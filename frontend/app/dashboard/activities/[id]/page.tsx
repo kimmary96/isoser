@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { createBrowserClient } from "@/lib/supabase/client";
 import { getCoachFeedback } from "@/lib/api/backend";
+import { getGuestActivities, isGuestMode } from "@/lib/guest";
 import type { Activity, CoachMessage } from "@/lib/types";
 
 export default function ActivityDetailPage() {
@@ -23,6 +24,14 @@ export default function ActivityDetailPage() {
 
   useEffect(() => {
     const fetchActivity = async () => {
+      if (isGuestMode()) {
+        const found = getGuestActivities().find((item) => item.id === (params.id as string)) ?? null;
+        setActivity(found);
+        setDescriptionDraft(found?.description ?? "");
+        setLoading(false);
+        return;
+      }
+
       try {
         const { data, error: activityError } = await supabase
           .from("activities")
@@ -45,6 +54,11 @@ export default function ActivityDetailPage() {
 
   const handleSaveDescription = async () => {
     if (!activity) return;
+    if (isGuestMode()) {
+      setActivity({ ...activity, description: descriptionDraft });
+      return;
+    }
+
     setSaving(true);
     setError(null);
     try {
@@ -88,6 +102,10 @@ export default function ActivityDetailPage() {
       setMessages([...updatedHistory, assistantMessage]);
 
       // 대화 이력 Supabase에 저장
+      if (isGuestMode()) {
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const { error: sessionError } = await supabase.from("coach_sessions").upsert({
@@ -111,10 +129,18 @@ export default function ActivityDetailPage() {
     }
   };
 
-  if (loading || !activity) {
+  if (loading) {
     return (
       <main className="min-h-screen bg-gray-50 flex items-center justify-center">
         <p className="text-gray-500">불러오는 중...</p>
+      </main>
+    );
+  }
+
+  if (!activity) {
+    return (
+      <main className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-500">활동을 찾을 수 없습니다.</p>
       </main>
     );
   }

@@ -13,6 +13,7 @@ import {
   View,
 } from "@react-pdf/renderer";
 
+import { getGuestActivities, getGuestResume, isGuestMode } from "@/lib/guest";
 import { createBrowserClient } from "@/lib/supabase/client";
 import type { Activity, Resume } from "@/lib/types";
 
@@ -101,6 +102,13 @@ function ResumeExportContent() {
       setLoading(true);
       setError(null);
       try {
+        if (isGuestMode()) {
+          const guestResume = getGuestResume();
+          setResume(guestResume);
+          setActivities(getGuestActivities());
+          return;
+        }
+
         let resumeRow: Resume | null = null;
         if (resumeId) {
           const { data, error: resumeError } = await supabase

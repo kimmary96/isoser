@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
+import { getGuestActivities, isGuestMode } from "@/lib/guest";
 import { createBrowserClient } from "@/lib/supabase/client";
 
 interface DashboardStats {
@@ -23,6 +24,16 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const fetchStats = async () => {
+      if (isGuestMode()) {
+        setStats({
+          activities: getGuestActivities().length,
+          resumes: 1,
+          sessions: 0,
+        });
+        setLoading(false);
+        return;
+      }
+
       try {
         const [{ count: activityCount }, { count: resumeCount }, { count: sessionCount }] =
           await Promise.all([

@@ -3,6 +3,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { getGuestActivities, isGuestMode } from "@/lib/guest";
 import { createBrowserClient } from "@/lib/supabase/client";
 import type { Activity } from "@/lib/types";
 
@@ -21,6 +22,12 @@ export default function ActivitiesPage() {
 
   useEffect(() => {
     const fetchActivities = async () => {
+      if (isGuestMode()) {
+        setActivities(getGuestActivities());
+        setLoading(false);
+        return;
+      }
+
       try {
         const { data, error: queryError } = await supabase
           .from("activities")

@@ -4,6 +4,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { parsePdf } from "@/lib/api/backend";
+import { isGuestMode } from "@/lib/guest";
 import { createBrowserClient } from "@/lib/supabase/client";
 import type { ParsedProfile, ParsedActivity } from "@/lib/types";
 
@@ -25,6 +26,11 @@ export default function OnboardingPage() {
   };
 
   const handleUpload = async () => {
+    if (isGuestMode()) {
+      setError("게스트 모드에서는 업로드 저장을 지원하지 않습니다. 활동 페이지의 샘플 데이터로 QA를 진행해주세요.");
+      return;
+    }
+
     if (!file) return;
     setLoading(true);
     setError(null);

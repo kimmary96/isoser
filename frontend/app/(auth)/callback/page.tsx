@@ -4,6 +4,7 @@
 import { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@/lib/supabase/client";
+import { disableGuestMode } from "@/lib/guest";
 
 export default function CallbackPage() {
   const router = useRouter();
@@ -17,6 +18,7 @@ export default function CallbackPage() {
         router.push("/login");
         return;
       }
+      disableGuestMode();
       router.push("/dashboard");
     };
 

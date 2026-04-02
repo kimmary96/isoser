@@ -2,9 +2,12 @@
 "use client";
 
 import { createBrowserClient } from "@/lib/supabase/client";
+import { enableGuestMode } from "@/lib/guest";
+import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 
 export default function LoginPage() {
+  const router = useRouter();
   const supabase = useMemo(() => createBrowserClient(), []);
 
   const handleGoogleLogin = async () => {
@@ -14,6 +17,11 @@ export default function LoginPage() {
         redirectTo: `${window.location.origin}/callback`,
       },
     });
+  };
+
+  const handleGuestStart = () => {
+    enableGuestMode();
+    router.push("/dashboard");
   };
 
   return (
@@ -47,6 +55,13 @@ export default function LoginPage() {
             />
           </svg>
           Google로 계속하기
+        </button>
+
+        <button
+          onClick={handleGuestStart}
+          className="w-full px-4 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+        >
+          게스트로 둘러보기
         </button>
       </div>
     </main>

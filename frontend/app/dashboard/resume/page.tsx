@@ -4,6 +4,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@/lib/supabase/client";
+import { getGuestActivities, isGuestMode, saveGuestResume } from "@/lib/guest";
 import type { Activity } from "@/lib/types";
 
 export default function ResumePage() {
@@ -18,6 +19,12 @@ export default function ResumePage() {
 
   useEffect(() => {
     const fetchActivities = async () => {
+      if (isGuestMode()) {
+        setActivities(getGuestActivities());
+        setLoading(false);
+        return;
+      }
+
       try {
         const { data, error: queryError } = await supabase
           .from("activities")
@@ -50,6 +57,23 @@ export default function ResumePage() {
     setSaving(true);
     setError(null);
     try {
+      if (isGuestMode()) {
+        const now = new Date().toISOString();
+        const guestResume = {
+          id: "guest-resume-1",
+          user_id: "guest",
+          title: `게스트 이력서 ${new Date().toISOString().slice(0, 10)}`,
+          target_job: targetJob || null,
+          template_id: "simple",
+          selected_activity_ids: Array.from(selected),
+          created_at: now,
+          updated_at: now,
+        };
+        saveGuestResume(guestResume);
+        router.push("/dashboard/resume/export");
+        return;
+      }
+
       const { data: authData, error: authError } = await supabase.auth.getUser();
       if (authError || !authData.user) {
         throw new Error("로그인이 필요합니다.");

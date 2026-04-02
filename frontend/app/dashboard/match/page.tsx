@@ -3,6 +3,7 @@
 
 import { useMemo, useState } from "react";
 import { analyzeMatch } from "@/lib/api/backend";
+import { getGuestActivities, isGuestMode } from "@/lib/guest";
 import { createBrowserClient } from "@/lib/supabase/client";
 import type { MatchResult } from "@/lib/types";
 
@@ -19,17 +20,27 @@ export default function MatchPage() {
     setError(null);
 
     try {
-      const { data: activities, error: activityError } = await supabase
-        .from("activities")
-        .select("id, title, description")
-        .eq("is_visible", true);
-      if (activityError) {
-        throw new Error(activityError.message);
+      let activities: { id: string; title: string; description: string | null }[] = [];
+      if (isGuestMode()) {
+        activities = getGuestActivities().map((item) => ({
+          id: item.id,
+          title: item.title,
+          description: item.description,
+        }));
+      } else {
+        const { data, error: activityError } = await supabase
+          .from("activities")
+          .select("id, title, description")
+          .eq("is_visible", true);
+        if (activityError) {
+          throw new Error(activityError.message);
+        }
+        activities = data || [];
       }
 
       const matchResult = await analyzeMatch({
         job_posting: jobPosting,
-        activities: activities || [],
+        activities,
       });
       setResult(matchResult);
     } catch (err) {
