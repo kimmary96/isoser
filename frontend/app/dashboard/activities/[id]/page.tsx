@@ -1,7 +1,7 @@
 // 활동 상세 페이지 - 활동 내용 편집 + AI 코치 대화
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { createBrowserClient } from "@/lib/supabase/client";
 import { getCoachFeedback } from "@/lib/api/backend";
@@ -9,31 +9,64 @@ import type { Activity, CoachMessage } from "@/lib/types";
 
 export default function ActivityDetailPage() {
   const params = useParams();
-  const supabase = createBrowserClient();
+  const supabase = useMemo(() => createBrowserClient(), []);
   const [activity, setActivity] = useState<Activity | null>(null);
   const [messages, setMessages] = useState<CoachMessage[]>([]);
   const [input, setInput] = useState("");
+  const [descriptionDraft, setDescriptionDraft] = useState("");
   const [jobTitle, setJobTitle] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [sessionId] = useState(() => crypto.randomUUID());
 
   useEffect(() => {
     const fetchActivity = async () => {
-      const { data } = await supabase
-        .from("activities")
-        .select("*")
-        .eq("id", params.id as string)
-        .single();
-      setActivity(data);
-      setLoading(false);
+      try {
+        const { data, error: activityError } = await supabase
+          .from("activities")
+          .select("*")
+          .eq("id", params.id as string)
+          .single();
+        if (activityError) {
+          throw new Error(activityError.message);
+        }
+        setActivity(data);
+        setDescriptionDraft(data?.description ?? "");
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "활동을 불러오지 못했습니다.");
+      } finally {
+        setLoading(false);
+      }
     };
     fetchActivity();
   }, [params.id, supabase]);
 
+  const handleSaveDescription = async () => {
+    if (!activity) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const { error: updateError } = await supabase
+        .from("activities")
+        .update({ description: descriptionDraft })
+        .eq("id", activity.id);
+      if (updateError) {
+        throw new Error(updateError.message);
+      }
+      setActivity({ ...activity, description: descriptionDraft });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "설명 저장에 실패했습니다.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleSendMessage = async () => {
     if (!activity || !input.trim()) return;
     setSending(true);
+    setError(null);
 
     const userMessage: CoachMessage = { role: "user", content: input };
     const updatedHistory = [...messages, userMessage];
@@ -45,7 +78,7 @@ export default function ActivityDetailPage() {
         session_id: sessionId,
         activity_description: input,
         job_title: jobTitle || "일반",
-        history: messages,
+        history: updatedHistory,
       });
 
       const assistantMessage: CoachMessage = {
@@ -57,14 +90,18 @@ export default function ActivityDetailPage() {
       // 대화 이력 Supabase에 저장
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        await supabase.from("coach_sessions").upsert({
+        const { error: sessionError } = await supabase.from("coach_sessions").upsert({
           id: sessionId,
           user_id: user.id,
           activity_id: activity.id,
           messages: [...updatedHistory, assistantMessage],
         });
+        if (sessionError) {
+          throw new Error(sessionError.message);
+        }
       }
-    } catch {
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "코치 피드백 요청에 실패했습니다.");
       setMessages([
         ...updatedHistory,
         { role: "assistant", content: "오류가 발생했습니다. 다시 시도해주세요." },
@@ -92,14 +129,26 @@ export default function ActivityDetailPage() {
             <p className="text-sm text-gray-500">{activity.period}</p>
           )}
         </div>
+        {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* 활동 설명 */}
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <h2 className="font-semibold text-gray-900 mb-3">활동 설명</h2>
-            <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
-              {activity.description || "설명이 없습니다."}
-            </p>
+            <textarea
+              value={descriptionDraft}
+              onChange={(e) => setDescriptionDraft(e.target.value)}
+              rows={12}
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400 resize-none"
+              placeholder="활동 내용을 구체적으로 작성하세요."
+            />
+            <button
+              onClick={handleSaveDescription}
+              disabled={saving}
+              className="mt-3 px-3 py-2 text-sm rounded-lg bg-black text-white hover:bg-gray-800 transition-colors disabled:opacity-50"
+            >
+              {saving ? "저장 중..." : "활동 설명 저장"}
+            </button>
           </div>
 
           {/* AI 코치 */}

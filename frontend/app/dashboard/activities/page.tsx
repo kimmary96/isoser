@@ -1,7 +1,7 @@
 // 활동 목록 페이지 - 모든 활동을 카드로 표시
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { createBrowserClient } from "@/lib/supabase/client";
 import type { Activity } from "@/lib/types";
@@ -14,18 +14,27 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 export default function ActivitiesPage() {
-  const supabase = createBrowserClient();
+  const supabase = useMemo(() => createBrowserClient(), []);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchActivities = async () => {
-      const { data } = await supabase
-        .from("activities")
-        .select("*")
-        .order("created_at", { ascending: false });
-      setActivities(data || []);
-      setLoading(false);
+      try {
+        const { data, error: queryError } = await supabase
+          .from("activities")
+          .select("*")
+          .order("created_at", { ascending: false });
+        if (queryError) {
+          throw new Error(queryError.message);
+        }
+        setActivities(data || []);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "활동을 불러오지 못했습니다.");
+      } finally {
+        setLoading(false);
+      }
     };
     fetchActivities();
   }, [supabase]);
@@ -50,6 +59,7 @@ export default function ActivitiesPage() {
             + 활동 추가
           </Link>
         </div>
+        {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
 
         {activities.length === 0 ? (
           <div className="text-center py-20 text-gray-400">

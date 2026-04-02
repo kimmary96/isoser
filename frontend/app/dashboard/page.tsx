@@ -1,7 +1,49 @@
-// 메인 대시보드 페이지 - 활동 목록 요약 및 이력서 바로가기
+// 메인 대시보드 페이지 - 활동/이력서/코치 세션 통계 요약
+"use client";
+
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+
+import { createBrowserClient } from "@/lib/supabase/client";
+
+interface DashboardStats {
+  activities: number;
+  resumes: number;
+  sessions: number;
+}
 
 export default function DashboardPage() {
+  const supabase = useMemo(() => createBrowserClient(), []);
+  const [stats, setStats] = useState<DashboardStats>({
+    activities: 0,
+    resumes: 0,
+    sessions: 0,
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [{ count: activityCount }, { count: resumeCount }, { count: sessionCount }] =
+          await Promise.all([
+            supabase.from("activities").select("*", { count: "exact", head: true }),
+            supabase.from("resumes").select("*", { count: "exact", head: true }),
+            supabase.from("coach_sessions").select("*", { count: "exact", head: true }),
+          ]);
+
+        setStats({
+          activities: activityCount ?? 0,
+          resumes: resumeCount ?? 0,
+          sessions: sessionCount ?? 0,
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, [supabase]);
+
   return (
     <main className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 py-8">
@@ -18,15 +60,15 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <p className="text-sm text-gray-500">총 활동</p>
-            <p className="text-3xl font-bold text-gray-900 mt-1">0</p>
+            <p className="text-3xl font-bold text-gray-900 mt-1">{loading ? "-" : stats.activities}</p>
           </div>
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <p className="text-sm text-gray-500">이력서</p>
-            <p className="text-3xl font-bold text-gray-900 mt-1">0</p>
+            <p className="text-3xl font-bold text-gray-900 mt-1">{loading ? "-" : stats.resumes}</p>
           </div>
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <p className="text-sm text-gray-500">AI 코치 세션</p>
-            <p className="text-3xl font-bold text-gray-900 mt-1">0</p>
+            <p className="text-3xl font-bold text-gray-900 mt-1">{loading ? "-" : stats.sessions}</p>
           </div>
         </div>
 

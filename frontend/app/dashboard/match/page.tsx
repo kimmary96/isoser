@@ -1,13 +1,13 @@
 // 공고 매칭 분석 페이지 - 채용 공고와 내 경험 비교
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { analyzeMatch } from "@/lib/api/backend";
 import { createBrowserClient } from "@/lib/supabase/client";
 import type { MatchResult } from "@/lib/types";
 
 export default function MatchPage() {
-  const supabase = createBrowserClient();
+  const supabase = useMemo(() => createBrowserClient(), []);
   const [jobPosting, setJobPosting] = useState("");
   const [result, setResult] = useState<MatchResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -19,10 +19,13 @@ export default function MatchPage() {
     setError(null);
 
     try {
-      const { data: activities } = await supabase
+      const { data: activities, error: activityError } = await supabase
         .from("activities")
         .select("id, title, description")
         .eq("is_visible", true);
+      if (activityError) {
+        throw new Error(activityError.message);
+      }
 
       const matchResult = await analyzeMatch({
         job_posting: jobPosting,

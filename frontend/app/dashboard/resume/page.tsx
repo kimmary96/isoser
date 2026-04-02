@@ -1,27 +1,38 @@
 // 이력서 편집 페이지 - 활동 선택 및 이력서 구성
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@/lib/supabase/client";
 import type { Activity } from "@/lib/types";
 
 export default function ResumePage() {
-  const supabase = createBrowserClient();
+  const router = useRouter();
+  const supabase = useMemo(() => createBrowserClient(), []);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [targetJob, setTargetJob] = useState("");
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchActivities = async () => {
-      const { data } = await supabase
-        .from("activities")
-        .select("*")
-        .eq("is_visible", true)
-        .order("created_at", { ascending: false });
-      setActivities(data || []);
-      setLoading(false);
+      try {
+        const { data, error: queryError } = await supabase
+          .from("activities")
+          .select("*")
+          .eq("is_visible", true)
+          .order("created_at", { ascending: false });
+        if (queryError) {
+          throw new Error(queryError.message);
+        }
+        setActivities(data || []);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "활동을 불러오지 못했습니다.");
+      } finally {
+        setLoading(false);
+      }
     };
     fetchActivities();
   }, [supabase]);
@@ -33,6 +44,40 @@ export default function ResumePage() {
       else next.add(id);
       return next;
     });
+  };
+
+  const handleCreateResume = async () => {
+    setSaving(true);
+    setError(null);
+    try {
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (authError || !authData.user) {
+        throw new Error("로그인이 필요합니다.");
+      }
+
+      const payload = {
+        user_id: authData.user.id,
+        title: `이력서 ${new Date().toISOString().slice(0, 10)}`,
+        target_job: targetJob || null,
+        template_id: "simple",
+        selected_activity_ids: Array.from(selected),
+      };
+
+      const { data, error: insertError } = await supabase
+        .from("resumes")
+        .insert(payload)
+        .select("id")
+        .single();
+      if (insertError || !data) {
+        throw new Error(insertError?.message ?? "이력서 저장에 실패했습니다.");
+      }
+
+      router.push(`/dashboard/resume/export?resumeId=${data.id}`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "이력서 저장 중 오류가 발생했습니다.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (loading) {
@@ -48,13 +93,15 @@ export default function ResumePage() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-gray-900">이력서 편집</h1>
-          <Link
-            href="/dashboard/resume/export"
-            className="px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
+          <button
+            onClick={handleCreateResume}
+            disabled={saving || selected.size === 0}
+            className="px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50"
           >
-            PDF 출력 →
-          </Link>
+            {saving ? "저장 중..." : "저장 후 PDF 출력 →"}
+          </button>
         </div>
+        {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
 
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">

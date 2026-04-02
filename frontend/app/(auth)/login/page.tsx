@@ -2,9 +2,10 @@
 "use client";
 
 import { createBrowserClient } from "@/lib/supabase/client";
+import { useMemo } from "react";
 
 export default function LoginPage() {
-  const supabase = createBrowserClient();
+  const supabase = useMemo(() => createBrowserClient(), []);
 
   const handleGoogleLogin = async () => {
     await supabase.auth.signInWithOAuth({

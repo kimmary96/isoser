@@ -1,7 +1,7 @@
 // 온보딩 페이지 - 기존 이력서 PDF 업로드로 활동 자동 추출
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { parsePdf } from "@/lib/api/backend";
 import { createBrowserClient } from "@/lib/supabase/client";
@@ -9,7 +9,7 @@ import type { ParsedProfile, ParsedActivity } from "@/lib/types";
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const supabase = createBrowserClient();
+  const supabase = useMemo(() => createBrowserClient(), []);
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,17 +36,23 @@ export default function OnboardingPage() {
 
       // 프로필 저장
       const profile: ParsedProfile = result.profile;
-      await supabase.from("profiles").upsert({
+      const { error: profileError } = await supabase.from("profiles").upsert({
         id: user.id,
         ...profile,
       });
+      if (profileError) {
+        throw new Error(profileError.message);
+      }
 
       // 활동 목록 저장
       const activities: ParsedActivity[] = result.activities;
       if (activities.length > 0) {
-        await supabase.from("activities").insert(
+        const { error: activityError } = await supabase.from("activities").insert(
           activities.map((a) => ({ ...a, user_id: user.id }))
         );
+        if (activityError) {
+          throw new Error(activityError.message);
+        }
       }
 
       router.push("/dashboard/activities");
