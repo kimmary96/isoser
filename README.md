@@ -183,4 +183,4 @@ RLS는 모든 테이블에 활성화하고, `auth.uid()` 기준 본인 데이터
 ### Backend (Render)
 1. `backend/render.yaml` 기준 Blueprint 배포
 2. 필수 환경변수: `GOOGLE_API_KEY`, `CHROMA_PERSIST_DIR`
-3. Start command에서 `python rag/seed.py && uvicorn main:app ...` 순으로 실행됨
+3. Start command에서 `python rag/seed.py && uvicorn main:app ...` 순으로 실행
