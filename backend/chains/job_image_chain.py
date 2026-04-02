@@ -6,6 +6,12 @@ from typing import Any
 
 import google.generativeai as genai
 
+_IMAGE_MODEL_CANDIDATES = [
+    os.getenv("GEMINI_IMAGE_MODEL", "").strip(),
+    "gemini-2.5-flash",
+    "gemini-2.0-flash",
+]
+
 
 _IMAGE_JOB_PROMPT = """
 당신은 채용 공고 텍스트 추출 전문가입니다.
@@ -66,24 +72,39 @@ def _generate_image_content_sync(image_bytes: bytes, mime_type: str) -> str:
     print("mime_type:", mime_type)
     print("image bytes:", len(image_bytes))
 
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    last_error: Exception | None = None
+    candidates = [name for name in _IMAGE_MODEL_CANDIDATES if name]
 
-    response = model.generate_content(
-        contents=[
-            {
-                "role": "user",
-                "parts": [
-                    {"text": _IMAGE_JOB_PROMPT},
+    response = None
+    for model_name in candidates:
+        try:
+            print(f"=== Gemini 이미지 모델 시도: {model_name} ===")
+            model = genai.GenerativeModel(model_name)
+            response = model.generate_content(
+                contents=[
                     {
-                        "inline_data": {
-                            "mime_type": mime_type,
-                            "data": base64.b64encode(image_bytes).decode("utf-8"),
-                        }
-                    },
-                ],
-            }
-        ]
-    )
+                        "role": "user",
+                        "parts": [
+                            {"text": _IMAGE_JOB_PROMPT},
+                            {
+                                "inline_data": {
+                                    "mime_type": mime_type,
+                                    "data": base64.b64encode(image_bytes).decode("utf-8"),
+                                }
+                            },
+                        ],
+                    }
+                ]
+            )
+            break
+        except Exception as e:
+            last_error = e
+            print(f"=== Gemini 이미지 모델 실패: {model_name} / {repr(e)} ===")
+
+    if response is None:
+        raise RuntimeError(
+            f"이미지 추출 가능한 Gemini 모델을 찾지 못했습니다. 후보: {candidates}, 마지막 오류: {repr(last_error)}"
+        ) from last_error
 
     print("=== Gemini 응답 수신 완료 ===")
 

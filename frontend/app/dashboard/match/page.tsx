@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import { analyzeMatch, extractJobImage } from "@/lib/api/backend";
 import { getGuestActivities, isGuestMode } from "@/lib/guest";
-import { getProfileExtra } from "@/lib/profile_extra";
 import { createBrowserClient } from "@/lib/supabase/client";
 import type { MatchResult } from "@/lib/types";
 
@@ -91,8 +90,6 @@ export default function MatchPage() {
       } = {};
 
       if (isGuestMode()) {
-        const extra = getProfileExtra();
-
         activities = getGuestActivities().map((item) => ({
           id: item.id,
           title: item.title,
@@ -135,8 +132,6 @@ export default function MatchPage() {
         if (profileError) {
           throw new Error(profileError.message);
         }
-
-        const extra = getProfileExtra();
 
         activities = activityData || [];
         profileContext = {

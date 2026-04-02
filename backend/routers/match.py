@@ -5,7 +5,7 @@ from chains.job_image_chain import extract_job_posting_from_image
 from chains.match_chain import run_match_chain
 
 
-router = APIRouter(prefix="/match", tags=["match"])
+router = APIRouter()
 
 
 class MatchAnalyzeRequest(BaseModel):
