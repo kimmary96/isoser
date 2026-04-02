@@ -61,6 +61,13 @@ export interface ParsedProfile {
   email: string;
   phone: string;
   education: string;
+  career?: string[];
+  education_history?: string[];
+  awards?: string[];
+  certifications?: string[];
+  languages?: string[];
+  skills?: string[];
+  self_intro?: string;
 }
 
 export interface ParsedActivity {

@@ -18,7 +18,14 @@ activities[].type은 반드시 아래 4개 중 하나만 사용하세요: 회사
     "name": "이름",
     "email": "이메일",
     "phone": "전화번호",
-    "education": "최종 학력"
+    "education": "최종 학력",
+    "career": ["경력 요약1", "경력 요약2"],
+    "education_history": ["학력1", "학력2"],
+    "awards": ["수상경력1"],
+    "certifications": ["자격증1"],
+    "languages": ["외국어1"],
+    "skills": ["스킬1", "스킬2"],
+    "self_intro": "자기소개 초안"
   }},
   "activities": [
     {{
@@ -134,6 +141,13 @@ def _parse_and_normalize_result(raw_content: Any) -> dict:
         "email": str(profile.get("email", "")).strip(),
         "phone": str(profile.get("phone", "")).strip(),
         "education": str(profile.get("education", "")).strip(),
+        "career": _normalize_string_list(profile.get("career")),
+        "education_history": _normalize_string_list(profile.get("education_history")),
+        "awards": _normalize_string_list(profile.get("awards")),
+        "certifications": _normalize_string_list(profile.get("certifications")),
+        "languages": _normalize_string_list(profile.get("languages")),
+        "skills": _normalize_string_list(profile.get("skills")),
+        "self_intro": str(profile.get("self_intro", "")).strip(),
     }
 
     normalized_activities = []
@@ -239,4 +253,21 @@ def _normalize_skills(raw_skills: Any) -> list[str]:
     if isinstance(raw_skills, str):
         candidates = [part.strip() for part in raw_skills.split(",")]
         return [item for item in candidates if item]
+    return []
+
+
+def _normalize_string_list(value: Any) -> list[str]:
+    """
+    임의 입력을 문자열 배열로 정규화한다.
+
+    Args:
+        value: 리스트 또는 문자열
+
+    Returns:
+        공백 제거된 문자열 리스트
+    """
+    if isinstance(value, list):
+        return [str(item).strip() for item in value if str(item).strip()]
+    if isinstance(value, str):
+        return [item.strip() for item in value.split(",") if item.strip()]
     return []

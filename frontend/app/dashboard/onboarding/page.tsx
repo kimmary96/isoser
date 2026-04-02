@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 import { parsePdf } from "@/lib/api/backend";
 import { isGuestMode } from "@/lib/guest";
+import { mergeParsedProfileToExtra, setProfileExtra } from "@/lib/profile_extra";
 import { createBrowserClient } from "@/lib/supabase/client";
 import type { ParsedProfile, ParsedActivity } from "@/lib/types";
 
@@ -107,9 +108,13 @@ export default function OnboardingPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("로그인이 필요합니다.");
 
+      const { name, email, phone, education } = parsedProfile;
       const { error: profileError } = await supabase.from("profiles").upsert({
         id: user.id,
-        ...parsedProfile,
+        name,
+        email,
+        phone,
+        education,
       });
       if (profileError) {
         throw new Error(profileError.message);
@@ -124,7 +129,8 @@ export default function OnboardingPage() {
         }
       }
 
-      router.push("/dashboard/activities");
+      setProfileExtra(mergeParsedProfileToExtra(parsedProfile));
+      router.push("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "저장 중 오류가 발생했습니다.");
     } finally {
@@ -188,7 +194,14 @@ export default function OnboardingPage() {
                 <p><span className="text-gray-500">이름:</span> {parsedProfile?.name || "-"}</p>
                 <p><span className="text-gray-500">이메일:</span> {parsedProfile?.email || "-"}</p>
                 <p><span className="text-gray-500">전화번호:</span> {parsedProfile?.phone || "-"}</p>
-                <p><span className="text-gray-500">학력:</span> {parsedProfile?.education || "-"}</p>
+                <p><span className="text-gray-500">최종 학력:</span> {parsedProfile?.education || "-"}</p>
+                <p><span className="text-gray-500">경력:</span> {(parsedProfile?.career ?? []).join(", ") || "-"}</p>
+                <p><span className="text-gray-500">학력 상세:</span> {(parsedProfile?.education_history ?? []).join(", ") || "-"}</p>
+                <p><span className="text-gray-500">수상경력:</span> {(parsedProfile?.awards ?? []).join(", ") || "-"}</p>
+                <p><span className="text-gray-500">자격증:</span> {(parsedProfile?.certifications ?? []).join(", ") || "-"}</p>
+                <p><span className="text-gray-500">외국어:</span> {(parsedProfile?.languages ?? []).join(", ") || "-"}</p>
+                <p><span className="text-gray-500">스킬:</span> {(parsedProfile?.skills ?? []).join(", ") || "-"}</p>
+                <p><span className="text-gray-500">자기소개:</span> {parsedProfile?.self_intro || "-"}</p>
               </div>
             </section>
 
