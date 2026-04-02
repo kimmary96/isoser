@@ -153,13 +153,24 @@ CREATE POLICY "본인 코치 세션만 접근" ON coach_sessions FOR ALL USING (
 ### 프론트엔드 (Vercel)
 1. GitHub 저장소를 Vercel에 연결
 2. Root Directory를 `frontend`로 설정
-3. 환경변수 설정 (`.env.local.example` 참고)
+3. 환경변수 설정
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `NEXT_PUBLIC_BACKEND_URL` (Render 백엔드 URL, 예: `https://isoser-backend.onrender.com`)
+4. Deploy 실행
 
 ### 백엔드 (Render)
 1. GitHub 저장소를 Render에 연결
-2. Root Directory를 `backend`로 설정
-3. `render.yaml` 설정 자동 적용
-4. 환경변수 설정 (`.env.example` 참고)
+2. Blueprint 배포로 `backend/render.yaml` 적용
+3. 환경변수 설정
+   - `GOOGLE_API_KEY` (필수)
+   - `CHROMA_PERSIST_DIR` (`/opt/render/project/src/chroma_store`)
+4. 최초 부팅 시 `python rag/seed.py`가 실행되어 Chroma seed 데이터가 적재됨
+
+### 배포 체크리스트
+1. Vercel 배포 URL이 생성되면 프론트 환경변수 `NEXT_PUBLIC_BACKEND_URL`을 Render URL로 고정
+2. Render 배포 후 `/docs`, `/parse/pdf`, `/coach/feedback`, `/match/analyze` 응답 확인
+3. Vercel에서 Google 로그인 콜백 URL을 `https://<vercel-domain>/callback`으로 Supabase에 등록
 
 ---
 

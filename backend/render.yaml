@@ -3,13 +3,14 @@ services:
   - type: web
     name: isoser-backend
     runtime: python
-    buildCommand: pip install -r requirements.txt && python rag/seed.py
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: python rag/seed.py && uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: GOOGLE_API_KEY
         sync: false
       - key: CHROMA_PERSIST_DIR
-        value: ./chroma_store
+        value: /opt/render/project/src/chroma_store
     disk:
       name: chroma-store
       mountPath: /opt/render/project/src/chroma_store
