@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Document,
@@ -86,7 +87,7 @@ function ResumePdfDocument({
   );
 }
 
-export default function ResumeExportPage() {
+function ResumeExportContent() {
   const supabase = useMemo(() => createBrowserClient(), []);
   const searchParams = useSearchParams();
   const resumeId = searchParams.get("resumeId");
@@ -220,5 +221,19 @@ export default function ResumeExportPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function ResumeExportPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <p className="text-gray-500">불러오는 중...</p>
+        </main>
+      }
+    >
+      <ResumeExportContent />
+    </Suspense>
   );
 }
