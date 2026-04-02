@@ -1,6 +1,7 @@
 # LangChain PDF 파싱 체인 - PyMuPDF 텍스트 추출 후 Gemini로 구조화
 import json
 import os
+from typing import Any
 
 import fitz  # PyMuPDF
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -10,6 +11,7 @@ from langchain_core.messages import HumanMessage
 _PARSE_PROMPT = """
 다음은 이력서 텍스트입니다. 아래 JSON 형식으로 구조화해서 반환하세요.
 코드 블록 없이 순수 JSON만 반환하세요.
+activities[].type은 반드시 아래 4개 중 하나만 사용하세요: 회사경력, 프로젝트, 대외활동, 학생활동
 
 {{
   "profile": {{
@@ -34,6 +36,26 @@ _PARSE_PROMPT = """
 {text}
 """
 
+_ALLOWED_ACTIVITY_TYPES = {"회사경력", "프로젝트", "대외활동", "학생활동"}
+_TYPE_ALIASES = {
+    "인턴": "회사경력",
+    "경력": "회사경력",
+    "업무경험": "회사경력",
+    "직무경험": "회사경력",
+    "work": "회사경력",
+    "experience": "회사경력",
+    "프로젝트 경험": "프로젝트",
+    "project": "프로젝트",
+    "활동": "대외활동",
+    "동아리": "대외활동",
+    "봉사": "대외활동",
+    "contest": "대외활동",
+    "competition": "대외활동",
+    "school": "학생활동",
+    "학내활동": "학생활동",
+    "학술활동": "학생활동",
+}
+
 
 async def parse_resume_pdf(pdf_bytes: bytes) -> dict:
     """
@@ -45,29 +67,21 @@ async def parse_resume_pdf(pdf_bytes: bytes) -> dict:
     Returns:
         profile과 activities가 포함된 딕셔너리
     """
-    # PyMuPDF로 텍스트 추출
     text = _extract_text_from_pdf(pdf_bytes)
     if not text.strip():
         return {"profile": {}, "activities": []}
 
-    # Gemini로 구조화
     try:
         llm = ChatGoogleGenerativeAI(
             model="gemini-2.5-flash",
             google_api_key=os.environ["GOOGLE_API_KEY"],
         )
-        prompt = _PARSE_PROMPT.format(text=text[:8000])  # 토큰 제한 고려
+        prompt = _PARSE_PROMPT.format(text=text[:8000])
         response = await llm.ainvoke([HumanMessage(content=prompt)])
     except Exception as e:
         raise RuntimeError(f"AI 파싱 호출 실패: {str(e)}") from e
 
-    try:
-        result = json.loads(response.content)
-    except json.JSONDecodeError:
-        # JSON 파싱 실패 시 빈 결과 반환
-        result = {"profile": {}, "activities": []}
-
-    return result
+    return _parse_and_normalize_result(response.content)
 
 
 def _extract_text_from_pdf(pdf_bytes: bytes) -> str:
@@ -86,3 +100,143 @@ def _extract_text_from_pdf(pdf_bytes: bytes) -> str:
         return "\n".join(pages_text)
     except Exception:
         return ""
+
+
+def _parse_and_normalize_result(raw_content: Any) -> dict:
+    """
+    LLM 응답에서 JSON을 추출하고, profile/activities 스키마로 정규화한다.
+
+    Args:
+        raw_content: LLM 응답 원본 콘텐츠
+
+    Returns:
+        profile/activities가 보장된 결과 딕셔너리
+    """
+    text = _extract_text_from_llm_content(raw_content).strip()
+    parsed: dict[str, Any]
+
+    try:
+        parsed = json.loads(text)
+    except json.JSONDecodeError:
+        json_text = _extract_json_object(text)
+        if not json_text:
+            return {"profile": {}, "activities": []}
+        try:
+            parsed = json.loads(json_text)
+        except json.JSONDecodeError:
+            return {"profile": {}, "activities": []}
+
+    profile = parsed.get("profile", {}) if isinstance(parsed, dict) else {}
+    activities = parsed.get("activities", []) if isinstance(parsed, dict) else []
+
+    normalized_profile = {
+        "name": str(profile.get("name", "")).strip(),
+        "email": str(profile.get("email", "")).strip(),
+        "phone": str(profile.get("phone", "")).strip(),
+        "education": str(profile.get("education", "")).strip(),
+    }
+
+    normalized_activities = []
+    if isinstance(activities, list):
+        for item in activities:
+            if not isinstance(item, dict):
+                continue
+            normalized_activities.append(
+                {
+                    "type": _normalize_activity_type(item.get("type")),
+                    "title": str(item.get("title", "")).strip(),
+                    "period": str(item.get("period", "")).strip(),
+                    "role": str(item.get("role", "")).strip(),
+                    "skills": _normalize_skills(item.get("skills")),
+                    "description": str(item.get("description", "")).strip(),
+                }
+            )
+
+    return {
+        "profile": normalized_profile,
+        "activities": normalized_activities,
+    }
+
+
+def _extract_text_from_llm_content(raw_content: Any) -> str:
+    """
+    LLM 콘텐츠를 문자열로 변환한다.
+
+    Args:
+        raw_content: 문자열 또는 블록 리스트 등
+
+    Returns:
+        문자열 형태의 콘텐츠
+    """
+    if isinstance(raw_content, str):
+        return raw_content
+    if isinstance(raw_content, list):
+        parts: list[str] = []
+        for block in raw_content:
+            if isinstance(block, str):
+                parts.append(block)
+            elif isinstance(block, dict):
+                text = block.get("text")
+                if isinstance(text, str):
+                    parts.append(text)
+        return "\n".join(parts)
+    return str(raw_content)
+
+
+def _extract_json_object(text: str) -> str:
+    """
+    문자열에서 JSON 객체 본문을 추출한다.
+
+    Args:
+        text: 원본 텍스트
+
+    Returns:
+        JSON 객체 문자열 또는 빈 문자열
+    """
+    cleaned = text.replace("```json", "").replace("```", "").strip()
+    start = cleaned.find("{")
+    end = cleaned.rfind("}")
+    if start == -1 or end == -1 or end <= start:
+        return ""
+    return cleaned[start : end + 1]
+
+
+def _normalize_activity_type(raw_type: Any) -> str:
+    """
+    활동 타입을 DB 제약에 맞는 4개 타입 중 하나로 정규화한다.
+
+    Args:
+        raw_type: 원본 타입 값
+
+    Returns:
+        정규화된 활동 타입
+    """
+    text = str(raw_type or "").strip()
+    if text in _ALLOWED_ACTIVITY_TYPES:
+        return text
+
+    lowered = text.lower()
+    if lowered in _TYPE_ALIASES:
+        return _TYPE_ALIASES[lowered]
+    if text in _TYPE_ALIASES:
+        return _TYPE_ALIASES[text]
+
+    return "프로젝트"
+
+
+def _normalize_skills(raw_skills: Any) -> list[str]:
+    """
+    skills 필드를 문자열 리스트로 정규화한다.
+
+    Args:
+        raw_skills: 원본 skills 값
+
+    Returns:
+        스킬 문자열 리스트
+    """
+    if isinstance(raw_skills, list):
+        return [str(skill).strip() for skill in raw_skills if str(skill).strip()]
+    if isinstance(raw_skills, str):
+        candidates = [part.strip() for part in raw_skills.split(",")]
+        return [item for item in candidates if item]
+    return []
