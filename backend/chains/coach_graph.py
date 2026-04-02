@@ -110,12 +110,12 @@ def _build_coach_graph() -> StateGraph:
 
     graph.add_node("rag_search", rag_search_node)
     graph.add_node("analyze", analyze_node)
-    graph.add_node("feedback", feedback_node)
+    graph.add_node("feedback_step", feedback_node)
 
     graph.set_entry_point("rag_search")
     graph.add_edge("rag_search", "analyze")
-    graph.add_edge("analyze", "feedback")
-    graph.add_edge("feedback", END)
+    graph.add_edge("analyze", "feedback_step")
+    graph.add_edge("feedback_step", END)
 
     return graph.compile()
 
