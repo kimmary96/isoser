@@ -1,9 +1,12 @@
 # LangGraph AI 코치 그래프 - STAR 기법 멀티턴 피드백 상태 관리
 import os
+import json
 from typing import TypedDict
+
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage
 from langgraph.graph import StateGraph, END
+
 from rag.chroma_client import search_job_keywords, search_star_examples
 
 
@@ -44,7 +47,7 @@ def rag_search_node(state: CoachState) -> CoachState:
     return {**state, "rag_context": rag_context}
 
 
-def analyze_node(state: CoachState) -> CoachState:
+async def analyze_node(state: CoachState) -> CoachState:
     """활동 설명을 분석해 빠진 STAR 요소를 파악한다."""
     llm = _get_llm()
 
@@ -57,14 +60,9 @@ def analyze_node(state: CoachState) -> CoachState:
 
 빠진 STAR 요소 (JSON 배열만 반환):"""
 
-    import json
     try:
-        import asyncio
-        loop = asyncio.get_event_loop()
-        response = loop.run_until_complete(
-            llm.ainvoke([HumanMessage(content=prompt)])
-        )
-        missing = json.loads(response.content.strip())
+        response = await llm.ainvoke([HumanMessage(content=prompt)])
+        missing = json.loads(str(response.content).strip())
         if not isinstance(missing, list):
             missing = []
     except Exception:
@@ -73,7 +71,7 @@ def analyze_node(state: CoachState) -> CoachState:
     return {**state, "missing_elements": missing}
 
 
-def feedback_node(state: CoachState) -> CoachState:
+async def feedback_node(state: CoachState) -> CoachState:
     """분석 결과를 바탕으로 구체적인 피드백 문장을 생성한다."""
     llm = _get_llm()
 
@@ -97,12 +95,8 @@ def feedback_node(state: CoachState) -> CoachState:
 
 피드백:"""
 
-    import asyncio
     try:
-        loop = asyncio.get_event_loop()
-        response = loop.run_until_complete(
-            llm.ainvoke([HumanMessage(content=prompt)])
-        )
+        response = await llm.ainvoke([HumanMessage(content=prompt)])
         feedback = response.content
     except Exception as e:
         feedback = f"피드백 생성 중 오류가 발생했습니다: {str(e)}"

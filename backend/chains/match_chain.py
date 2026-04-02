@@ -1,6 +1,7 @@
 # LangChain 공고 매칭 체인 - 채용 공고와 활동 목록 비교 분석
 import os
 import json
+
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage
 
@@ -53,7 +54,7 @@ async def run_match_chain(job_posting: str, activities: list[dict]) -> dict:
 
     try:
         response = await llm.ainvoke([HumanMessage(content=prompt)])
-        result = json.loads(response.content.strip())
+        result = json.loads(str(response.content).strip())
     except json.JSONDecodeError:
         result = {
             "match_score": 0,
@@ -62,5 +63,7 @@ async def run_match_chain(job_posting: str, activities: list[dict]) -> dict:
             "recommended_activities": [],
             "summary": "분석 결과를 파싱하는 데 실패했습니다. 다시 시도해주세요.",
         }
+    except Exception as e:
+        raise RuntimeError(f"공고 매칭 AI 호출 실패: {str(e)}") from e
 
     return result

@@ -1,6 +1,7 @@
 # LangChain PDF 파싱 체인 - PyMuPDF 텍스트 추출 후 Gemini로 구조화
-import os
 import json
+import os
+
 import fitz  # PyMuPDF
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage
@@ -50,12 +51,15 @@ async def parse_resume_pdf(pdf_bytes: bytes) -> dict:
         return {"profile": {}, "activities": []}
 
     # Gemini로 구조화
-    llm = ChatGoogleGenerativeAI(
-        model="gemini-2.5-flash",
-        google_api_key=os.environ["GOOGLE_API_KEY"],
-    )
-    prompt = _PARSE_PROMPT.format(text=text[:8000])  # 토큰 제한 고려
-    response = await llm.ainvoke([HumanMessage(content=prompt)])
+    try:
+        llm = ChatGoogleGenerativeAI(
+            model="gemini-2.5-flash",
+            google_api_key=os.environ["GOOGLE_API_KEY"],
+        )
+        prompt = _PARSE_PROMPT.format(text=text[:8000])  # 토큰 제한 고려
+        response = await llm.ainvoke([HumanMessage(content=prompt)])
+    except Exception as e:
+        raise RuntimeError(f"AI 파싱 호출 실패: {str(e)}") from e
 
     try:
         result = json.loads(response.content)
