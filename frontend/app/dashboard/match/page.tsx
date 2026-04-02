@@ -102,7 +102,13 @@ export default function MatchPage() {
         profileContext = {
           name: "게스트 사용자",
           education: "게스트 모드",
-          ...extra,
+          career: ["게스트 QA 경력"],
+          education_history: ["게스트 학력"],
+          awards: [],
+          certifications: [],
+          languages: ["한국어"],
+          skills: ["Next.js", "FastAPI"],
+          self_intro: "게스트 모드 프로필",
         };
       } else {
         const [
@@ -113,7 +119,13 @@ export default function MatchPage() {
             .from("activities")
             .select("id, title, description")
             .eq("is_visible", true),
-          supabase.from("profiles").select("name, education").limit(1).maybeSingle(),
+          supabase
+            .from("profiles")
+            .select(
+              "name, education, career, education_history, awards, certifications, languages, skills, self_intro"
+            )
+            .limit(1)
+            .maybeSingle(),
         ]);
 
         if (activityError) {
@@ -130,7 +142,13 @@ export default function MatchPage() {
         profileContext = {
           name: profileData?.name ?? undefined,
           education: profileData?.education ?? undefined,
-          ...extra,
+          career: profileData?.career ?? [],
+          education_history: profileData?.education_history ?? [],
+          awards: profileData?.awards ?? [],
+          certifications: profileData?.certifications ?? [],
+          languages: profileData?.languages ?? [],
+          skills: profileData?.skills ?? [],
+          self_intro: profileData?.self_intro ?? "",
         };
       }
 

@@ -8,6 +8,13 @@ export interface Profile {
   email: string | null;
   phone: string | null;
   education: string | null;
+  career: string[] | null;
+  education_history: string[] | null;
+  awards: string[] | null;
+  certifications: string[] | null;
+  languages: string[] | null;
+  skills: string[] | null;
+  self_intro: string | null;
   created_at: string;
   updated_at: string;
 }
