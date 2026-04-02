@@ -1,59 +1,64 @@
 # 이소서 (Isoser)
 
-AI 코치 기반 이력서·경력기술서 편집·관리 웹 서비스
+AI 코치 기반 이력서/경력기술서 편집 서비스입니다.  
+"AI가 대신 작성"이 아니라, 사용자가 직접 고칠 수 있도록 STAR 기준 피드백을 제공하는 데 초점을 둡니다.
 
-> AI가 대신 써주는 것이 아니라, 유저가 직접 한 줄씩 고치는 과정을 AI가 옆에서 코치합니다.
+## 개발 상태 (2026-04-02 기준)
 
----
+### 구현 완료
+- Google OAuth 로그인 + 게스트 모드 진입
+- 이력서 PDF 업로드 후 프로필/활동 자동 추출 (`/parse/pdf`)
+- 대시보드에서 프로필 확장 정보(경력/학력/수상/자격/외국어/스킬/자기소개) 편집 및 저장
+- 활동 목록/상세 조회, 활동 설명 수정
+- 활동 상세에서 STAR 기반 AI 코치 멀티턴 피드백 (`/coach/feedback`)
+- 채용 공고 매칭 분석 + 점수 산식 상세 표시 (`/match/analyze`)
+- 선택 활동 기반 이력서 생성 및 PDF 다운로드
+- ChromaDB 기반 RAG 시드/조회 (장애 시 fallback 동작)
+
+### 현재 제약/미구현
+- 이력서 PDF 템플릿은 `simple` 1종만 제공
+- 게스트 모드에서는 PDF 업로드 저장 및 Supabase 영속 저장 미지원
+- AI 코치 대화 이력은 저장되지만, 화면 재진입 시 과거 대화 자동 복원 로직은 없음
 
 ## 기술 스택
 
 | 영역 | 기술 |
 |------|------|
-| 프론트엔드 | Next.js 15, TypeScript, Tailwind CSS, react-pdf |
-| 백엔드 | Python 3.11, FastAPI, LangChain, LangGraph |
-| AI | Gemini 2.5 Flash (Google Generative AI) |
-| 벡터DB | ChromaDB (직무 키워드 RAG) |
-| 인증/DB | Supabase (PostgreSQL + Auth + Storage) |
-| 배포 | Vercel (frontend), Render (backend) |
-
----
+| Frontend | Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS, `@react-pdf/renderer` |
+| Backend | Python 3.11, FastAPI, LangChain, LangGraph, PyMuPDF |
+| AI | Gemini 2.5 Flash (`gemini-2.5-flash`) |
+| Vector DB | ChromaDB (job keywords + STAR examples) |
+| Auth/DB | Supabase (Auth + PostgreSQL) |
+| Deploy | Vercel (frontend), Render (backend) |
 
 ## 폴더 구조
 
-```
+```text
 isoser/
-├── frontend/    # Next.js 15 (App Router)
-├── backend/     # FastAPI
+├── frontend/                 # Next.js 앱
+│   ├── app/(auth)/           # 로그인/콜백
+│   ├── app/dashboard/        # 온보딩/대시보드/활동/매칭/이력서
+│   └── lib/                  # Supabase, API 클라이언트, 타입, 게스트 유틸
+├── backend/                  # FastAPI 앱
+│   ├── routers/              # parse, coach, match
+│   ├── chains/               # PDF 파싱/코치 그래프/매칭 체인
+│   └── rag/                  # Chroma 초기화/검색/시드 데이터
 └── README.md
 ```
 
----
+## 로컬 실행
 
-## 로컬 개발 환경 설정
-
-### 1. 환경변수 설정
+### 1) 환경변수 준비
 
 ```bash
 # frontend
 cp frontend/.env.local.example frontend/.env.local
-# .env.local 파일에 실제 값 입력
 
 # backend
 cp backend/.env.example backend/.env
-# .env 파일에 실제 값 입력
 ```
 
-### 2. 프론트엔드 실행
-
-```bash
-cd frontend
-npm install
-npm run dev
-# http://localhost:3000
-```
-
-### 3. 백엔드 실행
+### 2) 백엔드 실행
 
 ```bash
 cd backend
@@ -66,37 +71,71 @@ source venv/bin/activate
 venv\Scripts\activate
 
 pip install -r requirements.txt
+python rag/seed.py
 uvicorn main:app --reload
-# http://localhost:8000
-# API 문서: http://localhost:8000/docs
 ```
 
-### 4. ChromaDB 초기 데이터 적재
+- API: `http://localhost:8000`
+- Docs: `http://localhost:8000/docs`
+
+### 3) 프론트엔드 실행
 
 ```bash
-cd backend
-python rag/seed.py
+cd frontend
+npm install
+npm run dev
 ```
 
----
+- Web: `http://localhost:3000`
 
-## Supabase 설정
+## 환경변수
 
-Supabase 프로젝트 생성 후, SQL Editor에서 아래 쿼리를 실행하세요.
+### `frontend/.env.local`
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
+```
+
+### `backend/.env`
+
+```bash
+GOOGLE_API_KEY=your_gemini_api_key
+CHROMA_PERSIST_DIR=./chroma_store
+```
+
+## API 엔드포인트
+
+| Method | Path | 설명 |
+|--------|------|------|
+| GET | `/` | 헬스체크 (`{"status":"ok"}`) |
+| POST | `/parse/pdf` | PDF에서 프로필/활동 추출 |
+| POST | `/coach/feedback` | STAR 기반 코치 피드백 생성 |
+| POST | `/match/analyze` | 공고 매칭 점수/키워드/요약 분석 |
+
+## Supabase 스키마
+
+아래 테이블 기준으로 프론트/백엔드가 동작합니다.
 
 ```sql
--- 유저 프로필 테이블
 CREATE TABLE profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   name TEXT,
   email TEXT,
   phone TEXT,
   education TEXT,
+  career TEXT[] DEFAULT '{}',
+  education_history TEXT[] DEFAULT '{}',
+  awards TEXT[] DEFAULT '{}',
+  certifications TEXT[] DEFAULT '{}',
+  languages TEXT[] DEFAULT '{}',
+  skills TEXT[] DEFAULT '{}',
+  self_intro TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 활동 테이블
 CREATE TABLE activities (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
@@ -111,7 +150,6 @@ CREATE TABLE activities (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 이력서 버전 테이블
 CREATE TABLE resumes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
@@ -123,61 +161,26 @@ CREATE TABLE resumes (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- AI 코치 대화 이력 테이블
 CREATE TABLE coach_sessions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY,
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
   activity_id UUID REFERENCES activities(id) ON DELETE CASCADE,
   messages JSONB DEFAULT '[]',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-
--- RLS 활성화
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE activities ENABLE ROW LEVEL SECURITY;
-ALTER TABLE resumes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE coach_sessions ENABLE ROW LEVEL SECURITY;
-
--- 본인 데이터만 접근 가능한 정책
-CREATE POLICY "본인 프로필만 접근" ON profiles FOR ALL USING (auth.uid() = id);
-CREATE POLICY "본인 활동만 접근" ON activities FOR ALL USING (auth.uid() = user_id);
-CREATE POLICY "본인 이력서만 접근" ON resumes FOR ALL USING (auth.uid() = user_id);
-CREATE POLICY "본인 코치 세션만 접근" ON coach_sessions FOR ALL USING (auth.uid() = user_id);
 ```
 
----
+RLS는 모든 테이블에 활성화하고, `auth.uid()` 기준 본인 데이터만 접근하도록 정책을 설정해야 합니다.
 
 ## 배포
 
-### 프론트엔드 (Vercel)
-1. GitHub 저장소를 Vercel에 연결
-2. Root Directory를 `frontend`로 설정
-3. 환경변수 설정
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `NEXT_PUBLIC_BACKEND_URL` (Render 백엔드 URL, 예: `https://isoser-backend.onrender.com`)
-4. Deploy 실행
+### Frontend (Vercel)
+1. 저장소 연결 후 Root Directory를 `frontend`로 지정
+2. `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_BACKEND_URL` 설정
+3. 배포 후 Supabase OAuth Redirect URL에 `https://<your-domain>/callback` 등록
 
-### 백엔드 (Render)
-1. GitHub 저장소를 Render에 연결
-2. Blueprint 배포로 `backend/render.yaml` 적용
-3. 환경변수 설정
-   - `GOOGLE_API_KEY` (필수)
-   - `CHROMA_PERSIST_DIR` (`/opt/render/project/src/chroma_store`)
-4. 최초 부팅 시 `python rag/seed.py`가 실행되어 Chroma seed 데이터가 적재됨
-
-### 배포 체크리스트
-1. Vercel 배포 URL이 생성되면 프론트 환경변수 `NEXT_PUBLIC_BACKEND_URL`을 Render URL로 고정
-2. Render 배포 후 `/docs`, `/parse/pdf`, `/coach/feedback`, `/match/analyze` 응답 확인
-3. Vercel에서 Google 로그인 콜백 URL을 `https://<vercel-domain>/callback`으로 Supabase에 등록
-
----
-
-## API 엔드포인트
-
-| Method | Path | 설명 |
-|--------|------|------|
-| POST | `/parse/pdf` | PDF에서 프로필·활동 추출 |
-| POST | `/coach/feedback` | AI 코치 피드백 생성 |
-| POST | `/match/analyze` | 공고 매칭 분석 |
+### Backend (Render)
+1. `backend/render.yaml` 기준 Blueprint 배포
+2. 필수 환경변수: `GOOGLE_API_KEY`, `CHROMA_PERSIST_DIR`
+3. Start command에서 `python rag/seed.py && uvicorn main:app ...` 순으로 실행됨
