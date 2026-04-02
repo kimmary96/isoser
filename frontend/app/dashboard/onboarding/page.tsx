@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 
 import { parsePdf } from "@/lib/api/backend";
 import { isGuestMode } from "@/lib/guest";
-import { mergeParsedProfileToExtra, setProfileExtra } from "@/lib/profile_extra";
 import { createBrowserClient } from "@/lib/supabase/client";
 import type { ParsedProfile, ParsedActivity } from "@/lib/types";
 
@@ -108,13 +107,32 @@ export default function OnboardingPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("로그인이 필요합니다.");
 
-      const { name, email, phone, education } = parsedProfile;
+      const {
+        name,
+        email,
+        phone,
+        education,
+        career,
+        education_history,
+        awards,
+        certifications,
+        languages,
+        skills,
+        self_intro,
+      } = parsedProfile;
       const { error: profileError } = await supabase.from("profiles").upsert({
         id: user.id,
         name,
         email,
         phone,
         education,
+        career: career ?? [],
+        education_history: education_history ?? [],
+        awards: awards ?? [],
+        certifications: certifications ?? [],
+        languages: languages ?? [],
+        skills: skills ?? [],
+        self_intro: self_intro ?? "",
       });
       if (profileError) {
         throw new Error(profileError.message);
@@ -129,7 +147,6 @@ export default function OnboardingPage() {
         }
       }
 
-      setProfileExtra(mergeParsedProfileToExtra(parsedProfile));
       router.push("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "저장 중 오류가 발생했습니다.");

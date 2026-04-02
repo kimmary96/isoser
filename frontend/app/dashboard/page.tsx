@@ -1,11 +1,10 @@
-// 메인 대시보드 페이지 - 프로필/활동 카드/확장 이력 정보 표시
+// 메인 대시보드 페이지 - 프로필/활동 카드/확장 이력 정보(DB 저장) 표시
 "use client";
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import { getGuestActivities, isGuestMode } from "@/lib/guest";
-import { getProfileExtra, setProfileExtra, type ProfileExtraData } from "@/lib/profile_extra";
 import { createBrowserClient } from "@/lib/supabase/client";
 import type { Activity, Profile } from "@/lib/types";
 
@@ -15,9 +14,31 @@ const EMPTY_PROFILE: Profile = {
   email: null,
   phone: null,
   education: null,
+  career: [],
+  education_history: [],
+  awards: [],
+  certifications: [],
+  languages: [],
+  skills: [],
+  self_intro: "",
   created_at: "",
   updated_at: "",
 };
+
+function toArray(value: string[] | null | undefined): string[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function toLines(value: string[] | null | undefined): string {
+  return toArray(value).join("\n");
+}
+
+function fromLines(value: string): string[] {
+  return value
+    .split("\n")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
 
 function SectionList({ title, items }: { title: string; items: string[] }) {
   return (
@@ -41,9 +62,14 @@ export default function DashboardPage() {
 
   const [profile, setProfile] = useState<Profile>(EMPTY_PROFILE);
   const [activities, setActivities] = useState<Activity[]>([]);
-  const [extra, setExtra] = useState<ProfileExtraData>(getProfileExtra());
 
   const [skillsInput, setSkillsInput] = useState("");
+  const [careerInput, setCareerInput] = useState("");
+  const [educationInput, setEducationInput] = useState("");
+  const [awardsInput, setAwardsInput] = useState("");
+  const [certsInput, setCertsInput] = useState("");
+  const [languagesInput, setLanguagesInput] = useState("");
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -55,16 +81,28 @@ export default function DashboardPage() {
 
       try {
         if (isGuestMode()) {
-          setProfile({
+          const guestProfile: Profile = {
             ...EMPTY_PROFILE,
             id: "guest",
             name: "게스트 사용자",
             email: "guest@local",
             phone: "-",
             education: "게스트 모드",
-          });
+            career: ["게스트 QA 경력"],
+            education_history: ["게스트 학력"],
+            awards: [],
+            certifications: [],
+            languages: ["한국어"],
+            skills: ["FastAPI", "Next.js"],
+            self_intro: "게스트 모드에서 기능을 점검 중입니다.",
+          };
+          setProfile(guestProfile);
           setActivities(getGuestActivities());
-          setExtra(getProfileExtra());
+          setCareerInput(toLines(guestProfile.career));
+          setEducationInput(toLines(guestProfile.education_history));
+          setAwardsInput(toLines(guestProfile.awards));
+          setCertsInput(toLines(guestProfile.certifications));
+          setLanguagesInput(toLines(guestProfile.languages));
           return;
         }
 
@@ -86,11 +124,26 @@ export default function DashboardPage() {
           throw new Error(activityError.message);
         }
 
-        if (profileRow) {
-          setProfile(profileRow);
-        }
+        const normalizedProfile: Profile = {
+          ...EMPTY_PROFILE,
+          ...(profileRow ?? {}),
+          career: toArray(profileRow?.career),
+          education_history: toArray(profileRow?.education_history),
+          awards: toArray(profileRow?.awards),
+          certifications: toArray(profileRow?.certifications),
+          languages: toArray(profileRow?.languages),
+          skills: toArray(profileRow?.skills),
+          self_intro: profileRow?.self_intro ?? "",
+        };
+
+        setProfile(normalizedProfile);
         setActivities(activityRows || []);
-        setExtra(getProfileExtra());
+
+        setCareerInput(toLines(normalizedProfile.career));
+        setEducationInput(toLines(normalizedProfile.education_history));
+        setAwardsInput(toLines(normalizedProfile.awards));
+        setCertsInput(toLines(normalizedProfile.certifications));
+        setLanguagesInput(toLines(normalizedProfile.languages));
       } catch (e) {
         setError(e instanceof Error ? e.message : "대시보드 데이터를 불러오지 못했습니다.");
       } finally {
@@ -104,32 +157,73 @@ export default function DashboardPage() {
   const addSkill = () => {
     const value = skillsInput.trim();
     if (!value) return;
-    if (extra.skills.includes(value)) {
+
+    const current = toArray(profile.skills);
+    if (current.includes(value)) {
       setSkillsInput("");
       return;
     }
-    setExtra({ ...extra, skills: [...extra.skills, value] });
+
+    setProfile({ ...profile, skills: [...current, value] });
     setSkillsInput("");
   };
 
   const removeSkill = (skill: string) => {
-    setExtra({ ...extra, skills: extra.skills.filter((item) => item !== skill) });
+    setProfile({
+      ...profile,
+      skills: toArray(profile.skills).filter((item) => item !== skill),
+    });
   };
 
-  const saveExtra = async () => {
+  const saveProfileExtra = async () => {
     setSaving(true);
+    setError(null);
+
     try {
-      setProfileExtra(extra);
+      const payload = {
+        career: fromLines(careerInput),
+        education_history: fromLines(educationInput),
+        awards: fromLines(awardsInput),
+        certifications: fromLines(certsInput),
+        languages: fromLines(languagesInput),
+        skills: toArray(profile.skills),
+        self_intro: profile.self_intro ?? "",
+      };
+
+      if (isGuestMode()) {
+        setProfile({ ...profile, ...payload });
+        return;
+      }
+
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (authError || !authData.user) {
+        throw new Error("로그인이 필요합니다.");
+      }
+
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update(payload)
+        .eq("id", authData.user.id);
+
+      if (updateError) {
+        throw new Error(updateError.message);
+      }
+
+      setProfile({ ...profile, ...payload });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "프로필 저장 중 오류가 발생했습니다.");
     } finally {
       setSaving(false);
     }
   };
 
-  const careerItems = extra.career;
-  const educationItems = extra.education_history.length > 0 ? extra.education_history : [profile.education ?? ""];
-  const awardItems = extra.awards;
-  const certItems = extra.certifications;
-  const languageItems = extra.languages;
+  const careerItems = fromLines(careerInput);
+  const educationItems = fromLines(educationInput).length > 0
+    ? fromLines(educationInput)
+    : [profile.education ?? ""].filter(Boolean);
+  const awardItems = fromLines(awardsInput);
+  const certItems = fromLines(certsInput);
+  const languageItems = fromLines(languagesInput);
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -168,8 +262,8 @@ export default function DashboardPage() {
                 <div className="mt-5 space-y-2">
                   <label className="text-sm font-medium text-gray-700">자기소개</label>
                   <textarea
-                    value={extra.self_intro}
-                    onChange={(e) => setExtra({ ...extra, self_intro: e.target.value })}
+                    value={profile.self_intro ?? ""}
+                    onChange={(e) => setProfile({ ...profile, self_intro: e.target.value })}
                     placeholder="자기소개 내용을 입력하세요."
                     rows={4}
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400 resize-none"
@@ -195,10 +289,10 @@ export default function DashboardPage() {
                   <button onClick={addSkill} className="px-3 py-2 bg-gray-900 text-white rounded-lg text-sm">추가</button>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {extra.skills.length === 0 ? (
+                  {toArray(profile.skills).length === 0 ? (
                     <p className="text-sm text-gray-400">스킬이 없습니다.</p>
                   ) : (
-                    extra.skills.map((skill) => (
+                    toArray(profile.skills).map((skill) => (
                       <button
                         key={skill}
                         onClick={() => removeSkill(skill)}
@@ -209,15 +303,41 @@ export default function DashboardPage() {
                     ))
                   )}
                 </div>
-                <button
-                  onClick={saveExtra}
-                  disabled={saving}
-                  className="mt-4 w-full px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
-                >
-                  {saving ? "저장 중..." : "프로필 입력 저장"}
-                </button>
               </div>
             </section>
+
+            <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              <div className="bg-white rounded-xl border border-gray-200 p-5">
+                <h3 className="font-semibold text-gray-900 mb-2">내 경력 입력</h3>
+                <textarea value={careerInput} onChange={(e) => setCareerInput(e.target.value)} rows={6} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400 resize-none" placeholder="줄바꿈으로 여러 항목 입력" />
+              </div>
+              <div className="bg-white rounded-xl border border-gray-200 p-5">
+                <h3 className="font-semibold text-gray-900 mb-2">학력 입력</h3>
+                <textarea value={educationInput} onChange={(e) => setEducationInput(e.target.value)} rows={6} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400 resize-none" placeholder="줄바꿈으로 여러 항목 입력" />
+              </div>
+              <div className="bg-white rounded-xl border border-gray-200 p-5">
+                <h3 className="font-semibold text-gray-900 mb-2">수상경력 입력</h3>
+                <textarea value={awardsInput} onChange={(e) => setAwardsInput(e.target.value)} rows={6} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400 resize-none" placeholder="줄바꿈으로 여러 항목 입력" />
+              </div>
+              <div className="bg-white rounded-xl border border-gray-200 p-5">
+                <h3 className="font-semibold text-gray-900 mb-2">자격증 입력</h3>
+                <textarea value={certsInput} onChange={(e) => setCertsInput(e.target.value)} rows={6} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400 resize-none" placeholder="줄바꿈으로 여러 항목 입력" />
+              </div>
+              <div className="bg-white rounded-xl border border-gray-200 p-5">
+                <h3 className="font-semibold text-gray-900 mb-2">외국어 입력</h3>
+                <textarea value={languagesInput} onChange={(e) => setLanguagesInput(e.target.value)} rows={6} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400 resize-none" placeholder="줄바꿈으로 여러 항목 입력" />
+              </div>
+            </section>
+
+            <div className="flex justify-end">
+              <button
+                onClick={saveProfileExtra}
+                disabled={saving}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+              >
+                {saving ? "저장 중..." : "프로필 입력 저장"}
+              </button>
+            </div>
 
             <section className="bg-white rounded-xl border border-gray-200 p-5">
               <h2 className="font-semibold text-gray-900 mb-3">활동 카드</h2>
@@ -234,7 +354,7 @@ export default function DashboardPage() {
                       <p className="text-xs text-gray-500">{activity.type}</p>
                       <p className="font-semibold text-gray-900 mt-1">{activity.title}</p>
                       <p className="text-xs text-gray-500 mt-1">{activity.period || "기간 미입력"}</p>
-                      <p className="text-sm text-gray-700 mt-2 ">{activity.description || "설명 없음"}</p>
+                      <p className="text-sm text-gray-700 mt-2">{activity.description || "설명 없음"}</p>
                     </Link>
                   ))}
                 </div>
@@ -243,7 +363,7 @@ export default function DashboardPage() {
 
             <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               <SectionList title="내 경력" items={careerItems} />
-              <SectionList title="학력" items={educationItems.filter(Boolean)} />
+              <SectionList title="학력" items={educationItems} />
               <SectionList title="수상경력" items={awardItems} />
               <SectionList title="자격증" items={certItems} />
               <SectionList title="외국어" items={languageItems} />

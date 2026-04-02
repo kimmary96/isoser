@@ -4,7 +4,6 @@
 import { useMemo, useState } from "react";
 import { analyzeMatch } from "@/lib/api/backend";
 import { getGuestActivities, isGuestMode } from "@/lib/guest";
-import { getProfileExtra } from "@/lib/profile_extra";
 import { createBrowserClient } from "@/lib/supabase/client";
 import type { MatchResult } from "@/lib/types";
 
@@ -34,7 +33,6 @@ export default function MatchPage() {
         self_intro?: string;
       } = {};
       if (isGuestMode()) {
-        const extra = getProfileExtra();
         activities = getGuestActivities().map((item) => ({
           id: item.id,
           title: item.title,
@@ -43,13 +41,25 @@ export default function MatchPage() {
         profileContext = {
           name: "게스트 사용자",
           education: "게스트 모드",
-          ...extra,
+          career: ["게스트 QA 경력"],
+          education_history: ["게스트 학력"],
+          awards: [],
+          certifications: [],
+          languages: ["한국어"],
+          skills: ["Next.js", "FastAPI"],
+          self_intro: "게스트 모드 프로필",
         };
       } else {
         const [{ data: activityData, error: activityError }, { data: profileData, error: profileError }] =
           await Promise.all([
             supabase.from("activities").select("id, title, description").eq("is_visible", true),
-            supabase.from("profiles").select("name, education").limit(1).maybeSingle(),
+            supabase
+              .from("profiles")
+              .select(
+                "name, education, career, education_history, awards, certifications, languages, skills, self_intro"
+              )
+              .limit(1)
+              .maybeSingle(),
           ]);
         if (activityError) {
           throw new Error(activityError.message);
@@ -57,12 +67,17 @@ export default function MatchPage() {
         if (profileError) {
           throw new Error(profileError.message);
         }
-        const extra = getProfileExtra();
         activities = activityData || [];
         profileContext = {
           name: profileData?.name ?? undefined,
           education: profileData?.education ?? undefined,
-          ...extra,
+          career: profileData?.career ?? [],
+          education_history: profileData?.education_history ?? [],
+          awards: profileData?.awards ?? [],
+          certifications: profileData?.certifications ?? [],
+          languages: profileData?.languages ?? [],
+          skills: profileData?.skills ?? [],
+          self_intro: profileData?.self_intro ?? "",
         };
       }
 
