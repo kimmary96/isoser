@@ -1,0 +1,16 @@
+# Render 배포 설정 - FastAPI 서버
+services:
+  - type: web
+    name: isoser-backend
+    runtime: python
+    buildCommand: pip install -r requirements.txt && python rag/seed.py
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: CHROMA_PERSIST_DIR
+        value: ./chroma_store
+    disk:
+      name: chroma-store
+      mountPath: /opt/render/project/src/chroma_store
+      sizeGB: 1
