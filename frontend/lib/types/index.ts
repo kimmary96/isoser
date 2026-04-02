@@ -104,6 +104,17 @@ export interface CoachFeedbackResponse {
 export interface MatchAnalyzeRequest {
   job_posting: string;
   activities: Pick<Activity, "id" | "title" | "description">[];
+  profile_context?: {
+    name?: string;
+    education?: string;
+    career?: string[];
+    education_history?: string[];
+    awards?: string[];
+    certifications?: string[];
+    languages?: string[];
+    skills?: string[];
+    self_intro?: string;
+  };
 }
 
 /** POST /match/analyze 응답 */
@@ -113,4 +124,11 @@ export interface MatchResult {
   missing_keywords: string[];
   recommended_activities: string[];
   summary: string;
+  confidence?: "high" | "medium" | "low" | string;
+  match_basis?: {
+    weights: Record<string, number>;
+    components: Record<string, number>;
+    job_keyword_count: number;
+    matched_keyword_count: number;
+  };
 }

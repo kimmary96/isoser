@@ -17,6 +17,7 @@ class MatchAnalyzeRequest(BaseModel):
     """공고 매칭 분석 요청 모델."""
     job_posting: str
     activities: list[ActivitySummary]
+    profile_context: dict | None = None
 
 
 @router.post("/analyze")
@@ -41,6 +42,7 @@ async def analyze_match(request: MatchAnalyzeRequest) -> dict:
         result = await run_match_chain(
             job_posting=request.job_posting,
             activities=[a.model_dump() for a in request.activities],
+            profile_context=request.profile_context,
         )
         return result
     except Exception as e:

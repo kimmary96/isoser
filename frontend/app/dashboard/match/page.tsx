@@ -4,6 +4,7 @@
 import { useMemo, useState } from "react";
 import { analyzeMatch } from "@/lib/api/backend";
 import { getGuestActivities, isGuestMode } from "@/lib/guest";
+import { getProfileExtra } from "@/lib/profile_extra";
 import { createBrowserClient } from "@/lib/supabase/client";
 import type { MatchResult } from "@/lib/types";
 
@@ -21,26 +22,54 @@ export default function MatchPage() {
 
     try {
       let activities: { id: string; title: string; description: string | null }[] = [];
+      let profileContext: {
+        name?: string;
+        education?: string;
+        career?: string[];
+        education_history?: string[];
+        awards?: string[];
+        certifications?: string[];
+        languages?: string[];
+        skills?: string[];
+        self_intro?: string;
+      } = {};
       if (isGuestMode()) {
+        const extra = getProfileExtra();
         activities = getGuestActivities().map((item) => ({
           id: item.id,
           title: item.title,
           description: item.description,
         }));
+        profileContext = {
+          name: "게스트 사용자",
+          education: "게스트 모드",
+          ...extra,
+        };
       } else {
-        const { data, error: activityError } = await supabase
-          .from("activities")
-          .select("id, title, description")
-          .eq("is_visible", true);
+        const [{ data: activityData, error: activityError }, { data: profileData, error: profileError }] =
+          await Promise.all([
+            supabase.from("activities").select("id, title, description").eq("is_visible", true),
+            supabase.from("profiles").select("name, education").limit(1).maybeSingle(),
+          ]);
         if (activityError) {
           throw new Error(activityError.message);
         }
-        activities = data || [];
+        if (profileError) {
+          throw new Error(profileError.message);
+        }
+        const extra = getProfileExtra();
+        activities = activityData || [];
+        profileContext = {
+          name: profileData?.name ?? undefined,
+          education: profileData?.education ?? undefined,
+          ...extra,
+        };
       }
 
       const matchResult = await analyzeMatch({
         job_posting: jobPosting,
         activities,
+        profile_context: profileContext,
       });
       setResult(matchResult);
     } catch (err) {
@@ -90,6 +119,9 @@ export default function MatchPage() {
 
                 {/* 요약 */}
                 <p className="text-sm text-gray-700">{result.summary}</p>
+                {result.confidence && (
+                  <p className="text-xs text-gray-500">신뢰도: {result.confidence}</p>
+                )}
 
                 {/* 매칭 키워드 */}
                 {result.matched_keywords.length > 0 && (
@@ -116,6 +148,15 @@ export default function MatchPage() {
                         </span>
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {result.match_basis && (
+                  <div className="pt-2 border-t border-gray-100 text-xs text-gray-500 space-y-1">
+                    <p>기준: 키워드 적합도 40 + 프로필 스킬 30 + 경험 연관도 20 + 정량 성과 10</p>
+                    <p>
+                      상세: 키워드 {result.match_basis.components.keyword_fit} / 스킬 {result.match_basis.components.profile_skill_fit} / 경험 {result.match_basis.components.experience_relevance} / 정량 {result.match_basis.components.quantified_impact}
+                    </p>
                   </div>
                 )}
               </div>
