@@ -117,18 +117,44 @@ export interface MatchAnalyzeRequest {
   };
 }
 
+export interface MatchDetailedScore {
+  key: string;
+  label: string;
+  score: number;
+  max_score: number;
+  grade: string;
+  reason: string;
+}
+
 /** POST /match/analyze 응답 */
 export interface MatchResult {
-  match_score: number;
+  total_score: number;
+  grade: string;
+  summary: string;
+  support_recommendation: string;
+
+  radar_scores: Record<string, number>;
+  detailed_scores: MatchDetailedScore[];
+
+  strengths: string[];
+  gaps: string[];
+  resume_tips: string[];
+  highlight_keywords: string[];
+
   matched_keywords: string[];
   missing_keywords: string[];
   recommended_activities: string[];
-  summary: string;
-  confidence?: "high" | "medium" | "low" | string;
+
   match_basis?: {
-    weights: Record<string, number>;
-    components: Record<string, number>;
-    job_keyword_count: number;
-    matched_keyword_count: number;
+    job_keyword_count?: number;
+    matched_keyword_count?: number;
+    profile_keyword_count?: number;
+    activity_keyword_count?: number;
+    axis_weights?: Record<string, number>;
   };
+}
+
+export interface ExtractJobImageResponse {
+  job_posting_text: string;
+  sections?: Record<string, string>;
 }
