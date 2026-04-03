@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { getGuestActivities, isGuestMode } from "@/lib/guest";
 import { createBrowserClient } from "@/lib/supabase/client";
-import type { Activity, Profile } from "@/lib/types";
+import type { Activity, MatchAnalysisRecord, Profile } from "@/lib/types";
 
 const EMPTY_PROFILE: Profile = {
   id: "",
@@ -37,6 +37,16 @@ type CareerCard = {
   period: string;
   activities: Activity[];
 };
+
+function toPercent(value: number): string {
+  return `${Math.round(value * 100)}%`;
+}
+
+function formatDate(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleDateString("ko-KR");
+}
 
 function toArray(value: string[] | null | undefined): string[] {
   return Array.isArray(value) ? value : [];
@@ -526,6 +536,7 @@ export default function DashboardPage() {
 
   const [profile, setProfile] = useState<Profile>(EMPTY_PROFILE);
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [matchAnalyses, setMatchAnalyses] = useState<MatchAnalysisRecord[]>([]);
   const [editing, setEditing] = useState<EditableSection | null>(null);
 
   const [loading, setLoading] = useState(true);
@@ -556,6 +567,21 @@ export default function DashboardPage() {
           };
           setProfile(guestProfile);
           setActivities(getGuestActivities());
+          setMatchAnalyses([
+            {
+              id: "guest-analysis-1",
+              user_id: "guest",
+              job_title: "QA Engineer",
+              job_posting: "QA Engineer 공고",
+              total_score: 78,
+              grade: "A",
+              summary: "테스트 자동화 경험과 협업 역량이 공고와 잘 맞습니다.",
+              matched_keywords: ["테스트 자동화", "API 검증", "협업"],
+              missing_keywords: ["모바일 QA"],
+              recommended_activities: ["guest-activity-1"],
+              created_at: new Date().toISOString(),
+            },
+          ]);
           return;
         }
 
@@ -564,11 +590,20 @@ export default function DashboardPage() {
           throw new Error("로그인이 필요합니다.");
         }
 
-        const [{ data: profileRow, error: profileError }, { data: activityRows, error: activityError }] =
-          await Promise.all([
-            supabase.from("profiles").select("*").eq("id", authData.user.id).maybeSingle(),
-            supabase.from("activities").select("*").eq("is_visible", true).order("created_at", { ascending: false }),
-          ]);
+        const [
+          { data: profileRow, error: profileError },
+          { data: activityRows, error: activityError },
+          { data: matchRows, error: matchError },
+        ] = await Promise.all([
+          supabase.from("profiles").select("*").eq("id", authData.user.id).maybeSingle(),
+          supabase.from("activities").select("*").eq("is_visible", true).order("created_at", { ascending: false }),
+          supabase
+            .from("match_analyses")
+            .select("*")
+            .eq("user_id", authData.user.id)
+            .order("created_at", { ascending: false })
+            .limit(10),
+        ]);
 
         if (profileError) {
           throw new Error(profileError.message);
@@ -591,6 +626,12 @@ export default function DashboardPage() {
 
         setProfile(normalizedProfile);
         setActivities(activityRows || []);
+        if (matchError) {
+          console.warn("match_analyses 조회 실패:", matchError.message);
+          setMatchAnalyses([]);
+        } else {
+          setMatchAnalyses((matchRows as MatchAnalysisRecord[] | null) ?? []);
+        }
       } catch (e) {
         setError(e instanceof Error ? e.message : "대시보드 데이터를 불러오지 못했습니다.");
       } finally {
@@ -651,6 +692,11 @@ export default function DashboardPage() {
   const languageItems = toArray(profile.languages);
   const skillItems = toArray(profile.skills);
   const careerCards = buildCareerCards(careerItems, activities);
+  const recommendedRate =
+    matchAnalyses.length > 0
+      ? matchAnalyses.filter((item) => item.total_score >= 75).length / matchAnalyses.length
+      : 0;
+  const recentMatchAnalyses = matchAnalyses.slice(0, 3);
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -742,6 +788,50 @@ export default function DashboardPage() {
                       </div>
                     </article>
                   ))}
+                </div>
+              )}
+            </section>
+
+            <section className="rounded-xl border border-gray-200 bg-white p-5">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div>
+                  <h2 className="font-semibold text-gray-900">공고 매칭 분석</h2>
+                  <p className="mt-1 text-xs text-gray-500">지원 권장 비율은 예측 지표(참고용)입니다.</p>
+                </div>
+                <Link
+                  href="/dashboard/match"
+                  className="rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                >
+                  새 공고 분석
+                </Link>
+              </div>
+
+              {matchAnalyses.length === 0 ? (
+                <p className="text-sm text-gray-400">아직 저장된 공고 매칭 분석이 없습니다.</p>
+              ) : (
+                <div className="space-y-4">
+                  <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                    <p className="text-sm text-gray-500">지원 권장 비율 (총 {matchAnalyses.length}건)</p>
+                    <p className="mt-1 text-3xl font-bold text-gray-900">{toPercent(recommendedRate)}</p>
+                    <p className="mt-1 text-xs text-gray-500">기준: 매칭 점수 75점 이상</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+                    {recentMatchAnalyses.map((item) => (
+                      <article key={item.id} className="rounded-lg border border-gray-200 p-4">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="line-clamp-2 text-sm font-semibold text-gray-900">
+                            {item.job_title || "제목 미지정 공고"}
+                          </p>
+                          <span className="shrink-0 rounded bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-700">
+                            {item.total_score}점
+                          </span>
+                        </div>
+                        <p className="mt-2 text-xs text-gray-500">등급 {item.grade} · {formatDate(item.created_at)}</p>
+                        <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-gray-700">{item.summary}</p>
+                      </article>
+                    ))}
+                  </div>
                 </div>
               )}
             </section>

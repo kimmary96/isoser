@@ -165,3 +165,18 @@ export interface ExtractJobImageResponse {
   job_posting_text: string;
   sections?: Record<string, string>;
 }
+
+/** match_analyses table row */
+export interface MatchAnalysisRecord {
+  id: string;
+  user_id: string;
+  job_title: string | null;
+  job_posting: string;
+  total_score: number;
+  grade: string;
+  summary: string;
+  matched_keywords: string[] | null;
+  missing_keywords: string[] | null;
+  recommended_activities: string[] | null;
+  created_at: string;
+}

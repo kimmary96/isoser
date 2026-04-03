@@ -181,12 +181,14 @@ async def run_match_chain(
     gaps = llm_result.get("gaps") or _default_gaps(missing_keywords=missing_keywords)
     resume_tips = llm_result.get("resume_tips") or _default_resume_tips()
     highlight_keywords = llm_result.get("highlight_keywords") or matched_keywords[:5]
+    summary_text = _normalize_summary_text(
+        str(llm_result.get("summary") or _default_summary(total_score, strengths[:2], gaps[:2]))
+    )
 
     return {
         "total_score": total_score,
         "grade": grade,
-        "summary": llm_result.get("summary")
-        or _default_summary(total_score, strengths[:2], gaps[:2]),
+        "summary": summary_text,
         "support_recommendation": llm_result.get("support_recommendation")
         or support_recommendation,
         "radar_scores": {key: value["score"] for key, value in axis_scores.items()},
@@ -454,11 +456,26 @@ def _content_to_text(raw_content: Any) -> str:
     return str(raw_content)
 
 
-def _default_summary(score: int, strengths: list[str], gaps: list[str]) -> str:
-    strength_text = ", ".join(strengths) if strengths else "핵심 강점이 일부 확인됩니다"
-    gap_text = ", ".join(gaps) if gaps else "추가 보완 포인트는 크지 않습니다"
-    return f"총점 {score}점입니다. 강점은 {strength_text}이며, 보완이 필요한 부분은 {gap_text}입니다."
+def _normalize_summary_text(text: str) -> str:
+    cleaned = re.sub(r"\s+", " ", (text or "").strip())
+    if not cleaned:
+        return cleaned
 
+    cleaned = cleaned.replace("\ud544\uc694\uac00 \uc788\uc2b5\ub2c8\ub2e4.\uc785\ub2c8\ub2e4.", "\ud544\uc694\uac00 \uc788\uc2b5\ub2c8\ub2e4.")
+    cleaned = cleaned.replace("\ud544\uc694\ud569\ub2c8\ub2e4.\uc785\ub2c8\ub2e4.", "\ud544\uc694\ud569\ub2c8\ub2e4.")
+    cleaned = cleaned.replace("\uad8c\uc7a5\ub429\ub2c8\ub2e4.\uc785\ub2c8\ub2e4.", "\uad8c\uc7a5\ub429\ub2c8\ub2e4.")
+    cleaned = cleaned.replace("\uc88b\uc2b5\ub2c8\ub2e4.\uc785\ub2c8\ub2e4.", "\uc88b\uc2b5\ub2c8\ub2e4.")
+
+    cleaned = re.sub(r"(\uc785\ub2c8\ub2e4\\.)\\1+", r"\\1", cleaned)
+    cleaned = re.sub(r"(\ud569\ub2c8\ub2e4\\.)\\1+", r"\\1", cleaned)
+    cleaned = re.sub(r"(\uc785\ub2c8\ub2e4|\ud569\ub2c8\ub2e4|\ub429\ub2c8\ub2e4)\\.\uc774\uba70,?\\s*", r"\\1. ", cleaned)
+
+    return cleaned.strip()
+
+def _default_summary(score: int, strengths: list[str], gaps: list[str]) -> str:
+    strength_text = ", ".join(strengths) if strengths else "\ud575\uc2ec \uac15\uc810\uc774 \uc77c\ubd80 \ud655\uc778\ub429\ub2c8\ub2e4."
+    gap_text = ", ".join(gaps) if gaps else "\ucd94\uac00 \ubcf4\uc644 \uc694\uc778\uc740 \uc544\uc9c1 \uc5c6\uc2b5\ub2c8\ub2e4"
+    return f"\ucd1d\uc810 {score}\uc810\uc785\ub2c8\ub2e4. \uac15\uc810: {strength_text} \ubcf4\uc644 \ud544\uc694: {gap_text}"
 
 def _default_strengths(matched_keywords: list[str], recommended_activities: list[str]) -> list[str]:
     strengths = []
