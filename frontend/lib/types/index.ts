@@ -1,4 +1,4 @@
-// 공통 타입 정의 - Supabase 테이블 스키마 및 API 요청/응답 타입
+﻿// 공통 타입 정의 - Supabase 테이블 스키마 및 API 요청/응답 타입
 
 // ─── Supabase 테이블 타입 ───────────────────────────────────────────────────
 
@@ -164,6 +164,31 @@ export interface MatchResult {
 export interface ExtractJobImageResponse {
   job_posting_text: string;
   sections?: Record<string, string>;
+}
+
+export interface ExtractJobPdfResponse {
+  job_posting_text: string;
+}
+
+export interface CompanyInsightSignal {
+  key: string;
+  label: string;
+  status: "good" | "normal" | "caution";
+  status_text: string;
+  reason: string;
+}
+
+export interface CompanyInsightSource {
+  url: string;
+  title?: string;
+  snippet?: string;
+}
+
+export interface CompanyInsightResponse {
+  summary: string;
+  signals: CompanyInsightSignal[];
+  sources: CompanyInsightSource[];
+  note: string;
 }
 
 /** match_analyses table row */

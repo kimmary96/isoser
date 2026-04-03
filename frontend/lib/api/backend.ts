@@ -5,6 +5,8 @@
   MatchAnalyzeRequest,
   MatchResult,
   ExtractJobImageResponse,
+  ExtractJobPdfResponse,
+  CompanyInsightResponse,
 } from "@/lib/types";
 
 const BACKEND_URL =
@@ -96,5 +98,35 @@ export async function extractJobImage(
       body: formData,
     },
     "이미지 공고 추출 중 오류가 발생했습니다."
+  );
+}
+
+export async function extractJobPdf(file: File): Promise<ExtractJobPdfResponse> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return requestJson<ExtractJobPdfResponse>(
+    "/match/extract-job-pdf",
+    {
+      method: "POST",
+      body: formData,
+    },
+    "PDF 공고 추출 중 오류가 발생했습니다."
+  );
+}
+
+export async function getCompanyInsight(payload: {
+  company_name: string;
+}): Promise<CompanyInsightResponse> {
+  return requestJson<CompanyInsightResponse>(
+    "/company/insight",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    },
+    "기업 정보 조회 중 오류가 발생했습니다."
   );
 }

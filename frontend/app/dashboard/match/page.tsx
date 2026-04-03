@@ -2,10 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import { analyzeMatch, extractJobImage } from "@/lib/api/backend";
+import { analyzeMatch, extractJobImage, extractJobPdf, getCompanyInsight } from "@/lib/api/backend";
 import { getGuestActivities, isGuestMode } from "@/lib/guest";
 import { createBrowserClient } from "@/lib/supabase/client";
-import type { MatchResult } from "@/lib/types";
+import type { CompanyInsightResponse, MatchResult } from "@/lib/types";
 
 type DetailedScore = {
   key: string;
@@ -48,28 +48,6 @@ function makeJobTitle(company: string, position: string): string {
   return "제목 미지정 공고";
 }
 
-function inferCompanySignals(jobTitle: string, jobPosting: string) {
-  const text = `${jobTitle} ${jobPosting}`.toLowerCase();
-
-  let stability = 55;
-  if (/(상장|코스피|코스닥|흑자|영업이익|매출 성장|series c|series d)/.test(text)) stability += 20;
-  if (/(스타트업|seed|series a|적자|구조조정|자금난)/.test(text)) stability -= 20;
-  stability = Math.max(20, Math.min(90, stability));
-
-  let regularRate = 45;
-  if (/(정규직 전환|전환형 인턴|인턴 후 정규직|전환 가능)/.test(text)) regularRate += 25;
-  if (/(계약직|파견|프리랜서|단기)/.test(text)) regularRate -= 20;
-  regularRate = Math.max(10, Math.min(90, regularRate));
-
-  const employmentSignal = /(정규직|무기계약)/.test(text)
-    ? "정규직 중심"
-    : /(계약직|파견|프리랜서)/.test(text)
-      ? "비정규 계약 포함"
-      : "공고 내 고용형태 정보 제한적";
-
-  return { stability, regularRate, employmentSignal };
-}
-
 function ResultDetail({
   result,
   jobTitle,
@@ -80,7 +58,42 @@ function ResultDetail({
   jobPosting: string;
 }) {
   const detailedScores = (result?.detailed_scores ?? []) as DetailedScore[];
-  const signals = inferCompanySignals(jobTitle, jobPosting);
+  const [companyInsight, setCompanyInsight] = useState<CompanyInsightResponse | null>(null);
+  const [insightLoading, setInsightLoading] = useState(false);
+  const [insightError, setInsightError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    const run = async () => {
+      const companyName = (jobTitle || "").split(" ").slice(0, 1).join(" ").trim();
+      if (!companyName) return;
+
+      setInsightLoading(true);
+      setInsightError(null);
+      try {
+        const data = await getCompanyInsight({ company_name: companyName });
+        if (mounted) setCompanyInsight(data);
+      } catch (e) {
+        if (mounted) {
+          setInsightError(e instanceof Error ? e.message : "기업 정보 조회 실패");
+          setCompanyInsight(null);
+        }
+      } finally {
+        if (mounted) setInsightLoading(false);
+      }
+    };
+    run();
+    return () => {
+      mounted = false;
+    };
+  }, [jobTitle, jobPosting]);
+
+  const badgeClass = (status: "good" | "normal" | "caution") =>
+    status === "good"
+      ? "bg-green-100 text-green-700"
+      : status === "caution"
+        ? "bg-red-100 text-red-700"
+        : "bg-gray-100 text-gray-700";
 
   return (
     <div className="space-y-5">
@@ -168,27 +181,49 @@ function ResultDetail({
       <section className="rounded-xl border border-indigo-100 bg-indigo-50 p-4">
         <div className="flex items-center justify-between gap-2">
           <p className="text-sm font-semibold text-indigo-900">기업 정보 요약 (베타)</p>
-          <span className="rounded bg-white px-2 py-0.5 text-[11px] text-indigo-700">공고 텍스트 기반 추정</span>
+          <span className="rounded bg-white px-2 py-0.5 text-[11px] text-indigo-700">웹 검색 기반 요약</span>
         </div>
 
-        <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
-          <div className="rounded-lg bg-white p-3">
-            <p className="text-xs text-gray-500">재무/사업 안정성 신호</p>
-            <p className="mt-1 text-xl font-bold text-gray-900">{signals.stability}점</p>
+        {insightLoading ? (
+          <p className="mt-3 text-sm text-gray-600">기업 정보를 검색하는 중...</p>
+        ) : insightError ? (
+          <p className="mt-3 text-sm text-red-600">{insightError}</p>
+        ) : companyInsight ? (
+          <div className="mt-3 space-y-3">
+            <p className="text-sm text-gray-700">{companyInsight.summary}</p>
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+              {companyInsight.signals.map((signal) => (
+                <div key={signal.key} className="rounded-lg bg-white p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs text-gray-500">{signal.label}</p>
+                    <span className={`rounded px-2 py-0.5 text-xs font-semibold ${badgeClass(signal.status)}`}>
+                      {signal.status_text}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-gray-600">{signal.reason}</p>
+                </div>
+              ))}
+            </div>
+            {companyInsight.sources?.length > 0 && (
+              <div className="rounded-lg border border-indigo-100 bg-white p-3">
+                <p className="text-xs font-semibold text-gray-700">참고 출처</p>
+                <ul className="mt-2 space-y-2">
+                  {companyInsight.sources.slice(0, 3).map((src) => (
+                    <li key={src.url} className="text-xs text-gray-600">
+                      <a href={src.url} target="_blank" rel="noreferrer" className="font-medium text-blue-700 hover:underline">
+                        {src.title || src.url}
+                      </a>
+                      {src.snippet ? <p className="mt-1 text-gray-500">{src.snippet}</p> : null}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <p className="text-xs leading-5 text-gray-600">{companyInsight.note}</p>
           </div>
-          <div className="rounded-lg bg-white p-3">
-            <p className="text-xs text-gray-500">정규직 전환 가능성 신호</p>
-            <p className="mt-1 text-xl font-bold text-gray-900">{signals.regularRate}%</p>
-          </div>
-          <div className="rounded-lg bg-white p-3">
-            <p className="text-xs text-gray-500">고용 형태</p>
-            <p className="mt-1 text-sm font-semibold text-gray-900">{signals.employmentSignal}</p>
-          </div>
-        </div>
-
-        <p className="mt-3 text-xs leading-5 text-gray-600">
-          실제 재무제표/공시 기반 수치가 아니며, 지원 전 기업 공시/리뷰/뉴스를 함께 확인하는 것을 권장합니다.
-        </p>
+        ) : (
+          <p className="mt-3 text-sm text-gray-600">기업 정보가 없습니다.</p>
+        )}
       </section>
     </div>
   );
@@ -206,13 +241,41 @@ export default function MatchPage() {
   const [companyName, setCompanyName] = useState("");
   const [positionName, setPositionName] = useState("");
   const [jobPosting, setJobPosting] = useState("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
 
   const [loadingList, setLoadingList] = useState(false);
   const [loadingAnalyze, setLoadingAnalyze] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [extracting, setExtracting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saveNotice, setSaveNotice] = useState<string | null>(null);
+
+  const addImageFiles = (files: FileList | null) => {
+    const incoming = Array.from(files ?? []);
+    if (incoming.length === 0) return;
+
+    setImageFiles((prev) => {
+      const map = new Map<string, File>();
+      [...prev, ...incoming].forEach((f) => {
+        map.set(`${f.name}-${f.size}-${f.lastModified}`, f);
+      });
+      return Array.from(map.values());
+    });
+  };
+
+  const removeImageFile = (target: File) => {
+    setImageFiles((prev) =>
+      prev.filter(
+        (f) =>
+          !(
+            f.name === target.name &&
+            f.size === target.size &&
+            f.lastModified === target.lastModified
+          )
+      )
+    );
+  };
 
   const loadSavedAnalyses = async () => {
     if (isGuestMode()) {
@@ -280,8 +343,8 @@ export default function MatchPage() {
   }, []);
 
   const handleExtractImage = async () => {
-    if (!imageFile) {
-      setError("먼저 이미지 파일을 선택해 주세요.");
+    if (imageFiles.length === 0) {
+      setError("먼저 이미지 파일을 1개 이상 선택해 주세요.");
       return;
     }
 
@@ -289,16 +352,45 @@ export default function MatchPage() {
     setError(null);
 
     try {
-      const extracted = await extractJobImage(imageFile);
-      const extractedText = extracted?.job_posting_text || "";
-
-      if (!extractedText.trim()) {
-        throw new Error("이미지에서 추출된 공고 텍스트가 비어 있습니다.");
+      const extractedChunks: string[] = [];
+      for (const file of imageFiles) {
+        const extracted = await extractJobImage(file);
+        const extractedText = extracted?.job_posting_text || "";
+        if (extractedText.trim()) {
+          extractedChunks.push(extractedText.trim());
+        }
       }
 
-      setJobPosting(extractedText);
+      if (extractedChunks.length === 0) {
+        throw new Error("선택한 이미지들에서 공고 텍스트를 추출하지 못했습니다.");
+      }
+
+      const joined = extractedChunks.join("\n\n---\n\n");
+      setJobPosting((prev) => (prev.trim() ? `${prev}\n\n${joined}` : joined));
     } catch (err) {
       setError(err instanceof Error ? err.message : "이미지 공고 추출 중 오류가 발생했습니다.");
+    } finally {
+      setExtracting(false);
+    }
+  };
+
+  const handleExtractPdf = async () => {
+    if (!pdfFile) {
+      setError("먼저 PDF 파일을 선택해 주세요.");
+      return;
+    }
+
+    setExtracting(true);
+    setError(null);
+    try {
+      const extracted = await extractJobPdf(pdfFile);
+      const extractedText = extracted?.job_posting_text || "";
+      if (!extractedText.trim()) {
+        throw new Error("PDF에서 추출된 공고 텍스트가 비어 있습니다.");
+      }
+      setJobPosting((prev) => (prev.trim() ? `${prev}\n\n${extractedText.trim()}` : extractedText.trim()));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "PDF 공고 추출 중 오류가 발생했습니다.");
     } finally {
       setExtracting(false);
     }
@@ -446,6 +538,49 @@ export default function MatchPage() {
     }
   };
 
+  const handleDeleteSavedAnalysis = async (item: SavedAnalysisCard) => {
+    const ok = window.confirm(`"${item.job_title}" 분석 결과를 삭제할까요?`);
+    if (!ok) return;
+
+    setDeletingId(item.id);
+    setError(null);
+    setSaveNotice(null);
+
+    try {
+      if (!isGuestMode()) {
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError || !authData.user) {
+          throw new Error("로그인이 필요합니다.");
+        }
+
+        const { data: deletedRows, error: deleteError } = await supabase
+          .from("match_analyses")
+          .delete()
+          .eq("id", item.id)
+          .eq("user_id", authData.user.id)
+          .select("id");
+
+        if (deleteError) {
+          throw new Error(deleteError.message);
+        }
+        if (!deletedRows || deletedRows.length === 0) {
+          throw new Error("삭제 권한이 없어 DB에서 삭제되지 않았습니다. Supabase RLS delete 정책을 확인해 주세요.");
+        }
+      }
+
+      await loadSavedAnalyses();
+      if (selectedAnalysis?.id === item.id) {
+        setShowDetailModal(false);
+        setSelectedAnalysis(null);
+      }
+      setSaveNotice("선택한 분석 결과를 삭제했습니다.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "삭제 중 오류가 발생했습니다.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-6xl px-4 py-8">
@@ -460,7 +595,8 @@ export default function MatchPage() {
               setCompanyName("");
               setPositionName("");
               setJobPosting("");
-              setImageFile(null);
+              setImageFiles([]);
+              setPdfFile(null);
               setError(null);
               setSaveNotice(null);
               setShowInputModal(true);
@@ -482,20 +618,34 @@ export default function MatchPage() {
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {savedAnalyses.map((item) => (
-              <button
-                type="button"
-                key={item.id}
-                onClick={() => {
-                  setSelectedAnalysis(item);
-                  setShowDetailModal(true);
-                }}
-                className="rounded-2xl border border-gray-200 bg-white p-5 text-left transition-shadow hover:shadow-md"
-              >
-                <p className="text-4xl font-bold text-sky-500">{item.total_score}<span className="text-2xl">점</span></p>
-                <p className="mt-3 line-clamp-2 text-xl font-semibold text-gray-900">{item.job_title}</p>
-                <p className="mt-1 text-sm text-gray-500">등급 {item.grade}</p>
-                <p className="mt-8 text-sm text-gray-400">{formatDateTime(item.created_at)}</p>
-              </button>
+              <div key={item.id} className="rounded-2xl border border-gray-200 bg-white p-5 transition-shadow hover:shadow-md">
+                <div className="mb-2 flex items-start justify-end">
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteSavedAnalysis(item)}
+                    disabled={deletingId === item.id}
+                    className="rounded-md px-2 py-1 text-xs font-medium text-red-500 hover:bg-red-50 disabled:opacity-50"
+                  >
+                    {deletingId === item.id ? "삭제 중..." : "삭제"}
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedAnalysis(item);
+                    setShowDetailModal(true);
+                  }}
+                  className="w-full text-left"
+                >
+                  <p className="text-4xl font-bold text-sky-500">
+                    {item.total_score}
+                    <span className="text-2xl">점</span>
+                  </p>
+                  <p className="mt-3 line-clamp-2 text-xl font-semibold text-gray-900">{item.job_title}</p>
+                  <p className="mt-1 text-sm text-gray-500">등급 {item.grade}</p>
+                  <p className="mt-8 text-sm text-gray-400">{formatDateTime(item.created_at)}</p>
+                </button>
+              </div>
             ))}
           </div>
         )}
@@ -540,17 +690,60 @@ export default function MatchPage() {
                 <div className="mt-3 space-y-3">
                   <input
                     type="file"
+                    multiple
                     accept="image/png,image/jpeg,image/jpg,image/webp"
-                    onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+                    onChange={(e) => addImageFiles(e.target.files)}
+                    className="block w-full text-sm text-gray-700"
+                  />
+                  {imageFiles.length > 0 && (
+                    <div className="rounded-lg border border-gray-200 bg-white p-2">
+                      <div className="mb-2 flex items-center justify-between">
+                        <p className="text-xs text-gray-600">{imageFiles.length}개 이미지 선택됨</p>
+                        <button
+                          type="button"
+                          onClick={() => setImageFiles([])}
+                          className="text-xs font-medium text-gray-500 hover:text-gray-700"
+                        >
+                          전체 비우기
+                        </button>
+                      </div>
+                      <ul className="space-y-1">
+                        {imageFiles.map((file) => (
+                          <li key={`${file.name}-${file.size}-${file.lastModified}`} className="flex items-center justify-between gap-2">
+                            <span className="truncate text-xs text-gray-600">{file.name}</span>
+                            <button
+                              type="button"
+                              onClick={() => removeImageFile(file)}
+                              className="shrink-0 text-xs font-medium text-red-500 hover:text-red-700"
+                            >
+                              제거
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleExtractImage}
+                    disabled={extracting || imageFiles.length === 0}
+                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    {extracting ? "이미지 공고 추출 중..." : "이미지(여러 장) 공고 텍스트 추출"}
+                  </button>
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    onChange={(e) => setPdfFile(e.target.files?.[0] ?? null)}
                     className="block w-full text-sm text-gray-700"
                   />
                   <button
                     type="button"
-                    onClick={handleExtractImage}
-                    disabled={extracting}
+                    onClick={handleExtractPdf}
+                    disabled={extracting || !pdfFile}
                     className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                   >
-                    {extracting ? "이미지 공고 추출 중..." : "이미지 공고 텍스트 추출"}
+                    {extracting ? "PDF 공고 추출 중..." : "PDF 공고 텍스트 추출"}
                   </button>
                 </div>
 
@@ -606,6 +799,18 @@ export default function MatchPage() {
             </div>
 
             <div className="px-6 py-5">
+              {savedAnalyses.some((item) => item.id === selectedAnalysis.id) && (
+                <div className="mb-4 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteSavedAnalysis(selectedAnalysis)}
+                    disabled={deletingId === selectedAnalysis.id}
+                    className="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
+                  >
+                    {deletingId === selectedAnalysis.id ? "삭제 중..." : "이 분석 삭제"}
+                  </button>
+                </div>
+              )}
               {selectedAnalysis.result ? (
                 <ResultDetail
                   result={selectedAnalysis.result}

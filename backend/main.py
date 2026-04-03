@@ -1,10 +1,10 @@
-# FastAPI 앱 진입점 - CORS 설정, 라우터 등록, 서버 시작 시 ChromaDB 초기화
+﻿# FastAPI 앱 진입점 - CORS 설정, 라우터 등록, 서버 시작 시 ChromaDB 초기화
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-from routers import parse, coach, match
+from routers import parse, coach, match, company
 from rag.chroma_client import init_chroma
 
 load_dotenv()
@@ -43,6 +43,7 @@ app.add_middleware(
 app.include_router(parse.router, prefix="/parse", tags=["parse"])
 app.include_router(coach.router, prefix="/coach", tags=["coach"])
 app.include_router(match.router, prefix="/match", tags=["match"])
+app.include_router(company.router, prefix="/company", tags=["company"])
 
 
 @app.get("/")

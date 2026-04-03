@@ -1,4 +1,4 @@
--- Supabase table for storing job posting match analyses
+﻿-- Supabase table for storing job posting match analyses
 create table if not exists public.match_analyses (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.profiles(id) on delete cascade,
@@ -33,3 +33,9 @@ create policy "Users can insert own match analyses"
   on public.match_analyses
   for insert
   with check (auth.uid() = user_id);
+
+drop policy if exists "Users can delete own match analyses" on public.match_analyses;
+create policy "Users can delete own match analyses"
+  on public.match_analyses
+  for delete
+  using (auth.uid() = user_id);
