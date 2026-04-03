@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { analyzeMatch, extractJobImage, extractJobPdf, getCompanyInsight } from "@/lib/api/backend";
-import { getGuestActivities, isGuestMode } from "@/lib/guest";
+import { getGuestActivities, getGuestResume, isGuestMode } from "@/lib/guest";
 import { createBrowserClient } from "@/lib/supabase/client";
 import type { CompanyInsightResponse, MatchResult } from "@/lib/types";
 
@@ -25,6 +25,16 @@ type SavedAnalysisCard = {
   summary: string;
   created_at: string;
   result: MatchResult | null;
+};
+
+type AnalysisMode = "resume" | "activity" | null;
+
+type ResumeOption = {
+  id: string;
+  title: string;
+  target_job: string | null;
+  selected_activity_ids: string[] | null;
+  created_at: string;
 };
 
 function formatDateTime(value: string): string {
@@ -237,12 +247,16 @@ export default function MatchPage() {
 
   const [showInputModal, setShowInputModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [analysisMode, setAnalysisMode] = useState<AnalysisMode>(null);
 
   const [companyName, setCompanyName] = useState("");
   const [positionName, setPositionName] = useState("");
   const [jobPosting, setJobPosting] = useState("");
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [resumeOptions, setResumeOptions] = useState<ResumeOption[]>([]);
+  const [selectedResumeId, setSelectedResumeId] = useState("");
+  const [loadingResumes, setLoadingResumes] = useState(false);
 
   const [loadingList, setLoadingList] = useState(false);
   const [loadingAnalyze, setLoadingAnalyze] = useState(false);
@@ -275,6 +289,53 @@ export default function MatchPage() {
           )
       )
     );
+  };
+
+  const loadResumeOptions = async () => {
+    setLoadingResumes(true);
+    try {
+      if (isGuestMode()) {
+        const guestResume = getGuestResume();
+        if (!guestResume) {
+          setResumeOptions([]);
+          return;
+        }
+        setResumeOptions([
+          {
+            id: guestResume.id,
+            title: guestResume.title ?? "게스트 이력서",
+            target_job: guestResume.target_job ?? null,
+            selected_activity_ids: guestResume.selected_activity_ids ?? [],
+            created_at: guestResume.created_at ?? new Date().toISOString(),
+          },
+        ]);
+        return;
+      }
+
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (authError || !authData.user) {
+        setResumeOptions([]);
+        return;
+      }
+
+      const { data, error: resumeError } = await supabase
+        .from("resumes")
+        .select("id, title, target_job, selected_activity_ids, created_at")
+        .eq("user_id", authData.user.id)
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      if (resumeError) {
+        throw new Error(resumeError.message);
+      }
+
+      setResumeOptions((data as ResumeOption[] | null) ?? []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "이력서 목록을 불러오는 중 오류가 발생했습니다.");
+      setResumeOptions([]);
+    } finally {
+      setLoadingResumes(false);
+    }
   };
 
   const loadSavedAnalyses = async () => {
@@ -401,6 +462,22 @@ export default function MatchPage() {
       setError("공고 전문을 입력해 주세요.");
       return;
     }
+    if (!companyName.trim()) {
+      setError("회사명을 입력해 주세요.");
+      return;
+    }
+    if (!positionName.trim()) {
+      setError("직무명을 입력해 주세요.");
+      return;
+    }
+    if (!analysisMode) {
+      setError("먼저 분석 방식을 선택해 주세요.");
+      return;
+    }
+    if (analysisMode === "resume" && !selectedResumeId) {
+      setError("분석할 이력서를 선택해 주세요.");
+      return;
+    }
 
     setLoadingAnalyze(true);
     setError(null);
@@ -421,11 +498,21 @@ export default function MatchPage() {
       } = {};
 
       if (isGuestMode()) {
-        activities = getGuestActivities().map((item) => ({
+        const allGuestActivities = getGuestActivities().map((item) => ({
           id: item.id,
           title: item.title,
           description: item.description,
         }));
+        if (analysisMode === "resume") {
+          const guestResume = getGuestResume();
+          const selectedIds = new Set(guestResume?.selected_activity_ids ?? []);
+          activities = allGuestActivities.filter((item) => selectedIds.has(item.id));
+          if (activities.length === 0) {
+            throw new Error("선택한 이력서에 연결된 활동이 없습니다.");
+          }
+        } else {
+          activities = allGuestActivities;
+        }
 
         profileContext = {
           name: "게스트 사용자",
@@ -448,7 +535,11 @@ export default function MatchPage() {
           { data: activityData, error: activityError },
           { data: profileData, error: profileError },
         ] = await Promise.all([
-          supabase.from("activities").select("id, title, description").eq("is_visible", true),
+          supabase
+            .from("activities")
+            .select("id, title, description")
+            .eq("is_visible", true)
+            .eq("user_id", authData.user.id),
           supabase
             .from("profiles")
             .select("name, education, career, education_history, awards, certifications, languages, skills, self_intro")
@@ -459,7 +550,20 @@ export default function MatchPage() {
         if (activityError) throw new Error(activityError.message);
         if (profileError) throw new Error(profileError.message);
 
-        activities = activityData || [];
+        const allActivities = activityData || [];
+        if (analysisMode === "resume") {
+          const selectedResume = resumeOptions.find((resume) => resume.id === selectedResumeId);
+          if (!selectedResume) {
+            throw new Error("선택한 이력서 정보를 찾지 못했습니다.");
+          }
+          const selectedIds = new Set(selectedResume.selected_activity_ids ?? []);
+          activities = allActivities.filter((item) => selectedIds.has(item.id));
+          if (activities.length === 0) {
+            throw new Error("선택한 이력서에 연결된 활동이 없습니다.");
+          }
+        } else {
+          activities = allActivities;
+        }
         profileContext = {
           name: profileData?.name ?? undefined,
           education: profileData?.education ?? undefined,
@@ -597,6 +701,9 @@ export default function MatchPage() {
               setJobPosting("");
               setImageFiles([]);
               setPdfFile(null);
+              setAnalysisMode(null);
+              setSelectedResumeId("");
+              setResumeOptions([]);
               setError(null);
               setSaveNotice(null);
               setShowInputModal(true);
@@ -668,20 +775,92 @@ export default function MatchPage() {
 
             <div className="space-y-4 px-6 py-5">
               <section className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                <p className="text-sm font-semibold text-gray-800">0. 분석 방식 선택</p>
+                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setAnalysisMode("resume");
+                      setSelectedResumeId("");
+                      await loadResumeOptions();
+                    }}
+                    className={`rounded-xl border p-4 text-left transition ${
+                      analysisMode === "resume"
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-200 bg-white hover:border-gray-300"
+                    }`}
+                  >
+                    <p className="text-sm font-semibold text-gray-900">이력서로 분석하기</p>
+                    <p className="mt-1 text-xs text-gray-500">저장된 이력서의 활동만 기준으로 분석합니다.</p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAnalysisMode("activity");
+                      setSelectedResumeId("");
+                    }}
+                    className={`rounded-xl border p-4 text-left transition ${
+                      analysisMode === "activity"
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-200 bg-white hover:border-gray-300"
+                    }`}
+                  >
+                    <p className="text-sm font-semibold text-gray-900">내 활동으로 분석하기</p>
+                    <p className="mt-1 text-xs text-gray-500">현재 공개된 모든 활동 기준으로 분석합니다.</p>
+                  </button>
+                </div>
+
+                {analysisMode === "resume" && (
+                  <div className="mt-3 rounded-lg border border-gray-200 bg-white p-3">
+                    <p className="mb-2 text-xs font-semibold text-gray-700">분석할 이력서 선택</p>
+                    {loadingResumes ? (
+                      <p className="text-xs text-gray-500">이력서 목록을 불러오는 중...</p>
+                    ) : resumeOptions.length === 0 ? (
+                      <p className="text-xs text-gray-500">저장된 이력서가 없습니다. 먼저 이력서를 생성해 주세요.</p>
+                    ) : (
+                      <select
+                        value={selectedResumeId}
+                        onChange={(e) => setSelectedResumeId(e.target.value)}
+                        className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-gray-400"
+                      >
+                        <option value="">이력서를 선택해 주세요</option>
+                        {resumeOptions.map((resume) => (
+                          <option key={resume.id} value={resume.id}>
+                            {resume.title}
+                            {resume.target_job ? ` · ${resume.target_job}` : ""}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+                )}
+              </section>
+
+              <section className="rounded-xl border border-gray-200 bg-gray-50 p-4">
                 <p className="text-sm font-semibold text-gray-800">1. 회사명과 직무명 입력</p>
                 <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
-                  <input
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    placeholder="회사명을 입력해 주세요"
-                    className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-gray-400"
-                  />
-                  <input
-                    value={positionName}
-                    onChange={(e) => setPositionName(e.target.value)}
-                    placeholder="직무명을 입력해 주세요"
-                    className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-gray-400"
-                  />
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-gray-700">
+                      회사명 <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                      placeholder="회사명을 입력해 주세요"
+                      className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-gray-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-gray-700">
+                      직무명 <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      value={positionName}
+                      onChange={(e) => setPositionName(e.target.value)}
+                      placeholder="직무명을 입력해 주세요"
+                      className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-gray-400"
+                    />
+                  </div>
                 </div>
               </section>
 
@@ -770,7 +949,14 @@ export default function MatchPage() {
               <button
                 type="button"
                 onClick={handleAnalyze}
-                disabled={loadingAnalyze || !jobPosting.trim()}
+                disabled={
+                  loadingAnalyze ||
+                  !jobPosting.trim() ||
+                  !companyName.trim() ||
+                  !positionName.trim() ||
+                  !analysisMode ||
+                  (analysisMode === "resume" && !selectedResumeId)
+                }
                 className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
               >
                 {loadingAnalyze ? "분석 중..." : "합격률 분석하기"}

@@ -1,18 +1,17 @@
-import json
+﻿import json
 import os
 import re
 from collections import Counter
 from typing import Any
 
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage
-
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 _ANALYSIS_PROMPT = """
-당신은 채용 공고 분석 전문가입니다.
-아래 정보를 보고 지원자와 채용 공고의 적합도를 한국어로 분석하세요.
+당신은 채용 공고 매칭 분석가입니다.
 
-반드시 코드 블록 없이 순수 JSON만 반환하세요.
+아래 기본 점수와 사용자 정보를 참고해, 한국어로 JSON만 반환하세요.
+코드블록은 사용하지 마세요.
 
 반환 형식:
 {
@@ -20,7 +19,7 @@ _ANALYSIS_PROMPT = """
   "support_recommendation": "적극 지원 추천 | 보완 후 지원 | 경험 보강 필요",
   "strengths": ["강점1", "강점2", "강점3"],
   "gaps": ["보완점1", "보완점2", "보완점3"],
-  "resume_tips": ["이력서 팁1", "이력서 팁2", "이력서 팁3"],
+  "resume_tips": ["팁1", "팁2", "팁3"],
   "highlight_keywords": ["키워드1", "키워드2", "키워드3", "키워드4", "키워드5"]
 }
 
@@ -34,38 +33,21 @@ _ANALYSIS_PROMPT = """
 {analysis_json}
 """
 
-
 _STOPWORDS = {
-    "그리고",
-    "또한",
-    "관련",
-    "통해",
-    "기반",
-    "경험",
-    "업무",
-    "담당",
-    "수행",
-    "가능",
-    "우대",
-    "필수",
-    "채용",
-    "직무",
-    "회사",
-    "프로젝트",
-    "대한",
-    "에서",
-    "하는",
-    "으로",
-    "입니다",
-    "있습니다",
-    "the",
-    "and",
-    "with",
-    "for",
-    "from",
-    "you",
-    "our",
-    "team",
+    "그리고", "또한", "관련", "통해", "기반", "경험", "업무", "해당", "수행", "가능",
+    "우대", "필수", "채용", "직무", "회사", "프로젝트", "대한", "에서", "하는", "으로",
+    "입니다", "있습니다", "the", "and", "with", "for", "from", "you", "our", "team",
+}
+
+_EXPRESSION_TOKENS = {
+    "기획", "운영", "개선", "문제", "분석", "설계", "사용자", "성과", "지표",
+    "마케팅", "전략", "콘텐츠", "프로모션", "캠페인",
+    "project", "analysis", "strategy", "growth", "performance",
+}
+
+_GROWTH_TOKENS = {
+    "프로젝트", "구현", "학습", "개발", "분석", "실습", "서비스", "개선", "실험", "성과",
+    "growth", "optimize", "improvement",
 }
 
 
@@ -89,19 +71,20 @@ def _grade_from_ratio(score: int, max_score: int) -> str:
 
 
 def _overall_grade(score: int) -> str:
-    if score >= 85:
+    # 기존보다 현실적인 컷으로 완화
+    if score >= 80:
         return "A"
-    if score >= 70:
+    if score >= 65:
         return "B"
-    if score >= 55:
+    if score >= 50:
         return "C"
     return "D"
 
 
 def _support_recommendation_from_score(score: int) -> str:
-    if score >= 80:
+    if score >= 75:
         return "적극 지원 추천"
-    if score >= 60:
+    if score >= 55:
         return "보완 후 지원"
     return "경험 보강 필요"
 
@@ -111,9 +94,6 @@ async def run_match_chain(
     activities: list[dict],
     profile_context: dict | None = None,
 ) -> dict:
-    """
-    공고와 지원자 정보 기반 상세 매칭 리포트를 생성한다.
-    """
     profile_context = profile_context or {}
 
     job_keywords = _extract_keywords(job_posting)
@@ -123,7 +103,6 @@ async def run_match_chain(
 
     matched_keywords = sorted(job_keywords.intersection(candidate_keywords))
     missing_keywords = sorted(job_keywords.difference(candidate_keywords))
-
     activity_scores = _score_activities_by_keywords(activities, job_keywords)
 
     axis_scores = _calculate_axis_scores(
@@ -139,21 +118,35 @@ async def run_match_chain(
     )
 
     total_score = sum(item["score"] for item in axis_scores.values())
+
+    # 공고-지원자 키워드 일치가 충분할 때 체감 보정
+    norm_job_cnt = max(6, min(20, len(job_keywords)))
+    match_ratio = len(matched_keywords) / norm_job_cnt
+    score_bonus = 0
+    if match_ratio >= 0.45:
+        score_bonus += 8
+    elif match_ratio >= 0.30:
+        score_bonus += 5
+    elif match_ratio >= 0.20:
+        score_bonus += 3
+    if any(s > 0 for _, s in activity_scores[:3]):
+        score_bonus += 2
+
+    total_score = min(100, total_score + score_bonus)
     grade = _overall_grade(total_score)
     support_recommendation = _support_recommendation_from_score(total_score)
 
-    detailed_scores = []
-    for key, item in axis_scores.items():
-        detailed_scores.append(
-            {
-                "key": key,
-                "label": item["label"],
-                "score": item["score"],
-                "max_score": item["max_score"],
-                "grade": _grade_from_ratio(item["score"], item["max_score"]),
-                "reason": item["reason"],
-            }
-        )
+    detailed_scores = [
+        {
+            "key": key,
+            "label": item["label"],
+            "score": item["score"],
+            "max_score": item["max_score"],
+            "grade": _grade_from_ratio(item["score"], item["max_score"]),
+            "reason": item["reason"],
+        }
+        for key, item in axis_scores.items()
+    ]
 
     recommended_activities = [item[0] for item in activity_scores[:3] if item[1] > 0]
 
@@ -174,11 +167,8 @@ async def run_match_chain(
         base_result=base_result,
     )
 
-    strengths = llm_result.get("strengths") or _default_strengths(
-        matched_keywords=matched_keywords,
-        recommended_activities=recommended_activities,
-    )
-    gaps = llm_result.get("gaps") or _default_gaps(missing_keywords=missing_keywords)
+    strengths = llm_result.get("strengths") or _default_strengths(matched_keywords, recommended_activities)
+    gaps = llm_result.get("gaps") or _default_gaps(missing_keywords)
     resume_tips = llm_result.get("resume_tips") or _default_resume_tips()
     highlight_keywords = llm_result.get("highlight_keywords") or matched_keywords[:5]
     summary_text = _normalize_summary_text(
@@ -189,8 +179,7 @@ async def run_match_chain(
         "total_score": total_score,
         "grade": grade,
         "summary": summary_text,
-        "support_recommendation": llm_result.get("support_recommendation")
-        or support_recommendation,
+        "support_recommendation": llm_result.get("support_recommendation") or support_recommendation,
         "radar_scores": {key: value["score"] for key, value in axis_scores.items()},
         "detailed_scores": detailed_scores,
         "strengths": strengths[:3],
@@ -206,6 +195,7 @@ async def run_match_chain(
             "profile_keyword_count": len(profile_keywords),
             "activity_keyword_count": len(activity_keywords),
             "axis_weights": {key: value["max_score"] for key, value in axis_scores.items()},
+            "score_bonus": score_bonus,
         },
     }
 
@@ -214,10 +204,8 @@ def _extract_keywords(text: str) -> set[str]:
     tokens = re.findall(r"[A-Za-z][A-Za-z0-9+#.-]{1,}|[가-힣]{2,}", text or "")
     normalized = [token.strip().lower() for token in tokens]
     filtered = [t for t in normalized if t not in _STOPWORDS and len(t) >= 2]
-
     freq = Counter(filtered)
-    top_tokens = [token for token, _ in freq.most_common(50)]
-    return set(top_tokens)
+    return {token for token, _ in freq.most_common(50)}
 
 
 def _extract_profile_keywords(profile_context: dict) -> set[str]:
@@ -238,7 +226,6 @@ def _extract_profile_keywords(profile_context: dict) -> set[str]:
             chunks.append(value)
         elif isinstance(value, list):
             chunks.extend(str(item) for item in value)
-
     return _extract_keywords("\n".join(chunks))
 
 
@@ -248,20 +235,17 @@ def _extract_activity_keywords(activities: list[dict]) -> set[str]:
         title = str(activity.get("title", ""))
         desc = str(activity.get("description", ""))
         chunks.append(f"{title} {desc}")
-
     return _extract_keywords("\n".join(chunks))
 
 
 def _score_activities_by_keywords(activities: list[dict], job_keywords: set[str]) -> list[tuple[str, int]]:
     scores: list[tuple[str, int]] = []
-
     for idx, activity in enumerate(activities):
         activity_id = str(activity.get("id") or f"activity_{idx}")
         text = f"{activity.get('title', '')} {activity.get('description', '')}"
         activity_kw = _extract_keywords(text)
         overlap = len(activity_kw.intersection(job_keywords))
         scores.append((activity_id, overlap))
-
     scores.sort(key=lambda item: item[1], reverse=True)
     return scores
 
@@ -278,126 +262,86 @@ def _calculate_axis_scores(
     activity_scores: list[tuple[str, int]],
 ) -> dict:
     job_count = max(1, len(job_keywords))
+    normalized_job_count = max(6, min(20, job_count))
 
-    # 1) 직무 일치도 25
     combined_overlap = len(job_keywords.intersection(profile_keywords.union(activity_keywords)))
-    job_fit_ratio = combined_overlap / job_count
+    job_fit_ratio = combined_overlap / normalized_job_count
     job_fit_score = min(25, int(round(job_fit_ratio * 25)))
-    job_fit_reason = (
-        "공고 핵심 업무와 유사한 경험이 다수 확인됩니다."
-        if job_fit_score >= 20
-        else "공고와 연결되는 경험은 있으나 직접적인 직무 표현은 일부 부족합니다."
-        if job_fit_score >= 13
-        else "공고 핵심 업무와 직접 연결되는 경험 표현이 부족합니다."
-    )
+    if combined_overlap >= 3:
+        job_fit_score = max(job_fit_score, 12)
+    if combined_overlap >= 5:
+        job_fit_score = max(job_fit_score, 15)
 
-    # 2) 핵심 기술/역량 20
     core_skill_overlap = len(job_keywords.intersection(profile_keywords))
-    core_skill_ratio = core_skill_overlap / job_count
+    core_skill_ratio = core_skill_overlap / max(5, min(15, job_count))
     core_skill_score = min(20, int(round(core_skill_ratio * 20)))
-    core_skill_reason = (
-        "핵심 기술과 역량이 프로필에 잘 반영되어 있습니다."
-        if core_skill_score >= 16
-        else "일부 핵심 기술은 확인되지만 필수 역량 표현은 더 보완이 필요합니다."
-        if core_skill_score >= 10
-        else "공고에서 요구하는 핵심 기술/역량과의 연결이 약합니다."
-    )
+    if core_skill_overlap >= 2:
+        core_skill_score = max(core_skill_score, 8)
+    if core_skill_overlap >= 4:
+        core_skill_score = max(core_skill_score, 12)
 
-    # 3) 프로젝트 관련성 20
     top_overlap = activity_scores[0][1] if activity_scores else 0
-    project_ratio = min(1.0, top_overlap / 8)
+    project_ratio = min(1.0, top_overlap / 5)
     project_score = min(20, int(round(project_ratio * 20)))
-    project_reason = (
-        "직무와 직접 관련된 프로젝트 경험이 확인됩니다."
-        if project_score >= 16
-        else "직무와 유사한 프로젝트 경험은 있으나 연결성 설명이 조금 더 필요합니다."
-        if project_score >= 10
-        else "프로젝트 경험이 직무와 직접적으로 연결되기에는 다소 약합니다."
-    )
+    if top_overlap >= 2:
+        project_score = max(project_score, 10)
 
-    # 4) 성과 및 임팩트 15
     quantified_pattern = re.compile(r"\d+[\d,.%]*")
     impact_hits = 0
     for activity in activities:
         blob = f"{activity.get('title', '')} {activity.get('description', '')}"
         if quantified_pattern.search(blob):
             impact_hits += 1
-    impact_score = min(15, impact_hits * 5)
-    impact_reason = (
-        "성과가 수치 또는 결과 중심으로 비교적 잘 표현되어 있습니다."
-        if impact_score >= 12
-        else "성과 표현은 있으나 정량적 설득력은 조금 더 보강할 수 있습니다."
-        if impact_score >= 6
-        else "프로젝트 결과나 수치 중심 성과 표현이 부족합니다."
-    )
+    impact_score = min(15, impact_hits * 4 + (1 if impact_hits > 0 else 0))
 
-    # 5) 직무 표현력 10
-    expression_tokens = {"기획", "협업", "운영", "개선", "문제", "분석", "설계", "사용자", "성과", "지표"}
     profile_blob = json.dumps(profile_context, ensure_ascii=False)
     activity_blob = " ".join(f"{a.get('title', '')} {a.get('description', '')}" for a in activities)
-    expression_text = f"{profile_blob} {activity_blob}"
-    expression_hits = sum(1 for token in expression_tokens if token in expression_text)
-    expression_score = min(10, expression_hits)
-    expression_reason = (
-        "직무 언어와 역할 중심 표현이 비교적 잘 드러납니다."
-        if expression_score >= 8
-        else "직무 관련 경험은 있으나 채용 공고 언어로 번역된 표현은 더 보완이 필요합니다."
-        if expression_score >= 4
-        else "경험은 존재할 수 있으나 직무 관점에서 읽히는 표현이 약합니다."
-    )
+    expression_text = f"{profile_blob} {activity_blob}".lower()
+    expression_hits = sum(1 for token in _EXPRESSION_TOKENS if token.lower() in expression_text)
+    expression_score = min(10, expression_hits * 2)
+    if expression_hits >= 2:
+        expression_score = max(expression_score, 6)
 
-    # 6) 학습/성장 가능성 10
-    growth_signals = 0
-    growth_keywords = {"프로젝트", "구현", "학습", "개발", "분석", "실습", "부트캠프", "서비스"}
-    combined_text = f"{job_posting} {profile_blob} {activity_blob}"
-    for token in growth_keywords:
-        if token in combined_text:
-            growth_signals += 1
-    growth_score = min(10, max(4, growth_signals // 2))
-    growth_reason = (
-        "현재까지의 학습 흐름과 프로젝트 방향성이 직무와 잘 맞습니다."
-        if growth_score >= 8
-        else "직무 전환 또는 성장 가능성은 있으나 설득력 있는 연결은 조금 더 필요합니다."
-        if growth_score >= 5
-        else "현재 경험만으로는 성장 방향성이 뚜렷하게 드러나지 않습니다."
-    )
+    combined_text = f"{job_posting} {profile_blob} {activity_blob}".lower()
+    growth_signals = sum(1 for token in _GROWTH_TOKENS if token.lower() in combined_text)
+    growth_score = min(10, max(5, growth_signals // 2 + 2))
 
     return {
         "job_fit": {
             "label": "직무 일치도",
             "score": job_fit_score,
             "max_score": 25,
-            "reason": job_fit_reason,
+            "reason": "공고 키워드와 프로필/활동의 겹침 수준을 반영했습니다.",
         },
         "core_skills": {
             "label": "핵심 기술/역량",
             "score": core_skill_score,
             "max_score": 20,
-            "reason": core_skill_reason,
+            "reason": "프로필 텍스트에 명시된 핵심 역량 일치도를 반영했습니다.",
         },
         "project_relevance": {
             "label": "프로젝트 관련성",
             "score": project_score,
             "max_score": 20,
-            "reason": project_reason,
+            "reason": "상위 활동/프로젝트의 직무 연관도를 반영했습니다.",
         },
         "impact": {
-            "label": "성과 및 임팩트",
+            "label": "성과 및 업무 성취",
             "score": impact_score,
             "max_score": 15,
-            "reason": impact_reason,
+            "reason": "숫자 기반 성과 표현 여부를 기준으로 평가했습니다.",
         },
         "expression": {
             "label": "직무 표현력",
             "score": expression_score,
             "max_score": 10,
-            "reason": expression_reason,
+            "reason": "직무 언어(기획/분석/전략 등) 사용 정도를 반영했습니다.",
         },
         "growth": {
             "label": "학습/성장 가능성",
             "score": growth_score,
             "max_score": 10,
-            "reason": growth_reason,
+            "reason": "학습/개선/프로젝트 신호를 기준으로 평가했습니다.",
         },
     }
 
@@ -461,24 +405,27 @@ def _normalize_summary_text(text: str) -> str:
     if not cleaned:
         return cleaned
 
-    cleaned = cleaned.replace("\ud544\uc694\uac00 \uc788\uc2b5\ub2c8\ub2e4.\uc785\ub2c8\ub2e4.", "\ud544\uc694\uac00 \uc788\uc2b5\ub2c8\ub2e4.")
-    cleaned = cleaned.replace("\ud544\uc694\ud569\ub2c8\ub2e4.\uc785\ub2c8\ub2e4.", "\ud544\uc694\ud569\ub2c8\ub2e4.")
-    cleaned = cleaned.replace("\uad8c\uc7a5\ub429\ub2c8\ub2e4.\uc785\ub2c8\ub2e4.", "\uad8c\uc7a5\ub429\ub2c8\ub2e4.")
-    cleaned = cleaned.replace("\uc88b\uc2b5\ub2c8\ub2e4.\uc785\ub2c8\ub2e4.", "\uc88b\uc2b5\ub2c8\ub2e4.")
+    cleaned = cleaned.replace("필요가 있습니다.입니다.", "필요가 있습니다.")
+    cleaned = cleaned.replace("필요합니다.입니다.", "필요합니다.")
+    cleaned = cleaned.replace("권장됩니다.입니다.", "권장됩니다.")
+    cleaned = cleaned.replace("좋습니다.입니다.", "좋습니다.")
+    cleaned = cleaned.replace("확인됩니다.이며,", "확인되며,")
 
-    cleaned = re.sub(r"(\uc785\ub2c8\ub2e4\\.)\\1+", r"\\1", cleaned)
-    cleaned = re.sub(r"(\ud569\ub2c8\ub2e4\\.)\\1+", r"\\1", cleaned)
-    cleaned = re.sub(r"(\uc785\ub2c8\ub2e4|\ud569\ub2c8\ub2e4|\ub429\ub2c8\ub2e4)\\.\uc774\uba70,?\\s*", r"\\1. ", cleaned)
+    cleaned = re.sub(r"(입니다\.)\1+", r"\1", cleaned)
+    cleaned = re.sub(r"(합니다\.)\1+", r"\1", cleaned)
+    cleaned = re.sub(r"(입니다|합니다|됩니다)\.이며,?\s*", r"\1. ", cleaned)
 
     return cleaned.strip()
 
+
 def _default_summary(score: int, strengths: list[str], gaps: list[str]) -> str:
-    strength_text = ", ".join(strengths) if strengths else "\ud575\uc2ec \uac15\uc810\uc774 \uc77c\ubd80 \ud655\uc778\ub429\ub2c8\ub2e4."
-    gap_text = ", ".join(gaps) if gaps else "\ucd94\uac00 \ubcf4\uc644 \uc694\uc778\uc740 \uc544\uc9c1 \uc5c6\uc2b5\ub2c8\ub2e4"
-    return f"\ucd1d\uc810 {score}\uc810\uc785\ub2c8\ub2e4. \uac15\uc810: {strength_text} \ubcf4\uc644 \ud544\uc694: {gap_text}"
+    strength_text = ", ".join(strengths) if strengths else "핵심 강점이 일부 확인됩니다."
+    gap_text = ", ".join(gaps) if gaps else "추가 보완 요인은 아직 없습니다."
+    return f"총점 {score}점입니다. 강점은 {strength_text} 보완이 필요한 부분은 {gap_text}"
+
 
 def _default_strengths(matched_keywords: list[str], recommended_activities: list[str]) -> list[str]:
-    strengths = []
+    strengths: list[str] = []
     if matched_keywords:
         strengths.append(f"공고 핵심 키워드와 일치하는 요소가 있습니다: {', '.join(matched_keywords[:3])}")
     if recommended_activities:
@@ -489,17 +436,17 @@ def _default_strengths(matched_keywords: list[str], recommended_activities: list
 
 def _default_gaps(missing_keywords: list[str]) -> list[str]:
     if not missing_keywords:
-        return ["핵심 누락 키워드는 크지 않지만 표현 보완은 필요할 수 있습니다."]
+        return ["핵심 키워드는 대부분 포함되어 있어, 문장 표현만 보완하면 됩니다."]
     return [
         f"공고 핵심 키워드 중 일부가 부족합니다: {', '.join(missing_keywords[:3])}",
         "경험을 직무 언어로 더 직접적으로 표현할 필요가 있습니다.",
-        "성과 중심 문장 보강이 필요할 수 있습니다.",
+        "성과 중심 문장을 추가하면 설득력이 높아집니다.",
     ]
 
 
 def _default_resume_tips() -> list[str]:
     return [
         "프로젝트에서 맡은 역할과 해결한 문제를 먼저 쓰세요.",
-        "가능하면 결과를 숫자나 개선 효과 중심으로 표현하세요.",
-        "공고의 핵심 키워드를 이력서 문장에 자연스럽게 반영하세요.",
+        "가능하면 결과를 숫자나 개선 효과로 표현하세요.",
+        "공고 핵심 키워드를 이력서 문장에 자연스럽게 반영하세요.",
     ]
