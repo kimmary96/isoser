@@ -129,7 +129,7 @@ export default function OnboardingPage() {
         skills,
         self_intro,
       } = parsedProfile;
-      const { error: profileError } = await supabase.from("profiles").upsert({
+      let { error: profileError } = await supabase.from("profiles").upsert({
         id: user.id,
         name,
         email,
@@ -144,6 +144,23 @@ export default function OnboardingPage() {
         skills: skills ?? [],
         self_intro: self_intro ?? "",
       });
+      if (profileError?.code === "42703" || profileError?.message.toLowerCase().includes("bio")) {
+        const retry = await supabase.from("profiles").upsert({
+          id: user.id,
+          name,
+          email,
+          phone,
+          education,
+          career: career ?? [],
+          education_history: education_history ?? [],
+          awards: awards ?? [],
+          certifications: certifications ?? [],
+          languages: languages ?? [],
+          skills: skills ?? [],
+          self_intro: self_intro ?? "",
+        });
+        profileError = retry.error;
+      }
       if (profileError) {
         throw new Error(profileError.message);
       }

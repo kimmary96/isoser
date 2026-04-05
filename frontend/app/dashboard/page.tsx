@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { getGuestActivities, isGuestMode } from "@/lib/guest";
 import { createBrowserClient } from "@/lib/supabase/client";
@@ -544,6 +544,14 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [profileModalSaving, setProfileModalSaving] = useState(false);
+  const [profileNameInput, setProfileNameInput] = useState("");
+  const [profileNameEnInput, setProfileNameEnInput] = useState("");
+  const [profileBioInput, setProfileBioInput] = useState("");
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -671,7 +679,25 @@ export default function DashboardPage() {
       if (patch.self_intro !== undefined) payload.self_intro = patch.self_intro;
       if (patch.bio !== undefined) payload.bio = patch.bio;
 
-      const { error: updateError } = await supabase.from("profiles").update(payload).eq("id", authData.user.id);
+      let { error: updateError } = await supabase
+        .from("profiles")
+        .update(payload)
+        .eq("id", authData.user.id);
+
+      if (
+        (updateError?.code === "42703" ||
+          updateError?.message.toLowerCase().includes("bio")) &&
+        "bio" in payload
+      ) {
+        const payloadWithoutBio = { ...payload };
+        delete payloadWithoutBio.bio;
+        const retry = await supabase
+          .from("profiles")
+          .update(payloadWithoutBio)
+          .eq("id", authData.user.id);
+        updateError = retry.error;
+      }
+
       if (updateError) {
         throw new Error(updateError.message);
       }
@@ -746,6 +772,94 @@ export default function DashboardPage() {
   }, [profile, activities]);
   const profileAny = profile as Profile & { avatar_url?: string | null };
 
+  useEffect(() => {
+    if (!isProfileModalOpen) return;
+    setProfileNameInput(profile.name ?? "");
+    setProfileNameEnInput("");
+    setProfileBioInput(profileAny.bio ?? "");
+    setAvatarPreviewUrl(profileAny.avatar_url ?? null);
+    setAvatarFile(null);
+  }, [isProfileModalOpen, profile, profileAny.avatar_url, profileAny.bio]);
+
+  const handleAvatarFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setAvatarFile(file);
+    const objectUrl = URL.createObjectURL(file);
+    setAvatarPreviewUrl(objectUrl);
+  };
+
+  const handleSaveProfileModal = async () => {
+    if (!profileNameInput.trim()) {
+      setError("이름은 필수입니다.");
+      return;
+    }
+
+    setProfileModalSaving(true);
+    setError(null);
+    try {
+      let nextAvatarUrl = profileAny.avatar_url ?? null;
+
+      if (!isGuestMode()) {
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError || !authData.user) {
+          throw new Error("로그인이 필요합니다.");
+        }
+
+        if (avatarFile) {
+          const ext = avatarFile.name.split(".").pop() ?? "png";
+          const path = `${authData.user.id}/profile/${Date.now()}.${ext}`;
+          const { error: uploadError } = await supabase.storage
+            .from("activity-images")
+            .upload(path, avatarFile, { upsert: true });
+          if (uploadError) {
+            throw new Error(uploadError.message);
+          }
+          const { data: urlData } = supabase.storage.from("activity-images").getPublicUrl(path);
+          nextAvatarUrl = urlData.publicUrl;
+        }
+
+        let { error: upsertError } = await supabase.from("profiles").upsert(
+          {
+            id: authData.user.id,
+            name: profileNameInput.trim(),
+            bio: profileBioInput.trim() || null,
+            avatar_url: nextAvatarUrl,
+          },
+          { onConflict: "id" }
+        );
+        if (upsertError?.code === "42703" || upsertError?.message.toLowerCase().includes("bio")) {
+          const retry = await supabase.from("profiles").upsert(
+            {
+              id: authData.user.id,
+              name: profileNameInput.trim(),
+              avatar_url: nextAvatarUrl,
+            },
+            { onConflict: "id" }
+          );
+          upsertError = retry.error;
+        }
+        if (upsertError) {
+          throw new Error(upsertError.message);
+        }
+      } else if (avatarFile && avatarPreviewUrl) {
+        nextAvatarUrl = avatarPreviewUrl;
+      }
+
+      setProfile((prev) => ({
+        ...prev,
+        name: profileNameInput.trim(),
+        bio: profileBioInput.trim() || null,
+        avatar_url: nextAvatarUrl ?? undefined,
+      }));
+      setIsProfileModalOpen(false);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "프로필 저장에 실패했습니다.");
+    } finally {
+      setProfileModalSaving(false);
+    }
+  };
+
   return (
     <div className="p-8">
       <div className="mx-auto max-w-6xl space-y-6 px-4 py-8">
@@ -775,7 +889,10 @@ export default function DashboardPage() {
           <>
             <div className="flex gap-6 mb-6">
               <div className="w-56 flex-shrink-0">
-                <div className="bg-gray-700 rounded-2xl overflow-hidden relative h-[200px]">
+                <div
+                  className="bg-gray-700 rounded-2xl overflow-hidden relative h-[200px] cursor-pointer"
+                  onClick={() => setIsProfileModalOpen(true)}
+                >
                   {profileAny.avatar_url ? (
                     <img src={profileAny.avatar_url} alt="profile" className="w-full h-full object-cover" />
                   ) : (
@@ -1040,6 +1157,92 @@ export default function DashboardPage() {
         onClose={() => setEditing(null)}
         onSave={async (items) => updateProfileSection({ self_intro: items[0] ?? "" })}
       />
+
+      {isProfileModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">프로필 편집</h3>
+
+            <div className="border border-gray-200 rounded-xl p-4 mb-4">
+              <p className="text-sm font-medium text-gray-700 mb-3">프로필 사진 변경</p>
+              <div className="flex items-center gap-4">
+                <div className="w-20 h-20 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center">
+                  {avatarPreviewUrl ? (
+                    <img src={avatarPreviewUrl} alt="avatar preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-2xl text-gray-400">👤</span>
+                  )}
+                </div>
+                <div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleAvatarFileChange}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-3 py-2 rounded-lg border border-gray-300 text-sm text-gray-700 hover:bg-gray-50"
+                  >
+                    사진 선택
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="border border-gray-200 rounded-xl p-4">
+              <p className="text-sm font-medium text-gray-700 mb-3">기본 정보</p>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">이름 (필수)</label>
+                  <input
+                    value={profileNameInput}
+                    onChange={(e) => setProfileNameInput(e.target.value)}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">영어 이름 (선택)</label>
+                  <input
+                    value={profileNameEnInput}
+                    onChange={(e) => setProfileNameEnInput(e.target.value)}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">희망 직무 (선택)</label>
+                  <input
+                    value={profileBioInput}
+                    onChange={(e) => setProfileBioInput(e.target.value)}
+                    placeholder="5년차 마케터 | 브랜드 기획 전문"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setIsProfileModalOpen(false)}
+                className="px-4 py-2 rounded-lg border border-gray-300 text-sm text-gray-700 hover:bg-gray-50"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveProfileModal}
+                disabled={profileModalSaving}
+                className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm hover:bg-blue-700 disabled:opacity-50"
+              >
+                {profileModalSaving ? "저장 중..." : "저장하기"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

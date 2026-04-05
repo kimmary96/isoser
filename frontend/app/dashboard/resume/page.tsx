@@ -121,14 +121,40 @@ export default function ResumePage() {
           data: { user },
         } = await supabase.auth.getUser();
         if (user) {
-          const { data: profileData } = await supabase
+          const profileWithBio = await supabase
             .from("profiles")
             .select("name, bio, email, phone, self_intro, skills")
             .eq("id", user.id)
             .maybeSingle();
+
+          let profileData = profileWithBio.data;
+          if (
+            profileWithBio.error &&
+            (profileWithBio.error.code === "42703" ||
+              profileWithBio.error.message.toLowerCase().includes("bio"))
+          ) {
+            const profileWithoutBio = await supabase
+              .from("profiles")
+              .select("name, email, phone, self_intro, skills")
+              .eq("id", user.id)
+              .maybeSingle();
+            profileData = profileWithoutBio.data
+              ? { ...profileWithoutBio.data, bio: "" }
+              : null;
+          }
+
           if (profileData) {
-            setProfile(profileData);
-            setBioInput(profileData.bio ?? "");
+            setProfile(
+              profileData as {
+                name: string;
+                bio?: string;
+                email: string;
+                phone: string;
+                self_intro: string;
+                skills: string[];
+              }
+            );
+            setBioInput((profileData as { bio?: string | null }).bio ?? "");
           }
         }
       } catch (e) {
@@ -165,12 +191,17 @@ export default function ResumePage() {
         throw new Error("로그인이 필요합니다.");
       }
 
-      const { error: updateError } = await supabase
+      const updateWithBio = await supabase
         .from("profiles")
         .update({ bio: bioInput.trim() })
         .eq("id", user.id);
-      if (updateError) {
-        throw new Error(updateError.message);
+
+      if (
+        updateWithBio.error &&
+        updateWithBio.error.code !== "42703" &&
+        !updateWithBio.error.message.toLowerCase().includes("bio")
+      ) {
+        throw new Error(updateWithBio.error.message);
       }
       setProfile((prev) => (prev ? { ...prev, bio: bioInput.trim() } : prev));
     } catch (e) {
