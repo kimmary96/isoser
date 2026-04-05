@@ -6,6 +6,7 @@ export interface Profile {
   id: string;
   name: string | null;
   avatar_url?: string;
+  bio?: string | null;
   email: string | null;
   phone: string | null;
   education: string | null;
@@ -78,6 +79,7 @@ export interface ParsedProfile {
   name: string;
   email: string;
   phone: string;
+  bio?: string;
   education: string;
   career?: string[];
   education_history?: string[];

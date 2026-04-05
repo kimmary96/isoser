@@ -10,6 +10,7 @@ import type { Activity, MatchAnalysisRecord, Profile } from "@/lib/types";
 const EMPTY_PROFILE: Profile = {
   id: "",
   name: null,
+  bio: null,
   email: null,
   phone: null,
   education: null,
@@ -555,6 +556,7 @@ export default function DashboardPage() {
             ...EMPTY_PROFILE,
             id: "guest",
             name: "게스트 사용자",
+            bio: "게스트 QA 엔지니어",
             email: "guest@local",
             phone: "-",
             education: "게스트 모드",
@@ -623,6 +625,7 @@ export default function DashboardPage() {
           languages: toArray(profileRow?.languages),
           skills: toArray(profileRow?.skills),
           self_intro: profileRow?.self_intro ?? "",
+          bio: profileRow?.bio ?? "",
         };
 
         setProfile(normalizedProfile);
@@ -666,6 +669,7 @@ export default function DashboardPage() {
       if (patch.languages !== undefined) payload.languages = patch.languages;
       if (patch.skills !== undefined) payload.skills = patch.skills;
       if (patch.self_intro !== undefined) payload.self_intro = patch.self_intro;
+      if (patch.bio !== undefined) payload.bio = patch.bio;
 
       const { error: updateError } = await supabase.from("profiles").update(payload).eq("id", authData.user.id);
       if (updateError) {
@@ -740,7 +744,7 @@ export default function DashboardPage() {
 
     return Math.min(score, 100);
   }, [profile, activities]);
-  const profileAny = profile as Profile & { avatar_url?: string | null; bio?: string | null };
+  const profileAny = profile as Profile & { avatar_url?: string | null };
 
   return (
     <div className="p-8">

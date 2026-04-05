@@ -26,11 +26,14 @@ export default function ResumePage() {
   const [chatLoading, setChatLoading] = useState(false);
   const [profile, setProfile] = useState<{
     name: string;
+    bio?: string;
     email: string;
     phone: string;
     self_intro: string;
     skills: string[];
   } | null>(null);
+  const [bioInput, setBioInput] = useState("");
+  const [bioSaving, setBioSaving] = useState(false);
   const [leftMainTab, setLeftMainTab] = useState<"성과저장소" | "자기소개서">(
     "성과저장소"
   );
@@ -120,10 +123,13 @@ export default function ResumePage() {
         if (user) {
           const { data: profileData } = await supabase
             .from("profiles")
-            .select("name, email, phone, self_intro, skills")
+            .select("name, bio, email, phone, self_intro, skills")
             .eq("id", user.id)
             .maybeSingle();
-          if (profileData) setProfile(profileData);
+          if (profileData) {
+            setProfile(profileData);
+            setBioInput(profileData.bio ?? "");
+          }
         }
       } catch (e) {
         setError(e instanceof Error ? e.message : "활동을 불러오지 못했습니다.");
@@ -141,6 +147,37 @@ export default function ResumePage() {
       else next.add(id);
       return next;
     });
+  };
+
+  const saveBio = async () => {
+    if (isGuestMode()) {
+      setProfile((prev) => (prev ? { ...prev, bio: bioInput.trim() } : prev));
+      return;
+    }
+
+    try {
+      setBioSaving(true);
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
+      if (authError || !user) {
+        throw new Error("로그인이 필요합니다.");
+      }
+
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ bio: bioInput.trim() })
+        .eq("id", user.id);
+      if (updateError) {
+        throw new Error(updateError.message);
+      }
+      setProfile((prev) => (prev ? { ...prev, bio: bioInput.trim() } : prev));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "bio 저장에 실패했습니다.");
+    } finally {
+      setBioSaving(false);
+    }
   };
 
   const handleChatSend = async () => {
@@ -611,11 +648,26 @@ export default function ResumePage() {
                 >
                   {profile?.name || "이름을 입력해주세요"}
                 </h1>
+                <input
+                  type="text"
+                  value={bioInput}
+                  onChange={(e) => setBioInput(e.target.value)}
+                  onBlur={saveBio}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      saveBio();
+                    }
+                  }}
+                  placeholder="5년차 마케터 | 브랜드 기획 전문"
+                  className="text-gray-500 text-sm mt-0.5 w-full bg-transparent border-b border-transparent focus:border-gray-300 outline-none"
+                />
                 {targetJob && <p className="text-gray-500 text-sm mt-0.5">{targetJob}</p>}
                 <div className="flex gap-3 mt-2 text-xs text-gray-400">
                   {profile?.email && <span>✉ {profile.email}</span>}
                   {profile?.phone && <span>☎ {profile.phone}</span>}
                 </div>
+                {bioSaving && <p className="text-[10px] text-gray-400 mt-1">bio 저장 중...</p>}
               </div>
               <p className="text-xs text-gray-400">Seoul, South Korea</p>
             </div>
