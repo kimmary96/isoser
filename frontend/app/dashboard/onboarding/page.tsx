@@ -409,23 +409,29 @@ export default function OnboardingPage() {
               <p className="font-bold text-sm">설문 조사</p>
               <p className="text-gray-400 text-sm">이력서 분석 시 어떠한 것이 더 필요한가요?</p>
 
-              {[
-                "다양한 템플릿",
-                "다양한 항목 (경력, 프로젝트, 기술 스택 등)",
-                "보다 더 정교한 결과",
-              ].map((option) => {
-                const selected = surveyAnswer === option;
-                return (
+              {surveyAnswer ? (
+                <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50 p-4">
+                  <p className="mt-1 text-sm font-bold text-gray-900">내 이력서와 맞는 공고를 바로 찾아보세요</p>
+                  <p className="mt-1 text-xs text-gray-500">
+                    공고 매칭 분석에서 내 경험과 직무 키워드 적합도를 확인할 수 있어요.
+                  </p>
+                </div>
+              ) : (
+                [
+                  "다양한 템플릿",
+                  "다양한 항목 (경력, 프로젝트, 기술 스택 등)",
+                  "보다 더 정교한 결과",
+                ].map((option) => (
                   <button
                     key={option}
                     type="button"
                     onClick={() => setSurveyAnswer(option)}
-                    className={`py-3 w-full text-sm mt-2 rounded-lg ${selected ? "border-2 border-blue-400 bg-blue-50 text-blue-500" : "border border-gray-200 text-gray-700"}`}
+                    className="py-3 w-full text-sm mt-2 rounded-lg border border-gray-200 text-gray-700"
                   >
                     {option}
                   </button>
-                );
-              })}
+                ))
+              )}
             </div>
 
             <style>{`
