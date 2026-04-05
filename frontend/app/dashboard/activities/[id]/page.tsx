@@ -19,6 +19,13 @@ export default function ActivityDetailPage() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState<"basic" | "star">("basic");
+  const [starSituation, setStarSituation] = useState("");
+  const [starTask, setStarTask] = useState("");
+  const [starAction, setStarAction] = useState("");
+  const [starResult, setStarResult] = useState("");
+  const [starSaving, setStarSaving] = useState(false);
+  const [summaryLoading, setSummaryLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sessionId] = useState(() => crypto.randomUUID());
 
@@ -28,6 +35,10 @@ export default function ActivityDetailPage() {
         const found = getGuestActivities().find((item) => item.id === (params.id as string)) ?? null;
         setActivity(found);
         setDescriptionDraft(found?.description ?? "");
+        setStarSituation(found?.star_situation || "");
+        setStarTask(found?.star_task || "");
+        setStarAction(found?.star_action || "");
+        setStarResult(found?.star_result || "");
         setLoading(false);
         return;
       }
@@ -43,6 +54,10 @@ export default function ActivityDetailPage() {
         }
         setActivity(data);
         setDescriptionDraft(data?.description ?? "");
+        setStarSituation(data.star_situation || "");
+        setStarTask(data.star_task || "");
+        setStarAction(data.star_action || "");
+        setStarResult(data.star_result || "");
       } catch (e) {
         setError(e instanceof Error ? e.message : "활동을 불러오지 못했습니다.");
       } finally {
@@ -129,6 +144,52 @@ export default function ActivityDetailPage() {
     }
   };
 
+  const handleStarSave = async () => {
+    if (!activity) return;
+    setStarSaving(true);
+    try {
+      await supabase
+        .from("activities")
+        .update({
+          star_situation: starSituation,
+          star_task: starTask,
+          star_action: starAction,
+          star_result: starResult,
+        })
+        .eq("id", activity.id);
+    } finally {
+      setStarSaving(false);
+    }
+  };
+
+  const handleGenerateSummary = async () => {
+    if (!starSituation && !starTask && !starAction && !starResult) return;
+    setSummaryLoading(true);
+    try {
+      const prompt = `아래 STAR 기법으로 작성된 활동 내용을 바탕으로,
+이력서에 쓸 수 있는 간결하고 임팩트 있는 활동 소개 문단을 3~4문장으로 작성해줘.
+수치와 결과를 강조하고, 1인칭 주어 없이 서술해줘.
+
+Situation(상황): ${starSituation}
+Task(과제): ${starTask}
+Action(행동): ${starAction}
+Result(결과): ${starResult}`;
+
+      const res = await fetch("/api/summary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+      const data = await res.json();
+      if (data.summary) {
+        setDescriptionDraft(data.summary);
+        setActiveTab("basic");
+      }
+    } finally {
+      setSummaryLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <main className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -160,21 +221,139 @@ export default function ActivityDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* 활동 설명 */}
           <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="font-semibold text-gray-900 mb-3">활동 설명</h2>
-            <textarea
-              value={descriptionDraft}
-              onChange={(e) => setDescriptionDraft(e.target.value)}
-              rows={12}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400 resize-none"
-              placeholder="활동 내용을 구체적으로 작성하세요."
-            />
-            <button
-              onClick={handleSaveDescription}
-              disabled={saving}
-              className="mt-3 px-3 py-2 text-sm rounded-lg bg-black text-white hover:bg-gray-800 transition-colors disabled:opacity-50"
-            >
-              {saving ? "저장 중..." : "활동 설명 저장"}
-            </button>
+            <div className="flex gap-2 mb-4">
+              <button
+                onClick={() => setActiveTab("basic")}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  activeTab === "basic"
+                    ? "bg-gray-900 text-white"
+                    : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                기본 정보
+              </button>
+              <button
+                onClick={() => setActiveTab("star")}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  activeTab === "star"
+                    ? "bg-gray-900 text-white"
+                    : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                STAR 기록
+              </button>
+            </div>
+
+            {activeTab === "basic" && (
+              <div>
+                <h2 className="font-semibold text-gray-900 mb-3">활동 설명</h2>
+                <textarea
+                  value={descriptionDraft}
+                  onChange={(e) => setDescriptionDraft(e.target.value)}
+                  rows={12}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400 resize-none"
+                  placeholder="활동 내용을 구체적으로 작성하세요."
+                />
+                <button
+                  onClick={handleSaveDescription}
+                  disabled={saving}
+                  className="mt-3 px-3 py-2 text-sm rounded-lg bg-black text-white hover:bg-gray-800 transition-colors disabled:opacity-50"
+                >
+                  {saving ? "저장 중..." : "활동 설명 저장"}
+                </button>
+              </div>
+            )}
+
+            {activeTab === "star" && (
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-semibold text-blue-600 mb-1 block">
+                    S - Situation (상황)
+                  </label>
+                  <p className="text-xs text-gray-400 mb-2">
+                    프로젝트가 시작된 배경이나 당시 직면했던 구체적인 상황은 무엇인가요?
+                  </p>
+                  <textarea
+                    value={starSituation}
+                    onChange={(e) => setStarSituation(e.target.value)}
+                    placeholder="예) 신규 서비스 출시를 앞두고 기존 온보딩 이탈률이 68%에 달하는 상황이었습니다."
+                    className="w-full border border-gray-200 rounded-xl p-3 text-sm resize-none focus:outline-none focus:border-blue-400"
+                    rows={3}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-semibold text-blue-600 mb-1 block">
+                    T - Task (과제)
+                  </label>
+                  <p className="text-xs text-gray-400 mb-2">
+                    본인이 해결해야 했던 핵심 과제와 목표 수치는 무엇이었나요?
+                  </p>
+                  <textarea
+                    value={starTask}
+                    onChange={(e) => setStarTask(e.target.value)}
+                    placeholder="예) 온보딩 완료율을 3개월 내 85% 이상으로 개선하는 것이 목표였습니다."
+                    className="w-full border border-gray-200 rounded-xl p-3 text-sm resize-none focus:outline-none focus:border-blue-400"
+                    rows={3}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-semibold text-blue-600 mb-1 block">
+                    A - Action (행동)
+                  </label>
+                  <p className="text-xs text-gray-400 mb-2">
+                    목표 달성을 위해 어떤 구체적인 행동과 전략을 실행했나요?
+                  </p>
+                  <textarea
+                    value={starAction}
+                    onChange={(e) => setStarAction(e.target.value)}
+                    placeholder="예) 사용자 인터뷰 20건을 진행하고 이탈 구간을 특정해 단계를 5단계에서 3단계로 축소했습니다."
+                    className="w-full border border-gray-200 rounded-xl p-3 text-sm resize-none focus:outline-none focus:border-blue-400"
+                    rows={3}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-semibold text-blue-600 mb-1 block">
+                    R - Result (결과)
+                  </label>
+                  <p className="text-xs text-gray-400 mb-2">
+                    결과적으로 어떤 성과를 냈나요? 숫자, 퍼센트, 비즈니스 임팩트 중심으로 작성해주세요.
+                  </p>
+                  <textarea
+                    value={starResult}
+                    onChange={(e) => setStarResult(e.target.value)}
+                    placeholder="예) 온보딩 완료율 89% 달성, 첫 주 리텐션 41% 향상, 고객 문의 32% 감소."
+                    className="w-full border border-gray-200 rounded-xl p-3 text-sm resize-none focus:outline-none focus:border-blue-400"
+                    rows={3}
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={handleStarSave}
+                    disabled={starSaving}
+                    className="px-5 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    {starSaving ? "저장 중..." : "저장"}
+                  </button>
+                  <button
+                    onClick={handleGenerateSummary}
+                    disabled={summaryLoading || (!starSituation && !starTask && !starAction && !starResult)}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-blue-500 text-white rounded-xl text-sm font-medium hover:bg-blue-600 disabled:opacity-50 transition-all"
+                  >
+                    {summaryLoading ? "생성 중..." : "✦ AI 요약 생성"}
+                  </button>
+                </div>
+
+                {summaryLoading && (
+                  <p className="text-xs text-blue-400 text-center">
+                    STAR 내용을 분석해 활동 소개를 작성하고 있습니다...
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           {/* AI 코치 */}

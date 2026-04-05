@@ -5,6 +5,7 @@
 export interface Profile {
   id: string;
   name: string | null;
+  avatar_url?: string;
   email: string | null;
   phone: string | null;
   education: string | null;
@@ -28,6 +29,10 @@ export interface Activity {
   role: string | null;
   skills: string[] | null;
   description: string | null;
+  star_situation?: string;
+  star_task?: string;
+  star_action?: string;
+  star_result?: string;
   is_visible: boolean;
   created_at: string;
   updated_at: string;
