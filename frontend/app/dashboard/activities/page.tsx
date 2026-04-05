@@ -7,18 +7,25 @@ import { getGuestActivities, isGuestMode } from "@/lib/guest";
 import { createBrowserClient } from "@/lib/supabase/client";
 import type { Activity } from "@/lib/types";
 
-const TYPE_LABELS: Record<string, string> = {
-  회사경력: "💼 회사경력",
-  프로젝트: "🛠 프로젝트",
-  대외활동: "🌐 대외활동",
-  학생활동: "🎓 학생활동",
-};
-
 export default function ActivitiesPage() {
   const supabase = useMemo(() => createBrowserClient(), []);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<string>("전체");
+
+  const FILTERS = ["전체", "회사경력", "프로젝트", "대외활동", "학생활동"];
+
+  const filteredActivities = activeFilter === "전체"
+    ? activities
+    : activities.filter((a) => a.type === activeFilter);
+
+  const filterCounts = FILTERS.reduce((acc, f) => {
+    acc[f] = f === "전체"
+      ? activities.length
+      : activities.filter((a) => a.type === f).length;
+    return acc;
+  }, {} as Record<string, number>);
 
   useEffect(() => {
     const fetchActivities = async () => {
@@ -55,55 +62,123 @@ export default function ActivitiesPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">내 활동</h1>
+    <main className="bg-white min-h-screen">
+      <div className="max-w-6xl mx-auto px-8 py-8">
+        <div className="flex items-start justify-between mb-6">
+          <div>
+            <h1
+              className="text-2xl font-bold text-gray-900 mb-1"
+              style={{ fontFamily: "Pretendard, sans-serif" }}
+            >
+              성과 저장소
+            </h1>
+            <p className="text-sm text-gray-400">
+              당신의 성장을 증명하는 모든 순간의 기록입니다.
+            </p>
+          </div>
           <Link
-            href="/dashboard/onboarding"
-            className="px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
+            href="/dashboard/activities/new"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
+            style={{ background: "linear-gradient(135deg, #094cb2, #3b82f6)" }}
           >
-            + 활동 추가
+            + 새 성과 기록하기
           </Link>
         </div>
-        {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
 
-        {activities.length === 0 ? (
+        <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-3 mb-6">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="text-gray-400">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+          </svg>
+          <span className="text-sm text-gray-400">성과 기록 검색...</span>
+        </div>
+
+        <div className="flex gap-2 mb-8 flex-wrap">
+          {FILTERS.map((filter) => (
+            <button
+              key={filter}
+              onClick={() => setActiveFilter(filter)}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                activeFilter === filter
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              {filter}
+              {filterCounts[filter] > 0 && (
+                <span className={`ml-1.5 text-xs ${
+                  activeFilter === filter ? "text-blue-200" : "text-gray-400"
+                }`}>
+                  {filterCounts[filter]}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {error && (
+          <p className="text-red-500 text-sm mb-4">{error}</p>
+        )}
+
+        {filteredActivities.length === 0 ? (
           <div className="text-center py-20 text-gray-400">
-            <p className="text-lg">아직 활동이 없습니다.</p>
-            <p className="text-sm mt-2">기존 이력서 PDF를 업로드하거나 직접 추가해보세요.</p>
+            <p className="text-lg mb-2">아직 기록된 성과가 없습니다.</p>
+            <p className="text-sm">PDF를 업로드하거나 직접 활동을 추가해보세요.</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {activities.map((activity) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredActivities.map((activity) => (
               <Link
                 key={activity.id}
                 href={`/dashboard/activities/${activity.id}`}
-                className="block bg-white rounded-xl border border-gray-200 p-5 hover:border-gray-400 transition-colors"
+                className="group block bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all"
               >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-xs text-gray-400 mb-1">
-                      {TYPE_LABELS[activity.type] || activity.type}
-                    </p>
-                    <h2 className="font-semibold text-gray-900">{activity.title}</h2>
-                    {activity.period && (
-                      <p className="text-sm text-gray-500 mt-0.5">{activity.period}</p>
-                    )}
+                <div
+                  className="h-40 flex items-center justify-center relative"
+                  style={{ background: "linear-gradient(135deg, #1e3a5f, #2d5a8e)" }}
+                >
+                  <div className="absolute top-3 left-3">
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: "rgba(109,94,0,0.85)", color: "#fef3c7" }}>
+                      {activity.type}
+                    </span>
                   </div>
-                  <svg className="w-4 h-4 text-gray-400 mt-1 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,0.3)" strokeWidth={1}>
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <circle cx="8.5" cy="8.5" r="1.5" />
+                    <path d="M21 15l-5-5L5 21" />
                   </svg>
                 </div>
-                {activity.skills && activity.skills.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-3">
-                    {activity.skills.slice(0, 5).map((skill) => (
-                      <span key={skill} className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs">
-                        {skill}
-                      </span>
-                    ))}
+
+                <div className="p-4">
+                  <p className="text-xs text-gray-400 mb-1">{activity.period || ""}</p>
+                  <h3
+                    className="font-bold text-gray-900 text-sm leading-snug mb-2 line-clamp-2"
+                    style={{ fontFamily: "Pretendard, sans-serif" }}
+                  >
+                    {activity.title}
+                  </h3>
+                  {activity.description && (
+                    <p className="text-xs text-gray-500 line-clamp-2 mb-3">
+                      {activity.description}
+                    </p>
+                  )}
+                  {Array.isArray(activity.skills) && activity.skills.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {activity.skills.slice(0, 3).map((skill, i) => (
+                        <span
+                          key={i}
+                          className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600"
+                        >
+                          #{skill}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex justify-end mt-3">
+                    <span className="text-xs text-blue-500 group-hover:underline">
+                      상세보기 →
+                    </span>
                   </div>
-                )}
+                </div>
               </Link>
             ))}
           </div>

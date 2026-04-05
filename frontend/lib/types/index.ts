@@ -25,6 +25,12 @@ export interface Activity {
   user_id: string;
   type: "회사경력" | "프로젝트" | "대외활동" | "학생활동";
   title: string;
+  organization?: string;
+  team_size?: number;
+  team_composition?: string;
+  my_role?: string;
+  contributions?: string[];
+  image_urls?: string[];
   period: string | null;
   role: string | null;
   skills: string[] | null;
