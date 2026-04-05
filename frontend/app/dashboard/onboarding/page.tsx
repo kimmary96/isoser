@@ -1,7 +1,7 @@
 // 온보딩 페이지 - 기존 이력서 PDF 업로드/분석 후 프로필·활동 분리 확인 및 저장
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { parsePdf } from "@/lib/api/backend";
@@ -37,6 +37,14 @@ export default function OnboardingPage() {
   const [parsedProfile, setParsedProfile] = useState<ParsedProfile | null>(null);
   const [parsedActivities, setParsedActivities] = useState<ParsedActivity[]>([]);
   const [analyzed, setAnalyzed] = useState(false);
+
+  const [coverLetterFile, setCoverLetterFile] = useState<File | null>(null);
+  const [jobTitle, setJobTitle] = useState("");
+  const [showJobModal, setShowJobModal] = useState(false);
+  const [showAnalyzingModal, setShowAnalyzingModal] = useState(false);
+  const [analyzeStep, setAnalyzeStep] = useState<1 | 2>(1);
+  const [surveyAnswer, setSurveyAnswer] = useState<string | null>(null);
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
@@ -155,93 +163,298 @@ export default function OnboardingPage() {
     }
   };
 
+  const handleStartAnalyze = async () => {
+    setShowJobModal(false);
+    setShowAnalyzingModal(true);
+    setAnalyzeStep(1);
+
+    setTimeout(() => setAnalyzeStep(2), 1500);
+
+    await handleAnalyze();
+  };
+
+  useEffect(() => {
+    if (analyzed) {
+      setShowAnalyzingModal(false);
+      setShowCompleteModal(true);
+    }
+  }, [analyzed]);
+
   return (
-    <main className="min-h-screen bg-gray-50 px-4 py-10">
-      <div className="max-w-4xl mx-auto bg-white rounded-xl border border-gray-200 p-8 space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">기존 이력서 불러오기</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            PDF를 업로드하면 AI가 프로필과 활동 목록을 자동으로 추출합니다.
-          </p>
-        </div>
+    <main className="min-h-screen bg-slate-100">
+      <div className="max-w-2xl mx-auto px-6 py-16">
+        <h1 className="text-blue-500 font-bold text-2xl text-center">이력서와 자기소개서를 업로드해주세요!</h1>
+        <p className="text-gray-500 text-sm text-center mt-2">
+          이력서 업로드 후, 자기소개서까지 제출하면 더 정교한 분석이 완성돼요.
+        </p>
 
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-          <input
-            type="file"
-            accept="application/pdf"
-            onChange={handleFileChange}
-            className="hidden"
-            id="pdf-upload"
-          />
-          <label htmlFor="pdf-upload" className="cursor-pointer">
-            <p className="text-sm text-gray-600">{file ? file.name : "클릭하여 PDF 파일 선택"}</p>
-          </label>
-        </div>
+        {!file ? (
+          <div className="border-2 border-dashed border-blue-400 bg-white rounded-2xl p-10 text-center mt-8">
+            <svg width="72" height="60" viewBox="0 0 72 60" fill="none" className="mx-auto mb-4">
+              <path d="M4 8C4 5.8 5.8 4 8 4H28L36 12H64C66.2 12 68 13.8 68 16V52C68 54.2 66.2 56 64 56H8C5.8 56 4 54.2 4 52V8Z" fill="#3B82F6"/>
+              <path d="M4 20H68V52C68 54.2 66.2 56 64 56H8C5.8 56 4 54.2 4 52V20Z" fill="#60A5FA"/>
+            </svg>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+            <div className="flex items-center justify-center">
+              <span className="text-red-500 text-sm mr-2">필수</span>
+              <p className="text-gray-900 text-xl font-bold">이력서를 첨부해주세요.</p>
+            </div>
+            <p className="text-gray-400 text-sm mt-2">텍스트 인식이 가능한 PDF를 첨부해주세요(최대 10MB).</p>
 
-        <div className="flex gap-3">
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
-          >
-            건너뛰기
-          </button>
-          <button
-            onClick={handleAnalyze}
-            disabled={!file || loading}
-            className="px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50"
-          >
-            {loading ? "분석 중..." : "업로드 및 분석"}
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={!analyzed || loading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
-          >
-            {loading ? "저장 중..." : "추출 결과 저장"}
-          </button>
-        </div>
-
-        {analyzed && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <section className="rounded-lg border border-gray-200 p-4">
-              <h2 className="font-semibold text-gray-900 mb-3">프로필 정보</h2>
-              <div className="space-y-2 text-sm text-gray-700">
-                <p><span className="text-gray-500">이름:</span> {parsedProfile?.name || "-"}</p>
-                <p><span className="text-gray-500">이메일:</span> {parsedProfile?.email || "-"}</p>
-                <p><span className="text-gray-500">전화번호:</span> {parsedProfile?.phone || "-"}</p>
-                <p><span className="text-gray-500">최종 학력:</span> {parsedProfile?.education || "-"}</p>
-                <p><span className="text-gray-500">경력:</span> {(parsedProfile?.career ?? []).join(", ") || "-"}</p>
-                <p><span className="text-gray-500">학력 상세:</span> {(parsedProfile?.education_history ?? []).join(", ") || "-"}</p>
-                <p><span className="text-gray-500">수상경력:</span> {(parsedProfile?.awards ?? []).join(", ") || "-"}</p>
-                <p><span className="text-gray-500">자격증:</span> {(parsedProfile?.certifications ?? []).join(", ") || "-"}</p>
-                <p><span className="text-gray-500">외국어:</span> {(parsedProfile?.languages ?? []).join(", ") || "-"}</p>
-                <p><span className="text-gray-500">스킬:</span> {(parsedProfile?.skills ?? []).join(", ") || "-"}</p>
-                <p><span className="text-gray-500">자기소개:</span> {parsedProfile?.self_intro || "-"}</p>
+            <input
+              id="resume-upload"
+              type="file"
+              accept="application/pdf"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            <label htmlFor="resume-upload" className="inline-block border border-gray-300 rounded-lg px-6 py-2 text-sm mt-4 cursor-pointer">
+              파일 선택 ↑
+            </label>
+          </div>
+        ) : (
+          <div className="border-2 border-blue-400 bg-white rounded-2xl p-4 mt-8">
+            <div className="flex justify-between items-center gap-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <svg width="20" height="24" viewBox="0 0 20 24" fill="none" className="shrink-0">
+                  <path d="M4 1H11L16 6V22C16 22.55 15.55 23 15 23H4C3.45 23 3 22.55 3 22V2C3 1.45 3.45 1 4 1Z" stroke="#3B82F6" strokeWidth="1.5"/>
+                  <path d="M11 1V6H16" stroke="#3B82F6" strokeWidth="1.5"/>
+                </svg>
+                <p className="text-blue-500 text-sm truncate">{file.name}</p>
               </div>
-            </section>
+              <button
+                type="button"
+                onClick={() => setFile(null)}
+                className="text-gray-400 hover:text-gray-600"
+                aria-label="이력서 삭제"
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M3 5H17" stroke="currentColor" strokeWidth="1.5"/>
+                  <path d="M8 2H12" stroke="currentColor" strokeWidth="1.5"/>
+                  <path d="M6 5V16C6 16.55 6.45 17 7 17H13C13.55 17 14 16.55 14 16V5" stroke="currentColor" strokeWidth="1.5"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
 
-            <section className="rounded-lg border border-gray-200 p-4">
-              <h2 className="font-semibold text-gray-900 mb-3">활동 정보 ({parsedActivities.length})</h2>
-              {parsedActivities.length === 0 ? (
-                <p className="text-sm text-gray-500">추출된 활동이 없습니다.</p>
-              ) : (
-                <div className="space-y-3 max-h-[360px] overflow-y-auto pr-2">
-                  {parsedActivities.map((activity, idx) => (
-                    <div key={`${activity.title}-${idx}`} className="rounded border border-gray-200 p-3">
-                      <p className="text-xs text-gray-500">{activity.type}</p>
-                      <p className="font-medium text-gray-900">{activity.title || "(제목 없음)"}</p>
-                      <p className="text-xs text-gray-500 mt-1">{activity.period || "기간 미입력"}</p>
-                      <p className="text-sm text-gray-700 mt-2 whitespace-pre-wrap">{activity.description || "설명 없음"}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
+        {!coverLetterFile ? (
+          <div className="border border-dashed border-gray-300 bg-white rounded-2xl p-8 text-center mt-4">
+            <div className="flex items-center justify-center">
+              <span className="text-gray-400 text-sm mr-2">선택</span>
+              <p className="text-gray-900 text-xl font-bold">자기소개서를 첨부해주세요.</p>
+            </div>
+
+            <input
+              id="cover-letter-upload"
+              type="file"
+              accept="application/pdf"
+              onChange={(e) => {
+                const selected = e.target.files?.[0] ?? null;
+                if (!selected || selected.type === "application/pdf") {
+                  setCoverLetterFile(selected);
+                  setError(null);
+                } else {
+                  setError("PDF 파일만 업로드 가능합니다.");
+                }
+              }}
+              className="hidden"
+            />
+            <label htmlFor="cover-letter-upload" className="inline-block border border-gray-300 rounded-lg px-6 py-2 text-sm mt-4 cursor-pointer">
+              파일 선택 ↑
+            </label>
+          </div>
+        ) : (
+          <div className="border-2 border-blue-400 bg-white rounded-2xl p-4 mt-4">
+            <div className="flex justify-between items-center gap-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <svg width="20" height="24" viewBox="0 0 20 24" fill="none" className="shrink-0">
+                  <path d="M4 1H11L16 6V22C16 22.55 15.55 23 15 23H4C3.45 23 3 22.55 3 22V2C3 1.45 3.45 1 4 1Z" stroke="#3B82F6" strokeWidth="1.5"/>
+                  <path d="M11 1V6H16" stroke="#3B82F6" strokeWidth="1.5"/>
+                </svg>
+                <p className="text-blue-500 text-sm truncate">{coverLetterFile.name}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCoverLetterFile(null)}
+                className="text-gray-400 hover:text-gray-600"
+                aria-label="자기소개서 삭제"
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M3 5H17" stroke="currentColor" strokeWidth="1.5"/>
+                  <path d="M8 2H12" stroke="currentColor" strokeWidth="1.5"/>
+                  <path d="M6 5V16C6 16.55 6.45 17 7 17H13C13.55 17 14 16.55 14 16V5" stroke="currentColor" strokeWidth="1.5"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {error && <p className="text-sm text-red-600 mt-4 text-center">{error}</p>}
+
+        {!file ? (
+          <div className="mt-16 text-center">
+            <div className="bg-gray-900 text-white text-sm rounded-lg px-4 py-2 inline-block">이력서가 없다면?</div>
+            <div className="w-0 h-0 border-l-[8px] border-r-[8px] border-t-[10px] border-l-transparent border-r-transparent border-t-gray-900 mx-auto" />
+            <button
+              type="button"
+              onClick={() => router.push("/dashboard")}
+              className="border border-gray-300 bg-white rounded-lg px-20 py-3 text-gray-700 mt-4"
+            >
+              직접 입력하기
+            </button>
+          </div>
+        ) : (
+          <div className="mt-8 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setShowJobModal(true)}
+              disabled={loading}
+              className="bg-blue-500 text-white rounded-xl px-20 py-4 text-base font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              추출하기
+            </button>
           </div>
         )}
       </div>
+
+      {showJobModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-2xl p-8 w-96 relative">
+            <button
+              type="button"
+              onClick={() => setShowJobModal(false)}
+              className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
+              aria-label="닫기"
+            >
+              ×
+            </button>
+
+            <h2 className="text-blue-500 font-bold text-xl text-center">지원 직무를 입력해주세요!</h2>
+            <p className="text-gray-400 text-sm text-center mt-1">직무 기반으로 이력서를 분석합니다.</p>
+
+            <input
+              type="text"
+              placeholder="예) 서비스 기획자"
+              value={jobTitle}
+              onChange={(e) => setJobTitle(e.target.value)}
+              className="border border-gray-200 rounded-lg px-4 py-3 w-full mt-4"
+            />
+
+            <label className="flex items-center gap-2 mt-4 text-sm text-gray-700">
+              <input type="checkbox" defaultChecked />
+              <span>이력서 기반으로 프로필 업데이트 하기</span>
+            </label>
+
+            <button
+              type="button"
+              className="bg-blue-400 text-white rounded-full px-6 py-3 w-full mt-4"
+              onClick={() => {
+                void handleStartAnalyze();
+              }}
+            >
+              이력서 분석 시작하기
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showAnalyzingModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-2xl p-8 w-[480px]">
+            <h2 className="font-bold text-xl text-center">이력서를 분석하고 있습니다.</h2>
+            <p className="text-gray-400 text-sm text-center mt-1">30초에서 1분 정도 소요됩니다.</p>
+
+            <div className="mt-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-7 h-7 rounded-full bg-blue-500 text-white text-sm flex items-center justify-center">1</div>
+                  <p className="text-blue-500 text-sm">이력서에서 커리어 분석</p>
+                </div>
+                <div>
+                  {analyzeStep === 1 ? (
+                    <div>
+                      <span className="dot" />
+                      <span className="dot" />
+                      <span className="dot" />
+                    </div>
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <path d="M4 10L8 14L16 6" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`w-7 h-7 rounded-full text-sm flex items-center justify-center ${analyzeStep === 1 ? "bg-gray-200 text-gray-500" : "bg-blue-500 text-white"}`}>
+                    2
+                  </div>
+                  <p className={analyzeStep === 1 ? "text-gray-400 text-sm" : "text-blue-500 text-sm"}>경력에서 핵심 경험을 추출</p>
+                </div>
+                <div>
+                  {analyzeStep === 2 ? (
+                    <div>
+                      <span className="dot" />
+                      <span className="dot" />
+                      <span className="dot" />
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <p className="font-bold text-sm">설문 조사</p>
+              <p className="text-gray-400 text-sm">이력서 분석 시 어떠한 것이 더 필요한가요?</p>
+
+              {[
+                "다양한 템플릿",
+                "다양한 항목 (경력, 프로젝트, 기술 스택 등)",
+                "보다 더 정교한 결과",
+              ].map((option) => {
+                const selected = surveyAnswer === option;
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => setSurveyAnswer(option)}
+                    className={`py-3 w-full text-sm mt-2 rounded-lg ${selected ? "border-2 border-blue-400 bg-blue-50 text-blue-500" : "border border-gray-200 text-gray-700"}`}
+                  >
+                    {option}
+                  </button>
+                );
+              })}
+            </div>
+
+            <style>{`
+              .dot { width:8px; height:8px; border-radius:50%; background:#3B82F6; display:inline-block; margin:0 2px; animation: blink 1.2s infinite; }
+              .dot:nth-child(2) { animation-delay: 0.2s; }
+              .dot:nth-child(3) { animation-delay: 0.4s; }
+              @keyframes blink { 0%,80%,100%{opacity:0.2} 40%{opacity:1} }
+            `}</style>
+          </div>
+        </div>
+      )}
+
+      {showCompleteModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-2xl p-8 w-96 text-center">
+            <h2 className="font-bold text-xl">추출이 완료되었습니다.</h2>
+            <p className="text-gray-400 text-sm mt-2">추출된 활동 내용을 확인해주세요!</p>
+            <button
+              type="button"
+              className="bg-blue-500 text-white rounded-lg px-6 py-3 w-full mt-6"
+              onClick={async () => {
+                await handleSave();
+              }}
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

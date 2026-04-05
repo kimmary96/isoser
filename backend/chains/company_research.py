@@ -3,7 +3,10 @@ from __future__ import annotations
 from typing import Any
 
 import httpx
-from bs4 import BeautifulSoup
+try:
+    from bs4 import BeautifulSoup
+except ImportError:  # pragma: no cover - optional dependency fallback
+    BeautifulSoup = None
 
 
 def _to_status(value: float) -> tuple[str, str]:
@@ -15,6 +18,9 @@ def _to_status(value: float) -> tuple[str, str]:
 
 
 def _extract_sources_from_duckduckgo(html: str) -> list[dict[str, str]]:
+    if BeautifulSoup is None:
+        return []
+
     soup = BeautifulSoup(html, "html.parser")
     rows: list[dict[str, str]] = []
 
