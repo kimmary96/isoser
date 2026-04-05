@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Document,
+  Font,
   Page,
   PDFDownloadLink,
   StyleSheet,
@@ -17,11 +18,26 @@ import { getGuestActivities, getGuestResume, isGuestMode } from "@/lib/guest";
 import { createBrowserClient } from "@/lib/supabase/client";
 import type { Activity, Resume } from "@/lib/types";
 
+Font.register({
+  family: "NotoSansKR",
+  fonts: [
+    {
+      src: "https://fonts.gstatic.com/ea/notosanskr/v2/NotoSansKR-Regular.otf",
+      fontWeight: 400,
+    },
+    {
+      src: "https://fonts.gstatic.com/ea/notosanskr/v2/NotoSansKR-Bold.otf",
+      fontWeight: 700,
+    },
+  ],
+});
+
 const styles = StyleSheet.create({
   page: {
     paddingTop: 24,
     paddingBottom: 24,
     paddingHorizontal: 24,
+    fontFamily: "NotoSansKR",
     fontSize: 11,
     lineHeight: 1.4,
   },

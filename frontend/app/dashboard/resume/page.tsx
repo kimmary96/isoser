@@ -190,7 +190,7 @@ export default function ResumePage() {
           updated_at: now,
         };
         saveGuestResume(guestResume);
-        router.push("/dashboard/resume/export");
+        router.push("/dashboard/documents");
         return;
       }
 
@@ -216,7 +216,7 @@ export default function ResumePage() {
         throw new Error(insertError?.message ?? "이력서 저장에 실패했습니다.");
       }
 
-      router.push(`/dashboard/resume/export?resumeId=${data.id}`);
+      router.push(`/dashboard/documents?resumeId=${data.id}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "이력서 저장 중 오류가 발생했습니다.");
     } finally {
@@ -781,13 +781,6 @@ export default function ResumePage() {
             style={{ background: "linear-gradient(135deg, #094cb2, #3b82f6)" }}
           >
             {saving ? "저장 중..." : "✦ 문서 생성하기"}
-          </button>
-
-          <button
-            onClick={() => router.push("/dashboard/resume/export")}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium text-gray-700 border border-gray-200 hover:bg-gray-50 transition-all"
-          >
-            ↓ PDF로 내보내기
           </button>
 
           {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
