@@ -17,6 +17,7 @@ const navGroups = [
     items: [
       { label: '이력서', href: '/dashboard/resume' },
       { label: '포트폴리오', href: '/dashboard/portfolio' },
+      { label: '문서 저장소', href: '/dashboard/documents' },
     ],
   },
   {
