@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { getGuestActivities, isGuestMode } from "@/lib/guest";
@@ -533,6 +534,7 @@ function ReadonlyListSection({
 
 export default function DashboardPage() {
   const supabase = useMemo(() => createBrowserClient(), []);
+  const pathname = usePathname();
 
   const [profile, setProfile] = useState<Profile>(EMPTY_PROFILE);
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -697,18 +699,69 @@ export default function DashboardPage() {
       ? matchAnalyses.filter((item) => item.total_score >= 75).length / matchAnalyses.length
       : 0;
   const recentMatchAnalyses = matchAnalyses.slice(0, 3);
+  const isActivePath = (href: string) => {
+    if (href === "/dashboard") return pathname === href;
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
+  const navLinkClass = (href: string) =>
+    `flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-100 ${
+      isActivePath(href) ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-600"
+    }`;
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50">
+      <aside className="sticky top-0 h-screen w-[230px] shrink-0 border-r border-gray-200 bg-white px-4 py-6 relative">
+        <div>
+          <p className="font-bold text-lg text-gray-900">Isosoer</p>
+          <p className="text-xs text-gray-400 tracking-widest">CAREER CURATOR</p>
+        </div>
+
+        <nav className="mt-8">
+          <p className="text-xs text-gray-400 font-semibold mb-2 px-3">프로필</p>
+          <div className="space-y-1">
+            <Link href="/dashboard" className={navLinkClass("/dashboard")}>대시보드</Link>
+            <Link href="/dashboard/activities" className={navLinkClass("/dashboard/activities")}>성과저장소</Link>
+            <Link href="/dashboard/cover-letter" className={navLinkClass("/dashboard/cover-letter")}>자기소개서</Link>
+          </div>
+
+          <p className="text-xs text-gray-400 font-semibold px-3 mb-1 mt-6">문서 자동 완성</p>
+          <div className="space-y-1">
+            <Link href="/dashboard/resume" className={navLinkClass("/dashboard/resume")}>이력서</Link>
+            <Link href="/dashboard/portfolio" className={navLinkClass("/dashboard/portfolio")}>포트폴리오</Link>
+          </div>
+
+          <p className="text-xs text-gray-400 font-semibold px-3 mb-1 mt-6">AI 코칭</p>
+          <div className="space-y-1">
+            <Link href="/dashboard/match" className={navLinkClass("/dashboard/match")}>공고 매칭 분석</Link>
+            <Link href="/dashboard/coach" className={navLinkClass("/dashboard/coach")}>코치 이력서 첨삭</Link>
+          </div>
+        </nav>
+
+        <div className="mt-auto absolute bottom-6 left-4 right-4">
+          <div className="flex items-center gap-3 rounded-lg border border-gray-200 px-3 py-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-500">
+              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A9 9 0 1118.88 17.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium text-gray-800">{profile.name || "사용자"}</p>
+              <p className="text-xs text-gray-400">Premium Member</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <main className="flex-1 overflow-y-auto">
       <div className="mx-auto max-w-6xl space-y-6 px-4 py-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-2xl font-bold text-gray-900">내 프로필</h1>
           <div className="flex gap-2">
             <Link href="/dashboard/onboarding" className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800">
-              PDF 다시 분석
+              기존 이력서로 한번에 채우기
             </Link>
             <Link href="/dashboard/activities" className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50">
-              활동 관리
+              성과저장소
             </Link>
             <Link href="/dashboard/match" className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50">
               매칭 분석
@@ -923,6 +976,7 @@ export default function DashboardPage() {
         onClose={() => setEditing(null)}
         onSave={async (items) => updateProfileSection({ languages: items })}
       />
-    </main>
+      </main>
+    </div>
   );
 }
