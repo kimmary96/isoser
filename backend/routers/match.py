@@ -1,9 +1,11 @@
-﻿from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, File, HTTPException, Query, UploadFile
 from pydantic import BaseModel
 import fitz
 
 from chains.job_image_chain import extract_job_posting_from_image
+from chains.job_posting_rewrite_chain import run_job_posting_rewrite_chain
 from chains.match_chain import run_match_chain
+from schemas.match_rewrite import MatchRewriteRequest, MatchRewriteResponse
 
 
 router = APIRouter()
@@ -26,6 +28,27 @@ async def analyze_match(payload: MatchAnalyzeRequest):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"공고 매칭 분석 실패: {str(e)}")
+
+
+@router.post("/rewrite", response_model=MatchRewriteResponse)
+async def rewrite_match(
+    payload: MatchRewriteRequest,
+    user_id: str = Query(..., min_length=1),
+):
+    try:
+        return await run_job_posting_rewrite_chain(
+            user_id=user_id,
+            job_posting_text=payload.job_posting_text,
+            job_title=payload.job_title,
+            activity_ids=payload.activity_ids,
+            section_type=payload.section_type,
+        )
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"공고 기반 리라이팅 실패: {str(e)}")
 
 
 @router.post("/extract-job-image")
