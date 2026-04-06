@@ -1,9 +1,10 @@
 // 게스트 모드 유틸 - 로그인 없이 QA할 수 있도록 로컬 플래그/목업 데이터 제공
-import type { Activity, Resume } from "@/lib/types";
+import type { Activity, CoverLetter, Resume } from "@/lib/types";
 
 const GUEST_MODE_KEY = "isoser_guest_mode";
 const GUEST_RESUME_KEY = "isoser_guest_resume";
 const GUEST_ACTIVITIES_KEY = "isoser_guest_activities";
+const GUEST_COVER_LETTERS_KEY = "isoser_guest_cover_letters";
 
 function buildDefaultGuestActivities(): Activity[] {
   const now = new Date().toISOString();
@@ -120,4 +121,76 @@ export function getGuestResume(): Resume | null {
   } catch {
     return null;
   }
+}
+
+function defaultGuestCoverLetters(): CoverLetter[] {
+  const now = new Date().toISOString();
+  return [
+    {
+      id: "guest-cover-letter-1",
+      user_id: "guest",
+      title: "백엔드 개발자 지원 동기",
+      company_name: "이소서테크",
+      job_title: "백엔드 개발자",
+      prompt_question: "지원 동기와 입사 후 포부를 작성해 주세요.",
+      content:
+        "사용자 문제를 구조적으로 해결하는 백엔드 개발에 강점을 갖고 있습니다. 이전 프로젝트에서 API 응답 시간을 개선하며 서비스 체감 품질을 높인 경험이 있습니다. 이소서테크에서도 데이터 흐름을 안정적으로 설계하고, 빠르게 실험 가능한 백엔드 기반을 만드는 데 기여하겠습니다.",
+      tags: ["지원동기", "입사후포부"],
+      created_at: now,
+      updated_at: now,
+    },
+  ];
+}
+
+function loadGuestCoverLetters(): CoverLetter[] {
+  if (typeof window === "undefined") return [];
+  const raw = window.localStorage.getItem(GUEST_COVER_LETTERS_KEY);
+  if (!raw) {
+    const defaults = defaultGuestCoverLetters();
+    window.localStorage.setItem(GUEST_COVER_LETTERS_KEY, JSON.stringify(defaults));
+    return defaults;
+  }
+  try {
+    const parsed = JSON.parse(raw) as CoverLetter[];
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      const defaults = defaultGuestCoverLetters();
+      window.localStorage.setItem(GUEST_COVER_LETTERS_KEY, JSON.stringify(defaults));
+      return defaults;
+    }
+    return parsed;
+  } catch {
+    const defaults = defaultGuestCoverLetters();
+    window.localStorage.setItem(GUEST_COVER_LETTERS_KEY, JSON.stringify(defaults));
+    return defaults;
+  }
+}
+
+export function getGuestCoverLetters(): CoverLetter[] {
+  return loadGuestCoverLetters().sort((a, b) => {
+    const left = Date.parse(a.updated_at);
+    const right = Date.parse(b.updated_at);
+    return right - left;
+  });
+}
+
+export function getGuestCoverLetterById(id: string): CoverLetter | null {
+  const found = loadGuestCoverLetters().find((item) => item.id === id);
+  return found ?? null;
+}
+
+export function saveGuestCoverLetter(item: CoverLetter): void {
+  if (typeof window === "undefined") return;
+  const list = loadGuestCoverLetters();
+  const idx = list.findIndex((entry) => entry.id === item.id);
+  const next =
+    idx >= 0
+      ? list.map((entry, index) => (index === idx ? item : entry))
+      : [item, ...list];
+  window.localStorage.setItem(GUEST_COVER_LETTERS_KEY, JSON.stringify(next));
+}
+
+export function deleteGuestCoverLetter(id: string): void {
+  if (typeof window === "undefined") return;
+  const next = loadGuestCoverLetters().filter((item) => item.id !== id);
+  window.localStorage.setItem(GUEST_COVER_LETTERS_KEY, JSON.stringify(next));
 }

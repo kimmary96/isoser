@@ -27,7 +27,13 @@ backend/.venv310/
 
 # ChromaDB 데이터 (chroma_store는 포함, 실제 데이터 파일은 제외)
 backend/chroma_store/*.sqlite3
+backend/chroma_store/*.sqlite3-journal
 backend/chroma_store/*/
+backend/chroma_store_v2/
+backend/.chroma_tmp/
+
+# Generated frontend build metadata
+frontend/tsconfig.tsbuildinfo
 
 # 시스템 파일
 .DS_Store

@@ -51,6 +51,7 @@ app.include_router(coach.router, prefix="/coach", tags=["coach"])
 app.include_router(match.router, prefix="/match", tags=["match"])
 app.include_router(skills.router, prefix="/skills", tags=["skills"])
 app.include_router(activities.router, prefix="/activities", tags=["activities"])
+app.include_router(company.router, prefix="/company", tags=["company"])
 
 
 @app.get("/")

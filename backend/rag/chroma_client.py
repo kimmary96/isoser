@@ -5,10 +5,14 @@ from __future__ import annotations
 from collections import Counter
 from dataclasses import dataclass, field
 import logging
+import os
 from typing import Any, ClassVar, Mapping, Sequence
 
 import chromadb
+from chromadb import EmbeddingFunction, Embeddings
 from chromadb.config import Settings
+from google import genai
+from google.genai import types as genai_types
 
 try:
     from backend.logging_config import get_logger, log_event
@@ -47,6 +51,35 @@ COLLECTION_ORDER = (
     "star_examples",
     "job_posting_snippets",
 )
+
+
+class GeminiEmbeddingFunction(EmbeddingFunction):
+    """Custom Gemini embedding function using google-genai SDK."""
+
+    def __init__(self, api_key: str):
+        self.client = genai.Client(api_key=api_key)
+
+    def __call__(self, input: list[str]) -> Embeddings:
+        if not input:
+            return []
+        result = self.client.models.embed_content(
+            model="models/gemini-embedding-001",
+            contents=input,
+            config=genai_types.EmbedContentConfig(task_type="RETRIEVAL_DOCUMENT"),
+        )
+        if not result.embeddings:
+            return []
+        return [embedding.values for embedding in result.embeddings]
+
+
+def build_embedding_function() -> GeminiEmbeddingFunction:
+    """Build a shared embedding function that avoids local ONNX model loading."""
+
+    api_key = os.environ.get("GOOGLE_API_KEY")
+    if not api_key:
+        raise RuntimeError("GOOGLE_API_KEY is required for Chroma embedding initialization.")
+
+    return GeminiEmbeddingFunction(api_key=api_key)
 
 
 def _collection_metadata(name: str) -> dict[str, Any]:
@@ -139,10 +172,12 @@ def get_or_create_collections(
 ) -> tuple[chromadb.Collection, chromadb.Collection, chromadb.Collection]:
     """Return the collections used by Coach AI."""
 
+    embedding_fn = build_embedding_function()
     collections = tuple(
         client.get_or_create_collection(
             name=name,
             metadata=_collection_metadata(name),
+            embedding_function=embedding_fn,
         )
         for name in COLLECTION_ORDER
     )
@@ -252,6 +287,7 @@ class ChromaManager:
         collection = self._client.get_or_create_collection(
             name=collection_name,
             metadata=_collection_metadata(collection_name),
+            embedding_function=build_embedding_function(),
         )
         self._collections[collection_name] = collection
         return collection

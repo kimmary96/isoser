@@ -12,17 +12,52 @@ export default function CallbackPage() {
 
   useEffect(() => {
     const handleCallback = async () => {
-      const { error } = await supabase.auth.getSession();
-      if (error) {
-        console.error("로그인 처리 중 오류:", error);
-        router.push("/login");
+      const code = new URL(window.location.href).searchParams.get("code");
+
+      if (code) {
+        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+        if (exchangeError) {
+          // PKCE verifier 저장소가 비어도 이미 세션이 생성된 경우가 있어 fallback 확인을 진행한다.
+          const message = exchangeError.message || "";
+          const isPkceVerifierMissing = /code verifier/i.test(message);
+          if (!isPkceVerifierMissing) {
+            console.error("OAuth code 교환 오류:", exchangeError);
+            router.replace("/login");
+            return;
+          }
+        }
+      }
+
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        console.error("로그인 사용자 확인 오류:", userError);
+        router.replace("/login");
         return;
       }
+
+      const { data: profileRow, error: profileError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (profileError) {
+        console.error("프로필 조회 오류:", profileError);
+      }
+
       disableGuestMode();
-      router.push("/dashboard");
+      if (profileRow?.id) {
+        router.replace("/dashboard");
+        return;
+      }
+      router.replace("/dashboard/onboarding");
     };
 
-    handleCallback();
+    void handleCallback();
   }, [router, supabase]);
 
   return (

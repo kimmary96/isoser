@@ -8,6 +8,8 @@ Supabase SQL Editor에서 파일을 순서대로 실행하세요.
 
 001_init_schema.sql     → 전체 테이블 초기 생성
 002_add_bio_to_profiles.sql  → profiles.bio 컬럼 추가
+003_create_cover_letters.sql → cover_letters 테이블 추가
+004_add_qa_items_to_cover_letters.sql → cover_letters.qa_items 추가
 
 ## 규칙
 - 파일명은 숫자_설명.sql 형식으로 작성

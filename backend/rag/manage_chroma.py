@@ -13,6 +13,7 @@ BACKEND_DIR = Path(__file__).parent.parent
 sys.path.insert(0, str(BACKEND_DIR))
 
 from rag.build_job_taxonomy import main as build_job_taxonomy_main
+from rag.chroma_client import build_embedding_function
 from rag.runtime_config import BACKEND_DIR as BACKEND_ROOT, load_backend_dotenv, resolve_chroma_persist_dir
 from rag.seed import main as seed_main
 from rag.source_adapters.catalog import ALL_API_SOURCES
@@ -46,13 +47,16 @@ def doctor() -> int:
         print(f"  - {path.name}: {'ok' if path.exists() else 'missing'}")
 
     client = _get_client()
+    embedding_fn = build_embedding_function()
     job_collection = client.get_or_create_collection(
         name="job_keyword_patterns",
         metadata={"hnsw:space": "cosine"},
+        embedding_function=embedding_fn,
     )
     star_collection = client.get_or_create_collection(
         name="star_examples",
         metadata={"hnsw:space": "cosine"},
+        embedding_function=embedding_fn,
     )
     print("[doctor] collections:")
     print(f"  - job_keyword_patterns: {job_collection.count()}")
@@ -75,9 +79,11 @@ def dump_collection(collection_name: str, limit: int) -> int:
     """컬렉션 일부 문서를 빠르게 확인한다."""
     load_backend_dotenv()
     client = _get_client()
+    embedding_fn = build_embedding_function()
     collection = client.get_or_create_collection(
         name=collection_name,
         metadata={"hnsw:space": "cosine"},
+        embedding_function=embedding_fn,
     )
     peek = collection.get(limit=limit, include=["documents", "metadatas"])
     print(json.dumps(peek, ensure_ascii=False, indent=2))
