@@ -1,24 +1,23 @@
 # 이소서 (Isoser)
 
-AI 코치 기반 이력서/경력기술서 편집 서비스입니다.  
+AI 코치 기반 이력서/경력기술서 편집 서비스입니다.
 "AI가 대신 작성"이 아니라, 사용자가 직접 고칠 수 있도록 STAR 기준 피드백을 제공하는 데 초점을 둡니다.
 
-## 개발 상태 (2026-04-02 기준)
+## 개발 상태 (2026-04-06 기준)
 
 ### 구현 완료
-- Google OAuth 로그인 + 게스트 모드 진입
+- Google OAuth 로그인 + 게스트 모드
 - 이력서 PDF 업로드 후 프로필/활동 자동 추출 (`/parse/pdf`)
-- 대시보드에서 프로필 확장 정보(경력/학력/수상/자격/외국어/스킬/자기소개) 편집 및 저장
-- 활동 목록/상세 조회, 활동 설명 수정
-- 활동 상세에서 STAR 기반 AI 코치 멀티턴 피드백 (`/coach/feedback`)
-- 채용 공고 매칭 분석 + 점수 산식 상세 표시 (`/match/analyze`)
-- 선택 활동 기반 이력서 생성 및 PDF 다운로드
-- ChromaDB 기반 RAG 시드/조회 (장애 시 fallback 동작)
+- 대시보드 프로필 편집(이름/희망 직무/아바타), 자기소개/스킬/경력/학력/수상/자격/외국어 편집
+- 활동 목록/상세 조회, 활동 편집, STAR 저장
+- 활동 상세 STAR 기반 AI 코치 멀티턴 피드백 (`/coach/feedback`)
+- 채용 공고 매칭 분석 + 저장/조회/삭제 (`/match/analyze`)
+- 이력서 생성 후 문서 저장소(` /dashboard/documents`)에 저장 및 PDF 내보내기
+- PDF 한글 폰트 적용(`@react-pdf/renderer` + NotoSansKR)
 
-### 현재 제약/미구현
-- 이력서 PDF 템플릿은 `simple` 1종만 제공
-- 게스트 모드에서는 PDF 업로드 저장 및 Supabase 영속 저장 미지원
-- AI 코치 대화 이력은 저장되지만, 화면 재진입 시 과거 대화 자동 복원 로직은 없음
+### 현재 제약
+- 템플릿은 UI에 여러 옵션이 보이지만 실제 PDF 출력 포맷은 단순형 중심
+- 게스트 모드에서는 DB 영속 저장이 아닌 로컬 저장 기반
 
 ## 기술 스택
 
@@ -27,22 +26,27 @@ AI 코치 기반 이력서/경력기술서 편집 서비스입니다.
 | Frontend | Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS, `@react-pdf/renderer` |
 | Backend | Python 3.11, FastAPI, LangChain, LangGraph, PyMuPDF |
 | AI | Gemini 2.5 Flash (`gemini-2.5-flash`) |
-| Vector DB | ChromaDB (job keywords + STAR examples) |
-| Auth/DB | Supabase (Auth + PostgreSQL) |
+| Vector DB | ChromaDB |
+| Auth/DB | Supabase (Auth + PostgreSQL + Storage) |
 | Deploy | Vercel (frontend), Render (backend) |
 
 ## 폴더 구조
 
 ```text
 isoser/
-├── frontend/                 # Next.js 앱
-│   ├── app/(auth)/           # 로그인/콜백
-│   ├── app/dashboard/        # 온보딩/대시보드/활동/매칭/이력서
-│   └── lib/                  # Supabase, API 클라이언트, 타입, 게스트 유틸
-├── backend/                  # FastAPI 앱
-│   ├── routers/              # parse, coach, match
-│   ├── chains/               # PDF 파싱/코치 그래프/매칭 체인
-│   └── rag/                  # Chroma 초기화/검색/시드 데이터
+├── frontend/
+│   ├── app/(auth)/
+│   ├── app/dashboard/
+│   └── lib/
+├── backend/
+│   ├── routers/
+│   ├── chains/
+│   └── rag/
+├── supabase/
+│   ├── migrations/
+│   │   ├── 001_init_schema.sql
+│   │   └── 002_add_bio_to_profiles.sql
+│   └── README.md
 └── README.md
 ```
 
@@ -62,7 +66,6 @@ cp backend/.env.example backend/.env
 
 ```bash
 cd backend
-# 표준 로컬 가상환경 경로는 backend/venv
 python -m venv venv
 
 # macOS/Linux
@@ -72,12 +75,9 @@ source venv/bin/activate
 venv\Scripts\activate
 
 pip install -r requirements.txt
-python rag/manage_chroma.py prepare
+python rag/seed.py
 uvicorn main:app --reload
 ```
-
-- API: `http://localhost:8000`
-- Docs: `http://localhost:8000/docs`
 
 ### 3) 프론트엔드 실행
 
@@ -86,8 +86,6 @@ cd frontend
 npm install
 npm run dev
 ```
-
-- Web: `http://localhost:3000`
 
 ## 환경변수
 
@@ -106,36 +104,6 @@ GOOGLE_API_KEY=your_gemini_api_key
 CHROMA_PERSIST_DIR=./chroma_store
 ```
 
-## ChromaDB 작업
-
-```bash
-cd backend
-venv\Scripts\activate
-
-# taxonomy 생성 + seed 적재 + 컬렉션 카운트 확인
-python rag/manage_chroma.py prepare
-
-# 현재 상태 점검
-python rag/manage_chroma.py doctor
-
-# 외부 소스(Work24/NCS) env 준비 상태 확인
-python rag/manage_chroma.py sources
-
-# 외부 소스 요청 스펙 미리보기(키는 redaction 처리)
-python rag/manage_chroma.py request-spec ncs_reference https://example.com/ncs --param pageNo=1
-python rag/manage_chroma.py request-spec worknet_standard_job_description https://example.com/worknet --param pageNo=1 --infuser-header
-
-# 컬렉션 샘플 확인
-python rag/manage_chroma.py dump job_keyword_patterns --limit 3
-python rag/manage_chroma.py dump star_examples --limit 3
-```
-
-- `prepare`: `job_taxonomy.json` 재생성 후 Chroma seed 적재
-- `doctor`: `backend/.env`, seed 파일, Chroma 컬렉션 카운트 점검
-- `sources`: Work24/NCS/워크넷 source adapter별 env 준비 상태 확인
-- `request-spec`: source adapter 요청 파라미터/헤더 형식을 redaction된 상태로 미리 확인
-- `dump`: 컬렉션 문서/metadata 일부 확인
-
 ## API 엔드포인트
 
 | Method | Path | 설명 |
@@ -145,64 +113,14 @@ python rag/manage_chroma.py dump star_examples --limit 3
 | POST | `/coach/feedback` | STAR 기반 코치 피드백 생성 |
 | POST | `/match/analyze` | 공고 매칭 점수/키워드/요약 분석 |
 
-## Supabase 스키마
+## Supabase 스키마 관리
 
-아래 테이블 기준으로 프론트/백엔드가 동작합니다.
+DB DDL은 SQL Editor에서 직접 작성하지 말고 아래 마이그레이션 파일 기준으로 관리합니다.
 
-```sql
-CREATE TABLE profiles (
-  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  name TEXT,
-  email TEXT,
-  phone TEXT,
-  education TEXT,
-  career TEXT[] DEFAULT '{}',
-  education_history TEXT[] DEFAULT '{}',
-  awards TEXT[] DEFAULT '{}',
-  certifications TEXT[] DEFAULT '{}',
-  languages TEXT[] DEFAULT '{}',
-  skills TEXT[] DEFAULT '{}',
-  self_intro TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
+- `supabase/migrations/001_init_schema.sql` (기본 테이블/RLS/스토리지)
+- `supabase/migrations/002_add_bio_to_profiles.sql` (`profiles.bio` 추가)
 
-CREATE TABLE activities (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-  type TEXT NOT NULL CHECK (type IN ('회사경력', '프로젝트', '대외활동', '학생활동')),
-  title TEXT NOT NULL,
-  period TEXT,
-  role TEXT,
-  skills TEXT[],
-  description TEXT,
-  is_visible BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE TABLE resumes (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-  title TEXT NOT NULL,
-  target_job TEXT,
-  template_id TEXT DEFAULT 'simple',
-  selected_activity_ids UUID[],
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE TABLE coach_sessions (
-  id UUID PRIMARY KEY,
-  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-  activity_id UUID REFERENCES activities(id) ON DELETE CASCADE,
-  messages JSONB DEFAULT '[]',
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-```
-
-RLS는 모든 테이블에 활성화하고, `auth.uid()` 기준 본인 데이터만 접근하도록 정책을 설정해야 합니다.
+실행 가이드는 `supabase/README.md`를 참고하세요.
 
 ## 배포
 
@@ -214,9 +132,4 @@ RLS는 모든 테이블에 활성화하고, `auth.uid()` 기준 본인 데이터
 ### Backend (Render)
 1. `backend/render.yaml` 기준 Blueprint 배포
 2. 필수 환경변수: `GOOGLE_API_KEY`, `CHROMA_PERSIST_DIR`
-3. Start command에서 `python rag/seed.py && uvicorn main:app ...` 순으로 실행됨
-
-## 개발 메모
-
-- 로컬 Python 가상환경은 `backend/venv` 하나만 사용합니다.
-- `backend/.venv`는 현재 표준 경로가 아니며 사용하지 않습니다.
+3. Start command에서 `python rag/seed.py && uvicorn main:app ...` 순으로 실행

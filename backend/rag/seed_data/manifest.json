@@ -1,0 +1,32 @@
+{
+  "updated_at": "2026-04-03T00:00:00+00:00",
+  "collections": {
+    "job_keyword_patterns": {
+      "active_version": "v1",
+      "count": 50,
+      "source_files": [
+        "job_keyword_patterns.json"
+      ],
+      "active_file": "job_keyword_patterns.json",
+      "history": []
+    },
+    "star_examples": {
+      "active_version": "v1",
+      "count": 30,
+      "source_files": [
+        "star_examples.json"
+      ],
+      "active_file": "star_examples.json",
+      "history": []
+    },
+    "job_posting_snippets": {
+      "active_version": "v1",
+      "count": 15,
+      "source_files": [
+        "job_posting_snippets.json"
+      ],
+      "active_file": "job_posting_snippets.json",
+      "history": []
+    }
+  }
+}

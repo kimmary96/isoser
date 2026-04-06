@@ -2,10 +2,18 @@
 
 from __future__ import annotations
 
+import logging
 import re
 from typing import Any
 
-from rag.schema import CoachResponse, RewriteSuggestion, StructureDiagnosis
+try:
+    from backend.logging_config import get_logger, log_event
+except ImportError:
+    from logging_config import get_logger, log_event
+try:
+    from backend.rag.schema import CoachResponse, RewriteSuggestion, StructureDiagnosis
+except ImportError:
+    from rag.schema import CoachResponse, RewriteSuggestion, StructureDiagnosis
 
 STAR_KEYWORDS = {
     "Situation": ["상황", "배경", "당시", "문제", "이슈", "할 때", "~할 때"],
@@ -52,6 +60,7 @@ FOCUS_TO_REFERENCE_PATTERN = {
     "problem_definition": "Concrete Problem  Business Impact",
     "quantification": "Technical Achievement  Quantified Impact  Business Value",
 }
+logger = get_logger(__name__)
 
 
 def _safe_text(value: Any) -> str:
@@ -122,7 +131,7 @@ def diagnose_structure(text: str) -> StructureDiagnosis:
         "정량적 성과",
     )
 
-    return StructureDiagnosis(
+    diagnosis = StructureDiagnosis(
         has_problem_definition=has_problem_definition,
         has_tech_decision=has_tech_decision,
         has_quantified_result=has_quantified_result,
@@ -131,6 +140,14 @@ def diagnose_structure(text: str) -> StructureDiagnosis:
         missing_elements=missing_elements,
         priority_focus=priority_focus,
     )
+    log_event(
+        logger,
+        logging.INFO,
+        "structure_diagnosed",
+        missing=diagnosis.missing_elements,
+        priority=diagnosis.priority_focus,
+    )
+    return diagnosis
 
 
 def _normalize_rag_results(rag_results: Any) -> dict[str, list[dict[str, Any]]]:

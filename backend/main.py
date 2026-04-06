@@ -5,8 +5,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from check_python_version import main as assert_python_version
+from logging_config import configure_logging
 from rag.runtime_config import load_backend_dotenv
 
+configure_logging()
 load_backend_dotenv()
 assert_python_version()
 

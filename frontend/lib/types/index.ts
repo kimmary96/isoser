@@ -1,6 +1,4 @@
-﻿// 공통 타입 정의 - Supabase 테이블 스키마 및 API 요청/응답 타입
-
-// ─── Supabase 테이블 타입 ───────────────────────────────────────────────────
+// Shared app types for Supabase rows and backend API payloads.
 
 export interface Profile {
   id: string;
@@ -56,25 +54,52 @@ export interface Resume {
   updated_at: string;
 }
 
-export interface CoachSession {
-  id: string;
-  user_id: string;
-  activity_id: string;
-  messages: CoachMessage[];
-  created_at: string;
-  updated_at: string;
-}
-
-// ─── AI 코치 대화 타입 ─────────────────────────────────────────────────────
-
 export interface CoachMessage {
   role: "user" | "assistant";
   content: string;
 }
 
-// ─── FastAPI 요청/응답 타입 ────────────────────────────────────────────────
+export interface StructureDiagnosis {
+  has_problem_definition: boolean;
+  has_tech_decision: boolean;
+  has_quantified_result: boolean;
+  has_role_clarification: boolean;
+  has_implementation_detail: boolean;
+  missing_elements: string[];
+  priority_focus: string;
+}
 
-/** POST /parse/pdf 응답 */
+export interface RewriteSuggestion {
+  text: string;
+  focus:
+    | "star_gap"
+    | "quantification"
+    | "verb_strength"
+    | "job_fit"
+    | "tech_decision"
+    | "problem_definition";
+  section: string;
+  rationale: string;
+  reference_pattern?: string | null;
+}
+
+export interface CoachSession {
+  id: string;
+  user_id: string;
+  job_title: string;
+  section_type: Activity["type"] | "요약";
+  activity_description: string;
+  iteration_count: number;
+  last_feedback: string | null;
+  last_suggestions: RewriteSuggestion[];
+  selected_suggestion_index: number | null;
+  suggestion_type: string | null;
+  last_structure_diagnosis: StructureDiagnosis | Record<string, unknown>;
+  missing_elements: string[];
+  created_at: string;
+  updated_at: string;
+}
+
 export interface ParsedProfile {
   name: string;
   email: string;
@@ -104,23 +129,47 @@ export interface ParsePdfResponse {
   activities: ParsedActivity[];
 }
 
-/** POST /coach/feedback 요청 */
 export interface CoachFeedbackRequest {
-  session_id: string;
+  session_id?: string;
+  user_id?: string | null;
   activity_description: string;
   job_title: string;
+  section_type: Activity["type"] | "요약";
+  selected_suggestion_index?: number | null;
   history: CoachMessage[];
 }
 
-/** POST /coach/feedback 응답 */
 export interface CoachFeedbackResponse {
+  session_id: string;
   feedback: string;
+  structure_diagnosis: StructureDiagnosis;
+  rewrite_suggestions: RewriteSuggestion[];
   missing_elements: string[];
   iteration_count: number;
   updated_history: CoachMessage[];
 }
 
-/** POST /match/analyze 요청 */
+export interface CoachSessionSummary {
+  id: string;
+  user_id: string;
+  job_title: string;
+  section_type: string;
+  activity_description: string;
+  iteration_count: number;
+  last_feedback: string | null;
+  suggestion_type: string | null;
+  missing_elements: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CoachSessionDetail extends CoachSessionSummary {
+  last_suggestions: RewriteSuggestion[];
+  selected_suggestion_index: number | null;
+  last_structure_diagnosis: StructureDiagnosis | Record<string, unknown>;
+  restored_history: CoachMessage[];
+}
+
 export interface MatchAnalyzeRequest {
   job_posting: string;
   activities: Pick<Activity, "id" | "title" | "description">[];
@@ -146,25 +195,20 @@ export interface MatchDetailedScore {
   reason: string;
 }
 
-/** POST /match/analyze 응답 */
 export interface MatchResult {
   total_score: number;
   grade: string;
   summary: string;
   support_recommendation: string;
-
   radar_scores: Record<string, number>;
   detailed_scores: MatchDetailedScore[];
-
   strengths: string[];
   gaps: string[];
   resume_tips: string[];
   highlight_keywords: string[];
-
   matched_keywords: string[];
   missing_keywords: string[];
   recommended_activities: string[];
-
   match_basis?: {
     job_keyword_count?: number;
     matched_keyword_count?: number;
@@ -204,7 +248,6 @@ export interface CompanyInsightResponse {
   note: string;
 }
 
-/** match_analyses table row */
 export interface MatchAnalysisRecord {
   id: string;
   user_id: string;

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import sys
+import logging
 from collections import Counter
 from json import JSONDecodeError
 from pathlib import Path
@@ -15,6 +16,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+from backend.logging_config import get_logger, log_event
 from backend.rag.runtime_config import load_backend_dotenv, resolve_chroma_persist_dir
 from backend.rag.schema import (
     JobKeywordPatternSeed,
@@ -25,6 +27,7 @@ from backend.rag.chroma_client import create_chroma_client, get_or_create_collec
 from check_python_version import main as assert_python_version
 
 SEED_DIR = Path(__file__).parent / "seed_data"
+logger = get_logger(__name__)
 
 load_backend_dotenv()
 
@@ -67,16 +70,23 @@ def _validate_seed_item(
     try:
         model = model_cls(**item)
     except ValidationError as exc:
-        print(
-            f"[seed][warning] {collection_name}: invalid item {item_ref} skipped - "
-            f"{_format_validation_error(exc)}"
+        log_event(
+            logger,
+            logging.WARNING,
+            "seed_validation_failed",
+            collection=collection_name,
+            item_ref=item_ref,
+            error=_format_validation_error(exc),
         )
         return None
 
     if model.document in seen_documents:
-        print(
-            f"[seed][warning] {collection_name}: duplicate document skipped - "
-            f"{model.id}"
+        log_event(
+            logger,
+            logging.WARNING,
+            "seed_duplicate_skipped",
+            collection=collection_name,
+            item_ref=model.id,
         )
         return None
 
@@ -93,9 +103,13 @@ def load_job_keyword_patterns() -> tuple[list[JobKeywordPatternSeed], int]:
 
     for index, item in enumerate(raw_items):
         if not isinstance(item, dict):
-            print(
-                "[seed][warning] job_keyword_patterns: "
-                f"invalid item index={index} skipped - item must be an object"
+            log_event(
+                logger,
+                logging.WARNING,
+                "seed_validation_failed",
+                collection="job_keyword_patterns",
+                item_ref=f"index={index}",
+                error="item must be an object",
             )
             continue
 
@@ -112,9 +126,14 @@ def load_job_keyword_patterns() -> tuple[list[JobKeywordPatternSeed], int]:
     family_counts = Counter(item.job_family for item in validated_items)
     for job_family, count in sorted(family_counts.items()):
         if count < 5:
-            print(
-                "[seed][warning] job_keyword_patterns: "
-                f"job_family '{job_family}' has only {count} valid items"
+            log_event(
+                logger,
+                logging.WARNING,
+                "seed_coverage_warning",
+                collection="job_keyword_patterns",
+                job_family=job_family,
+                valid_count=count,
+                minimum_recommended=5,
             )
 
     return validated_items, len(raw_items)
@@ -129,9 +148,13 @@ def load_star_examples() -> tuple[list[StarExampleSeed], int]:
 
     for index, item in enumerate(raw_items):
         if not isinstance(item, dict):
-            print(
-                "[seed][warning] star_examples: "
-                f"invalid item index={index} skipped - item must be an object"
+            log_event(
+                logger,
+                logging.WARNING,
+                "seed_validation_failed",
+                collection="star_examples",
+                item_ref=f"index={index}",
+                error="item must be an object",
             )
             continue
 
@@ -146,9 +169,13 @@ def load_star_examples() -> tuple[list[StarExampleSeed], int]:
             validated_items.append(validated)
 
     if len(validated_items) < 20:
-        print(
-            "[seed][warning] star_examples: "
-            f"only {len(validated_items)} valid items found; minimum recommended is 20"
+        log_event(
+            logger,
+            logging.WARNING,
+            "seed_coverage_warning",
+            collection="star_examples",
+            valid_count=len(validated_items),
+            minimum_recommended=20,
         )
 
     return validated_items, len(raw_items)
@@ -163,9 +190,13 @@ def load_job_posting_snippets() -> tuple[list[JobPostingSnippetSeed], int]:
 
     for index, item in enumerate(raw_items):
         if not isinstance(item, dict):
-            print(
-                "[seed][warning] job_posting_snippets: "
-                f"invalid item index={index} skipped - item must be an object"
+            log_event(
+                logger,
+                logging.WARNING,
+                "seed_validation_failed",
+                collection="job_posting_snippets",
+                item_ref=f"index={index}",
+                error="item must be an object",
             )
             continue
 
@@ -190,7 +221,13 @@ def seed_job_keywords(
     """검증된 직무 키워드 패턴 시드를 ChromaDB에 적재한다."""
 
     if collection.count() > 0:
-        print("[seed] job_keyword_patterns: 기존 데이터가 있어 적재를 건너뜁니다.")
+        log_event(
+            logger,
+            logging.INFO,
+            "seed_init",
+            collection="job_keyword_patterns",
+            status="skipped_existing",
+        )
         return
 
     if items is None or total_count is None:
@@ -218,7 +255,14 @@ def seed_job_keywords(
             ids=[item.id for item in items],
         )
 
-    print(f"[seed] job_keyword_patterns: {loaded_count}/{total_count} 적재 완료")
+    log_event(
+        logger,
+        logging.INFO,
+        "seed_init",
+        collection="job_keyword_patterns",
+        loaded=loaded_count,
+        total=total_count,
+    )
 
 
 def seed_star_examples(
@@ -229,7 +273,13 @@ def seed_star_examples(
     """검증된 STAR 예시 시드를 ChromaDB에 적재한다."""
 
     if collection.count() > 0:
-        print("[seed] star_examples: 기존 데이터가 있어 적재를 건너뜁니다.")
+        log_event(
+            logger,
+            logging.INFO,
+            "seed_init",
+            collection="star_examples",
+            status="skipped_existing",
+        )
         return
 
     if items is None or total_count is None:
@@ -256,7 +306,14 @@ def seed_star_examples(
             ids=[item.id for item in items],
         )
 
-    print(f"[seed] star_examples: {loaded_count}/{total_count} 적재 완료")
+    log_event(
+        logger,
+        logging.INFO,
+        "seed_init",
+        collection="star_examples",
+        loaded=loaded_count,
+        total=total_count,
+    )
 
 
 def seed_job_posting_snippets(
@@ -267,7 +324,13 @@ def seed_job_posting_snippets(
     """검증한 채용 공고 표현 시드를 ChromaDB에 적재한다."""
 
     if collection.count() > 0:
-        print("[seed] job_posting_snippets: 기존 데이터가 있어 적재를 건너뜁니다.")
+        log_event(
+            logger,
+            logging.INFO,
+            "seed_init",
+            collection="job_posting_snippets",
+            status="skipped_existing",
+        )
         return
 
     if items is None or total_count is None:
@@ -293,7 +356,14 @@ def seed_job_posting_snippets(
             ids=[item.id for item in items],
         )
 
-    print(f"[seed] job_posting_snippets: {loaded_count}/{total_count} 적재 완료")
+    log_event(
+        logger,
+        logging.INFO,
+        "seed_init",
+        collection="job_posting_snippets",
+        loaded=loaded_count,
+        total=total_count,
+    )
 
 
 def seed_collections(
@@ -321,13 +391,35 @@ def main() -> None:
     chroma_client, chroma_mode = create_chroma_client()
     if chroma_mode == "persistent":
         persist_dir = resolve_chroma_persist_dir()
-        print(f"[seed] ChromaDB 초기화 - mode={chroma_mode}, 저장 경로: {persist_dir}")
+        log_event(
+            logger,
+            logging.INFO,
+            "seed_init",
+            collection="all",
+            chroma_mode=chroma_mode,
+            persist_dir=str(persist_dir),
+            status="starting",
+        )
     else:
-        print(f"[seed] ChromaDB 초기화 - mode={chroma_mode}")
+        log_event(
+            logger,
+            logging.INFO,
+            "seed_init",
+            collection="all",
+            chroma_mode=chroma_mode,
+            status="starting",
+        )
 
     job_collection, star_collection, posting_collection = get_or_create_collections(chroma_client)
     seed_collections(job_collection, star_collection, posting_collection)
-    print("[seed] 완료")
+    log_event(
+        logger,
+        logging.INFO,
+        "seed_init",
+        collection="all",
+        chroma_mode=chroma_mode,
+        status="completed",
+    )
 
 
 if __name__ == "__main__":

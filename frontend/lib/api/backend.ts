@@ -1,18 +1,23 @@
-﻿import type {
-  ParsePdfResponse,
+import type {
   CoachFeedbackRequest,
   CoachFeedbackResponse,
-  MatchAnalyzeRequest,
-  MatchResult,
+  CoachSessionDetail,
+  CoachSessionSummary,
+  CompanyInsightResponse,
   ExtractJobImageResponse,
   ExtractJobPdfResponse,
-  CompanyInsightResponse,
+  MatchAnalyzeRequest,
+  MatchResult,
+  ParsePdfResponse,
 } from "@/lib/types";
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
-async function handleResponse<T>(response: Response, fallbackMessage: string): Promise<T> {
+async function handleResponse<T>(
+  response: Response,
+  fallbackMessage: string
+): Promise<T> {
   if (!response.ok) {
     const errorData = await response.json().catch(() => null);
     throw new Error(errorData?.detail || fallbackMessage);
@@ -32,7 +37,7 @@ async function requestJson<T>(
   } catch (error) {
     if (error instanceof Error && /failed to fetch/i.test(error.message)) {
       throw new Error(
-        `백엔드 연결 실패: ${BACKEND_URL} 에 접속할 수 없습니다. 백엔드 서버(uvicorn)가 실행 중인지 확인해주세요.`
+        `Failed to connect to the backend at ${BACKEND_URL}. Check whether the backend server is running.`
       );
     }
     throw error;
@@ -49,7 +54,7 @@ export async function parsePdf(file: File): Promise<ParsePdfResponse> {
       method: "POST",
       body: formData,
     },
-    "PDF 파싱 중 오류가 발생했습니다."
+    "PDF parsing failed."
   );
 }
 
@@ -65,7 +70,36 @@ export async function getCoachFeedback(
       },
       body: JSON.stringify(payload),
     },
-    "코치 피드백 생성 중 오류가 발생했습니다."
+    "Coach feedback generation failed."
+  );
+}
+
+export async function getCoachSessions(
+  userId: string
+): Promise<CoachSessionSummary[]> {
+  const params = new URLSearchParams({ user_id: userId });
+
+  return requestJson<CoachSessionSummary[]>(
+    `/coach/sessions?${params.toString()}`,
+    {
+      method: "GET",
+    },
+    "Failed to load coach sessions."
+  );
+}
+
+export async function getCoachSessionDetail(
+  sessionId: string,
+  userId: string
+): Promise<CoachSessionDetail> {
+  const params = new URLSearchParams({ user_id: userId });
+
+  return requestJson<CoachSessionDetail>(
+    `/coach/sessions/${sessionId}?${params.toString()}`,
+    {
+      method: "GET",
+    },
+    "Failed to load the coach session."
   );
 }
 
@@ -81,7 +115,7 @@ export async function analyzeMatch(
       },
       body: JSON.stringify(payload),
     },
-    "공고 매칭 분석 중 오류가 발생했습니다."
+    "Match analysis failed."
   );
 }
 
@@ -97,11 +131,13 @@ export async function extractJobImage(
       method: "POST",
       body: formData,
     },
-    "이미지 공고 추출 중 오류가 발생했습니다."
+    "Image job posting extraction failed."
   );
 }
 
-export async function extractJobPdf(file: File): Promise<ExtractJobPdfResponse> {
+export async function extractJobPdf(
+  file: File
+): Promise<ExtractJobPdfResponse> {
   const formData = new FormData();
   formData.append("file", file);
 
@@ -111,7 +147,7 @@ export async function extractJobPdf(file: File): Promise<ExtractJobPdfResponse> 
       method: "POST",
       body: formData,
     },
-    "PDF 공고 추출 중 오류가 발생했습니다."
+    "PDF job posting extraction failed."
   );
 }
 
@@ -127,6 +163,6 @@ export async function getCompanyInsight(payload: {
       },
       body: JSON.stringify(payload),
     },
-    "기업 정보 조회 중 오류가 발생했습니다."
+    "Failed to load company insight."
   );
 }

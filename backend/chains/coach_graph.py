@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 from typing import Any, TypedDict
@@ -11,12 +12,9 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import END, StateGraph
 
-from rag.chroma_client import (
-    search_job_keyword_pattern_records,
-    search_job_posting_snippet_records,
-    search_star_example_records,
-)
+from logging_config import get_logger, log_event
 from rag.fallback import generate_fallback_response
+from rag.retrievers import CoachRetriever
 from rag.schema import CoachResponse, RewriteSuggestion, StructureDiagnosis
 
 STRUCTURE_CHECKLIST = [
@@ -137,6 +135,9 @@ missing_elements와 priority_focus에는 아래 표현만 사용한다.
 rewrite_suggestions.text는 바로 이력서에 붙여 넣을 수 있는 완성 문장으로 작성한다.
 문제 정의, 기술 선택 근거, 구현 디테일, 정량적 성과가 자연스럽게 연결되도록 구성한다.
 """.strip()
+
+COACH_RETRIEVER = CoachRetriever()
+logger = get_logger(__name__)
 
 
 class CoachPromptInput(TypedDict, total=False):
@@ -515,26 +516,42 @@ def _parse_llm_response(
     except (TypeError, ValueError):
         normalized_iteration = iteration_count
 
-    return CoachResponse(
+    response = CoachResponse(
         feedback=feedback,
         structure_diagnosis=structure_diagnosis,
         rewrite_suggestions=rewrite_suggestions,
         missing_elements=missing_elements,
         iteration_count=normalized_iteration,
     )
+    log_event(
+        logger,
+        logging.INFO,
+        "structure_diagnosed",
+        missing=response.structure_diagnosis.missing_elements,
+        priority=response.structure_diagnosis.priority_focus,
+    )
+    return response
 
 
 def rag_search_node(state: CoachState) -> CoachState:
     """Retrieve job patterns and STAR examples, then build the prompt context."""
 
     try:
-        job_patterns = search_job_keyword_pattern_records(state["job_title"])
-        job_posting_snippets = search_job_posting_snippet_records(
-            f"{state['job_title']} {state['section_type']}".strip()
+        rag_results = COACH_RETRIEVER.retrieve_for_coaching(
+            job_title=state["job_title"],
+            activity_text=state["activity_text"],
+            section_type=state["section_type"],
         )
-        star_examples = search_star_example_records(state["activity_text"])
+        job_patterns = rag_results["job_keyword_patterns"]
+        job_posting_snippets = rag_results["job_posting_snippets"]
+        star_examples = rag_results["star_examples"]
         rag_context = build_rag_context(job_patterns, star_examples, job_posting_snippets)
     except Exception:
+        rag_results = {
+            "job_keyword_patterns": [],
+            "job_posting_snippets": [],
+            "star_examples": [],
+        }
         job_patterns = []
         job_posting_snippets = []
         star_examples = []
@@ -543,11 +560,7 @@ def rag_search_node(state: CoachState) -> CoachState:
     return {
         **state,
         "rag_context": rag_context,
-        "rag_results": {
-            "job_keyword_patterns": job_patterns,
-            "job_posting_snippets": job_posting_snippets,
-            "star_examples": star_examples,
-        },
+        "rag_results": rag_results,
     }
 
 
@@ -580,11 +593,28 @@ async def coach_response_node(state: CoachState) -> CoachState:
             iteration_count=state["iteration_count"],
         )
     except Exception as exc:
+        log_event(
+            logger,
+            logging.ERROR,
+            "gemini_failed",
+            session_id=state["session_id"],
+            job_title=state["job_title"],
+            section_type=state["section_type"],
+            error=str(exc),
+        )
         fallback_response = generate_fallback_response(
             activity_description=state["activity_text"],
             rag_results=state["rag_results"],
             job_title=state["job_title"],
             section_type=state["section_type"],
+        )
+        log_event(
+            logger,
+            logging.WARNING,
+            "fallback_triggered",
+            session_id=state["session_id"],
+            missing=fallback_response.missing_elements,
+            priority=fallback_response.structure_diagnosis.priority_focus,
         )
         coach_response = fallback_response.model_copy(
             update={
@@ -595,6 +625,16 @@ async def coach_response_node(state: CoachState) -> CoachState:
                 "iteration_count": state["iteration_count"],
             }
         )
+
+    log_event(
+        logger,
+        logging.INFO,
+        "coach_response",
+        session_id=state["session_id"],
+        suggestion_count=len(coach_response.rewrite_suggestions),
+        missing=coach_response.missing_elements,
+        priority=coach_response.structure_diagnosis.priority_focus,
+    )
 
     return {
         **state,
@@ -632,6 +672,15 @@ async def run_coach_graph(
     """Run the Coach AI graph and return a CoachResponse-compatible payload."""
 
     history = history or []
+    log_event(
+        logger,
+        logging.INFO,
+        "session",
+        session_id=session_id,
+        job_title=job_title,
+        section_type=section_type,
+        history_count=len(history),
+    )
     initial_state: CoachState = {
         "session_id": session_id,
         "activity_text": activity_text,
@@ -640,7 +689,11 @@ async def run_coach_graph(
         "selected_suggestion_index": selected_suggestion_index,
         "history": history,
         "rag_context": "",
-        "rag_results": {"job_keyword_patterns": [], "star_examples": []},
+        "rag_results": {
+            "job_keyword_patterns": [],
+            "job_posting_snippets": [],
+            "star_examples": [],
+        },
         "feedback": "",
         "missing_elements": [],
         "structure_diagnosis": {},

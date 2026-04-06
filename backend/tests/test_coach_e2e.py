@@ -23,41 +23,35 @@ class DummyLLM:
 @pytest.fixture(autouse=True)
 def isolate_rag(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
-        coach_graph,
-        "search_job_keyword_pattern_records",
-        lambda job_title: [
-            {
-                "pattern_type": "decision_statement",
-                "document": "Redis와 Memcached를 비교해 TTL 제어와 운영 가시성을 기준으로 Redis를 선택했습니다.",
-            },
-            {
-                "pattern_type": "result_statement",
-                "document": "응답속도를 780ms에서 290ms로 개선했습니다.",
-            },
-        ],
-    )
-    monkeypatch.setattr(
-        coach_graph,
-        "search_star_example_records",
-        lambda activity_text: [
-            {
-                "activity_type": "tech_decision",
-                "original_text": "Redis를 사용했습니다.",
-                "document": "대안을 비교한 뒤 Redis를 선택해 지연 시간을 줄였습니다.",
-                "rewrite_focus": "기술 선택 근거와 대안 비교 보강",
-            }
-        ],
-    )
-    monkeypatch.setattr(
-        coach_graph,
-        "search_job_posting_snippet_records",
-        lambda query_text: [
-            {
-                "source": "wanted",
-                "section_type": "주요업무",
-                "document": "핵심 서비스의 데이터 흐름을 설계하고 안정적으로 운영할 수 있는 백엔드 엔지니어를 찾습니다.",
-            }
-        ],
+        coach_graph.COACH_RETRIEVER,
+        "retrieve_for_coaching",
+        lambda **kwargs: {
+            "job_keyword_patterns": [
+                {
+                    "pattern_type": "decision_statement",
+                    "document": "Redis와 Memcached를 비교해 TTL 제어와 운영 가시성을 기준으로 Redis를 선택했습니다.",
+                },
+                {
+                    "pattern_type": "result_statement",
+                    "document": "응답속도를 780ms에서 290ms로 개선했습니다.",
+                },
+            ],
+            "star_examples": [
+                {
+                    "activity_type": "tech_decision",
+                    "original_text": "Redis를 사용했습니다.",
+                    "document": "대안을 비교한 뒤 Redis를 선택해 지연 시간을 줄였습니다.",
+                    "rewrite_focus": "기술 선택 근거와 대안 비교 보강",
+                }
+            ],
+            "job_posting_snippets": [
+                {
+                    "source": "wanted",
+                    "section_type": "주요업무",
+                    "document": "대규모 서비스의 데이터 흐름을 설계하고 안정적으로 운영할 백엔드 엔지니어를 찾습니다.",
+                }
+            ],
+        },
     )
 
 
@@ -88,7 +82,7 @@ def _mock_success_llm(monkeypatch: pytest.MonkeyPatch, *, focus: str = "quantifi
                 "text": "로그인 병목 문제를 해결하기 위해 Redis 캐시를 도입하고 요청 처리 시간을 780ms에서 290ms로 줄였습니다.",
                 "focus": focus,
                 "section": "성과" if focus == "quantification" else "기술적 의사결정",
-                "rationale": "핵심 성과와 기술 선택 근거를 한 문장에 담았습니다.",
+                "rationale": "정량 성과와 기술 선택 근거를 한 문장에 담았습니다.",
                 "reference_pattern": "Technical Achievement  Quantified Impact  Business Value"
                 if focus == "quantification"
                 else "Problem  Alternative Comparison  Decision",
@@ -174,7 +168,7 @@ def test_coach_fallback_on_gemini_failure(client, monkeypatch: pytest.MonkeyPatc
 
     response = client.post(
         "/coach/feedback",
-        json=_valid_payload(activity_description="온보딩 퍼널 개선 프로젝트에서 이탈 문제를 줄였습니다."),
+        json=_valid_payload(activity_description="회원가입 개선 프로젝트에서 이탈 문제를 줄였습니다."),
     )
 
     assert response.status_code == 200
