@@ -13,6 +13,14 @@ services:
         sync: false
       - key: CHROMA_PERSIST_DIR
         value: /opt/render/project/src/chroma_store
+      - key: DATA_GO_KR_SERVICE_KEY
+        sync: false
+      - key: WORK24_OPEN_API_AUTH_KEY
+        sync: false
+      - key: NCS_REFERENCE_API_KEY
+        sync: false
+      - key: NCS_RESOURCE_API_KEY
+        sync: false
     disk:
       name: chroma-store
       mountPath: /opt/render/project/src/chroma_store
