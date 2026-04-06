@@ -2,6 +2,9 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect, useMemo } from 'react'
+import { disableGuestMode } from '@/lib/guest'
+import { createBrowserClient } from '@/lib/supabase/client'
 
 const navGroups = [
   {
@@ -35,6 +38,17 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const supabase = useMemo(() => createBrowserClient(), [])
+
+  useEffect(() => {
+    const syncGuestMode = async () => {
+      const { data } = await supabase.auth.getSession()
+      if (data.session) {
+        disableGuestMode()
+      }
+    }
+    syncGuestMode()
+  }, [supabase])
 
   return (
     <div className="flex min-h-screen bg-white">

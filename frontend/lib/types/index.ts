@@ -54,6 +54,20 @@ export interface Resume {
   updated_at: string;
 }
 
+export interface CoverLetter {
+  id: string;
+  user_id: string;
+  title: string;
+  company_name: string | null;
+  job_title: string | null;
+  prompt_question: string | null;
+  content: string;
+  qa_items?: { question: string; answer: string }[] | null;
+  tags: string[] | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface CoachMessage {
   role: "user" | "assistant";
   content: string;
