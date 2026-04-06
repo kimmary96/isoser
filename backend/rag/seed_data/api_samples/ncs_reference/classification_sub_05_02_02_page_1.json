@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "05",
+            "NCS_LCLAS_CDNM": "법률·경찰·소방·교도·국방",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "소방방재",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "방재",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "방재시설",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "방재시설은 국민의 생명과 재산에 막대한 영향을 주는 자연재해를 예방하기 위하여 설치되는 방재시설의 특성분석, 계획, 조사, 재해유형별 설계, 시공관리, 유지관리, 피해저감능력 측정을 하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "05",
+            "NCS_LCLAS_CDNM": "법률·경찰·소방·교도·국방",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "소방방재",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "방재",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "기업재난관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "기업 재난관리는 조직의 생명, 신체, 재산 및 발전 가능성을 저해하는 요인에 대하여 발생 가능성과 영향을 최소화하기 위한 방법 및 절차를 계획, 구축, 점검, 개선하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "05",
+            "NCS_LCLAS_CDNM": "법률·경찰·소방·교도·국방",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "소방방재",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "방재",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "방재안전대책관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "방재안전대책관리는 자연재해 위험으로부터 안전을 확보하기 위해 재난 예방, 대비, 대응, 복구과정을 포함하는 프로젝트를 기획하고 타당성검토, 조사, 분석, 평가, 재해저감대책수립, 비상대응관리 등의 방재안전대책 업무를 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

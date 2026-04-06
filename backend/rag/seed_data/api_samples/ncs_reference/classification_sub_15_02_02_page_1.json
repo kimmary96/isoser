@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "기계가공",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "특수가공",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "방전가공",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "방전가공은 방전가공 장비를 이용하여 방전 스파크를 발생시켜 공작물을 필요한 형상으로 가공하는 직무이며, 이를 효율적으로 하기 위하여 장비 유지 보수 관리 및 공작물의 품질관리를 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "기계가공",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "특수가공",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "레이저가공",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "레이저가공은 레이저 장비를 이용하여 각종 재료를 사용자가 원하는 형상으로 안전하게 가공을 수행하는 일이다. ",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "기계가공",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "특수가공",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "워터젯가공",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "워터젯가공은 워터젯 장비를 이용하여 각종 재료를 사용자가 원하는 형상으로 절단하는 직무이며, 이를 효율적으로 하기 위하여 장비관리 및 작업 안전관리를 수행하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "기계가공",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "특수가공",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "플라즈마가공",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "플라즈마가공은 플라즈마 장비를 이용하여 각종 재료를 사용자가 원하는 특성과 사양으로 절단, 용접, 표면처리하는 업무를 수행하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

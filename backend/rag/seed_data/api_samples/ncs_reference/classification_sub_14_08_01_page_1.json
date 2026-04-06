@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "해양자원",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "해양환경조사",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "해양관측",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "해양관측이란 안전하고 지속가능한 해양의 이용·개발을 위하여 해양관측계획을 수립하고, 조석, 해수유동, 파랑, 해수물성, 해빈류, 해저퇴적물이동, 해빈변화, 해저질변화, 해양기상 등의 해양 정보를 획득하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "해양자원",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "해양환경조사",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "해양측량",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "해양측량은 해양 공간에 위치하고 있는 대상물 간의 상대적·절대적 위치와 물리적 특성을 결정하고, 해저지형 및 지질 특성의 관계를 설명하기 위하여 해양의 수심, 해저지질, 해저지층, 지구자기, 중력, 해안선의 형태 등에 대하여 과학적인 방법을 사용하여 자료 또는 속성 정보를 능동적으로 획득하고, 이를 표현하기 위한 해양공간정보를 구축하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "해양자원",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "해양환경조사",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "해양생태환경조사",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "해양생태환경조사란 해양을 효율적으로 이용·개발·보존하기 위하여 기초생산력·퇴적·화학·생물 환경조사 계획을 수립하고, 적정한 방법으로 조사·분석·평가하여 대책을 수립하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

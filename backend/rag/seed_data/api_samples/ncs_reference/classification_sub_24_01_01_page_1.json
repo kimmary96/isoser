@@ -1,0 +1,143 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "농업",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "작물재배",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "수도작재배",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "수도작재배는 모내기, 직파 및 친환경 등 재배유형과 기술을 선택하고 이에 따라 소비자 기호, 시장 구조 및 경영여건에 맞는 벼 품종을 선택하여 파종 육묘 또는 직파 파종 후 시비관리, 잡초방제, 병해충관리, 재해관리, 논 물 관리 등을 통해 벼를 재배하고 적정 시기에 수확하여 수확물을 건조, 저장하며, 수도작 농가 운영을 위한 경영관리의 업무를 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "농업",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "작물재배",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "전작재배",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "전작재배는 수요조사 분석을 토대로 재배계획을 수립하고, 우수 전작물을 생산하기 위하여 토양·파종·생육·병해충 관리를 수행하며, 재배에 필요한 시설과 농기자재 관리, 인증관리, 경영관리의 업무를 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "농업",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "작물재배",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "채소재배",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "채소재배는 채소 품목별 재배 계획에 따라 육묘, 재배포장관리, 재배관리, 재배시설관리, 수경재배, 생리장해 및 병해충관리를 실시하여 품질 좋은 채소 작물을 수확하여 출하하며, 그 과정에서 필요한 채소재배 장비자재 관리와 재배농장의 효율적 운영을 위한 경영관리를 실시하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "농업",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "작물재배",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "과수재배",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "과수재배는 적지에 과수원을 조성하여 기상재해를 최소화하고, 과종별 생육단계에 따라 영양번식, 정지전정, 결실관리, 생리장해 및 병해충잡초관리 등을 통해 고품질의 생산성 높은 과일을 생산하며, 수확 후 관리, 안전성관리 등을 수행하여 과수원을 안정적으로 운영하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "농업",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "작물재배",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "화훼재배",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "화훼재배는 화훼 소비 시장과 재배 환경을 분석하여 재배 작물에 적합한 토양, 시설을 확보하고, 재배계획을 수립하여 환경관리, 개화조절, 병해충 관리 등을 통해 화훼 작물을 수확하며, 수확 후 관리, 판매, 경영, 화훼 이용 등의 업무를 수행하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "농업",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "작물재배",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "버섯재배",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "버섯재배는 자실체를 형성하는 균류를 인공적으로 생산하는 것으로 버섯의 종류 및 재배방식에 따라 종균관리, 배지조제, 배지살균, 종균접종, 배양관리 및 생육환경관리를 통해 버섯을 생산하며, 안전적인 생산과 출하를 위해 수확후관리, 병해충관리 및 재배시설장비관리를 실시하고, 품질관리를 위해 각종 인증관리를 실시하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "농업",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "작물재배",
+            "NCS_SUBD_CD": "07",
+            "NCS_SUBD_CDNM": "특용작물재배",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "특용작물재배란 약용작물, 유지작물, 기호작물, 향신료작물, 산업원료작물 등의 생육환경과 시장에 대한 분석결과를 토대로 재배계획을 수립하고 파종, 육묘, 정식, 생육, 병충해와 재해관리를 수행하며, 재배생산에 필요한 농자재관리, 인증관리, 경영관리의 업무를 수행하는 일이다.",
+            "DUTY_ORD": 7,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "농업",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "작물재배",
+            "NCS_SUBD_CD": "08",
+            "NCS_SUBD_CDNM": "시설원예",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "시설원예는 시설을 통해 재배하는 원예작물에 대한 이해를 바탕으로 적합한 시설을 설치하고 시설 내 생육환경을 제어 및 관리하는 작업을 수행하는 일이다.",
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "농업",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "작물재배",
+            "NCS_SUBD_CD": "09",
+            "NCS_SUBD_CDNM": "유기재배",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "‘유기재배’는 유기농업의 환경분석, 생산계획 수립 등을 통해 유기재배를 준비하고, 토양 관리를 기초로 종자 종묘관리, 생육 관리, 병해충 관리, 수확 관리, 경영·인증관리 등을 하여 유기농산물을 생산하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 9,
+      "lastPageNo": 1
+    }
+  }
+}

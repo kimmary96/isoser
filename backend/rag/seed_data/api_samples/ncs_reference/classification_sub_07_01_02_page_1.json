@@ -1,0 +1,88 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "07",
+            "NCS_LCLAS_CDNM": "사회복지·종교",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "사회복지",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "사회복지서비스",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "사회복지프로그램운영",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "사회복지프로그램운영은 개인, 가족, 집단, 지역사회의 욕구 충족과 문제해결을 위해 사회복지의 가치를 기반으로 전문적인 지식·기술과 지역사회자원을 활용하여 프로그램을 계획, 실행, 평가하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "07",
+            "NCS_LCLAS_CDNM": "사회복지·종교",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "사회복지",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "사회복지서비스",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "일상생활기능지원",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "일상생활기능지원이란 대상자의 보호·자립을 위해 일상생활 기능을 유지 및 향상시키기 위한 전문서비스를 제공하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "07",
+            "NCS_LCLAS_CDNM": "사회복지·종교",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "사회복지",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "사회복지서비스",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "사회복지면담",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "사회복지면담은 클라이언트의 문제해결 및 욕구를 충족할 수 있도록 사회복지사가 개인, 집단, 가족 차원에서 전문적인 지식과 기술을 활용하여 상호작용하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "07",
+            "NCS_LCLAS_CDNM": "사회복지·종교",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "사회복지",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "사회복지서비스",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "사회복지사례관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "사회복지사례관리란 복합적이고 다양한 욕구가 있는 사례관리대상자와 그 가족의 사회적기능 향상을 돕기 위해 운영체계를 확립하고, 사례관리대상자와 함께 종합적인 사정을 통하여 내적자원 및 지역사회 자원을 개발하고 연계·조정·활용하여 포괄적으로 실천하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "07",
+            "NCS_LCLAS_CDNM": "사회복지·종교",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "사회복지",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "사회복지서비스",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "자원봉사관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "자원봉사관리는 자원봉사활동을 위해 지역사회와 자원봉사자의 요구를 바탕으로 자원봉사 프로그램을 기획·운영하며 자원봉사자와 팀의 자원봉사활동을 지원하고 촉진하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 5,
+      "lastPageNo": 1
+    }
+  }
+}

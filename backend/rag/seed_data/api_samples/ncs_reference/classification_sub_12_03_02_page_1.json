@@ -1,0 +1,88 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "관광·레저",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "숙박서비스",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "숙박기획·개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "숙박 기획·개발은 고객만족과 기업의 성과목표 달성을 위하여 최적의 운영시스템과 전문역량을 갖춘 인적 자원 활용을 통한 숙박사업 개발, 운영 기획 및 경영지원 업무 등을 수행 하는 일이다.  ",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "관광·레저",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "숙박서비스",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "객실관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "객실관리는 고객의 편안하고 안락한 투숙을 위해, 예약 접수, 체크 인/아웃 업무, 객실 유지보수 · 정비개선과 공용지역 청결관리를 통해 최상의 객실 상품을 창출하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "관광·레저",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "숙박서비스",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "부대시설관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "부대시설관리는 숙박객 및 방문객의 이용 목적에 따른 편의 제공을 위해 식음료와 판매시설, 레저 스포츠 시설 등을 설치하여 운영·관리하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "관광·레저",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "숙박서비스",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "연회관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "연회관리는 성공적인 행사진행을 통한 고객 만족 극대화를 위해 계획된 장소, 시간, 예산 내에서 식음료 및 제반 서비스를 제공하고 연회행사를 준비, 운영하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "관광·레저",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "숙박서비스",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "접객서비스",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "접객서비스는 숙박시설을 이용하는 고객들과의 다양한 접점 상황에서 고객의 필요 사항을 확인하고 요구에 부합하는 서비스를 제공함으로써 고객 만족을 창출하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 5,
+      "lastPageNo": 1
+    }
+  }
+}

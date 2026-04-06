@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "보험",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "보험영업·계약",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "보험모집",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "고객과 보험회사의 상호이익 달성을 위하여 요구되는 판매전략 수립과 고객상담 지원을 활용하여 보험계약을 체결하는 일련의 업무이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "보험",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "보험영업·계약",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "보험계약심사",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "보험계약심사(언더라이팅)는 보험가입자의 공평성과 보험경영의 안정성에 준하는 최적의 보험계약 인수를 위해 보험대상 의 위험을 선택하여 적절한 위험집단으로 분류하고 이를 통해 보험료 및 가입조건을 결정하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "보험",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "보험영업·계약",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "보험계약·보전",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "보험계약이 체결되어 소멸될 때까지 양질의 보험서비스를 제공하기 위하여 계약의 유지, 변경, 지급 등의 업무를 효율적으로 관리하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "보험",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "보험영업·계약",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "위험관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "위험관리는 보험회사의 지속경영과 이해관계자의 권익증진을 위하여 발생 가능한 위험을 예측하고 체계화된 시스템으로 관리하는 일이다.  (단, 2014년은 보험 모집단계에서 지급단계까지 한정해서 개발한다)",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

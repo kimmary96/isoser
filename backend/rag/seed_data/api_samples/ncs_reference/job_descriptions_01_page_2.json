@@ -1,0 +1,28 @@
+{
+  "data": [
+    {
+      "ncsLclasCd": "01",
+      "ncsLclasCdnm": "사업관리",
+      "ncsMclasCd": "01",
+      "ncsMclasCdnm": "사업관리",
+      "ncsSclasCd": "01",
+      "ncsSclasCdnm": "프로젝트관리",
+      "ncsSubdCd": "01",
+      "ncsSubdCdnm": "공적개발원조사업관리",
+      "ncsClCd": "0101010102_17v2",
+      "compeUnitName": "공적개발원조사업 사업기획",
+      "relQualfMtr": "ODA 일반, 프로젝트관리 관련 자격증 (예, PMP, PRINCE2 등)",
+      "befDutyExprc": "공적개발원조사업 PDM수립\r\n공적개발원조사업 프로젝트집행\r\n공적개발원조사업 성과관리\r\n공적개발원조사업 평가관리",
+      "dutyExperPerd": "3년 ~ 4년",
+      "downUrl": "https://www.ncs.go.kr/common/file/downloadFile.do?sysDstinCd=03&fileMstky=20180125153544872&filedetlSeq=20180125153608650"
+    }
+  ],
+  "dataInfo": {
+    "code": "000",
+    "message": "정상",
+    "totalPage": 2,
+    "pageNo": "2",
+    "numOfRows": 50,
+    "totCnt": 51
+  }
+}

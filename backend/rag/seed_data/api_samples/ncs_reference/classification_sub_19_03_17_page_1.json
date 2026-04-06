@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "17",
+            "NCS_SCLAS_CDNM": "커넥티드카개발",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "커넥티드카소프트웨어기술개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "커넥티드카 소프트웨어기술개발은 자동차와 연결될 수 있는 모든 대상과의 양방향 통신을 통해 안전성, 편의성 향상 및 이동공간에서의 새로운 서비스 창출을 위한 HMI, 보안, 콘텐츠 소프트웨어를 개발하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "17",
+            "NCS_SCLAS_CDNM": "커넥티드카개발",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "커넥티드카콘텐츠서비스",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "커넥티드카 콘텐츠·서비스는 커넥티드카의 운전자와 탑승자에게 안전성, 편의성, 오락성과 관련된 서비스와 콘텐츠 제공에 필요한 요구사항을 분석하여 콘텐츠와 서비스를 기획·개발·운영하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

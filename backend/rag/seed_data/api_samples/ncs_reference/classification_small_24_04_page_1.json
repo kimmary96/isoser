@@ -1,0 +1,58 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "수산",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "어업",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "수산",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "양식",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "수산",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "수산자원관리",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "수산",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "어촌개발",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

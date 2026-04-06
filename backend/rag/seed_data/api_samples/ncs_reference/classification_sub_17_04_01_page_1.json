@@ -1,0 +1,88 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "17",
+            "NCS_LCLAS_CDNM": "화학·바이오",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "플라스틱·고무",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "플라스틱",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "압출성형",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "압출성형은 고객이 요구하는 압출성형품 제조를 위해 원재료를 압출성형기로 용융하고 가압하여 다이(Die)를 통해 연속적으로 플라스틱 필름, 파이프류의 제품을 제조하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "17",
+            "NCS_LCLAS_CDNM": "화학·바이오",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "플라스틱·고무",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "플라스틱",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "코팅",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "코팅은 플라스틱 성형품에 미적인 면과 기능성을 부여하기 위하여 유․무기 코팅 재료로 배합 설계 후 공정 관리와 품질관리 과정을 거쳐 제품을 생산하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "17",
+            "NCS_LCLAS_CDNM": "화학·바이오",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "플라스틱·고무",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "플라스틱",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "중공·진공성형",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "중공 진공 성형은 성형품 제조를 위하여 공기의 흐름을 이용한 성형기와 중공진공금형을 활용하고 성형품 설계, 공정설계, 성형, 품질관리, 후 가공, 시설유지·보수 하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "17",
+            "NCS_LCLAS_CDNM": "화학·바이오",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "플라스틱·고무",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "플라스틱",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "컴파운딩",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "컴파운딩은 플라스틱 성형품에 기능과 특성을 부여하기 위하여 2종 이상의 소재를 혼합하는 공정으로 최적의 배합과 공정설계를 통해 컴파운딩 작업, 품질관리와 사전, 사후작업을 수행하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "17",
+            "NCS_LCLAS_CDNM": "화학·바이오",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "플라스틱·고무",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "플라스틱",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "사출성형",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "사출성형은 고객이 요구하는 생활용품, 자동차·가전 부품 등을 제조하기 위하여 사출성형기에 장착된 금형 내에 플라스틱용융물을 주입하고 냉각, 취출의 성형 싸이클을 통해 동일한 제품을 대량으로 생산하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 5,
+      "lastPageNo": 1
+    }
+  }
+}

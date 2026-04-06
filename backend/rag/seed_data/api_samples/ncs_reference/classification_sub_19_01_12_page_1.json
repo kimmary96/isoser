@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "12",
+            "NCS_SCLAS_CDNM": "전기저장장치",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "전기저장장치개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "전기저장장치개발이란 전기저장장치를 구성하는 전력변환장치, 전력관리장치, 배터리관리장치를 설계, 개발, 제작, 테스트하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "12",
+            "NCS_SCLAS_CDNM": "전기저장장치",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "전기저장장치설치",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "전기저장장치설치란 전기저장장치 구축을 위하여 시공현장의 환경, 설치조건등의 분석, 설계, 설치, 시공, 운영 및 안전점검, 유지보수를 하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

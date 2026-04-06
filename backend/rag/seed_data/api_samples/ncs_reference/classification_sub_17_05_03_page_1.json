@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "17",
+            "NCS_LCLAS_CDNM": "화학·바이오",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "바이오",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "바이오기술",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "유전체정보분석",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "유전체 정보 분석이란 생산된 데이터로부터 생물체의 유전자 염기서열 전체 배열, 유전자 변이, 유전자의 다양한 후성 상태, 전사체 발현 등의 다양한 유전학적 변화와 상태를 분석하여 생명현상을 파악하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "17",
+            "NCS_LCLAS_CDNM": "화학·바이오",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "바이오",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "바이오기술",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "유전자변형",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "유전자변형이란 유전정보를 갖는 생물에 특정한 유전형질을 갖는 유전자를 삽입(치환, 증폭, 결합), 제거하여 재조합 DNA 및 형질전환체를 제조하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

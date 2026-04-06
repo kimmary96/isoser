@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "18",
+            "NCS_SCLAS_CDNM": "자율주행개발",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "자율주행하드웨어개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "자율주행하드웨어개발은 자율주행에 필요한 인지, 판단, 제어를 수행하기 위하여 작성된 개발계획서와 사양명세서를 근거로 회로를 설계하고 검토하여 모듈을 제작한 후 차량에 장착하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "18",
+            "NCS_SCLAS_CDNM": "자율주행개발",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "자율주행소프트웨어개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "자율주행소프트웨어개발은 자동차의 원활한 자율주행을 위하여 차량 센서, 인프라에서 수집한 데이터를 기반으로 인지, 판단하여 자동차를 제어하는 소프트웨어를 개발하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

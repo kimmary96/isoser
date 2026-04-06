@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "해양자원",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "해양환경관리",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "해양환경보전·복원",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "해양환경보전·복원은 해양환경의 훼손 또는 해양오염으로 인한 위해를 예방하고 깨끗하고 안전한 해양환경을 유지하기 위하여 갯벌보전과 해역에서의 오염원이나 갯녹음을 관리, 자원조성·준설 등으로 천해생태계를 보전·복원하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "해양자원",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "해양환경관리",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "해양환경영향평가",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "해양환경영향평가는 육상 또는 해상에서 이루어지는 인위적인 개발행위로부터 발생되는 해양환경영향을 최소화하기 위하여 현황조사, 영향예측·평가 결과를 토대로 개발계획의 변경, 대안의 선정, 저감기술제시와 같은 저감방안을 수립하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "해양자원",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "해양환경관리",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "해양오염관리·방제",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "해양오염관리·방제는 해양의 생물자원과 해양생태에 유해하거나 인간의 건강을 위협하는 해양오염에 대해 방제 조치를 실시하여 해양환경의 피해를 최소화하고 해양환경을 보전하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

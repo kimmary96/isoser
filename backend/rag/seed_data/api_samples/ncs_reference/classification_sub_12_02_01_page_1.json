@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "결혼·장례",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "결혼서비스",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "결혼상담",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "결혼상담은 결혼을 원하는 고객의 신체적, 심리적, 물리적인 제반사항과 내·외적 정보를 제공 받아 전문적인 지식과 다양한 경험을 바탕으로 적합한 이성에 대해 분석·상담하여 만남을 주선하고 결혼이 성사될 수 있도록 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "결혼·장례",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "결혼서비스",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "웨딩플래너",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "웨딩플래너는 혼인을 준비하는 고객을 대상으로 맞춤 상담을 통해 웨딩상품 및 혼수상품정보, 예식장예약, 일정관리 등 혼인에 필요한 모든 정보를 제공하고, 고객의 예산과 상황에 맞는 효율적인 웨딩을 기획·진행·관리하는 업무를 수행하는 능력이며 더 나아가 건강가정 확산을 위한 참혼인 문화를 실천하는 능력이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "결혼·장례",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "결혼서비스",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "결혼예식장관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "결혼예식장관리는 결혼예식장에서 예식 고객을 대상으로 결혼예식과 피로연 서비스를 제공하기 위하여 예식 예약, 연회, 조리, 예식진행, 시설 관리, 경영지원 관리 등 제반 업무를 수행하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "결혼·장례",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "결혼서비스",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "웨딩이벤트",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "웨딩이벤트는 성공적인 혼례를 위하여 그에 필요한 웨딩촬영, 웨딩 뷰티, 웨딩드레스, 한복 예단, 예복, 예물, 웨딩플라워, 폐백. 이바지, 신혼여행 등의 분야에서 각각의 상품을 기획하고, 전문적인 서비스를 제공하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

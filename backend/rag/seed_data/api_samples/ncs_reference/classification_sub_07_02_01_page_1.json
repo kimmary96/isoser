@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "07",
+            "NCS_LCLAS_CDNM": "사회복지·종교",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "상담",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "직업상담서비스",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "직업상담",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "직업상담은 인간의 생애진로주기와 관련하여 개인의 특성에 따라 진로탐색, 직업선택, 직업적응, 직업유지, 직업전환, 은퇴 등에서 발생하는 직업적 논점을 진단하고 상담·처치하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "07",
+            "NCS_LCLAS_CDNM": "사회복지·종교",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "상담",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "직업상담서비스",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "취업알선",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "취업알선은 고용관련정보를 수집하고 분류하여 구직자에게는 취업에 필요한 서비스를 제공하고, 구인자에게는 충족되는 구직자를 소개하기 위한 업무를 지원하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "07",
+            "NCS_LCLAS_CDNM": "사회복지·종교",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "상담",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "직업상담서비스",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "전직지원",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "전직지원이란, 고객의 요구를 분석하여 전직지원을 기획하고 전직대상자의 역량을 진단하여 전직 목표를 세우고 이에 따른 변화관리, 생애설계, 취창업 등을 지원하며 전직심화상담과 전직지원관리 등을 수행하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

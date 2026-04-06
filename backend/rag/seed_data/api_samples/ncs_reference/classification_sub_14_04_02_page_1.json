@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "플랜트",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "플랜트시공",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "플랜트기계설비시공",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "플랜트기계설비시공은 산업용 설비와 환경 관련 기계 설비를 사용 목적에 맞도록 공사의 계획, 관리, 시공과 시운전 등을 효율적으로 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "플랜트",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "플랜트시공",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "플랜트전기설비시공",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "플랜트전기설비 시공은 국민생활 및 국가경제에 밀접한 설비로서 안정적인 전원공급을 위하여 공사계획과 품질안전계획을 수립하고 수변전설비, 전력간선 및 동력설비, 보호설비, 보안설비 등에 필요한 전기공사와 검사준공을 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "플랜트",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "플랜트시공",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "플랜트계측설비시공",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "플랜트계측설비시공은 산업·환경설비의 효율적이고 안전한 운전을 위하여 각종 계측제어장치의 시공업무를 수행하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

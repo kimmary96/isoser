@@ -1,0 +1,162 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "01",
+            "NCS_LCLAS_CDNM": "사업관리",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "02",
+            "NCS_LCLAS_CDNM": "경영·회계·사무",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "04",
+            "NCS_LCLAS_CDNM": "교육·자연·사회과학",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "05",
+            "NCS_LCLAS_CDNM": "법률·경찰·소방·교도·국방",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "06",
+            "NCS_LCLAS_CDNM": "보건·의료",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "07",
+            "NCS_LCLAS_CDNM": "사회복지·종교",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "09",
+            "NCS_LCLAS_CDNM": "운전·운송",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "10",
+            "NCS_LCLAS_CDNM": "영업판매",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "11",
+            "NCS_LCLAS_CDNM": "경비·청소",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "13",
+            "NCS_LCLAS_CDNM": "음식서비스",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "17",
+            "NCS_LCLAS_CDNM": "화학·바이오",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "18",
+            "NCS_LCLAS_CDNM": "섬유·의복",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "21",
+            "NCS_LCLAS_CDNM": "식품가공",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "22",
+            "NCS_LCLAS_CDNM": "인쇄·목재·가구·공예",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 24,
+      "lastPageNo": 1
+    }
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "09",
+            "NCS_MCLAS_CDNM": "항공기제작",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "항공기정비",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "항공기기체정비",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "항공기기체정비는 항공기기체 구조 및 부품의 성능을 유지하기 위하여 구조 및 부품 상태의 점검, 부품 장·탈착 작업, 판금 및 복합재료 작업, 배관작업, 조종 장치 작업, 용접작업, 도장작업, 수리 및 개조업무를 하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "09",
+            "NCS_MCLAS_CDNM": "항공기제작",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "항공기정비",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "항공기가스터빈엔진정비",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "항공기가스터빈엔진정비는 항공기가스터빈엔진의 성능을 유지하기 위하여 부품의 상태점검, 분해조립, 세척, 수리, 교환, 검사, 작동점검 및 시험업무를 하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "09",
+            "NCS_MCLAS_CDNM": "항공기제작",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "항공기정비",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "항공기왕복엔진정비",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "항공기왕복엔진정비는 항공기왕복엔진의 성능을 유지하기 위하여 부품의 상태점검, 분해·조립, 세척, 수리, 교환,  검사, 작동점검 및 시험업무를 하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "09",
+            "NCS_MCLAS_CDNM": "항공기제작",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "항공기정비",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "항공기프로펠러정비",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "항공기 프로펠러 정비는 항공기 프로펠러의 성능을 유지하기 위하여 부품의 상태점검, 분해·조립, 세척, 수리, 교환, 검사, 작동점검 및 시험업무를 하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "09",
+            "NCS_MCLAS_CDNM": "항공기제작",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "항공기정비",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "항공기계통정비",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "항공기 계통 정비는 항공기의 안전성을 확보하기 위하여 항공기의 구조물과 각 계통의 검사, 작동점검, 기능점검, 보급(servicing), 세척 및 수리, 개조 업무와 지상지원 업무를 하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "09",
+            "NCS_MCLAS_CDNM": "항공기제작",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "항공기정비",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "항공기전기·전자장비정비",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "항공기전기·전자장비정비는 항공기전기·전자장비의 성능을 유지하기 위하여 부품의 상태점검, 분해·조립, 세척, 수리, 교환, 검사, 작동점검 및 시험업무를 하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "09",
+            "NCS_MCLAS_CDNM": "항공기제작",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "항공기정비",
+            "NCS_SUBD_CD": "07",
+            "NCS_SUBD_CDNM": "헬리콥터정비",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "헬리콥터정비는 헬리콥터의 안전성을 확보하기 위하여 헬리콥터의 구조물과 각 계통의 검사, 작동점검, 기능점검, 서비싱(servicing), 세척 및 수리, 개조 업무를 하는 일이다.",
+            "DUTY_ORD": 7,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "09",
+            "NCS_MCLAS_CDNM": "항공기제작",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "항공기정비",
+            "NCS_SUBD_CD": "08",
+            "NCS_SUBD_CDNM": "소형무인기정비",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "소형무인기정비는 무인기의 안전한 운항을 위하여 소형무인기 구조물, 추진체, 탑재전자장비, 지상통제･지원장비, 임무장비의 점검, 교환, 수리하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 8,
+      "lastPageNo": 1
+    }
+  }
+}

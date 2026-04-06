@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "07",
+            "NCS_LCLAS_CDNM": "사회복지·종교",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "사회복지",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "사회복지정책",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "지역사회복지개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "지역사회복지개발은 지역주민복지를 증진시키기 위하여 지역사회 환경 및 복지욕구의 분석을 통해 개발된 지역사회문제 의제가 실행될 수 있도록 지역사회 네트워크, 주민 조직화, 지역 자원 관리를 추진하고 복지계획 수립 및 새로운 복지 정책을 제안하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "07",
+            "NCS_LCLAS_CDNM": "사회복지·종교",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "사회복지",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "사회복지정책",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "사회복지조직운영",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "사회복지조직 운영이란 사회복지조직(시설, 기관, 단체)의 목적 달성을 위하여 인적·물적·정보 자원을 효과적·효율적으로 관리하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "07",
+            "NCS_LCLAS_CDNM": "사회복지·종교",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "사회복지",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "사회복지정책",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "공공복지",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "공공복지는 국민의 삶의 질 향상을 위해 정부 및 지방자치단체에서 기획된 사회복지제도를 공공 사회복지 전달체계에서 실행하고 지역자원과 대상자를 발굴하며 지원하는 사회복지사업을 운영하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

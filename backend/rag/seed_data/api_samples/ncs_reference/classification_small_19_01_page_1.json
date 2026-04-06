@@ -1,0 +1,158 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "발전설비설계",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "발전설비운영",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "송배전설비",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "지능형전력망설비",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "전기기기제작",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "전기설비설계·감리",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "07",
+            "NCS_SCLAS_CDNM": "전기공사",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "08",
+            "NCS_SCLAS_CDNM": "전기자동제어",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "09",
+            "NCS_SCLAS_CDNM": "전기철도",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "10",
+            "NCS_SCLAS_CDNM": "철도신호제어",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "11",
+            "NCS_SCLAS_CDNM": "초임계CO₂발전",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "12",
+            "NCS_SCLAS_CDNM": "전기저장장치",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "13",
+            "NCS_SCLAS_CDNM": "미래형전기시스템",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "14",
+            "NCS_SCLAS_CDNM": "전지",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 14,
+      "lastPageNo": 1
+    }
+  }
+}

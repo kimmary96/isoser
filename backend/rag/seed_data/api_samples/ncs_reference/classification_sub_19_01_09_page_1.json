@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "09",
+            "NCS_SCLAS_CDNM": "전기철도",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "전기철도설계·감리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "전기철도 설계·감리는 전기철도 설계계획수립부터 공사 준공까지 송․변전설비, 전차선로, 전력설비 등에 대한 설계․감리업무를 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "09",
+            "NCS_SCLAS_CDNM": "전기철도",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "전기철도시공",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "전기철도 시공은 시공계획과 설계도서에 따라 전기차의 안전한 운행을 위하여 송전선로, 변전설비, 전차선로, 배전선로를 구축하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "09",
+            "NCS_SCLAS_CDNM": "전기철도",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "전기철도시설물유지보수",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "전기철도시설물 유지보수는 최적의 철도운영시스템을 유지하기 위해 전문역량을 갖춘 인력을 활용하여 송수선, 변전, 전차선로, 전력설비의 유지보수와 안전관리 및 사고장애 대책을 수립하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

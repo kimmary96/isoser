@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "06",
+            "NCS_MCLAS_CDNM": "자동차",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "자동차관리",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "자동차영업",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "자동차 영업은 신차 및 중고 자동차 판매를 위해 자동차와 관련된 기본적인 지식을 바탕으로 영업환경과 고객 니즈를 조사·분석하여 시장변화에 적절한 영업판촉활동을 계획하고 고객 발굴·상담, 계약, 자동차인도, 신규 및 재구매 고객관리, 중고차 매입·판매 등을 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "06",
+            "NCS_MCLAS_CDNM": "자동차",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "자동차관리",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "자동차튜닝",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "자동차튜닝이란 사용자의 요청에 따라 자동차의 성능향상, 구조 및 장치 변경을 목적으로 부품과 시스템의 기획, 설계, 제작, 조립, 장착, 시험, 검사 업무를 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

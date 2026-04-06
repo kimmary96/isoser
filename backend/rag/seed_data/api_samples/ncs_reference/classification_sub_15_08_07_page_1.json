@@ -1,0 +1,88 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "07",
+            "NCS_SCLAS_CDNM": "선박정비",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "선체정비",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "선체정비는 선체의 안전 확보와 인명보호, 선박의 안전한 운항을 위하여 정비지식과 기술을 습득하고 관련 법규와 규정에 따라 선체를 안전한 상태로 수리하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "07",
+            "NCS_SCLAS_CDNM": "선박정비",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "선박기관정비",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "선박기관정비는 선박기관계통의 기기 및 장비가 정상적으로 작동하도록 하기 위하여 고객, 검사기관, 법규 및 그 밖의 요구사항과 작업표준에 따라 각종 공구, 시험기 및 계측장비 등을 사용하여 분해, 점검, 신품교체 수리, 검사 등의 정비를 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "07",
+            "NCS_SCLAS_CDNM": "선박정비",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "선박배관정비",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "선박배관정비는 고객, 검사기관, 법규 및 그 밖의 요구사항에 따라 정비 대상이 되는 관 및 관장치를 철거하고 관 및 관장치를 제작, 도장 및/또는 조립하여  선박 배관의 기능을 정상적으로 복구 또는 유지시키는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "07",
+            "NCS_SCLAS_CDNM": "선박정비",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "전장정비",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "전장정비는 인명의 안전과 선박의 안전운항을 확보하기 위하여 고객의 요구사항에 따라 선박의 전기전자장비를 관련규정에 적합하게 수리, 설치, 철거 및 교체작업을 수행하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "07",
+            "NCS_SCLAS_CDNM": "선박정비",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "의장정비",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "의장정비는 고객, 검사기관, 법규 및 그 밖의 요구사항과 도면에 따라 의장품에 관한 정비 지식 및 기술을  활용하여 점검, 수리, 교체, 검사를 통하여 의장품 본래의 기능을 유지 시키는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 5,
+      "lastPageNo": 1
+    }
+  }
+}

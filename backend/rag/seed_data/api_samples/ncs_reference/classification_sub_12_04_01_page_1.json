@@ -1,0 +1,32 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "스포츠",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "스포츠용품",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "스포츠용품제작",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "스포츠용품제작은 스포츠과학을 기반으로 스포츠에 사용되는 용품을 수요자 요구에 맞게 개발하고 성능을 검증하여 제품 제작 및 관리하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 1,
+      "lastPageNo": 1
+    }
+  }
+}

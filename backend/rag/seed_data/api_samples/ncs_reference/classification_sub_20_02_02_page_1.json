@@ -1,0 +1,102 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "통신기술",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "무선통신구축",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "무선통신시스템구축",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "무선통신시스템구축은 요구사항 분석을 통하여 무선통신서비스 제공을 위한 교환설비 및 관련 시스템의 구축계획을 수립하고 설계, 장비발주, 구축공사, 시험, 감리, 최적화, 위해(危害) 전자파 보호대책 수립, 인수인계, 하자관리에 대한 업무를 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "통신기술",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "무선통신구축",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "전송시스템구축",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": " 전송시스템구축은 전송매체를 사용하여 음성, 데이터 및 영상 신호를 송·수신하는 전송시스템을 구축하기 위한 기획, 설계, 시공, 시험, 감리, 유지관리 하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "통신기술",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "무선통신구축",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "무선통신망구축",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "무선통신망구축은 무선통신망과 관련된 지식과 기술을 바탕으로 무선국과 단말기 간의 원활한 통신을 위하여 기본계획, 기본설계, 실시설계, 장비발주, 시공, 시험, 감리, 기술기준적용, 운용지원 및 유지보수 업무를 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "통신기술",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "무선통신구축",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "위성통신망구축",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "위성통신망 구축은 위성통신 서비스를 제공하기 위하여 위성통신망을 구축하고 위성통신망을 유지 관리하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "통신기술",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "무선통신구축",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "IoT통신망구축",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "IoT통신망구축은 IoT 융합서비스 제공을 위한 통신망 요구사항을 분석하고 표준 및 기술기준을 활용하여 LPWAN과 LoWPAN의 설계, 공사, 운용 업무를 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "통신기술",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "무선통신구축",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "공공안전통신망구축",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "공공안전통신망구축은 공공기관이 공공의 안전을 위하여 이동통신 기반의 통신망을 구축하고, 유지관리 하는 일이다.",
+            "DUTY_ORD": 6,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 6,
+      "lastPageNo": 1
+    }
+  }
+}

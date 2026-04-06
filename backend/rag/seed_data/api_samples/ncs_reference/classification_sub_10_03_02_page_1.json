@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "10",
+            "NCS_LCLAS_CDNM": "영업판매",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "판매",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "일반판매",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "매장판매",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "매장판매는 적합한 공간과 시설을 갖추고 매장방문 고객을 위하여 상품에 대한 이해를 바탕으로 상품판매 및 매장 운영활동을 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "10",
+            "NCS_LCLAS_CDNM": "영업판매",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "판매",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "일반판매",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "방문판매",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "방문판매는 판매자가 구매자를 직접 방문해서 상품을 시연, 설명, 설득, 판매하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

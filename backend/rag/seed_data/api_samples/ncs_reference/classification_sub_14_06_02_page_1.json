@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "06",
+            "NCS_MCLAS_CDNM": "도시·교통",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "교통계획·설계",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "교통계획",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "교통계획이란 교통정책의 목표달성을 위하여 교통조사분석, 교통수요분석, 교통수요관리분석, 교통운영정책분석, 미래기술 융합 교통계획 등의 과정을 거쳐 정책을 수립하는 일이다.\n",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "06",
+            "NCS_MCLAS_CDNM": "도시·교통",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "교통계획·설계",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "교통설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "교통설계란 효율적인 교통체계를 구축하기 위하여 교통 현황 조사ㆍ분석, 교통시설 규모 산정, 교통시설 부문별 설계, 교통시설의 설계 감리, 교통설계 타당성 검토, 공사 중 교통처리설계, 교통설계 안전성 검토 등을 하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "06",
+            "NCS_MCLAS_CDNM": "도시·교통",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "교통계획·설계",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "교통운영·감리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "교통운영ㆍ감리는 교통시스템을 효율적으로 운영ㆍ유지 관리하기 위하여 운영현황과 문제점 분석을 통해 교통운영개선계획을 수립하여 실행하고 관리 감독하는 일이다. ",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

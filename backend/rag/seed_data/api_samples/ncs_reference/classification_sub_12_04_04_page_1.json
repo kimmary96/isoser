@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "스포츠",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "스포츠마케팅",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "스포츠이벤트",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "스포츠이벤트는 해당 스포츠가 갖고 있는 특성을 활용하여 이벤트 개최를 위한 기획 단계부터 준비, 운영, 실행, 평가하는 과정을 통해 이벤트의 다양한 목적을 실현하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "스포츠",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "스포츠마케팅",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "스포츠라이선싱",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "스포츠라이선싱은 상표 등록된 재산권을 가지고 있는 라이선서(Licenser)가 부가 수익과 이미지 제고, 홍보 효과를 얻기 위하여 보유한 무형자산을 라이선시(Licensee)에게 대가를 받고, 재산권을 사용할 수 있도록 권리를 부여함으로서 라이선시(Licensee)는 그러한 무형자산을 활용하여 제품을 판매·홍보하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "스포츠",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "스포츠마케팅",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "스포츠에이전트",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "스포츠에이전트는 운동선수 개인 또는 스포츠 구단을 대리하여 입단과 이적, 연봉협상, 후원계약 등의 각종 계약을 처리하고 선수의 경력관리, 권익보호를 지원하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "스포츠",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "스포츠마케팅",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "스포츠정보관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "스포츠 정보관리는 효율적인 마케팅 활동을 위해 스포츠 관련 정보를 수집하고, 가공, 분류, 분석 및 활용하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

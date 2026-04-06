@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "02",
+            "NCS_LCLAS_CDNM": "경영·회계·사무",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "기획사무",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "홍보·광고",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "PR",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "PR은 조직의 긍정적 이미지를 제고하기 위하여 전략과 계획의 수립, 온ㆍ오프라인 매체를 이용한 커뮤니케이션 활동, 효과 측정과 피드백 등을 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "02",
+            "NCS_LCLAS_CDNM": "경영·회계·사무",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "기획사무",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "홍보·광고",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "광고",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "광고는 기업과 제품의 브랜드 인지도 제고와 이미지 구축을 위해 구체적인 전략을 수립하고 메시지를 개발하여 다양한 매체를 통해 커뮤니케이션 하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

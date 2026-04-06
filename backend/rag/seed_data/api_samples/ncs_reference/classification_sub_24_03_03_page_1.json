@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "임업",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "임산물생산·가공",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "임산물생산",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "임산물생산은 재배기술을 활용하여 산림에서 임산물을 생산하고, 임산물의 가공·유통을 통해 농산촌민의 소득을 창출하는 일이다. ",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "임업",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "임산물생산·가공",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "목재가공",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "목재가공은 원목 또는 목질계 원료를 이용하여 원료조성, 제재, 건조, 절삭, 분쇄, 집성, 성형, 접합 등의 물리적 기계가공 또는 접착, 도장, 탄화, 화학처리등의 개질가공으로 다양한 용도의 목질재료 및 목제품을 제조하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "임업",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "임산물생산·가공",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "펄프·종이제조",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "펄프·종이 제조는 문화, 위생, 산업용도로 쓰이는 종이제품 등을 생산하기 위하여 목질, 비목질, 폐지 등의 섬유원료로 펄프를 얻은 다음 이를 성형하여 용도에 적합한 품질의 종이를 제조하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

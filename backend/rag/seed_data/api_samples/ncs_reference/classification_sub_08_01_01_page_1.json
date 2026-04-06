@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "문화·예술",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "문화예술경영",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "문화·예술기획",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "문화·예술기획은 인간 삶의 질적 가치를 높이고 예술가들의 지속적인 창작활동을 위하여 문화예술작품을 선정하고 실행하여 사후관리하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "문화·예술",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "문화예술경영",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "문화·예술행정",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "문화·예술행정이란 문화예술의 진흥과 국민의 문화예술 향유를 위해서 기관과 시설에서 문화예술 관련 법률에 근거하여 기관경영, 정책 개발·평가, 사업 기획과 운영을 하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "문화·예술",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "문화예술경영",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "문화·예술경영",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "문화·예술경영은 문화예술 활동을 지속적, 안정적, 효율적으로 수행하기 위하여 경영전략, 조직과 인력, 홍보마케팅, 자금 등의 제반계획 수립을 통해 실무적 관리방안을 수행하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "문화·예술",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "문화예술경영",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "문헌정보관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "문헌정보관리는 이용자가 정보이용/조사/연구/학습/교양/평생교육 등의 활동을 할 수 있도록 다양한 매체의 문헌정보를   생성, 수집, 조직, 보존 및 제공하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

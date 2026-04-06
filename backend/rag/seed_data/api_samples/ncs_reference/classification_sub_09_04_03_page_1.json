@@ -1,0 +1,32 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "09",
+            "NCS_LCLAS_CDNM": "운전·운송",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "항공운전·운송",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "항행안전시설",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "항행안전무선시설운영관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "항행안전무선시설운영관리란 항공기가 운항하는데 이용되는 항법시설, 감시시설 등 항행안전무선시설의 성능을 확보하여 국내외 기술기준에 부합하는 항행안전 관련 정보를 제공함으로써 항공기 안전운항을 지원하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 1,
+      "lastPageNo": 1
+    }
+  }
+}

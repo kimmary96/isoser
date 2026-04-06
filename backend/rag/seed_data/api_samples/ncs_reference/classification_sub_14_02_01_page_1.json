@@ -1,0 +1,186 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "토목",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "토목설계·감리",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "도로설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "도로설계는 중장기 도로망 계획을 토대로 공간 기능을 확보하고, 도로 이용자에 대한 이동, 접근, 체류 등의 교통기능을 제공하기 위해 기술적·사회적·경제적 측면을 고려하여 조사·계획·설계하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "토목",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "토목설계·감리",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "공항설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "공항 설계란 항공기의 이륙·착륙을 위한 시설, 여객·화물의 운송을 위한 시설과 그 부대시설 및 지원시설을 설계하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "토목",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "토목설계·감리",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "터널설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "터널설계는 공학적 지식을 활용하여 요구되는 용도에 부합하도록 터널의 위치와 규모, 시공법, 사용재료를 효과적으로 계획하여 목적한 구조물을 안전하고 경제적이며 친환경적으로 설계하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "토목",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "토목설계·감리",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "교량설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "교량설계는 운송로에 방해가 되는 장애물을 피하거나 통과하기 위하여 관계법령 및 기준에 따라 주변경관을 고려하여 안전하며 경제적으로 교량을 설계하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "토목",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "토목설계·감리",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "항만(해양)설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "항만(해양)설계란 항만 및 어항, 연안보전·방재, 친수·레져, 해양플랜트 등 해양 공간의 이용, 보전을 위해 공간 및 시설을 계획·설계하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "토목",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "토목설계·감리",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "상하수도설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "상하수도 설계는 상·하수도 시설을 구축하기 위해 기초자료를 수집·분석하고, 이를 토대로 사업타당성 검토, 기본계획, 설계, 시운전 및 유지관리에 필요한 제반업무를 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "토목",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "토목설계·감리",
+            "NCS_SUBD_CD": "07",
+            "NCS_SUBD_CDNM": "하천(댐)설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "하천(댐)설계는 하천(댐)유역의 수자원 개발 및 이용, 재해방지 및 저감, 하천(댐)기능의 복원 및 유지 등을 위해 하천(댐)유역을 종합적이고 체계적으로 개발하고 관리하여 하천(댐)과 인간생활이 바람직한 조화를 이루도록 계획하고 설계하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "토목",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "토목설계·감리",
+            "NCS_SUBD_CD": "08",
+            "NCS_SUBD_CDNM": "지반설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "지반설계는 건설구조물에 관련된 지반특성과 현장조건을 조사·분석하여 합리적인 공법과 방안을 제시하고, 지반구조물이 안정적·경제적인 구조물이 되도록 설계하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "토목",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "토목설계·감리",
+            "NCS_SUBD_CD": "09",
+            "NCS_SUBD_CDNM": "단지설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "단지설계란 국토종합계획 및 각종 상위계획 등을 토대로 주택, 산업, 물류, 관광·휴양시설 등 융·복합 공간 조성에 필요한 기반시설을 계획하고, 종합적인 설계를 하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "토목",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "토목설계·감리",
+            "NCS_SUBD_CD": "10",
+            "NCS_SUBD_CDNM": "철도설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "철도설계는 민간제안을 포함한 상위계획에 따라 철도의 건설, 운영, 유지관리를 위하여 조사, 계획 및 설계성과품을 작성하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "토목",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "토목설계·감리",
+            "NCS_SUBD_CD": "11",
+            "NCS_SUBD_CDNM": "토목건설사업관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "토목건설사업관리란 건설기술진흥법에 따라 건설기술용역업자가 발주처의 감독 권한을 대행하여 품질확보 및 향상을 위하여 건설사업관리를 수행하는 것을 말하며 해당공사의 설계도서, 그 밖의 관계서류의 내용대로 시공되는지 여부를 확인하고 품질관리, 시공관리, 공정관리, 안전·위험관리, 환경관리 등에 대한 기술을 지도하고 관리·감독하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "토목",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "토목설계·감리",
+            "NCS_SUBD_CD": "12",
+            "NCS_SUBD_CDNM": "토목시설물경관",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "토목시설물경관이란 토목분야별 시설물이 대상지 주변현황, 인문 자연환경에 적합하도록 기본계획·설계,  분야별 지침서 작성, 협의·심의 도서작성, 성과물 작성을 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 12,
+      "lastPageNo": 1
+    }
+  }
+}

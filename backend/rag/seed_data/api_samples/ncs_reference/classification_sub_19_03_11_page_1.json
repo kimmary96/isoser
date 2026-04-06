@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "11",
+            "NCS_SCLAS_CDNM": "3D프린터개발",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "3D프린터개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "3D프린터개발은 시장의 요구사항을 토대로 3차원 형상을 제작하기 위하여 기계기구물과 회로를 설계하고 최적의 소프트웨어를 적용하여 3D프린터를 제작하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "11",
+            "NCS_SCLAS_CDNM": "3D프린터개발",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "3D프린터용 제품제작",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "3D프린터용 제품제작은 다양한 산업 분야에서 요구되는 제품을 3D프린팅을 활용하여 설계, 모델링, 출력 및 후처리하는 업무를 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "11",
+            "NCS_SCLAS_CDNM": "3D프린터개발",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "3D프린팅 소재개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "3D프린팅 소재 개발은, 수요산업별 요구에 따른 3D프린팅 소재 개발을 위하여 시장조사, 기획, 개발, 평가, 안전관리를 하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

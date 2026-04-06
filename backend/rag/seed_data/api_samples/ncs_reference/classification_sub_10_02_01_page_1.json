@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "10",
+            "NCS_LCLAS_CDNM": "영업판매",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "부동산",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "부동산컨설팅",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "부동산개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "부동산개발은 토지의 가치제고·공간의 효용성과 경제적 효과가 극대화되고 최적으로 운용될 수 있는 부동산을 생산하기 위해 토지, 자본, 노동, 지식 등을 결합해 토지 및 건축물 등을 조성 공급하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "10",
+            "NCS_LCLAS_CDNM": "영업판매",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "부동산",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "부동산컨설팅",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "부동산분양",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "부동산분양은 부동산개발을 통해 만들어진 결과물을 효과적이고 바람직한 홍보와 마케팅을 통해 성공적으로 시장에서 실현 되도록 하는 일련의 과정과 계획을 수립하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "10",
+            "NCS_LCLAS_CDNM": "영업판매",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "부동산",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "부동산컨설팅",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "부동산경·공매",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "부동산 경·공매란 민사집행법상의 부동산 경매 및 국세징수법에 따른 부동산 공매와 공공기관 등이 관계 법령의 규정에 따라 부동산을 매각하는 제반활동에 관한 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

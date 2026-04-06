@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "10",
+            "NCS_SCLAS_CDNM": "철도신호제어",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "철도신호제어설계·감리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "철도신호제어 설계·감리는 철도차량의 안전운행 및 효율성 향상을 위하여 철도신호제어 설비를 설계하고, 현장조건 및 설계도서 등 기준에 적합하게 설치되도록 감리(관리, 감독)를 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "10",
+            "NCS_SCLAS_CDNM": "철도신호제어",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "철도신호제어시공",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "철도신호제어시공은 설계도서 및 관련 법령(지침), 신호제어분야의 전문지식을 바탕으로 신설  및 운행선의 철도신호제어설비를 시공하여 열차의 안전 및 정시운행에 기여할 수 있도록 하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "10",
+            "NCS_SCLAS_CDNM": "철도신호제어",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "철도신호제어시설물유지보수",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "철도신호시설물 유지보수는 신호 유지보수 계획수립 및 신호 안전관리와 철도신호시설물을 유지보수하고, 신호 사고장애 복구ㆍ대책을 수립하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

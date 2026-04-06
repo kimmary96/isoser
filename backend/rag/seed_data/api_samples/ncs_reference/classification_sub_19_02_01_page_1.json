@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "전자기기일반",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "전자제품개발기획·생산",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "전자제품기획",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "전자제품기획은 전자제품의 시장, 기술 및 제품동향, 제품경쟁력 등의 분석을 통하여 상품화 실행 전략을 수립하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "전자기기일반",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "전자제품개발기획·생산",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "전자제품생산",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "전자제품 생산은 제품개발이 완료된 전자제품을 효율적으로 제조하기 위하여 생산계획, 생산기술, 구매관리, 자재관리, 공정관리, 설비관리, 제조, 품질보증, 품질관리, 출하관리, 표준관리, 안전관리, 자동화장비활용을 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

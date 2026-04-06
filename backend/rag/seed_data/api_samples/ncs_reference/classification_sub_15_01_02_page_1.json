@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "기계설계",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "기계설계",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "기계요소설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "기계요소설계는 기계를 구성하고 있는 단위요소를 설계하기 위하여 창의적인 기능품의 선정과 제조방법을 고려한 요소의 강도, 형상, 구조를 결정하여 적합한 규격에 맞도록 검토 및 설계하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "기계설계",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "기계설계",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "기계시스템설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "기계시스템설계는 요구되는 일반기계의 성능을 실현하기 위해 메커니즘 설정, 역학적 분석, 기계요소의 통합적 구성관계를 검토하여 시스템을 설계하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "기계설계",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "기계설계",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "구조해석설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "구조해석설계는 최적의 기계를 설계하기 위하여 공학이론을 기본으로 컴퓨터 응용해석 등을 통하여 기계의 성능, 안전성, 신뢰성 등을 확보하고 검증하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "기계설계",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "기계설계",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "기계제어설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "기계제어설계는 고객의 요구사항에 적합한 기계구동을 위하여 제어대상을 분석하고 인터페이스를 설계하며, 제어계를 구성하고 설계하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

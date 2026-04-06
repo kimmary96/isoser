@@ -1,0 +1,132 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "02",
+            "NCS_LCLAS_CDNM": "경영·회계·사무",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "재무·회계",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "재무",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "자금",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y",
+            "NCS_COMPE_UNIT_CD": "01",
+            "DEVEL_YY": "2020",
+            "VER_NO": 3,
+            "NCS_CL_CD": "0203010201_20v3",
+            "COMPE_UNIT_NAME": "자금계획 수립",
+            "COMPE_UNIT_DEF": "자금계획수립이란 기업 경영에 필요한 영업, 투자, 재무활동을 수행하기 위하여 자금의 조달과 운용 계획을 수립하는 능력이다.",
+            "COMPE_UNIT_LEVEL": 6
+          },
+          {
+            "NCS_LCLAS_CD": "02",
+            "NCS_LCLAS_CDNM": "경영·회계·사무",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "재무·회계",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "재무",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "자금",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y",
+            "NCS_COMPE_UNIT_CD": "02",
+            "DEVEL_YY": "2020",
+            "VER_NO": 3,
+            "NCS_CL_CD": "0203010202_20v3",
+            "COMPE_UNIT_NAME": "자금조달",
+            "COMPE_UNIT_DEF": "자금조달이란 자금계획에 따라 조달비용을 최소화할 수 있는 자금 조달방안을 수립하고, 수립된 자금조달 계획에 따라 기업 내·외부의 자금을 조달하는 능력이다.",
+            "COMPE_UNIT_LEVEL": 5
+          },
+          {
+            "NCS_LCLAS_CD": "02",
+            "NCS_LCLAS_CDNM": "경영·회계·사무",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "재무·회계",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "재무",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "자금",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y",
+            "NCS_COMPE_UNIT_CD": "04",
+            "DEVEL_YY": "2020",
+            "VER_NO": 3,
+            "NCS_CL_CD": "0203010204_20v3",
+            "COMPE_UNIT_NAME": "자금운용",
+            "COMPE_UNIT_DEF": "자금운용이란 자금계획에 따라 기업의 내·외부에서 조달된 자금을 목적에 맞추어 집행하고 관리하는 능력이다.",
+            "COMPE_UNIT_LEVEL": 4
+          },
+          {
+            "NCS_LCLAS_CD": "02",
+            "NCS_LCLAS_CDNM": "경영·회계·사무",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "재무·회계",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "재무",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "자금",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y",
+            "NCS_COMPE_UNIT_CD": "05",
+            "DEVEL_YY": "2020",
+            "VER_NO": 3,
+            "NCS_CL_CD": "0203010205_20v3",
+            "COMPE_UNIT_NAME": "자금정보제공",
+            "COMPE_UNIT_DEF": "자금정보제공이란 투자 유치와 투자자 보호를 위하여 공시규정에 따라 기업의 재무정보를 제공하는 능력이다.",
+            "COMPE_UNIT_LEVEL": 3
+          },
+          {
+            "NCS_LCLAS_CD": "02",
+            "NCS_LCLAS_CDNM": "경영·회계·사무",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "재무·회계",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "재무",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "자금",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y",
+            "NCS_COMPE_UNIT_CD": "06",
+            "DEVEL_YY": "2020",
+            "VER_NO": 3,
+            "NCS_CL_CD": "0203010206_20v3",
+            "COMPE_UNIT_NAME": "재무위험관리",
+            "COMPE_UNIT_DEF": "재무위험관리란 기업의 재무위험을 최소화하기 위하여 위험대상의 식별, 대응계획 수립,  대응결과의 검토를 통해 재무위험을 최소 비용으로 관리하는 능력이다.",
+            "COMPE_UNIT_LEVEL": 5
+          },
+          {
+            "NCS_LCLAS_CD": "02",
+            "NCS_LCLAS_CDNM": "경영·회계·사무",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "재무·회계",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "재무",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "자금",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y",
+            "NCS_COMPE_UNIT_CD": "07",
+            "DEVEL_YY": "2020",
+            "VER_NO": 3,
+            "NCS_CL_CD": "0203010207_20v3",
+            "COMPE_UNIT_NAME": "성과 분석",
+            "COMPE_UNIT_DEF": "성과 분석이란 조직의 효율적인 자금운용을 위하여 계획 대비 실적에 대한 차이 분석과 원인에 대한 대응방안을 도출하여 차기계획에 반영 하는 능력이다.",
+            "COMPE_UNIT_LEVEL": 6
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 6,
+      "lastPageNo": 1
+    }
+  }
+}

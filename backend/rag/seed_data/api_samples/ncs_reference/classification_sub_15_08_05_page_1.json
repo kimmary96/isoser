@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "선박생산관리",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "선박생산계획",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "선박생산계획은 고객이 요구하는 양질의 선박 건조와 인도를 위하여 설비 및 생산 능력에 부합하도록 선박의 수주부터 인도까지의 생산 공정(선행, 후행) 계획을 수립하고 관리하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "선박생산관리",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "선체생산관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "선체생산관리는 선체를 건조하기 위하여 강재관리에서부터 가공, 조립, 탑재 및 진수까지 일련의 생산공정을 계획, 실행 및 관리하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "선박생산관리",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "의장생산관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "의장생산관리는 조선소에서 건조하는 선박의 의장품을 주어진 시간 내에 계약서에서 요구하는 수준의 품질을 확보하여 공정단계별로 가장 효율적으로 생산하기 위한 의장생산관리를 총괄적으로 수행하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

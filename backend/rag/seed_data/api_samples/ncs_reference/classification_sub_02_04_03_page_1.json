@@ -1,0 +1,88 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "02",
+            "NCS_LCLAS_CDNM": "경영·회계·사무",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "생산·품질관리",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "물류무역관리",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "수출입관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "수출입관리는 무역업무 흐름을 최적화하기 위하여 수출입사전준비, 수출입위험관리, 수출입마케팅,  수출입계약, 수출입운송보험, 수출입통관, 수출입대금결제 등을 하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "02",
+            "NCS_LCLAS_CDNM": "경영·회계·사무",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "생산·품질관리",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "물류무역관리",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "원산지관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "원산지관리란 FTA 활용 등을 통한 기업의 수출 경쟁력 강화를 위하여 원재료 구매부터 물품의 수출까지 전반적인 현황을 분석하고 FTA 원산지 규정에 따라서 원산지 판정, 원산지 증빙서류 발급, 원산지 검증 대응 등에 관한 업무를 수행하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "02",
+            "NCS_LCLAS_CDNM": "경영·회계·사무",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "생산·품질관리",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "물류무역관리",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "물류기획",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "물류기획은 효율적인 물자 흐름 관리를 위해 고객관리, 물류거점 네트워크 설계, 재고, 운송 및 보관·하역 등 물류 기능의 전략과 운영계획을 수립하고, 성과관리를 하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "02",
+            "NCS_LCLAS_CDNM": "경영·회계·사무",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "생산·품질관리",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "물류무역관리",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "운송관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "운송관리는 최적의 서비스로 화물을 인도하기 위해 육상, 해상, 항공과 복합 운송, 국내외 특송의 운송수단과 운송플랫폼을 활용하여 수·배송을 관리하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "02",
+            "NCS_LCLAS_CDNM": "경영·회계·사무",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "생산·품질관리",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "물류무역관리",
+            "NCS_SUBD_CD": "07",
+            "NCS_SUBD_CDNM": "보관·하역관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "보관·하역관리는 화물의 취급과 저장을 효율적으로 수행하기 위해 입고에서부터 출고에 이르는 보관, 분류, 포장, 유통가공과 관련한 업무를 관리하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 5,
+      "lastPageNo": 1
+    }
+  }
+}

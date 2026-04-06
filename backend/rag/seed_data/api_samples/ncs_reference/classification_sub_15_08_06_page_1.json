@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "시운전",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "기장시운전",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "기장시운전은 선박 건조의 최종 단계에서 도면 및 관련 규정에 따라 기관실 구역 내에 설치된 모든 장비와 시스템의 성능과 기능이 만족하는지를 확인하기 위하여 점검하고 시험운전하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "시운전",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "선장시운전",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "선장시운전은 선박 건조의 최종 단계에서 도면 및 관련 규정에 따라 선박에 설치된 선체의장 장비와 시스템의 성능과 기능을 확인하기 위하여 점검하고 시험운전하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "시운전",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "전장시운전",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "전장시운전은 선박 건조의 최종단계에서 관련 규정, 도면 및 표준작업서에 따라 선박에 설치된 전기장비, 전기계통, 항해·통신 장비 및 관련 특수 장비의 성능과 기능을 확인하기 위하여 점검하고 시험·운전하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

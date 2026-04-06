@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "선박품질관리",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "선체품질관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "조선 품질관리 분야는 선박 건조에 필요한 자재, 작업과정, 완성품에 대하여 승인도면, 선급 규정/규칙 및 사양서에 일치하는지 검사하고 보증하는 과정으로 이 중, 선체품질관리는 선박의 선체 구조물이 설계기준, 선급 규정/규칙 및 사양서에 준하여 제작되는지를 검사하고 보증하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "선박품질관리",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "의장품질관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "조선 품질관리 분야는 선박 건조에 필요한 자재, 작업과정, 완성품에 대하여 승인도면, 선급규정/규칙 및 사양서에 일치하는지 검사하고 보증하는 과정으로 이중, 의장품질관리는 규정 및 도면에 따라 주요기기, 보조기기, 축계(Shaft system) 및 타계(Rudder &amp; Steering System) 등이 설치되었는지를 확인하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "선박품질관리",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "도장품질관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "도장품질관리는 선박도장품질이 승인된 도장사양 및 관련 규정에 일치하도록 예방관리 및 검증활동으로 도장품질을 확보하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

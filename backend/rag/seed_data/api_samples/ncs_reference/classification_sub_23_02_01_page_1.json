@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "환경보건",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "환경보건관리",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "산업환경보건",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "산업환경보건은 산업현장을 포함한 각종 오염원으로부터 환경유해인자가 주변지역으로 노출되고 확산되어 환경에 미치는 영향을 사전예방하거나 최소화시켜 지역주민의 건강을 유지, 증진시키는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "환경보건",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "환경보건관리",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "실내공기질관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "실내공기질 관리는 인체 위해성을 최소화하고 쾌적한 실내공기질 유지를 위해 측정·분석, 평가, 관리, 개선에 관한 업무를 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "환경보건",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "환경보건관리",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "위해성관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "위해성관리는 환경 및 산업적 유해인자에 노출되어 나타날 수 있는 환경 영향과 건강 위해성을 예측하고, 우선순위를 결정한 후 의사소통을 통해 예방 및 저감 대책을 수립·관리하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

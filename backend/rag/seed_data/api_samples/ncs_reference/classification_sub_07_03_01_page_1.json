@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "07",
+            "NCS_LCLAS_CDNM": "사회복지·종교",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "보육",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "보육",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "보육",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "보육은 표준보육과정을 기초로 어린이집의 운영 철학에 따라 영유아의 발달을 촉진하는 놀이활동의 기획과 보육업무를 수행하고 어린이집-보호자-지역사회 등의 인적․물적 네트워크와 협력을 이끌고 지원하는 직무를 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "07",
+            "NCS_LCLAS_CDNM": "사회복지·종교",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "보육",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "보육",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "산후육아지원",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "산후육아지원은 출산 후 산모와 신생아가 신체적·정서적 건강 상태를 유지할 수 있도록 산후관리사가 산모와 신생아의 관찰과 상담을 통해 신체적, 정서적 지원과 일생생활에 필요한 지원을 제공하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "07",
+            "NCS_LCLAS_CDNM": "사회복지·종교",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "보육",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "보육",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "아이돌봄",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "아이돌봄이란 가정을 기반으로 만 12세 이하의 아동에게 개별적으로 보호 및 양육서비스를 제공하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

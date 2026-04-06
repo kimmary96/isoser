@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "10",
+            "NCS_LCLAS_CDNM": "영업판매",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "부동산",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "감정평가",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "부동산·동산감정평가",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "부동산·동산의 감정평가란 공공의 이익과 국민경제에 이바지할 수 있도록 높은 식견과 전문적인 지식을 기반으로 대상의 구체적 사항을 조사·확인하는 과정을 거쳐 경제적 가치를 판단하고 결정하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "10",
+            "NCS_LCLAS_CDNM": "영업판매",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "부동산",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "감정평가",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "기업가치평가",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "기업가치평가란 기업이 보유하고 있는 토지, 건물, 기계기구를 포함한 유형자산과 영업권, 산업재산권을 포함한 무형자산의 기초자료 수집, 현장조사, 자료 분석절차를 거친 후 구체적인 감정평가 방법의 적용을 통해 경제적 가치를 산정하고 이를 보고서로 작성하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "10",
+            "NCS_LCLAS_CDNM": "영업판매",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "부동산",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "감정평가",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "감정평가가격정보제공",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "감정평가가격정보제공이란 국가, 기업과 개인이 보유하고 있는 부동산 등 유형자산과 사회기반시설 그리고 영업권과 기업가치 등 무형자산의 가치에 영향을 미치는 가치형성요인과 가치발생요인에 관한 자료를 수집, 정리, 가공하여 생성한 감정평가가격정보를 전산정보체계를 활용하여 수요자에게 제공하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "기계장치설치",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "냉동공조설비",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "냉동공조설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "냉동공조설계는 최적의 냉동공조시스템을 구성하기 위하여 기본계획을 수립하고, 부하계산 등을 통하여 설계도서를 작성하고 검증하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "기계장치설치",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "냉동공조설비",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "냉동공조설치",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "냉동공조설치는 설계도서에 따라 열원설비, 공조설비, 자동제어설비 등을 설치하고 성능을 확인하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "기계장치설치",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "냉동공조설비",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "냉동공조유지보수관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "냉동공조유지보수관리는 냉동공조설비를 최적의 상태로 유지하기 위하여 설비의 점검 및 진단을 통하여 성능과 효율을 관리하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "기계장치설치",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "냉동공조설비",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "보일러설치·정비",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "보일러 설치·정비는 건물난방용 및 산업용 등의 열에너지를 공급하기 위하여 사용 목적에 적합하게 보일러 및 관련설비를 설치·정비하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "기계장치설치",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "냉동공조설비",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "보일러운영관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "보일러운영관리는 건축물과 산업시설 등에 열을 공급하는 보일러 및 관련 설비를 안전하고 효율적으로 운영·관리하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 5,
+      "lastPageNo": 1
+    }
+  }
+}

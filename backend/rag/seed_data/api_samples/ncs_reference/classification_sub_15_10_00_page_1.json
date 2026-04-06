@@ -1,0 +1,32 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "10",
+            "NCS_MCLAS_CDNM": "금형",
+            "NCS_SCLAS_CD": "00",
+            "NCS_SCLAS_CDNM": "금형(공통)",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "금형스마트시스템운영·관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "금형스마트시스템운영‧관리는 ICT융합기술 기반의 스마트 환경을 활용하여 금형설계, 제작, 데이터 수집, 검증, 금형 원가, 금형 이력 등을 시스템으로 운영‧관리하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 1,
+      "lastPageNo": 1
+    }
+  }
+}

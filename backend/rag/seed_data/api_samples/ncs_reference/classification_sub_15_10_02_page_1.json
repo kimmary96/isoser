@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "10",
+            "NCS_MCLAS_CDNM": "금형",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "프레스금형",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "프레스금형설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "프레스금형설계는 금형소재, 제품성형, 프레스기계, 가공방법, 설계소프트웨어, 성형해석소프트웨어에 대한 지식과 기술을 기반으로 제품도 검토, 공정순서 및 금형구조 결정, 도면 작성 작업을 수행하여 가공성, 조립성, 생산성 및 품질이 확보될 수 있는 금형을 설계하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "10",
+            "NCS_MCLAS_CDNM": "금형",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "프레스금형",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "프레스금형제작",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "프레스금형제작은 금형설계 도면을 보고 현재 진행 중인 작업상황을 파악, 공정설계를 완료하여 표준부품과 가공부품의 수급방법을 정하고 설비 및 가공 표준화 관리로 설계된 부품을 가공하여 고객이 요구하는 금형제작을 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "10",
+            "NCS_MCLAS_CDNM": "금형",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "프레스금형",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "프레스금형품질관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "프레스금형 품질관리는 금형 품질을 확보하기 위해, 제작된 금형이 설계 요구사항에 맞는지 검사하고, 시제품 및 양산성 검증을 실시하여 양산성이 확보된 금형을 생산부서에 이관하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "10",
+            "NCS_MCLAS_CDNM": "금형",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "프레스금형",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "프레스금형조립",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "프레스금형조립은 기계가공 된 금형요소 부품을 조립하기 위하여 금형설계 도면의 특성을 파악하고 금형부품을 검수한 후 사상·조립하여 금형의 생산성 확보를 위한 조립 표준화작업을 수행하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

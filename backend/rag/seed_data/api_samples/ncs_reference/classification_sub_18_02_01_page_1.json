@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "18",
+            "NCS_LCLAS_CDNM": "섬유·의복",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "패션",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "패션제품기획",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "패션기획",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "패션기획은 기업의 목표달성과 소비자 만족을 위하여 패션시장 현황분석과 판매분석을 기반으로 브랜드 전략수립부터 소재기획, 상품기획, 생산기획, 판매관리에 이르는 전 과정을 총괄하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "18",
+            "NCS_LCLAS_CDNM": "섬유·의복",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "패션",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "패션제품기획",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "패션디자인",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "패션디자인은 패션상품생산을 위하여 디자인 기획을 통해 컬러, 소재, 스타일 등 디자인 요소를 분석, 선별하고 패션디자인 및 시제품을 개발, 평가하여 기능성과 심미성 있는 패션 제품을 창작하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "18",
+            "NCS_LCLAS_CDNM": "섬유·의복",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "패션",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "패션제품기획",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "패턴",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "패턴은 의복 생산을 위하여 작업지시서를 바탕으로 패턴제작, 패턴수정, 그레이딩, 원부자재 소요량 산출, 기술지도, 품질관리하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "18",
+            "NCS_LCLAS_CDNM": "섬유·의복",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "패션",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "패션제품기획",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "비주얼머천다이징",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "비주얼머천다이징은 패션상품의 브랜드 가치와 매출 증대를 위하여 트렌드 및 자사브랜드 분석을 바탕으로 비주얼머천다이징 전략수립 및 실행을 계획하고 매장구성과 상품 제안을 전개하여 패션매장의 시각적 효과를 극대화하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

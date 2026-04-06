@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "반도체개발",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "반도체개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "반도체 개발은 전기적 특성에 따른 고객의 요구 기능을 구현하기 위해 제품을 기획하고 칩을 설계하며, 설계에 적합한 공정과 패키지를 개발하여 완성된 제품에 대해 검증 및 테스트를 통해 신뢰성이 확보되는 반도체를 개발하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "반도체개발",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "반도체제조",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "반도체제조는 설계된 반도체의 생산을 위해 안전을 고려하여 장비, 시설운영, 유지･개선 관리와 품질관리 및 생산성 향상 업무를 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "반도체개발",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "반도체장비",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "반도체장비는 반도체를 제조하기 위한 전공정 장비, 검사 장비, 후공정 장비를 기획, 설계, 개발하고 생산하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "반도체개발",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "반도체재료",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "반도체 재료는 반도체 제조에 필요한 재료들에 대한 특성에 따라 생산성, 품질 및 안전을 고려하여 재료들을 개발하고 제조하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

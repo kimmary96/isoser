@@ -1,0 +1,102 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "축산",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "사육관리",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "젖소사육",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "젖소사육은 번식, 사양, 질병 관리 등을 통해 위생적으로 건강한 젖소를 키우고, 착유한 우유 등의 유제품을 판매하여 목장을 효율적으로 경영하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "축산",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "사육관리",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "돼지사육",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "돼지사육은 후보돈을 관리하여 돼지의 번식, 급여, 생육환경, 질병을 관리하고, 방역 및 분뇨처리를 통해 위생을 유지하며, 농가의 효율적인 운영을 위한 시설, 경영관리 및 각종 인증을 획득하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "축산",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "사육관리",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "가금사육",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "가금사육은 입추환경을 조성하고, 가금 생산단계별로 사양관리를 통해 가금을 기르며, 사료, 축사, 질병, 경영 등을 효과적으로 관리하여 농장을 효율적으로 운영하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "축산",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "사육관리",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "한우사육",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "한우사육은 한우를 입식하여 개량, 번식, 육성, 비육, 사료 및 질병을 관리하고, 방역 및 분뇨 처리를 통해 가축의 위생을 유지하며, 농장의 운영을 위한 경영 및 시설을 관리하고, 소비자 신뢰확보 및 축산 식품 안전을 고려하여 각종 인증을 획득하고 적기에 출하하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "축산",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "사육관리",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "말사육",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "말사육은 말의 용도에 따라 번식, 자마, 육성마 등의 단계별로 사양관리를 통해 기르고, 운동, 질병, 방역위생, 초지, 마장ㆍ마사, 말 장구 등을 효과적으로 관리하며, 농장의 효율적 운영을 위한 경영관리를 실시하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "축산",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "사육관리",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "곤충사육",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "‘곤충사육’은 산업에 활용하는 곤충의 특성에 따라 곤충종충, 사육환경, 병해충을 관리하여 산물을 생산하고 관리하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 6,
+      "lastPageNo": 1
+    }
+  }
+}

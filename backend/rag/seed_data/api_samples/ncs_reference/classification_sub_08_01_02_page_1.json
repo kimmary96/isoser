@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "문화·예술",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "실용예술",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "실용음악",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "실용음악은 대중의 음악문화 향유를 목적으로 고전음악, 민속음악 등의 전통음악을 제외한 모든 음악을 가창하고 연주하고창작하여 생산 보급하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "문화·예술",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "실용예술",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "실용사진",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "실용사진은 영리를 목적으로 다양한 매체에 적합한 사진적 표현방법을 기획하고 시각화하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

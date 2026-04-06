@@ -1,0 +1,88 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "09",
+            "NCS_MCLAS_CDNM": "항공기제작",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "항공기설계",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "항공기기체설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "항공기 기체설계는 주어진 항공기 설계 요구조건에 따라 감항인증기준을 충족하는 최적의 항공기 형상과 구조를 구현하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "09",
+            "NCS_MCLAS_CDNM": "항공기제작",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "항공기설계",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "항공기엔진·프로펠러설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "항공기 엔진·프로펠러 설계는 항공기 특성에 따른 요구조건을 만족하도록 엔진·프로펠러의 기능과 형상을 정의하고, 이를 구현하기 위한 설계, 해석, 시제작 및 시험평가를 하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "09",
+            "NCS_MCLAS_CDNM": "항공기제작",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "항공기설계",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "항공기전기·전자장비설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "항공기 전기·전자장비 설계는 항공기의 안전하고 효율적인 운항 및 사용자의 편의성을 증대하기 위하여 최적화된 항행, 통신, 감시 등의 전기전자계통을 설계하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "09",
+            "NCS_MCLAS_CDNM": "항공기제작",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "항공기설계",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "항공기시스템설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "항공기시스템 설계는 작동스펙트럼을 분석하여 해석, M&amp;S 등을 통한 통합·배치를 하는 기본설계와 제작성·정비성, 내구성 등을 고려한 상세 설계를 완성하고 효율적인 공정을 고려하여 제품규격을 제정하고 시제품 제작 및 시험·결과 분석을 실시하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "09",
+            "NCS_MCLAS_CDNM": "항공기제작",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "항공기설계",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "소형무인기비행체개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "소형무인기비행체개발이란 소형 무인항공기 비행체 및 탑재 장비가 정상적인 작동을 하도록 비행체 외형을 설계하고 동력장치, 임무장비 등의 주요 구성품을 선정하고 장착하도록 설계하며, 소형 무인기에 해당하는 특수 비행체의 특성을 이해하여 체계종합 기술자 수준으로 소형 무인항공기 비행체의 설계를 수행하는 일이다..",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 5,
+      "lastPageNo": 1
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "해양자원",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "잠수",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "일반잠수",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "일반잠수는 대기압 이상의 압력에서 스쿠버 장비를 사용하여 수색구조, 수중촬영, 수중조사, 스쿠버 장비 관리와 스쿠버 잠수 교육을 통한 수중 레저 활동 등을 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "해양자원",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "잠수",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "산업잠수",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "산업잠수는 대기압 이상의 작업환경에서 인원, 장비, 자재를 바탕으로 공기 및 혼합기체를 사용하여 구조물 용접 및 절단, 보수, 구조물 설치 및 해체, 안전진단, 고르기, 발파, 해난구조, 극한환경잠수 등의 수중작업을 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금융",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "금융영업",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "창구사무",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "창구사무는 고객이 원하는 금융거래를 위하여 고객접점에서 서비스를 제공하고 금융상품을 세일즈 하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금융",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "금융영업",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "기업영업",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "기업영업은 기업활동에 필요한 금융상품과 서비스의 제공을 통해 기업과 금융사의 동반성장을 목적으로 고객발굴 및 상담능력, 기업분석능력, 컨설팅능력을 가지고, 가망고객발굴, 대상기업분석, 고객접촉활동·관계형성, 고객상담, 고객니즈 파악·분석, 거래제안·협상, 약정에 따른 거래성사, 거래심화, 고객관리를 하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금융",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "금융영업",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "PB영업",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "PB(Private Banker)영업이란 일정 규모 이상의 부를 가진 고객에 대한 재무적, 비재무적 니즈를 파악하여 니즈에 맞는 종합적이고 체계적인 자산관리 서비스를 제공하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금융",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "금융영업",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "카드영업",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "카드영업이란 고객의 특성, 카드상품, 판매채널, 관련 법규 등의 이해를 기반으로, 고객의 생활양식에 적합한 결제수단 및 편의 서비스를 제공하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금융",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "금융영업",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "여신전문금융영업",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "여신전문금융영업은 고객이 필요로 하는 금융과 서비스를 리스, 렌탈, 할부, 대출의 방식에 따라 고객발굴, 상담, 신용분석 및 계약의 과정을 거쳐 고객에게 제공하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 5,
+      "lastPageNo": 1
+    }
+  }
+}

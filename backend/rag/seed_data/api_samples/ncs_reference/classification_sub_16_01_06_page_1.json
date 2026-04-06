@@ -1,0 +1,88 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금속재료",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "비철금속재료제조",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "마그네슘제조",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "마그네슘 제조는 원료를 전처리, 제련하여 순 마그네슘 및 합금 잉곳을 제조하고, 정밀성형을 위한 다이캐스팅, 주조, 압연, 판재성형, 표면처리 등의 공법으로 초경량 부품을 만들고 원재료를 재활용하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금속재료",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "비철금속재료제조",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "타이타늄제조",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "타이타늄 제조는 타이타늄 함유 광물을 원광으로 정･제련을 통해 만들어진 타이타늄 스폰지로부터 순수 타이타늄 및 합금의 중간재를 제조하여 정밀주조, 중간재 제조, 소재가공, 적층 제조, 열･표면처리, 리사이클링 등을 통해 소재･부품화하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금속재료",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "비철금속재료제조",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "알루미늄가공",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "알루미늄 가공이란 알루미늄 소재를 사용하여 합금제조, 소성가공, 주조, 적층성형, 후처리, 접합 등의 공법으로 부품을 제조하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금속재료",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "비철금속재료제조",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "비철금속건식제련",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "비철금속 건식제련이란 광석 및 이를 대체할 수 있는 원료에 고온반응을 적용하여 구리, 아연, 연, 마그네슘, 니켈 등과 같은 목적 금속과 불순물을 분리 회수하기 위하여 공정설계, 생산계획수립, 원료예비처리작업, 조금속제조, 정련작업, 주조작업, 부산물처리작업, 황산제조작업, 품질관리, 설비관리, 환경안전관리를 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금속재료",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "비철금속재료제조",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "비철금속습식제련",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "비철금속 습식제련이란 용매를 사용하여 광석 및 재활용 원료를 용해한 수용액에서 목적 금속을 생산하기 위하여 공정설계, 생산계획수립, 원료예비처리작업, 침출작업, 고액분리작업, 침출액정제작업, 전해작업, 회수작업, 부산물처리작업, 품질관리, 설비관리, 환경안전관리를 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 5,
+      "lastPageNo": 1
+    }
+  }
+}

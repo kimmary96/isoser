@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "09",
+            "NCS_SCLAS_CDNM": "의료장비제조",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "의료기기품질관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "의료기기 품질관리는 의료기기가 의도된 용도에 적합하도록 의료기기의 설계로부터 원재료의 구입, 제조, 검사, 포장, 보관, 출하, 설치 및 사후관리까지 확대하여 안전성과 유효성을 종합적으로 관리하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "09",
+            "NCS_SCLAS_CDNM": "의료장비제조",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "의료기기인·허가",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "의료기기 인허가는 국내외에서 의료기기를 판매하기 위하여 의료기기의 안전성·유효성에 대한 전반적인 지식을 바탕으로 해당 국가의 규정을 파악하고 해당 의료기기에 대한 시험검사, 기술문서심사, 임상 등과 같은 직무를 수행하고 지속적으로 관리하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "09",
+            "NCS_SCLAS_CDNM": "의료장비제조",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "의료기기생산",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "의료기기생산은 허가·인증·신고된 사항에 따라 생산계획을 수립하여 원부자재를 구매하고 회사에서 자격을 부여받은 사람이 제조, 검사, 관리의 과정을 거쳐 제품을 완성하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "09",
+            "NCS_SCLAS_CDNM": "의료장비제조",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "의료기기연구개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "의료기기 연구개발은 의료기기를 개발하기 위한 연구개발기획, 개발 계획 수립, 개발 위험관리, 하드웨어 설계제작, 소프트웨어 설계제작, 기구 설계제작, 안전성·유효성 검사, 전·임상 시험 지원, 개발문서 작성관리, 생산 기술지원을 포함하는 의료기기 연구개발의 전체 과정을 수행하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

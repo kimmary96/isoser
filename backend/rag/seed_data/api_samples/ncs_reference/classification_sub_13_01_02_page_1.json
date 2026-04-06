@@ -1,0 +1,88 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "13",
+            "NCS_LCLAS_CDNM": "음식서비스",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "식음료조리·서비스",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "식음료서비스",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "식음료접객",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "식음료접객이란 식음료 영업장에서 고객을 맞이하여 고객의 필요에 따른 식음료 서비스를 제공하고, 고객만족향상을 위하여 고객을 응대하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "13",
+            "NCS_LCLAS_CDNM": "음식서비스",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "식음료조리·서비스",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "식음료서비스",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "소믈리에",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "소믈리에 직무는 와인 지식과 서비스 기술을 가지고 선정·구매, 관리하며 고객에게 추천·제공하는 일이다.\n",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "13",
+            "NCS_LCLAS_CDNM": "음식서비스",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "식음료조리·서비스",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "식음료서비스",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "커피관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "바리스타 직무는 커피에 대한 지식과 기술을 갖추고, 다양한 기법으로 커피를 제조하여, 고객에게 서비스 제공 및 커피매장을 관리ㆍ운용하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "13",
+            "NCS_LCLAS_CDNM": "음식서비스",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "식음료조리·서비스",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "식음료서비스",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "바텐더",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "바텐더 직무는 고객이 만족할 수 있는 조주음료 서비스를 제공하기 위하여 다양한 음료의 종류와 특성을 이해하고 음료 영업장의 관리, 마케팅을 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "13",
+            "NCS_LCLAS_CDNM": "음식서비스",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "식음료조리·서비스",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "식음료서비스",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "식공간연출",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "식공간연출은 대중매체에서 요구되는 푸드스타일링과 음식 관련 전시, 파티 및 이벤트 연출을 위하여 지식과 기술을 갖춘 전문가가 테이블 코디네이트, 식공간 장식물 연출, 식공간 메뉴기획, 음식사진 촬영 등을 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 5,
+      "lastPageNo": 1
+    }
+  }
+}

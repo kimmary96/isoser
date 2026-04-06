@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "11",
+            "NCS_LCLAS_CDNM": "경비·청소",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "경비",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "경비·경호",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "보안",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "보안은 특정한 고객의 재산·생명·신체를 보호하기 위하여 각종 위해를 예방 및 대응 하는 일체의 안전활동이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "11",
+            "NCS_LCLAS_CDNM": "경비·청소",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "경비",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "경비·경호",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "경호",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "경호란 경호대상자의 생명·신체·재산을 각종 위해로부터 안전하게 보호하고, 명예와 품위를 유지하도록 지원하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

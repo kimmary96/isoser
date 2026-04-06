@@ -1,0 +1,116 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "에너지·자원",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "재생에너지",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "태양광에너지생산",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "태양광에너지생산이란, 친환경 태양광 에너지 활용을 위하여 신뢰성을 바탕으로 안전한 전기에너지 변환을 위한 태양광발전시스템을 설계, 시공, 운영하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "에너지·자원",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "재생에너지",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "태양열에너지생산",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "태양열에너지생산이란 태양열의 효율적 이용을 통해 환경 친화적인 에너지를 공급하기 위해 태양열 에너지 시스템에 대한 기획, 연구개발, 설계, 제조, 설치, 운영, 보수, 폐기하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "에너지·자원",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "재생에너지",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "바이오에너지생산",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "바이오에너지생산이란 재생 가능한 바이오매스를 활용하여 친환경적인 에너지 생산을 위한 시설을 설계, 설치, 운영을 통해 바이오연료 및 바이오에너지를 생산하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "에너지·자원",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "재생에너지",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "해양에너지생산",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "해양에너지생산이란 국가 에너지 공급 체계 다원화 및 온실가스 배출 저감에 기여하기 위하여 조력, 조류, 파력, 해수온도차 등의 해양에너지 발전 시설을 설계, 제작, 시공을 위해 해양환경과 안전이 확보된 발전 시스템을 구축 운영하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "에너지·자원",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "재생에너지",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "풍력에너지생산",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "풍력에너지생산이란 재생 가능한 풍력 에너지 생산을 위한 자원조사와 발전장치를 설계, 생산하고, 발전단지를 설계, 시공, 유지관리를 하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "에너지·자원",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "재생에너지",
+            "NCS_SUBD_CD": "07",
+            "NCS_SUBD_CDNM": "폐자원에너지생산",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "폐자원에너지생산이란 환경을 개선하기 위해 폐자원을 유용하게 사용하고 폐자원에 포함되어 버려지는 에너지를 친환경적으로 회수해서 활용하는 일이다.",
+            "DUTY_ORD": 7,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "에너지·자원",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "재생에너지",
+            "NCS_SUBD_CD": "08",
+            "NCS_SUBD_CDNM": "지열에너지생산·활용",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "지열에너지생산·활용이란 지중이나 지하수 등에 포함된 열을 생산·활용(냉난방)하여 기술적, 경제적, 관리적 행위를 하는 일이다.",
+            "DUTY_ORD": 8,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 7,
+      "lastPageNo": 1
+    }
+  }
+}

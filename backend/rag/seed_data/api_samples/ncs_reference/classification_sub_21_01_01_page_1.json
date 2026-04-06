@@ -1,0 +1,172 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "21",
+            "NCS_LCLAS_CDNM": "식품가공",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "식품가공",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "식품가공",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "수산식품가공",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "수산식품가공은 수산물을 주 원료로 하여 제조 공정을 거쳐 위생적이고 안전한 수산식품을 가공하는 일이다.",
+            "DUTY_ORD": 9,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "21",
+            "NCS_LCLAS_CDNM": "식품가공",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "식품가공",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "식품가공",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "두류식품가공",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "두류식품가공은 두류를 주원료로 하여 제품의 특성에 따라 분쇄, 가열, 응고, 건조, 발효, 숙성, 살균, 여과 등의 기술을 활용하여 두부류, 연․순두부류, 유부류, 묵류, 앙금류, 두유류, 장류를 제조하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "21",
+            "NCS_LCLAS_CDNM": "식품가공",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "식품가공",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "식품가공",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "축산식품가공",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "축산식품가공은 가축이나 가금류, 벌에서 나오는  고기, 알, 꿀 등을 원료로 하여 가열, 냉각, 살균, 건조, 농축 등의 기술을  활용하여 햄류, 소시지류, 병조림·통조림·레토르트파우치, 저장육류, 양념육류, 분쇄 성형육, 식육 추출가공품, 식용 우·돈지, 포장육, 액란 및 난분, 알 가공품, 꿀 가공품으로 가공하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "21",
+            "NCS_LCLAS_CDNM": "식품가공",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "식품가공",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "식품가공",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "유제품가공",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "유제품가공은 원유를 주 원료로 하여 제조 공정을 거쳐 위생적이고 안전한 유제품을 가공하는 일이다.",
+            "DUTY_ORD": 10,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "21",
+            "NCS_LCLAS_CDNM": "식품가공",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "식품가공",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "식품가공",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "건강기능식품제조가공",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "건강기능식품가공은 인체에 유용한 영양소 또는 기능성분이 함유된 원료를 분말, 과립, 액상, 환, 캡슐, 정제, 필름, 바, 젤리 등의 형태로 가공하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "21",
+            "NCS_LCLAS_CDNM": "식품가공",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "식품가공",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "식품가공",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "김치·반찬가공",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "김치ㆍ반찬가공은 김치류(배추김치, 총각김치, 열무김치, 깍두기 등), 김치양념, 절임류(식염절임류, 식초절임류, 장절임류, 당절임류), 조림류, 볶음류, 무침류를 가공하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "21",
+            "NCS_LCLAS_CDNM": "식품가공",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "식품가공",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "식품가공",
+            "NCS_SUBD_CD": "07",
+            "NCS_SUBD_CDNM": "면류식품가공",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "면류식품가공은 곡분·전분, 기타 부원료를 혼합하여 반죽을 하고 면대·면발을 형성하여 면을 가공하는 일이다.",
+            "DUTY_ORD": 8,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "21",
+            "NCS_LCLAS_CDNM": "식품가공",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "식품가공",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "식품가공",
+            "NCS_SUBD_CD": "08",
+            "NCS_SUBD_CDNM": "곡류·서류·견과류가공",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "곡류·서류·견과류가공은 소비자가 직접 식용하는 상태로 만들거나 식품의 소재를 만들기 위하여 곡류, 서류 및 견과류를 가공하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "21",
+            "NCS_LCLAS_CDNM": "식품가공",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "식품가공",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "식품가공",
+            "NCS_SUBD_CD": "09",
+            "NCS_SUBD_CDNM": "음료주류가공",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "음료·주류가공은 음용을 목적으로 혼합, 살균, 발효 등의 기술을 활용하여 소비자의 기호에 충족하는 음료와 주류 제품을 가공하는 일이다.",
+            "DUTY_ORD": 11,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "21",
+            "NCS_LCLAS_CDNM": "식품가공",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "식품가공",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "식품가공",
+            "NCS_SUBD_CD": "10",
+            "NCS_SUBD_CDNM": "식품가공연구개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "식품가공연구개발은 시장이 요구하는 식품을 개발하기 위해 신제품 개발 계획 수립, 제조 공정 및 규격 설계, 안전성 및 안정성이 확보된 제품을 개발하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "21",
+            "NCS_LCLAS_CDNM": "식품가공",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "식품가공",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "식품가공",
+            "NCS_SUBD_CD": "11",
+            "NCS_SUBD_CDNM": "식품품질관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "식품품질관리는 식품별 기준과 규격에 적합한 제품을 제공하기 위해 입고검사, 공정관리, 공정설비 조건관리, 제품검사관리, 식품관련 법규관리, 영업장 위생관리, 고객불만관리, 협력업체 관리, 시험․검사관리, 식품안전 위기관리, 관능검사를 하며 안전한 식품을 공급하기 위해 원료 관리, 제조․가공․선별․포장․보관․유통․판매 각 과정의 위해요소를 확인․평가하여 중점적으로 관리하는 일이다.",
+            "DUTY_ORD": 11,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 11,
+      "lastPageNo": 1
+    }
+  }
+}

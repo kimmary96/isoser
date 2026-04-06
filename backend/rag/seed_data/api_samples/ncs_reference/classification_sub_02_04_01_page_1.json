@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "02",
+            "NCS_LCLAS_CDNM": "경영·회계·사무",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "생산·품질관리",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "생산관리",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "구매관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "구매관리는 기업의 경영 활동에 필요한 물품과 서비스를 안정적이고 효율적으로 조달하기 위하여 공급자를 발굴·관리하고, 구매전략 수립에서 발주관리, 구매품의 품질, 원가, 성과 관리를 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "02",
+            "NCS_LCLAS_CDNM": "경영·회계·사무",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "생산·품질관리",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "생산관리",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "자재관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "자재관리는 기업의 경영목표 달성을 위하여 생산에 필요한 물적자원(원료, 재료, 부품)을 효율적으로 관리하고 적기적소에 적량을 공급하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "02",
+            "NCS_LCLAS_CDNM": "경영·회계·사무",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "생산·품질관리",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "생산관리",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "공정관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "공정관리는 생산 및 제조 현장에서 고객만족을 위한 품질, 원가, 납기를 만족시키기 위해 자원 투입부터 제품 산출까지의 과정을 효율적인 방법으로 계획(planning) 하고 절차에 따라 처리(expediting) 하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "02",
+            "NCS_LCLAS_CDNM": "경영·회계·사무",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "생산·품질관리",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "생산관리",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "SCM",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "SCM은 불확실성이 높은 환경변화에 기민하게 대응하기 위하여 공급사슬 전체의 동적 최적화를 통해 고객만족을 추구하는 경영관리 혁신 활동을 하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

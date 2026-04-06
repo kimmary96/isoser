@@ -1,0 +1,32 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "11",
+            "NCS_MCLAS_CDNM": "스마트공장(smart factory)",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "스마트공장(smart factory)설치",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "스마트공장(smart factory)시스템설치",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "스마트공장(smart factory) 시스템설치는 제조업의 가치사슬과 기계, 설비, 유틸리티의 데이터를 통합하기 위하여 하드웨어, 소프트웨어, 네트워크, 보안 기능, 애플리케이션을 융합하여 설치하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 1,
+      "lastPageNo": 1
+    }
+  }
+}

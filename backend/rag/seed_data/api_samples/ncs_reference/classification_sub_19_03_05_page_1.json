@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "전자부품개발",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "전자부품하드웨어개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "전자부품 하드웨어개발은 전자제품이 필요로 하는 부품의 성능, 기능, 신뢰성을 만족시키기 위하여 부품개발 검토, 특허확보, 부품규격 결정, 시뮬레이션 분석, 부품설계, 시제품 제작, 품질검증, 실장검증, 인증획득, 양산이관을 수행하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "전자부품개발",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "전자부품기구개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "전자부품 기구 개발은 전자부품의 기능구현과 편의성, 안전성을 확보하기 위하여 고객의 요구사항을 분석하고 프로젝트를 기획·설계하여 기구 설계 및 검증을 통해 금형을 제작하고, 시제품을 제작 및 평가하여 신뢰성과 양산성을 시험하며, 무형자산 관리 및 사후관리하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "전자부품개발",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "전자부품소프트웨어개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "전자부품 소프트웨어 개발은 단독으로 독립적인 역할을 수행할 수 없는 전자부품 내에서 동작하는 소프트웨어 또는 전자부품 시험용 소프트웨어를 개발하기 위하여 개발계획을 수립하고, 지식재산권 및 부품하드웨어 사양서, 소프트웨어 사용환경을 분석한 후 소프트웨어를 제작하여 소프트웨어 시험, 하드웨어 정합시험 및 현장 시험을 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

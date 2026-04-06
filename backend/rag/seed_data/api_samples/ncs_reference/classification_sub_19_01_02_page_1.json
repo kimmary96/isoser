@@ -1,0 +1,102 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "발전설비운영",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "수력발전설비운영",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "수력발전설비운영은 수력에너지를 이용하여 전기를 생산하는 발전설비의 안전한 운전과 유지보수를 수행하며, 수자원을 효율적으로 운영관리 하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "발전설비운영",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "화력발전설비운영",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "화력발전설비운영은 화력발전 연료를 사용하여 전기를 생산하고 안정적으로 공급하기 위하여 발전설비의 운전과 유지관리를 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "발전설비운영",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "원자력발전설비운영",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "원자력발전설비 운영은 원자력에너지를 이용하여 경제적인 전기를 생산하기 위한 발전설비의 안전한 운전과 유지보수를 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "발전설비운영",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "원자력발전전기설비정비",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "원자력발전전기설비정비는 원자력발전소 전기설비의 성능·기능이 정상적으로 유지되도록 점검하고, 예측·예방 정비 및 고장 수리 등 제반 활동을 수행하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "발전설비운영",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "원자력발전기계설비정비",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "원자력발전기계설비정비는 원자력발전소 기계설비의 성능ㆍ기능이 정상적으로 유지ㆍ관리되도록 점검하고, 예측ㆍ예방정비 및 고장 수리 등 제반 활동을 수행하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "발전설비운영",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "원자력발전계측제어설비정비",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "원자력발전계측제어설비정비는 원자력발전소 계측제어설비의 성능·기능이 정상적으로 유지되도록 점검하고, 예측·예방 정비 및 고장 수리 등 제반 활동을 수행하는 일이다.",
+            "DUTY_ORD": 6,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 6,
+      "lastPageNo": 1
+    }
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "06",
+            "NCS_LCLAS_CDNM": "보건·의료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "보건",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "보건지원",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "병원행정",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "병원행정은 의료기관에서 원무, 인사, 기획, 구매, 일반관리, 회계 및 경영평가 등 병원전체 관리를 위한 행정업무를 하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "06",
+            "NCS_LCLAS_CDNM": "보건·의료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "보건",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "보건지원",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "병원안내",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "병원안내는 의료현장에서 고객에게 양질의 서비스를 제공하기 위해 안내, 예약, 상담, 수납 등의 진료서비스를 지원하고 관리하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "06",
+            "NCS_LCLAS_CDNM": "보건·의료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "보건",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "보건지원",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "보건교육",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "보건교육은 개인과 집단의 질병예방과 건강증진을 위하여 대상자의 요구도 진단결과를 근거로 보건교육 내용을 도출하고 전략을 개발하여 보건교육을 수행 및 평가하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "06",
+            "NCS_LCLAS_CDNM": "보건·의료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "보건",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "보건지원",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "의료시설위생관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "의료시설 위생관리는 보건의료업에서 발생할 수 있는 위해환경 요소들을 평가하고 이를 최소화하기 위한 계획을 수립하고 실행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "06",
+            "NCS_LCLAS_CDNM": "보건·의료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "보건",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "보건지원",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "지역사회위생관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "지역사회위생관리는 지역사회 발전과 지역주민의 삶의 질을 유지, 향상시키기 위하여 식품, 환경, 건강, 안전 분야에서 유해한 생활환경을 예방·관리하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 5,
+      "lastPageNo": 1
+    }
+  }
+}

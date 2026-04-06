@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "기계품질관리",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "기계품질관리",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "기계품질계획",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "기계품질관리는 계획된 기계품질을 유지하기 위하여 자재입고부터 출하까지 검사하고 관리하며 관련 규제에 대응하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "기계품질관리",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "기계품질관리",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "기계품질관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "기계품질관리는 계획된 기계품질을 유지하기 위하여 자재입고부터 출하까지 검사하고 관리하며 관련 규제에 대응하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "기계품질관리",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "기계품질관리",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "기계품질평가",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "기계품질평가는 제품의 도면, 규격, 고객 요구사항을 충족시키기 위하여 규정된 절차에 따라 기계품질을 평가하고 제품인증업무를 수행하며 관련 데이터를 분석하고 관리하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

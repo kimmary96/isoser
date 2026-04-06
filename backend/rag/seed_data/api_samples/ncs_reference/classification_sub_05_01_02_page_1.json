@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "05",
+            "NCS_LCLAS_CDNM": "법률·경찰·소방·교도·국방",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "법률",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "지식재산관리",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "지식재산관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "지식재산관리는 특허, 실용신안, 상표, 디자인, 저작물(컴퓨터 프로그램 등), 영업비밀, 식물신품종, 유전자원 등 지식재산의 창출, 보호, 활용을 위한 사무를 다루는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "05",
+            "NCS_LCLAS_CDNM": "법률·경찰·소방·교도·국방",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "법률",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "지식재산관리",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "지식재산평가·거래",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "지식재산평가거래는 지식재산의 가치가 최대한 발휘될 수 있도록 지식재산의 경제적 가치 및 우수성을 객관적인 가액, 등급 또는 점수 등으로 평가하고, 양도 또는 실시권 허락, 기술 지도 등의 방법으로 홍보, 알선, 중개하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "05",
+            "NCS_LCLAS_CDNM": "법률·경찰·소방·교도·국방",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "법률",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "지식재산관리",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "지식재산정보조사분석",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "지식재산 정보조사분석이란 산업재산권, 저작권, 신지식재산권에 대한 조사 분석을 수행하거나 이를 통해 객관적 정보와 목적에 따른 합리적 판단 근거를 제시하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "05",
+            "NCS_LCLAS_CDNM": "법률·경찰·소방·교도·국방",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "법률",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "지식재산관리",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "특허엔지니어링",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "특허엔지니어링이란 연구·개발 활동을 통해 산출된 기술을 보호하기 위해 특허를 발굴 및 개발하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

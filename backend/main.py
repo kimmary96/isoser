@@ -1,15 +1,17 @@
-﻿# FastAPI 앱 진입점 - CORS 설정, 라우터 등록, 서버 시작 시 ChromaDB 초기화
+# FastAPI 앱 진입점 - CORS 설정, 라우터 등록, 서버 시작 시 ChromaDB 초기화
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv
 
 from check_python_version import main as assert_python_version
-from routers import parse, coach, match, company
-from rag.chroma_client import init_chroma
+from rag.runtime_config import load_backend_dotenv
 
-load_dotenv()
+load_backend_dotenv()
 assert_python_version()
+
+from routers import parse, coach, match, company
+from rag.chroma_client import get_chroma_health_summary, init_chroma
 
 
 @asynccontextmanager
@@ -45,10 +47,21 @@ app.add_middleware(
 app.include_router(parse.router, prefix="/parse", tags=["parse"])
 app.include_router(coach.router, prefix="/coach", tags=["coach"])
 app.include_router(match.router, prefix="/match", tags=["match"])
-app.include_router(company.router, prefix="/company", tags=["company"])
 
 
 @app.get("/")
 async def root() -> dict:
     """헬스 체크 엔드포인트."""
     return {"status": "ok", "service": "이소서 API"}
+
+
+@app.get("/health")
+async def health() -> dict:
+    """Return app status plus Chroma collection diagnostics."""
+
+    chroma_summary = get_chroma_health_summary()
+    return {
+        "status": "ok",
+        "service": "이소서 API",
+        "chroma": chroma_summary,
+    }

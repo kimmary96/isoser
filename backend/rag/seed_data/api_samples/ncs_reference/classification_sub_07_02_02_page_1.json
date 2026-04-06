@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "07",
+            "NCS_LCLAS_CDNM": "사회복지·종교",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "상담",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "청소년지도",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "청소년활동",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "청소년활동이란 청소년사업을 기획하고 홍보하며, 청소년프로그램을 개발하고 적용하며 평가하는 일련의 과정을 말하며, 자원관리, 인증관리, 행정관리, 협업체계관리, 정보관리 등을 통하여 이를 효율적으로 지원하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "07",
+            "NCS_LCLAS_CDNM": "사회복지·종교",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "상담",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "청소년지도",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "청소년상담복지",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "청소년상담복지는 청소년의 행복과 균형 있는 성장을 위하여 청소년과 그 주변인을 대상으로 전문적 상담서비스, 보호 및 위기개입, 지역사회 연계망 운영, 교육과 예방활동을 통합적으로 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "07",
+            "NCS_LCLAS_CDNM": "사회복지·종교",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "상담",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "청소년지도",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "진로지원",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "진로지원은 청소년의 진로개발을 위하여 역량 진단과 환경 조성, 진로체험 기회 등을 제공하고, 진학‧취업‧창업 관련 역량을 강화하여 청소년 스스로가 자신의 진로를 개척하고 삶의 가치를 실현할 수 있도록 전문적으로 지원하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

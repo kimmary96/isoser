@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "11",
+            "NCS_MCLAS_CDNM": "스마트공장(smart factory)",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "스마트공장(smart factory)운영관리",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "스마트공장(smart factory)시스템관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "스마트공장(smart factory)시스템관리는 스마트공장 시스템의 효율적 운영을 위하여 관리계획을 수립하고 정보통신, 하드웨어, 소프트웨어 기술을 융합하여 스마트공장 시스템을 유지·개선하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "11",
+            "NCS_MCLAS_CDNM": "스마트공장(smart factory)",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "스마트공장(smart factory)운영관리",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "스마트공장(smart factory)기계설비유지관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "스마트공장 기계설비유지관리란 스마트 공장의 효율적이고 지속 가능한 운전을 위해 정보통신, 데이터관리, 센서, 계측기술 등을 활용해서 스마트설비와 애플리케이션 간의 연결성을 고려한 스마트설비를 유지관리하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

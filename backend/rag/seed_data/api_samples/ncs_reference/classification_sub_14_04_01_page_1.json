@@ -1,0 +1,116 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "플랜트",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "플랜트설계·감리",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "발전설비설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "발전설비설계는 다양한 1차 에너지를 전기에너지로 변환시킬 수 있는 발전소를 건설하기 위하여 발전설비에 포함되는 계통과 구조물의 제반 설계를 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "플랜트",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "플랜트설계·감리",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "석유·화학설비설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "석유화학설비설계는 석유류 및 석유화학제품을 효율적으로 생산하기 위한 설비와 부대시설을 법규/CODE 및 그 밖의 요구사항에 따라 설계하고 구매 및 시공과 시운전을 지원하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "플랜트",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "플랜트설계·감리",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "에너지설비설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "에너지설비설계는 에너지를 생산, 전환, 수송 및 저장하기 위하여 법규, Code 및 그 밖의 요구사항에 따라 에너지설비시스템을 구상하고, 열에너지와 전기에너지를 생산하는 설비, 에너지를 저장하는 설비, 열전환 설비, 열수송 및 전기공급 설비 설계를 수행하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "플랜트",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "플랜트설계·감리",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "제조공장설비설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "제조공장설비설계는 원자재를 이용하여 제품을 제조하기 위한 제조공정설계, 환경, 보건, 안전을 기본으로 구조물, 기기설비, 배관 및 유틸리티를 유기적으로 연결하여 최적화된 설비를 설계하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "플랜트",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "플랜트설계·감리",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "환경설비설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "환경설비설계는 환경오염을 예방, 제거, 감축하거나 재활용하고, 기후변화 대응 및 지속가능한 발전을 위하여 관련 법규 및 해외 관련 규격 등 그 밖의 요구사항에 따라 자원순환형 폐기물관리 설비를 설계하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "플랜트",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "플랜트설계·감리",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "플랜트설비감리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "산업·환경설비감리는 발주자가 요구하는 시설물의 완성을 위하여 설계도서 검토 및 관계법령·계약에 따라 산업·환경설비의 설계·시공 과정에서 통합관리계획, 사업 제반 조건 검토, 조달관리, 공정관리, 품질관리, 안전보건관리, 리스크관리, 준공관리를 확인, 지도, 감독하는 일이다.",
+            "DUTY_ORD": 6,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "플랜트",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "플랜트설계·감리",
+            "NCS_SUBD_CD": "07",
+            "NCS_SUBD_CDNM": "해수담수화플랜트설비설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "담수화설비 개념설계란 담수화플랜트 건설을 위하여 현장여건을 조사하여 생산용량과 담수화방식을 결정하고 Layout을 작성하며 최적의 담수화설비 시스템을 구성하는 능력이다.",
+            "DUTY_ORD": 6,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 7,
+      "lastPageNo": 1
+    }
+  }
+}

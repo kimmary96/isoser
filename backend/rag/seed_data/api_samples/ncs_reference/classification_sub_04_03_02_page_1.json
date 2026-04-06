@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "04",
+            "NCS_LCLAS_CDNM": "교육·자연·사회과학",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "직업교육",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "이러닝",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "이러닝시스템개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "이러닝시스템개발은 학습과 관련된 모든 시스템에 대해 제안, 프로젝트 관리를 포함한 학습의 운영과 관리에 필요한 소프트웨어를 설계하고 개발하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "04",
+            "NCS_LCLAS_CDNM": "교육·자연·사회과학",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "직업교육",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "이러닝",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "이러닝콘텐츠개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "이러닝콘텐츠 개발은 콘텐츠에 대한 기획력을 갖고 교수 목적에 맞는 학습을 고려하여 교수방법을 결정하거나, 설계된 내용을 이해하여 멀티미디어 요소를 활용하여 콘텐츠를 구현하거나, 콘텐츠 구현의 전 과정을 지원하는 역할을 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "04",
+            "NCS_LCLAS_CDNM": "교육·자연·사회과학",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "직업교육",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "이러닝",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "이러닝과정(process)운영",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "이러닝과정운영은 학습자의 학습목표 달성과 학습성과를 극대화하기 위하여 교육과정에 대한 운영계획을 수립하고, 학습자와 교강사 활동을 지원하며, 학습과 관련한 불편사항을 개선하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

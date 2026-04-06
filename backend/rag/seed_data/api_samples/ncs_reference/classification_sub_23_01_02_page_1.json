@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "산업환경",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "대기관리",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "대기환경관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "대기환경관리란 대기오염으로 인한 국민건강이나 환경에 관한 위해를 예방하기 위해 대기환경관리계획수립, 측정분석·평가, 시설관리를 통해 대기환경을 적정하고 지속가능 하도록 관리ㆍ보전하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "산업환경",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "대기관리",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "온실가스관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "온실가스관리는 기후변화 현상ㆍ정책에 대한 이해를 토대로 온실가스 배출원 파악, 배출량 산정, 배출량보고서 작성 및 온실가스 감축을 위한 활동과 관련되는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "산업환경",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "대기관리",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "기상기술관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "기상기술관리란 지진·지진해일을 포함한 기상관측과 기상예보에 관련된 기술을 관리하고 수행하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "산업환경",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "대기관리",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "기후변화적응",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "기후변화적응은 기후변화로 인한 피해 및 영향에 대한 취약 분야를 확인하고 장기적인 적응대책을 마련하기 위한 신사업 분야 창출 등 기후변화를 새로운 발전의 기회로 삼는 역량을 강화하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

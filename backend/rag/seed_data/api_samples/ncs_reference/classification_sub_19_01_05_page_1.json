@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "전기기기제작",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "전기기기설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "전기기기설계는 고객 요구 사항과 표준규격을 충족시키기 위한 전기기기 (변압기, 차단기, 전력변환장치, 배전반, 유도전동기, 동기발전기, 직류기 등) 생산을 위하여 기초 이론과 응용 기술을 활용하여 설계하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "전기기기제작",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "전기기기제작",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "전기기기제작은 설계가 완료된 설계 시방(부품자재, 도면자재, 권선시방 등)에 준하는 방식으로 정해진 제작절차와 규정에 의거하여 단위 부품을 제작하고 전체 조립도면에 맞게 제작된 단위 부품을 완제품으로 조립하고 검사, 시험하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "전기기기제작",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "전기기기유지보수",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "전기기기유지보수는 회전기(발전기, 전동기), 정지기(변압기, 개폐기, 전원공급장치, 배전반) 및 보호계전기 등의 건전상태를 확인하고 정상적으로 제 성능을 유지하도록 관리하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "전기기기제작",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "전기전선제조",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "전기전선 제조는 전력, 제어, 통신에 사용하기 위한 절연전선, 코드 및 케이블 등의 전선을 제조하기 위하여 설계, 제작, 품질 검사 등의 업무를 수행하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

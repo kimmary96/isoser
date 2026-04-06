@@ -1,0 +1,32 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "11",
+            "NCS_MCLAS_CDNM": "스마트공장(smart factory)",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "스마트공장(smart factory)설계",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "스마트설비설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "스마트설비설계는 단위설비에 센서, 로봇, 계측제어기술 등을 활용하여 운영 솔루션과 데이터 연결성을 고려한 설비를 설계하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 1,
+      "lastPageNo": 1
+    }
+  }
+}

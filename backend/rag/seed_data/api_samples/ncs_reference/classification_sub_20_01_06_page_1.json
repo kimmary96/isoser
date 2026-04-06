@@ -1,0 +1,200 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "정보보호",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "정보보호관리·운영",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "정보보호관리·운영은 조직의 비전과 미션을 수행하기 위하여 정보 자산을 안정적으로 운영하는 데 필요한 정보보호 전략과 정책을 수립하고, 법령 준수, 보호관리 활동을 수행하며, 위험관리에 기반한 정보보호 대책을 도출하고 실행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "정보보호",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "정보보호진단·분석",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "정보보호진단·분석은 주요 정보자산을 보호하기 위하여 보안진단과 위험평가를 수행하고 정보보호 대책, 관리체계 설계, 보안전략을 수립·자문하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "정보보호",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "보안사고분석대응",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "보안사고분석대응은 보안사고에 대한 정보의 확보·분석을 통하여 시스템 복구와 재발 방지 대책을 수립하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "정보보호",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "정보보호암호·인증",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "정보보호암호·인증은 정보의 기밀성과 무결성, 신뢰성을 보장하기 위한 암호 및 인증 기술을 개발, 관리, 검증하고 해당 시스템을 운영하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "정보보호",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "영상정보처리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "영상정보처리는 영상정보처리 알고리즘을 개발하고 영상정보처리시스템 구축과 영상관제 업무관리를 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "정보보호",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "생체인식(바이오인식)",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "생체인식(바이오인식)은 개인의 고유한 생리학적 또는 행동학적 특징을 획득 및 추출한 정보로 신원을 식별하거나 인증하기 위하여 생체인식 시스템을 개발 및 평가를 수행하는 일이다.",
+            "DUTY_ORD": 6,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "정보보호",
+            "NCS_SUBD_CD": "08",
+            "NCS_SUBD_CDNM": "디지털포렌식",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "디지털포렌식은 디지털 기기에서 발생된 특정 행위의 사실 관계를 규명하고, 추후 법정에서 증거 자료로 인정될 수 있도록 요건을 갖추어 과학적 방법으로 증거물을 수집, 이동, 보존, 분석, 제출, 검증하는 일이다.",
+            "DUTY_ORD": 8,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "정보보호",
+            "NCS_SUBD_CD": "09",
+            "NCS_SUBD_CDNM": "영상정보보안·운영",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "영상정보보안·운영은 영상정보의 수집, 저장, 반출, 파기 등 처리 과정에서 기밀성, 무결성, 가용성을 확보하고 접근통제와 오남용 방지, 영상정보관제, 보안사고대응 등을 수행하는 일이다.",
+            "DUTY_ORD": 9,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "정보보호",
+            "NCS_SUBD_CD": "11",
+            "NCS_SUBD_CDNM": "OT보안",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "OT(Operation Technology, 운영기술)보안은 OT환경의 시스템 및 네트워크에 대한 사이버 안전성을 확보하기 위하여 OT보안 체계를 구축하기 위한 개발, 운영, 평가와 위협 및 사고대응 업무를 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "정보보호",
+            "NCS_SUBD_CD": "12",
+            "NCS_SUBD_CDNM": "클라우드 보안 관리·운영",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "클라우드 보안 관리·운영은 조직이 클라우드 인프라를 안전하게 활용하기 위하여 정보보호 정책을 기획하며, 이에 따른 보안 운영 업무를 수행하고, 감사를 통해 조직의 클라우드 정보보호 거버넌스를 구현하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "정보보호",
+            "NCS_SUBD_CD": "14",
+            "NCS_SUBD_CDNM": "정보보호제품 시험·평가",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "정보보호제품 시험·평가는 사용자가 정보보호제품을 안전하게 사용할 수 있도록 정보보호제품에 구현된 보안기능의 안전성과 신뢰성을 검증받는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "정보보호",
+            "NCS_SUBD_CD": "15",
+            "NCS_SUBD_CDNM": "SW공급망보안",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "SW공급망 보안은 안전한 개발 환경을 구축하고 SW 구성명세서(SBOM)와 취약점을 관리하여 SW 개발, 도입, 운영까지 SW공급망을 안전하게 보호하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "정보보호",
+            "NCS_SUBD_CD": "16",
+            "NCS_SUBD_CDNM": "모빌리티보안",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "모빌리티 보안은 모빌리티의 안정성을 확보하기 위하여 보안 조직구성, 전략과 정책 수립, 법령을 준수하고, 생명주기 전 단계에 걸쳐 보안위협과 위험을 식별하고 보안성 검증 활동과 대응방안을 수립, 적용, 평가, 인증하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 13,
+      "lastPageNo": 1
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "10",
+            "NCS_LCLAS_CDNM": "영업판매",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "부동산",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "부동산중개",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "부동산중개",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "부동산중개는 부동산 시장 분석, 부동산 자료 수집 제공, 부동산 중개 의뢰 계약, 부동산 현황 및 권리 분석, 부동산 중개 대상물 광고, 부동산 고객 협상 및 상가․건물 권리금 거래 계약, 거래 계약 체결, 부동산 중개 부수업무 처리, 부동산 고객 및 중개 사무소 관리를 하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "10",
+            "NCS_LCLAS_CDNM": "영업판매",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "부동산",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "부동산중개",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "부동산정보제공",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "부동산정보제공은 부동산정보를 인터넷과 모바일 등 온라인 및 오프라인 상으로 제공하는 서비스로써 이 사업의 운영에 필요한 부동산정보 콘텐츠제작은 물론, 서비스에 필요한 시스템 개발, 광고상품의 기획, 마케팅과 운영, 부동산정보의 분석과 가공, 부동산 콘텐츠의 제공과 이에 부가되는 지원 서비스를 제공하며, 기타 부동산정보와 관련된 교육과 부동산이용 상담 등의 업무를 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "02",
+            "NCS_LCLAS_CDNM": "경영·회계·사무",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "생산·품질관리",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "품질관리",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "QM/QC관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "QM/QC관리는 조직의 방침 및 목표를 달성하기 위해 제품, 업무, 서비스에 대한 품질기획(QP), 품질관리(QC), 품질보증(QA), 품질개선(QI) 활동을 하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 1,
+      "lastPageNo": 1
+    }
+  }
+}

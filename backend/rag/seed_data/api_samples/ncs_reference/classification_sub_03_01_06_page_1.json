@@ -1,0 +1,102 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금융",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "증권·외환",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "증권거래업무",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "증권거래업무는 고객의 자산관리와 투자기회 확보를 위해 고객을 발굴하여 상담하고 증권에 관한 조사분석을 통해 투자를 권유하거나 자산설계와 배분을 조언하며 부가적으로 발생하는 제반업무를 처리하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금융",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "증권·외환",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "외환·파생업무",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "외환·파생업무란 외환·파생거래를 실행함으로써 공정한 가격 형성에 이바지하고 고객 편의를 증진시킴은 물론 금융 회사의 수익성 제고 및 건전성 유지에 기여하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금융",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "증권·외환",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "인수업무",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "인수업무는 기업의 자금을 조달하기 위하여 자본시장에서 금융투자회사의 책임으로 증권을 발행하고 투자자를 모집하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금융",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "증권·외환",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "증권상장업무",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "증권상장업무는 상장요건을 충족한 기업이 발행한 주권을 증권시장에서 거래될 수 있도록 상장대상 기업을 발굴하여 상장을 위한 전략을 수립하고 한국거래소 심사를 받아 공모를 수행하여 기업을 상장시키는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금융",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "증권·외환",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "외화조달·외화대출업무",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "외화조달·외화대출업무는 기업 및 금융기관의 외화수요를 충족시키기 위하여 다양한 조달시장과 수단을 발굴하고 조달 인프라를 구축하여 투자자를 관리하며 시장 상황 분석을 통해 주로 해외로부터 외화를 조달하여 공급하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금융",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "증권·외환",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "무역금융업무",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "무역금융업무는 기업의 원활한 수출입업무 지원을 위하여 무역거래의 진행단계에 따라 필요한 자금 및 서비스를 제공하고 관리하는 일이다.",
+            "DUTY_ORD": 6,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 6,
+      "lastPageNo": 1
+    }
+  }
+}

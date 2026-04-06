@@ -1,0 +1,88 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "07",
+            "NCS_MCLAS_CDNM": "건설기계운전·정비",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "건설기계정비",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "건설기계정비",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "건설기계정비란 건설기계의 정상적인 동작을 유지하기 위하여 분해ㆍ조립하여 수리하고 그 부분품에 대해 가공제작ㆍ교환하는 등을 하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "07",
+            "NCS_MCLAS_CDNM": "건설기계운전·정비",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "건설기계정비",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "굴착기정비",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "굴착기정비란 굴착기의 정상적인 작동 및 성능을 유지하기 위해 진단·조정하고 구성품을 교환 또는 수리하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "07",
+            "NCS_MCLAS_CDNM": "건설기계운전·정비",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "건설기계정비",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "지게차정비",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "지게차정비란 지게차의 정상적인 작동 및 성능을 유지하기 위해 진단ㆍ조정하여 수리하고 그 부분품에 대해 가공제작ㆍ교환 등을 하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "07",
+            "NCS_MCLAS_CDNM": "건설기계운전·정비",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "건설기계정비",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "이동식크레인정비",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "이동식크레인정비란 이동식크레인의 정상적인 작동 및 성능을 유지하기 위해 진단ㆍ조정하고 구성품을 수리하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "07",
+            "NCS_MCLAS_CDNM": "건설기계운전·정비",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "건설기계정비",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "건설기계성능검사",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "건설기계성능검사는 건설기계관리법에 따라 건설기계의 안전주행과 작업안전에 필요한 각종 성능검사를 수행하고, 결과를 분석하여 안전기준에 충족하는지 판정하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 5,
+      "lastPageNo": 1
+    }
+  }
+}

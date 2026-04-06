@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "10",
+            "NCS_LCLAS_CDNM": "영업판매",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "부동산",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "부동산관리",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "주택관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "주택관리란 입주민의 쾌적한 삶을 증진시키기 위하여 주택의 모든 시설과 설비, 부대시설과 복리시설은 물론 건물의 수선과 안전에 관한 관리와 관리비 징수 및 공과금 납부 등의 회계처리, 입주 및 퇴거에 관한 주민 편의를 도모하는 업무를 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "10",
+            "NCS_LCLAS_CDNM": "영업판매",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "부동산",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "부동산관리",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "상업용건물관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "상업용건물관리란 사회·경제적으로 전문적인 관리가 요구되는 상업용 건물에 대하여 그 건물의 특성을 구체적으로 파악하고 그에 따른 법률적·기술적·경제적 관리계획을 수립한 후 임대차 관리, 시설 관리 등 행정적 절차를 수행함으로써 이용자의 편익과 소유자의 재산가치를 증진시키려고 하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "10",
+            "NCS_LCLAS_CDNM": "영업판매",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "부동산",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "부동산관리",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "부동산자산관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "부동산자산관리란 부동산 소유자 및 투자자를 위하여 부동산의 취득, 운영, 처분, 포트폴리오 운용 등의 활동을 통해 부동산의 자산 가치를 증진시키는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

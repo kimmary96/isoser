@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "01",
+            "NCS_LCLAS_CDNM": "사업관리",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "사업관리",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "해외관리",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "해외법인설립관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "해외법인설립관리란, 기업의 해외진출을 효과적으로 달성하기 위해 국내 및 현지의 업무 환경을 조사 분석하고 법인을 설립하는 전 과정을 계획, 실행, 관리하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "01",
+            "NCS_LCLAS_CDNM": "사업관리",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "사업관리",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "해외관리",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "해외취업관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "해외취업관리란, 내국인이 해외에서 일자리를 가질 수 있도록 구인처를 탐색, 발굴하고 알선하며 해외취업 이후 사후관리까지의 전반적인 과정을 운영, 관리 밎 지원하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

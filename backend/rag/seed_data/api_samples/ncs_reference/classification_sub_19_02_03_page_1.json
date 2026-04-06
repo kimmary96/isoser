@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "전자기기일반",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "전자제품고객지원",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "전자제품설치·정비",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "전자제품설치․정비는 전자제품의 설치, 운용이나 보수 등 기술에 관한 전문적 지식을 활용하여 구매자에게 그 제품에 대한 설치, 수리, 점검 등의 활동을 통하여 고객만족도를 높이는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "전자기기일반",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "전자제품고객지원",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "전자제품영업",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "전자제품영업은 판매를 통한 이윤창출을 목적으로 전기전자 기술을 응용하여 제작된 전자제품의 상품, 용역, 서비스를 제공하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

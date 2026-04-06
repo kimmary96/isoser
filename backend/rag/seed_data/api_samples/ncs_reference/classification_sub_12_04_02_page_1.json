@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "스포츠",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "스포츠시설",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "스포츠시설개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "스포츠시설개발은 스포츠 및 여가․레저 산업 시장의 환경을 반영하여 관련시설에 대한 운영 및 규격․표준과 이용고객의 안전에 대한 지식을 가지고 사용목적에 부합하도록 개발하고 관리하는 일이다. ",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "스포츠",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "스포츠시설",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "스포츠시설운영관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "스포츠시설운영관리는 고객의 건강증진과 안전을 위하여 스포츠시설을 체계적이고 효율적으로 운영하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

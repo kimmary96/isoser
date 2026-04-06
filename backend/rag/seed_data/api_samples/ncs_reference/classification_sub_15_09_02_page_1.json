@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "09",
+            "NCS_MCLAS_CDNM": "항공기제작",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "항공기제작",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "항공기기체제작",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "항공기기체제작은 요구되는 성능 및 품질(감항기준 포함)을 만족시키기 위해 설계도에 따른 자재를 사용하여 항공기 구조물을 제작, 조립 및 검사하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "09",
+            "NCS_MCLAS_CDNM": "항공기제작",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "항공기제작",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "항공기엔진·프로펠러제작",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "항공기 엔진·프로펠러 제작은 설계도면에 의거 구성품들을 생산하고 조립하여 제작된 항공기 엔진·프로펠러가 규격에 명시된 성능을 시험하여 그 결과로서 규격 충족성을 보장하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "09",
+            "NCS_MCLAS_CDNM": "항공기제작",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "항공기제작",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "항공기전기·전자장비제작",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "항공기전기·전자장비제작은 항공기 성능, 안전, 고객, 검사기관 및 그 밖의 요구사항과 품질 및 설계규격을 만족하는 장비를 제작하기 위하여 형상, 공정, 자재 및 품질 관리를 통하여 구성품 제작, 조립, 시험·검사하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

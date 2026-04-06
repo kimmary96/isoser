@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "17",
+            "NCS_LCLAS_CDNM": "화학·바이오",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "플라스틱·고무",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "고무",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "고무배합",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": " 고무배합이란 고무제품 제조를 위하여 원료 고무에 충전제, 노화방지제, 가공조제, 가교제, 가교보조제, 가교촉진제 등 여러 가지 배합약품을 고무 배합기에 배합함으로써 고무 배합물을 제조하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "17",
+            "NCS_LCLAS_CDNM": "화학·바이오",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "플라스틱·고무",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "고무",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "고무제품제조",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "고무제품제조란 고객이 요구하는 고무제품을 제조하기 위하여 배합고무를 성형 및 가교 공정을 통해 고무제품을 제조하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

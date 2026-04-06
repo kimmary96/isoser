@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "18",
+            "NCS_LCLAS_CDNM": "섬유·의복",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "섬유제조",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "섬유생산관리",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "구매생산관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "구매생산관리는 상품기획에 의한 최적화된 섬유생산을 위하여 안정된 생산기지 확보와 생산기획, 제품의 원가관리, 생산일정에 따른 납기관리, 양질의 제품제공을 위한 품질관리 등 섬유생산을 위한 구매관련 모든 영역에서 활동하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "18",
+            "NCS_LCLAS_CDNM": "섬유·의복",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "섬유제조",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "섬유생산관리",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "생산현장관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "생산현장관리란 섬유제조분야 제품의 생산성과 효율성을 향상시키기 위해 방사, 방적, 제직, 편직, 염색, 가공 등 공정별   생산현장을 관리하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

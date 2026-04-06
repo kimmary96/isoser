@@ -1,0 +1,102 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "06",
+            "NCS_LCLAS_CDNM": "보건·의료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "보건",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "의료기술지원",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "의료기기관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "의료기기관리는 의료기기에 대한 유지⋅보수 관리 업무, 고장 수리, 예방 정비, 안전 점검 및 신규 도입기기에 대한 사양 검토, 설치, 시운전 및 설치 가동 후부터 폐기 시까지의 성능 관리와 의료기기 사용자 교육 등의 업무를 수행하고, 사용자와 의료기기에 관련된 기술적 내용을 협의 검토⋅개발하여 기기 기술에 대한 임상 지원 등의 업무를 수행함으로써 사용자가 환자의 진료를 원활하게 할 수 있도록 기기의 도입에서 폐기에 이르는 전 과정의 업무를 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "06",
+            "NCS_LCLAS_CDNM": "보건·의료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "보건",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "의료기술지원",
+            "NCS_SUBD_CD": "08",
+            "NCS_SUBD_CDNM": "요양지원",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "요양지원은 효율적인 진료 및 간호인력의 지원업무를 위하여 진료지원보조, 물품전달, 환자이송지원, 일상생활수행지원, 신체청결지원, 물품세척, 오염물처리, 사고예방지원, 요양보호 관련 제도 이해, 인지활동지원보조 등을 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "06",
+            "NCS_LCLAS_CDNM": "보건·의료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "보건",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "의료기술지원",
+            "NCS_SUBD_CD": "09",
+            "NCS_SUBD_CDNM": "의지보조기제작·관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "의지보조기는 장애인보조기기와 치료용 보조기기를 필요로 하는 사람에게 신체기능의 회복·증진을 위하여 제작, 장착, 훈련, 관리 서비스를 제공하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "06",
+            "NCS_LCLAS_CDNM": "보건·의료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "보건",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "의료기술지원",
+            "NCS_SUBD_CD": "10",
+            "NCS_SUBD_CDNM": "청각관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "청각관리는 청각손실로 인한 의사소통의 어려움과 대인관계, 심리사회적, 교육적 및 직업적 기능에 미치는 부정적인 영향을 최소화하거나 예방하기 위하여 행동청능평가, 전기생리청각평가, 보청기적합관리, 이식형청각기기적합관리, 청능훈련, 중추청각기능·전정기능·이명의 재활, 청력보존, 청각관리교육연구개발, 청각관리지원, 청각기기생산 및 청각산업경영을 수행하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "06",
+            "NCS_LCLAS_CDNM": "보건·의료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "보건",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "의료기술지원",
+            "NCS_SUBD_CD": "13",
+            "NCS_SUBD_CDNM": "임상심리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "임상심리는 정신건강 증진을 도모하기 위해 심리학적 지식을 활용하여 심리평가, 심리치료, 자문, 교육, 연구, 재활, 지도감독 등을 수행하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "06",
+            "NCS_LCLAS_CDNM": "보건·의료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "보건",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "의료기술지원",
+            "NCS_SUBD_CD": "14",
+            "NCS_SUBD_CDNM": "의료정보관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "의료정보관리는 국민건강증진에 기여하기 위해 개인건강기록과 진료정보가 정확하고 무결성이 유지될 수 있도록 데이터를 수집 및 분석하여 환자진료, 진료비상환, 교육·연구, 정책 등에 필요한 정보와 통계를 생성하고 이를 활용할 수 있도록 지원 및 개인정보보호와 데이터 질 향상 활동을 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 6,
+      "lastPageNo": 1
+    }
+  }
+}

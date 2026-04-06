@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "10",
+            "NCS_LCLAS_CDNM": "영업판매",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "영업",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "일반·해외영업",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "일반영업",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "일반영업이란 이윤창출과 고객만족을 위하여 자사의 상품을 고객에게 판매하고 고객을 유지하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "10",
+            "NCS_LCLAS_CDNM": "영업판매",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "영업",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "일반·해외영업",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "해외영업",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "해외영업은 판매시장의 확대와 회사의 이익증대를 목표로 영업전략을 수립하고 실행을 통하여 회사의 상품을 해외고객에게 판매하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "02",
+            "NCS_LCLAS_CDNM": "경영·회계·사무",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "총무·인사",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "일반사무",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "비서",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "비서는 상사와 조직을 위하여 상호 신뢰를 바탕으로 기밀유지 및 비서윤리를 준수하고, 조직과 경영 전반에 관한 지식, 사무정보기술, 의사소통능력을 갖추어 경영진을 전문적으로 보좌하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "02",
+            "NCS_LCLAS_CDNM": "경영·회계·사무",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "총무·인사",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "일반사무",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "사무행정",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "사무행정은 조직이나 부서 구성원들이 본연의 업무를 원활하게 수행할 수 있도록 조직 내부와 외부에서 요청하거나 필요로 하는 업무를 지원하고 관리하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

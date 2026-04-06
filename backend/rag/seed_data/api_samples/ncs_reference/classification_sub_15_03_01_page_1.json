@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "기계조립·관리",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "기계조립",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "기계수동조립",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "기계수동조립이란 기계장치를 조립 생산하기 위하여 조립 도면에 따라 작업자가 조립 공정을 설계하고, 조립 부품을 가공 및 조립하여 최종 완성품을 출고하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "기계조립·관리",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "기계조립",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "기계소프트웨어개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "기계소프트웨어는 기계장비 및 시스템을 제어하기 위해 제어 프로그램을 작성하고, 기계시스템에 설치하여 테스트하고 최적화하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "기계조립·관리",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "기계조립",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "기계하드웨어개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "기계하드웨어개발은 기계장치를 의도한 기능 성능에 맞게 구동시키기 위하여 제어기 하드웨어를 설계하고 제작하고 시험하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "기계조립·관리",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "기계조립",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "기계펌웨어개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "기계펌웨어개발은 기계장비를 제어하기 위해 컴포넌트를 분석하고 펌웨어 구조설계, 개발환경 구축, 프로그래밍, 테스트, 시험 평가를 하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

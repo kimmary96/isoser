@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금속재료",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "표면처리",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "도금",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "도금은 소재표면에 요구되는 기능을 부여하기 위하여 생산계획 수립, 도금작업, 후처리작업 등을 통해 금속 및 비금속 피막을 형성시키는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금속재료",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "표면처리",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "금속도장",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "금속도장은 금속재료의 표면을 보호하고 외관을 아름답게 하기 위해 도장 설계에 따라 작업계획을 수립한 후 금속도장  공정을 수행하고 각종 도료와 도장기기 및 설비를 활용하여 고객이 요구하는 품질의 제품을 생산하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

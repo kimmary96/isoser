@@ -1,0 +1,78 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금융",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "금융영업",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금융",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "금융상품개발",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금융",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "신용분석",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금융",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "자산운용",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금융",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "금융영업지원",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금융",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "증권·외환",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 6,
+      "lastPageNo": 1
+    }
+  }
+}

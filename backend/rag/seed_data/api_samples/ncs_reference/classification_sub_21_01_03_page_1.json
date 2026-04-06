@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "21",
+            "NCS_LCLAS_CDNM": "식품가공",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "식품가공",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "식품유통",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "수산식품유통",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "수산식품 유통은 수산품 취급을 관리하고, 활어ㆍ패류, 신선ㆍ냉장품, 냉동품, 건제품, 염장품, 조미가공품, 어육연제품 등급판정과 관련된 운송, 재고관리, 위생관리, 안전관리, 부적합품목관리, 소분 포장관리, 고객 불만처리를 하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "21",
+            "NCS_LCLAS_CDNM": "식품가공",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "식품가공",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "식품유통",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "농산식품유통",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "농산식품 유통은 보다 신선한 농산식품을 소비자에게 제공하기 위해 수확 후 관리, 운송, 재고, 위생, 안전, 부적합품 관리, 소분 포장관리 및 고객 불만처리를 하며 농산식품의 전반적인 유통관리, 인증관리, 수입·수출 농산식품과 판매를 관리하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "21",
+            "NCS_LCLAS_CDNM": "식품가공",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "식품가공",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "식품유통",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "축산식품유통",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "축산식품유통은 육류, 유류, 난류 및 꿀 등 축산물을 원료나 가공된 상태로 소비자에게 안전하고 위생적이며 신뢰할 수 있는 축산식품을 공급하기 위해서 원료 및 제품의 특성에 따라 분류(등급판정), 운반, 보관, 포장, 진열, 판매를 하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

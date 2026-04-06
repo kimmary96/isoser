@@ -1,0 +1,172 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "문화·예술",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "공연예술",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "무대연출",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "무대연출은 언어적·비언어적 재료들을 바탕으로 공연참여자와의 협업을 통해 무대화에 필요한 요소들을 조정·중재·통합·지휘하여 관객이 공감할 수 있도록 공연을 창작하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "문화·예술",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "공연예술",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "무대조명",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "무대조명은 공연예술의 시각적 효과와 이미지 구현을 위하여 빛을 구상하고 설계하여, 무대에서 가시화 될 수 있도록 조명시스템과 장비를 운영하여 실행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "문화·예술",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "공연예술",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "무대기계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "무대기계는 원활한 공연을 위해 스태프회의에 참여하여 공유한 의견을 바탕으로 무대기계 점검 및 안전대책 강구, 유지보수를 통한 무대기계 안정성 확보로 공연을 지원하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "문화·예술",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "공연예술",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "무대음향",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "무대음향은 원활한 공연을 위하여 무대음향 계획에 따라 음향시스템을 구성하고, 설치, 조정, 운용, 철수, 유지보수 업무를 수행함으로써 무대음향의 안전성을 확보하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "문화·예술",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "공연예술",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "무대미술",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "무대미술은 공연을 위하여 공간연출을 토대로 미학적 공간을 창조하고 실현하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "문화·예술",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "공연예술",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "무대감독",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "무대감독은 다양한 장르의 공연예술 작품을 제작의도에 맞게 공연하기 위해 출연진 및 스태프와 조율(협의, 조정, 분배)하여 제작 회의, 연습 및 일정 수립, 공연 준비 및 리허설, 공연 등을 진행, 관리(Management)하는 일이다.",
+            "DUTY_ORD": 6,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "문화·예술",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "공연예술",
+            "NCS_SUBD_CD": "07",
+            "NCS_SUBD_CDNM": "무대기술감독",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "무대기술감독이란 현재 기술과 제작의 업무를 포함하며 다양한 장르의 공연예술 작품을 공연하기 위해 작품분석을 바탕으로 기술적 지원에 관련된 예산 및 일정을 수립하고, 공연 시스템에 관한 회의를 근거로 분야별 제작사를 선정하여 공연에 필요한 모든 장비의 설치와 철거가 안전하게 진행될 수 있도록 관리, 감독하는 일이다.",
+            "DUTY_ORD": 7,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "문화·예술",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "공연예술",
+            "NCS_SUBD_CD": "08",
+            "NCS_SUBD_CDNM": "무대장치·소품",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "무대장치·소품 이란 공연에 최적화된 무대를 구현하기 위해 작품과 연출 의도를 분석하여 이해하고, 기능적, 심미적 안목을 활용하여 공연 기획 단계에서 확인된 제약조건과 요구가 반영된 무대장치·소품을 제작, 설치하는 일이다.",
+            "DUTY_ORD": 8,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "문화·예술",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "공연예술",
+            "NCS_SUBD_CD": "09",
+            "NCS_SUBD_CDNM": "무대의상",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "무대의상 직무는 무대공연을 목적으로 무대 위에서 배우가 작품에 적합한 캐릭터를 창출하기 위해 사전 작품분석을 통한 무대의상 콘셉트에 따라 필요한 의복 및 장신구 일체를 디자인·제작·사입하여 공연 중 의상전환을 원활히 하고 공연 후 사용된 무대의상에 대한 사후관리까지 수행하는 직무이다.",
+            "DUTY_ORD": 9,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "문화·예술",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "공연예술",
+            "NCS_SUBD_CD": "10",
+            "NCS_SUBD_CDNM": "무대영상",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "무대영상은 공연예술작품을 위해 영상콘텐츠를 활용하여 시각적으로 표현하는 일이다.",
+            "DUTY_ORD": 10,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "문화·예술",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "공연예술",
+            "NCS_SUBD_CD": "11",
+            "NCS_SUBD_CDNM": "하우스매니징",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "하우스매니징은 공연장 운영을 위한 관객의 안전 및 서비스를 제공하고 공연장의 규정 및 운영체계에 준하여 공연을 진행하고 관객의 안전·서비스 관리 및 인력운영, 객석·로비 관리를 담당하는 일이다.",
+            "DUTY_ORD": 11,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 11,
+      "lastPageNo": 1
+    }
+  }
+}

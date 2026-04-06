@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "02",
+            "NCS_LCLAS_CDNM": "경영·회계·사무",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "기획사무",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "마케팅",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "마케팅전략기획",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "마케팅전략기획은 시장 경쟁 우위 확보와 고객 가치 창출을 위하여 마케팅 목표를 수립하고 성과를 관리하기 위한 체계적인 전략 방안을 설계하고 실행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "02",
+            "NCS_LCLAS_CDNM": "경영·회계·사무",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "기획사무",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "마케팅",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "고객관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "고객관리란 현재의 고객과 잠재고객의 이해를 바탕으로 고객이 원하는 제품과 서비스를 지속적으로 제공함으로써 기업과 브랜드에 호감도가 높은 고객의 유지와 확산을 위해 고객과의 관계를 관리하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "02",
+            "NCS_LCLAS_CDNM": "경영·회계·사무",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "기획사무",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "마케팅",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "통계조사",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "통계조사는 조사목적에 따라 과학적이고 체계적인 조사계획, 자료수집, 자료분석을 통해 개인, 팀 및 조직이 의사결정을 할 수 있도록 정보를 제공하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "02",
+            "NCS_LCLAS_CDNM": "경영·회계·사무",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "기획사무",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "마케팅",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "유통관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "유통관리는 도소매업의 효율적 운영을 위해 구매, 판매, 마케팅, 물류, 채널 융·복합, 유통정보와 관련된 업무를 수행하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

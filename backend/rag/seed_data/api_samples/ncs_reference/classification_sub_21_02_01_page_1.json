@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "21",
+            "NCS_LCLAS_CDNM": "식품가공",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "제과·제빵·떡제조",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "제과·제빵·떡제조",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "제과",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "제과는 고객가치에 부합하는 고품질의 과자류제품을 제공하기 위해 효율적이고 체계적인 기술과 지식을 활용하여 생산, 위생관리, 판매 및 경영관련 업무를 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "21",
+            "NCS_LCLAS_CDNM": "식품가공",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "제과·제빵·떡제조",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "제과·제빵·떡제조",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "제빵",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "제빵은 고객가치에 부합하는 고품질의 빵류 제품을 제공하기 위해 효율적이고 체계적인 기술과 지식을 활용하여 생산, 위생관리, 판매 및 경영관련 업무를 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "21",
+            "NCS_LCLAS_CDNM": "식품가공",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "제과·제빵·떡제조",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "제과·제빵·떡제조",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "떡제조",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "떡제조란 곡류와 다양한 식재료를 이용하여 찌기, 치기, 삶기, 지지기, 굽기 등의 과정을 거쳐 소비자의 기호에 맞는 떡 제품을 만드는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "21",
+            "NCS_LCLAS_CDNM": "식품가공",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "제과·제빵·떡제조",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "제과·제빵·떡제조",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "한과제조",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "한과제조란 곡류, 두류, 해조류, 견과류, 채소류 등의 재료를 이용하여 찌기, 튀기기, 굽기, 졸이기, 절이기, 성형 및 고명하기 등의 방법으로 한과류를 제조하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

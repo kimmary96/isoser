@@ -1,0 +1,32 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "18",
+            "NCS_LCLAS_CDNM": "섬유·의복",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "섬유제조",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "섬유가공",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "염색가공",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "염색가공은 섬유의 용도와 성질에 따라 섬유에 알맞은 색상을 입히거나, 모양, 형태 등 여러 가지 기능을 부여하여 제품생산 및 품질, 환경을 관리하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 1,
+      "lastPageNo": 1
+    }
+  }
+}

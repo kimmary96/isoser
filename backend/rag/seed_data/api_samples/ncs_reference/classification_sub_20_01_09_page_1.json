@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "09",
+            "NCS_SCLAS_CDNM": "스마트물류",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "스마트물류체계기획",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "스마트물류체계기획은 물류 서비스의 효율성과 안정성, 지속가능성 향상 등을 목적으로 최신 IoT 기술과 인공지능 기술을 기반으로 기존의 물류체계를 개선하거나 새로운 물류체계를 구축하고 관리하기 위한 계획을 수립하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "09",
+            "NCS_SCLAS_CDNM": "스마트물류",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "스마트물류플랫폼구축",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "스마트물류플랫폼구축은 지능형물류서비스를 제공하기 위해 정보기술솔루션에 IoT와 인공지능(AI) 등 신기술을 융합하여 플랫폼을 설계하고 구축하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "09",
+            "NCS_SCLAS_CDNM": "스마트물류",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "스마트물류통합관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "스마트물류통합관리는 스마트물류 플랫폼을 활용하여 물류의 기능들을 최적으로 수행하기 위한 정보통신기술(ICT) 기반의 지능형 물류 서비스를 통합관리 하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

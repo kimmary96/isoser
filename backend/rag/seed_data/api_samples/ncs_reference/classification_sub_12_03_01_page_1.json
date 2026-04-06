@@ -1,0 +1,88 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "관광·레저",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "여행서비스",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "여행상품개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "여행상품개발은 고객의 여행욕구를 만족시킬 수 있는 여행상품을 판매하기 위하여 여행상품 시장조사, 여행상품 STP전략, 여행상품개발 자원관리, 여행샘플상품 구성, 여행상품 원가분석, 여행상품 상품성 검토, 여행상품 샘플투어, 여행상품 관리, 여행상품 마케팅 믹스, 여행상품 출시를 하는 일이다. ",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "관광·레저",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "여행서비스",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "여행상품상담",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "여행상품상담은 고객의 수요에 맞는 여행상품의 추천을 위해 여행상품 상담 교육을 한 후 고객을 응대하여 여행 상품 설명 및 여행 요금 상담, 교통편 예약 조회 및 여행상품 계약을 하고 고객의 안전한 여행을 위하여 교통권 발권 및 지상수배, 여행서류를 확인하며, 여행 고객을 관리하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "관광·레저",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "여행서비스",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "국내여행안내",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": " 국내여행안내는 우리나라를 여행하는 관광객을 대상으로 안전하고 즐겁게 여행할 수 있도록 편의를 제공하기 위하여 국내여행안내 행사지시서 확인, 국내여행안내 행사준비, 미팅(meeting), 교통편 탑승 후 오리엔테이션, 관광자원 해설, 국내여행안내 행사진행, 국내여행안내 시 안전관리, 국내여행고객 만족관리, 센딩(Sending), 국내여행안내 정산·보고를 하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "관광·레저",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "여행서비스",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "해외여행안내",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "해외여행안내는 국외를 여행하는 내국인 관광객을 대상으로 안전하고 즐겁게 여행할 수 있도록 편의를 제공하고 국외여행안내 행사확정 확인, 국외여행안내 사전 정보 확인, 기내 업무, 입국 업무, 국외여행 행사관리, 국외여행 시 안전관리, 국외여행고객 만족관리, 국외여행 정산·보고, 국외여행안내 행사정보 파악. 국외여행안내 사전 정보 지원, 출국장 업무, 출국 업무를 하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "관광·레저",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "여행서비스",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "항공객실서비스",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "항공객실서비스란 객실 안전관리, 승객 탑승 전 준비, 승객 탑승 서비스, 이륙 전 서비스, 비행 중 서비스, 착륙 전 서비스, 착륙 후 서비스, 승객 하기 후 관리, 응급환자 대처, 객실승무 관리를 하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 5,
+      "lastPageNo": 1
+    }
+  }
+}

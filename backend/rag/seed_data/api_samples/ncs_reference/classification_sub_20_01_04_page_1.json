@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "정보기술관리",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "IT프로젝트관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "IT프로젝트관리는 IT프로젝트 인도물의 납기 준수를 위하여 IT프로젝트를 기획하고, 범위, 일정, 원가, 인적자원, 품질, 위험, 의사소통, 조달, 변경, 보안, 정보시스템, 성과 등을 통합 관리하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "정보기술관리",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "IT품질보증",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "IT품질보증은 조직에서 제공하는 IT제품 또는 IT서비스의 품질목표를 달성하기 위하여 전사 및 프로젝트 관점의 IT품질정책과 관리계획을 수립하고, 지속적인 품질교육 및 관리활동 개선, 품질 평가 및 점검, 시정조치관리 활동, 관리시스템 구축 및 운영을 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "정보기술관리",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "IT테스트",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "IT테스트는 테스트를 효과적으로 수행하기 위해 필요한 기획, 진단 컨설팅, 계획, 분석, 설계, 환경구축, 실행, 완료 및 자동화를 수행하고 관리하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "정보기술관리",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "IT감리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "IT감리는 발주자 및 사업자의 이해관계로부터 독립된 자가 정보시스템의 품질 및 성과를 확보하기 위하여 제3자의 관점에서 정보시스템의 기획, 구축 및 운영 등에 관한 사항을 종합적으로 점검하고 문제점을 개선하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

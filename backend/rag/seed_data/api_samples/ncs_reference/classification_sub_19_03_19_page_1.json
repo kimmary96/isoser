@@ -1,0 +1,32 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "19",
+            "NCS_SCLAS_CDNM": "원격시스템개발",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "혼합현실(MR)기반협업시스템개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "혼합현실(MR: Mixed Reality)기반 협업시스템개발은 서비스 유형별 혼합현실 기반의 콘텐츠를 활용하여 가상세계와 현실세계가 혼합된 공간에서 다양한 정보를 공유하고, 상호작용할 수 있는 시스템을 개발하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 1,
+      "lastPageNo": 1
+    }
+  }
+}

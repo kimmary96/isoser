@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "에너지·자원",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "광산조사·탐사",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "광산지질조사",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "광산지질조사는 광물자원의 탐사와 개발을 목적으로 지질·광상학적 조사를 통하여 광상의 부존특성과 매장량을 조사하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "에너지·자원",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "광산조사·탐사",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "지구물리·화학탐사",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "지구물리·화학탐사란 지하의 대상광체 또는 지하의 공간에 대한 물리적, 화학적 특성을 파악하여, 시추설계에 필요한 근거자료를 제공하기 위하여 지상 및 지하에서 탐사장비를 이용하여 자료를 획득, 처리, 해석하는 지구물리탐사와 지표 및 지하에서 암석, 토양, 하상퇴적물, 자연수 등의 지질시료를 채취, 분석, 해석하는 지구화학탐사를 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "에너지·자원",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "광산조사·탐사",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "석유시추",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "석유시추란 석유자원의 부존을 확인하고 개발 가능성을 판단하기 위하여 시추 및 평가 계획을 수립하고 시추 및 평가 장비를 사용하여 목표지점까지 굴착하여 지층 정보를 취득하고 자원량을 평가하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "에너지·자원",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "광산조사·탐사",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "광물시추",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "광물시추는 광물자원의 부존여부와 지하정보 자료를 수집하기 위하여, 시추장비를 사용하여 천공작업을 수행하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

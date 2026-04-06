@@ -1,0 +1,78 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금속재료",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "금속엔지니어링",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금속재료",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "금속재료제조",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금속재료",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "금속가공",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금속재료",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "표면처리",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금속재료",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "용접",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금속재료",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "비철금속재료제조",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 6,
+      "lastPageNo": 1
+    }
+  }
+}

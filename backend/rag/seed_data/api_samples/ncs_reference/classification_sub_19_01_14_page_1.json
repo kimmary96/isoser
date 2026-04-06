@@ -1,0 +1,32 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "14",
+            "NCS_SCLAS_CDNM": "전지",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "리튬이온전지셀개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "리튬이온전지셀개발은 고객의 요구사항을 반영한 요구성능지표를 만족하기 위하여 소재의 선정과 구성요소 설계 및 검증을 거쳐 제조공정에 적용가능한 셀 설계안을 개발하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 1,
+      "lastPageNo": 1
+    }
+  }
+}

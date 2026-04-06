@@ -1,0 +1,102 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "22",
+            "NCS_LCLAS_CDNM": "인쇄·목재·가구·공예",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "공예",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "귀금속·보석",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "귀금속가공",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "귀금속 가공은 귀금속이나 보석을 주재료로 다양한 기법과 장비를 활용하여 주얼리를 비롯한 여러 장식용품을 제작하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "22",
+            "NCS_LCLAS_CDNM": "인쇄·목재·가구·공예",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "공예",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "귀금속·보석",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "귀금속품위감정",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "귀금속품위감정은 관련 장비 및 화학약품을 이용하여 귀금속 제품 중 귀금속의 정성, 정량을 분석하는 직무를 수행 하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "22",
+            "NCS_LCLAS_CDNM": "인쇄·목재·가구·공예",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "공예",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "귀금속·보석",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "보석가공",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "보석가공은 보석의 색 및 광택효과를 극대화 하기위하여 원석의 특성에 따라 다양한 연마기법을 적용하여 나석 및 귀금속, 공예품에 활용할 수 있는 제품을 가공하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "22",
+            "NCS_LCLAS_CDNM": "인쇄·목재·가구·공예",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "공예",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "귀금속·보석",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "보석감정",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "보석감정은 필요한 장비와 도구를 이용하여 보석의 종류 및 진위여부를 판별하고 품질을 평가하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "22",
+            "NCS_LCLAS_CDNM": "인쇄·목재·가구·공예",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "공예",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "귀금속·보석",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "보석디자인",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "보석디자인은 시장의 수요변화와 문화적 배경을 바탕으로 트렌드를 조사, 분석하여 창의적이며 아름다운 보석장신구 제품을 기획하고 개발하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "22",
+            "NCS_LCLAS_CDNM": "인쇄·목재·가구·공예",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "공예",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "귀금속·보석",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "주얼리마케팅",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "주얼리 마케팅은 주얼리 전문지식을 바탕으로 주얼리 시장조사, 제품, 점포, 판매, 프로모션, 브랜드 관리로 고객만족을 추구하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 6,
+      "lastPageNo": 1
+    }
+  }
+}

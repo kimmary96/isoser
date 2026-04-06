@@ -1,0 +1,88 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "에너지·자원",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "광산조사·탐사",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "에너지·자원",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "광물·석유자원개발·생산",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "에너지·자원",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "광산환경관리",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "에너지·자원",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "광산보안",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "에너지·자원",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "재생에너지",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "에너지·자원",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "에너지관리",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "에너지·자원",
+            "NCS_SCLAS_CD": "07",
+            "NCS_SCLAS_CDNM": "신에너지",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 7,
+      "lastPageNo": 1
+    }
+  }
+}

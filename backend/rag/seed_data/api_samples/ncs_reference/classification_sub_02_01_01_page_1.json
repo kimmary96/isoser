@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "02",
+            "NCS_LCLAS_CDNM": "경영·회계·사무",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "기획사무",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "경영기획",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "경영기획",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "경영기획은 경영목표를 효과적으로 달성하기 위한 전략을 수립하고 최적의 자원을 효율적으로 배분하도록 경영진의 의사결정을 체계적으로 지원하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "02",
+            "NCS_LCLAS_CDNM": "경영·회계·사무",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "기획사무",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "경영기획",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "경영평가",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "경영평가는 조직의 지속적 성장을 위하여 경영목표에 따른 평가기준을 마련하고, 일정기간 동안 조직이 수행한 성과를 이 기준에 따라 분석/정리하여 보고하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

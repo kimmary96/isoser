@@ -1,0 +1,88 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "09",
+            "NCS_LCLAS_CDNM": "운전·운송",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "항공운전·운송",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "항공기조종운송",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "경량항공기조종",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "경량항공기조종은 비행 전 준비, 이륙 전 지상운용, 이륙, 공중조작, 기동조작, 항법, 착륙접근, 착륙, 착륙 후 지상운용, 항공안전보안 관리를 통해서 비행에 요구되는 능력을 활용하여 안전하게 경량항공기 조종을 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "09",
+            "NCS_LCLAS_CDNM": "운전·운송",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "항공운전·운송",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "항공기조종운송",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "자가용항공기조종",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "자가용항공기조종은 무상으로 운항하는 항공기를 조종할 수 있는 자격을 가진 자가 비행 전 준비, 이륙 전 지상운용, 이륙, 공중조작, 비상절차, 항법, 비행장 내 운용, 착륙, 착륙 후 지상운용, 항공안전 보안관리에 요구되는 능력을 활용하여 안전하게 자가용항공기조종을 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "09",
+            "NCS_LCLAS_CDNM": "운전·운송",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "항공운전·운송",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "항공기조종운송",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "사업용항공기조종",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "사업용 항공기 조종은 사업용 항공기 조종면허를 가진 조종사가 비행 전 준비, 이륙 전 지상운용, 이륙, 공중조작, 항법, 착륙, 착륙 후 지상운용, 사용사업 업무비행, 승무원자원관리, 항공안전 보안관리를 통하여 조종사의 효율적이고 완벽한 비행 능력을 활용하여 안전하게 사업용 항공기를 조종하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "09",
+            "NCS_LCLAS_CDNM": "운전·운송",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "항공운전·운송",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "항공기조종운송",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "운송용항공기조종",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "운송용항공기조종은 비행계획을 검토하고 관제사와 통신하며 산출된 항공기 성능을 적용하여 이륙, 상승, 항로비행, 강하, 접근, 착륙 절차에 따라 항행하고 안전 및 보안 관리를 하여 승객과 화물을 안전하게 목적지까지 운송하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "09",
+            "NCS_LCLAS_CDNM": "운전·운송",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "항공운전·운송",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "항공기조종운송",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "소형무인기운용·조종",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "소형무인기운용·조종은 부여된 임무를 수행하기 위하여 비행 계획을 수립하고 운항안전을 확보하여 소형무인기를 조종하고, 임무장비를 운용하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 5,
+      "lastPageNo": 1
+    }
+  }
+}

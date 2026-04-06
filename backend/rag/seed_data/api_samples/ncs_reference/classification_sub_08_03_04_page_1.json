@@ -1,0 +1,116 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "문화콘텐츠",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "영상제작",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "영상연출",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "영상연출이란 다양한 미디어를 통해서 대중들에게 정보, 재미, 감동을 전달하기 위하여 스토리가 있는 영상 콘텐츠를 예술적이고, 기술적으로 창작하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "문화콘텐츠",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "영상제작",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "영상촬영",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "영상촬영은 콘텐츠 제작을 위해 그 목적과 내용, 형식에 맞게 카메라를 통해 영상으로 창조하고 품질을 관리하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "문화콘텐츠",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "영상제작",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "영상조명",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "영상조명은 영상을 촬영하기 위하여 기술적으로 적당한 밝기를 주어 공간, 시간, 분위기를 전달하도록 빛을 활용하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "문화콘텐츠",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "영상제작",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "영상음향제작",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "영상음향제작은 영상매체와 관련된 음향 요소를 녹음하고 디자인하여 최적화된 음향콘텐츠를 제작하는 일이다.",
+            "DUTY_ORD": 7,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "문화콘텐츠",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "영상제작",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "영상그래픽",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "영상그래픽이란 영상제작에 있어 촬영하기 어려운 효과나 상황을 구현하기 위한 시각효과 작업과 영상에 움직임을 부여하는 모든 그래픽 작업을 총칭하며 영상의 가치를 극대화하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "문화콘텐츠",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "영상제작",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "영상편집",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "영상편집은 콘텐츠의 제작의도를 분석하고 영상을 종합적으로 구성하여 스토리가 효과적으로 전달되도록 영상작품을 최종 완성하는 일이다.",
+            "DUTY_ORD": 6,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "문화콘텐츠",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "영상제작",
+            "NCS_SUBD_CD": "07",
+            "NCS_SUBD_CDNM": "영상미술",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "영상미술은 종합예술로서 영상제작에 있어서 텍스트의 분석을 통하여 콘셉트, 공간, 인물의 창의적 시각화를 위해 미술적요소를 계획·설계·제작·관리하는 일이다.",
+            "DUTY_ORD": 7,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 7,
+      "lastPageNo": 1
+    }
+  }
+}

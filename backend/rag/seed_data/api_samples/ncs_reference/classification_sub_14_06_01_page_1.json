@@ -1,0 +1,102 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "06",
+            "NCS_MCLAS_CDNM": "도시·교통",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "국토·도시계획",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "국토·지역계획",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "국토ㆍ지역계획이란 국토와 지역에 대한 이용ㆍ개발 및 보전함에 있어서 국토균형발전을 고려하고, 미래의 사회ㆍ경제 변화에 대응하여 국민 모두가 행복할 수 있는 지속가능한 발전 방향을 설정하며 이를 달성하기 위한 장기 종합계획을 수립하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "06",
+            "NCS_MCLAS_CDNM": "도시·교통",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "국토·도시계획",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "도시계획",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "도시계획이란 주민의 삶의 질을 향상시키고 공공복리를 증진시키기 위해 미래지향적인 도시발전 방향을 제시하고 주민과 계획참여자의 협력을 통해 지속가능한 도시환경을 조성하기 위한 계획을 수립하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "06",
+            "NCS_MCLAS_CDNM": "도시·교통",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "국토·도시계획",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "도시설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "도시설계란 시민 삶의 질 향상을 위해 도시계획과 토목, 교통, 건축, 조경, 경관, 사회ㆍ문화ㆍ경제 분야를 연계하여 토지이용을 합리화하고 기능을 증진시키며 종합적ㆍ입체적인 도시공간계획 및 도시관리기준을 수립하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "06",
+            "NCS_MCLAS_CDNM": "도시·교통",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "국토·도시계획",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "도시재생",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "도시재생은 쇠퇴하거나 정체된 도시와 지역을 대상으로 주민들의 생활환경을 개선하고, 지역사회의 삶의 질을 높이기 위하여, 지역주민과 함께 물리적, 경제적, 사회적, 환경적, 문화적으로 활성화 시키는 계획과 사업을 추진하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "06",
+            "NCS_MCLAS_CDNM": "도시·교통",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "국토·도시계획",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "도시개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "도시개발은 도시의 성장·변화에 따른 도시 공간 수요에 대응하여 지속가능한 도시발전을 도모하기 위하여 계획적인 도시공간을 조성하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "06",
+            "NCS_MCLAS_CDNM": "도시·교통",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "국토·도시계획",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "도시경관",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "도시경관은 도시와 지역의 시각적 환경의 총체이며, 도시경관계획은 아름답고 개성있는 지역환경을 조성하기 위해 도시경관을 보전, 관리, 형성하는 계획을 수립하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 6,
+      "lastPageNo": 1
+    }
+  }
+}

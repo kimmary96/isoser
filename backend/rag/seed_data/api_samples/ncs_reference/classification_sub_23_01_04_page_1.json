@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "산업환경",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "소음진동관리",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "소음진동방지",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "소음‧진동방지는 발생원, 전파경로 및 수음(진)점 등의 현황을 조사, 측정, 분석, 예측, 평가하여 최적의 소음·진동 저감대책을 마련하기 위한 소음·진동방지시설의 설계, 제작, 시공과 그 효과를 시험·검사하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "산업환경",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "소음진동관리",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "소음진동측정·분석평가",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "소음 진동 측정·분석 평가는 정온한 생활환경과 자연환경을 위하여, 소음진동 관리계획을 수립하고 측정·분석·평가하여 보고서를 작성하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

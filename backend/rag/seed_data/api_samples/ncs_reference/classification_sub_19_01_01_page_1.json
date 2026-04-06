@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "발전설비설계",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "수력발전설비설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "수력발전설비설계란 물의 위치에너지를 수차, 발전기, 보조 전기설비를 이용하여 전기에너지로 변환하여 경제적인 전력을 생산하기 위한 수력발전소 전기설비를 설계하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "발전설비설계",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "화력발전설비설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "화력발전설비설계란 화석연료를 사용하여 경제적인 전력을 생산하기 위한 안전하고 신뢰성 있는 화력발전소를 설계하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "발전설비설계",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "원자력발전설비설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "원자력발전설비설계란 원자력 연료를 사용하여 경제적인 전력을 생산하기 위한 안전하고 신뢰성 있는 원자력발전소를 설계하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "농업",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "농촌개발",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "농촌체험상품개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "농촌체험상품개발은 농촌주민이 체험객들을 대상으로 농촌자원을 활용하여 농업농촌의 다원적 가치를 창출하기 위해서 자원발굴조사, 시장분석, 기획, 개발전략 수립, 사업성분석, 마케팅, 실행전략 수립, 공간 및 시설 개발, 평가개선의 전체 과정을 통해 유무형의 농촌체험상품 및 프로그램을 개발하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "농업",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "농촌개발",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "농촌체험시설운영",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "농촌체험시설운영은 농촌체험 프로그램을 운영하는 농가, 마을, 법인, 기타 농촌조직이 농촌체험시설을 효율적으로 운영하기 위한 계획을 수립하고, 각종 농촌체험 프로그램의 운영, 시설 및 환경관리, 안전관리, 인력관리, 홍보, 고객관리, 재무회계관리, 서비스 품질 관리, 성과관리 등의 업무를 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "농업",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "농촌개발",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "농업환경개선",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "농업환경개선은 농업 생산성을 높이고, 이와 관련된 농업의 공익적 기능을 증진시키고, 지속가능한 작물생산환경을 유지 개선하기 위하여 토양, 물, 기상 등 농업환경기본요소를 효율적으로 활용하고, 농업자재 이용 및 작물재배관리기술을 환경친화적 방법으로 개선하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "농업",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "농촌개발",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "농산물품질관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "농산물품질관리란 농산물의 품질 향상과 유통 효율화를 위하여 농산물 출하, 유통, 판매 과정에서 수확후 처리, 저장, 선별, 포장, 표준규격 출하, 상품관리 등의 농산물 품질을 관리하는 업무를 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

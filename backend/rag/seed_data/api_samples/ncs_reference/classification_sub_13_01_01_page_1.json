@@ -1,0 +1,102 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "13",
+            "NCS_LCLAS_CDNM": "음식서비스",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "식음료조리·서비스",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "음식조리",
+            "NCS_SUBD_CD": "00",
+            "NCS_SUBD_CDNM": "음식조리공통직무",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "음식조리 기본직무 (공통)는 조리작업에 기본적인 위생과 안전수칙을 이해하고 실행하며, 메뉴·구매·재료관리 업무를 수행하는 일이다.",
+            "DUTY_ORD": 6,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "13",
+            "NCS_LCLAS_CDNM": "음식서비스",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "식음료조리·서비스",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "음식조리",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "한식조리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "한식조리는 한국음식의 특성을 이해하고 메뉴 계획, 식재료를 손질 및 관리하여 정해진 조리법에 의해 조리하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "13",
+            "NCS_LCLAS_CDNM": "음식서비스",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "식음료조리·서비스",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "음식조리",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "양식조리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "양식조리는 서양음식의 특성을 이해하고 메뉴 계획, 식재료를 손질 및 관리하여 정해진 조리법에 의해 조리하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "13",
+            "NCS_LCLAS_CDNM": "음식서비스",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "식음료조리·서비스",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "음식조리",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "중식조리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "중식조리는 중국음식의 특성을 이해하고 메뉴 계획, 식재료를 손질 및 관리하여 정해진 조리법에 의해 조리하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "13",
+            "NCS_LCLAS_CDNM": "음식서비스",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "식음료조리·서비스",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "음식조리",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "일식조리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "일식조리는 일본음식의 특성을 이해하고 다양한 식재료를 이용하여 재료 본연의 맛과 계절감을 살려 위생적이고, 정해진 조리법으로 조리하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "13",
+            "NCS_LCLAS_CDNM": "음식서비스",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "식음료조리·서비스",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "음식조리",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "복어조리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "복어조리는 식용 가능한 복어를 선별하여 안전하게 제독 처리하고 손질한 후 재료 본연의 맛과 계절감을 살려 위생적으로 조리하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 6,
+      "lastPageNo": 1
+    }
+  }
+}

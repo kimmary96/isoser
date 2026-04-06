@@ -1,0 +1,102 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "17",
+            "NCS_LCLAS_CDNM": "화학·바이오",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "바이오",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "바이오의약",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "바이오의약품생산",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "바이오의약품 생산이란 인간이 건강한 삶을 유지하기 위해 생물체를 이용하여 배양, 분리·정제, 농도조절, 제제화, 제형화 등의 공정을 거쳐 필요한 의약품을 생산하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "17",
+            "NCS_LCLAS_CDNM": "화학·바이오",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "바이오",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "바이오의약",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "바이오의약품개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "바이오의약품개발이란 사람 또는 생물체에서 유래된 원료 또는 재료를 활용하여 생물학적 제제, 유전자재조합의약품, 세포배양의약품, 세포치료제, 유전자치료제 등과 같은 의약품 후보물질 도출, 공정개발, 비임상 및 임상평가 등을 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "17",
+            "NCS_LCLAS_CDNM": "화학·바이오",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "바이오",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "바이오의약",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "바이오진단제품개발·서비스",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "바이오진단제품개발ㆍ서비스는 질병유무, 질병원인, 질환치료 효과 등 의학적 진단에 활용하기 위해 생체유래물질로부터 특정 바이오마커를 분석하는 진단키트를 개발하거나 유전자 염기서열 분석서비스를 수행하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "17",
+            "NCS_LCLAS_CDNM": "화학·바이오",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "바이오",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "바이오의약",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "생물학적제제개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "생물학적제제 개발은 안전성, 유효성, 안정성이 확보된 백신ㆍ항독소, 혈액제제 및 이외의 생물학적제제(치료용 항원류, 보툴리늄 제제 등) 개발을 위해 목표 제품 프로필을 설정하여 각종 공정개발을 진행하고 임상시험용 의약품 생산을 수행하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "17",
+            "NCS_LCLAS_CDNM": "화학·바이오",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "바이오",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "바이오의약",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "첨단바이오의약품개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "첨단바이오의약품 개발은 세포 치료제, 유전자 치료제, 조직 공학 제제, 첨단바이오 융복합 제제를 개발하기 위하여 유효성과 안전성, 생산 적합성 등을 목표로 의약품 후보 물질 도출, 비임상 시험, 그리고 임상 시험을 수행하는 일이다.",
+            "DUTY_ORD": 6,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "17",
+            "NCS_LCLAS_CDNM": "화학·바이오",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "바이오",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "바이오의약",
+            "NCS_SUBD_CD": "07",
+            "NCS_SUBD_CDNM": "바이오의약품품질관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "바이오의약품 품질관리는 우수하고 안전한 품질의 의약품을 생산하기 위해 법규를 준수하고 품질과 연관된 시험, 검증, 보증, 평가 등을 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 6,
+      "lastPageNo": 1
+    }
+  }
+}

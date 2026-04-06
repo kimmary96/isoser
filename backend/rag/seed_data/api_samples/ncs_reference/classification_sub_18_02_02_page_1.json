@@ -1,0 +1,88 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "18",
+            "NCS_LCLAS_CDNM": "섬유·의복",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "패션",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "패션제품생산",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "제직의류생산",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "제직의류생산은 제직의류제품을 생산하기 위하여 생산의뢰서에 따라 생산설계 및 생산효율관리를 계획한 후, 입고된 원부자재를 재단 및 봉제하여 완제품으로 제조하는 작업을 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "18",
+            "NCS_LCLAS_CDNM": "섬유·의복",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "패션",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "패션제품생산",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "편직의류생산",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "편직의류생산은 편직의류제품을 생산하기 위하여 제품개발과 생산기획을 하고 적절한 편직 방법을 선택하여 편직한 후, 봉제 및 무봉제 설계 과정을 통해 편직의류 완제품을 생산하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "18",
+            "NCS_LCLAS_CDNM": "섬유·의복",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "패션",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "패션제품생산",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "가죽·모피생산",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "가죽모피생산은 의류제품생산을 위하여, 동물의 원피를 물리적·화학적으로 가공하여 원단을 제조하고, 그 원단으로 가죽모피의류제품을 생산하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "18",
+            "NCS_LCLAS_CDNM": "섬유·의복",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "패션",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "패션제품생산",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "패션소품생산",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "패션 소품 생산은 제직원단, 편직원단, 가죽, 기타 재료로 생산된 패션  제품 중 의류를 제외한 가방, 벨트, 모자, 장갑, 스카프, 넥타이, 양말 등 패션의 완성도를 높여주는 아이템을 생산하기 위한 디자인·개발·제조에 이르는 일련의 과정을 수행하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "18",
+            "NCS_LCLAS_CDNM": "섬유·의복",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "패션",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "패션제품생산",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "한복생산",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "한복생산은 한복의 소재와 디자인을 기획하고 개발하여 옷본 제작, 마름질, 바느질하는 일련의 과정을 수행하여 한복을 생산하고, 원ㆍ부자재 관리와 품질검사를 수행하는 일이다. ",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 5,
+      "lastPageNo": 1
+    }
+  }
+}

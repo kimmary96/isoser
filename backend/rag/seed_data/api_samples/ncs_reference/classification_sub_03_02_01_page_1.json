@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "보험",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "보험상품개발",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "보험동향분석",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "보험동향분석은 보험 상품 시장의 과거, 현재 상태를 진단하고, 미래를 예측하여 보험 상품 개발의 방향을 제시하기 위해 상품시장 수요 분석, 거시 경제 분석, 국내외 사례조사, 예상 시장 분석 등의 활동을 통해 소비자들의 수요에 부합되는 구체 상품 시안을 도출하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "보험",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "보험상품개발",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "보험상품개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "보험상품개발은 고객 니즈와 회사의 전략적 목표 달성을 위하여 새로운 상품을 기획, 개발, 모니터링 하는 일련의 업무이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "보험",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "보험상품개발",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "보험계리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "보험계리는 주주 등 이해관계자들의 의사결정에 필요한 정보를 제공하기 위하여, 보험과 연금에서 발생 가능한 재무적 영향을 분석하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

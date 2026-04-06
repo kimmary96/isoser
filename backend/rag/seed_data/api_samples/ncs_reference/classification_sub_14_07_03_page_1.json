@@ -1,0 +1,32 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "07",
+            "NCS_MCLAS_CDNM": "건설기계운전·정비",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "콘크리트공기계운전",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "콘크리트공기계운전",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "콘크리트공기계운전은 콘크리트믹서트럭과 콘크리트펌프를 조종하여 건축과 토목 공사에 콘크리트를 신속하고 안전하게 운반하여 압송, 타설하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 1,
+      "lastPageNo": 1
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "04",
+            "NCS_LCLAS_CDNM": "교육·자연·사회과학",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "직업교육",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "직업교육",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "경력지도",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "경력지도는 경력발전을 위하여 직업환경과 관련된 정보와 개인보유역량 및 직업요구역량과 관련된 정보의 수집과 분석을 기반으로 경력지도 실행계획을 수립하여, 경력상담, 경력코칭 리더십개발의 지도 활동을 진행하고, 그에 대한 결과를 보고하며, 조직에 경력개발제도를 수립하고 실행함으로써 성과를 창출할 수 있도록 돕는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "04",
+            "NCS_LCLAS_CDNM": "교육·자연·사회과학",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "직업교육",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "직업교육",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "기업교육",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "기업교육은 기업이 추구하는 목적과 비전에 적합한 인재를 개발하기 위하여, 인재상과 인재개발 전략에 의거하여, 교육 기획·교육과정의 개발과 운영·교육성과의 측정과 평가·교육 사후관리 등을 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "04",
+            "NCS_LCLAS_CDNM": "교육·자연·사회과학",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "직업교육",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "직업교육",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "직무분석",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "직무분석은 직무의 내용을 체계적으로 밝히는 활동으로, 조직의 인력 운용에 있어 채용, 배치, 직무전환, 승진, 평가, 보상, 교육훈련, 경력개발 등 인적자원관리 및 개발에 활용하기 위하여 각 직무와 관련된 기초적이고 구체적인 정보를 수집, 분석하여 해당 직무에서 수행하는 과업과 책무의 내용을 서술하고, 해당 과업과 책무의 수행에 요구되는 지식, 기술, 태도 등을 도출하고 분석한 직무정보를 조직 내에 공유하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

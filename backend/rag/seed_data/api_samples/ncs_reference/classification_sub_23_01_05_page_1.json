@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "산업환경",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "토양·지하수관리",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "지하수관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "지하수 관리는 공공복리증진과 지속가능한 지하수 환경보전을 위해 지하수 수자원의 효율적인 관리와 적절한 개발 및 이용을 도모하고, 지하수 오염을 조사ㆍ평가ㆍ정화하는 업무를 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "산업환경",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "토양·지하수관리",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "토양관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "토양관리는 건전한 토양환경 보전 및 토지 자산 보호를 위하여 토양의 조사ㆍ평가 및 오염된 토양의 정화와 보전에 대한 기술적, 법ㆍ제도적인 업무를 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "송배전설비",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "송변전배전설비설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "송변전배전설비설계는 발전소에서 생산된 전기를 수용가에 안정적으로 공급하기 위하여 송변전 배전설비를 관계 법령 및 설계기준에 맞도록 계획을 세워 설계도서를 작성하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "송배전설비",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "송변전배전설비운영",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "송변전 배전설비 운영은 발전소에서 생산된 전력을 수요지점까지 수송하기 위한 설비를 운영하는 것으로서 송변전ㆍ배전설비를 관계법령에 따라 적정하게 운영하고 주기적으로 점검ㆍ유지보수하여 전기사용자에게 안정적인 전력을 공급하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "송배전설비",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "송변전배전설비공사감리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "송변전 배전설비 공사감리는 발전소에서 생산된 전기를 가정, 공장, 빌딩 등 사용자 설비까지 공급하기 위한 송변전, 배전설비 공사를 감리 하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "송배전설비",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "직류송배전전력변환설비제작",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "직류송배전전력변환설비제작은 도면을 분석하고 전력변환기기 모듈 소자별 특성을 고려하여 서브모듈 제작, 컨버터, 냉각 설비, 인버터를 조립하고 관리하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "송배전설비",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "직류송배전제어·보호시스템설비제작",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "직류송배전 제어·보호시스템 설비제작은 직류송배전 시스템의 정상 운전 및 이상 시 전력 변환 장치의 제어와 보호를 위한 설비를 설계, 제작, 시험 평가하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "송배전설비",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "직류송배전시험평가",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "“직류송배전 시험평가”란 공장시험, 기기 개별시험, 기기 연계시험, 시운전시험을 통해 직류송배전을 위한 전력변환소 구성 설비의 기능과 성능을 시험평가 하는 일이다.",
+            "DUTY_ORD": 6,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "송배전설비",
+            "NCS_SUBD_CD": "07",
+            "NCS_SUBD_CDNM": "직류송배전전력변환설비설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "직류송배전전력변환설비설계는 전력변환기 모듈 소자별 수명 산정 및 환경을 고려하여 서브모듈, 컨버터, 인버터를 설계하고 시뮬레이션하여 설계한 결과를 검증하는 일이다.",
+            "DUTY_ORD": 7,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "송배전설비",
+            "NCS_SUBD_CD": "08",
+            "NCS_SUBD_CDNM": "직류송배전제어·보호시스템설비설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "직류송배전 제어·보호시스템 설비설계는 직류송배전 시스템의 정상 운전 및 이상 시 전력 변환 장치의 제어와 보호를 위한 설비를 설계하는 일이다.",
+            "DUTY_ORD": 8,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 8,
+      "lastPageNo": 1
+    }
+  }
+}

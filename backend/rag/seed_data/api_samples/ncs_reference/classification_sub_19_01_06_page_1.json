@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "전기설비설계·감리",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "전기설비설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "전기설비설계는 전력 계통으로부터 전기를 수전하여 구내전기설비에 전력을 공급하고, 전기설비가 원활히 운영될 수 있도록 관계 법령 및 설계기준에 따라 설계도서를 작성하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "전기설비설계·감리",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "전기설비감리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "전기설비감리란 전기설비 공사에 대하여 발주자의 위탁을 받은 감리업자가 설계도서, 그 밖의 관련 서류의 내용대로 시공하였는지 여부를 확인하고, 품질관리ㆍ공사관리 및 안전관리 등에 대한 기술지도를 하며, 관련 법령에 따라 발주자의 권한을 대행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "전기설비설계·감리",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "전기설비운영",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "전기설비운영은 자가용전기설비의 성능과 기능을 보전하고 안전사고를 미연에 방지하기 위한 운영계획, 운전, 점검, 관리 등을 수행하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

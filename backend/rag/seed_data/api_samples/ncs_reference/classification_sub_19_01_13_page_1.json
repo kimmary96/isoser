@@ -1,0 +1,32 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "13",
+            "NCS_SCLAS_CDNM": "미래형전기시스템",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "스마트유지보수운영",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "스마트 유지보수 운영이란 스마트 센서로부터 수집 된 데이터를 분석하여 전기설비시스템을 예측·예방·유지 보수·관리하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 1,
+      "lastPageNo": 1
+    }
+  }
+}

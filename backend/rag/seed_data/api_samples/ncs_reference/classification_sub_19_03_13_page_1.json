@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "13",
+            "NCS_SCLAS_CDNM": "착용형스마트기기",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "착용형스마트기기설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "착용형 스마트기기 설계란 착용형 스마트기기 개발을 위해 사용자 요구사항을 반영한 인간공학적 제품을 기획하고 시작품을 설계하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "13",
+            "NCS_SCLAS_CDNM": "착용형스마트기기",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "착용형스마트기기서비스",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "착용형 스마트기기 서비스는 고객서비스를 지원하기 위한 제품의 수요자 사용적합성, 인체 안전성 검증을 수행하고, 상호운용성 및 신뢰성 확보를 위한 인증을 획득하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "13",
+            "NCS_SCLAS_CDNM": "착용형스마트기기",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "착용형스마트기기개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "착용형 스마트기기 개발이란 센싱 기술과 무선통신을 기반으로 하는 저전력 하드웨어와 소프트웨어 플랫폼을 개발하고 인간공학적 설계와 생체친화형 소재를 적용한 기기를 개발하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

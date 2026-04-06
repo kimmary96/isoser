@@ -1,0 +1,186 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "해양자원",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "해양플랜트설계·설치·운용",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "원유시추설비설치·운용",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "원유시추설비설치·운용은 고객 요구사항에 따라 대상이 되는 원유를 시추하기 위하여 드릴링 장비 중 드릴링시스템, 머드시스템, 권상이송용 장비의 설치·운용 계획을 세우고 안전하게 설치하고 시운전을 진행하고 평가하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "해양자원",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "해양플랜트설계·설치·운용",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "원유생산설비설치·운용",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "원유생산설비 설치·운용은 해저에 매장 된 오일과 가스를 원유 또는 정제된 상태로 운송하기 위하여 해상에 설치된 상·하부구조물과 해저 배관 라인을 설치하고, 안전한 상태에서 사용 가능하도록 하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "해양자원",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "해양플랜트설계·설치·운용",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "해양터미널구조물설치",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "해양터미널구조물 설치는 해양 또는 육상에서 생산된 원유 도는 가스를 저장, 정제, 운송하기 위하여, 특정한 목적에 맞도록 해양 또는 해안에 설치하는 구조물의 설치계획, 운반, 설치, 시운전 및 관리하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "해양자원",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "해양플랜트설계·설치·운용",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "해양플랜트프로세스설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "해양플랜트 프로세스설계란 해양 구조물의 특성에 따라 시스템, 장비의 용량과 사양 등을 결정하고, 성능보증 및 안전, 에너지 효율 등을 고려하여 후 공정에 도면과 데이터 시트를 제공하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "해양자원",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "해양플랜트설계·설치·운용",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "해양플랜트시운전설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "해양플랜트 시운전설계는 해양플랜트 계약 요구사항과 현장실무 조건을 이해하고 시스템 및 장비별 특성을 파악하여 안전하고 효과적으로 시운전을 수행할 수 있도록 설계하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "해양자원",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "해양플랜트설계·설치·운용",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "해양플랜트안전설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "해양플랜트 안전설계는 해양플랜트 운전(Operation)중에 발생 가능한 사고들을 사전에 예방하고 사고 발생 시 피해를 최소화하기 위해, 위험요소를 식별하고 위험성을 분석, 평가하여 단계별 적합한 보호계층을 구축하고, 작업자 근무환경의 부정적인 영향(정신적, 육체적) 등을 평가하여 작업자가 안전하고 쾌적하게 업무 및 생활을 할 수 있도록 최적의 설계를 하는 일이다.",
+            "DUTY_ORD": 6,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "해양자원",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "해양플랜트설계·설치·운용",
+            "NCS_SUBD_CD": "07",
+            "NCS_SUBD_CDNM": "해양플랜트종합설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "해양플랜트 종합설계는 발주처 사양서(COMPANY Specifications), 규칙과 규정(Rules &amp; Regulations), 규격과 표준(Codes &amp; Standards)에 근거하여 부유식/고정식 해양 구조물(FPSO, FPU, FLNG, Drillship, Rig, Offshore/Onshore Platform, TLP, SPAR 등)의 운용 목적에 맞게 주요 치수 결정, 일반 배치, 중량 계산, 역학 계산 및 마린 오퍼레이션(Marine Operation) 설계 업무를 수행하는 일이다.",
+            "DUTY_ORD": 7,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "해양자원",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "해양플랜트설계·설치·운용",
+            "NCS_SUBD_CD": "08",
+            "NCS_SUBD_CDNM": "해양플랜트구조설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "해양플랜트 구조설계는 발주처 사양서(COMPANY Specifications)와 규칙과 규정(Rules &amp; Regulations), 규격과 표준(Codes &amp; Standards)을 바탕으로 선적, 운송, 설치, 운용 조건을 고려한 설계하중을 정의하고 구조계산 및 해석을 통해 해양플랜트 구조물을 구성하는 구조 부재의 재질, 형상 및 배치를 위한 설계하는 일이다.",
+            "DUTY_ORD": 8,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "해양자원",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "해양플랜트설계·설치·운용",
+            "NCS_SUBD_CD": "09",
+            "NCS_SUBD_CDNM": "해양플랜트기계설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "해양플랜트 기계설계는 발주처 사양서(Company Specifications), 규칙과 규정(Rules &amp; Regulations), 규격과 표준(Codes &amp; Standards)에 근거하여 기계장비를 설계, 구매, 제작, 설치하기 위한 제반 설계를 수행하는 일이다.",
+            "DUTY_ORD": 9,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "해양자원",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "해양플랜트설계·설치·운용",
+            "NCS_SUBD_CD": "10",
+            "NCS_SUBD_CDNM": "해양플랜트계장설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "해양플랜트 계장설계는 발주처 사양서(COMPANY Specifications), 규칙과 규정(Rules &amp; Regulations), 규격과 표준(Codes &amp; Standards)에 근거하여 해양플랜트의 정보처리장치(자동제어시스템), 계측장치, 제어장치, 화재 &amp; 가스 감지 장치의 시스템 및 제어방식, 사양을 결정하고, 장비의 원활한 작동을 위한 제어실, 장비 배치, 케이블 및 전로를 설계하는 일이다.",
+            "DUTY_ORD": 10,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "해양자원",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "해양플랜트설계·설치·운용",
+            "NCS_SUBD_CD": "11",
+            "NCS_SUBD_CDNM": "해양플랜트배관설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "해양플랜트 배관설계는 해양플랜트의 제작·설치·운용 및 유지보수를 위하여 원유, 가스 등이 원활하게 이송될 수 있도록 계약서, 해양플랜트 관련 법령(Rules &amp; Regulations), 해양플랜트 배관 관련 국제 표준(Codes &amp; Standards)과 시공성 등에 따라 배관상세설계와 배관생산설계를 수행하는 일이다.",
+            "DUTY_ORD": 11,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "해양자원",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "해양플랜트설계·설치·운용",
+            "NCS_SUBD_CD": "12",
+            "NCS_SUBD_CDNM": "해양플랜트전장설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "해양플랜트 전장설계는 발주처 사양서(COMPANY Specifications), 규칙과 규정(Rules &amp; Regulations), 국제 규격과 표준(Codes &amp; Standards)을 기반으로 구매서 작성, 전기 의장품 시스템별 도면작성, 배치설계를 하고 인도되기까지의 설계 제반사항을 수행하는 일이다.",
+            "DUTY_ORD": 12,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 12,
+      "lastPageNo": 1
+    }
+  }
+}

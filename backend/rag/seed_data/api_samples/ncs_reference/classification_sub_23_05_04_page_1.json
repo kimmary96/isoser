@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "에너지·자원",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "광산보안",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "광산보안관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "광산보안관리란 광산 근로자에 대한 위해의 방지, 재해시 구호, 지하자원의 보호와 합리적 개발, 광업시설 보전 및 광해방지를 위한 광산보안관리계획을 수립하여 광산안전관리를 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "에너지·자원",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "광산보안",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "화약류관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "화약류관리는 산업현장에서 실시하는 발파작업을 안전하고 효율적으로 수행하기 위해, 화약류 취급 및 관리, 발파 설계, 시공, 발파공해 방지대책을 수립하여 친환경적인 굴착 작업을 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

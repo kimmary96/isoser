@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "17",
+            "NCS_LCLAS_CDNM": "화학·바이오",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "화학·바이오공통",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "화학제품연구개발",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "화학제품연구개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "화학제품연구개발이란 화학, 화학공학, 고분자공학, 생화학, 약학 등의 지식을 바탕으로 합성, 포뮬레이션, 가공, 폐플라스틱 열분해 등의 공정을 통한 석유화학제품, 정밀화학제품, 고분자제품 등의 화학제품을 개발하기 위하여 연구개발계획수립, 연구개발 과제관리, 랩 실험계획, 랩공정․처방 개발, 랩 분석 개발, 스케일업 공정개발, 시제품평가, 연구개발 성과확보, 생산이관, 안전·환경관리, 플라스틱 물리적 특성분석, 공학적 기술해석 등을 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "17",
+            "NCS_LCLAS_CDNM": "화학·바이오",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "화학·바이오공통",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "화학제품연구개발",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "화학신소재개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "화학신소재개발이란 지속 성장을 위해 체계화된 개발 프로세스를 통하여 기업의 내ㆍ외부 환경과 역량을 파악하여 유망 신소재를 도출하고, 사업 타당성을 분석하여 개발계획을 수립하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "17",
+            "NCS_LCLAS_CDNM": "화학·바이오",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "화학·바이오공통",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "화학제품연구개발",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "화학제품기술사업화관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "화학제품기술사업화관리란 화학, 화학공학, 고분자공학, 공업화학, 생화학, 약학 등의 지식을 바탕으로 개발된 연구 결과물을 사업화하기 위하여 사업화 계획 수립, 사업성 평가, 공정최적화, 시제품 생산, 생산결과 평가를 관리하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

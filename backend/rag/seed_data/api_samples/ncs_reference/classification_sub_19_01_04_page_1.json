@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "지능형전력망설비",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "지능형전력망설비",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "지능형전력망 설비는 공급자와 소비자가 양방향으로 필요한 에너지 관련정보를 실시간으로 교환함으로써 모든 시장 참여자가 원하는 시간에 필요한 양만큼 에너지를 공급, 소비, 저장 및 거래를 할 수 있도록 하는 기반설비를 구축하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "지능형전력망설비",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "지능형전력망설비소프트웨어",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "지능형전력망설비 소프트웨어는 지능형전력망 설비의 효율적 운용을 지원하는 소프트웨어와 지능형전력망 설비 기반 서비스를 제공하는 소프트웨어를 설계하는 업무에 종사하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

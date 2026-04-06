@@ -1,0 +1,88 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "선체건조",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "선체가공",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "선체가공은 선박을 건조하기 위하여 선체가공도면에 따라 장비공구를 활용하여 소요재료를 전처리하고, 분류, 마킹, 절단, 성형하여 선체조립에 필요한 재료를 가공하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "선체건조",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "선체조립",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "선체조립은 선체조립 공정에 필요한 지식과 기술을 바탕으로, 소요재료를 관련 도면에 따라 장비 및 공기구를 활용하여 소조립, 중조립, 대조립, 선행탑재(pre-erection, P.E), 건조 도크 탑재 과정을 거쳐 선체조립 품질 기준과 절차에 맞게 조립하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "선체건조",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "선박도장",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "선박도장은 해양환경으로부터 선박을 보호하고 관련 국제규정 및 도장시방서에 적합하도록 표면처리, 도장작업 등을 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "선체건조",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "심출(철목)",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "심출(철목)이란 각종 계측 장비를 이용하여 연관 블록(Block) 조립 상태를 체크하여 정도 범위 내에서 조정 후 선행탑재(Pre Erection, P.E)와 도크(Dock)에서 블록들을 세팅(Setting)하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "선체건조",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "조선비계(족장, 발판, scaffolding)",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "조선비계는 고소부 작업을 포함한 모든 선박 건조 과정을 지원하기 위해 비계 시공 표준에 따라 안전하게 임시가설물을 설치 및 해체하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 5,
+      "lastPageNo": 1
+    }
+  }
+}

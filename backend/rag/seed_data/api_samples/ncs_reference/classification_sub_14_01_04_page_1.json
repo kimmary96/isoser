@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "건설공사관리",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "스마트건설관리",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "스마트건설설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "스마트건설 설계는 건설산업의 디지털 전환을 위하여 BIM 관련 도구를 활용한 조사·계획·해석·분석을 통해 모델링·시각화·시뮬레이션을 포함한 디지털 설계성과물을 작성하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "건설공사관리",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "스마트건설관리",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "스마트건설정보관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "스마트건설정보관리란 스마트건설기술을 적용한 시설물의 생애주기동안 생성되는 디지털 데이터를 수집ㆍ가공ㆍ분석ㆍ활용하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "건설공사관리",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "스마트건설관리",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "스마트건설시공관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "스마트건설 시공관리는 시공단계에서 안전성 제고 및 생산성 향상을 위해 스마트건설기술 적용계획을 수립하고, 그에 따라 스마트건설장비와 기술을 활용하여 건설사업의 시공절차를 개선하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

@@ -43,6 +43,8 @@ pip install -r requirements.txt
 uvicorn main:app --reload                         # http://localhost:8000/docs
 ```
 
+- 로컬 표준 가상환경 경로는 `backend/venv`
+
 ---
 
 ## 환경변수

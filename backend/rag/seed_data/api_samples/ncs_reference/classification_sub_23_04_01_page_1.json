@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "환경서비스",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "환경경영",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "환경컨설팅",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "환경컨설팅은 환경분야의 전문적인 조사, 분석, 진단, 상담, 문제해결, 정보제공, 교육, 대행서비스 등의 환경서비스 업무를 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "환경서비스",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "환경경영",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "환경시설운영",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "환경시설운영은 환경상의 위해 예방과 법적 요구사항을 만족시키기 위하여 대기오염 방지시설, 물 처리 시설, 폐기물 처리 시설을 안전하게 관리 운영하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "환경서비스",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "환경경영",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "환경관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "환경관리는 사업장의 통합적인 환경관리를 위한 오염원 및 오염물질을 조사·파악하고 저감계획을 수립하며 이를 통해 오염물질의 발생과 배출을 최소화하여 안전하게 관리하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

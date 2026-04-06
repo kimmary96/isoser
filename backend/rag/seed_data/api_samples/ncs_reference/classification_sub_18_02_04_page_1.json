@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "18",
+            "NCS_LCLAS_CDNM": "섬유·의복",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "패션",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "신발개발·생산",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "신발생산",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "신발생산은 확정된 견본에 근거하여 생산계획을 수립하고, 생산준비 과정에서 만들어진 금형, 발형, 자재를 이용하여 재단, 갑피제작, 제화 과정을 거쳐 완제품을 만드는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "18",
+            "NCS_LCLAS_CDNM": "섬유·의복",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "패션",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "신발개발·생산",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "신발개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "신발개발은 신발개발기획을 바탕으로 소재, 디자인, 장비, 설비, 라스트, 패턴 및 금형을 개발하고, 이를 통해 신발견본을 제작한 후 검증과정을 거쳐 신상품을 개발하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

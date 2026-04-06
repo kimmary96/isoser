@@ -1,0 +1,78 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "07",
+            "NCS_MCLAS_CDNM": "건설기계운전·정비",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "토공기계운전",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "07",
+            "NCS_MCLAS_CDNM": "건설기계운전·정비",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "기초공건설기계운전",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "07",
+            "NCS_MCLAS_CDNM": "건설기계운전·정비",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "콘크리트공기계운전",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "07",
+            "NCS_MCLAS_CDNM": "건설기계운전·정비",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "적재기계운전",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "07",
+            "NCS_MCLAS_CDNM": "건설기계운전·정비",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "양중기계운전",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "07",
+            "NCS_MCLAS_CDNM": "건설기계운전·정비",
+            "NCS_SCLAS_CD": "06",
+            "NCS_SCLAS_CDNM": "건설기계정비",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 6,
+      "lastPageNo": 1
+    }
+  }
+}

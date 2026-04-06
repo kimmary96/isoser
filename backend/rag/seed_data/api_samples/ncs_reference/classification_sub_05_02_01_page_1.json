@@ -1,0 +1,116 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "05",
+            "NCS_LCLAS_CDNM": "법률·경찰·소방·교도·국방",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "소방방재",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "소방",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "소방시설설계·감리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "특정 소방대상물에 적합한 소방시설을 설계하고 시공을 감리하여 인명안전과 재산손실을 최소화하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "05",
+            "NCS_LCLAS_CDNM": "법률·경찰·소방·교도·국방",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "소방방재",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "소방",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "소방시설공사",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "소방시설공사는 소화설비, 경보설비, 피난설비, 소화용수설비, 소화활동설비 등의 각 설비별 설계도서를 파악하고, 관계법규 및 국가화재안전기준을 준수하여 장비 및 기구, 배관, 배선 등을 설치하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "05",
+            "NCS_LCLAS_CDNM": "법률·경찰·소방·교도·국방",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "소방방재",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "소방",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "구조구급",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "재난현장에서 위험에 처해있는 사람을 긴급구조하고 생명이 위중한 응급환자를 처치하고 신속하게 병원으로 이송하여 국민의 생명을 보호하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "05",
+            "NCS_LCLAS_CDNM": "법률·경찰·소방·교도·국방",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "소방방재",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "소방",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "소방안전관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "소방안전관리는 특정소방대상물과 관련된 소방계획 수립 후 소방·피난·방재시설을 점검 및 정비, 유지관리와 교육훈련을 실시하여 화재를 예방하고, 화재 발생 시 소방시설을 정상작동하게 함으로써 인명과 재산을 보호하는 일이다. ",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "05",
+            "NCS_LCLAS_CDNM": "법률·경찰·소방·교도·국방",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "소방방재",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "소방",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "위험물운송·운반관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "위험물을 안전하게 출하ㆍ수송ㆍ저장하기 위하여 위험물 관련 법규 준수, 유별 위험물의 위험성과 취급기준을 파악하고, 운송ㆍ운반 시 효과적으로 사고대응조치를 실시하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "05",
+            "NCS_LCLAS_CDNM": "법률·경찰·소방·교도·국방",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "소방방재",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "소방",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "위험물안전관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "위험물안전관리는 위험물을 안전하게 관리하기 위하여 위험물의 특성에 따른 유별 분류, 저장·취급 및 비상시에 대한 대응을 위험물안전관리 관련법령에 따라 위험물 안전관리업무를 실시하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "05",
+            "NCS_LCLAS_CDNM": "법률·경찰·소방·교도·국방",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "소방방재",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "소방",
+            "NCS_SUBD_CD": "07",
+            "NCS_SUBD_CDNM": "화재감식평가",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "화재감식평가는 화재의 원인 및 피해를 조사하고 증거물을 수집·분석하여 이에 대한 사실관계를 밝히는 일이다.",
+            "DUTY_ORD": 7,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 7,
+      "lastPageNo": 1
+    }
+  }
+}

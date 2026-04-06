@@ -1,0 +1,116 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "산업환경",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "수질관리",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "수질오염분석",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "수질오염분석은 하천·호소, 지하수, 상수, 하·폐수 등의 수질 오염도를 측정·분석하여 수자원의 평가와 안전성을 확보하기 위한 각종 실험 및 연구 활동을 하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "산업환경",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "수질관리",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "수질공정관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "수질공정관리는 산업폐수, 축산폐수, 분뇨, 침출수를 대상으로 다양한 처리공정을 제어ㆍ감시하고, 운영ㆍ보수ㆍ유지관리 하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "산업환경",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "수질관리",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "수질환경관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "수질환경관리란 수질오염으로 인한 인간건강 및 환경상의 위해를 예방하기 위해서 하천·호소 등의 수질환경계획, 관리 및 예측을 통해 물환경을 적정하게 관리하고 보전하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "산업환경",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "수질관리",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "정수시설운영관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "정수시설운영관리는 정수장에서 안전한 수돗물을 생산·공급하기 위해 원수를 취수하고 정수처리공정을 적정하게 운영·관리하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "산업환경",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "수질관리",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "상수관로시설운영관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "상수관로시설운영관리는 정수장에서 생산된 수돗물을 안전하고 안정적으로 수용가까지 공급하기 위하여 상수관로를 비롯한 관련 시설물을 조사·진단하여 계획·운영·유지관리하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "산업환경",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "수질관리",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "하수관로시설운영관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "하수관로시설운영관리는 하수를 처리시설로 수집·이송하거나 하천, 바다 그 밖의 공유수면으로 유출시키기 위하여 운영하는 관로와 부속시설을 조사·진단하여 계획·운영·유지관리하는 일이다.",
+            "DUTY_ORD": 6,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "산업환경",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "수질관리",
+            "NCS_SUBD_CD": "07",
+            "NCS_SUBD_CDNM": "하수처리시설운영관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "하수처리시설운영관리는 공중보건위생 향상 및 공공수역 수생태계 보전을 위해 하수처리시설로 이송된 하수를 관계법령에서 정한 목표 수질기준에 맞게 정화시키는 처리설비를 적정하게 운영·관리하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 7,
+      "lastPageNo": 1
+    }
+  }
+}

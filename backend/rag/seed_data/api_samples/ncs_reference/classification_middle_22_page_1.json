@@ -1,0 +1,34 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "22",
+            "NCS_LCLAS_CDNM": "인쇄·목재·가구·공예",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "인쇄·출판",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "22",
+            "NCS_LCLAS_CDNM": "인쇄·목재·가구·공예",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "공예",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "08",
+            "NCS_SCLAS_CDNM": "블록체인",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "블록체인분석·설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "블록체인 분석 설계는 블록체인 플랫폼 또는 응용서비스를 구축하기 위해 비지니스 요구사항 분석 및 시스템을 정의하고, 구체화하여 블록체인서비스의 프로토타입을 개발·테스트하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "08",
+            "NCS_SCLAS_CDNM": "블록체인",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "블록체인구축·운영",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "블록체인 구축 ‧ 운영은 블록체인 플랫폼 또는 응용서비스를 구축하기 위해 이해관계자 요구사항에 따른 기능과 보상체계, 합의 알고리즘 등을 구현하며 이에 대한 단위 및 통합테스트를 수행하고, 안정적으로 운영 관리하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "08",
+            "NCS_SCLAS_CDNM": "블록체인",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "블록체인서비스기획",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "블록체인 서비스기획은 블록체인 관련 산업시장 환경을 분석하고 블록체인 비즈니스모델을 수립하며, 안전하고 신뢰성 있는 블록체인 서비스 제공을 위한 분석·설계 및 구축·운영 계획을 수립하는 일이다. ",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

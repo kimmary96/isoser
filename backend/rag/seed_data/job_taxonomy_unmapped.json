@@ -1,0 +1,6182 @@
+[
+  {
+    "normalized_job_key": "know_1_5_9_1_3",
+    "display_name_ko": "3D프린팅모델러",
+    "aliases": [
+      "3D프린팅모델러"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-9-1-3",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-9-1-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_8_3_1_1",
+    "display_name_ko": "가구제조·수리원",
+    "aliases": [
+      "가구제조·수리원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-8-3-1-1",
+    "know_mid_category": "인쇄·목재·공예 및 기타 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-8-3-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_8_3_2_1",
+    "display_name_ko": "가구조립원",
+    "aliases": [
+      "가구조립원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-8-3-2-1",
+    "know_mid_category": "인쇄·목재·공예 및 기타 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-8-3-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_6_1_6_1",
+    "display_name_ko": "가사도우미",
+    "aliases": [
+      "가사도우미"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-6-1-6-1",
+    "know_mid_category": "청소 및 기타 개인서비스직",
+    "source_ref": "KNOW_DETAIL:5-6-1-6-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_3_3_2_2",
+    "display_name_ko": "가상현실전문가",
+    "aliases": [
+      "가상현실전문가"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-3-3-2-2",
+    "know_mid_category": "정보통신 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-3-3-2-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_4_6_1",
+    "display_name_ko": "가수",
+    "aliases": [
+      "가수"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-4-6-1",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-4-6-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_3_2_2_1",
+    "display_name_ko": "가전제품설치·수리원",
+    "aliases": [
+      "가전제품설치·수리원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-3-2-2-1",
+    "know_mid_category": "전기·전자 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-3-2-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_1_1_13",
+    "display_name_ko": "가정의학과의사",
+    "aliases": [
+      "가정의학과의사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-1-1-13",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-1-1-13",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_9_0_2_2_1",
+    "display_name_ko": "가축사육종사원",
+    "aliases": [
+      "가축사육종사원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "9-0-2-2-1",
+    "know_mid_category": "농림어업직",
+    "source_ref": "KNOW_DETAIL:9-0-2-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_8_5_2_1",
+    "display_name_ko": "간판제작·설치원",
+    "aliases": [
+      "간판제작·설치원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-8-5-2-1",
+    "know_mid_category": "인쇄·목재·공예 및 기타 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-8-5-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_4_0_4",
+    "display_name_ko": "간호사",
+    "aliases": [
+      "간호사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-4-0-4",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-4-0-4",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_7_5_1",
+    "display_name_ko": "간호조무사",
+    "aliases": [
+      "간호조무사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-7-5-1",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-7-5-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_6_4_1",
+    "display_name_ko": "감사사무원",
+    "aliases": [
+      "감사사무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-6-4-1",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-6-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_3_4_1",
+    "display_name_ko": "감정평가사",
+    "aliases": [
+      "감정평가사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-3-4-1",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-3-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_7_0_1_1_1",
+    "display_name_ko": "강구조물가공원 및 건립원",
+    "aliases": [
+      "강구조물가공원 및 건립원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "7-0-1-1-1",
+    "know_mid_category": "건설·채굴직",
+    "source_ref": "KNOW_DETAIL:7-0-1-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_6_2_4",
+    "display_name_ko": "개그맨 및 코미디언",
+    "aliases": [
+      "개그맨 및 코미디언"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-6-2-4",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-6-2-4",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_7_0_2_6_1",
+    "display_name_ko": "건물도장공",
+    "aliases": [
+      "건물도장공"
+    ],
+    "job_family": "unmapped",
+    "know_code": "7-0-2-6-1",
+    "know_mid_category": "건설·채굴직",
+    "source_ref": "KNOW_DETAIL:7-0-2-6-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_1_1_6_1",
+    "display_name_ko": "건설·광업기계설치·정비원",
+    "aliases": [
+      "건설·광업기계설치·정비원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-1-1-6-1",
+    "know_mid_category": "기계 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-1-1-6-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_1_6_1_1",
+    "display_name_ko": "건설·채굴관리자",
+    "aliases": [
+      "건설·채굴관리자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-1-6-1-1",
+    "know_mid_category": "관리직(임원·부서장)",
+    "source_ref": "KNOW_DETAIL:0-1-6-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_7_0_4_0_1",
+    "display_name_ko": "건설·채굴기계운전원",
+    "aliases": [
+      "건설·채굴기계운전원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "7-0-4-0-1",
+    "know_mid_category": "건설·채굴직",
+    "source_ref": "KNOW_DETAIL:7-0-4-0-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_7_0_6_0_1",
+    "display_name_ko": "건설·채굴단순종사원",
+    "aliases": [
+      "건설·채굴단순종사원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "7-0-6-0-1",
+    "know_mid_category": "건설·채굴직",
+    "source_ref": "KNOW_DETAIL:7-0-6-0-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_1_1_1",
+    "display_name_ko": "건설기계공학기술자 및 연구원",
+    "aliases": [
+      "건설기계공학기술자 및 연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-1-1-1",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-1-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_4_0_7_1",
+    "display_name_ko": "건설자재시험원",
+    "aliases": [
+      "건설자재시험원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-4-0-7-1",
+    "know_mid_category": "건설·채굴 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-4-0-7-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_4_0_1_1",
+    "display_name_ko": "건축가(건축설계사)",
+    "aliases": [
+      "건축가(건축설계사)"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-4-0-1-1",
+    "know_mid_category": "건설·채굴 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-4-0-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_4_0_2_5",
+    "display_name_ko": "건축감리기술자",
+    "aliases": [
+      "건축감리기술자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-4-0-2-5",
+    "know_mid_category": "건설·채굴 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-4-0-2-5",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_4_0_2_1",
+    "display_name_ko": "건축구조기술자",
+    "aliases": [
+      "건축구조기술자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-4-0-2-1",
+    "know_mid_category": "건설·채굴 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-4-0-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_7_0_1_6_1",
+    "display_name_ko": "건축목공",
+    "aliases": [
+      "건축목공"
+    ],
+    "job_family": "unmapped",
+    "know_code": "7-0-1-6-1",
+    "know_mid_category": "건설·채굴직",
+    "source_ref": "KNOW_DETAIL:7-0-1-6-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_7_0_1_5_1",
+    "display_name_ko": "건축석공",
+    "aliases": [
+      "건축석공"
+    ],
+    "job_family": "unmapped",
+    "know_code": "7-0-1-5-1",
+    "know_mid_category": "건설·채굴직",
+    "source_ref": "KNOW_DETAIL:7-0-1-5-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_4_0_2_4",
+    "display_name_ko": "건축설비기술자",
+    "aliases": [
+      "건축설비기술자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-4-0-2-4",
+    "know_mid_category": "건설·채굴 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-4-0-2-4",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_4_0_2_7",
+    "display_name_ko": "건축시공기술자 및 견적원",
+    "aliases": [
+      "건축시공기술자 및 견적원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-4-0-2-7",
+    "know_mid_category": "건설·채굴 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-4-0-2-7",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_4_0_2_6",
+    "display_name_ko": "건축안전·환경·품질·에너지관리기술자",
+    "aliases": [
+      "건축안전·환경·품질·에너지관리기술자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-4-0-2-6",
+    "know_mid_category": "건설·채굴 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-4-0-2-6",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_2_1_1_2",
+    "display_name_ko": "검사",
+    "aliases": [
+      "검사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-2-1-1-2",
+    "know_mid_category": "법률직",
+    "source_ref": "KNOW_DETAIL:2-2-1-1-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_6_2_4_1",
+    "display_name_ko": "검표원",
+    "aliases": [
+      "검표원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-6-2-4-1",
+    "know_mid_category": "청소 및 기타 개인서비스직",
+    "source_ref": "KNOW_DETAIL:5-6-2-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_5_5_2",
+    "display_name_ko": "게임그래픽디자이너",
+    "aliases": [
+      "게임그래픽디자이너"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-5-5-2",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-5-5-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_3_3_2_4",
+    "display_name_ko": "게임프로그래머",
+    "aliases": [
+      "게임프로그래머"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-3-3-2-4",
+    "know_mid_category": "정보통신 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-3-3-2-4",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_2_0_3_1",
+    "display_name_ko": "경기심판",
+    "aliases": [
+      "경기심판"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-2-0-3-1",
+    "know_mid_category": "스포츠·레크리에이션직",
+    "source_ref": "KNOW_DETAIL:4-2-0-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_7_0_1_2_1",
+    "display_name_ko": "경량철골공",
+    "aliases": [
+      "경량철골공"
+    ],
+    "job_family": "unmapped",
+    "know_code": "7-0-1-2-1",
+    "know_mid_category": "건설·채굴직",
+    "source_ref": "KNOW_DETAIL:7-0-1-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_7_2_1",
+    "display_name_ko": "경리사무원",
+    "aliases": [
+      "경리사무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-7-2-1",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-7-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_1_4_3_1",
+    "display_name_ko": "경비·청소관리자",
+    "aliases": [
+      "경비·청소관리자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-1-4-3-1",
+    "know_mid_category": "관리직(임원·부서장)",
+    "source_ref": "KNOW_DETAIL:0-1-4-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_4_2_0_1",
+    "display_name_ko": "경비원",
+    "aliases": [
+      "경비원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-4-2-0-1",
+    "know_mid_category": "경호·경비직",
+    "source_ref": "KNOW_DETAIL:5-4-2-0-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_2_1_3",
+    "display_name_ko": "경영·진단전문가",
+    "aliases": [
+      "경영·진단전문가"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-2-1-3",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-2-1-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_6_1_1",
+    "display_name_ko": "경영기획사무원",
+    "aliases": [
+      "경영기획사무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-6-1-1",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-6-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_1_2_2_1",
+    "display_name_ko": "경영지원관리자",
+    "aliases": [
+      "경영지원관리자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-1-2-2-1",
+    "know_mid_category": "관리직(임원·부서장)",
+    "source_ref": "KNOW_DETAIL:0-1-2-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_1_0_2_2",
+    "display_name_ko": "경제학연구원",
+    "aliases": [
+      "경제학연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-1-0-2-2",
+    "know_mid_category": "인문·사회과학 연구직",
+    "source_ref": "KNOW_DETAIL:1-1-0-2-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_1_3_3_5",
+    "display_name_ko": "경찰·소방·교도관리자",
+    "aliases": [
+      "경찰·소방·교도관리자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-1-3-3-5",
+    "know_mid_category": "관리직(임원·부서장)",
+    "source_ref": "KNOW_DETAIL:0-1-3-3-5",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_4_0_1_1",
+    "display_name_ko": "경찰관",
+    "aliases": [
+      "경찰관"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-4-0-1-1",
+    "know_mid_category": "경찰·소방·교도직",
+    "source_ref": "KNOW_DETAIL:2-4-0-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_4_1_1_1",
+    "display_name_ko": "경호원",
+    "aliases": [
+      "경호원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-4-1-1-1",
+    "know_mid_category": "경호·경비직",
+    "source_ref": "KNOW_DETAIL:5-4-1-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_6_2_1_1",
+    "display_name_ko": "계기검침원 및 가스점검원",
+    "aliases": [
+      "계기검침원 및 가스점검원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-6-2-1-1",
+    "know_mid_category": "청소 및 기타 개인서비스직",
+    "source_ref": "KNOW_DETAIL:5-6-2-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_1_6_1_1",
+    "display_name_ko": "계산원",
+    "aliases": [
+      "계산원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-1-6-1-1",
+    "know_mid_category": "영업·판매직",
+    "source_ref": "KNOW_DETAIL:6-1-6-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_9_2_1",
+    "display_name_ko": "고객상담원",
+    "aliases": [
+      "고객상담원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-9-2-1",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-9-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_5_2_4_1",
+    "display_name_ko": "고무·플라스틱 제품 조립원",
+    "aliases": [
+      "고무·플라스틱 제품 조립원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-5-2-4-1",
+    "know_mid_category": "화학·환경 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-5-2-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_4_1_2",
+    "display_name_ko": "고무·플라스틱 화학공학기술자 및 연구원",
+    "aliases": [
+      "고무·플라스틱 화학공학기술자 및 연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-4-1-2",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-4-1-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_1_1_1_2",
+    "display_name_ko": "고위공무원",
+    "aliases": [
+      "고위공무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-1-1-1-2",
+    "know_mid_category": "관리직(임원·부서장)",
+    "source_ref": "KNOW_DETAIL:0-1-1-1-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_7_3_3_1",
+    "display_name_ko": "곡물가공제품기계조작원",
+    "aliases": [
+      "곡물가공제품기계조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-7-3-3-1",
+    "know_mid_category": "식품 가공·생산직",
+    "source_ref": "KNOW_DETAIL:8-7-3-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_9_0_1_1_1",
+    "display_name_ko": "곡식작물재배원",
+    "aliases": [
+      "곡식작물재배원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "9-0-1-1-1",
+    "know_mid_category": "농림어업직",
+    "source_ref": "KNOW_DETAIL:9-0-1-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_5_4_1",
+    "display_name_ko": "공공행정사무원",
+    "aliases": [
+      "공공행정사무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-5-4-1",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-5-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_1_1_1_1",
+    "display_name_ko": "공업기계설치·정비원",
+    "aliases": [
+      "공업기계설치·정비원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-1-1-1-1",
+    "know_mid_category": "기계 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-1-1-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_7_0_3_2_1",
+    "display_name_ko": "공업배관공",
+    "aliases": [
+      "공업배관공"
+    ],
+    "job_family": "unmapped",
+    "know_code": "7-0-3-2-1",
+    "know_mid_category": "건설·채굴직",
+    "source_ref": "KNOW_DETAIL:7-0-3-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_4_4_2",
+    "display_name_ko": "공연·영화·음반기획자",
+    "aliases": [
+      "공연·영화·음반기획자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-4-4-2",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-4-4-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_8_4_1_1",
+    "display_name_ko": "공예원",
+    "aliases": [
+      "공예원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-8-4-1-1",
+    "know_mid_category": "인쇄·목재·공예 및 기타 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-8-4-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_9_0_1_3_1",
+    "display_name_ko": "과수작물재배원",
+    "aliases": [
+      "과수작물재배원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "9-0-1-3-1",
+    "know_mid_category": "농림어업직",
+    "source_ref": "KNOW_DETAIL:9-0-1-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_7_3_4_1",
+    "display_name_ko": "과실·채소기계조작원",
+    "aliases": [
+      "과실·채소기계조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-7-3-4-1",
+    "know_mid_category": "식품 가공·생산직",
+    "source_ref": "KNOW_DETAIL:8-7-3-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_3_3_1",
+    "display_name_ko": "관세사",
+    "aliases": [
+      "관세사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-3-3-1",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-3-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_5_2_1",
+    "display_name_ko": "관세행정사무원",
+    "aliases": [
+      "관세행정사무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-5-2-1",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-5-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_6_1_4",
+    "display_name_ko": "광고영상감독",
+    "aliases": [
+      "광고영상감독"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-6-1-4",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-6-1-4",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_2_6_4_1",
+    "display_name_ko": "광석·석제품생산기계조작원",
+    "aliases": [
+      "광석·석제품생산기계조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-2-6-4-1",
+    "know_mid_category": "금속·재료 설치·정비·생산직(판금·단조·주조·용접·도장 등)",
+    "source_ref": "KNOW_DETAIL:8-2-6-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_7_0_5_1_1",
+    "display_name_ko": "광원·채석원 및 석재절단원",
+    "aliases": [
+      "광원·채석원 및 석재절단원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "7-0-5-1-1",
+    "know_mid_category": "건설·채굴직",
+    "source_ref": "KNOW_DETAIL:7-0-5-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_4_0_3_1",
+    "display_name_ko": "교도관",
+    "aliases": [
+      "교도관"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-4-0-3-1",
+    "know_mid_category": "경찰·소방·교도직",
+    "source_ref": "KNOW_DETAIL:2-4-0-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_1_0_1_4",
+    "display_name_ko": "교육학연구원",
+    "aliases": [
+      "교육학연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-1-0-1-4",
+    "know_mid_category": "인문·사회과학 연구직",
+    "source_ref": "KNOW_DETAIL:1-1-0-1-4",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_1_5_1_5",
+    "display_name_ko": "교재·교구개발원",
+    "aliases": [
+      "교재·교구개발원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-1-5-1-5",
+    "know_mid_category": "교육직",
+    "source_ref": "KNOW_DETAIL:2-1-5-1-5",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_4_0_5_2",
+    "display_name_ko": "교통계획·설계가",
+    "aliases": [
+      "교통계획·설계가"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-4-0-5-2",
+    "know_mid_category": "건설·채굴 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-4-0-5-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_4_0_5_3",
+    "display_name_ko": "교통영향평가원",
+    "aliases": [
+      "교통영향평가원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-4-0-5-3",
+    "know_mid_category": "건설·채굴 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-4-0-5-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_4_4_1",
+    "display_name_ko": "국악인",
+    "aliases": [
+      "국악인"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-4-4-1",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-4-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_8_4_2_1",
+    "display_name_ko": "귀금속·보석세공원",
+    "aliases": [
+      "귀금속·보석세공원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-8-4-2-1",
+    "know_mid_category": "인쇄·목재·공예 및 기타 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-8-4-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_2_1_1",
+    "display_name_ko": "금속·재료공학기술자",
+    "aliases": [
+      "금속·재료공학기술자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-2-1-1",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-2-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_2_2_1",
+    "display_name_ko": "금속·재료공학시험원",
+    "aliases": [
+      "금속·재료공학시험원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-2-2-1",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-2-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_2_1_2_1",
+    "display_name_ko": "금속가공기계조작원",
+    "aliases": [
+      "금속가공기계조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-2-1-2-1",
+    "know_mid_category": "금속·재료 설치·정비·생산직(판금·단조·주조·용접·도장 등)",
+    "source_ref": "KNOW_DETAIL:8-2-1-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_2_1_1_1",
+    "display_name_ko": "금속가공제어장치조작원",
+    "aliases": [
+      "금속가공제어장치조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-2-1-1-1",
+    "know_mid_category": "금속·재료 설치·정비·생산직(판금·단조·주조·용접·도장 등)",
+    "source_ref": "KNOW_DETAIL:8-2-1-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_1_3_2_1",
+    "display_name_ko": "금속공작기계조작원",
+    "aliases": [
+      "금속공작기계조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-1-3-2-1",
+    "know_mid_category": "기계 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-1-3-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_1_2_4_1",
+    "display_name_ko": "금융관리자",
+    "aliases": [
+      "금융관리자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-1-2-4-1",
+    "know_mid_category": "관리직(임원·부서장)",
+    "source_ref": "KNOW_DETAIL:0-1-2-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_3_1_3_2",
+    "display_name_ko": "금융상품개발자",
+    "aliases": [
+      "금융상품개발자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-3-1-3-2",
+    "know_mid_category": "금융·보험직",
+    "source_ref": "KNOW_DETAIL:0-3-1-3-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_1_3_1_1",
+    "display_name_ko": "금형원",
+    "aliases": [
+      "금형원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-1-3-1-1",
+    "know_mid_category": "기계 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-1-3-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_1_3_1",
+    "display_name_ko": "기계시험원",
+    "aliases": [
+      "기계시험원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-1-3-1",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-1-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_3_2_2",
+    "display_name_ko": "기록물관리사",
+    "aliases": [
+      "기록물관리사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-3-2-2",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-3-2-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_1_4_3_1",
+    "display_name_ko": "기술·기능계강사",
+    "aliases": [
+      "기술·기능계강사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-1-4-3-1",
+    "know_mid_category": "교육직",
+    "source_ref": "KNOW_DETAIL:2-1-4-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_6_1_5",
+    "display_name_ko": "기술감독",
+    "aliases": [
+      "기술감독"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-6-1-5",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-6-1-5",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_1_2_1_1",
+    "display_name_ko": "기술영업원",
+    "aliases": [
+      "기술영업원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-1-2-1-1",
+    "know_mid_category": "영업·판매직",
+    "source_ref": "KNOW_DETAIL:6-1-2-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_1_1_2_1",
+    "display_name_ko": "기업고위임원",
+    "aliases": [
+      "기업고위임원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-1-1-2-1",
+    "know_mid_category": "관리직(임원·부서장)",
+    "source_ref": "KNOW_DETAIL:0-1-1-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_7_2_2_1",
+    "display_name_ko": "김치·밑반찬 제조종사원",
+    "aliases": [
+      "김치·밑반찬 제조종사원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-7-2-2-1",
+    "know_mid_category": "식품 가공·생산직",
+    "source_ref": "KNOW_DETAIL:8-7-2-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_9_0_2_1_1",
+    "display_name_ko": "낙농종사원",
+    "aliases": [
+      "낙농종사원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "9-0-2-1-1",
+    "know_mid_category": "농림어업직",
+    "source_ref": "KNOW_DETAIL:9-0-2-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_1_1_1",
+    "display_name_ko": "내과의사",
+    "aliases": [
+      "내과의사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-1-1-1",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-1-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_3_1_2_1",
+    "display_name_ko": "내선전기공",
+    "aliases": [
+      "내선전기공"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-3-1-2-1",
+    "know_mid_category": "전기·전자 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-3-1-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_1_4_0_1",
+    "display_name_ko": "냉·난방설비조작원",
+    "aliases": [
+      "냉·난방설비조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-1-4-0-1",
+    "know_mid_category": "기계 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-1-4-0-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_1_1_4_1",
+    "display_name_ko": "냉동·냉장·공조기설치·정비원",
+    "aliases": [
+      "냉동·냉장·공조기설치·정비원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-1-1-4-1",
+    "know_mid_category": "기계 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-1-1-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_1_1_3_2",
+    "display_name_ko": "네일아티스트",
+    "aliases": [
+      "네일아티스트"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-1-1-3-2",
+    "know_mid_category": "미용·예식 서비스직",
+    "source_ref": "KNOW_DETAIL:5-1-1-3-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_2_2_1",
+    "display_name_ko": "노무사",
+    "aliases": [
+      "노무사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-2-2-1",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-2-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_1_5_5_1",
+    "display_name_ko": "노점 및 이동판매원",
+    "aliases": [
+      "노점 및 이동판매원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-1-5-5-1",
+    "know_mid_category": "영업·판매직",
+    "source_ref": "KNOW_DETAIL:6-1-5-5-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_6_9_3",
+    "display_name_ko": "놀이치료사",
+    "aliases": [
+      "놀이치료사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-6-9-3",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-6-9-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_2_2_3_1",
+    "display_name_ko": "농림어업시험원",
+    "aliases": [
+      "농림어업시험원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-2-2-3-1",
+    "know_mid_category": "자연·생명과학 연구직",
+    "source_ref": "KNOW_DETAIL:1-2-2-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_1_1_9_1",
+    "display_name_ko": "농업용 및 기타 기계장비설치·정비원",
+    "aliases": [
+      "농업용 및 기타 기계장비설치·정비원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-1-1-9-1",
+    "know_mid_category": "기계 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-1-1-9-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_2_2_1_3",
+    "display_name_ko": "농학연구원",
+    "aliases": [
+      "농학연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-2-2-1-3",
+    "know_mid_category": "자연·생명과학 연구직",
+    "source_ref": "KNOW_DETAIL:1-2-2-1-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_7_0_2_3_1",
+    "display_name_ko": "단열공",
+    "aliases": [
+      "단열공"
+    ],
+    "job_family": "unmapped",
+    "know_code": "7-0-2-3-1",
+    "know_mid_category": "건설·채굴직",
+    "source_ref": "KNOW_DETAIL:7-0-2-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_2_3_1_1",
+    "display_name_ko": "단조원 및 단조기조작원",
+    "aliases": [
+      "단조원 및 단조기조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-2-3-1-1",
+    "know_mid_category": "금속·재료 설치·정비·생산직(판금·단조·주조·용접·도장 등)",
+    "source_ref": "KNOW_DETAIL:8-2-3-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_5_3_1",
+    "display_name_ko": "대기환경기술자 및 연구원",
+    "aliases": [
+      "대기환경기술자 및 연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-5-3-1",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-5-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_4_7_3",
+    "display_name_ko": "대중무용수",
+    "aliases": [
+      "대중무용수"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-4-7-3",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-4-7-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_1_3_2_4",
+    "display_name_ko": "대학교 총장 및 대학학장",
+    "aliases": [
+      "대학교 총장 및 대학학장"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-1-3-2-4",
+    "know_mid_category": "관리직(임원·부서장)",
+    "source_ref": "KNOW_DETAIL:0-1-3-2-4",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_1_1_1_1",
+    "display_name_ko": "대학교수",
+    "aliases": [
+      "대학교수"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-1-1-1-1",
+    "know_mid_category": "교육직",
+    "source_ref": "KNOW_DETAIL:2-1-1-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_1_1_2_1",
+    "display_name_ko": "대학시간강사",
+    "aliases": [
+      "대학시간강사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-1-1-2-1",
+    "know_mid_category": "교육직",
+    "source_ref": "KNOW_DETAIL:2-1-1-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_2_5_2_1",
+    "display_name_ko": "도금·금속분무기조작원",
+    "aliases": [
+      "도금·금속분무기조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-2-5-2-1",
+    "know_mid_category": "금속·재료 설치·정비·생산직(판금·단조·주조·용접·도장 등)",
+    "source_ref": "KNOW_DETAIL:8-2-5-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_8_2_1",
+    "display_name_ko": "도로운송사무원",
+    "aliases": [
+      "도로운송사무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-8-2-1",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-8-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_4_1_3",
+    "display_name_ko": "도료·농약품 화학공학기술자 및 연구원",
+    "aliases": [
+      "도료·농약품 화학공학기술자 및 연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-4-1-3",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-4-1-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_7_0_2_5_1",
+    "display_name_ko": "도배공",
+    "aliases": [
+      "도배공"
+    ],
+    "job_family": "unmapped",
+    "know_code": "7-0-2-5-1",
+    "know_mid_category": "건설·채굴직",
+    "source_ref": "KNOW_DETAIL:7-0-2-5-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_4_0_5_1",
+    "display_name_ko": "도시계획·설계가",
+    "aliases": [
+      "도시계획·설계가"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-4-0-5-1",
+    "know_mid_category": "건설·채굴 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-4-0-5-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_2_5_1_1",
+    "display_name_ko": "도장원(도장기조작원)",
+    "aliases": [
+      "도장원(도장기조작원)"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-2-5-1-1",
+    "know_mid_category": "금속·재료 설치·정비·생산직(판금·단조·주조·용접·도장 등)",
+    "source_ref": "KNOW_DETAIL:8-2-5-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_3_2_4",
+    "display_name_ko": "디스플레이연구 및 개발자",
+    "aliases": [
+      "디스플레이연구 및 개발자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-3-2-4",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-3-2-4",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_7_1_2_1",
+    "display_name_ko": "떡제조원",
+    "aliases": [
+      "떡제조원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-7-1-2-1",
+    "know_mid_category": "식품 가공·생산직",
+    "source_ref": "KNOW_DETAIL:8-7-1-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_2_0_4_3",
+    "display_name_ko": "레크리에이션전문가",
+    "aliases": [
+      "레크리에이션전문가"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-2-0-4-3",
+    "know_mid_category": "스포츠·레크리에이션직",
+    "source_ref": "KNOW_DETAIL:4-2-0-4-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_1_2_1",
+    "display_name_ko": "로봇공학기술자",
+    "aliases": [
+      "로봇공학기술자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-1-2-1",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-1-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_6_3_2",
+    "display_name_ko": "리포터",
+    "aliases": [
+      "리포터"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-6-3-2",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-6-3-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_1_1_10",
+    "display_name_ko": "마취병리과의사",
+    "aliases": [
+      "마취병리과의사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-1-1-10",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-1-1-10",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_4_3_1",
+    "display_name_ko": "만화가",
+    "aliases": [
+      "만화가"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-4-3-1",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-4-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_4_3_3",
+    "display_name_ko": "만화영화작가(애니메이터)",
+    "aliases": [
+      "만화영화작가(애니메이터)"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-4-3-3",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-4-3-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_1_6_2_1",
+    "display_name_ko": "매표원 및 복권판매원",
+    "aliases": [
+      "매표원 및 복권판매원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-1-6-2-1",
+    "know_mid_category": "영업·판매직",
+    "source_ref": "KNOW_DETAIL:6-1-6-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_1_1_4_1",
+    "display_name_ko": "메이크업아티스트",
+    "aliases": [
+      "메이크업아티스트"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-1-1-4-1",
+    "know_mid_category": "미용·예식 서비스직",
+    "source_ref": "KNOW_DETAIL:5-1-1-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_6_2_2",
+    "display_name_ko": "모델",
+    "aliases": [
+      "모델"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-6-2-2",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-6-2-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_8_2_1_1",
+    "display_name_ko": "목재가공기계조작원",
+    "aliases": [
+      "목재가공기계조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-8-2-1-1",
+    "know_mid_category": "인쇄·목재·공예 및 기타 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-8-2-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_8_1_1",
+    "display_name_ko": "무역사무원",
+    "aliases": [
+      "무역사무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-8-1-1",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-8-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_4_7_1",
+    "display_name_ko": "무용가",
+    "aliases": [
+      "무용가"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-4-7-1",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-4-7-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_1_4_1_1",
+    "display_name_ko": "문리학원강사",
+    "aliases": [
+      "문리학원강사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-1-4-1-1",
+    "know_mid_category": "교육직",
+    "source_ref": "KNOW_DETAIL:2-1-4-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_3_1_2",
+    "display_name_ko": "문화재보존원",
+    "aliases": [
+      "문화재보존원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-3-1-2",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-3-1-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_8_3_2",
+    "display_name_ko": "물류사무원",
+    "aliases": [
+      "물류사무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-8-3-2",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-8-3-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_6_5_1",
+    "display_name_ko": "물리치료사",
+    "aliases": [
+      "물리치료사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-6-5-1",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-6-5-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_2_1_1_1",
+    "display_name_ko": "물리학연구원",
+    "aliases": [
+      "물리학연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-2-1-1-1",
+    "know_mid_category": "자연·생명과학 연구직",
+    "source_ref": "KNOW_DETAIL:1-2-1-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_1_1_3_1",
+    "display_name_ko": "물품이동장비설치·정비원",
+    "aliases": [
+      "물품이동장비설치·정비원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-1-1-3-1",
+    "know_mid_category": "기계 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-1-1-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_1_1_2_1",
+    "display_name_ko": "미용사",
+    "aliases": [
+      "미용사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-1-1-2-1",
+    "know_mid_category": "미용·예식 서비스직",
+    "source_ref": "KNOW_DETAIL:5-1-1-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_7_0_2_1_1",
+    "display_name_ko": "미장공",
+    "aliases": [
+      "미장공"
+    ],
+    "job_family": "unmapped",
+    "know_code": "7-0-2-1-1",
+    "know_mid_category": "건설·채굴직",
+    "source_ref": "KNOW_DETAIL:7-0-2-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_3_1_6_1",
+    "display_name_ko": "바텐터",
+    "aliases": [
+      "바텐터"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-3-1-6-1",
+    "know_mid_category": "음식 서비스직",
+    "source_ref": "KNOW_DETAIL:5-3-1-6-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_3_2_2",
+    "display_name_ko": "반도체공학기술자 및 연구원",
+    "aliases": [
+      "반도체공학기술자 및 연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-3-2-2",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-3-2-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_1_1_5_1",
+    "display_name_ko": "반려동물미용사",
+    "aliases": [
+      "반려동물미용사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-1-1-5-1",
+    "know_mid_category": "미용·예식 서비스직",
+    "source_ref": "KNOW_DETAIL:5-1-1-5-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_3_3_0_1",
+    "display_name_ko": "발전·배전장치조작원",
+    "aliases": [
+      "발전·배전장치조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-3-3-0-1",
+    "know_mid_category": "전기·전자 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-3-3-0-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_3_1_3",
+    "display_name_ko": "발전설비기술자",
+    "aliases": [
+      "발전설비기술자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-3-1-3",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-3-1-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_1_5_6_1",
+    "display_name_ko": "방문판매원",
+    "aliases": [
+      "방문판매원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-1-5-6-1",
+    "know_mid_category": "영업·판매직",
+    "source_ref": "KNOW_DETAIL:6-1-5-6-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_1_1_9",
+    "display_name_ko": "방사선과의사",
+    "aliases": [
+      "방사선과의사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-1-1-9",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-1-1-9",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_6_2_1",
+    "display_name_ko": "방사선사",
+    "aliases": [
+      "방사선사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-6-2-1",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-6-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_4_2_3_1",
+    "display_name_ko": "방송·통신·인터넷케이블 설치·수리원",
+    "aliases": [
+      "방송·통신·인터넷케이블 설치·수리원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-4-2-3-1",
+    "know_mid_category": "정보통신 설치·정비직",
+    "source_ref": "KNOW_DETAIL:8-4-2-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_2_0_2",
+    "display_name_ko": "방송기자",
+    "aliases": [
+      "방송기자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-2-0-2",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-2-0-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_3_6_0_2",
+    "display_name_ko": "방송송출장비기사",
+    "aliases": [
+      "방송송출장비기사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-3-6-0-2",
+    "know_mid_category": "정보통신 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-3-6-0-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_6_1_1",
+    "display_name_ko": "방송연출가",
+    "aliases": [
+      "방송연출가"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-6-1-1",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-6-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_1_1_4",
+    "display_name_ko": "방송작가",
+    "aliases": [
+      "방송작가"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-1-1-4",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-1-1-4",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_4_2_1_1",
+    "display_name_ko": "방송장비설치·수리원",
+    "aliases": [
+      "방송장비설치·수리원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-4-2-1-1",
+    "know_mid_category": "정보통신 설치·정비직",
+    "source_ref": "KNOW_DETAIL:8-4-2-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_7_0_2_2_1",
+    "display_name_ko": "방수공",
+    "aliases": [
+      "방수공"
+    ],
+    "job_family": "unmapped",
+    "know_code": "7-0-2-2-1",
+    "know_mid_category": "건설·채굴직",
+    "source_ref": "KNOW_DETAIL:7-0-2-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_6_1_3_1",
+    "display_name_ko": "방역원",
+    "aliases": [
+      "방역원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-6-1-3-1",
+    "know_mid_category": "청소 및 기타 개인서비스직",
+    "source_ref": "KNOW_DETAIL:5-6-1-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_7_0_3_1_1",
+    "display_name_ko": "배관공",
+    "aliases": [
+      "배관공"
+    ],
+    "job_family": "unmapped",
+    "know_code": "7-0-3-1-1",
+    "know_mid_category": "건설·채굴직",
+    "source_ref": "KNOW_DETAIL:7-0-3-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_2_2_2_1",
+    "display_name_ko": "버스운전원",
+    "aliases": [
+      "버스운전원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-2-2-2-1",
+    "know_mid_category": "운전·운송직",
+    "source_ref": "KNOW_DETAIL:6-2-2-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_1_2_1",
+    "display_name_ko": "번역가",
+    "aliases": [
+      "번역가"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-1-2-1",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-1-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_2_2_0_1",
+    "display_name_ko": "법률사무원",
+    "aliases": [
+      "법률사무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-2-2-0-1",
+    "know_mid_category": "법률직",
+    "source_ref": "KNOW_DETAIL:2-2-2-0-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_2_1_3_1",
+    "display_name_ko": "법무사 및 집행관",
+    "aliases": [
+      "법무사 및 집행관"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-2-1-3-1",
+    "know_mid_category": "법률직",
+    "source_ref": "KNOW_DETAIL:2-2-1-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_5_4_2",
+    "display_name_ko": "법원공무원",
+    "aliases": [
+      "법원공무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-5-4-2",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-5-4-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_2_1_4_1",
+    "display_name_ko": "변리사",
+    "aliases": [
+      "변리사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-2-1-4-1",
+    "know_mid_category": "법률직",
+    "source_ref": "KNOW_DETAIL:2-2-1-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_2_1_2_1",
+    "display_name_ko": "변호사",
+    "aliases": [
+      "변호사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-2-1-2-1",
+    "know_mid_category": "법률직",
+    "source_ref": "KNOW_DETAIL:2-2-1-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_5_3_1",
+    "display_name_ko": "병무행정사무원",
+    "aliases": [
+      "병무행정사무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-5-3-1",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-5-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_1_3_4_1",
+    "display_name_ko": "보건·의료관리자",
+    "aliases": [
+      "보건·의료관리자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-1-3-4-1",
+    "know_mid_category": "관리직(임원·부서장)",
+    "source_ref": "KNOW_DETAIL:0-1-3-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_4_0_3",
+    "display_name_ko": "보건교사",
+    "aliases": [
+      "보건교사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-4-0-3",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-4-0-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_5_5_1",
+    "display_name_ko": "보건위생·환경검사원",
+    "aliases": [
+      "보건위생·환경검사원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-5-5-1",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-5-5-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_7_4_1",
+    "display_name_ko": "보건의료정보관리사",
+    "aliases": [
+      "보건의료정보관리사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-7-4-1",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-7-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_3_2_1_1",
+    "display_name_ko": "보육교사",
+    "aliases": [
+      "보육교사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-3-2-1-1",
+    "know_mid_category": "사회복지·종교직",
+    "source_ref": "KNOW_DETAIL:2-3-2-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_1_1_5_1",
+    "display_name_ko": "보일러설치·정비원",
+    "aliases": [
+      "보일러설치·정비원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-1-1-5-1",
+    "know_mid_category": "기계 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-1-1-5-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_1_2_9_1",
+    "display_name_ko": "보조교사",
+    "aliases": [
+      "보조교사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-1-2-9-1",
+    "know_mid_category": "교육직",
+    "source_ref": "KNOW_DETAIL:2-1-2-9-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_1_2_4_2",
+    "display_name_ko": "보험관리자",
+    "aliases": [
+      "보험관리자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-1-2-4-2",
+    "know_mid_category": "관리직(임원·부서장)",
+    "source_ref": "KNOW_DETAIL:0-1-2-4-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_3_3_2_1",
+    "display_name_ko": "보험대리인 및 중개인",
+    "aliases": [
+      "보험대리인 및 중개인"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-3-3-2-1",
+    "know_mid_category": "금융·보험직",
+    "source_ref": "KNOW_DETAIL:0-3-3-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_3_3_2_2",
+    "display_name_ko": "보험모집인",
+    "aliases": [
+      "보험모집인"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-3-3-2-2",
+    "know_mid_category": "금융·보험직",
+    "source_ref": "KNOW_DETAIL:0-3-3-2-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_3_2_3_2",
+    "display_name_ko": "보험보상사무원",
+    "aliases": [
+      "보험보상사무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-3-2-3-2",
+    "know_mid_category": "금융·보험직",
+    "source_ref": "KNOW_DETAIL:0-3-2-3-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_3_1_3_1",
+    "display_name_ko": "보험상품개발자",
+    "aliases": [
+      "보험상품개발자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-3-1-3-1",
+    "know_mid_category": "금융·보험직",
+    "source_ref": "KNOW_DETAIL:0-3-1-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_3_2_3_1",
+    "display_name_ko": "보험심사원",
+    "aliases": [
+      "보험심사원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-3-2-3-1",
+    "know_mid_category": "금융·보험직",
+    "source_ref": "KNOW_DETAIL:0-3-2-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_1_1_0_1",
+    "display_name_ko": "부동산중개인",
+    "aliases": [
+      "부동산중개인"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-1-1-0-1",
+    "know_mid_category": "영업·판매직",
+    "source_ref": "KNOW_DETAIL:6-1-1-0-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_5_0_3_1",
+    "display_name_ko": "부사관",
+    "aliases": [
+      "부사관"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-5-0-3-1",
+    "know_mid_category": "군인",
+    "source_ref": "KNOW_DETAIL:2-5-0-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_1_1_4_2",
+    "display_name_ko": "분장사",
+    "aliases": [
+      "분장사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-1-1-4-2",
+    "know_mid_category": "미용·예식 서비스직",
+    "source_ref": "KNOW_DETAIL:5-1-1-4-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_1_1_11",
+    "display_name_ko": "비뇨기과의사",
+    "aliases": [
+      "비뇨기과의사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-1-1-11",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-1-1-11",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_4_1_4",
+    "display_name_ko": "비누·화장품 화학공학기술자 및 연구원",
+    "aliases": [
+      "비누·화장품 화학공학기술자 및 연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-4-1-4",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-4-1-4",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_9_4_1",
+    "display_name_ko": "비서",
+    "aliases": [
+      "비서"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-9-4-1",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-9-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_8_5_1",
+    "display_name_ko": "비파괴검사원",
+    "aliases": [
+      "비파괴검사원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-8-5-1",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-8-5-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_3_4_1_2",
+    "display_name_ko": "빅데이터분석가",
+    "aliases": [
+      "빅데이터분석가"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-3-4-1-2",
+    "know_mid_category": "정보통신 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-3-4-1-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_9_5_1",
+    "display_name_ko": "사무보조원",
+    "aliases": [
+      "사무보조원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-9-5-1",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-9-5-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_3_2_1_1",
+    "display_name_ko": "사무용 전자기기설치·수리원",
+    "aliases": [
+      "사무용 전자기기설치·수리원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-3-2-1-1",
+    "know_mid_category": "전기·전자 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-3-2-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_3_2_1",
+    "display_name_ko": "사서",
+    "aliases": [
+      "사서"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-3-2-1",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-3-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_8_1_2_1",
+    "display_name_ko": "사진인화·현상기조작원(사진수정 포함)",
+    "aliases": [
+      "사진인화·현상기조작원(사진수정 포함)"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-8-1-2-1",
+    "know_mid_category": "인쇄·목재·공예 및 기타 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-8-1-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_4_2_1",
+    "display_name_ko": "사진작가 및 사진사",
+    "aliases": [
+      "사진작가 및 사진사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-4-2-1",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-4-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_3_1_5_1",
+    "display_name_ko": "사회단체활동가",
+    "aliases": [
+      "사회단체활동가"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-3-1-5-1",
+    "know_mid_category": "사회복지·종교직",
+    "source_ref": "KNOW_DETAIL:2-3-1-5-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_1_3_5_1",
+    "display_name_ko": "사회복지관리자",
+    "aliases": [
+      "사회복지관리자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-1-3-5-1",
+    "know_mid_category": "관리직(임원·부서장)",
+    "source_ref": "KNOW_DETAIL:0-1-3-5-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_3_1_1_1",
+    "display_name_ko": "사회복지사",
+    "aliases": [
+      "사회복지사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-3-1-1-1",
+    "know_mid_category": "사회복지·종교직",
+    "source_ref": "KNOW_DETAIL:2-3-1-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_1_0_2_3",
+    "display_name_ko": "사회학연구원",
+    "aliases": [
+      "사회학연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-1-0-2-3",
+    "know_mid_category": "인문·사회과학 연구직",
+    "source_ref": "KNOW_DETAIL:1-1-0-2-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_1_1_4",
+    "display_name_ko": "산부인과의사",
+    "aliases": [
+      "산부인과의사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-1-1-4",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-1-1-4",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_8_4_1",
+    "display_name_ko": "산업안전원",
+    "aliases": [
+      "산업안전원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-8-4-1",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-8-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_3_1_1_1",
+    "display_name_ko": "산업전기공",
+    "aliases": [
+      "산업전기공"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-3-1-1-1",
+    "know_mid_category": "전기·전자 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-3-1-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_5_3_1_1",
+    "display_name_ko": "상·하수도처리장치조작원",
+    "aliases": [
+      "상·하수도처리장치조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-5-3-1-1",
+    "know_mid_category": "화학·환경 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-5-3-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_1_5_1_1",
+    "display_name_ko": "상점판매원",
+    "aliases": [
+      "상점판매원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-1-5-1-1",
+    "know_mid_category": "영업·판매직",
+    "source_ref": "KNOW_DETAIL:6-1-5-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_1_5_4_1",
+    "display_name_ko": "상품대여원",
+    "aliases": [
+      "상품대여원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-1-5-4-1",
+    "know_mid_category": "영업·판매직",
+    "source_ref": "KNOW_DETAIL:6-1-5-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_1_2_5_1",
+    "display_name_ko": "상품중개인 및 경매사",
+    "aliases": [
+      "상품중개인 및 경매사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-1-2-5-1",
+    "know_mid_category": "영업·판매직",
+    "source_ref": "KNOW_DETAIL:6-1-2-5-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_2_2_2_1",
+    "display_name_ko": "생명과학시험원",
+    "aliases": [
+      "생명과학시험원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-2-2-2-1",
+    "know_mid_category": "자연·생명과학 연구직",
+    "source_ref": "KNOW_DETAIL:1-2-2-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_2_1_1_4",
+    "display_name_ko": "생물학연구원",
+    "aliases": [
+      "생물학연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-2-1-1-4",
+    "know_mid_category": "자연·생명과학 연구직",
+    "source_ref": "KNOW_DETAIL:1-2-1-1-4",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_8_4_1",
+    "display_name_ko": "생산·품질사무원",
+    "aliases": [
+      "생산·품질사무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-8-4-1",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-8-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_3_2_9_1",
+    "display_name_ko": "생활지도원",
+    "aliases": [
+      "생활지도원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-3-2-9-1",
+    "know_mid_category": "사회복지·종교직",
+    "source_ref": "KNOW_DETAIL:2-3-2-9-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_7_0_2_7_1",
+    "display_name_ko": "섀시조립·설치원",
+    "aliases": [
+      "섀시조립·설치원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "7-0-2-7-1",
+    "know_mid_category": "건설·채굴직",
+    "source_ref": "KNOW_DETAIL:7-0-2-7-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_5_1_1_1",
+    "display_name_ko": "석유·천연가스제조제어장치조작원",
+    "aliases": [
+      "석유·천연가스제조제어장치조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-5-1-1-1",
+    "know_mid_category": "화학·환경 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-5-1-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_4_1_1",
+    "display_name_ko": "석유화학공학기술자 및 연구원",
+    "aliases": [
+      "석유화학공학기술자 및 연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-4-1-1",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-4-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_2_4_3_1",
+    "display_name_ko": "선박갑판원",
+    "aliases": [
+      "선박갑판원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-2-4-3-1",
+    "know_mid_category": "운전·운송직",
+    "source_ref": "KNOW_DETAIL:6-2-4-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_2_2_2_1",
+    "display_name_ko": "선박객실승무원",
+    "aliases": [
+      "선박객실승무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-2-2-2-1",
+    "know_mid_category": "여행·숙박·오락 서비스직",
+    "source_ref": "KNOW_DETAIL:5-2-2-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_2_1_4_2",
+    "display_name_ko": "선박교통관제사",
+    "aliases": [
+      "선박교통관제사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-2-1-4-2",
+    "know_mid_category": "운전·운송직",
+    "source_ref": "KNOW_DETAIL:6-2-1-4-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_2_1_2_3",
+    "display_name_ko": "선박기관사",
+    "aliases": [
+      "선박기관사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-2-1-2-3",
+    "know_mid_category": "운전·운송직",
+    "source_ref": "KNOW_DETAIL:6-2-1-2-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_1_2_2_1",
+    "display_name_ko": "선박정비원",
+    "aliases": [
+      "선박정비원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-1-2-2-1",
+    "know_mid_category": "기계 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-1-2-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_1_7_3_1",
+    "display_name_ko": "선박조립원",
+    "aliases": [
+      "선박조립원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-1-7-3-1",
+    "know_mid_category": "기계 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-1-7-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_2_1_2_1",
+    "display_name_ko": "선장 및 항해사",
+    "aliases": [
+      "선장 및 항해사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-2-1-2-1",
+    "know_mid_category": "운전·운송직",
+    "source_ref": "KNOW_DETAIL:6-2-1-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_6_1_1",
+    "display_name_ko": "섬유공학기술자",
+    "aliases": [
+      "섬유공학기술자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-6-1-1",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-6-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_6_2_1",
+    "display_name_ko": "섬유공학시험원",
+    "aliases": [
+      "섬유공학시험원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-6-2-1",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-6-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_6_1_1_1",
+    "display_name_ko": "섬유제조기계조작원",
+    "aliases": [
+      "섬유제조기계조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-6-1-1-1",
+    "know_mid_category": "섬유·의복 생산직",
+    "source_ref": "KNOW_DETAIL:8-6-1-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_4_6_2",
+    "display_name_ko": "성악가",
+    "aliases": [
+      "성악가"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-4-6-2",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-4-6-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_6_2_5",
+    "display_name_ko": "성우",
+    "aliases": [
+      "성우"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-6-2-5",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-6-2-5",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_1_1_3",
+    "display_name_ko": "성형외과의사",
+    "aliases": [
+      "성형외과의사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-1-1-3",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-1-1-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_3_2_1",
+    "display_name_ko": "세무사",
+    "aliases": [
+      "세무사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-3-2-1",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-3-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_6_4_3_1",
+    "display_name_ko": "세탁기계조작원",
+    "aliases": [
+      "세탁기계조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-6-4-3-1",
+    "know_mid_category": "섬유·의복 생산직",
+    "source_ref": "KNOW_DETAIL:8-6-4-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_6_1_5_1",
+    "display_name_ko": "세탁원(다림질원)",
+    "aliases": [
+      "세탁원(다림질원)"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-6-1-5-1",
+    "know_mid_category": "청소 및 기타 개인서비스직",
+    "source_ref": "KNOW_DETAIL:5-6-1-5-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_1_4_0_1",
+    "display_name_ko": "소규모판매점장",
+    "aliases": [
+      "소규모판매점장"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-1-4-0-1",
+    "know_mid_category": "영업·판매직",
+    "source_ref": "KNOW_DETAIL:6-1-4-0-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_8_2_1",
+    "display_name_ko": "소방공학기술자 및 연구원",
+    "aliases": [
+      "소방공학기술자 및 연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-8-2-1",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-8-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_4_0_2_1",
+    "display_name_ko": "소방관",
+    "aliases": [
+      "소방관"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-4-0-2-1",
+    "know_mid_category": "경찰·소방·교도직",
+    "source_ref": "KNOW_DETAIL:2-4-0-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_1_1_2",
+    "display_name_ko": "소설가",
+    "aliases": [
+      "소설가"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-1-1-2",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-1-1-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_1_1_8",
+    "display_name_ko": "소아과의사",
+    "aliases": [
+      "소아과의사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-1-1-8",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-1-1-8",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_5_3_5",
+    "display_name_ko": "소음진동기술자 및 연구원",
+    "aliases": [
+      "소음진동기술자 및 연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-5-3-5",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-5-3-5",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_9_9_2",
+    "display_name_ko": "속기사",
+    "aliases": [
+      "속기사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-9-9-2",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-9-9-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_3_1_5_1",
+    "display_name_ko": "손해사정사",
+    "aliases": [
+      "손해사정사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-3-1-5-1",
+    "know_mid_category": "금융·보험직",
+    "source_ref": "KNOW_DETAIL:0-3-1-5-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_3_1_4",
+    "display_name_ko": "송·배전설비기술자",
+    "aliases": [
+      "송·배전설비기술자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-3-1-4",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-3-1-4",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_2_2_1_4",
+    "display_name_ko": "수산학연구원",
+    "aliases": [
+      "수산학연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-2-2-1-4",
+    "know_mid_category": "자연·생명과학 연구직",
+    "source_ref": "KNOW_DETAIL:1-2-2-1-4",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_8_2_4",
+    "display_name_ko": "수상운송사무원",
+    "aliases": [
+      "수상운송사무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-8-2-4",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-8-2-4",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_2_0_1",
+    "display_name_ko": "수의사",
+    "aliases": [
+      "수의사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-2-0-1",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-2-0-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_1_1_5_2",
+    "display_name_ko": "수의사보조원",
+    "aliases": [
+      "수의사보조원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-1-1-5-2",
+    "know_mid_category": "미용·예식 서비스직",
+    "source_ref": "KNOW_DETAIL:5-1-1-5-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_5_3_2",
+    "display_name_ko": "수질환경기술자 및 연구원",
+    "aliases": [
+      "수질환경기술자 및 연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-5-3-2",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-5-3-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_2_1_1_3",
+    "display_name_ko": "수학·통계학연구원",
+    "aliases": [
+      "수학·통계학연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-2-1-1-3",
+    "know_mid_category": "자연·생명과학 연구직",
+    "source_ref": "KNOW_DETAIL:1-2-1-1-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_2_3_0_1",
+    "display_name_ko": "숙박시설서비스원",
+    "aliases": [
+      "숙박시설서비스원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-2-3-0-1",
+    "know_mid_category": "여행·숙박·오락 서비스직",
+    "source_ref": "KNOW_DETAIL:5-2-3-0-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_2_0_1_1",
+    "display_name_ko": "스포츠감독 및 코치",
+    "aliases": [
+      "스포츠감독 및 코치"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-2-0-1-1",
+    "know_mid_category": "스포츠·레크리에이션직",
+    "source_ref": "KNOW_DETAIL:4-2-0-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_2_0_4_1",
+    "display_name_ko": "스포츠강사",
+    "aliases": [
+      "스포츠강사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-2-0-4-1",
+    "know_mid_category": "스포츠·레크리에이션직",
+    "source_ref": "KNOW_DETAIL:4-2-0-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_2_0_4_2",
+    "display_name_ko": "스포츠트레이너",
+    "aliases": [
+      "스포츠트레이너"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-2-0-4-2",
+    "know_mid_category": "스포츠·레크리에이션직",
+    "source_ref": "KNOW_DETAIL:4-2-0-4-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_1_1_2_1",
+    "display_name_ko": "승강기설치·정비원",
+    "aliases": [
+      "승강기설치·정비원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-1-1-2-1",
+    "know_mid_category": "기계 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-1-1-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_5_4_4",
+    "display_name_ko": "시각디자이너",
+    "aliases": [
+      "시각디자이너"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-5-4-4",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-5-4-4",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_2_6_3_1",
+    "display_name_ko": "시멘트·광물제품생산기계조작원",
+    "aliases": [
+      "시멘트·광물제품생산기계조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-2-6-3-1",
+    "know_mid_category": "금속·재료 설치·정비·생산직(판금·단조·주조·용접·도장 등)",
+    "source_ref": "KNOW_DETAIL:8-2-6-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_4_1_3_1",
+    "display_name_ko": "시설·특수경비원",
+    "aliases": [
+      "시설·특수경비원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-4-1-3-1",
+    "know_mid_category": "경호·경비직",
+    "source_ref": "KNOW_DETAIL:5-4-1-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_7_2_3_1",
+    "display_name_ko": "식품·담배등급원",
+    "aliases": [
+      "식품·담배등급원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-7-2-3-1",
+    "know_mid_category": "식품 가공·생산직",
+    "source_ref": "KNOW_DETAIL:8-7-2-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_7_1_1",
+    "display_name_ko": "식품공학기술자 및 연구원",
+    "aliases": [
+      "식품공학기술자 및 연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-7-1-1",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-7-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_7_2_1",
+    "display_name_ko": "식품공학시험원",
+    "aliases": [
+      "식품공학시험원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-7-2-1",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-7-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_2_0_1",
+    "display_name_ko": "신문기자",
+    "aliases": [
+      "신문기자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-2-0-1",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-2-0-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_6_4_2_1",
+    "display_name_ko": "신발제조기계조작원 및 조립원",
+    "aliases": [
+      "신발제조기계조작원 및 조립원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-6-4-2-1",
+    "know_mid_category": "섬유·의복 생산직",
+    "source_ref": "KNOW_DETAIL:8-6-4-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_3_1_1_2",
+    "display_name_ko": "신용분석가",
+    "aliases": [
+      "신용분석가"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-3-1-1-2",
+    "know_mid_category": "금융·보험직",
+    "source_ref": "KNOW_DETAIL:0-3-1-1-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_3_2_5_1",
+    "display_name_ko": "신용추심원",
+    "aliases": [
+      "신용추심원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-3-2-5-1",
+    "know_mid_category": "금융·보험직",
+    "source_ref": "KNOW_DETAIL:0-3-2-5-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_2_1_9_1",
+    "display_name_ko": "신호원 및 수송원",
+    "aliases": [
+      "신호원 및 수송원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-2-1-9-1",
+    "know_mid_category": "운전·운송직",
+    "source_ref": "KNOW_DETAIL:6-2-1-9-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_5_3_1",
+    "display_name_ko": "실내장식디자이너",
+    "aliases": [
+      "실내장식디자이너"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-5-3-1",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-5-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_3_1_2_1",
+    "display_name_ko": "심리상담전문가",
+    "aliases": [
+      "심리상담전문가"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-3-1-2-1",
+    "know_mid_category": "사회복지·종교직",
+    "source_ref": "KNOW_DETAIL:2-3-1-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_1_0_1_5",
+    "display_name_ko": "심리학연구원",
+    "aliases": [
+      "심리학연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-1-0-1-5",
+    "know_mid_category": "인문·사회과학 연구직",
+    "source_ref": "KNOW_DETAIL:1-1-0-1-5",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_6_3_1",
+    "display_name_ko": "아나운서",
+    "aliases": [
+      "아나운서"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-6-3-1",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-6-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_8_5_1_1",
+    "display_name_ko": "악기제조원 및 조율사",
+    "aliases": [
+      "악기제조원 및 조율사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-8-5-1-1",
+    "know_mid_category": "인쇄·목재·공예 및 기타 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-8-5-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_7_3_1",
+    "display_name_ko": "안경사",
+    "aliases": [
+      "안경사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-7-3-1",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-7-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_1_1_6",
+    "display_name_ko": "안과의사",
+    "aliases": [
+      "안과의사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-1-1-6",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-1-1-6",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_9_1_1",
+    "display_name_ko": "안내·접수원",
+    "aliases": [
+      "안내·접수원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-9-1-1",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-9-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_7_6_1",
+    "display_name_ko": "안마사",
+    "aliases": [
+      "안마사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-7-6-1",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-7-6-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_4_7_2",
+    "display_name_ko": "안무가",
+    "aliases": [
+      "안무가"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-4-7-2",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-4-7-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_3_0_1",
+    "display_name_ko": "약사",
+    "aliases": [
+      "약사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-3-0-1",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-3-0-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_2_2_1_2",
+    "display_name_ko": "약학연구원",
+    "aliases": [
+      "약학연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-2-2-1-2",
+    "know_mid_category": "자연·생명과학 연구직",
+    "source_ref": "KNOW_DETAIL:1-2-2-1-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_9_0_4_1_1",
+    "display_name_ko": "양식원",
+    "aliases": [
+      "양식원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "9-0-4-1-1",
+    "know_mid_category": "농림어업직",
+    "source_ref": "KNOW_DETAIL:9-0-4-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_3_1_4_1",
+    "display_name_ko": "양식조리사",
+    "aliases": [
+      "양식조리사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-3-1-4-1",
+    "know_mid_category": "음식 서비스직",
+    "source_ref": "KNOW_DETAIL:5-3-1-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_6_3_2_1",
+    "display_name_ko": "양장·양복제조원",
+    "aliases": [
+      "양장·양복제조원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-6-3-2-1",
+    "know_mid_category": "섬유·의복 생산직",
+    "source_ref": "KNOW_DETAIL:8-6-3-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_9_0_4_2_1",
+    "display_name_ko": "어부 및 해녀",
+    "aliases": [
+      "어부 및 해녀"
+    ],
+    "job_family": "unmapped",
+    "know_code": "9-0-4-2-1",
+    "know_mid_category": "농림어업직",
+    "source_ref": "KNOW_DETAIL:9-0-4-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_6_9_1",
+    "display_name_ko": "언어치료사",
+    "aliases": [
+      "언어치료사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-6-9-1",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-6-9-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_1_0_1_3",
+    "display_name_ko": "언어학연구원",
+    "aliases": [
+      "언어학연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-1-0-1-3",
+    "know_mid_category": "인문·사회과학 연구직",
+    "source_ref": "KNOW_DETAIL:1-1-0-1-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_5_2_3",
+    "display_name_ko": "에너지시험원",
+    "aliases": [
+      "에너지시험원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-5-2-3",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-5-2-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_1_4_1_3",
+    "display_name_ko": "여행·호텔관리자",
+    "aliases": [
+      "여행·호텔관리자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-1-4-1-3",
+    "know_mid_category": "관리직(임원·부서장)",
+    "source_ref": "KNOW_DETAIL:0-1-4-1-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_2_1_2_1",
+    "display_name_ko": "여행사무원",
+    "aliases": [
+      "여행사무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-2-1-2-1",
+    "know_mid_category": "여행·숙박·오락 서비스직",
+    "source_ref": "KNOW_DETAIL:5-2-1-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_2_1_1_1",
+    "display_name_ko": "여행상품개발자",
+    "aliases": [
+      "여행상품개발자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-2-1-1-1",
+    "know_mid_category": "여행·숙박·오락 서비스직",
+    "source_ref": "KNOW_DETAIL:5-2-1-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_2_1_3_4",
+    "display_name_ko": "여행안내원",
+    "aliases": [
+      "여행안내원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-2-1-3-4",
+    "know_mid_category": "여행·숙박·오락 서비스직",
+    "source_ref": "KNOW_DETAIL:5-2-1-3-4",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_1_0_1_2",
+    "display_name_ko": "역사학연구원",
+    "aliases": [
+      "역사학연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-1-0-1-2",
+    "know_mid_category": "인문·사회과학 연구직",
+    "source_ref": "KNOW_DETAIL:1-1-0-1-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_1_3_1_1",
+    "display_name_ko": "연구관리자",
+    "aliases": [
+      "연구관리자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-1-3-1-1",
+    "know_mid_category": "관리직(임원·부서장)",
+    "source_ref": "KNOW_DETAIL:0-1-3-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_6_2_3",
+    "display_name_ko": "연극·뮤지컬배우",
+    "aliases": [
+      "연극·뮤지컬배우"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-6-2-3",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-6-2-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_6_1_3",
+    "display_name_ko": "연극연출가",
+    "aliases": [
+      "연극연출가"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-6-1-3",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-6-1-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_7_2_1",
+    "display_name_ko": "연예인매니저",
+    "aliases": [
+      "연예인매니저"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-7-2-1",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-7-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_4_5_3",
+    "display_name_ko": "연주가",
+    "aliases": [
+      "연주가"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-4-5-3",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-4-5-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_2_2_2_2",
+    "display_name_ko": "열차객실승무원",
+    "aliases": [
+      "열차객실승무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-2-2-2-2",
+    "know_mid_category": "여행·숙박·오락 서비스직",
+    "source_ref": "KNOW_DETAIL:5-2-2-2-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_6_6_1",
+    "display_name_ko": "영상·녹화·편집기사",
+    "aliases": [
+      "영상·녹화·편집기사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-6-6-1",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-6-6-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_5_5_3",
+    "display_name_ko": "영상그래픽디자이너",
+    "aliases": [
+      "영상그래픽디자이너"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-5-5-3",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-5-5-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_5_0_1",
+    "display_name_ko": "영양사",
+    "aliases": [
+      "영양사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-5-0-1",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-5-0-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_1_5_1_1",
+    "display_name_ko": "영업·판매관리자",
+    "aliases": [
+      "영업·판매관리자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-1-5-1-1",
+    "know_mid_category": "관리직(임원·부서장)",
+    "source_ref": "KNOW_DETAIL:0-1-5-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_6_1_3",
+    "display_name_ko": "영업기획·관리·지원사무원",
+    "aliases": [
+      "영업기획·관리·지원사무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-6-1-3",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-6-1-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_6_1_2",
+    "display_name_ko": "영화감독",
+    "aliases": [
+      "영화감독"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-6-1-2",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-6-1-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_6_2_1",
+    "display_name_ko": "영화배우 및 탤런트",
+    "aliases": [
+      "영화배우 및 탤런트"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-6-2-1",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-6-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_1_1_3",
+    "display_name_ko": "영화시나리오작가",
+    "aliases": [
+      "영화시나리오작가"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-1-1-3",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-1-1-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_1_4_4_1",
+    "display_name_ko": "예능강사",
+    "aliases": [
+      "예능강사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-1-4-4-1",
+    "know_mid_category": "교육직",
+    "source_ref": "KNOW_DETAIL:2-1-4-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_1_3_6_1",
+    "display_name_ko": "예술·디자인·방송관리자",
+    "aliases": [
+      "예술·디자인·방송관리자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-1-3-6-1",
+    "know_mid_category": "관리직(임원·부서장)",
+    "source_ref": "KNOW_DETAIL:0-1-3-6-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_6_9_4",
+    "display_name_ko": "예술치료사",
+    "aliases": [
+      "예술치료사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-6-9-4",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-6-9-4",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_2_4_0_1",
+    "display_name_ko": "오락시설서비스원",
+    "aliases": [
+      "오락시설서비스원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-2-4-0-1",
+    "know_mid_category": "여행·숙박·오락 서비스직",
+    "source_ref": "KNOW_DETAIL:5-2-4-0-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_1_2_9_1",
+    "display_name_ko": "오토바이정비원",
+    "aliases": [
+      "오토바이정비원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-1-2-9-1",
+    "know_mid_category": "기계 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-1-2-9-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_1_5_3_1",
+    "display_name_ko": "온라인판매원",
+    "aliases": [
+      "온라인판매원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-1-5-3-1",
+    "know_mid_category": "영업·판매직",
+    "source_ref": "KNOW_DETAIL:6-1-5-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_1_1_2",
+    "display_name_ko": "외과의사",
+    "aliases": [
+      "외과의사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-1-1-2",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-1-1-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_1_4_1_2",
+    "display_name_ko": "외국어강사",
+    "aliases": [
+      "외국어강사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-1-4-1-2",
+    "know_mid_category": "교육직",
+    "source_ref": "KNOW_DETAIL:2-1-4-1-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_3_1_3_1",
+    "display_name_ko": "외선전기공",
+    "aliases": [
+      "외선전기공"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-3-1-3-1",
+    "know_mid_category": "전기·전자 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-3-1-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_5_0_1_1",
+    "display_name_ko": "요양간호사 및 간병인",
+    "aliases": [
+      "요양간호사 및 간병인"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-5-0-1-1",
+    "know_mid_category": "돌봄 서비스직(간병·육아)",
+    "source_ref": "KNOW_DETAIL:5-5-0-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_2_4_1_1",
+    "display_name_ko": "용접원 및 용접기조작원",
+    "aliases": [
+      "용접원 및 용접기조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-2-4-1-1",
+    "know_mid_category": "금속·재료 설치·정비·생산직(판금·단조·주조·용접·도장 등)",
+    "source_ref": "KNOW_DETAIL:8-2-4-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_2_4_2_1",
+    "display_name_ko": "우편물집배원",
+    "aliases": [
+      "우편물집배원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-2-4-2-1",
+    "know_mid_category": "운전·운송직",
+    "source_ref": "KNOW_DETAIL:6-2-4-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_1_5_2_1",
+    "display_name_ko": "운송관리자",
+    "aliases": [
+      "운송관리자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-1-5-2-1",
+    "know_mid_category": "관리직(임원·부서장)",
+    "source_ref": "KNOW_DETAIL:0-1-5-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_9_0_1_4_1",
+    "display_name_ko": "원예작물재배원",
+    "aliases": [
+      "원예작물재배원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "9-0-1-4-1",
+    "know_mid_category": "농림어업직",
+    "source_ref": "KNOW_DETAIL:9-0-1-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_5_1_6",
+    "display_name_ko": "원자력공학기술자",
+    "aliases": [
+      "원자력공학기술자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-5-1-6",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-5-1-6",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_1_2_1_2",
+    "display_name_ko": "웨딩플래너",
+    "aliases": [
+      "웨딩플래너"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-1-2-1-2",
+    "know_mid_category": "미용·예식 서비스직",
+    "source_ref": "KNOW_DETAIL:5-1-2-1-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_7_1_2",
+    "display_name_ko": "웹방송전문가(콘텐츠제작자)",
+    "aliases": [
+      "웹방송전문가(콘텐츠제작자)"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-7-1-2",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-7-1-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_3_4_4_1",
+    "display_name_ko": "웹운영자",
+    "aliases": [
+      "웹운영자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-3-4-4-1",
+    "know_mid_category": "정보통신 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-3-4-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_5_0_2_1",
+    "display_name_ko": "위관급 장교",
+    "aliases": [
+      "위관급 장교"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-5-0-2-1",
+    "know_mid_category": "군인",
+    "source_ref": "KNOW_DETAIL:2-5-0-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_8_4_2",
+    "display_name_ko": "위험관리원",
+    "aliases": [
+      "위험관리원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-8-4-2",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-8-4-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_2_6_1_1",
+    "display_name_ko": "유리·유리제품생산기계조작원",
+    "aliases": [
+      "유리·유리제품생산기계조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-2-6-1-1",
+    "know_mid_category": "금속·재료 설치·정비·생산직(판금·단조·주조·용접·도장 등)",
+    "source_ref": "KNOW_DETAIL:8-2-6-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_7_0_2_5_2",
+    "display_name_ko": "유리부착원",
+    "aliases": [
+      "유리부착원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "7-0-2-5-2",
+    "know_mid_category": "건설·채굴직",
+    "source_ref": "KNOW_DETAIL:7-0-2-5-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_1_3_2_1",
+    "display_name_ko": "유치원 원장 및 원감",
+    "aliases": [
+      "유치원 원장 및 원감"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-1-3-2-1",
+    "know_mid_category": "관리직(임원·부서장)",
+    "source_ref": "KNOW_DETAIL:0-1-3-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_1_3_0_1",
+    "display_name_ko": "유치원교사",
+    "aliases": [
+      "유치원교사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-1-3-0-1",
+    "know_mid_category": "교육직",
+    "source_ref": "KNOW_DETAIL:2-1-3-0-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_7_3_1_1",
+    "display_name_ko": "육류·어패류·낙농품가공기계조작원",
+    "aliases": [
+      "육류·어패류·낙농품가공기계조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-7-3-1-1",
+    "know_mid_category": "식품 가공·생산직",
+    "source_ref": "KNOW_DETAIL:8-7-3-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_5_0_2_1",
+    "display_name_ko": "육아도우미",
+    "aliases": [
+      "육아도우미"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-5-0-2-1",
+    "know_mid_category": "돌봄 서비스직(간병·육아)",
+    "source_ref": "KNOW_DETAIL:5-5-0-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_3_2_1_1",
+    "display_name_ko": "은행사무원",
+    "aliases": [
+      "은행사무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-3-2-1-1",
+    "know_mid_category": "금융·보험직",
+    "source_ref": "KNOW_DETAIL:0-3-2-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_7_3_5_1",
+    "display_name_ko": "음료제조기계조작원",
+    "aliases": [
+      "음료제조기계조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-7-3-5-1",
+    "know_mid_category": "식품 가공·생산직",
+    "source_ref": "KNOW_DETAIL:8-7-3-5-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_3_1_7_1",
+    "display_name_ko": "음료조리사",
+    "aliases": [
+      "음료조리사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-3-1-7-1",
+    "know_mid_category": "음식 서비스직",
+    "source_ref": "KNOW_DETAIL:5-3-1-7-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_3_2_4_1",
+    "display_name_ko": "음식배달원",
+    "aliases": [
+      "음식배달원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-3-2-4-1",
+    "know_mid_category": "음식 서비스직",
+    "source_ref": "KNOW_DETAIL:5-3-2-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_1_4_2_1",
+    "display_name_ko": "음식서비스관리자",
+    "aliases": [
+      "음식서비스관리자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-1-4-2-1",
+    "know_mid_category": "관리직(임원·부서장)",
+    "source_ref": "KNOW_DETAIL:0-1-4-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_6_5_1",
+    "display_name_ko": "음향·녹음기사",
+    "aliases": [
+      "음향·녹음기사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-6-5-1",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-6-5-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_7_1_1",
+    "display_name_ko": "응급구조사",
+    "aliases": [
+      "응급구조사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-7-1-1",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-7-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_9_2_2",
+    "display_name_ko": "의료코디네이터",
+    "aliases": [
+      "의료코디네이터"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-9-2-2",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-9-2-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_6_3_4_1",
+    "display_name_ko": "의복·가죽·모피수선원",
+    "aliases": [
+      "의복·가죽·모피수선원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-6-3-4-1",
+    "know_mid_category": "섬유·의복 생산직",
+    "source_ref": "KNOW_DETAIL:8-6-3-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_5_2_1",
+    "display_name_ko": "의상디자이너",
+    "aliases": [
+      "의상디자이너"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-5-2-1",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-5-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_4_1_5",
+    "display_name_ko": "의약품공학기술자 및 연구원",
+    "aliases": [
+      "의약품공학기술자 및 연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-4-1-5",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-4-1-5",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_2_2_1_1",
+    "display_name_ko": "의학연구원",
+    "aliases": [
+      "의학연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-2-2-1-1",
+    "know_mid_category": "자연·생명과학 연구직",
+    "source_ref": "KNOW_DETAIL:1-2-2-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_4_1_2_1",
+    "display_name_ko": "이동전화기수리원",
+    "aliases": [
+      "이동전화기수리원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-4-1-2-1",
+    "know_mid_category": "정보통신 설치·정비직",
+    "source_ref": "KNOW_DETAIL:8-4-1-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_1_1_5",
+    "display_name_ko": "이비인후과의사",
+    "aliases": [
+      "이비인후과의사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-1-1-5",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-1-1-5",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_1_1_1_1",
+    "display_name_ko": "이용사",
+    "aliases": [
+      "이용사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-1-1-1-1",
+    "know_mid_category": "미용·예식 서비스직",
+    "source_ref": "KNOW_DETAIL:5-1-1-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_6_2_1",
+    "display_name_ko": "인사·교육·훈련사무원",
+    "aliases": [
+      "인사·교육·훈련사무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-6-2-1",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-6-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_8_1_1_1",
+    "display_name_ko": "인쇄기계조작원",
+    "aliases": [
+      "인쇄기계조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-8-1-1-1",
+    "know_mid_category": "인쇄·목재·공예 및 기타 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-8-1-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_2_2_2",
+    "display_name_ko": "인적자원전문가",
+    "aliases": [
+      "인적자원전문가"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-2-2-2",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-2-2-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_1_6_1_3",
+    "display_name_ko": "일반기계조립원",
+    "aliases": [
+      "일반기계조립원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-1-6-1-3",
+    "know_mid_category": "기계 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-1-6-1-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_1_2_1",
+    "display_name_ko": "일반의사",
+    "aliases": [
+      "일반의사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-1-2-1",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-1-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_3_1_5_1",
+    "display_name_ko": "일식조리사",
+    "aliases": [
+      "일식조리사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-3-1-5-1",
+    "know_mid_category": "음식 서비스직",
+    "source_ref": "KNOW_DETAIL:5-3-1-5-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_6_1_1",
+    "display_name_ko": "임상병리사",
+    "aliases": [
+      "임상병리사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-6-1-1",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-6-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_6_6_1",
+    "display_name_ko": "임상심리사",
+    "aliases": [
+      "임상심리사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-6-6-1",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-6-6-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_2_2_1_5",
+    "display_name_ko": "임학·산림학연구원",
+    "aliases": [
+      "임학·산림학연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-2-2-1-5",
+    "know_mid_category": "자연·생명과학 연구직",
+    "source_ref": "KNOW_DETAIL:1-2-2-1-5",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_1_5_0_1",
+    "display_name_ko": "자동조립라인·산업용 로봇조작원",
+    "aliases": [
+      "자동조립라인·산업용 로봇조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-1-5-0-1",
+    "know_mid_category": "기계 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-1-5-0-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_1_1_7",
+    "display_name_ko": "자동차공학기술자",
+    "aliases": [
+      "자동차공학기술자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-1-1-7",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-1-1-7",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_1_7_2_1",
+    "display_name_ko": "자동차부품조립·검사원",
+    "aliases": [
+      "자동차부품조립·검사원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-1-7-2-1",
+    "know_mid_category": "기계 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-1-7-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_1_2_3_1",
+    "display_name_ko": "자동차영업원",
+    "aliases": [
+      "자동차영업원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-1-2-3-1",
+    "know_mid_category": "영업·판매직",
+    "source_ref": "KNOW_DETAIL:6-1-2-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_1_2_4_1",
+    "display_name_ko": "자동차정비원",
+    "aliases": [
+      "자동차정비원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-1-2-4-1",
+    "know_mid_category": "기계 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-1-2-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_1_7_1_1",
+    "display_name_ko": "자동차조립원",
+    "aliases": [
+      "자동차조립원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-1-7-1-1",
+    "know_mid_category": "기계 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-1-7-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_3_1_2_1",
+    "display_name_ko": "자산운용가",
+    "aliases": [
+      "자산운용가"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-3-1-2-1",
+    "know_mid_category": "금융·보험직",
+    "source_ref": "KNOW_DETAIL:0-3-1-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_2_1_3_3",
+    "display_name_ko": "자연 및 문화해설사",
+    "aliases": [
+      "자연 및 문화해설사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-2-1-3-3",
+    "know_mid_category": "여행·숙박·오락 서비스직",
+    "source_ref": "KNOW_DETAIL:5-2-1-3-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_2_1_2_1",
+    "display_name_ko": "자연과학시험원",
+    "aliases": [
+      "자연과학시험원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-2-1-2-1",
+    "know_mid_category": "자연·생명과학 연구직",
+    "source_ref": "KNOW_DETAIL:1-2-1-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_8_3_1",
+    "display_name_ko": "자재·구매사무원",
+    "aliases": [
+      "자재·구매사무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-8-3-1",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-8-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_1_2_9_2",
+    "display_name_ko": "자전거판매 및 수리원",
+    "aliases": [
+      "자전거판매 및 수리원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-1-2-9-2",
+    "know_mid_category": "기계 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-1-2-9-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_4_5_2",
+    "display_name_ko": "작곡가",
+    "aliases": [
+      "작곡가"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-4-5-2",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-4-5-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_6_5_2",
+    "display_name_ko": "작업치료사",
+    "aliases": [
+      "작업치료사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-6-5-2",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-6-5-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_7_0_5_9_2",
+    "display_name_ko": "잠수기능원",
+    "aliases": [
+      "잠수기능원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "7-0-5-9-2",
+    "know_mid_category": "건설·채굴직",
+    "source_ref": "KNOW_DETAIL:7-0-5-9-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_2_0_3",
+    "display_name_ko": "잡지기자",
+    "aliases": [
+      "잡지기자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-2-0-3",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-2-0-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_1_2_3_1",
+    "display_name_ko": "장례지도사 및 장례상담원",
+    "aliases": [
+      "장례지도사 및 장례상담원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-1-2-3-1",
+    "know_mid_category": "미용·예식 서비스직",
+    "source_ref": "KNOW_DETAIL:5-1-2-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_6_2_2_1",
+    "display_name_ko": "재단사",
+    "aliases": [
+      "재단사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-6-2-2-1",
+    "know_mid_category": "섬유·의복 생산직",
+    "source_ref": "KNOW_DETAIL:8-6-2-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_6_2_3_1",
+    "display_name_ko": "재봉사",
+    "aliases": [
+      "재봉사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-6-2-3-1",
+    "know_mid_category": "섬유·의복 생산직",
+    "source_ref": "KNOW_DETAIL:8-6-2-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_6_7_1",
+    "display_name_ko": "재활공학기사",
+    "aliases": [
+      "재활공학기사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-6-7-1",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-6-7-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_5_3_2_1",
+    "display_name_ko": "재활용 처리장치·소각로조작원",
+    "aliases": [
+      "재활용 처리장치·소각로조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-5-3-2-1",
+    "know_mid_category": "화학·환경 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-5-3-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_1_6_2_1",
+    "display_name_ko": "전기·가스·수도관리자",
+    "aliases": [
+      "전기·가스·수도관리자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-1-6-2-1",
+    "know_mid_category": "관리직(임원·부서장)",
+    "source_ref": "KNOW_DETAIL:0-1-6-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_3_3_1",
+    "display_name_ko": "전기·전자공학시험원",
+    "aliases": [
+      "전기·전자공학시험원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-3-3-1",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-3-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_3_6_0_1",
+    "display_name_ko": "전기·전자부품·제품조립원",
+    "aliases": [
+      "전기·전자부품·제품조립원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-3-6-0-1",
+    "know_mid_category": "전기·전자 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-3-6-0-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_3_4_0_1",
+    "display_name_ko": "전기·전자설비조작원",
+    "aliases": [
+      "전기·전자설비조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-3-4-0-1",
+    "know_mid_category": "전기·전자 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-3-4-0-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_3_1_5",
+    "display_name_ko": "전기감리기술자",
+    "aliases": [
+      "전기감리기술자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-3-1-5",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-3-1-5",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_3_1_2",
+    "display_name_ko": "전기계측제어기술자",
+    "aliases": [
+      "전기계측제어기술자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-3-1-2",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-3-1-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_3_1_1",
+    "display_name_ko": "전기기기·제품개발기술자 및 연구원",
+    "aliases": [
+      "전기기기·제품개발기술자 및 연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-3-1-1",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-3-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_3_5_1_1",
+    "display_name_ko": "전기부품·제품생산기계조작원",
+    "aliases": [
+      "전기부품·제품생산기계조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-3-5-1-1",
+    "know_mid_category": "전기·전자 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-3-5-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_3_1_6",
+    "display_name_ko": "전기안전기술자",
+    "aliases": [
+      "전기안전기술자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-3-1-6",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-3-1-6",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_3_2_3",
+    "display_name_ko": "전자계측제어기술자",
+    "aliases": [
+      "전자계측제어기술자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-3-2-3",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-3-2-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_3_5_2_1",
+    "display_name_ko": "전자부품·제품생산기계조작원",
+    "aliases": [
+      "전자부품·제품생산기계조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-3-5-2-1",
+    "know_mid_category": "전기·전자 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-3-5-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_3_2_1",
+    "display_name_ko": "전자제품 및 부품 개발기술자",
+    "aliases": [
+      "전자제품 및 부품 개발기술자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-3-2-1",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-3-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_7_0_1_6_2",
+    "display_name_ko": "전통건축기능원",
+    "aliases": [
+      "전통건축기능원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "7-0-1-6-2",
+    "know_mid_category": "건설·채굴직",
+    "source_ref": "KNOW_DETAIL:7-0-1-6-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_2_6_2_1",
+    "display_name_ko": "점토제품생산기계조작원",
+    "aliases": [
+      "점토제품생산기계조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-2-6-2-1",
+    "know_mid_category": "금속·재료 설치·정비·생산직(판금·단조·주조·용접·도장 등)",
+    "source_ref": "KNOW_DETAIL:8-2-6-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_7_0_5_9_1",
+    "display_name_ko": "점화·발파·화약관리원",
+    "aliases": [
+      "점화·발파·화약관리원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "7-0-5-9-1",
+    "know_mid_category": "건설·채굴직",
+    "source_ref": "KNOW_DETAIL:7-0-5-9-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_1_3_7_1",
+    "display_name_ko": "정보통신관리자",
+    "aliases": [
+      "정보통신관리자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-1-3-7-1",
+    "know_mid_category": "관리직(임원·부서장)",
+    "source_ref": "KNOW_DETAIL:0-1-3-7-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_3_2_0_4",
+    "display_name_ko": "정보통신컨설턴트 및 감리원",
+    "aliases": [
+      "정보통신컨설턴트 및 감리원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-3-2-0-4",
+    "know_mid_category": "정보통신 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-3-2-0-4",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_1_0_1",
+    "display_name_ko": "정부·공공행정전문가",
+    "aliases": [
+      "정부·공공행정전문가"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-1-0-1",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-1-0-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_1_2_1_1",
+    "display_name_ko": "정부행정관리자",
+    "aliases": [
+      "정부행정관리자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-1-2-1-1",
+    "know_mid_category": "관리직(임원·부서장)",
+    "source_ref": "KNOW_DETAIL:0-1-2-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_1_1_7",
+    "display_name_ko": "정신과의사",
+    "aliases": [
+      "정신과의사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-1-1-7",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-1-1-7",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_7_2_1_1",
+    "display_name_ko": "정육원 및 도축원",
+    "aliases": [
+      "정육원 및 도축원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-7-2-1-1",
+    "know_mid_category": "식품 가공·생산직",
+    "source_ref": "KNOW_DETAIL:8-7-2-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_1_0_2_1",
+    "display_name_ko": "정치학연구원",
+    "aliases": [
+      "정치학연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-1-0-2-1",
+    "know_mid_category": "인문·사회과학 연구직",
+    "source_ref": "KNOW_DETAIL:1-1-0-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_7_1_1_1",
+    "display_name_ko": "제과·제빵원",
+    "aliases": [
+      "제과·제빵원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-7-1-1-1",
+    "know_mid_category": "식품 가공·생산직",
+    "source_ref": "KNOW_DETAIL:8-7-1-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_2_2_3_1",
+    "display_name_ko": "제관원 및 제관기조작원",
+    "aliases": [
+      "제관원 및 제관기조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-2-2-3-1",
+    "know_mid_category": "금속·재료 설치·정비·생산직(판금·단조·주조·용접·도장 등)",
+    "source_ref": "KNOW_DETAIL:8-2-2-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_9_1_4",
+    "display_name_ko": "제도사(캐드원)",
+    "aliases": [
+      "제도사(캐드원)"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-9-1-4",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-9-1-4",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_7_3_2_1",
+    "display_name_ko": "제분·도정기계조작원",
+    "aliases": [
+      "제분·도정기계조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-7-3-2-1",
+    "know_mid_category": "식품 가공·생산직",
+    "source_ref": "KNOW_DETAIL:8-7-3-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_1_6_3_1",
+    "display_name_ko": "제조·생산관리자",
+    "aliases": [
+      "제조·생산관리자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-1-6-3-1",
+    "know_mid_category": "관리직(임원·부서장)",
+    "source_ref": "KNOW_DETAIL:0-1-6-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_1_2_4_1",
+    "display_name_ko": "제품광고영업원",
+    "aliases": [
+      "제품광고영업원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-1-2-4-1",
+    "know_mid_category": "영업·판매직",
+    "source_ref": "KNOW_DETAIL:6-1-2-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_5_1_1",
+    "display_name_ko": "제품디자이너",
+    "aliases": [
+      "제품디자이너"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-5-1-1",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-5-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_6_4_1_1",
+    "display_name_ko": "제화원",
+    "aliases": [
+      "제화원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-6-4-1-1",
+    "know_mid_category": "섬유·의복 생산직",
+    "source_ref": "KNOW_DETAIL:8-6-4-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_4_1_2",
+    "display_name_ko": "조각가",
+    "aliases": [
+      "조각가"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-4-1-2",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-4-1-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_4_0_4_1",
+    "display_name_ko": "조경기술자",
+    "aliases": [
+      "조경기술자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-4-0-4-1",
+    "know_mid_category": "건설·채굴 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-4-0-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_9_0_1_5_1",
+    "display_name_ko": "조경원",
+    "aliases": [
+      "조경원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "9-0-1-5-1",
+    "know_mid_category": "농림어업직",
+    "source_ref": "KNOW_DETAIL:9-0-1-5-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_9_0_3_1_1",
+    "display_name_ko": "조림·산림경영인 및 벌목원",
+    "aliases": [
+      "조림·산림경영인 및 벌목원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "9-0-3-1-1",
+    "know_mid_category": "농림어업직",
+    "source_ref": "KNOW_DETAIL:9-0-3-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_6_7_1",
+    "display_name_ko": "조명기사",
+    "aliases": [
+      "조명기사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-6-7-1",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-6-7-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_4_2_3",
+    "display_name_ko": "조사전문가",
+    "aliases": [
+      "조사전문가"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-4-2-3",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-4-2-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_1_1_8",
+    "display_name_ko": "조선·해양공학기술자",
+    "aliases": [
+      "조선·해양공학기술자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-1-1-8",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-1-1-8",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_5_1_1",
+    "display_name_ko": "조세행정사무원",
+    "aliases": [
+      "조세행정사무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-5-1-1",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-5-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_7_0_1_7_1",
+    "display_name_ko": "조적원",
+    "aliases": [
+      "조적원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "7-0-1-7-1",
+    "know_mid_category": "건설·채굴직",
+    "source_ref": "KNOW_DETAIL:7-0-1-7-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_8_2_3_1",
+    "display_name_ko": "종이제품생산기계조작원",
+    "aliases": [
+      "종이제품생산기계조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-8-2-3-1",
+    "know_mid_category": "인쇄·목재·공예 및 기타 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-8-2-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_3_2_3_1",
+    "display_name_ko": "주방보조원",
+    "aliases": [
+      "주방보조원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-3-2-3-1",
+    "know_mid_category": "음식 서비스직",
+    "source_ref": "KNOW_DETAIL:5-3-2-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_3_1_1_1",
+    "display_name_ko": "주방장",
+    "aliases": [
+      "주방장"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-3-1-1-1",
+    "know_mid_category": "음식 서비스직",
+    "source_ref": "KNOW_DETAIL:5-3-1-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_1_5_7_1",
+    "display_name_ko": "주유원",
+    "aliases": [
+      "주유원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-1-5-7-1",
+    "know_mid_category": "영업·판매직",
+    "source_ref": "KNOW_DETAIL:6-1-5-7-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_2_3_3_1",
+    "display_name_ko": "주조원 및 주조기조작원",
+    "aliases": [
+      "주조원 및 주조기조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-2-3-3-1",
+    "know_mid_category": "금속·재료 설치·정비·생산직(판금·단조·주조·용접·도장 등)",
+    "source_ref": "KNOW_DETAIL:8-2-3-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_6_2_3_1",
+    "display_name_ko": "주차관리·안내원",
+    "aliases": [
+      "주차관리·안내원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-6-2-3-1",
+    "know_mid_category": "청소 및 기타 개인서비스직",
+    "source_ref": "KNOW_DETAIL:5-6-2-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_1_2_1_1",
+    "display_name_ko": "중·고등학교교사",
+    "aliases": [
+      "중·고등학교교사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-1-2-1-1",
+    "know_mid_category": "교육직",
+    "source_ref": "KNOW_DETAIL:2-1-2-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_1_3_2_3",
+    "display_name_ko": "중고등학교 교장 및 교감",
+    "aliases": [
+      "중고등학교 교장 및 교감"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-1-3-2-3",
+    "know_mid_category": "관리직(임원·부서장)",
+    "source_ref": "KNOW_DETAIL:0-1-3-2-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_3_1_3_1",
+    "display_name_ko": "중식조리사",
+    "aliases": [
+      "중식조리사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-3-1-3-1",
+    "know_mid_category": "음식 서비스직",
+    "source_ref": "KNOW_DETAIL:5-3-1-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_3_1_4_1",
+    "display_name_ko": "증권딜러",
+    "aliases": [
+      "증권딜러"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-3-1-4-1",
+    "know_mid_category": "금융·보험직",
+    "source_ref": "KNOW_DETAIL:0-3-1-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_3_2_2_1",
+    "display_name_ko": "증권사무원",
+    "aliases": [
+      "증권사무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-3-2-2-1",
+    "know_mid_category": "금융·보험직",
+    "source_ref": "KNOW_DETAIL:0-3-2-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_2_3_0_2",
+    "display_name_ko": "지게차운전원",
+    "aliases": [
+      "지게차운전원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-2-3-0-2",
+    "know_mid_category": "운전·운송직",
+    "source_ref": "KNOW_DETAIL:6-2-3-0-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_4_0_6_2",
+    "display_name_ko": "지리정보시스템전문가",
+    "aliases": [
+      "지리정보시스템전문가"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-4-0-6-2",
+    "know_mid_category": "건설·채굴 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-4-0-6-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_4_0_6_1",
+    "display_name_ko": "지적 및 측량기술자",
+    "aliases": [
+      "지적 및 측량기술자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-4-0-6-1",
+    "know_mid_category": "건설·채굴 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-4-0-6-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_2_1_1_5",
+    "display_name_ko": "지질학연구원",
+    "aliases": [
+      "지질학연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-2-1-1-5",
+    "know_mid_category": "자연·생명과학 연구직",
+    "source_ref": "KNOW_DETAIL:1-2-1-1-5",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_4_5_1",
+    "display_name_ko": "지휘자",
+    "aliases": [
+      "지휘자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-4-5-1",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-4-5-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_3_1_4_1",
+    "display_name_ko": "직업상담사",
+    "aliases": [
+      "직업상담사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-3-1-4-1",
+    "know_mid_category": "사회복지·종교직",
+    "source_ref": "KNOW_DETAIL:2-3-1-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_2_0_2_1",
+    "display_name_ko": "직업운동선수",
+    "aliases": [
+      "직업운동선수"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-2-0-2-1",
+    "know_mid_category": "스포츠·레크리에이션직",
+    "source_ref": "KNOW_DETAIL:4-2-0-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_6_1_2_1",
+    "display_name_ko": "직조기·편직기조작원",
+    "aliases": [
+      "직조기·편직기조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-6-1-2-1",
+    "know_mid_category": "섬유·의복 생산직",
+    "source_ref": "KNOW_DETAIL:8-6-1-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_9_0_1_2_1",
+    "display_name_ko": "채소·특용작물재배원",
+    "aliases": [
+      "채소·특용작물재배원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "9-0-1-2-1",
+    "know_mid_category": "농림어업직",
+    "source_ref": "KNOW_DETAIL:9-0-1-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_2_1_1_6",
+    "display_name_ko": "천문·기상학연구원",
+    "aliases": [
+      "천문·기상학연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-2-1-1-6",
+    "know_mid_category": "자연·생명과학 연구직",
+    "source_ref": "KNOW_DETAIL:1-2-1-1-6",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_7_0_1_3_1",
+    "display_name_ko": "철근공",
+    "aliases": [
+      "철근공"
+    ],
+    "job_family": "unmapped",
+    "know_code": "7-0-1-3-1",
+    "know_mid_category": "건설·채굴직",
+    "source_ref": "KNOW_DETAIL:7-0-1-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_2_1_3_1",
+    "display_name_ko": "철도·전동차기관사",
+    "aliases": [
+      "철도·전동차기관사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-2-1-3-1",
+    "know_mid_category": "운전·운송직",
+    "source_ref": "KNOW_DETAIL:6-2-1-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_8_2_2",
+    "display_name_ko": "철도·지하철운송사무원",
+    "aliases": [
+      "철도·지하철운송사무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-8-2-2",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-8-2-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_2_1_4_3",
+    "display_name_ko": "철도교통관제사",
+    "aliases": [
+      "철도교통관제사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-2-1-4-3",
+    "know_mid_category": "운전·운송직",
+    "source_ref": "KNOW_DETAIL:6-2-1-4-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_1_2_3_1",
+    "display_name_ko": "철도기관차·전동차정비원",
+    "aliases": [
+      "철도기관차·전동차정비원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-1-2-3-1",
+    "know_mid_category": "기계 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-1-2-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_7_0_5_2_1",
+    "display_name_ko": "철로설치·보수원",
+    "aliases": [
+      "철로설치·보수원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "7-0-5-2-1",
+    "know_mid_category": "건설·채굴직",
+    "source_ref": "KNOW_DETAIL:7-0-5-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_1_0_1_1",
+    "display_name_ko": "철학연구원",
+    "aliases": [
+      "철학연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-1-0-1-1",
+    "know_mid_category": "인문·사회과학 연구직",
+    "source_ref": "KNOW_DETAIL:1-1-0-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_6_9_2",
+    "display_name_ko": "청능치료사",
+    "aliases": [
+      "청능치료사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-6-9-2",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-6-9-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_3_1_3_1",
+    "display_name_ko": "청소년지도사",
+    "aliases": [
+      "청소년지도사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-3-1-3-1",
+    "know_mid_category": "사회복지·종교직",
+    "source_ref": "KNOW_DETAIL:2-3-1-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_6_1_1_1",
+    "display_name_ko": "청소원",
+    "aliases": [
+      "청소원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-6-1-1-1",
+    "know_mid_category": "청소 및 기타 개인서비스직",
+    "source_ref": "KNOW_DETAIL:5-6-1-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_4_1_2_1",
+    "display_name_ko": "청원경찰",
+    "aliases": [
+      "청원경찰"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-4-1-2-1",
+    "know_mid_category": "경호·경비직",
+    "source_ref": "KNOW_DETAIL:5-4-1-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_1_3_2_2",
+    "display_name_ko": "초등학교 교장 및 교감",
+    "aliases": [
+      "초등학교 교장 및 교감"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-1-3-2-2",
+    "know_mid_category": "관리직(임원·부서장)",
+    "source_ref": "KNOW_DETAIL:0-1-3-2-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_1_2_2_1",
+    "display_name_ko": "초등학교교사",
+    "aliases": [
+      "초등학교교사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-1-2-2-1",
+    "know_mid_category": "교육직",
+    "source_ref": "KNOW_DETAIL:2-1-2-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_6_3_1",
+    "display_name_ko": "총무사무원",
+    "aliases": [
+      "총무사무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-6-3-1",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-6-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_6_4_1",
+    "display_name_ko": "촬영기사",
+    "aliases": [
+      "촬영기사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-6-4-1",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-6-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_2_2_1_6",
+    "display_name_ko": "축산학·수의학연구원",
+    "aliases": [
+      "축산학·수의학연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-2-2-1-6",
+    "know_mid_category": "자연·생명과학 연구직",
+    "source_ref": "KNOW_DETAIL:1-2-2-1-6",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_3_2_4_1",
+    "display_name_ko": "출납창구사무원",
+    "aliases": [
+      "출납창구사무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-3-2-4-1",
+    "know_mid_category": "금융·보험직",
+    "source_ref": "KNOW_DETAIL:0-3-2-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_9_9_1",
+    "display_name_ko": "출판·자료편집사무원",
+    "aliases": [
+      "출판·자료편집사무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-9-9-1",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-9-9-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_1_3_1",
+    "display_name_ko": "출판물기획자",
+    "aliases": [
+      "출판물기획자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-1-3-1",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-1-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_9_9_4",
+    "display_name_ko": "취업알선원",
+    "aliases": [
+      "취업알선원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-9-9-4",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-9-9-4",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_6_3_1",
+    "display_name_ko": "치과기공사",
+    "aliases": [
+      "치과기공사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-6-3-1",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-6-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_6_4_1",
+    "display_name_ko": "치과위생사",
+    "aliases": [
+      "치과위생사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-6-4-1",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-6-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_1_4_1",
+    "display_name_ko": "치과의사",
+    "aliases": [
+      "치과의사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-1-4-1",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-1-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_1_4_2_1",
+    "display_name_ko": "컴퓨터강사",
+    "aliases": [
+      "컴퓨터강사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-1-4-2-1",
+    "know_mid_category": "교육직",
+    "source_ref": "KNOW_DETAIL:2-1-4-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_4_1_1_1",
+    "display_name_ko": "컴퓨터설치·수리원",
+    "aliases": [
+      "컴퓨터설치·수리원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-4-1-1-1",
+    "know_mid_category": "정보통신 설치·정비직",
+    "source_ref": "KNOW_DETAIL:8-4-1-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_3_1_1_1",
+    "display_name_ko": "컴퓨터하드웨어기술자 및 연구원",
+    "aliases": [
+      "컴퓨터하드웨어기술자 및 연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-3-1-1-1",
+    "know_mid_category": "정보통신 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-3-1-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_7_0_1_4_1",
+    "display_name_ko": "콘크리트공",
+    "aliases": [
+      "콘크리트공"
+    ],
+    "job_family": "unmapped",
+    "know_code": "7-0-1-4-1",
+    "know_mid_category": "건설·채굴직",
+    "source_ref": "KNOW_DETAIL:7-0-1-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_2_3_0_1",
+    "display_name_ko": "크레인·호이스트운전원",
+    "aliases": [
+      "크레인·호이스트운전원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-2-3-0-1",
+    "know_mid_category": "운전·운송직",
+    "source_ref": "KNOW_DETAIL:6-2-3-0-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_5_2_1_1",
+    "display_name_ko": "타이어·고무제품생산기계조작원",
+    "aliases": [
+      "타이어·고무제품생산기계조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-5-2-1-1",
+    "know_mid_category": "화학·환경 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-5-2-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_7_0_2_4_1",
+    "display_name_ko": "타일·대리석시공원",
+    "aliases": [
+      "타일·대리석시공원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "7-0-2-4-1",
+    "know_mid_category": "건설·채굴직",
+    "source_ref": "KNOW_DETAIL:7-0-2-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_5_1_2",
+    "display_name_ko": "태양광발전연구 및 개발자",
+    "aliases": [
+      "태양광발전연구 및 개발자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-5-1-2",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-5-1-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_2_4_1_1",
+    "display_name_ko": "택배원",
+    "aliases": [
+      "택배원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-2-4-1-1",
+    "know_mid_category": "운전·운송직",
+    "source_ref": "KNOW_DETAIL:6-2-4-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_2_2_1_1",
+    "display_name_ko": "택시운전원",
+    "aliases": [
+      "택시운전원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-2-2-1-1",
+    "know_mid_category": "운전·운송직",
+    "source_ref": "KNOW_DETAIL:6-2-2-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_4_0_3_4",
+    "display_name_ko": "토목감리기술자",
+    "aliases": [
+      "토목감리기술자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-4-0-3-4",
+    "know_mid_category": "건설·채굴 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-4-0-3-4",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_4_0_3_1",
+    "display_name_ko": "토목구조설계기술자",
+    "aliases": [
+      "토목구조설계기술자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-4-0-3-1",
+    "know_mid_category": "건설·채굴 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-4-0-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_4_0_3_6",
+    "display_name_ko": "토목시공기술자 및 견적원",
+    "aliases": [
+      "토목시공기술자 및 견적원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-4-0-3-6",
+    "know_mid_category": "건설·채굴 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-4-0-3-6",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_4_0_3_5",
+    "display_name_ko": "토목안전·환경·품질기술자",
+    "aliases": [
+      "토목안전·환경·품질기술자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-4-0-3-5",
+    "know_mid_category": "건설·채굴 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-4-0-3-5",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_5_3_6",
+    "display_name_ko": "토양환경기술자 및 연구원",
+    "aliases": [
+      "토양환경기술자 및 연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-5-3-6",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-5-3-6",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_9_3_3",
+    "display_name_ko": "통계사무원",
+    "aliases": [
+      "통계사무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-9-3-3",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-9-3-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_1_5_2_3",
+    "display_name_ko": "통신기기·서비스판매원",
+    "aliases": [
+      "통신기기·서비스판매원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-1-5-2-3",
+    "know_mid_category": "영업·판매직",
+    "source_ref": "KNOW_DETAIL:6-1-5-2-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_3_1_2_1",
+    "display_name_ko": "통신기기·장비기술자",
+    "aliases": [
+      "통신기기·장비기술자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-3-1-2-1",
+    "know_mid_category": "정보통신 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-3-1-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_3_6_0_1",
+    "display_name_ko": "통신장비기사",
+    "aliases": [
+      "통신장비기사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-3-6-0-1",
+    "know_mid_category": "정보통신 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-3-6-0-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_4_2_2_1",
+    "display_name_ko": "통신장비설치·수리원",
+    "aliases": [
+      "통신장비설치·수리원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-4-2-2-1",
+    "know_mid_category": "정보통신 설치·정비직",
+    "source_ref": "KNOW_DETAIL:8-4-2-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_1_2_2",
+    "display_name_ko": "통역가",
+    "aliases": [
+      "통역가"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-1-2-2",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-1-2-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_3_1_1_1",
+    "display_name_ko": "투자분석가",
+    "aliases": [
+      "투자분석가"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-3-1-1-1",
+    "know_mid_category": "금융·보험직",
+    "source_ref": "KNOW_DETAIL:0-3-1-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_1_2_3_1",
+    "display_name_ko": "특수교육교사",
+    "aliases": [
+      "특수교육교사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-1-2-3-1",
+    "know_mid_category": "교육직",
+    "source_ref": "KNOW_DETAIL:2-1-2-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_2_2_1_1",
+    "display_name_ko": "판금원 및 판금기조작원",
+    "aliases": [
+      "판금원 및 판금기조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-2-2-1-1",
+    "know_mid_category": "금속·재료 설치·정비·생산직(판금·단조·주조·용접·도장 등)",
+    "source_ref": "KNOW_DETAIL:8-2-2-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_2_1_1_1",
+    "display_name_ko": "판사",
+    "aliases": [
+      "판사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-2-1-1-1",
+    "know_mid_category": "법률직",
+    "source_ref": "KNOW_DETAIL:2-2-1-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_5_2_2",
+    "display_name_ko": "패션소품디자이너",
+    "aliases": [
+      "패션소품디자이너"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-5-2-2",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-5-2-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_3_2_1_1",
+    "display_name_ko": "패스트푸드준비원",
+    "aliases": [
+      "패스트푸드준비원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-3-2-1-1",
+    "know_mid_category": "음식 서비스직",
+    "source_ref": "KNOW_DETAIL:5-3-2-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_6_2_1_1",
+    "display_name_ko": "패턴사",
+    "aliases": [
+      "패턴사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-6-2-1-1",
+    "know_mid_category": "섬유·의복 생산직",
+    "source_ref": "KNOW_DETAIL:8-6-2-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_8_2_2_1",
+    "display_name_ko": "펄프·종이제조장치조작원",
+    "aliases": [
+      "펄프·종이제조장치조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-8-2-2-1",
+    "know_mid_category": "인쇄·목재·공예 및 기타 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-8-2-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_5_3_3",
+    "display_name_ko": "폐기물처리기술자",
+    "aliases": [
+      "폐기물처리기술자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-5-3-3",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-5-3-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_8_5_9_2",
+    "display_name_ko": "포장원",
+    "aliases": [
+      "포장원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-8-5-9-2",
+    "know_mid_category": "인쇄·목재·공예 및 기타 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-8-5-9-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_6_1_3_1",
+    "display_name_ko": "표백·염색기조작원",
+    "aliases": [
+      "표백·염색기조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-6-1-3-1",
+    "know_mid_category": "섬유·의복 생산직",
+    "source_ref": "KNOW_DETAIL:8-6-1-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_8_4_2",
+    "display_name_ko": "품질관리사무원",
+    "aliases": [
+      "품질관리사무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-8-4-2",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-8-4-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_5_1_3",
+    "display_name_ko": "풍력발전연구 및 개발자",
+    "aliases": [
+      "풍력발전연구 및 개발자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-5-1-3",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-5-1-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_2_0_2_2",
+    "display_name_ko": "프로게이머",
+    "aliases": [
+      "프로게이머"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-2-0-2-2",
+    "know_mid_category": "스포츠·레크리에이션직",
+    "source_ref": "KNOW_DETAIL:4-2-0-2-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_5_2_2_1",
+    "display_name_ko": "플라스틱제품생산기계조작원",
+    "aliases": [
+      "플라스틱제품생산기계조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-5-2-2-1",
+    "know_mid_category": "화학·환경 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-5-2-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_1_1_2",
+    "display_name_ko": "플랜트기계공학기술자",
+    "aliases": [
+      "플랜트기계공학기술자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-1-1-2",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-1-1-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_1_1_3_1",
+    "display_name_ko": "피부 및 체형관리사",
+    "aliases": [
+      "피부 및 체형관리사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-1-1-3-1",
+    "know_mid_category": "미용·예식 서비스직",
+    "source_ref": "KNOW_DETAIL:5-1-1-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_1_1_12",
+    "display_name_ko": "피부과의사",
+    "aliases": [
+      "피부과의사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-1-1-12",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-1-1-12",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_2_4_4_1",
+    "display_name_ko": "하역·적재종사원",
+    "aliases": [
+      "하역·적재종사원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-2-4-4-1",
+    "know_mid_category": "운전·운송직",
+    "source_ref": "KNOW_DETAIL:6-2-4-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_1_4_5_1",
+    "display_name_ko": "학습지·교육교구방문강사",
+    "aliases": [
+      "학습지·교육교구방문강사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-1-4-5-1",
+    "know_mid_category": "교육직",
+    "source_ref": "KNOW_DETAIL:2-1-4-5-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_3_1_1",
+    "display_name_ko": "학예사",
+    "aliases": [
+      "학예사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-3-1-1",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-3-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_6_3_1_1",
+    "display_name_ko": "한복제조원",
+    "aliases": [
+      "한복제조원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-6-3-1-1",
+    "know_mid_category": "섬유·의복 생산직",
+    "source_ref": "KNOW_DETAIL:8-6-3-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_3_1_2_1",
+    "display_name_ko": "한식조리사",
+    "aliases": [
+      "한식조리사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-3-1-2-1",
+    "know_mid_category": "음식 서비스직",
+    "source_ref": "KNOW_DETAIL:5-3-1-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_3_0_2",
+    "display_name_ko": "한약사",
+    "aliases": [
+      "한약사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-3-0-2",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-3-0-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_3_0_1_3_1",
+    "display_name_ko": "한의사",
+    "aliases": [
+      "한의사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "3-0-1-3-1",
+    "know_mid_category": "보건·의료직",
+    "source_ref": "KNOW_DETAIL:3-0-1-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_1_1_5",
+    "display_name_ko": "항공공학기술자",
+    "aliases": [
+      "항공공학기술자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-1-1-5",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-1-1-5",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_2_1_4_1",
+    "display_name_ko": "항공교통관제사",
+    "aliases": [
+      "항공교통관제사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-2-1-4-1",
+    "know_mid_category": "운전·운송직",
+    "source_ref": "KNOW_DETAIL:6-2-1-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_2_2_1_1",
+    "display_name_ko": "항공기객실승무원",
+    "aliases": [
+      "항공기객실승무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-2-2-1-1",
+    "know_mid_category": "여행·숙박·오락 서비스직",
+    "source_ref": "KNOW_DETAIL:5-2-2-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_1_2_1_1",
+    "display_name_ko": "항공기정비원",
+    "aliases": [
+      "항공기정비원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-1-2-1-1",
+    "know_mid_category": "기계 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-1-2-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_2_1_1_1",
+    "display_name_ko": "항공기조종사",
+    "aliases": [
+      "항공기조종사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-2-1-1-1",
+    "know_mid_category": "운전·운송직",
+    "source_ref": "KNOW_DETAIL:6-2-1-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_8_2_3",
+    "display_name_ko": "항공운송사무원",
+    "aliases": [
+      "항공운송사무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-8-2-3",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-8-2-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_2_4_0_1_2",
+    "display_name_ko": "해양경찰관",
+    "aliases": [
+      "해양경찰관"
+    ],
+    "job_family": "unmapped",
+    "know_code": "2-4-0-1-2",
+    "know_mid_category": "경찰·소방·교도직",
+    "source_ref": "KNOW_DETAIL:2-4-0-1-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_1_2_2_1",
+    "display_name_ko": "해외영업원",
+    "aliases": [
+      "해외영업원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-1-2-2-1",
+    "know_mid_category": "영업·판매직",
+    "source_ref": "KNOW_DETAIL:6-1-2-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_4_4_4",
+    "display_name_ko": "행사기획자",
+    "aliases": [
+      "행사기획자"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-4-4-4",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-4-4-4",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_9_9_3",
+    "display_name_ko": "행정사",
+    "aliases": [
+      "행정사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-9-9-3",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-9-9-3",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_1_2_1_2",
+    "display_name_ko": "헬리콥터정비원",
+    "aliases": [
+      "헬리콥터정비원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-1-2-1-2",
+    "know_mid_category": "기계 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-1-2-1-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_2_1_1_2",
+    "display_name_ko": "헬리콥터조종사",
+    "aliases": [
+      "헬리콥터조종사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-2-1-1-2",
+    "know_mid_category": "운전·운송직",
+    "source_ref": "KNOW_DETAIL:6-2-1-1-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_1_2_2_1",
+    "display_name_ko": "혼례종사원",
+    "aliases": [
+      "혼례종사원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-1-2-2-1",
+    "know_mid_category": "미용·예식 서비스직",
+    "source_ref": "KNOW_DETAIL:5-1-2-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_3_2_2_1",
+    "display_name_ko": "홀서빙원",
+    "aliases": [
+      "홀서빙원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-3-2-2-1",
+    "know_mid_category": "음식 서비스직",
+    "source_ref": "KNOW_DETAIL:5-3-2-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_1_7_1_1",
+    "display_name_ko": "홍보도우미 및 판촉원",
+    "aliases": [
+      "홍보도우미 및 판촉원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-1-7-1-1",
+    "know_mid_category": "영업·판매직",
+    "source_ref": "KNOW_DETAIL:6-1-7-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_4_1_4_1_1",
+    "display_name_ko": "화가",
+    "aliases": [
+      "화가"
+    ],
+    "job_family": "unmapped",
+    "know_code": "4-1-4-1-1",
+    "know_mid_category": "예술·디자인·방송직",
+    "source_ref": "KNOW_DETAIL:4-1-4-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_6_2_2_3_4",
+    "display_name_ko": "화물차·특수차운전원",
+    "aliases": [
+      "화물차·특수차운전원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "6-2-2-3-4",
+    "know_mid_category": "운전·운송직",
+    "source_ref": "KNOW_DETAIL:6-2-2-3-4",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_4_2_1",
+    "display_name_ko": "화학공학시험원",
+    "aliases": [
+      "화학공학시험원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-4-2-1",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-4-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_5_1_2_1",
+    "display_name_ko": "화학물가공장치조작원",
+    "aliases": [
+      "화학물가공장치조작원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-5-1-2-1",
+    "know_mid_category": "화학·환경 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-5-1-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_2_1_1_2",
+    "display_name_ko": "화학연구원",
+    "aliases": [
+      "화학연구원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-2-1-1-2",
+    "know_mid_category": "자연·생명과학 연구직",
+    "source_ref": "KNOW_DETAIL:1-2-1-1-2",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_8_5_2_3_1",
+    "display_name_ko": "화학제품생산기계조작원(고무·플라스틱 제외)",
+    "aliases": [
+      "화학제품생산기계조작원(고무·플라스틱 제외)"
+    ],
+    "job_family": "unmapped",
+    "know_code": "8-5-2-3-1",
+    "know_mid_category": "화학·환경 설치·정비·생산직",
+    "source_ref": "KNOW_DETAIL:8-5-2-3-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_5_6_1_2_1",
+    "display_name_ko": "환경미화원 및 재활용품수거원",
+    "aliases": [
+      "환경미화원 및 재활용품수거원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "5-6-1-2-1",
+    "know_mid_category": "청소 및 기타 개인서비스직",
+    "source_ref": "KNOW_DETAIL:5-6-1-2-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_5_4_1",
+    "display_name_ko": "환경시험원",
+    "aliases": [
+      "환경시험원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-5-4-1",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-5-4-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_1_5_5_3_4",
+    "display_name_ko": "환경영향평가원",
+    "aliases": [
+      "환경영향평가원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-5-3-4",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+    "source_ref": "KNOW_DETAIL:1-5-5-3-4",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_3_1_1",
+    "display_name_ko": "회계사",
+    "aliases": [
+      "회계사"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-3-1-1",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-3-1-1",
+    "priority": 99
+  },
+  {
+    "normalized_job_key": "know_0_2_7_1_1",
+    "display_name_ko": "회계사무원",
+    "aliases": [
+      "회계사무원"
+    ],
+    "job_family": "unmapped",
+    "know_code": "0-2-7-1-1",
+    "know_mid_category": "경영·행정·사무직",
+    "source_ref": "KNOW_DETAIL:0-2-7-1-1",
+    "priority": 99
+  }
+]

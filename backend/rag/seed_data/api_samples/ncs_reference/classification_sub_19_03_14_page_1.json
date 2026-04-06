@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "14",
+            "NCS_SCLAS_CDNM": "플렉시블디스플레이개발",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "플렉시블디스플레이모듈개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "플렉시블 디스플레이 모듈 개발은 플렉시블 디스플레이 모듈을 생산하기 위하여 라미네이션, 부착, 가공 공정을 기획하고 수행하며 성능을 검증하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "14",
+            "NCS_SCLAS_CDNM": "플렉시블디스플레이개발",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "플렉시블디스플레이검사",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "플렉시블 디스플레이 검사란 휘어지는 디스플레이의 품질 향상과 수율 증대를 위하여 기판, BP, 증착, 봉지, 셀, 모듈 검사를 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "14",
+            "NCS_SCLAS_CDNM": "플렉시블디스플레이개발",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "플렉시블디스플레이재료개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "플렉시블 디스플레이 재료 개발이란 휘어지는 디스플레이 제조에 필요한 기능성 재료를 개발하고 안정적으로 생산하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

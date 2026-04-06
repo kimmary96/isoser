@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "06",
+            "NCS_MCLAS_CDNM": "도시·교통",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "지능형교통",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "지능형교통체계(ITS) 기획 및 설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "지능형교통체계(ITS) 기획 및 설계는 최적화된 지능형 교통서비스를 이용자에게 실시간으로 제공하기 위하여 사업구상에서부터 사업추진방안수립까지의 과정을 통하여 교통체계지능화사업 및 서비스 등을 기획하고 설계하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "06",
+            "NCS_MCLAS_CDNM": "도시·교통",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "지능형교통",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "지능형교통체계(ITS) 개발 및 구축",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "지능형교통체계(ITS) 개발 및 구축은 이용자에게 실시간 교통서비스를 제공하기 위하여 안전하고 효율적인 지능형교통 시스템 구현에 필요한 H/W, S/W를 개발하고 구축하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "06",
+            "NCS_MCLAS_CDNM": "도시·교통",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "지능형교통",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "지능형교통체계(ITS) 운영 및 유지관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "지능형교통체계(ITS) 운영 및 유지관리는 교통정보를 수집, 가공 및 종합 분석하여 도로 이용객에게 실시간 교통서비스를 중단 없이 제공함으로써 정보화 사회에 알맞은 차세대 교통체계를 운영하고 유지관리하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

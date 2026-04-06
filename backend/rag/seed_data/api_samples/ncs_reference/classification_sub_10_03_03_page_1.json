@@ -1,0 +1,32 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "10",
+            "NCS_LCLAS_CDNM": "영업판매",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "판매",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "상품중개·경매",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "농축수산물경매",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "농축수산물 경매란 출하자로부터 수탁 받은 농축수산물의 원활한 유통을 위하여, 정해진 절차와 방식에 의거하여 가격과 낙찰자를 공정하게 결정하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 1,
+      "lastPageNo": 1
+    }
+  }
+}

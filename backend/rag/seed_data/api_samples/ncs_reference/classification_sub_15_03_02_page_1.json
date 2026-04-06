@@ -1,0 +1,88 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "기계조립·관리",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "기계생산관리",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "기계생산관리계획",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "기계생산관리계획은 생산기능의 수행에 앞서 그 기능이 목적에 합치되게 수행될 수 있도록 일정한 지침을 마련해 주는 체계적인 행위로서, 주로 생산관리 계획의 목표인 품질, 원가, 납기, 안전의 향상을 예상하고, 이를 실행시키는 방안을 마련해 줌으로써 생산 기능이 각 단계에서 제대로 실행될 수 있도록 계획하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "기계조립·관리",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "기계생산관리",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "기계자재관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "기계자재관리는 제품생산에 필요한 자재의 입출고 및 적정한 가격, 품질, 납기를 위해 자재 공급 계획을 수립하고, 자재 발주 관리가 가능한 공급자를 개발하고 유지 관리 하며, 원활한 자재 창고 관리를 위하여 자재관리 프로그램을 운영하고, 자재를 필요로 하는 부문에 공급할 수 있도록 자재 공급설비를 관리하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "기계조립·관리",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "기계생산관리",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "기계공정관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "기계공정관리는 제품품질과 생산성을 확보하기 위하여 생산공정의 설계, 분석, 개선 및 이력관리 등을 통해서 공정을 표준화하고 유지·관리하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "기계조립·관리",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "기계생산관리",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "기계생산성관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "기계생산성관리는 생산성데이터를 활용하여 생산계획에 부합되도록 생산공정 능력 및 제조기술을 검토·분석하고 인력, 자재, 설비, 생산환경 등을 유지·개선하는데 필요한 제반활동을 수행하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "기계조립·관리",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "기계생산관리",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "기계작업감독",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "기계작업감독은 계획된 생산목표를 효율적으로 달성하기 위하여 생산에 관련된 기계작업의 작업인원, 재료, 방법, 설비, 품질측정 및 도덕의식 등의 제반요소와 작업현장을 관리 감독하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 5,
+      "lastPageNo": 1
+    }
+  }
+}

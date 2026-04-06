@@ -1,0 +1,88 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금융",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "자산운용",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "펀드운용",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "펀드운용은 고객자산의 수익 극대화를 위해 거시경제, 산업 및 기업분석을 기반으로 포트폴리오를 구성하여 투자자산을 운용하고, 이와 관련한 컴플라이언스, 펀드 리스크관리, 성과평가, 펀드회계 및 수탁업무를 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금융",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "자산운용",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "주식·채권운용",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "주식·채권운용은 투자자의 수익창출을 위해 경제, 산업, 기업 등을 분석하여 주식 및 채권의 가치를 평가하고, 이에 대한 투자전략을 수립하고 포트폴리오를 구성·운용하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금융",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "자산운용",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "파생상품운용",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "파생상품운용은 고객과 기업의 리스크 회피 또는 수익 창출을 위해 선물, 옵션, 스왑 등 장내·외 파생상품을 활용하여 효율적인 포트폴리오를 구성하고 투기, 차익, 헤지 등 투자목적에 따라 최적화된 운용업무를 수행하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금융",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "자산운용",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "대체투자",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "대체투자는 주식·채권 등 전통적인 투자에 대비되는 개념으로, 효율적인 수익 창출을 위해 정형화된 공개시장을 통하지 않고 주로 협상을 통해 유가증권·실물자산 등에 투자하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금융",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "자산운용",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "신탁자산관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "신탁자산관리는 위탁된 자산의 위탁 목적에 부합하도록 관리 계획을 수립하고 그 자산을 금전, 금전채권, 부동산, 동산, 유가증권 등의 형태로 운용, 보관, 처분하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 5,
+      "lastPageNo": 1
+    }
+  }
+}

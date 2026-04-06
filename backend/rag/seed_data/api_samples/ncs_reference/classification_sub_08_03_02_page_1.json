@@ -1,0 +1,186 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "문화콘텐츠",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "문화콘텐츠제작",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "방송콘텐츠제작",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "방송콘텐츠제작은 각종 유무선 매체를 통해 대중에게 다양하고 유익한 정보를 제공하기 위하여 프로그램을 제작하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "문화콘텐츠",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "문화콘텐츠제작",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "영화콘텐츠제작",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "영화콘텐츠제작은 극장과 다양한 매체의 상영을 목적으로 스토리를 발굴하고 분야별 전문가들이 협업을 통해 영상을 만드는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "문화콘텐츠",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "문화콘텐츠제작",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "음악콘텐츠제작",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "음악콘텐츠제작은 음반판매를 목적으로 음반 콘텐츠를 기획하고, 아티스트를 발굴하여 육성하고, 음원을 유통하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "문화콘텐츠",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "문화콘텐츠제작",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "광고콘텐츠제작",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "광고콘텐츠제작이란 상품 및 서비스의 판매 촉진을 위하여 다양한 광고물을 기획하고 제작하고 실행하고 관리하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "문화콘텐츠",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "문화콘텐츠제작",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "게임콘텐츠제작",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "게임콘텐츠제작은 사용자 상호작용을 통해 즐거움을 주는 게임을 기획하고 개발하고 운영하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "문화콘텐츠",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "문화콘텐츠제작",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "애니메이션콘텐츠제작",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "애니메이션콘텐츠제작은 다양한 기법과 매체를 이용하여 피사체를 생성하고 인위적으로 조작함으로써 움직이는 영상을 제작, 활용하는 일이다.",
+            "DUTY_ORD": 6,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "문화콘텐츠",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "문화콘텐츠제작",
+            "NCS_SUBD_CD": "07",
+            "NCS_SUBD_CDNM": "만화콘텐츠제작",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "만화콘텐츠 제작은 글과 그림을 통해 연출된 이미지 콘텐츠를 제작, 활용하는 일이다.",
+            "DUTY_ORD": 7,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "문화콘텐츠",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "문화콘텐츠제작",
+            "NCS_SUBD_CD": "08",
+            "NCS_SUBD_CDNM": "캐릭터콘텐츠제작",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "캐릭터콘텐츠 제작은 캐릭터 개발을 중심으로 권리화를 통해 제품화가 가능하도록 응용그래픽과 매뉴얼을 제작하는 일이다.",
+            "DUTY_ORD": 8,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "문화콘텐츠",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "문화콘텐츠제작",
+            "NCS_SUBD_CD": "09",
+            "NCS_SUBD_CDNM": "스마트문화앱콘텐츠제작",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "스마트문화앱콘텐츠 제작은 문화콘텐츠 산업 활성화를 위하여 스마트 기기에 적합한 콘텐츠를 발굴하여 앱을 기획·제작하고 관리하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "문화콘텐츠",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "문화콘텐츠제작",
+            "NCS_SUBD_CD": "10",
+            "NCS_SUBD_CDNM": "영사",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "영사는 극장과 그 외의 영화 상영 설비가 갖춰진 장소에서 문화콘텐츠를 극장 표준 품질로 상영하고 관련 장비를 관리하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "문화콘텐츠",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "문화콘텐츠제작",
+            "NCS_SUBD_CD": "11",
+            "NCS_SUBD_CDNM": "완구콘텐츠제작",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "완구콘텐츠 제작이란 놀이문화 활성화 및 교육적 가치 창출을 위해 완구 제작과정에 다양한 콘텐츠를 융합하여 기획, 개발, 관리하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "문화콘텐츠",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "문화콘텐츠제작",
+            "NCS_SUBD_CD": "12",
+            "NCS_SUBD_CDNM": "드론콘텐츠제작",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "드론콘텐츠 제작은 드론의 조종, 유지운영, 안전관리에 관한 제반 운영지식을 기반으로 드론을 활용하여 사진, 영상을 제작하고 공연, 스포츠, 게임과 같은 활동을 통해 문화 콘텐츠를 만드는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 12,
+      "lastPageNo": 1
+    }
+  }
+}

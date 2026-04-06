@@ -11,11 +11,23 @@ services:
         value: 3.10.14
       - key: GOOGLE_API_KEY
         sync: false
+      - key: ANONYMIZED_TELEMETRY
+        value: "False"
+      - key: CHROMA_MODE
+        value: persistent
       - key: CHROMA_PERSIST_DIR
         value: /opt/render/project/src/chroma_store
       - key: DATA_GO_KR_SERVICE_KEY
         sync: false
-      - key: WORK24_OPEN_API_AUTH_KEY
+      - key: WORKNET_STANDARD_JOB_DESCRIPTION_API_KEY
+        sync: false
+      - key: WORK24_MAJOR_INFO_AUTH_KEY
+        sync: false
+      - key: WORK24_JOB_DUTY_AUTH_KEY
+        sync: false
+      - key: WORK24_COMMON_CODES_AUTH_KEY
+        sync: false
+      - key: WORK24_JOB_INFO_AUTH_KEY
         sync: false
       - key: NCS_REFERENCE_API_KEY
         sync: false

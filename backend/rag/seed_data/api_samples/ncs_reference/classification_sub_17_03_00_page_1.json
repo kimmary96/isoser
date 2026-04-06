@@ -1,0 +1,32 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "17",
+            "NCS_LCLAS_CDNM": "화학·바이오",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "정밀화학",
+            "NCS_SCLAS_CD": "00",
+            "NCS_SCLAS_CDNM": "정밀화학(공통)",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "정밀화학생산",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "정밀화학 생산은 유·무기화학의 기초 원료를 사용하여 배합, 합성, 혼합, 여과, 정제, 건조 등의 공정을 거쳐 고부가가치의 중간체, 중합체, 완제품 등을 제조하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 1,
+      "lastPageNo": 1
+    }
+  }
+}

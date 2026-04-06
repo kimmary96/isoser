@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "21",
+            "NCS_LCLAS_CDNM": "식품가공",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "식품가공",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "식품저장",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "수산식품저장",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "수산식품 저장은 수산식품의 품질과 특성을 유지하기 위하여 수산식품의 특성에 적합한 냉장·냉동ㆍ상온 등의 저장조건을 관리하고, 저장장치 및 저장고의 안전과 위생상태를 점검하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "21",
+            "NCS_LCLAS_CDNM": "식품가공",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "식품가공",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "식품저장",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "농산식품저장",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "농산식품저장은 산지에서 유통되기 전까지 농산식품을 신선하게 저장할 목적으로 수확물 관리, 입고관리, 곡류, 두류, 과실류, 채소류, 서류, 특용작물류, 버섯류를 품질평가하며 CA저장, 시설·장비관리, 저장관리를 거쳐 재고, 위생, 안전, 부적합 품목을 관리하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "21",
+            "NCS_LCLAS_CDNM": "식품가공",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "식품가공",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "식품저장",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "축산식품저장",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "축산식품저장은 육류, 유류, 난류, 꿀 등 축산물을 원료상태나 가공된 상태로 소비자에게 안전하고 위생적으로 일정기간 품질을 유지하기 위해서 원료 및 제품의 특성에 따라 실온(상온), 냉장, 냉동 등 적정한 조건으로 보관·취급하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

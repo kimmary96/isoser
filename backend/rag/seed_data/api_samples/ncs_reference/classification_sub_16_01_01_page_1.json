@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금속재료",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "금속엔지니어링",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "재료설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "재료설계는 수요자의 요구특성에 부합하는 최적의 금속재료를 얻기 위하여 자료검토, 분석, 설계 등을 통해서 제조 및 가공방법을 선택하고 시제품이 개발될 수 있도록 신뢰성 확보 및 표준화를 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금속재료",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "금속엔지니어링",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "재료시험",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "재료시험은 제품의 적합성 검토와 판단을 위한 시험계획을 수립하고, 시험준비 단계를 거쳐 기계적, 물리적, 화학적 시험 등을 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금속재료",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "금속엔지니어링",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "재료조직평가",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "재료조직평가는 재료의 조직 및 성분을 육안, 현미경 및 분석장비를 이용하여 정성적, 정량적으로 분석 및 평가하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

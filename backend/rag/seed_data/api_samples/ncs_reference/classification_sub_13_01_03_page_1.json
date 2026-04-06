@@ -1,0 +1,32 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "13",
+            "NCS_LCLAS_CDNM": "음식서비스",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "식음료조리·서비스",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "외식경영",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "외식운영관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "외식운영관리는 안전하고 위생적인 음식을 최상의 환경에서 고객에게 가치 있게 제공하기 위하여 최적의 운영 시스템과 전문역량을 갖춘 인력을 활용하여 매장 내에서 이루어지는 식자재관리, 메뉴품질관리, 접객서비스관리 등 일련의 운영업무를 효율적으로 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 1,
+      "lastPageNo": 1
+    }
+  }
+}

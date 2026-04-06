@@ -1,0 +1,158 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "통신기술",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "유선통신구축",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "교환시스템구축",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "교환시스템구축은 정보통신사업자가 구축·운용하는 음성·영상·데이터 등 정보통신서비스를 제공하기 위한 교환설비와 부대설비를 구축하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "통신기술",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "유선통신구축",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "구내통신구축",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "구내통신구축은 구내에 설치하는 정보통신설비의 구축계획을 수립하고 설계, 시공, 감리와 운영관리 업무를 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "통신기술",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "유선통신구축",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "네트워크구축",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": " 네트워크구축은 유·무선전송매체를 통하여 다수의 단말에 음성, 데이터, 영상 서비스를 제공하는 정보통신망을 구축하기 위한 설계, 시공, 감리, 유지보수를 하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "통신기술",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "유선통신구축",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "구내통신설비공사",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "구내통신설비공사는 구내에 설치되는 정보통신 설비 및 부대설비의 설치 공사와 유지·보수에 관한 업무를 수행하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "통신기술",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "유선통신구축",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "실감형플랫폼구축",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "실감형플랫폼구축은 실감형서비스를 제공하기 위한 통신 플랫폼의 요구사항분석, 구축계획, 설계, 구축공사, 감리, 운용관리, 품질관리, 보안관리, 유지보수를 수행하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "통신기술",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "유선통신구축",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "철도정보통신설비공사",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "철도정보통신설비공사는 철도선로 및 역사 기반시설에 설치되어 정보를 저장·제어·처리하거나 송·수신하기 위한 정보통신설비의 설치 및 유지·보수에 관한 공사와 이에 따르는 부대공사를 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "통신기술",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "유선통신구축",
+            "NCS_SUBD_CD": "07",
+            "NCS_SUBD_CDNM": "도로·교통정보통신설비공사",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "도로·교통정보통신설비공사는 도로·교통시설을 기반으로 정보를 수집·저장·제어·처리하거나 송·수신하기 위한 정보통신설비의 설치 및 유지·보수에 관한 공사와 이에 따르는 부대공사를 수행하는 일이다.",
+            "DUTY_ORD": 7,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "통신기술",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "유선통신구축",
+            "NCS_SUBD_CD": "08",
+            "NCS_SUBD_CDNM": "항해·항만정보통신설비공사",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "항해․항만정보통신설비공사는 선박의 안전 항해를 위하여 항만과 선박에 설치되는 정보통신설비공사를 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "통신기술",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "유선통신구축",
+            "NCS_SUBD_CD": "09",
+            "NCS_SUBD_CDNM": "항공·항행정보통신시설공사",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "항공·항행정보통신시설공사는 항공기가 안전하게 항행 또는 이·착륙하기 위하여 지상에 설치되는 정보통신시설에 대한 공사를 수행하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "통신기술",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "유선통신구축",
+            "NCS_SUBD_CD": "10",
+            "NCS_SUBD_CDNM": "클라우드플랫폼구축",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "클라우드 플랫폼 구축은 클라우드 서비스를 제공하기 위해 시스템 요구사항과 환경 분석을 통하여 클라우드 플랫폼을 설계하고, 구현하여 시험하는 일이다.",
+            "DUTY_ORD": 10,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 10,
+      "lastPageNo": 1
+    }
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "08",
+            "NCS_SCLAS_CDNM": "전기자동제어",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "자동제어시스템설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "자동제어시스템 설계는 시설물 현황 사전조사, 프로세스공정 특성을 분석하여 제어성능이 최적으로 발휘되도록 자동화 시스템을 구성하고 자동제어 기기선정, 시공, 시설물운영, 유지정비가 가장 효율적이고 경제적으로 운영관리 될 수 있도록 제어시스템을 설계하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "08",
+            "NCS_SCLAS_CDNM": "전기자동제어",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "자동제어기기제작",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "자동제어기기 제작은 설비의 자동화를 위해 단위부품 또는 단위모듈을 조합하여 시스템을 만들고 설계사양에 알맞은지 성능을 평가하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "08",
+            "NCS_SCLAS_CDNM": "전기자동제어",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "자동제어시스템유지정비",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "자동제어시스템 유지정비는 제어시스템을 최상상태로 운전하기 위하여 관리하고 점검하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "전기",
+            "NCS_SCLAS_CD": "08",
+            "NCS_SCLAS_CDNM": "전기자동제어",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "자동제어시스템운영",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "자동제어시스템운영은 자동제어시스템의 제어원리를 이해하고 운전 상태나 동작 상태를 파악하여 설비를 안정적이고 효율적으로 관리하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

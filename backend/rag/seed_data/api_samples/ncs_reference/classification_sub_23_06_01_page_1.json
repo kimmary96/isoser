@@ -1,0 +1,130 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "06",
+            "NCS_MCLAS_CDNM": "산업안전보건",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "산업안전관리",
+            "NCS_SUBD_CD": "00",
+            "NCS_SUBD_CDNM": "산업안전관리공통직무",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "산업안전관리공통직무는 전 산업에서 발생할 수 있는 재해를 방지하기 위하여, 전반적인 사업장 안전관리를 수행하고, 발생한 재해에 대한 원인분석을 통해 안전한 작업환경을 조성하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "06",
+            "NCS_MCLAS_CDNM": "산업안전보건",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "산업안전관리",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "기계안전관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "기계안전관리는 기계작업공정의 특성 분석을 통해 기계설비를 점검하고 위험요인을 관리함으로서 안전하고 쾌적한 작업환경을 조성하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "06",
+            "NCS_MCLAS_CDNM": "산업안전보건",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "산업안전관리",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "전기안전관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "전기안전관리는 안전한 작업환경을 조성하기 위하여 전기재해방지에 대한 기반기술을 이해하고, 전기 에너지로 인한 전기 재해의 위험성을 분석·도출하여, 전기설비 안전관리에 적용함으로써, 전기 사고, 감전 재해, 전기 화재·폭발, 정전기 장·재해를 예방하고 대응하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "06",
+            "NCS_MCLAS_CDNM": "산업안전보건",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "산업안전관리",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "건설안전관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "건설안전관리는 건설현장 안전사고 분석을 통하여 건설물의 시공 관리상의 위험성을 도출하고 건설재해방지에 대한 기반기술을 이해함으로써, 공정별 안전대책에 적용·관리하여 안전하고 쾌적한 작업환경을 조성하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "06",
+            "NCS_MCLAS_CDNM": "산업안전보건",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "산업안전관리",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "화공안전관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "화공안전관리란 유해·위험물질의 누출 또는 화재·폭발·누출 사고로부터 손실을 방지하기 위해 유해·위험 물질의 위험성 및 안전대책에 대한 기반기술을 이해하고 유해·위험물질의 저장·취급·사용 등에 적용·관리하여 안전하고 쾌적한 작업환경을 조성하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "06",
+            "NCS_MCLAS_CDNM": "산업안전보건",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "산업안전관리",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "가스안전관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "가스안전관리는 고압가스, 액화석유가스, 도시가스의 제조, 공급, 충전, 저장, 판매, 사용, 용기 등의 제조, 가스용품 제조 및 운반 그리고 가스설비에 대한 설계·시공, 검사, 점검과 응급조치 및 유지관리 등 제반 안전관리를 통해 가스 종사자 및 국민의 안전을 확보하는 일이다.",
+            "DUTY_ORD": 6,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "06",
+            "NCS_MCLAS_CDNM": "산업안전보건",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "산업안전관리",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "방사선측정평가",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "방사선측정평가는 방사선계측 원리와 시스템 운영 절차를 이해하고, 방사선원별 요구되는 시료 전처리 과정 수행과 결과 분석 등의 실무 검증을 통하여 방사선/능을 측정·분석·평가하여 보고서를 작성하는 일이다.",
+            "DUTY_ORD": 7,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "06",
+            "NCS_MCLAS_CDNM": "산업안전보건",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "산업안전관리",
+            "NCS_SUBD_CD": "07",
+            "NCS_SUBD_CDNM": "원자력발전소해체방사성폐기물관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "원자력발전소해체방사성폐기물관리는 원자력발전소 해체과정에서 발생된 해체방사성폐기물의 종합적이고 안전한 관리에 대한 일련의 모든 활동을 수행하는 일이다.",
+            "DUTY_ORD": 8,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 8,
+      "lastPageNo": 1
+    }
+  }
+}

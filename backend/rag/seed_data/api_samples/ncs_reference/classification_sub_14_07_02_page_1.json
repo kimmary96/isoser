@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "07",
+            "NCS_MCLAS_CDNM": "건설기계운전·정비",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "기초공건설기계운전",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "락드릴항타항발기운전",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "락드릴항타항발기운전은 암반을 천공하는 락드릴과 파일 홀, 천공, 인발을 하는 항타항발기를 운전하여 건설 현장의 기초공사를 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "07",
+            "NCS_MCLAS_CDNM": "건설기계운전·정비",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "기초공건설기계운전",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "지열시추기운전",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "지열 시추기 운전은 시추의 목적에 따라 지열시추장비를 선정하여 작업계획을 수립하고 작업을 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

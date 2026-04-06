@@ -1,0 +1,116 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "선박설계",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "선박기본설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "선박기본설계는 사람과 화물을 안전하게 운송하고 해양환경을 보존하는 선박을 만들기 위하여 고객의 요구 사양, 관련 법규 및 규정을 만족하고, 최적의 성능과 경제성, 친환경 기술을 고려하여 주요 제원 결정, 일반배치, 복원성 평가, 선형설계, 추진기설계, 성능평가 등을 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "선박설계",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "선체설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "선체설계는 화물과 승객을 안전하게 운송하는 선박을 만들기 위하여 고객의 사양서, 각종 국제협약 및 선급규칙을 만족하는 최적의 선체구조배치, 치수, 형상, 강재종류, 시공방법을 결정하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "선박설계",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "선박배관설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "선박배관설계는 선박의 거주구역(Deck House)과 기관실(Engine Room) 구역을 제외한 전구역의 배관설계 관련 업무를 지칭하며, Building Specifications과 규칙 및 규정(Rule &amp; Regulation)에 준하여 Hull Piping and Cargo Piping Diagram 작성, 상세배치 설계 및 시스템 구성에 필요한 사양작성, 배관재의 제작 및 설치를 위한 생산도 작성을 하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "선박설계",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "철의장설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "철의장설계는 선박을 운용함에 있어 안전한 운항 및 화물의 선적과 하역을 위하여 기관실과 거주구를 제외한 전 구역의 선박계선/계류 시스템, 통행시스템, 통풍시스템, 화물 양하역 시스템, 구명장비, 조향장비 및 Mast/Post 등을 설계 하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "선박설계",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "기장설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "기장설계는 건조사양 및 관련 법규를 토대로 선박 기관실의 구획 및 장비를 배치하고 관련 장비들이 잘 운전될 수 있도록 기관 관련 각종 기기 및 장치에 대한 기기사양 확정과 배관 및 철의장의 계통도 / 배치도 / 제작도 설계 등을 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "선박설계",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "전장설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "전장설계는 건조사양서(Building Spec.)를 기반으로 전기 의장품 구매서 작성과 선박내의 전기 의장품(동력, 조명, 제어, 항해통신, 화재경보)의 시스템별 도면작성, 상세배치설계를 하고 배가 인도되기까지 제반사항을 수행하는 일이다.",
+            "DUTY_ORD": 6,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "선박설계",
+            "NCS_SUBD_CD": "07",
+            "NCS_SUBD_CDNM": "선실설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "선실설계는 선박 거주구역의 제반 설계를 지칭하며, 승무원과 여객들이 쾌적한 선상생활을 영위할 수 있도록 최적의 공간 배치를 바탕으로 목의장, 공조설비, 위생배관 등을 설계하는 일이다.",
+            "DUTY_ORD": 7,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 7,
+      "lastPageNo": 1
+    }
+  }
+}

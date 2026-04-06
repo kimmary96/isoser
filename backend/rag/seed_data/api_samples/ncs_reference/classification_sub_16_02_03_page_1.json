@@ -1,0 +1,88 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "세라믹재료",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "소성·소결세라믹제조",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "소성·소결세라믹원료합성처리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "소성·소결 세라믹 원료합성처리는 세라믹스의 적절한 제조를 위해 작업지시서에 따라 필요한 원료분말의 분쇄 및 혼합, 혼합분말 특성확인, 분말의 과립화를 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "세라믹재료",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "소성·소결세라믹제조",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "소성·소결세라믹성형",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "소성·소결 세라믹 성형은 원료합성처리를 거쳐 얻어진 혼합분말을 사용하여 소결에 필요한 성형품을 제조하기 위해 주입성형, 가압성형, 사출성형, 롤러성형, 냉간정수압성형, 압출성형 등을 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "세라믹재료",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "소성·소결세라믹제조",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "세라믹소성·소결",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "세라믹 소성·소결은 성형공정을 통하여 만들어진 성형체에 열을 가해 세라믹스 소결품을 얻기 위해 작업 지시서에 따라 각종 소성․소결작업을 수행하는 하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "세라믹재료",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "소성·소결세라믹제조",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "소성·소결세라믹후처리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "소성·소결세라믹 후처리는 소성·소결 공정을 통하여 얻어진 세라믹스 중간제품을 최종제품화하기 위하여 가공, 세정, 코팅, 조립/검사, 제품분쇄, 콘크리트 제조, 시유, 장식, 건조를 수행 또는 관리하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "세라믹재료",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "소성·소결세라믹제조",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "소성·소결세라믹시공",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "소성·소결 세라믹 시공은 각종 내화물 및 시공에 대한 이론과 기술을 습득하고, 시공계획을 수립하여 시공과 관련된 작업준비와 시공 작업, 건조, 검사, 점검보수 등 설치 공사를 수행하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 5,
+      "lastPageNo": 1
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "환경서비스",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "환경평가",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "환경영향평가",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "환경영향평가는 사업시행에 따른 부정적인 환경영향을 최소화하기 위하여 사업계획과 환경조사분석 결과를 토대로 주변 환경에 미치는 영향을 예측·평가하고 목표기준에 대한 최적의 저감방안 및 사후환경관리계획을 수립하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "환경서비스",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "환경평가",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "환경조사분석",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "환경조사분석이란 환경현황을 파악하기 위하여 관계법령에 따라 환경평가 분야별 환경실태를 조사하고 그 결과를 분석·해석하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

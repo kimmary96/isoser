@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "에너지·자원",
+            "NCS_SCLAS_CD": "07",
+            "NCS_SCLAS_CDNM": "신에너지",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "연료전지에너지생산",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "연료전지에너지생산이란 수소를 포함한 연료와 연료전지를 활용하여 고효율의 전기와 열을 안정적으로 생산, 공급하기 위한 시스템을 설계, 제작, 설치, 운영, 유지보수하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "에너지·자원",
+            "NCS_SCLAS_CD": "07",
+            "NCS_SCLAS_CDNM": "신에너지",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "수소연료전지제조",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "수소연료전지제조는 수소의 화학에너지를 직접 전기에너지로 변환하기 위해 수소연료전지 제작을 기획하고 단위전지, 스택, 공기공급계, 열관리계, 열회수장치, 연료공급계, 수소연료전지 제어기 등을 설계·제작하며 시스템 평가와 품질검사를 수행하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "23",
+            "NCS_LCLAS_CDNM": "환경·에너지·안전",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "에너지·자원",
+            "NCS_SCLAS_CD": "07",
+            "NCS_SCLAS_CDNM": "신에너지",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "수소공급",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "수소 공급이란 기체 수소를 압축, 액화 또는 화학적으로 변환하기 위해 공정시스템을 운전하고 수소를 안전하게 저장·이송하여 수소 활용처에 공급하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

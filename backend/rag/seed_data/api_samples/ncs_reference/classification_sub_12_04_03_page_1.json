@@ -1,0 +1,144 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "스포츠",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "스포츠경기·지도",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "선수스포츠지도",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "선수스포츠지도란 대한체육회 산하의 가맹 경기단체에 등록된 선수의 경기력 향상과 함께 전인적 인간의 완성을 목적으로 해당종목의 전문적인 스포츠 이론과 실기를 지도하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "스포츠",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "스포츠경기·지도",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "일반인스포츠지도",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "일반인스포츠지도는 국민 건강 증진과 삶의 질 향상을 목적으로 스포츠 기능과 방법을 지도하고 제반 환경을 관리하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "스포츠",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "스포츠경기·지도",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "건강운동관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "건강운동관리는 의사의 의뢰를 받은 환자이거나 건강증진을 위해 운동이 필요한 사람을 대상으로 운동수행 방법을 계획하고 지도·관리하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "스포츠",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "스포츠경기·지도",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "경기기록분석",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "경기기록분석은 선수와 팀의 경기 자료를 수집, 기록, 분석 및 평가하여 이용자의 목적에 맞게 정보를 제공하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "스포츠",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "스포츠경기·지도",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "경기심판",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "경기심판은 종목별 경기규정에 의거한 스포츠 윤리적 기본 정신에 입각하여 스포츠 경기를 개시, 진행, 판정, 종료하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "스포츠",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "스포츠경기·지도",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "경기지원",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "경기지원은 스포츠 경기를 위해 참가자와 관중이 최적의 성과를 얻을 수 있도록 지원하는 일이다.",
+            "DUTY_ORD": 6,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "스포츠",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "스포츠경기·지도",
+            "NCS_SUBD_CD": "07",
+            "NCS_SUBD_CDNM": "건강운동ICT융복합콘텐츠개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "건강운동 ICT 융복합 콘텐츠개발은 ICT 융복합 기술 적용을 통해 운동기능 향상 및 체력증진을 목적으로 건강운동 관련 콘텐츠를 개발, 보급 및 사업화 하는 일이다.",
+            "DUTY_ORD": 7,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "스포츠",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "스포츠경기·지도",
+            "NCS_SUBD_CD": "08",
+            "NCS_SUBD_CDNM": "경기력향상융복합콘텐츠개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "경기력향상 융복합 콘텐츠개발은 스포츠과학 근거 기반 경기력향상 요소·요인 도출을 통해 융복합 콘텐츠를 개발하는 일이다.",
+            "DUTY_ORD": 8,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "스포츠",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "스포츠경기·지도",
+            "NCS_SUBD_CD": "09",
+            "NCS_SUBD_CDNM": "골프캐디",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "골프캐디는 플레이어의 원활한 경기수행을 위해 조언 및 필요한 서비스를 제공하며 고객관리를 지원하는 일이다.",
+            "DUTY_ORD": 9,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 9,
+      "lastPageNo": 1
+    }
+  }
+}

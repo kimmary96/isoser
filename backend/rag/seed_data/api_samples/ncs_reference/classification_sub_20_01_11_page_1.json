@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "11",
+            "NCS_SCLAS_CDNM": "개인정보보호",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "개인정보보호관리운영",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "개인정보보호관리운영은 개인정보보호 관련 법령 및 정책에 따라 개인정보를 생명주기별로 안전하게 보호하고 체계적으로 관리·운영하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "11",
+            "NCS_SCLAS_CDNM": "개인정보보호",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "개인정보가명익명처리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "개인정보 가명·익명처리란 개인정보를 법령 등에 따라 정보주체의 동의 없이 안전하게 활용하기 위하여 적정한 수준으로 가명·익명처리를 수행하고 사후관리를 하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "11",
+            "NCS_SCLAS_CDNM": "개인정보보호",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "개인정보인증평가",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "개인정보인증·평가는 개인정보처리자를 대상으로 개인정보보호 기준 준수 여부를 심사하고 평가하는 업무를 수행하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

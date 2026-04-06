@@ -1,0 +1,102 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "17",
+            "NCS_LCLAS_CDNM": "화학·바이오",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "석유·기초화학물",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "기초유기화학물",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "석유화학제품제조",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "석유화학제품제조는 석유제품, 천연가스, 대체원료를 열분해하거나 화학반응 공정을 통하여 합성수지, 합성섬유, 합성고무와 같은 다양한 석유화학제품을 생산하기 위한 에틸렌, 프로필렌, 부타디엔 등의 기초유분과 중간원료를 제조하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "17",
+            "NCS_LCLAS_CDNM": "화학·바이오",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "석유·기초화학물",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "기초유기화학물",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "합성수지제조",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "합성수지제조는 석유, 천연가스로부터 얻어진 저분자의 유기화학 물질을 주원료로 사용하여 원부원료 관리, 설비운전을 통하여 제품을 생산·출하하고 품질관리, 제조원가 관리, 공정개선, 품질개선을 통해 생산효율·품질을 제고하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "17",
+            "NCS_LCLAS_CDNM": "화학·바이오",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "석유·기초화학물",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "기초유기화학물",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "합섬원료제조",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "합섬원료제조는 석유, 천연가스 및 석탄으로부터 얻어진 유기·무기화학물질을 주원료로 사용하여 수급관리, 품질관리, 설비유지보수, 공정운전, 공정관리, 안전·관리, 환경관리 등을 통하여 카프로락탐, EG, TPA, AN 등의 합성섬유제품의 원료를 제조하는 일이다.",
+            "DUTY_ORD": 6,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "17",
+            "NCS_LCLAS_CDNM": "화학·바이오",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "석유·기초화학물",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "기초유기화학물",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "합성고무제조",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "합성고무제조는 화학적 안정성, 내마모성과 인장강도 향상을 위하여 주로 부타디엔과 기타 유도체를 원료로 원부재료 관리, 원부재료구매계획, 생산·품질관리, 환경안전보건 관리, 설비 유지보수, 공정개선을 통해 고무를 제조하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "17",
+            "NCS_LCLAS_CDNM": "화학·바이오",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "석유·기초화학물",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "기초유기화학물",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "고분자복합재료제조",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "고분자복합재료제조는 고객 요구사항과 시장분석에 따라 배합·공정설계, 혼련작업, 공정검사, 제품검사, 품질관리, 품질보증 외주관리, 시설유지보수, 시험제품 생산을 통하여 성능이 향상된 복합재료를 제조하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "17",
+            "NCS_LCLAS_CDNM": "화학·바이오",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "석유·기초화학물",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "기초유기화학물",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "기능성고분자제조",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "기능성고분자제조는 기술동향과 경제성 분석, 분자설계, 중합, 개질, 물성측정, 해석, 분석, 생산성 향상, 품질보증과 인증, 안전·환경 점검을 통하여 제품을 생산하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 6,
+      "lastPageNo": 1
+    }
+  }
+}

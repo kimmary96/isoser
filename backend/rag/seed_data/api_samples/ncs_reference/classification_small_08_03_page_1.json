@@ -1,0 +1,58 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "문화콘텐츠",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "문화콘텐츠기획",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "문화콘텐츠",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "문화콘텐츠제작",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "문화콘텐츠",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "문화콘텐츠유통·서비스",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "문화콘텐츠",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "영상제작",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

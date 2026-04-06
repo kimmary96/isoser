@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "선박의장생산",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "기장생산",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "기장생산은 선박 내 기관실 내부의 각종 철의장품, Pipe류, 밸브류 등의 설치와 검사를 수행하며 P.E.(Pre-Erection) Stage부터 선박을 고객에게 인도 시까지의 공사를 수행하는 일이다. 기계(기관)설치는 선박의 추진에 필요한 주, 보기 설치와 동력전달을 위한 축계 설치, 선박의 조향을 위한 타계 설치를 하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "선박의장생산",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "전장생산",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "전장생산은 고객의 요구에 따른 선박을 건조하기 위하여 선박내·외의 모든 전장설비를 안전운항과 인명의 안전을 확보하도록 선박의 용도에 따라 설치하고 검사하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "선박의장생산",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "선장생산",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "선장생산은 선박의 용도에 부합되도록 기관실 및 선실 구역을 제외한 선체구역의 배관품 및 철의장품을 설치하고 검사하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "선박의장생산",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "선실의장생산",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "선실의장생산은 선박의 안전과 효율적인 선박운용, 승선자의 쾌적한 선상생활을 위하여 종류별 선실의장을 선주요구, 관련 법규 및 기준에 따라 선박용도에 적합하게 시공하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "방송기술",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "방송플랫폼기술",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "라디오방송",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "라디오 방송 직무는 청취자에게 최적의 청취환경을 제공하기 위하여 다양한 방송용 유, 무선망을 구축하여 방송 제작, 송출, 송신 기술을 바탕으로 방송 시스템을 운용, 관리하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "방송기술",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "방송플랫폼기술",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "지상파TV방송",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "TV방송은 시청자에게 방송문화 창달과 고품질 서비스를 제공하기 위하여 제작 기술과 송신 기술을 바탕으로 프로그램 제작 및 송출, 송신 시스템을 구축, 운용하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "방송기술",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "방송플랫폼기술",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "지상파DMB",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "지상파DMB직무는 영상, 오디오, 데이터 등의 방송콘텐츠를 다중화하여 지상파 방송망을 통해 이동수신이 가능한 단말기에 제공하는 방송서비스를 운용하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "방송기술",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "방송플랫폼기술",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "케이블방송",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "케이블방송이란 시청자들에게 채널 선택의 폭을 넓혀주고 생활의 편의성을 위하여 다채널 양방향 전송 시스템 및 유선망 운용을 통해 다양하고 전문화된 프로그램 및 부가서비스(데이터방송, 음악방송, VOD 등)를 제공하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "방송기술",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "방송플랫폼기술",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "인터넷멀티미디어방송",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "인터넷멀티미디어방송은 인터넷 프로토콜(IP) 기반의 멀티미디어 서비스를 제공하는 방송 플랫폼을 구축하고 운영하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 5,
+      "lastPageNo": 1
+    }
+  }
+}

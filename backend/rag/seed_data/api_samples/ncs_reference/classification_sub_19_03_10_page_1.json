@@ -1,0 +1,130 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "10",
+            "NCS_SCLAS_CDNM": "광기술개발",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "광부품개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "광부품 개발은 광시스템에서 요구되는 기능, 성능, 신뢰도를 만족시키기 위하여 광부품 개발기획, 광부품 지식재산권 전략수립, 광부품 개발 방법수립, 광부품 시뮬레이션, 광부품 설계, 공정 개발, 시제품 제작, 품질평가, 광부품 실장, 개발제품 인증, 생산 이관을 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "10",
+            "NCS_SCLAS_CDNM": "광기술개발",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "레이저개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "레이저 개발은 고객의 요구에 맞는 레이저 제품을 개발하기 위하여 레이저에 대한 물리적, 전기적, 광학적 지식과 기술을 바탕으로 제품개발에 대한 기획, 설계, 개발, 시험 및 인증 업무를 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "10",
+            "NCS_SCLAS_CDNM": "광기술개발",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "LED기술개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "LED기술개발은 LED를 활용하는 분야에서 요구되는 제품을 개발하기 위하여 전기전자, 광학, 재료, 기계기술 기초지식을 바탕으로 LED응용제품 개발기획, 지식재산권확보전략수립, 제품 개념설계, 회로개발, 제품 공정개발, 광원 모듈개발, 제품 기구개발, 제품 품질관리, 제품시험분석검증, 제품 인증을 수행하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "10",
+            "NCS_SCLAS_CDNM": "광기술개발",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "광학시스템제조",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "광학시스템제조는 광학기능을 포함하는 제품의 성능·신뢰도를 만족시키기 위하여 광학시스템 제조 기획, 지식재산권 전략 수립, 광학계 분석, 기구 설계, 광학모듈 조립 검증, 광학모듈 시제품 제작, 광학시스템 성능 평가, 공정 관리, 인증 업무를 수행하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "10",
+            "NCS_SCLAS_CDNM": "광기술개발",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "광학소프트웨어응용",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "광학소프트웨어응용이란 광학 제품의 광학적 성능을 만족시키기 위하여 광학 소프트웨어를 응용하여 광학 제품의 레이아웃을 설계하고 시뮬레이션을 통해 성능을 분석하여 광학 제품을 최적화하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "10",
+            "NCS_SCLAS_CDNM": "광기술개발",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "광센서기기개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "광센서기기 개발은 시장수요 분석에 따라 제품을 개발하기 위하여 개발 기획, 시제품 설계 제작, 특성평가, 신뢰성 평가, 제품인증, 양산이관 업무를 수행하는 일이다.",
+            "DUTY_ORD": 6,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "10",
+            "NCS_SCLAS_CDNM": "광기술개발",
+            "NCS_SUBD_CD": "07",
+            "NCS_SUBD_CDNM": "광의료기기개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "광의료기기개발은 광을 기반으로 하는 진단, 치료, 헬스케어 기기를 개발하기 위하여 기획, 설계, 제작, 인증, 양산이관 업무를 수행하는 일이다.",
+            "DUTY_ORD": 7,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "10",
+            "NCS_SCLAS_CDNM": "광기술개발",
+            "NCS_SUBD_CD": "08",
+            "NCS_SUBD_CDNM": "라이다(LiDAR)기기개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "라이다기기 개발이란 광원과 광검출기를 사용하여 원격의 공간정보 획득, 물성 관측을 수행하는 응용 기기를 개발하는 일이다.",
+            "DUTY_ORD": 8,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 8,
+      "lastPageNo": 1
+    }
+  }
+}

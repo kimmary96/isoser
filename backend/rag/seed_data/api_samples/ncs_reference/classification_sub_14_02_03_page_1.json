@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "토목",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "측량·지리정보개발",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "지적",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "지적은 토지에 관련된 정보를 조사·측량하여 지적공부에 등록·관리하고 그 변경사항을 영속적으로 관리함으로써 소유권 보호와 토지를 효율적으로 관리하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "토목",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "측량·지리정보개발",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "측량",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "측량은 지구와 우주공간에 존재하고 있는 대상을 관측하여 위치결정과 도면화 및 수치로 표현하고 구조물과 이동체의 거리․높이․면적․부피 및 변위를 계산하거나 도면 및 수치로 표현된 위치 등을 현지에 재현하고 측량용 사진의 촬영 및 지도의 제작과 건설공사에서 요구되는 측량도면의 작성을 포함하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "토목",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "측량·지리정보개발",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "공간정보구축",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "공간정보구축은 측량에서 취득된 자료를 기반으로 공간상에 존재하는 자연적·인공적 객체에 대한 공간적 인지 및 의사결정에 필요한 정보를 구축하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "토목",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "측량·지리정보개발",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "공간정보융합서비스",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "공간정보융합서비스는 공간정보 기반의 의사결정과 콘텐츠 융합에 필요한 정보 서비스를 제공하기 위하여 공간정보 서비스의 기획, 설계, 가공, 분석, 개발, 운영 업무를 수행하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

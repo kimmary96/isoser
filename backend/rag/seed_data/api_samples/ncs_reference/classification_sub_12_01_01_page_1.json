@@ -1,0 +1,88 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "이·미용",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "이·미용서비스",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "헤어미용",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "헤어미용은 미적욕구의 충족을 통해 정서적 만족감 및 자존감을 높이려는 고객에게 미용기기와 제품을 활용하여 샴푸, 헤어커트, 헤어펌, 헤어컬러, 두피·모발 관리, 헤어스타일연출 등의 미용서비스를 제공하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "이·미용",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "이·미용서비스",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "피부미용",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "피부미용은 고객의 상담과 피부분석을 통하여 안정감있고 위생적인 환경에서 얼굴과 몸매의 피부를 피부미용기기 및 기구와 화장품 등을 이용하여 서비스를 제공하고 피부미용에 대한 업무수행을 기획, 관리하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "이·미용",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "이·미용서비스",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "메이크업",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "메이크업은 특정한 상황과 목적에 맞는 이미지, 캐릭터 창출을 목적으로 이미지분석, 디자인, 메이크업, 뷰티코디네이션, 후속관리 등을 실행함으로써 얼굴·신체를 연출하고 표현하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "이·미용",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "이·미용서비스",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "네일미용",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "네일미용은 네일에 관한 이론과 기술을 바탕으로 건강하고 아름다운 네일을 유지·보호하기 위해 네일미용 기구와 제품을 활용하여 자연 네일관리, 인조 네일관리, 네일아트 기법 등의 서비스를 고객에게 제공하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "이·미용",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "이·미용서비스",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "이용",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "이용은 고객을 대상으로 이발, 면도, 정발, 아이론 펌, 샴푸, 가발, 두개피 관리, 염・탈색 등의 방법으로 외모를 단정하고 멋스럽게 손질 및 관리하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 5,
+      "lastPageNo": 1
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "09",
+            "NCS_LCLAS_CDNM": "운전·운송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "선박운전·운송",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "검수·검량",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "검수·검정",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "검수검정은 수출입 화물을 검수, 검량, 감정하거나 해상손해에 대한 감정을 하기 위하여 작업계획 수립, 작업 안전관리를 수행함으로써 사전준비를 한 후, 화물 검수작업·검량작업·감정작업 및 해상손해 감정작업을 수행하고 작업이 끝난 후에는 검수검정보고서 작성 및 검수검정결과를 보고하는 검수검정작업에 필요한 전 과정을 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 1,
+      "lastPageNo": 1
+    }
+  }
+}

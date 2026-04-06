@@ -1,0 +1,116 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "09",
+            "NCS_LCLAS_CDNM": "운전·운송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "선박운전·운송",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "선박운항",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "항해",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "항해는 국내외 기준에 따라 항해장비 운용, 선체관리, 화물관리, 비상대응 등 항해관련 전문 지식과 기술을 가지고 선박을  출발지에서 목적지까지 경제적이고 안전하게 운항하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "09",
+            "NCS_LCLAS_CDNM": "운전·운송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "선박운전·운송",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "선박운항",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "선박기관운전",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "선박기관운전은 선박의 안전운항과 해양환경보호를 목적으로 관련 국내외 법규를 준수하고, 내연기관을 비롯한 추진장치, 제어장치, 보일러, 보조기기 및 갑판기기 등을 효율적으로 운용하고 운전을 수행하는 일이다.",
+            "DUTY_ORD": 7,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "09",
+            "NCS_LCLAS_CDNM": "운전·운송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "선박운전·운송",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "선박운항",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "선박통신",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "선박통신은 해상에서 인명의 안전 및 선박의 안전 운항을 위해 선박과 선박 간, 선박과 육상 간의 조난 안전통신 및 일반 통신 업무를 수행하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "09",
+            "NCS_LCLAS_CDNM": "운전·운송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "선박운전·운송",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "선박운항",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "수면비행선박조종",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "수면비행선박조종은 계획된 항로에 따라 사람과 물자를 신속하게 운송하기 위하여 수면효과를 이용하는 초고속 수면비행선박을 안전하게 조종하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "09",
+            "NCS_LCLAS_CDNM": "운전·운송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "선박운전·운송",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "선박운항",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "수상레저기구조종",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "수상레저기구조종은 수상레저기구에 대한 조종술과 항해술을 기반으로 선체, 기관 관리 및 위기대처 능력을 갖추어 개인 또는 상업용도의 수상레저기구를 운용하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "09",
+            "NCS_LCLAS_CDNM": "운전·운송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "선박운전·운송",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "선박운항",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "선박교통관제",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "선박교통관제는 선박교통의 안전을 증진하고 해양환경과 시설을 보호하기 위하여, 선박의 위치를 탐지하고 동정을 관찰하면서 선박과 통신할 수 있는 설비를 운영하여 선박에 대한 안전 및 항만운영정보를 제공하는 일이다. ",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "09",
+            "NCS_LCLAS_CDNM": "운전·운송",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "선박운전·운송",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "선박운항",
+            "NCS_SUBD_CD": "07",
+            "NCS_SUBD_CDNM": "선박갑판관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "선박갑판관리는 선박의 안전항해와 안전한 화물운송을 위하여 선박의 선체 및 갑판 관련 설비를 점검하고 보수하고 정비하는 일이다.",
+            "DUTY_ORD": 7,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 7,
+      "lastPageNo": 1
+    }
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "08",
+            "NCS_SCLAS_CDNM": "레저선박",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "레저선박몰드제작",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "레저선박 몰드제작은 복합재료 레저선박의 선체와 부가물을 제작하기 위하여 제작도면을 이해하고 현도, 프레임(frame) 설치, 곡면 제작, 선체 페어링(faring), 표면처리를 통해 몰드(mold)를 제작하는 하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "08",
+            "NCS_SCLAS_CDNM": "레저선박",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "알루미늄레저선박건조",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "알루미늄 레저선박건조는 알루미늄 소재의 특성을 이해하고 생산공정 계획, 소재 절단 및 성형가공, 부재조립과 용접 및 표면처리, 품질관리를 통해 알루미늄 레저선박을 건조하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "08",
+            "NCS_SCLAS_CDNM": "레저선박",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "복합재료레저선박건조",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "복합재료 레저선박건조는 안전한 선체를 제작하기 위하여 레저선박용 복합재료 지식을 습득하고 성형공법에 따라 선체와 부분품을 제작ㆍ조립하며, 검사하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "08",
+            "NCS_SCLAS_CDNM": "레저선박",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "레저선박도장",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "레저선박 도장은 미려한 표면, 선박 보호를 위하여 작업자의 안전과 환경을 보호하면서 도장 기술을 통하여 레저선박 도장을 수행하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "08",
+            "NCS_MCLAS_CDNM": "조선",
+            "NCS_SCLAS_CD": "08",
+            "NCS_SCLAS_CDNM": "레저선박",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "레저선박기장설치수리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "레저선박 기장 설치수리는 레저선박의 추진성능 달성과 안전한 운항을 위해 주기관, 추진 장치, 보조 장치의 기능이 유지될 수 있도록 설치하고 수리하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 5,
+      "lastPageNo": 1
+    }
+  }
+}

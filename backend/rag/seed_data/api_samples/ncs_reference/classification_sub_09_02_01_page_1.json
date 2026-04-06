@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "09",
+            "NCS_LCLAS_CDNM": "운전·운송",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "철도운전·운송",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "철도운전운영",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "철도관제",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "철도관제는 열차운행 계획의 실행을 목적으로 관제시스템을 활용하여 열차운행과 운행선 지장작업을 집중 제어 통제 감시함으로써 열차운행의 안전성과 효율성을 확보하고 혼란이 발생할 때에는 운전정리를 통하여 열차운행을 정상화 시키는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "09",
+            "NCS_LCLAS_CDNM": "운전·운송",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "철도운전·운송",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "철도운전운영",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "열차운용DIA",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "열차운용DIA는 열차수송을 안전, 정확, 신속하게 수행하기 위하여 수송수요 및 철도시스템(인력, 차량, 시설 등)을 고려한 열차운행계획을 수립하고 역간 소요시간을 산정하여 열차운행시간을 설정하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "09",
+            "NCS_LCLAS_CDNM": "운전·운송",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "철도운전·운송",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "철도운전운영",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "철도운전",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "철도운전은 열차 또는 차량을 운행함에 있어 각종 사고예방으로 여객 및 화물을 안전하고 원활하게 수송하기 위한 직무이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "09",
+            "NCS_LCLAS_CDNM": "운전·운송",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "철도운전·운송",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "철도운전운영",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "기지내차량운전",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "기지 내 차량운전은 철도차량 기지 내에서 차량정비 유지보수 · 열차운행을 위한 동력차 운전을 하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

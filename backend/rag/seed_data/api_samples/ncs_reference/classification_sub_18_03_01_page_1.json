@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "18",
+            "NCS_LCLAS_CDNM": "섬유·의복",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "의복관리",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "세탁·수선",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "세탁",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "세탁은 고객이 의뢰한 의복이나 세탁 대상품에 부착된 오염물질을 제거하기 위해 용제와 세제를 사용하여 기계나 기구를 조작하고 세탁물을 청결히 한 후 여러 가지 가공처리와 다림질하여 의복에 기능성을 부여함은 물론 가치를 원상태로 가깝게 회복시켜 주는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "18",
+            "NCS_LCLAS_CDNM": "섬유·의복",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "의복관리",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "세탁·수선",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "수선",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "수선은 의복의 활용도를 높이기 위하여 기존의 의복을 고객의 체형과 요구사항에 맞게 보정 보완하고 새로운 디자인으로 변형하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

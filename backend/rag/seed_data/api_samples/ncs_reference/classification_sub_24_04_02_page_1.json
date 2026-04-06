@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "수산",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "양식",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "해면양식",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "해면양식이란 바다를 입체적으로 이용하여 수하식, 가두리, 육상수조식, 바닥식 등의 양식방법에 의해 양식생물을 인위적으로 길러서 수확하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "수산",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "양식",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "수산종묘생산",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "수산종묘생산은 자연에서 채묘기질을 투입하여 종자를 확보하거나 인위적 관리하에서 어미로부터 채란·부화·유생사육  과 중간육성 등 일련의 과정을 거쳐 양식용 또는 방류용 종자를 생산하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "수산",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "양식",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "내수면양식",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "내수면양식은 내수면에서 유용한 수산동식물을 양식할 목적으로 사업계획 부터 생산에 이르는 제반 과정을 효율적으로 관리하여 목적하는 대상생물을 인위적으로 사육하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "수산",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "양식",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "스마트양식",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "스마트양식은 양식산업에 데이터 기반의 정보통신기술을 접목하여 통제 가능한 사육시스템 내에서 양식생물을 체계적으로 생산하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "건설공사관리",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "건설시공관리",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "건설공사공정관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "건설공사공정관리는 공사의 목적물을 계약된 공사 기간내에 완성하기 위해 합리적이며 경제적인 공정계획을 수립하여 공사가 원활이 수행될 수 있도록 관리하며, 계획공정에 미달할 경우 이에 대한 만회대책을 수립·조정하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "건설공사관리",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "건설시공관리",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "건설공사품질관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "건설공사품질관리는 건설공사를 수행함에 있어서 발주자의 요구에 맞추어 소정의 품질을 확보하고 이를 향상시켜 합리적 ․ 경제적 ․ 내구적인 시설물을 만들어 냄으로써, 예상되는 하자를 미연에 방지하고 건설공사 품질에 대한 신뢰성을 확보하며 원가 및 운영관리 비용 등을 절감하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "건설공사관리",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "건설시공관리",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "건설공사환경관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "1.1.1.1. 건설공사환경관리란 건설공사를 수행함에 있어 시공 중이거나 완공 후 불가피하게 환경의 질을 저하시킬 필요가 있는 항목들에 대하여 그 영향이 환경 법규에 정하고 있는 법적기준이나 협의기준 이하로 될 수 있도록 환경 저해 요인 별로 대책 수립 후 공종별로 환경관리를 시행하는 능력이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "건설공사관리",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "건설시공관리",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "건설공사공무관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "건설공사공무관리란 건설공사 전반에 걸쳐 발생하는 공사기획 및 계약, 공사현장의 운영,  설계변경, 기성관리, 견적업무, 공사비 및 공사자원관리, 준공 후 사후관리 등 성공적인 건설공사 수행을 위한 기술적, 관리적 업무를 하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

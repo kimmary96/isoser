@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "관광·레저",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "컨벤션",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "회의기획",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "회의 기획은 참가자의 지식과 정보를 공유하고 상호 교류와 의사소통을 증진시키기 위하여 국제 및 국내 회의를 유치 또는 개발하고 개최를 위한 기획, 회의 프로그램 설계, 예산 및 참가자 관리, 홍보 마케팅, 회의 현장을 운영하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "관광·레저",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "컨벤션",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "전시기획",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": " 전시기획은 전시회 개발 및 운영계획을 수립하고 바이어, 일반 참관객, 참가업체 유치 및 관리, 전시장조성, 운영서비스 등을 통하여 상품 및 서비스 거래를 위한 통합마케팅의 장을 구성하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "관광·레저",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "컨벤션",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "이벤트기획",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "컨벤션 산업에서의 이벤트 기획은 정부·협회·단체·기업 등에서 주최하는 컨벤션 프로그램 중 공식·사교·부대행사를 기획·연출·운영하여 참가자 간 네트워킹을 증진시키는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "12",
+            "NCS_SCLAS_CDNM": "가상훈련시스템개발",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "가상훈련시스템설계·검증",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "가상훈련시스템 설계·검증이란 가상현실기반의 교육·훈련·체험을 목적으로 한 모의 시스템 개발을 위하여 시장요구를 반영하여, 실제 현장과 유사한 시스템 사항을 분석하고 다양한 요소 기술을 통합하여 설계하고 이를 검증하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "12",
+            "NCS_SCLAS_CDNM": "가상훈련시스템개발",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "가상훈련구동엔지니어링",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "가상훈련구동엔지니어링이란 가상훈련시스템이 유기적으로 작동하도록 하기 위해 가상훈련시스템 설계도를 검토하여 물리적인 장치와 소프트웨어를 개발하고 관리하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "12",
+            "NCS_SCLAS_CDNM": "가상훈련시스템개발",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "가상훈련콘텐츠개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "가상훈련콘텐츠 개발이란 가상환경에서 목적훈련이 가능한 상호작용 디지털콘텐츠를 개발하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "12",
+            "NCS_SCLAS_CDNM": "가상훈련시스템개발",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "실감형콘텐츠하드웨어(디바이스)개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "실감형콘텐츠하드웨어(디바이스)개발이란 실제상황에 있는 유의미한 정보를 획득할 수 있는 다양한 입력기술을 기반으로 신호처리 기술의 융합을 통해 인체의 오감을 활용하여 몰입감과 현실감을 경험할 수 있는 디바이스/기기를 개발하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "01",
+            "NCS_LCLAS_CDNM": "사업관리",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "사업관리",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "프로젝트관리",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "공적개발원조사업관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "공적개발원조사업관리는 국가·지방자치단체 또는 공공기관이 개발도상국의 발전과 복지증진을 위하여 지원하는 사업을 관리하는 것으로서 사업개발 전략수립, 사업개발기획, PDM(사업설계모형)수립, 총괄운영관리, 프로젝트집행, 프로젝트성과 및 평가에 이르는 전 과정을 체계적으로 추진하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "01",
+            "NCS_LCLAS_CDNM": "사업관리",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "사업관리",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "프로젝트관리",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "프로젝트관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "프로젝트관리란 프로젝트 목표를 성공적으로 달성하기 위하여 프로젝트를 기획하고, 추진하는 실행 계획에 대하여 지식, 기술, 기법 및 역량 등을 적용하여 프로젝트 이행 절차를 감시, 통제 및 종료하는 직무이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "01",
+            "NCS_LCLAS_CDNM": "사업관리",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "사업관리",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "프로젝트관리",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "산학협력관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "산학협력관리는 대학이 보유한 인적, 물적 자원을 기반으로 산업체 등이 요구하는 새로운 지식과 기술을 개발 및 확산하기 위하여 정부, 지방자치단체, 산업체 등과 협력하여 수행하는 산학협력 사업을 기획, 관리하며 지식재산권 등 사업성과를 기술이전 및 사업화를 통해 산업계에 확산하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 50,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

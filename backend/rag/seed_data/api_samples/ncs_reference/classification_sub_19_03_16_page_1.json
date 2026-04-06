@@ -1,0 +1,32 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "19",
+            "NCS_LCLAS_CDNM": "전기·전자",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "전자기기개발",
+            "NCS_SCLAS_CD": "16",
+            "NCS_SCLAS_CDNM": "OLED개발",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "OLED조명개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "OLED조명개발은 다양한 분야에서 적용할 수 있는 OLED조명 제품을 개발하기 위하여 개발계획에 따라 기구 및 회로를 설계하고 제품의 성능과 품질을 확보하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 1,
+      "lastPageNo": 1
+    }
+  }
+}

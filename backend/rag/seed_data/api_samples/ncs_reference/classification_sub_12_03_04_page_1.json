@@ -1,0 +1,88 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "관광·레저",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "관광레저서비스",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "카지노기획개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "카지노기획개발은 고객들이 여가선용을 통한 즐거움을 얻을 수 있도록 카지노사업, 마케팅, 상품선정, 시장창출, 고객서비스, 직원교육, 전산시스템 구축 및 보안 등을 계획하고 실행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "관광·레저",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "관광레저서비스",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "카지노운영관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "카지노 운영관리는 관련 법규에 따라 허가된 카지노 영업장 내에서 고객의 관광레저 욕구를 충족시키고 건전한 게임 문화를 제공하기 위하여 전반적인 사항을 운영·관리하고 게임을 진행하며 원활한 카지노 서비스를 지원하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "관광·레저",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "관광레저서비스",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "크루즈운영관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "크루즈운영관리 직무는 크루즈 내의 프론트, 캐빈, 식음료, 조리, 기항지관광, 카지노, 위락 시설, 마케팅, 지상 지원, 선상 지원 관리 업무를 수행하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "관광·레저",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "관광레저서비스",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "유원시설운영관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "유원시설운영관리는 고객이 위락활동을 안전하게 즐길 수 있도록 테마와 스토리가 있는 유원시설에서 유기시설과 유기기구, 상품판매시설, 식음료시설, 고객 편의시설 및 인적서비스를 개발, 제공하기 위하여 기획, 서비스운영관리, 어트랙션운영관리, 상품기획, 식음료운영, 이벤트운영, 전시운영, 시설관리, 마케팅, 운영지원 등을 하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "12",
+            "NCS_LCLAS_CDNM": "이용·숙박·여행·오락·스포츠",
+            "NCS_MCLAS_CD": "03",
+            "NCS_MCLAS_CDNM": "관광·레저",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "관광레저서비스",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "리조트운영관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "리조트 운영관리는 리조트의 효율적인 운영을 위하여 개인 및 법인 회원권의 분양과 해약업무를 처리하고 리조트 내 객실, 식음료업장, 편의시설을 이용하는 회원, 일반 및 단체 투숙 고객에 대한 서비스 제공과 안전을 관리하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 5,
+      "lastPageNo": 1
+    }
+  }
+}

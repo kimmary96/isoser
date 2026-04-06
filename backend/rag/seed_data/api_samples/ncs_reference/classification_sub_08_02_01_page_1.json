@@ -1,0 +1,186 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "디자인",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "디자인",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "시각디자인",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "시각디자인은 시각정보 전달을 목적으로 콘셉트에 맞는 아이디어를 발상하여 디자인 요소를 시각화하고 매체별 다양한 제작기법을 활용하여 창의적으로 표현하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "디자인",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "디자인",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "제품디자인",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "제품디자인은 제품이 갖는 본질적 특성을 이해하고 그를 바탕으로 수요예측과 시장변화를 반영하여 사용자의 요구에 의해 다양한 소재를 활용하여 사용목적에 적합한 심미적이고 독창적인 형태와 감성적·기능적 가치가 겸비된 제품을 창조하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "디자인",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "디자인",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "환경디자인",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "환경디자인은 인간과 환경이라는 관계성 위에서 얻어지는 요소를 재창조, 재구성하여 인간이 생존을 유지하는데 필요한 생활공간을 보다 기능적, 미적, 경제적으로 만드는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "디자인",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "디자인",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "디지털디자인",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "디지털디자인은 다양한 종류의 디지털 환경에서 제공되는 서비스ㆍ콘텐츠를 사용 목적과 용도에 맞게 최적화하여 디자인하고 효과적으로 구현하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "디자인",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "디자인",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "텍스타일디자인",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "텍스타일디자인은 용도에 맞는 텍스타일 디자인 상품 개발을 위해 텍스타일 디자인 리서치, 디자인 기획, 디자인 발상, 패브릭 디자인, 텍스타일 시제품 제작을 하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "디자인",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "디자인",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "서비스경험디자인",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "서비스·경험디자인은 사용자 중심의 디자인사고와 방법을 기반으로 서비스 시스템에 관여하는 이해관계자의 요구를 발굴하여 사용자 경험 만족을 위한 혁신적인 유·무형의 서비스 모델을 디자인하는 업무에 종사하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "디자인",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "디자인",
+            "NCS_SUBD_CD": "07",
+            "NCS_SUBD_CDNM": "실내디자인",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "실내디자인은 공간을 효율적이고 미적으로 구성하여 사람들이 쾌적하고 편안하게 생활하도록 실내공간을 디자인하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "디자인",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "디자인",
+            "NCS_SUBD_CD": "08",
+            "NCS_SUBD_CDNM": "색채디자인",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "색채디자인은 디자인 과정에서 색채와 관련된 자료를 수집하고 분석하여 다양한 디자인 환경에서 요구하는 용도와 목적에 맞게 매체별 색채를 기획하고 개발하여 표현하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "디자인",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "디자인",
+            "NCS_SUBD_CD": "09",
+            "NCS_SUBD_CDNM": "전시디자인",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "전시디자인은 전시장에서 전시물과 수요자간의 효과적 커뮤니케이션을 극대화 하기위해 클라이언트의 요구사항을 바탕으로 전시콘텐츠 수요자와 공급자의 요구에 맞게 창의적 전시공간을 기획·설계·설치·해체하는 통합적이고 융합적인 직무이다.",
+            "DUTY_ORD": 9,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "디자인",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "디자인",
+            "NCS_SUBD_CD": "10",
+            "NCS_SUBD_CDNM": "3D프린팅디자인",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "3D프린팅디자인은 조형 아이디어를 3차원으로 모델링하고 이를 3D프린터로 제작하는 전 과정으로서 프린팅 결과물이 다양한 산업 분야와 융합 될 수 있도록 디자인하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "디자인",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "디자인",
+            "NCS_SUBD_CD": "11",
+            "NCS_SUBD_CDNM": "패키지디자인",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "패키지디자인은 마케팅과 디자인 전략을 기반으로 상품의 정보를 시각화하고 보호, 운반하는 지기 및 용기 구조와 형태를 개발하는 일이다.",
+            "DUTY_ORD": 11,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "08",
+            "NCS_LCLAS_CDNM": "문화·예술·디자인·방송",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "디자인",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "디자인",
+            "NCS_SUBD_CD": "12",
+            "NCS_SUBD_CDNM": "VR콘텐츠디자인",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "VR콘텐츠디자인은 가상현실 스토리텔링에 의한 세계관에 따라 3D 객체 또는 360도 영상으로 구축된 가상 공간 내에서 사용자가 사용자 인터페이스를 통해 다양한 경험을 습득할 수 있도록 가상현실 콘텐츠를 기획, 디자인, 프로그래밍하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 12,
+      "lastPageNo": 1
+    }
+  }
+}

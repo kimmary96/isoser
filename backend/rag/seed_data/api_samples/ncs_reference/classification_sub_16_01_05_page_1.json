@@ -1,0 +1,130 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금속재료",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "용접",
+            "NCS_SUBD_CD": "00",
+            "NCS_SUBD_CDNM": "용접공통직무",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "용접분야 공통직무는 직무단위별 용접을 수행하는데 있어 선택적으로 활용가능한 레이저용접, 가스용접, 용접절차사양서에 대한 능력과 용접직무수행에 필수적인 작업안전보건관리와 작업 후 정리정돈에 요구되는 능력을 활용하여 기본적인 용접작업을 수행하는 일이다.",
+            "DUTY_ORD": 7,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금속재료",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "용접",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "피복아크용접",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "피복아크용접(SMAW)은 주어진 도면에 따른 용접절차사양서(WPS) 검토, 용접재료 종류와 적용, 용접기의 특성, 조립 설치, 용접재료 준비 및 안전 사항, 본용접, 용접검사 및 용접기록에 요구되는 능력을 활용하여 산업체에 전반적으로 적용할 수 있는 기본적인 용접작업을 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금속재료",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "용접",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "CO₂용접",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "CO₂용접은 주어진 도면에 따른 용접절차사양서(WPS) 검토, 용접재료 종류와 적용, 용접기의 특성 및 조립설치, 용접준비 및 안전사항, CO₂본용접, 용접검사 및 용접기록 작업에 요구되는 능력을 활용하여 산업체에 전반적으로 적용할 수 있는 기본적인 용접작업을 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금속재료",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "용접",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "가스텅스텐아크용접",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "가스텅스텐아크용접(GTAW)은 주어진 도면에 따른 용접절차사양서(WPS) 검토, 용접재료 종류와 적용, 용접기의 특성 및   조립설치, 용접준비 및 안전사항, 용접작업, 용접검사 및 용접기록 작업에 요구되는 능력을 활용하여 산업체에 전반적으로 적용할 수 있는 기본적인 용접작업을 수행하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금속재료",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "용접",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "가스메탈아크용접",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "가스메탈아크용접(GMAW)은 주어진 작업안전보건관리, 도면해독, 용접재료준비, 용접장비준비, 가용접 작업, 본용접 작업, 용접부 검사, 용접 결함부 보수용접 작업, 작업 후 정리정돈에 요구되는 능력을 활용하여 산업체에 전반적으로 적용할 수 있는 기본적인 용접작업을 수행하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금속재료",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "용접",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "서브머지드아크용접",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "서브머지드아크용접(SAW)은 주어진 도면에 따른 용접절차사양서(WPS) 검토, 용접 재료의 종류와 적용, 용접기별 특성과 용접 방법 선정, 용접 작업 준비 및 안전 사항, 본 용접, 용접부 검사, 용접기록에 요구되는 능력을 활용하여 산업체에 적용할 수 있는 용접작업을 수행하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금속재료",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "용접",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "로봇용접",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "로봇용접은 주어진 도면에 따라 로봇프로그램에 데이터를 입력해서 구현한 자동화용접시스템을 활용하여 산업체에 전반적으로 적용할 수 있는 기본적인 용접작업을 수행하는 일이다.",
+            "DUTY_ORD": 6,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금속재료",
+            "NCS_SCLAS_CD": "05",
+            "NCS_SCLAS_CDNM": "용접",
+            "NCS_SUBD_CD": "07",
+            "NCS_SUBD_CDNM": "저항용접",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "주어진 도면과 용접절차사양서에 따라 점 용접, 심 용접, 돌기 용접, 업셋 용접, 플래시 용접을 수행하고 용접부를 검사하여 산업체에 전반적으로 적용할 수 있는 저항용접 작업을 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 8,
+      "lastPageNo": 1
+    }
+  }
+}

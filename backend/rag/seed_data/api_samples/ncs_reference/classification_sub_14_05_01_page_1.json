@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "조경",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "조경",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "조경설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "조경설계는 아름다운 경관과 쾌적한 환경을 조성하기 위해 예술적·공학적·생태적인 지식과 기술을 활용하여 대상지를 조사 분석하고 공간별·공종별 계획과 설계를 수행 하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "조경",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "조경",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "조경시공",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "조경시공은 설계도서에 따라 시공계획을 수립한 후 현장여건을 고려하여 조경목적물을 생태적·기능적·심미적으로 공사하는 업무를 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "조경",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "조경",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "조경관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "조경관리는 조성된 조경공간내 식물과 시설물을 아름다운 경관과 쾌적하고 안전한 환경으로 유지하기 위해 생태적, 공학적, 예술적인 지식과 기술을 활용하여 관리업무를 효과적으로 수행하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "14",
+            "NCS_LCLAS_CDNM": "건설",
+            "NCS_MCLAS_CD": "05",
+            "NCS_MCLAS_CDNM": "조경",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "조경",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "조경사업관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "‘조경사업관리’는 발주자가 요구한 조경 목적물이 의도대로 완성되도록 종합적 판단을 통해 조경사업관리(CM)의 설계와 시공에 있어 관련도서 및 법규에 따라 제대로 수행되고 있는지 확인하고, 관리하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

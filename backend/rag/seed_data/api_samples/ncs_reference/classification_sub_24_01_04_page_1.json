@@ -1,0 +1,46 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "농업",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "화훼장식",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "단위화훼장식",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "단위화훼장식은 화훼류를 주 재료로 하여 고객의 요구에 맞게 화훼장식물을 기획, 제작, 디자인, 판매, 유지 및 관리하여 미적가치와 경제적 효용가치를 창출하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "농업",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "화훼장식",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "공간화훼장식",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "공간화훼장식은 화훼류를 주 재료로 자연적, 인공적 재료를 활용하여 실내외 공간을 고객의 요구와 트렌드에 적합하게 기획, 디자인, 시공, 유지관리를 수행하여 미적, 기능적, 생태적, 경제적 가치를 창출하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 2,
+      "lastPageNo": 1
+    }
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "세라믹재료",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "용융세라믹제조",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "용융세라믹원료배합",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "용융 세라믹 원료배합은 용융 세라믹 제품 제조에 필요한 원료들을 입고·보관하고, 계량하고, 혼합한 뒤 용융 설비로 보내주는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "세라믹재료",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "용융세라믹제조",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "용융세라믹용융",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "용융 세라믹 용융은 용융로에 투입된 배합원료를 녹이고 탈포 및 균질화하여 제품별 목표조성에 맞게 유리 상태로 만드는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "세라믹재료",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "용융세라믹제조",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "용융세라믹성형",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "용융세라믹 성형은 용융된 유리를 제품 용도에 맞춰 특정한 형태로 만들고, 안정된 상태로 상온까지 냉각시키는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "16",
+            "NCS_LCLAS_CDNM": "재료",
+            "NCS_MCLAS_CD": "02",
+            "NCS_MCLAS_CDNM": "세라믹재료",
+            "NCS_SCLAS_CD": "04",
+            "NCS_SCLAS_CDNM": "용융세라믹제조",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "용융세라믹가공",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "용융 세라믹 가공은 판유리를 절단, 연마, 세척 후 코팅유리, 강화유리, 접합유리, 복층유리 등을 제조하거나 프리트 유리, 석영유리, 광학유리, 유리 광섬유 등을 용융과 분쇄, 절단과 용접, 몰딩과 연마, 연신 등의 가공 공정을 거쳐 제품을 제조하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

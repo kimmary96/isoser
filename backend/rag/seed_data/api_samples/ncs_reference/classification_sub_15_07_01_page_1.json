@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "07",
+            "NCS_MCLAS_CDNM": "철도차량제작",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "철도차량설계·제작",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "철도차량설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "철도차량 설계는 승객 및 화물의 안전한 수송을 위하여 철도분야의 전문지식과 기술을 바탕으로 철도안전 기준에 적합한 차량을 설계하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "07",
+            "NCS_MCLAS_CDNM": "철도차량제작",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "철도차량설계·제작",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "철도차량제작",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "철도차량제작은 지정된 선로를 통하여 여객과 화물의 운송 및 철도시설 유지보수와 같은 특수목적을 위하여 철도차량분야의 전문지식을 바탕으로 부품, 차체, 대차의 구매, 제작, 조립, 검사를 통하여 설계기준에 적합한 철도차량을 만드는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "07",
+            "NCS_MCLAS_CDNM": "철도차량제작",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "철도차량설계·제작",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "철도차량시운전",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "철도차량 시운전은 신조 철도차량의 설계적합성과 합치성을 확보하기 위하여 철도차량기지와 운행선에서 제반 시험을 통해 철도차량의 성능을 확인하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

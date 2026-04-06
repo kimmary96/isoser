@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금융",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "금융상품개발",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "여수신상품개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "여수신상품개발은 공공성을 기반으로 여수신고객의 수요충족, 금융회사의 수익성 확보를 위하여 시장기회를 탐색하고 상품 타당성을 검토하여 기획·설계된 여수신상품을 수요자에게 제공하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금융",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "금융상품개발",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "투자상품개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "투자상품개발은 금융소비자의 투자수요 충족을 위하여 다양한 투자 아이디어를 토대로 투자상품을 개발하고 관리하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금융",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "금융상품개발",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "연금상품개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "연금상품개발은 지속적이고 안정적인 노후소득의 확보를 위하여 고객맞춤의 은퇴자산 적립 및 인출 전략을 설계하고 부담금의 납입, 자산운용, 가입자 관리 등을 수행하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "03",
+            "NCS_LCLAS_CDNM": "금융·보험",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "금융",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "금융상품개발",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "카드상품개발",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "카드상품개발은 고객의 소비 편의성 증진과 기업의 경영 목표 달성을 위하여 시장을 조사하고 신상품을 기획하여 카드 본연의 결제 기능 및 부가적인 혜택을 제공할 수 있는 유·무형의 상품을 개발하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

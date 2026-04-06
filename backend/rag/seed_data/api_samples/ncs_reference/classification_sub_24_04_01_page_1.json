@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "수산",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "어업",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "원양어업",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "원양어업이란 국제규범에 따라 조업계획, 출항준비를 마치고, 해외수역에서 어선 및 어구를 안전하게 사용하여 수산생물을 효과적으로 포획하고, 어획물의 경제적 가치를 제고하기 위하여 처리·보관·양륙하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "수산",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "어업",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "근해어업",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "근해어업이란 근해에서 관련규정에 따라 수산물을 생산하기 위하여 필요한 어선의 관리와 운용, 어구, 기타 장비를 사용하여 안전하게 수산생물을 포획·채취하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "수산",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "어업",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "연안어업",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "연안어업이란 조업계획, 어선정비, 출어준비 후 연안수역에서 안전하게 어로장비를 운용하여 수산생물을 포획하고 관리하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "24",
+            "NCS_LCLAS_CDNM": "농림어업",
+            "NCS_MCLAS_CD": "04",
+            "NCS_MCLAS_CDNM": "수산",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "어업",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "내수면어업",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "내수면어업이란 내수면에서 수산자원을 조성 · 관리하고 포획하기 위한 계획을 수립하여 안전하게 어선, 어구, 장비 등을 운용하여 어획물을 조업하고 유지 · 관리하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

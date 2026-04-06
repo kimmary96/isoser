@@ -1,0 +1,60 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "06",
+            "NCS_MCLAS_CDNM": "자동차",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "자동차설계",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "자동차설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "자동차 설계는, 시장의 수요를 파악하여 자동차 관련법규에 준하는 안전하고 친환경적인 완성차 및 자동차 부품을 합리적인 가격으로 설계 개발하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "06",
+            "NCS_MCLAS_CDNM": "자동차",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "자동차설계",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "자동차시험평가",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "자동차시험평가는 제작차를 대상으로 자동차의 안전, 성능, 환경규제 등의 측면에서 적합하게 장비를 활용하여 제작되었는지 여부를 시험, 분석 및 평가하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "06",
+            "NCS_MCLAS_CDNM": "자동차",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "자동차설계",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "자동차공정설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "자동차공정설계는 설계된 완성차와 부품의 생산을 위해서 투입요소의 배치 및 작업순서와 방법을 최적화 하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

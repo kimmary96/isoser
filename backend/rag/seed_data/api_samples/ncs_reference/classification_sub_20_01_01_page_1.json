@@ -1,0 +1,130 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "정보기술전략·계획",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "정보기술전략",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "정보기술전략은 조직의 미션·비전·전략목표를 달성하기 위하여 정보기술을 효과적으로 활용할 수 있도록 정보기술 전략을 기획하고, 거버넌스, R&amp;D, 프로세스, 아키텍처 등 분야 별 전략수립과 통합, 실행을 관리하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "정보기술전략·계획",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "정보기술컨설팅",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "정보기술컨설팅은 조직의 경영 목표를 달성하는데 도움이 될 수 있도록 외부 컨설턴트가 객관적인 시각에서 조직 경영 환경을 이해하고 대상 업무 및 정보시스템을 분석하여 개선 방안을 지도, 자문 및 상담을 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "정보기술전략·계획",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "정보기술기획",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "정보기술기획은 조직의 경영목표를 달성하기 위하여 비즈니스와 정보기술 환경을 분석하여 정보기술 운영전략과 전체 예산 계획을 수립한 후 이를 바탕으로 정보기술 모형과 아키텍처를 설계하고 정보기술 운영방안을 마련하여 원활한 운영자원 투입계획과 실행계획을 수립하고 성과를 분석하는 일이다.",
+            "DUTY_ORD": 3,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "정보기술전략·계획",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "SW제품기획",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "SW제품 기획은 기업의 수익 창출을 위해 SW제품 활용분야에 대한 기업 내/외부 환경, 요구 기술, 시장성 등을 분석하여 SW제품의 명세 및 로드맵을 수립하고 SW제품의 개발, 지원, 판매, 마케팅 계획을 수립하는 일이다.",
+            "DUTY_ORD": 4,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "정보기술전략·계획",
+            "NCS_SUBD_CD": "05",
+            "NCS_SUBD_CDNM": "빅데이터분석",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "빅데이터 분석은 다양한 형태의 대용량 데이터 집합으로부터 유용한 정보를 찾고 예측하기 위해 목적에 적합한 분석 기술과 방법을 적용하여 데이터에 대한 전처리, 탐색, 분석 모델링, 시각화를 수행하는 일이다.",
+            "DUTY_ORD": 5,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "정보기술전략·계획",
+            "NCS_SUBD_CD": "06",
+            "NCS_SUBD_CDNM": "IoT융합서비스기획",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "IoT 융합서비스 기획은 적용하고자 하는 서비스 분야와 IoT(사물인터넷) 구성기술에 대한 이해를 바탕으로 사물, 사람, 데이터를 연결하여 생성·수집·저장된 정보를 기반으로 사람에게 편리와 안전을 제공하기 위한 지능형 서비스를 기획하는 일이다.",
+            "DUTY_ORD": 6,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "정보기술전략·계획",
+            "NCS_SUBD_CD": "07",
+            "NCS_SUBD_CDNM": "빅데이터기획",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "빅데이터 기획은 가치 창출을 위하여 빅데이터 환경분석, 서비스, 분석모델 및 플랫폼을 정의하고 이에 대한 활용과 운영 및 성과관리를 기획, 수립하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "20",
+            "NCS_LCLAS_CDNM": "정보통신",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "정보기술",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "정보기술전략·계획",
+            "NCS_SUBD_CD": "08",
+            "NCS_SUBD_CDNM": "핀테크기술기획",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "핀테크 기술기획은 정보·통신 기술에 기반한 금융 서비스 구현을 위하여 핀테크 환경을 분석하고 핀테크 핵심 기술을 선정한 후 이를 바탕으로 핀테크 서비스를 기획하고, 기술 전략을 수립하는 일이다.",
+            "DUTY_ORD": 8,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 8,
+      "lastPageNo": 1
+    }
+  }
+}

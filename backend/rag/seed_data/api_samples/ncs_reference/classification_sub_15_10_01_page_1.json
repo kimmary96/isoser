@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "10",
+            "NCS_MCLAS_CDNM": "금형",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "사출금형",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "사출금형설계",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "사출금형설계는 사출 제품도 분석과 사출성형해석을 통해 경제성 있는 금형구조를 결정하고, 2D 및 3D CAD 프로그램을 사용하여 설계일정에 맞추어 사출금형 조립도, 부품도, 가공지원도면을 작성하고 3D 모델링 작업을 수행하며, 시험사출 제품 분석결과를 검증, 보완하여 사출금형을 설계하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "10",
+            "NCS_MCLAS_CDNM": "금형",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "사출금형",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "사출금형제작",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "사출금형제작은 고객이 요구하는 금형제작을 위하여 기초 및 응용 도면해독, 일정관리, 공정설계, 외주관리, 표준 및 가공 부품 수급관리, 공정간 검사, 설비관리, 기초 및 가공부품 표준화 관리, 가공표준관리, 기초 부품가공, 부품 CNC가공, 부품 형조방전가공, 기초 및 응용 부품가공프로그램, 3D 프린팅 활용 시제품 제작 및 후처리 등을 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "10",
+            "NCS_MCLAS_CDNM": "금형",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "사출금형",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "사출금형품질관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "사출금형 품질관리는 제작된 금형이 설계 요구사항에 맞는지 검사하고, 시제품 성형과 생산성 검증을 실시하여 금형의 품질을 안정적으로 유지하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "15",
+            "NCS_LCLAS_CDNM": "기계",
+            "NCS_MCLAS_CD": "10",
+            "NCS_MCLAS_CDNM": "금형",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "사출금형",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "사출금형조립",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "사출금형조립은 설계된 금형도면에 따라 가공된 부품들을 다듬질과 경면래핑을 하여 금형부품을 조립하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}

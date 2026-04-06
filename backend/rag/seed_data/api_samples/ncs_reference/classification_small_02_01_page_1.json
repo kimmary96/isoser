@@ -1,0 +1,48 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "02",
+            "NCS_LCLAS_CDNM": "경영·회계·사무",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "기획사무",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "경영기획",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "02",
+            "NCS_LCLAS_CDNM": "경영·회계·사무",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "기획사무",
+            "NCS_SCLAS_CD": "02",
+            "NCS_SCLAS_CDNM": "홍보·광고",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "02",
+            "NCS_LCLAS_CDNM": "경영·회계·사무",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "기획사무",
+            "NCS_SCLAS_CD": "03",
+            "NCS_SCLAS_CDNM": "마케팅",
+            "NCS_DEGR": 28,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 3,
+      "lastPageNo": 1
+    }
+  }
+}

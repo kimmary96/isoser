@@ -1,0 +1,74 @@
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+            "NCS_LCLAS_CD": "17",
+            "NCS_LCLAS_CDNM": "화학·바이오",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "화학·바이오공통",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "화학물질·품질관리",
+            "NCS_SUBD_CD": "01",
+            "NCS_SUBD_CDNM": "화학물질분석",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "화학물질분석은 화학물질의 성분, 조성, 구조, 함량, 특성 등을 확인하기 위해 화학반응이나 분석기기 등을 활용하여 분석계획수립, 시료채취, 전처리, 분석, 데이터 해석, 결과보고서 작성 등의 분석업무를 수행하는 일이다.",
+            "DUTY_ORD": 2,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "17",
+            "NCS_LCLAS_CDNM": "화학·바이오",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "화학·바이오공통",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "화학물질·품질관리",
+            "NCS_SUBD_CD": "02",
+            "NCS_SUBD_CDNM": "화학물질검사·평가",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "화학물질검사·평가는 화학물질에 대한 품질검사와 화학물질이 인체와 환경에 미치는 영향을 평가하기 위해 분석자료, 문헌자료 및 데이터베이스 검색 등을 통해 물리적·화학적 특성 확인, 인체 및 환경에 대한 유해성과 노출 평가, 인체 및 환경 위해도 결정 등 노출 및 독성 정보를 체계적으로 검토하고 평가하는 업무를 수행하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "17",
+            "NCS_LCLAS_CDNM": "화학·바이오",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "화학·바이오공통",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "화학물질·품질관리",
+            "NCS_SUBD_CD": "03",
+            "NCS_SUBD_CDNM": "화학물질취급관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "화학물질취급관리는 화학물질ㆍ화약류로 인하여 발생할 수 있는 국민의 생명과 재산을 보호하기 위해 유해화학물질ㆍ화약류 사고예방 관리체계 구축, 산업안전 점검, 화학물질ㆍ화약류 사고의 대비와 초기대응능력 제고를 통해 환경위해 또는 안전사고를 예방하고, 사고피해를 최소화할 수 있도록 화학물질ㆍ화약류를 체계적으로 관리하여 공공의 안전을 유지하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          },
+          {
+            "NCS_LCLAS_CD": "17",
+            "NCS_LCLAS_CDNM": "화학·바이오",
+            "NCS_MCLAS_CD": "01",
+            "NCS_MCLAS_CDNM": "화학·바이오공통",
+            "NCS_SCLAS_CD": "01",
+            "NCS_SCLAS_CDNM": "화학물질·품질관리",
+            "NCS_SUBD_CD": "04",
+            "NCS_SUBD_CDNM": "화학제품품질관리",
+            "NCS_DEGR": 28,
+            "DUTY_DEF": "화학제품 품질관리는 제품·서비스와 관련된 고객 요구사항을 만족시키기 위하여 원부자재에서 완제품까지의 품질관리와, 고객이 제품을 사용할 때까지의 품질보증을 통하여 화학 제품의 품질을 안정적으로 관리하는 일이다.",
+            "DUTY_ORD": 1,
+            "USG_YN": "Y"
+          }
+        ]
+      },
+      "pageNo": 1,
+      "numOfRows": 200,
+      "totalCount": 4,
+      "lastPageNo": 1
+    }
+  }
+}
