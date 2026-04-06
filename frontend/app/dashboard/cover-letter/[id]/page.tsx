@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 
+import { getCoachFeedback } from "@/lib/api/backend";
 import {
   deleteGuestCoverLetter,
   getGuestCoverLetterById,
@@ -93,6 +94,7 @@ export default function CoverLetterDetailPage() {
   const [coachMessages, setCoachMessages] = useState<CoachMessage[]>([]);
   const [coachInput, setCoachInput] = useState("");
   const [coachJobTitle, setCoachJobTitle] = useState("");
+  const [coachSessionId, setCoachSessionId] = useState<string | undefined>(undefined);
   const [coaching, setCoaching] = useState(false);
 
   const activeQa = qaItems[activeQaIndex] || { question: "", answer: "" };
@@ -303,39 +305,42 @@ export default function CoverLetterDetailPage() {
     const trimmed = requestText.trim();
     if (!trimmed) return;
 
+    const userMessage: CoachMessage = { role: "user", content: trimmed };
+    const nextHistory = [...coachMessages, userMessage];
+
     setCoaching(true);
-    setCoachMessages((prev) => [...prev, { role: "user", content: trimmed }]);
+    setCoachMessages(nextHistory);
     setCoachInput("");
 
     try {
-      const prompt = `
-너는 한국어 자기소개서 코치다.
-아래 문항/답변을 보고 코칭해라.
-응답 형식:
-1) 진단 3개
-2) 개선 제안 3개
-3) 문항에 맞는 개선 답변 예시 1개
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-[지원 회사] ${companyName || "(미입력)"}
-[지원 직무] ${coachJobTitle || jobTitle || "(미입력)"}
-[현재 문항] ${activeQa.question || "(미입력)"}
-[현재 답변] ${activeQa.answer || "(미입력)"}
-[요청] ${trimmed}
-      `.trim();
+      const activityDescription = [
+        `자기소개서 문항 코칭 요청`,
+        `[지원 회사] ${companyName || "(미입력)"}`,
+        `[지원 직무] ${coachJobTitle || jobTitle || "(미입력)"}`,
+        `[현재 문항] ${activeQa.question || "(미입력)"}`,
+        `[현재 답변] ${activeQa.answer || "(미입력)"}`,
+        `[추가 요청] ${trimmed}`,
+      ].join("\n");
 
-      const res = await fetch("/api/summary", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
+      const result = await getCoachFeedback({
+        session_id: coachSessionId,
+        user_id: user?.id ?? null,
+        activity_description: activityDescription,
+        job_title: coachJobTitle || jobTitle || "일반",
+        section_type: "요약",
+        history: nextHistory,
       });
-      const data = await res.json();
-      const answer = typeof data?.summary === "string" ? data.summary.trim() : "";
-      if (!answer) throw new Error("AI 응답이 비어 있습니다.");
-      setCoachMessages((prev) => [...prev, { role: "assistant", content: answer }]);
+
+      setCoachSessionId(result.session_id);
+      setCoachMessages(result.updated_history);
     } catch (e) {
       const message = e instanceof Error ? e.message : "AI 코칭 요청에 실패했습니다.";
-      setCoachMessages((prev) => [
-        ...prev,
+      setCoachMessages([
+        ...nextHistory,
         { role: "assistant", content: `코칭 중 오류가 발생했습니다: ${message}` },
       ]);
     } finally {
