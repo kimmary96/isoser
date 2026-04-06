@@ -9,8 +9,10 @@ import os
 from typing import Any, ClassVar, Mapping, Sequence
 
 import chromadb
+from chromadb import EmbeddingFunction, Embeddings
 from chromadb.config import Settings
-from chromadb.utils.embedding_functions import GoogleGenerativeAiEmbeddingFunction
+from google import genai
+from google.genai import types as genai_types
 
 try:
     from backend.logging_config import get_logger, log_event
@@ -51,17 +53,33 @@ COLLECTION_ORDER = (
 )
 
 
-def build_embedding_function() -> GoogleGenerativeAiEmbeddingFunction:
+class GeminiEmbeddingFunction(EmbeddingFunction):
+    """Custom Gemini embedding function using google-genai SDK."""
+
+    def __init__(self, api_key: str):
+        self.client = genai.Client(api_key=api_key)
+
+    def __call__(self, input: list[str]) -> Embeddings:
+        if not input:
+            return []
+        result = self.client.models.embed_content(
+            model="models/gemini-embedding-001",
+            contents=input,
+            config=genai_types.EmbedContentConfig(task_type="RETRIEVAL_DOCUMENT"),
+        )
+        if not result.embeddings:
+            return []
+        return [embedding.values for embedding in result.embeddings]
+
+
+def build_embedding_function() -> GeminiEmbeddingFunction:
     """Build a shared embedding function that avoids local ONNX model loading."""
 
     api_key = os.environ.get("GOOGLE_API_KEY")
     if not api_key:
         raise RuntimeError("GOOGLE_API_KEY is required for Chroma embedding initialization.")
 
-    return GoogleGenerativeAiEmbeddingFunction(
-        api_key=api_key,
-        model_name="models/text-embedding-004",
-    )
+    return GeminiEmbeddingFunction(api_key=api_key)
 
 
 def _collection_metadata(name: str) -> dict[str, Any]:

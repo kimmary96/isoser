@@ -14,7 +14,7 @@ services:
       - key: ANONYMIZED_TELEMETRY
         value: "False"
       - key: CHROMA_MODE
-        value: persistent
+        value: ephemeral
       - key: CHROMA_PERSIST_DIR
         value: /opt/render/project/src/chroma_store
       - key: DATA_GO_KR_SERVICE_KEY
