@@ -142,6 +142,13 @@ export interface CoachFeedbackRequest {
 export interface CoachIntroGenerateRequest {
   mode: "intro_generate";
   activity_description: string;
+  activity_type: string;
+  org_name: string;
+  period: string;
+  team_size: number;
+  role: string;
+  skills: string[];
+  contribution: string;
   section_type?: Activity["type"] | "요약";
 }
 

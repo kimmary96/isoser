@@ -68,6 +68,10 @@ export default function ActivityDetailPage() {
   const [showPostSaveModal, setShowPostSaveModal] = useState(false);
   const [postSaveActivity, setPostSaveActivity] = useState<Activity | null>(null);
   const [postSaveAction, setPostSaveAction] = useState<"star" | "portfolio" | null>(null);
+  const [starSaveToast, setStarSaveToast] = useState<{
+    tone: "success" | "error";
+    message: string;
+  } | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sessionId] = useState(() => crypto.randomUUID());
@@ -77,6 +81,16 @@ export default function ActivityDetailPage() {
       setActiveTab("star");
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    if (!starSaveToast) return;
+
+    const timer = window.setTimeout(() => {
+      setStarSaveToast(null);
+    }, 2500);
+
+    return () => window.clearTimeout(timer);
+  }, [starSaveToast]);
 
   useEffect(() => {
     const fetchActivity = async () => {
@@ -191,6 +205,8 @@ export default function ActivityDetailPage() {
   useEffect(() => {
     if (
       isNewActivity ||
+      loading ||
+      !activity ||
       typeof window === "undefined" ||
       searchParams.get("tab") !== "star"
     ) {
@@ -213,7 +229,7 @@ export default function ActivityDetailPage() {
         };
       };
 
-      if (parsed.activityId !== activityId || !parsed.star) {
+      if (parsed.activityId !== activityId || parsed.activityId !== activity.id || !parsed.star) {
         return;
       }
 
@@ -225,7 +241,7 @@ export default function ActivityDetailPage() {
     } catch {
       window.sessionStorage.removeItem(PENDING_STAR_CONVERSION_KEY);
     }
-  }, [activityId, isNewActivity, searchParams]);
+  }, [activity, activityId, isNewActivity, loading, searchParams]);
 
   const handleSaveDescription = async () => {
     if (!activity) return;
@@ -419,7 +435,7 @@ export default function ActivityDetailPage() {
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files || imageUrls.length >= 5) return;
+    if (isGuestMode() || !files || imageUrls.length >= 5) return;
 
     setImageUploading(true);
     try {
@@ -496,6 +512,13 @@ export default function ActivityDetailPage() {
       const result = await generateActivityIntro({
         mode: "intro_generate",
         activity_description: buildIntroSourceText(),
+        activity_type: typeDraft || activity?.type || "?꾨줈?앺듃",
+        org_name: organization.trim(),
+        period: periodValue,
+        team_size: teamSize,
+        role: myRole.trim(),
+        skills: skillsDraft,
+        contribution: contributionItems.join("\n"),
         section_type: (typeDraft || activity?.type || "프로젝트") as Activity["type"],
       });
       setIntroCandidates(result.intro_candidates);
@@ -717,8 +740,41 @@ export default function ActivityDetailPage() {
   const handleStarSave = async () => {
     if (!activity) return;
     setStarSaving(true);
+    setError(null);
     try {
-      await supabase
+      if (isGuestMode()) {
+        const now = new Date().toISOString();
+        const guestActivity: Activity = {
+          ...activity,
+          type: (typeDraft || activity.type) as Activity["type"],
+          title: titleDraft || activity.title,
+          period: periodValue || activity.period,
+          role: myRole || activity.role,
+          skills: skillsDraft,
+          description: descriptionDraft || activity.description,
+          organization,
+          team_size: teamSize,
+          team_composition: teamComposition,
+          my_role: myRole,
+          contributions: filteredContributions,
+          image_urls: imageUrls,
+          star_situation: starSituation,
+          star_task: starTask,
+          star_action: starAction,
+          star_result: starResult,
+          updated_at: now,
+        };
+
+        upsertGuestActivity(guestActivity);
+        setActivity(guestActivity);
+        setStarSaveToast({
+          tone: "success",
+          message: "STAR 기록이 저장되었습니다.",
+        });
+        return;
+      }
+
+      const { error: updateError } = await supabase
         .from("activities")
         .update({
           star_situation: starSituation,
@@ -727,6 +783,28 @@ export default function ActivityDetailPage() {
           star_result: starResult,
         })
         .eq("id", activity.id);
+
+      if (updateError) {
+        console.error("STAR save error:", updateError);
+        setError(updateError.message);
+        setStarSaveToast({
+          tone: "error",
+          message: "저장에 실패했습니다.",
+        });
+        return;
+      }
+
+      setActivity({
+        ...activity,
+        star_situation: starSituation,
+        star_task: starTask,
+        star_action: starAction,
+        star_result: starResult,
+      });
+      setStarSaveToast({
+        tone: "success",
+        message: "STAR 기록이 저장되었습니다.",
+      });
     } finally {
       setStarSaving(false);
     }
@@ -821,6 +899,19 @@ Result(결과): ${starResult}`;
           )}
         </div>
         {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
+        {starSaveToast && (
+          <div className="fixed bottom-6 right-6 z-50">
+            <div
+              className={`rounded-2xl px-4 py-3 text-sm font-medium shadow-lg ${
+                starSaveToast.tone === "success"
+                  ? "bg-emerald-600 text-white"
+                  : "bg-red-500 text-white"
+              }`}
+            >
+              {starSaveToast.message}
+            </div>
+          </div>
+        )}
 
         <div className={`grid grid-cols-1 ${activeTab === "star" ? "lg:grid-cols-2" : ""} gap-6`}>
           {/* 활동 설명 */}
@@ -1203,7 +1294,14 @@ Result(결과): ${starResult}`;
                   )}
 
                   {imageUrls.length < 5 && (
-                    <label className="flex items-center gap-2 w-fit cursor-pointer border border-dashed border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-500 hover:bg-gray-50 transition-all">
+                    <label
+                      title={isGuestMode() ? "로그인 후 이용 가능합니다" : "이미지를 선택해 추가합니다"}
+                      className={`flex items-center gap-2 w-fit border border-dashed rounded-xl px-4 py-3 text-sm transition-all ${
+                        isGuestMode()
+                          ? "cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400"
+                          : "cursor-pointer border-gray-300 text-gray-500 hover:bg-gray-50"
+                      }`}
+                    >
                       <span>🖼</span>
                       <span>{imageUploading ? "업로드 중..." : "이미지 선택"}</span>
                       <input
@@ -1212,9 +1310,12 @@ Result(결과): ${starResult}`;
                         multiple
                         className="hidden"
                         onChange={handleImageUpload}
-                        disabled={imageUploading}
+                        disabled={imageUploading || isGuestMode()}
                       />
                     </label>
+                  )}
+                  {isGuestMode() && (
+                    <p className="mt-2 text-xs text-gray-400">로그인 후 이용 가능합니다.</p>
                   )}
                 </div>
 

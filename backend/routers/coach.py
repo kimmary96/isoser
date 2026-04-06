@@ -45,6 +45,13 @@ class CoachRequest(BaseModel):
     session_id: str | None = None
     user_id: str | None = None
     activity_description: str
+    activity_type: str | None = None
+    org_name: str | None = None
+    period: str | None = None
+    team_size: int | None = None
+    role: str | None = None
+    skills: list[str] | None = None
+    contribution: str | None = None
     job_title: str = ""
     section_type: str = ""
     selected_suggestion_index: int | None = None
@@ -124,6 +131,36 @@ def _detail_payload(session: CoachSessionRecord) -> dict[str, Any]:
     }
 
 
+def _build_intro_generate_activity_text(request: CoachRequest) -> str:
+    """Build intro-generation source text from structured fields when present."""
+
+    structured_segments: list[str] = []
+
+    if request.activity_type:
+        structured_segments.append(f"활동 유형: {request.activity_type}")
+    if request.org_name:
+        structured_segments.append(f"조직: {request.org_name}")
+    if request.period:
+        structured_segments.append(f"기간: {request.period}")
+    if request.team_size and request.team_size > 0:
+        structured_segments.append(f"인원: {request.team_size}명")
+    if request.role:
+        structured_segments.append(f"역할: {request.role}")
+    if request.skills:
+        normalized_skills = [skill.strip() for skill in request.skills if str(skill).strip()]
+        if normalized_skills:
+            structured_segments.append(f"사용 기술: {', '.join(normalized_skills)}")
+    if request.contribution:
+        structured_segments.append(f"기여 내용: {request.contribution}")
+
+    if structured_segments:
+        if request.activity_description:
+            structured_segments.append(f"소개 초안: {request.activity_description}")
+        return "\n".join(structured_segments)
+
+    return request.activity_description
+
+
 def _resolve_suggestion_type(
     rewrite_suggestions: list[dict[str, Any]],
     selected_index: int | None,
@@ -146,7 +183,11 @@ def _resolve_suggestion_type(
 async def get_coach_feedback(request: CoachRequest):
     """Create or load a coach session, run coaching, and persist the latest result."""
 
-    if len(request.activity_description) < 10:
+    activity_input_text = request.activity_description
+    if request.mode == "intro_generate":
+        activity_input_text = _build_intro_generate_activity_text(request)
+
+    if len(activity_input_text) < 10:
         return _validation_error("활동 설명은 최소 10자 이상 입력해주세요.")
 
     if request.mode == "feedback" and not request.job_title:
@@ -196,7 +237,7 @@ async def get_coach_feedback(request: CoachRequest):
 
         result = await run_coach_graph(
             session_id=session_id,
-            activity_text=request.activity_description,
+            activity_text=activity_input_text,
             job_title=request.job_title or "일반",
             section_type=request.section_type,
             selected_suggestion_index=request.selected_suggestion_index,
