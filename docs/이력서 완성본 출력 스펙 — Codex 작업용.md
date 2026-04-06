@@ -1,4 +1,4 @@
-# 이력서 완성본 출력 스펙 — Codex 작업용
+# 포트폴리오 완성본 출력 스펙 — Codex 작업용
 
 <aside>
 🎯
@@ -265,7 +265,7 @@ async def generate_resume(
 ) -> ResumeGenerateResponse:
     """
     사용자의 활동 데이터를 기반으로 6단계 구조 이력서를 생성합니다.
-    
+  
     1. Supabase에서 사용자 activities + coach_sessions 조회
     2. 각 activity별 RAG context 수집 (job_keyword_patterns + star_examples)
     3. Gemini에 시스템 프롬프트 + 활동 데이터 전달
@@ -322,28 +322,28 @@ async def generate_resume_pipeline(
     파이프라인:
     1. fetch_activities(user_id, activity_ids)
        → Supabase activities 테이블에서 조회
-    
+  
     2. fetch_coach_sessions(user_id, activity_ids)
        → 각 활동별 코칭 이력 (피드백, 선택한 suggestion 등)
-    
+  
     3. for each activity:
        a. get_rag_context(activity, target_job_title)
           → ChromaDB에서 job_keyword_patterns top-3 + star_examples top-3
        b. build_activity_prompt(activity, sessions, rag_context)
           → 활동 데이터 + 코칭 이력 + RAG를 프롬프트 포맷으로 조립
-    
+  
     4. build_system_prompt(include_troubleshooting)
        → 3-1 시스템 프롬프트 로드
-    
+  
     5. call_gemini(system_prompt, user_prompt)
        → 구조화 출력 (JSON mode)
-    
+  
     6. parse_and_validate(gemini_response)
        → ResumeProjectOutput[] 파싱 + review_tags 자동 태깅
-    
+  
     7. generate_markdown(projects)
        → 2-1 마크다운 템플릿으로 렌더링
-    
+  
     8. return ResumeGenerateResponse
     """
     pass
@@ -369,11 +369,11 @@ async def generate_resume_pipeline(
 
 ### 5-2. review_tags 처리
 
-| **태그** | **의미** | **UI 처리** |
-| --- | --- | --- |
-| `[수치 보완 필요]` | 정량 데이터가 없어 플레이스홀더 삽입됨 | 노란색 하이라이트 + 입력 유도 tooltip |
-| `[검토 필요]` | AI가 역추론한 내용이라 본인 확인 필요 | 주황색 하이라이트 + "본인 경험으로 수정해주세요" 안내 |
-| `[본인 경험으로 수정 필요]` | 일반적 근거로 작성된 기술 선택 근거 | 녹색 하이라이트 + 편집 모드 자동 활성화 |
+| **태그**                | **의미**                         | **UI 처리**                                     |
+| ----------------------------- | -------------------------------------- | ----------------------------------------------------- |
+| `[수치 보완 필요]`          | 정량 데이터가 없어 플레이스홀더 삽입됨 | 노란색 하이라이트 + 입력 유도 tooltip                 |
+| `[검토 필요]`               | AI가 역추론한 내용이라 본인 확인 필요  | 주황색 하이라이트 + "본인 경험으로 수정해주세요" 안내 |
+| `[본인 경험으로 수정 필요]` | 일반적 근거로 작성된 기술 선택 근거    | 녹색 하이라이트 + 편집 모드 자동 활성화               |
 
 ---
 
@@ -386,27 +386,27 @@ async def generate_resume_pipeline(
 
 </aside>
 
-- [ ]  **Step 1**: `backend/rag/schema.py`에 `ResumeGenerateRequest`, `ResumeProjectOutput`, `ResumeGenerateResponse` Pydantic 모델 추가
-- [ ]  **Step 2**: `backend/chains/resume_generator.py` 생성 — 파이프라인 골격 구현
-    - `fetch_activities()` → Supabase 조회
-    - `fetch_coach_sessions()` → 코칭 이력 조회
-    - `get_rag_context()` → ChromaDB 검색
-    - `build_activity_prompt()` → 프롬프트 조립
-    - `build_system_prompt()` → 시스템 프롬프트 로드
-- [ ]  **Step 3**: `backend/chains/resume_generator.py` — Gemini 호출 + 파싱
-    - `call_gemini()` → JSON mode로 호출
-    - `parse_and_validate()` → 응답 파싱 + `review_tags` 자동 태깅
-    - `generate_markdown()` → 마크다운 렌더링
-- [ ]  **Step 4**: `backend/routers/resume.py` 생성 — `POST /resume/generate` 엔드포인트
-    - 인증 (Supabase JWT)
-    - 요청 검증
-    - 파이프라인 호출
-    - 응답 반환
-- [ ]  **Step 5**: 테스트
-    - 활동 2개 이상 → 프로젝트별 6단계 구조 생성 확인
-    - 정량 수치 없는 활동 → `[수치 보완 필요]` 태그 삽입 확인
-    - Gemini 실패 시 에러 핸들링 확인
-    - 마크다운 출력 형식 검증
+- [ ] **Step 1**: `backend/rag/schema.py`에 `ResumeGenerateRequest`, `ResumeProjectOutput`, `ResumeGenerateResponse` Pydantic 모델 추가
+- [ ] **Step 2**: `backend/chains/resume_generator.py` 생성 — 파이프라인 골격 구현
+  - `fetch_activities()` → Supabase 조회
+  - `fetch_coach_sessions()` → 코칭 이력 조회
+  - `get_rag_context()` → ChromaDB 검색
+  - `build_activity_prompt()` → 프롬프트 조립
+  - `build_system_prompt()` → 시스템 프롬프트 로드
+- [ ] **Step 3**: `backend/chains/resume_generator.py` — Gemini 호출 + 파싱
+  - `call_gemini()` → JSON mode로 호출
+  - `parse_and_validate()` → 응답 파싱 + `review_tags` 자동 태깅
+  - `generate_markdown()` → 마크다운 렌더링
+- [ ] **Step 4**: `backend/routers/resume.py` 생성 — `POST /resume/generate` 엔드포인트
+  - 인증 (Supabase JWT)
+  - 요청 검증
+  - 파이프라인 호출
+  - 응답 반환
+- [ ] **Step 5**: 테스트
+  - 활동 2개 이상 → 프로젝트별 6단계 구조 생성 확인
+  - 정량 수치 없는 활동 → `[수치 보완 필요]` 태그 삽입 확인
+  - Gemini 실패 시 에러 핸들링 확인
+  - 마크다운 출력 형식 검증
 
 ---
 
@@ -415,48 +415,49 @@ async def generate_resume_pipeline(
 아래는 가상 프로젝트를 기준으로 한 **이상적인 출력 예시**입니다:
 
 - 📎 이소서 레퍼런스 — 이상적인 출력 예시
-    
-    ### 프로젝트: 실시간 배달 매칭 플랫폼 (FoodRunner)
-    
-    주문-라이더 실시간 매칭 및 배달 추적 플랫폼
-    
-    - **기간**: 2025.03 ~ 2025.07 (약 4개월)
-    - **인원**: 5인 (PM 1 / 백엔드 2 / 프론트엔드 1 / 디자이너 1) — **백엔드 개발자로 참여**
-    - **기술**: Python, FastAPI, Redis, PostgreSQL, WebSocket, Docker, AWS
-    - **기여**:
-        - Redis 기반 실시간 매칭 엔진 설계 및 구현
-        - WebSocket 통신을 통한 라이더 위치 추적 및 주문 상태 실시간 동기화
-        - FastAPI 기반 주문/배달 관리 API 구현
-        - PostgreSQL 기반 배달 이력 및 통계 데이터 파이프라인 구축
-    
-    **문제 1 — 수동 배차로 인한 대기 시간 문제**
-    
-    기존 시스템은 운영자가 수동으로 주문을 라이더에게 배정하는 방식이었습니다. 피크타임에는 평균 대기 시간이 12분으로 늘어나고, 주문 누락이 발생하여 고객 불만과 매출 손실로 이어졌습니다.
-    
-    **문제 2 — 모놀리식 구조의 확장성 한계**
-    
-    초기에는 단일 서버에서 주문 접수부터 매칭, 알림까지 모두 처리했습니다. 주문 급증 시 서버 응답 지연이 발생하고, 매칭 로직과 알림 전송이 동기적으로 연결되어 병목이 불가피했습니다.
-    
-    **의사결정 1 — 실시간 통신 방식 (Polling vs WebSocket)**
-    
-    기존 Polling 방식은 1초 간격 재요청으로 서버 부하가 높고 실시간성이 떨어졌습니다. WebSocket 기반 양방향 통신을 도입하여 라이더 위치 업데이트와 주문 상태 동기화를 지연 없이 처리할 수 있도록 했습니다.
-    
-    **의사결정 2 — 매칭 엔진 데이터 저장소 (PostgreSQL vs Redis)**
-    
-    매칭 로직은 초단위 속도가 필요하여 PostgreSQL만으로는 응답 시간 보장이 어려웠습니다. Redis를 매칭 엔진의 핵심 데이터 저장소로 채택하고, 확정된 매칭 결과만 PostgreSQL에 영구 저장하는 구조로 설계했습니다.
-    
-    **구현**
-    
-    Redis Sorted Set을 활용한 매칭 엔진을 설계하여, 주문 접수 시 반경·대기 시간·완료율 기반으로 최적의 라이더를 자동 매칭하는 구조를 구현했습니다. WebSocket을 통해 라이더에게 실시간 주문 알림을 전송하고, 고객에게는 배달 진행 상태를 실시간으로 표시했습니다.
-    
-    **성과**
-    
-    Redis 기반 매칭 엔진과 WebSocket 실시간 통신 도입으로 피크타임에도 안정적으로 운영했습니다.
-    
-    - **일 15,000건** 주문 지연 없이 처리
-    - **매칭 시간 75% 단축** (12초 → 3초)
-    - **배달 완료율 94%** 달성
-    - **피크타임 장애 0건** 운영
+
+  ### 프로젝트: 실시간 배달 매칭 플랫폼 (FoodRunner)
+
+  주문-라이더 실시간 매칭 및 배달 추적 플랫폼
+
+
+  - **기간**: 2025.03 ~ 2025.07 (약 4개월)
+  - **인원**: 5인 (PM 1 / 백엔드 2 / 프론트엔드 1 / 디자이너 1) — **백엔드 개발자로 참여**
+  - **기술**: Python, FastAPI, Redis, PostgreSQL, WebSocket, Docker, AWS
+  - **기여**:
+    - Redis 기반 실시간 매칭 엔진 설계 및 구현
+    - WebSocket 통신을 통한 라이더 위치 추적 및 주문 상태 실시간 동기화
+    - FastAPI 기반 주문/배달 관리 API 구현
+    - PostgreSQL 기반 배달 이력 및 통계 데이터 파이프라인 구축
+
+  **문제 1 — 수동 배차로 인한 대기 시간 문제**
+
+  기존 시스템은 운영자가 수동으로 주문을 라이더에게 배정하는 방식이었습니다. 피크타임에는 평균 대기 시간이 12분으로 늘어나고, 주문 누락이 발생하여 고객 불만과 매출 손실로 이어졌습니다.
+
+  **문제 2 — 모놀리식 구조의 확장성 한계**
+
+  초기에는 단일 서버에서 주문 접수부터 매칭, 알림까지 모두 처리했습니다. 주문 급증 시 서버 응답 지연이 발생하고, 매칭 로직과 알림 전송이 동기적으로 연결되어 병목이 불가피했습니다.
+
+  **의사결정 1 — 실시간 통신 방식 (Polling vs WebSocket)**
+
+  기존 Polling 방식은 1초 간격 재요청으로 서버 부하가 높고 실시간성이 떨어졌습니다. WebSocket 기반 양방향 통신을 도입하여 라이더 위치 업데이트와 주문 상태 동기화를 지연 없이 처리할 수 있도록 했습니다.
+
+  **의사결정 2 — 매칭 엔진 데이터 저장소 (PostgreSQL vs Redis)**
+
+  매칭 로직은 초단위 속도가 필요하여 PostgreSQL만으로는 응답 시간 보장이 어려웠습니다. Redis를 매칭 엔진의 핵심 데이터 저장소로 채택하고, 확정된 매칭 결과만 PostgreSQL에 영구 저장하는 구조로 설계했습니다.
+
+  **구현**
+
+  Redis Sorted Set을 활용한 매칭 엔진을 설계하여, 주문 접수 시 반경·대기 시간·완료율 기반으로 최적의 라이더를 자동 매칭하는 구조를 구현했습니다. WebSocket을 통해 라이더에게 실시간 주문 알림을 전송하고, 고객에게는 배달 진행 상태를 실시간으로 표시했습니다.
+
+  **성과**
+
+  Redis 기반 매칭 엔진과 WebSocket 실시간 통신 도입으로 피크타임에도 안정적으로 운영했습니다.
+
+  - **일 15,000건** 주문 지연 없이 처리
+  - **매칭 시간 75% 단축** (12초 → 3초)
+  - **배달 완료율 94%** 달성
+  - **피크타임 장애 0건** 운영
 
 ---
 
@@ -470,4 +471,5 @@ async def generate_resume_pipeline(
 3. **코칭 이력 활용** — `coach_sessions`의 피드백과 선택된 suggestion을 반영하여 품질 향상
 4. **review_tags 자동 태깅** — AI가 추론한 부분에는 반드시 태그를 붙여 사용자 검토 유도
 5. **Gemini fallback** — API 실패 시 기본 템플릿 + 사용자 원문만으로 최소 출력 생성
+
 </aside>
