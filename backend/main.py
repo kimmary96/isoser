@@ -4,10 +4,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
+from check_python_version import main as assert_python_version
 from routers import parse, coach, match, company
 from rag.chroma_client import init_chroma
 
 load_dotenv()
+assert_python_version()
 
 
 @asynccontextmanager

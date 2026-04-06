@@ -7,6 +7,8 @@ from pathlib import Path
 import chromadb
 from chromadb.config import Settings
 
+from check_python_version import main as assert_python_version
+
 SEED_DIR = Path(__file__).parent / "seed_data"
 PERSIST_DIR = os.environ.get("CHROMA_PERSIST_DIR", "./chroma_store")
 
@@ -90,4 +92,5 @@ def main() -> None:
 if __name__ == "__main__":
     # backend/ 디렉토리에서 실행: python rag/seed.py
     sys.path.insert(0, str(Path(__file__).parent.parent))
+    assert_python_version()
     main()

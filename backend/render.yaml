@@ -4,8 +4,8 @@ services:
     name: isoser-backend
     runtime: python
     rootDir: backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: python rag/seed.py && uvicorn main:app --host 0.0.0.0 --port $PORT
+    buildCommand: python check_python_version.py && pip install -r requirements.txt
+    startCommand: python check_python_version.py && python rag/seed.py && uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.14
