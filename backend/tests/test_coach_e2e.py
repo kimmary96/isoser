@@ -57,6 +57,7 @@ def isolate_rag(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def _valid_payload(activity_description: str = "로그인 응답속도 개선 프로젝트에서 Redis를 도입했습니다.") -> dict:
     return {
+        "mode": "feedback",
         "session_id": "session-1",
         "activity_description": activity_description,
         "job_title": "백엔드 개발자",
@@ -103,6 +104,21 @@ def _mock_gemini_failure(monkeypatch: pytest.MonkeyPatch) -> None:
         raise RuntimeError("gemini unavailable")
 
     monkeypatch.setattr(coach_graph, "_get_llm", _raise)
+
+
+def _mock_intro_success_llm(monkeypatch: pytest.MonkeyPatch) -> None:
+    payload = {
+        "intro_candidates": [
+            "사용자 인터뷰를 바탕으로 온보딩 플로우를 개선한 프로젝트입니다.",
+            "사용자 이탈 구간을 분석해 온보딩 경험을 개선한 활동입니다.",
+            "온보딩 과정의 문제를 정리하고 실제 개선안을 반영한 프로젝트입니다.",
+        ]
+    }
+    monkeypatch.setattr(
+        coach_graph,
+        "_get_llm",
+        lambda: DummyLLM(json.dumps(payload, ensure_ascii=False)),
+    )
 
 
 def test_coach_feedback_success(client, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -204,3 +220,38 @@ def test_problem_definition_coaching(client, monkeypatch: pytest.MonkeyPatch) ->
     assert response.status_code == 200
     payload = response.json()
     assert payload["rewrite_suggestions"][0]["focus"] == "problem_definition"
+
+
+def test_intro_generate_success(client, monkeypatch: pytest.MonkeyPatch) -> None:
+    _mock_intro_success_llm(monkeypatch)
+
+    response = client.post(
+        "/coach/feedback",
+        json={
+            "mode": "intro_generate",
+            "activity_description": "사용자 인터뷰 결과를 정리하고 이탈 구간을 분석해 온보딩 플로우를 개선했습니다.",
+            "section_type": "프로젝트",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert "intro_candidates" in payload
+    assert 1 <= len(payload["intro_candidates"]) <= 3
+    assert "feedback" not in payload
+
+
+def test_intro_generate_fallback_on_gemini_failure(client, monkeypatch: pytest.MonkeyPatch) -> None:
+    _mock_gemini_failure(monkeypatch)
+
+    response = client.post(
+        "/coach/feedback",
+        json={
+            "mode": "intro_generate",
+            "activity_description": "사용자 인터뷰를 진행하고 온보딩 플로우를 개선했습니다.",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["intro_candidates"]

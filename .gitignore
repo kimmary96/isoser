@@ -20,6 +20,10 @@ backend/venv/
 *.egg-info/
 dist/
 build/
+venv310/
+backend/venv310/
+.venv310/
+backend/.venv310/
 
 # ChromaDB 데이터 (chroma_store는 포함, 실제 데이터 파일은 제외)
 backend/chroma_store/*.sqlite3
