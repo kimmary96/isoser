@@ -2,7 +2,7 @@
 "use client";
 
 import { createBrowserClient } from "@/lib/supabase/client";
-import { enableGuestMode } from "@/lib/guest";
+import { disableGuestMode, enableGuestMode } from "@/lib/guest";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 
@@ -11,6 +11,7 @@ export default function LoginPage() {
   const supabase = useMemo(() => createBrowserClient(), []);
 
   const handleGoogleLogin = async () => {
+    disableGuestMode();
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {

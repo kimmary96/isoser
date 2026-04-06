@@ -32,6 +32,7 @@ export default function OnboardingPage() {
 
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const [authChecking, setAuthChecking] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [parsedProfile, setParsedProfile] = useState<ParsedProfile | null>(null);
@@ -41,10 +42,43 @@ export default function OnboardingPage() {
   const [coverLetterFile, setCoverLetterFile] = useState<File | null>(null);
   const [jobTitle, setJobTitle] = useState("");
   const [showJobModal, setShowJobModal] = useState(false);
+  const [showGuestLoginPrompt, setShowGuestLoginPrompt] = useState(false);
   const [showAnalyzingModal, setShowAnalyzingModal] = useState(false);
   const [analyzeStep, setAnalyzeStep] = useState<1 | 2>(1);
   const [surveyAnswer, setSurveyAnswer] = useState<string | null>(null);
   const [showCompleteModal, setShowCompleteModal] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const checkAuth = async () => {
+      if (isGuestMode()) {
+        if (mounted) {
+          setAuthChecking(false);
+        }
+        return;
+      }
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!mounted) return;
+
+      if (!user) {
+        router.replace("/login");
+        return;
+      }
+
+      setAuthChecking(false);
+    };
+
+    void checkAuth();
+
+    return () => {
+      mounted = false;
+    };
+  }, [router, supabase]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
@@ -199,6 +233,14 @@ export default function OnboardingPage() {
     }
   }, [analyzed]);
 
+  if (authChecking) {
+    return (
+      <main className="min-h-screen bg-slate-100 flex items-center justify-center">
+        <p className="text-gray-500">로그인 상태를 확인 중입니다...</p>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-slate-100">
       <div className="max-w-2xl mx-auto px-6 py-16">
@@ -327,7 +369,15 @@ export default function OnboardingPage() {
           <div className="mt-8 flex justify-center">
             <button
               type="button"
-              onClick={() => setShowJobModal(true)}
+              onClick={() => {
+                if (isGuestMode()) {
+                  setShowGuestLoginPrompt(true);
+                  setShowJobModal(true);
+                  return;
+                }
+                setShowGuestLoginPrompt(false);
+                setShowJobModal(true);
+              }}
               disabled={loading}
               className="bg-blue-500 text-white rounded-xl px-20 py-4 text-base font-bold disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -342,38 +392,68 @@ export default function OnboardingPage() {
           <div className="bg-white rounded-2xl p-8 w-96 relative">
             <button
               type="button"
-              onClick={() => setShowJobModal(false)}
+              onClick={() => {
+                setShowJobModal(false);
+                setShowGuestLoginPrompt(false);
+              }}
               className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
               aria-label="닫기"
             >
               ×
             </button>
 
-            <h2 className="text-blue-500 font-bold text-xl text-center">지원 직무를 입력해주세요!</h2>
-            <p className="text-gray-400 text-sm text-center mt-1">직무 기반으로 이력서를 분석합니다.</p>
+            {!showGuestLoginPrompt ? (
+              <>
+                <h2 className="text-blue-500 font-bold text-xl text-center">지원 직무를 입력해주세요!</h2>
+                <p className="text-gray-400 text-sm text-center mt-1">직무 기반으로 이력서를 분석합니다.</p>
 
-            <input
-              type="text"
-              placeholder="예) 서비스 기획자"
-              value={jobTitle}
-              onChange={(e) => setJobTitle(e.target.value)}
-              className="border border-gray-200 rounded-lg px-4 py-3 w-full mt-4"
-            />
+                <input
+                  type="text"
+                  placeholder="예) 서비스 기획자"
+                  value={jobTitle}
+                  onChange={(e) => setJobTitle(e.target.value)}
+                  className="border border-gray-200 rounded-lg px-4 py-3 w-full mt-4"
+                />
 
-            <label className="flex items-center gap-2 mt-4 text-sm text-gray-700">
-              <input type="checkbox" defaultChecked />
-              <span>이력서 기반으로 프로필 업데이트 하기</span>
-            </label>
+                <label className="flex items-center gap-2 mt-4 text-sm text-gray-700">
+                  <input type="checkbox" defaultChecked />
+                  <span>이력서 기반으로 프로필 업데이트 하기</span>
+                </label>
 
-            <button
-              type="button"
-              className="bg-blue-400 text-white rounded-full px-6 py-3 w-full mt-4"
-              onClick={() => {
-                void handleStartAnalyze();
-              }}
-            >
-              이력서 분석 시작하기
-            </button>
+                <button
+                  type="button"
+                  className={`rounded-full px-6 py-3 w-full mt-4 text-white ${
+                    isGuestMode() ? "bg-gray-300 cursor-not-allowed" : "bg-blue-400"
+                  }`}
+                  onClick={() => {
+                    if (isGuestMode()) {
+                      setShowGuestLoginPrompt(true);
+                      return;
+                    }
+                    void handleStartAnalyze();
+                  }}
+                >
+                  이력서 분석 시작하기
+                </button>
+              </>
+            ) : (
+              <>
+                <h2 className="text-blue-500 font-bold text-xl text-center">로그인이 필요합니다</h2>
+                <p className="text-gray-500 text-sm text-center mt-3">
+                  게스트 모드에서는 이력서 추출 기능을 사용할 수 없습니다. 로그인 해주세요.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowGuestLoginPrompt(false);
+                    setShowJobModal(false);
+                  }}
+                  className="bg-gray-900 text-white rounded-full px-6 py-3 w-full mt-6"
+                >
+                  뒤로가기
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}

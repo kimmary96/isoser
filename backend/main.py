@@ -49,6 +49,7 @@ app.add_middleware(
 app.include_router(parse.router, prefix="/parse", tags=["parse"])
 app.include_router(coach.router, prefix="/coach", tags=["coach"])
 app.include_router(match.router, prefix="/match", tags=["match"])
+app.include_router(company.router, prefix="/company", tags=["company"])
 
 
 @app.get("/")
