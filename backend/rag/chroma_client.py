@@ -60,7 +60,7 @@ def build_embedding_function() -> GoogleGenerativeAiEmbeddingFunction:
 
     return GoogleGenerativeAiEmbeddingFunction(
         api_key=api_key,
-        model_name="models/embedding-001",
+        model_name="models/text-embedding-004",
     )
 
 
