@@ -186,6 +186,7 @@ export default function ActivityDetailPage() {
       const result = await getCoachFeedback({
         session_id: sessionId,
         activity_description: input,
+        section_type: activity.type || "",
         job_title: jobTitle || "일반",
         history: updatedHistory,
       });
