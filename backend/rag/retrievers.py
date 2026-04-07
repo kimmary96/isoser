@@ -229,6 +229,29 @@ def _distance_to_similarity(distance: Any) -> float:
     return max(0.0, 1.0 - numeric)
 
 
+def _tokenize_for_fallback(text: str) -> set[str]:
+    """Tokenize text for local lexical fallback scoring."""
+
+    return {
+        token.lower()
+        for token in re.findall(r"[0-9A-Za-z가-힣]{2,}", text or "")
+        if token.strip()
+    }
+
+
+def _lexical_similarity(query_text: str, document_text: str) -> float:
+    """Return a lightweight lexical overlap score in [0, 1]."""
+
+    query_tokens = _tokenize_for_fallback(query_text)
+    if not query_tokens:
+        return 0.0
+    doc_tokens = _tokenize_for_fallback(document_text)
+    if not doc_tokens:
+        return 0.0
+    overlap = len(query_tokens.intersection(doc_tokens))
+    return overlap / len(query_tokens)
+
+
 class CoachRetriever:
     """Retriever that applies coaching-specific normalization and reranking."""
 
@@ -309,39 +332,75 @@ class CoachRetriever:
         if collection is None:
             return []
 
-        try:
-            if collection.count() == 0:
-                return []
+        if collection.count() == 0:
+            return []
 
+        records: list[dict[str, Any]] = []
+        try:
             results = collection.query(
                 query_texts=[query_text],
                 n_results=n_results,
                 where=where,
                 include=["documents", "metadatas", "distances"],
             )
+
+            documents = results.get("documents", [[]])[0]
+            metadatas = results.get("metadatas", [[]])[0]
+            distances = results.get("distances", [[]])[0]
+            ids = results.get("ids", [[]])[0]
+
+            for index, document in enumerate(documents):
+                metadata = metadatas[index] if index < len(metadatas) else {}
+                distance = distances[index] if index < len(distances) else None
+                item: dict[str, Any] = {
+                    "id": ids[index] if index < len(ids) else None,
+                    "document": document,
+                    "distance": distance,
+                    "similarity": _distance_to_similarity(distance),
+                }
+                if isinstance(metadata, dict):
+                    item.update(metadata)
+                records.append(item)
+
+            return records
+        except Exception as exc:
+            log_event(
+                logger,
+                logging.WARNING,
+                "retriever_query_fallback",
+                error=str(exc),
+                where=where or {},
+                n_results=n_results,
+            )
+
+        try:
+            fallback = collection.get(
+                where=where,
+                include=["documents", "metadatas"],
+            )
         except Exception:
             return []
 
-        documents = results.get("documents", [[]])[0]
-        metadatas = results.get("metadatas", [[]])[0]
-        distances = results.get("distances", [[]])[0]
-        ids = results.get("ids", [[]])[0]
+        ids_raw = fallback.get("ids") or []
+        docs_raw = fallback.get("documents") or []
+        metas_raw = fallback.get("metadatas") or []
 
-        records: list[dict[str, Any]] = []
-        for index, document in enumerate(documents):
-            metadata = metadatas[index] if index < len(metadatas) else {}
-            distance = distances[index] if index < len(distances) else None
+        for index, document in enumerate(docs_raw):
+            text = str(document or "")
+            score = _lexical_similarity(query_text, text)
+            metadata = metas_raw[index] if index < len(metas_raw) else {}
             item: dict[str, Any] = {
-                "id": ids[index] if index < len(ids) else None,
-                "document": document,
-                "distance": distance,
-                "similarity": _distance_to_similarity(distance),
+                "id": ids_raw[index] if index < len(ids_raw) else None,
+                "document": text,
+                "distance": None,
+                "similarity": score,
             }
             if isinstance(metadata, dict):
                 item.update(metadata)
             records.append(item)
 
-        return records
+        records.sort(key=lambda row: float(row.get("similarity", 0.0)), reverse=True)
+        return records[:n_results]
 
     def _retrieve_job_keyword_patterns(
         self,
