@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import Counter, defaultdict
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
@@ -38,7 +38,7 @@ class RawSurveyUnavailableError(RuntimeError):
 
 
 def _timestamp() -> str:
-    return datetime.now(UTC).isoformat().replace("+00:00", "Z")
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
 def _column_index(cell_ref: str) -> int:
@@ -277,6 +277,20 @@ def _is_placeholder_raw_csv(rows: list[dict[str, str]]) -> bool:
     return note == "PII_REMOVED"
 
 
+def _is_restricted_full_raw_csv(rows: list[dict[str, str]]) -> bool:
+    """Block full raw survey dumps by default unless explicitly allowed."""
+
+    if not rows:
+        return False
+
+    first_row = rows[0]
+    if not isinstance(first_row, dict):
+        return False
+
+    looks_like_full_schema = {"id", "knowcode", "sq1"}.issubset(set(first_row.keys()))
+    return looks_like_full_schema and len(rows) > 1000
+
+
 def _resolve_job_name(rows: list[dict[str, str]], know_code: str, know_code_labels: dict[str, str]) -> str:
     counter = Counter((row.get("job") or "").strip() for row in rows if (row.get("job") or "").strip())
     if counter:
@@ -367,6 +381,10 @@ def build_skill_weights_payload(raw_csv_path: Path, codebook_path: Path, *, top_
     if _is_placeholder_raw_csv(raw_rows):
         raise RawSurveyUnavailableError(
             "원자료 CSV가 PII 제거 안내 파일로 대체되어 실제 직업별 가중치를 계산할 수 없습니다."
+        )
+    if _is_restricted_full_raw_csv(raw_rows) and os.environ.get("KNOW_ALLOW_FULL_RAW") != "1":
+        raise RawSurveyUnavailableError(
+            "Full raw survey CSV is restricted by default. Set KNOW_ALLOW_FULL_RAW=1 to override."
         )
 
     grouped_rows: dict[str, list[dict[str, str]]] = defaultdict(list)

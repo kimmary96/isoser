@@ -1,4 +1,4 @@
-"""Activity-to-STAR and portfolio conversion helpers."""
+﻿"""Activity-to-STAR and portfolio conversion helpers."""
 
 from __future__ import annotations
 
@@ -38,7 +38,7 @@ PERIOD_SPLIT_PATTERN = re.compile(r"\s*(?:~|-|–|—)\s*")
 YEAR_MONTH_PATTERN = re.compile(r"(?P<year>\d{4})[./-]?\s*(?P<month>\d{1,2})")
 
 PROBLEM_KEYWORDS = ("문제", "이슈", "배경", "상황", "병목", "장애", "기존", "불편", "리스크")
-TASK_KEYWORDS = ("목표", "과제", "해결", "개선", "달성", "줄이", "높이", "구축", "전환")
+TASK_KEYWORDS = ("목표", "과제", "해결", "달성", "줄이", "높이", "구축", "전환")
 ACTION_KEYWORDS = ("구현", "설계", "도입", "적용", "개선", "개발", "구축", "분석", "자동화", "최적화", "리팩터링", "운영")
 DECISION_KEYWORDS = ("선택", "비교", "대안", "도입", "채택", "결정", "대신", "전환")
 DECISION_RATIONALE_KEYWORDS = ("비교", "대안", "대신", "선택", "이유", "근거", "판단")

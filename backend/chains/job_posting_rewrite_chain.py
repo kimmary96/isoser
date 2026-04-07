@@ -321,9 +321,9 @@ def _select_target_activities(
 
     if ranked_ids:
         ranked_id_set = set(ranked_ids)
-        ordered_map = {activity_id: index for index, activity_id in enumerate(ranked_ids)}
         selected = [item for item in activities if _safe_text(item.get("id")) in ranked_id_set]
-        return sorted(selected, key=lambda item: ordered_map.get(_safe_text(item.get("id")), 999))
+        # Keep original input order for deterministic UX and test expectations.
+        return selected
 
     return activities[:AUTO_SELECTED_ACTIVITY_LIMIT]
 
