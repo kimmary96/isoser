@@ -208,9 +208,8 @@ async def get_coach_feedback(request: CoachRequest):
         return _validation_error("selected_suggestion_index는 0 이상의 값만 허용됩니다.")
 
     should_persist_session = request.mode == "feedback"
-    repo = get_coach_session_repo() if should_persist_session and request.user_id else None
-    if should_persist_session and request.user_id and repo is None:
-        raise HTTPException(status_code=503, detail="coach session persistence is not configured")
+    # Allow coaching to continue even when session persistence is not configured.
+    repo = get_coach_session_repo() if request.user_id else None
 
     saved_session: CoachSessionRecord | None = None
     restored_history = [message.model_dump() for message in request.history]
