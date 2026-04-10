@@ -54,7 +54,7 @@ export default function CallbackPage() {
         router.replace("/dashboard");
         return;
       }
-      router.replace("/dashboard/onboarding");
+      router.replace("/onboarding");
     };
 
     void handleCallback();

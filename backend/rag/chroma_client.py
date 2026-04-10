@@ -45,12 +45,17 @@ COLLECTION_CONFIG: dict[str, dict[str, Any]] = {
         "metadata": {"hnsw:space": "cosine"},
         "stats_keys": ("source", "section_type"),
     },
+    "programs": {
+        "metadata": {"hnsw:space": "cosine"},
+        "stats_keys": ("category", "location", "is_active"),
+    },
 }
-COLLECTION_ORDER = (
+SEEDED_COLLECTION_ORDER = (
     "job_keyword_patterns",
     "star_examples",
     "job_posting_snippets",
 )
+COLLECTION_ORDER = SEEDED_COLLECTION_ORDER + ("programs",)
 
 
 class GeminiEmbeddingFunction(EmbeddingFunction):
@@ -179,7 +184,7 @@ def get_or_create_collections(
             metadata=_collection_metadata(name),
             embedding_function=embedding_fn,
         )
-        for name in COLLECTION_ORDER
+        for name in SEEDED_COLLECTION_ORDER
     )
     return collections
 
@@ -227,10 +232,16 @@ class ChromaManager:
         try:
             client, chroma_mode = create_chroma_client()
             collections = get_or_create_collections(client)
+            programs_collection = client.get_or_create_collection(
+                name="programs",
+                metadata=_collection_metadata("programs"),
+                embedding_function=build_embedding_function(),
+            )
 
             self._client = client
             self._chroma_mode = chroma_mode
-            self._collections = dict(zip(COLLECTION_ORDER, collections, strict=True))
+            self._collections = dict(zip(SEEDED_COLLECTION_ORDER, collections, strict=True))
+            self._collections["programs"] = programs_collection
 
             if seed_data:
                 try:

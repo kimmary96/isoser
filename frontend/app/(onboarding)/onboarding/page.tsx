@@ -3,10 +3,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 import { parsePdf } from "@/lib/api/backend";
-import { isGuestMode } from "@/lib/guest";
 import { createBrowserClient } from "@/lib/supabase/client";
 import type { ParsedActivity, ParsedProfile } from "@/lib/types";
 
@@ -39,12 +37,10 @@ function previewValue(value?: string | null) {
 }
 
 export default function OnboardingPage() {
-  const router = useRouter();
   const supabase = useMemo(() => createBrowserClient(), []);
 
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
-  const [authChecking, setAuthChecking] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [parsedProfile, setParsedProfile] = useState<ParsedProfile | null>(null);
@@ -53,38 +49,6 @@ export default function OnboardingPage() {
 
   const [showAnalyzingModal, setShowAnalyzingModal] = useState(false);
   const [analyzeStep, setAnalyzeStep] = useState<1 | 2>(1);
-
-  useEffect(() => {
-    let mounted = true;
-
-    const checkAuth = async () => {
-      if (isGuestMode()) {
-        if (mounted) {
-          setAuthChecking(false);
-        }
-        return;
-      }
-
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!mounted) return;
-
-      if (!user) {
-        router.replace("/login");
-        return;
-      }
-
-      setAuthChecking(false);
-    };
-
-    void checkAuth();
-
-    return () => {
-      mounted = false;
-    };
-  }, [router, supabase]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
@@ -103,11 +67,6 @@ export default function OnboardingPage() {
   };
 
   const handleAnalyze = async () => {
-    if (isGuestMode()) {
-      setError("게스트 모드에서는 PDF 추출을 사용할 수 없습니다. 로그인 후 업로드해 주세요.");
-      return;
-    }
-
     if (!file) {
       setError("먼저 이력서 PDF를 선택해 주세요.");
       return;
@@ -240,14 +199,6 @@ export default function OnboardingPage() {
     }
   };
 
-  if (authChecking) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-100">
-        <p className="text-gray-500">로그인 상태를 확인 중입니다...</p>
-      </main>
-    );
-  }
-
   const activityCounts = countByType(parsedActivities);
 
   return (
@@ -305,14 +256,6 @@ export default function OnboardingPage() {
               >
                 직접 입력으로 이동
               </Link>
-              {isGuestMode() && (
-                <Link
-                  href="/login"
-                  className="rounded-full border border-white/16 px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-white/8"
-                >
-                  로그인하고 업로드하기
-                </Link>
-              )}
             </div>
           </section>
 
@@ -386,18 +329,12 @@ export default function OnboardingPage() {
                     <button
                       type="button"
                       onClick={handleAnalyze}
-                      disabled={loading || isGuestMode()}
+                      disabled={loading}
                       className="rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {loading ? "분석 중..." : "추출 시작"}
                     </button>
                   </div>
-                  {isGuestMode() && (
-                    <p className="mt-4 text-sm text-amber-700">
-                      게스트 모드에서는 업로드 분석이 비활성화되어 있습니다. 로그인 후 이용해
-                      주세요.
-                    </p>
-                  )}
                 </div>
               )}
             </div>

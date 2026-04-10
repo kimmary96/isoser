@@ -954,7 +954,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-2xl font-semibold tracking-tight text-slate-950">내 이력 완성도</h2>
             <div className="flex flex-col items-end gap-2">
-              <Link href="/dashboard/onboarding" className="text-white rounded-xl px-6 py-2.5 text-sm font-semibold" style={{ background: "linear-gradient(135deg, #094cb2, #3b82f6)" }}>
+              <Link href="/onboarding" className="text-white rounded-xl px-6 py-2.5 text-sm font-semibold" style={{ background: "linear-gradient(135deg, #094cb2, #3b82f6)" }}>
                 기존 이력서로 한번에 채우기
               </Link>
               <p className="text-2xl font-bold text-blue-600">{completionScore}%</p>
