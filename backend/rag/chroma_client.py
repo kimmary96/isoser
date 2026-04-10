@@ -58,11 +58,23 @@ SEEDED_COLLECTION_ORDER = (
 COLLECTION_ORDER = SEEDED_COLLECTION_ORDER + ("programs",)
 
 
+def _gemini_http_options() -> genai_types.HttpOptions:
+    """Build Google GenAI HTTP options that ignore broken proxy env vars."""
+
+    return genai_types.HttpOptions(
+        client_args={"trust_env": False},
+        async_client_args={"trust_env": False},
+    )
+
+
 class GeminiEmbeddingFunction(EmbeddingFunction):
     """Custom Gemini embedding function using google-genai SDK."""
 
     def __init__(self, api_key: str):
-        self.client = genai.Client(api_key=api_key)
+        self.client = genai.Client(
+            api_key=api_key,
+            http_options=_gemini_http_options(),
+        )
 
     def __call__(self, input: list[str]) -> Embeddings:
         if not input:

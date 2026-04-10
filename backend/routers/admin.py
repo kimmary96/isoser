@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 from datetime import date
@@ -142,6 +143,88 @@ def _normalize_program_row(row: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _deduplicate_program_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    deduped_by_hrd_id: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        hrd_id = str(row.get("hrd_id") or "").strip()
+        if not hrd_id:
+            continue
+        deduped_by_hrd_id[hrd_id] = row
+    return list(deduped_by_hrd_id.values())
+
+
+async def _fetch_chroma_sync_candidates() -> list[dict[str, Any]]:
+    rows = await _request_supabase(
+        method="GET",
+        path="/rest/v1/programs",
+        params={
+            "select": "id,title,description,category,location,provider,is_active,end_date",
+            "end_date": "not.is.null",
+            "order": "end_date.asc",
+            "limit": "200",
+        },
+    )
+    return rows if isinstance(rows, list) else []
+
+
+async def _sync_program_batches(program_rows: list[dict[str, Any]]) -> tuple[int, int]:
+    if not program_rows:
+        return 0, 0
+
+    if not programs_rag._manager.ensure_initialized(seed_data=False):
+        log_event(logger, logging.ERROR, "admin_programs_chroma_init_failed")
+        return 0, len(program_rows)
+
+    chroma_synced = 0
+    chroma_skipped = 0
+
+    for batch_index in range(0, len(program_rows), 20):
+        batch = program_rows[batch_index : batch_index + 20]
+        batch_started_at = perf_counter()
+        try:
+            synced_count = programs_rag.sync(batch)
+            chroma_synced += synced_count
+            if synced_count < len(batch):
+                chroma_skipped += len(batch) - synced_count
+                log_event(
+                    logger,
+                    logging.WARNING,
+                    "admin_programs_chroma_batch_partial",
+                    batch_start=batch_index,
+                    batch_size=len(batch),
+                    synced_count=synced_count,
+                    skipped_count=len(batch) - synced_count,
+                    duration_seconds=round(perf_counter() - batch_started_at, 3),
+                )
+            else:
+                log_event(
+                    logger,
+                    logging.INFO,
+                    "admin_programs_chroma_batch_completed",
+                    batch_start=batch_index,
+                    batch_size=len(batch),
+                    synced_count=synced_count,
+                    duration_seconds=round(perf_counter() - batch_started_at, 3),
+                )
+        except Exception as exc:
+            chroma_skipped += len(batch)
+            log_event(
+                logger,
+                logging.WARNING,
+                "admin_programs_chroma_batch_skipped",
+                batch_start=batch_index,
+                batch_size=len(batch),
+                error=str(exc),
+                rate_limited="429" in str(exc) or "Too Many Requests" in str(exc),
+                duration_seconds=round(perf_counter() - batch_started_at, 3),
+            )
+
+        if batch_index + 20 < len(program_rows):
+            await asyncio.sleep(2)
+
+    return chroma_synced, chroma_skipped
+
+
 @router.post("/sync/programs")
 async def sync_programs(
     authorization: str | None = Header(default=None),
@@ -181,6 +264,7 @@ async def sync_programs(
             raise HTTPException(status_code=503, detail="Failed to fetch Work24 training programs")
 
         payload = [normalized for row in fetched_rows if (normalized := _normalize_program_row(row))]
+        payload = _deduplicate_program_rows(payload)
         if not payload:
             duration_seconds = round(perf_counter() - started_at, 3)
             log_event(
@@ -189,9 +273,15 @@ async def sync_programs(
                 "admin_programs_sync_completed",
                 synced_count=0,
                 chroma_synced=0,
+                chroma_skipped=0,
                 duration_seconds=duration_seconds,
             )
-            return {"synced": 0, "chroma_synced": 0, "duration_seconds": duration_seconds}
+            return {
+                "synced": 0,
+                "chroma_synced": 0,
+                "chroma_skipped": 0,
+                "duration_seconds": duration_seconds,
+            }
 
         upsert_started_at = perf_counter()
         rows = await _request_supabase(
@@ -208,11 +298,32 @@ async def sync_programs(
             logging.INFO,
             "admin_programs_upsert_completed",
             duration_seconds=upsert_duration,
+            payload_count=len(payload),
             synced_count=len(synced_rows),
         )
 
         chroma_started_at = perf_counter()
-        chroma_synced = programs_rag.sync(synced_rows)
+        chroma_synced = 0
+        chroma_skipped = 0
+        try:
+            chroma_candidates_started_at = perf_counter()
+            chroma_candidates = await _fetch_chroma_sync_candidates()
+            log_event(
+                logger,
+                logging.INFO,
+                "admin_programs_chroma_candidates_fetched",
+                duration_seconds=round(perf_counter() - chroma_candidates_started_at, 3),
+                candidate_count=len(chroma_candidates),
+            )
+            chroma_synced, chroma_skipped = await _sync_program_batches(chroma_candidates)
+        except Exception as exc:
+            log_event(
+                logger,
+                logging.WARNING,
+                "admin_programs_chroma_sync_failed",
+                error=str(exc),
+            )
+
         chroma_duration = round(perf_counter() - chroma_started_at, 3)
         log_event(
             logger,
@@ -220,6 +331,7 @@ async def sync_programs(
             "admin_programs_chroma_sync_completed",
             duration_seconds=chroma_duration,
             chroma_synced=chroma_synced,
+            chroma_skipped=chroma_skipped,
         )
 
         duration_seconds = round(perf_counter() - started_at, 3)
@@ -230,6 +342,7 @@ async def sync_programs(
             fetched_count=len(fetched_rows),
             synced_count=len(synced_rows),
             chroma_synced=chroma_synced,
+            chroma_skipped=chroma_skipped,
             start_dt=resolved_start_dt,
             end_dt=resolved_end_dt,
             area_code=area_code,
@@ -239,6 +352,7 @@ async def sync_programs(
         return {
             "synced": len(synced_rows),
             "chroma_synced": chroma_synced,
+            "chroma_skipped": chroma_skipped,
             "duration_seconds": duration_seconds,
         }
     except HTTPException:

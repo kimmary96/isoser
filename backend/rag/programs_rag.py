@@ -145,6 +145,21 @@ class ProgramsRAG:
     def __init__(self) -> None:
         self._manager = get_chroma_manager()
 
+    def _urgency_score(self, program: dict) -> float:
+        from datetime import date
+
+        date_str = program.get("deadline") or program.get("end_date")
+        if not date_str:
+            return 0.0
+        try:
+            target = date.fromisoformat(str(date_str)[:10])
+            days_left = (target - date.today()).days
+            if days_left < 0:
+                return 0.0
+            return max(0.0, 1.0 - days_left / 30)
+        except Exception:
+            return 0.0
+
     def sync(self, programs: Sequence[Mapping[str, Any]]) -> int:
         ids: list[str] = []
         documents: list[str] = []
@@ -205,18 +220,21 @@ class ProgramsRAG:
             program = program_by_id.get(program_id)
             if not program:
                 continue
+            program_record = dict(program)
+            urgency_score = self._urgency_score(program_record)
+            program_record["urgency_score"] = urgency_score
             reason_payload = reasons.get(program_id, {})
             recommendations.append(
                 ProgramRecommendation(
                     program_id=program_id,
-                    score=result.score,
+                    score=result.score if result.score is not None else urgency_score,
                     reason=_safe_text(reason_payload.get("reason")) or "프로필과 연관성이 높아 추천합니다.",
                     fit_keywords=[
                         str(item).strip()
                         for item in reason_payload.get("fit_keywords", [])
                         if str(item).strip()
                     ][:3],
-                    program=program,
+                    program=program_record,
                 )
             )
 
@@ -291,4 +309,3 @@ class ProgramsRAG:
                 continue
             mapped[program_id] = item
         return mapped
-
