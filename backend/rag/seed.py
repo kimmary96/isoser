@@ -24,7 +24,10 @@ from backend.rag.schema import (
     StarExampleSeed,
 )
 from backend.rag.chroma_client import create_chroma_client, get_or_create_collections
-from check_python_version import main as assert_python_version
+try:
+    from backend.check_python_version import main as assert_python_version
+except ImportError:
+    from check_python_version import main as assert_python_version
 
 SEED_DIR = Path(__file__).parent / "seed_data"
 logger = get_logger(__name__)

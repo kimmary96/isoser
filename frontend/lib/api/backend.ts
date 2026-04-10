@@ -1,6 +1,10 @@
 import type {
+  ActivityConvertRequest,
+  ActivityConvertResponse,
   CoachFeedbackRequest,
   CoachFeedbackResponse,
+  CoachIntroGenerateRequest,
+  CoachIntroGenerateResponse,
   CoachSessionDetail,
   CoachSessionSummary,
   CompanyInsightResponse,
@@ -9,6 +13,7 @@ import type {
   MatchAnalyzeRequest,
   MatchResult,
   ParsePdfResponse,
+  SkillSuggestResponse,
 } from "@/lib/types";
 
 const BACKEND_URL =
@@ -71,6 +76,22 @@ export async function getCoachFeedback(
       body: JSON.stringify(payload),
     },
     "Coach feedback generation failed."
+  );
+}
+
+export async function generateActivityIntro(
+  payload: CoachIntroGenerateRequest
+): Promise<CoachIntroGenerateResponse> {
+  return requestJson<CoachIntroGenerateResponse>(
+    "/coach/feedback",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    },
+    "Activity intro generation failed."
   );
 }
 
@@ -164,5 +185,39 @@ export async function getCompanyInsight(payload: {
       body: JSON.stringify(payload),
     },
     "Failed to load company insight."
+  );
+}
+
+export async function getSkillSuggestions(
+  role: string,
+  limit = 20
+): Promise<SkillSuggestResponse> {
+  const params = new URLSearchParams({
+    role,
+    limit: String(limit),
+  });
+
+  return requestJson<SkillSuggestResponse>(
+    `/skills/suggest?${params.toString()}`,
+    {
+      method: "GET",
+    },
+    "Failed to load skill suggestions."
+  );
+}
+
+export async function convertActivity(
+  payload: ActivityConvertRequest
+): Promise<ActivityConvertResponse> {
+  return requestJson<ActivityConvertResponse>(
+    "/activities/convert",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    },
+    "Activity conversion failed."
   );
 }

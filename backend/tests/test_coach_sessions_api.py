@@ -152,6 +152,15 @@ def _graph_result(activity_text: str) -> dict[str, Any]:
     }
 
 
+def _intro_graph_result(activity_text: str) -> dict[str, Any]:
+    return {
+        "intro_candidates": [
+            activity_text,
+            f"이 활동은 {activity_text}",
+        ]
+    }
+
+
 def test_feedback_creates_session_and_persists_structure(client, fake_repo, monkeypatch: pytest.MonkeyPatch) -> None:
     async def fake_run_coach_graph(**kwargs):  # noqa: ANN003
         return _graph_result(kwargs["activity_text"])
@@ -234,3 +243,29 @@ def test_get_session_detail_restores_last_exchange(client, fake_repo) -> None:
         {"role": "user", "content": "Redis cache rollout improved API latency."},
         {"role": "assistant", "content": "feedback"},
     ]
+
+
+def test_intro_generate_skips_session_persistence(client, fake_repo, monkeypatch: pytest.MonkeyPatch) -> None:
+    async def fake_run_coach_graph(**kwargs):  # noqa: ANN003
+        assert kwargs["mode"] == "intro_generate"
+        return _intro_graph_result(kwargs["activity_text"])
+
+    monkeypatch.setattr(coach_router, "run_coach_graph", fake_run_coach_graph)
+
+    response = client.post(
+        "/coach/feedback",
+        json={
+            "mode": "intro_generate",
+            "session_id": "session-1",
+            "user_id": "user-1",
+            "activity_description": "사용자 인터뷰를 진행하고 온보딩 플로우를 개선했습니다.",
+            "section_type": "프로젝트",
+            "history": [],
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["intro_candidates"]
+    assert fake_repo.last_updated_payload is None
+    assert "session-1" not in fake_repo.sessions

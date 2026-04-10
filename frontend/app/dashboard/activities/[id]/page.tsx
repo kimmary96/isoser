@@ -2,14 +2,28 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { createBrowserClient } from "@/lib/supabase/client";
-import { getCoachFeedback } from "@/lib/api/backend";
-import { getGuestActivities, isGuestMode } from "@/lib/guest";
-import type { Activity, CoachMessage } from "@/lib/types";
+import {
+  convertActivity,
+  generateActivityIntro,
+  getCoachFeedback,
+  getSkillSuggestions,
+} from "@/lib/api/backend";
+import {
+  deleteGuestActivity,
+  getGuestActivities,
+  isGuestMode,
+  upsertGuestActivity,
+} from "@/lib/guest";
+import type { Activity, ActivityConvertRequest, CoachMessage } from "@/lib/types";
+
+const PENDING_STAR_CONVERSION_KEY = "isoser:pending-star-conversion";
+const PENDING_PORTFOLIO_CONVERSION_KEY = "isoser:pending-portfolio-conversion";
 
 export default function ActivityDetailPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const activityId = params.id as string;
   const isNewActivity = activityId === "new" || activityId === "__new__";
   const router = useRouter();
@@ -40,13 +54,43 @@ export default function ActivityDetailPage() {
   const [periodEnd, setPeriodEnd] = useState("");
   const [skillInput, setSkillInput] = useState("");
   const [skillsDraft, setSkillsDraft] = useState<string[]>([]);
+  const [skillSuggestions, setSkillSuggestions] = useState<string[]>([]);
+  const [skillSuggestionRoleLabel, setSkillSuggestionRoleLabel] = useState<string | null>(null);
+  const [skillSuggestionLoading, setSkillSuggestionLoading] = useState(false);
+  const [skillSuggestionError, setSkillSuggestionError] = useState<string | null>(null);
+  const [introCandidates, setIntroCandidates] = useState<string[]>([]);
+  const [introGenerateLoading, setIntroGenerateLoading] = useState(false);
+  const [introGenerateError, setIntroGenerateError] = useState<string | null>(null);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [imageUploading, setImageUploading] = useState(false);
   const [basicSaving, setBasicSaving] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showPostSaveModal, setShowPostSaveModal] = useState(false);
+  const [postSaveActivity, setPostSaveActivity] = useState<Activity | null>(null);
+  const [postSaveAction, setPostSaveAction] = useState<"star" | "portfolio" | null>(null);
+  const [starSaveToast, setStarSaveToast] = useState<{
+    tone: "success" | "error";
+    message: string;
+  } | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sessionId] = useState(() => crypto.randomUUID());
+
+  useEffect(() => {
+    if (searchParams.get("tab") === "star") {
+      setActiveTab("star");
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (!starSaveToast) return;
+
+    const timer = window.setTimeout(() => {
+      setStarSaveToast(null);
+    }, 2500);
+
+    return () => window.clearTimeout(timer);
+  }, [starSaveToast]);
 
   useEffect(() => {
     const fetchActivity = async () => {
@@ -147,6 +191,58 @@ export default function ActivityDetailPage() {
     fetchActivity();
   }, [activityId, isNewActivity, supabase]);
 
+  useEffect(() => {
+    setSkillSuggestions([]);
+    setSkillSuggestionRoleLabel(null);
+    setSkillSuggestionError(null);
+  }, [myRole]);
+
+  useEffect(() => {
+    setIntroCandidates([]);
+    setIntroGenerateError(null);
+  }, [titleDraft, typeDraft, organization, myRole, contributions]);
+
+  useEffect(() => {
+    if (
+      isNewActivity ||
+      loading ||
+      !activity ||
+      typeof window === "undefined" ||
+      searchParams.get("tab") !== "star"
+    ) {
+      return;
+    }
+
+    const raw = window.sessionStorage.getItem(PENDING_STAR_CONVERSION_KEY);
+    if (!raw) {
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(raw) as {
+        activityId?: string;
+        star?: {
+          star_situation?: string;
+          star_task?: string;
+          star_action?: string;
+          star_result?: string;
+        };
+      };
+
+      if (parsed.activityId !== activityId || parsed.activityId !== activity.id || !parsed.star) {
+        return;
+      }
+
+      setStarSituation(parsed.star.star_situation ?? "");
+      setStarTask(parsed.star.star_task ?? "");
+      setStarAction(parsed.star.star_action ?? "");
+      setStarResult(parsed.star.star_result ?? "");
+      window.sessionStorage.removeItem(PENDING_STAR_CONVERSION_KEY);
+    } catch {
+      window.sessionStorage.removeItem(PENDING_STAR_CONVERSION_KEY);
+    }
+  }, [activity, activityId, isNewActivity, loading, searchParams]);
+
   const handleSaveDescription = async () => {
     if (!activity) return;
     if (isGuestMode()) {
@@ -186,8 +282,8 @@ export default function ActivityDetailPage() {
       const result = await getCoachFeedback({
         session_id: sessionId,
         activity_description: input,
-        section_type: activity.type || "",
         job_title: jobTitle || "일반",
+        section_type: (typeDraft || activity.type) as Activity["type"],
         history: updatedHistory,
       });
 
@@ -228,21 +324,54 @@ export default function ActivityDetailPage() {
   const handleSaveBasicInfo = async () => {
     if (!activity) return;
     setBasicSaving(true);
+    setError(null);
     try {
+      if (isGuestMode()) {
+        const now = new Date().toISOString();
+        const guestActivity: Activity = {
+          ...activity,
+          id: isNewActivity ? `guest-activity-${Date.now()}` : activity.id,
+          user_id: "guest",
+          type: (typeDraft || activity.type) as Activity["type"],
+          title: titleDraft || organization.trim() || "새 성과 기록",
+          period: periodValue || null,
+          role: myRole || activity.role,
+          skills: skillsDraft,
+          description: descriptionDraft || null,
+          organization,
+          team_size: teamSize,
+          team_composition: teamComposition,
+          my_role: myRole,
+          contributions: filteredContributions,
+          image_urls: imageUrls,
+          updated_at: now,
+          created_at: isNewActivity ? now : activity.created_at,
+        };
+
+        upsertGuestActivity(guestActivity);
+
+        if (isNewActivity) {
+          setPostSaveActivity(guestActivity);
+          setShowPostSaveModal(true);
+          return;
+        }
+
+        setActivity(guestActivity);
+        return;
+      }
+
       if (isNewActivity) {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
           throw new Error("로그인이 필요합니다.");
         }
-        const { error: insertError } = await supabase
+        const { data: insertedActivity, error: insertError } = await supabase
           .from("activities")
           .insert({
             user_id: user.id,
             type: typeDraft || activity.type,
             title: titleDraft || organization.trim() || "새 성과 기록",
-            period: periodStart && periodEnd
-              ? `${periodStart} ~ ${periodEnd}`
-              : periodStart || "",
+            period: periodValue,
             role: activity.role,
             skills: skillsDraft,
             description: descriptionDraft || null,
@@ -250,18 +379,21 @@ export default function ActivityDetailPage() {
             team_size: teamSize,
             team_composition: teamComposition,
             my_role: myRole,
-            contributions: contributions.filter((c) => c.trim() !== ""),
+            contributions: filteredContributions,
             image_urls: imageUrls,
             is_visible: true,
-          });
+          })
+          .select("*")
+          .single();
         if (insertError) {
           throw insertError;
         }
-        router.push("/dashboard/activities");
+        setPostSaveActivity(insertedActivity as Activity);
+        setShowPostSaveModal(true);
         return;
       }
 
-      await supabase
+      const { error: updateError } = await supabase
         .from("activities")
         .update({
           description: descriptionDraft,
@@ -269,16 +401,17 @@ export default function ActivityDetailPage() {
           team_size: teamSize,
           team_composition: teamComposition,
           my_role: myRole,
-          contributions: contributions.filter((c) => c.trim() !== ""),
+          contributions: filteredContributions,
           image_urls: imageUrls,
           title: titleDraft,
           type: typeDraft,
-          period: periodStart && periodEnd
-            ? `${periodStart} ~ ${periodEnd}`
-            : periodStart || "",
+          period: periodValue,
           skills: skillsDraft,
         })
         .eq("id", activity.id);
+      if (updateError) {
+        throw updateError;
+      }
       setActivity({
         ...activity,
         description: descriptionDraft,
@@ -286,15 +419,15 @@ export default function ActivityDetailPage() {
         team_size: teamSize,
         team_composition: teamComposition,
         my_role: myRole,
-        contributions: contributions.filter((c) => c.trim() !== ""),
+        contributions: filteredContributions,
         image_urls: imageUrls,
         title: titleDraft,
         type: (typeDraft || activity.type) as Activity["type"],
-        period: periodStart && periodEnd
-          ? `${periodStart} ~ ${periodEnd}`
-          : periodStart || "",
+        period: periodValue,
         skills: skillsDraft,
       });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "?쒕룞 ??μ뿉 ?ㅽ뙣?덉뒿?덈떎.");
     } finally {
       setBasicSaving(false);
     }
@@ -302,7 +435,7 @@ export default function ActivityDetailPage() {
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files || imageUrls.length >= 5) return;
+    if (isGuestMode() || !files || imageUrls.length >= 5) return;
 
     setImageUploading(true);
     try {
@@ -347,21 +480,253 @@ export default function ActivityDetailPage() {
     setContributions((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleSkillAdd = () => {
-    const trimmed = skillInput.trim();
-    if (!trimmed || skillsDraft.includes(trimmed) || skillsDraft.length >= 10) return;
+  const contributionItems = contributions
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+
+  const hasContributionContent = contributionItems.length > 0;
+
+  const buildIntroSourceText = () => {
+    const segments = [
+      titleDraft.trim() ? `활동명: ${titleDraft.trim()}` : "",
+      organization.trim() ? `조직: ${organization.trim()}` : "",
+      myRole.trim() ? `역할: ${myRole.trim()}` : "",
+      `활동 유형: ${(typeDraft || activity?.type || "프로젝트").trim()}`,
+      contributionItems.length > 0
+        ? `기여 내용:\n- ${contributionItems.join("\n- ")}`
+        : "",
+    ].filter(Boolean);
+
+    return segments.join("\n");
+  };
+
+  const handleGenerateIntroCandidates = async () => {
+    if (!hasContributionContent) {
+      setIntroGenerateError("기여내용을 먼저 작성해주세요.");
+      return;
+    }
+
+    setIntroGenerateLoading(true);
+    setIntroGenerateError(null);
+    try {
+      const result = await generateActivityIntro({
+        mode: "intro_generate",
+        activity_description: buildIntroSourceText(),
+        activity_type: typeDraft || activity?.type || "?꾨줈?앺듃",
+        org_name: organization.trim(),
+        period: periodValue,
+        team_size: teamSize,
+        role: myRole.trim(),
+        skills: skillsDraft,
+        contribution: contributionItems.join("\n"),
+        section_type: (typeDraft || activity?.type || "프로젝트") as Activity["type"],
+      });
+      setIntroCandidates(result.intro_candidates);
+      if (result.intro_candidates.length === 0) {
+        setIntroGenerateError("생성된 소개글 후보가 없습니다.");
+      }
+    } catch (e) {
+      setIntroCandidates([]);
+      setIntroGenerateError(
+        e instanceof Error ? e.message : "AI 소개글을 생성하지 못했습니다."
+      );
+    } finally {
+      setIntroGenerateLoading(false);
+    }
+  };
+
+  const filteredContributions = contributions.filter((c) => c.trim() !== "");
+  const periodValue =
+    periodStart && periodEnd ? `${periodStart} ~ ${periodEnd}` : periodStart || "";
+
+  const buildActivityConvertPayload = (
+    activityOverride?: Partial<Activity>
+  ): ActivityConvertRequest["activity"] => ({
+    id: activityOverride?.id ?? (isNewActivity ? null : activity?.id) ?? null,
+    type: (typeDraft || activityOverride?.type || activity?.type || "?꾨줈?앺듃") as Activity["type"],
+    title:
+      titleDraft.trim() ||
+      activityOverride?.title ||
+      activity?.title ||
+      "???깃낵 湲곕줉",
+    organization: organization || activityOverride?.organization || null,
+    team_size:
+      teamSize > 0
+        ? teamSize
+        : activityOverride?.team_size ?? activity?.team_size ?? null,
+    team_composition: teamComposition || activityOverride?.team_composition || null,
+    my_role: myRole || activityOverride?.my_role || null,
+    contributions: filteredContributions,
+    period: periodValue || activityOverride?.period || null,
+    role: activityOverride?.role ?? activity?.role ?? (myRole || null),
+    skills: skillsDraft,
+    description: descriptionDraft || activityOverride?.description || null,
+    star_situation: starSituation || activityOverride?.star_situation || null,
+    star_task: starTask || activityOverride?.star_task || null,
+    star_action: starAction || activityOverride?.star_action || null,
+    star_result: starResult || activityOverride?.star_result || null,
+  });
+
+  const normalizeSkill = (value: string) => value.trim().toLowerCase();
+
+  const isSkillSelected = (value: string) =>
+    skillsDraft.some((skill) => normalizeSkill(skill) === normalizeSkill(value));
+
+  const addSkillToDraft = (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed || isSkillSelected(trimmed)) {
+      return false;
+    }
+
+    if (skillsDraft.length >= 10) {
+      setSkillSuggestionError("사용 기술은 최대 10개까지 선택할 수 있습니다.");
+      return false;
+    }
+
     setSkillsDraft((prev) => [...prev, trimmed]);
-    setSkillInput("");
+    setSkillSuggestionError(null);
+    return true;
+  };
+
+  const handleSkillSuggest = async () => {
+    const trimmedRole = myRole.trim();
+    if (!trimmedRole) {
+      setSkillSuggestionError("역할을 먼저 입력해주세요.");
+      return;
+    }
+
+    setSkillSuggestionLoading(true);
+    setSkillSuggestionError(null);
+    try {
+      const result = await getSkillSuggestions(trimmedRole, 20);
+      setSkillSuggestions(result.recommended_skill_tags);
+      setSkillSuggestionRoleLabel(result.display_name_ko || result.input_role);
+      if (result.recommended_skill_tags.length === 0) {
+        setSkillSuggestionError("추천할 기술 태그가 없습니다.");
+      }
+    } catch (e) {
+      setSkillSuggestions([]);
+      setSkillSuggestionRoleLabel(null);
+      setSkillSuggestionError(
+        e instanceof Error ? e.message : "기술 태그 추천을 불러오지 못했습니다."
+      );
+    } finally {
+      setSkillSuggestionLoading(false);
+    }
+  };
+
+  const handleSkillAdd = async () => {
+    const trimmed = skillInput.trim();
+    if (trimmed) {
+      const added = addSkillToDraft(trimmed);
+      if (added) {
+        setSkillInput("");
+      }
+      return;
+    }
+
+    await handleSkillSuggest();
   };
 
   const handleSkillRemove = (index: number) => {
     setSkillsDraft((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleSuggestedSkillToggle = (skill: string) => {
+    if (isSkillSelected(skill)) {
+      setSkillsDraft((prev) =>
+        prev.filter((item) => normalizeSkill(item) !== normalizeSkill(skill))
+      );
+      setSkillSuggestionError(null);
+      return;
+    }
+
+    addSkillToDraft(skill);
+  };
+
+  const handleSendToStar = async () => {
+    if (!postSaveActivity) return;
+    setPostSaveAction("star");
+    setError(null);
+    try {
+      const result = await convertActivity({
+        target: "star",
+        activity: buildActivityConvertPayload(postSaveActivity),
+      });
+
+      if (!result.star) {
+        throw new Error("STAR 蹂??寃곌낵瑜??쎌쓣 ???놁뒿?덈떎.");
+      }
+
+      if (typeof window !== "undefined") {
+        window.sessionStorage.setItem(
+          PENDING_STAR_CONVERSION_KEY,
+          JSON.stringify({
+            activityId: postSaveActivity.id,
+            star: result.star,
+          })
+        );
+      }
+
+      setShowPostSaveModal(false);
+      router.push(`/dashboard/activities/${postSaveActivity.id}?tab=star`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "STAR 蹂??以묒뿉 ?ㅽ뙣?덉뒿?덈떎.");
+    } finally {
+      setPostSaveAction(null);
+    }
+  };
+
+  const handleSendToPortfolio = async () => {
+    if (!postSaveActivity) return;
+    setPostSaveAction("portfolio");
+    setError(null);
+    try {
+      const result = await convertActivity({
+        target: "portfolio",
+        activity: buildActivityConvertPayload(postSaveActivity),
+      });
+
+      if (!result.portfolio) {
+        throw new Error("?ъ듃?명룷由ъ삤 蹂??寃곌낵瑜??쎌쓣 ???놁뒿?덈떎.");
+      }
+
+      if (typeof window !== "undefined") {
+        window.sessionStorage.setItem(
+          PENDING_PORTFOLIO_CONVERSION_KEY,
+          JSON.stringify({
+            activityId: postSaveActivity.id,
+            portfolio: result.portfolio,
+          })
+        );
+      }
+
+      setShowPostSaveModal(false);
+      router.push("/dashboard/portfolio");
+    } catch (e) {
+      setError(
+        e instanceof Error ? e.message : "?ъ듃?명룷由ъ삤 蹂??以묒뿉 ?ㅽ뙣?덉뒿?덈떎."
+      );
+    } finally {
+      setPostSaveAction(null);
+    }
+  };
+
+  const handlePostSaveLater = () => {
+    setShowPostSaveModal(false);
+    router.push("/dashboard/activities");
+  };
+
   const handleDelete = async () => {
     if (!activity) return;
     setDeleting(true);
     try {
+      if (isGuestMode()) {
+        deleteGuestActivity(activity.id);
+        router.push("/dashboard/activities");
+        return;
+      }
+
       await supabase
         .from("activities")
         .delete()
@@ -375,8 +740,41 @@ export default function ActivityDetailPage() {
   const handleStarSave = async () => {
     if (!activity) return;
     setStarSaving(true);
+    setError(null);
     try {
-      await supabase
+      if (isGuestMode()) {
+        const now = new Date().toISOString();
+        const guestActivity: Activity = {
+          ...activity,
+          type: (typeDraft || activity.type) as Activity["type"],
+          title: titleDraft || activity.title,
+          period: periodValue || activity.period,
+          role: myRole || activity.role,
+          skills: skillsDraft,
+          description: descriptionDraft || activity.description,
+          organization,
+          team_size: teamSize,
+          team_composition: teamComposition,
+          my_role: myRole,
+          contributions: filteredContributions,
+          image_urls: imageUrls,
+          star_situation: starSituation,
+          star_task: starTask,
+          star_action: starAction,
+          star_result: starResult,
+          updated_at: now,
+        };
+
+        upsertGuestActivity(guestActivity);
+        setActivity(guestActivity);
+        setStarSaveToast({
+          tone: "success",
+          message: "STAR 기록이 저장되었습니다.",
+        });
+        return;
+      }
+
+      const { error: updateError } = await supabase
         .from("activities")
         .update({
           star_situation: starSituation,
@@ -385,6 +783,28 @@ export default function ActivityDetailPage() {
           star_result: starResult,
         })
         .eq("id", activity.id);
+
+      if (updateError) {
+        console.error("STAR save error:", updateError);
+        setError(updateError.message);
+        setStarSaveToast({
+          tone: "error",
+          message: "저장에 실패했습니다.",
+        });
+        return;
+      }
+
+      setActivity({
+        ...activity,
+        star_situation: starSituation,
+        star_task: starTask,
+        star_action: starAction,
+        star_result: starResult,
+      });
+      setStarSaveToast({
+        tone: "success",
+        message: "STAR 기록이 저장되었습니다.",
+      });
     } finally {
       setStarSaving(false);
     }
@@ -479,6 +899,19 @@ Result(결과): ${starResult}`;
           )}
         </div>
         {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
+        {starSaveToast && (
+          <div className="fixed bottom-6 right-6 z-50">
+            <div
+              className={`rounded-2xl px-4 py-3 text-sm font-medium shadow-lg ${
+                starSaveToast.tone === "success"
+                  ? "bg-emerald-600 text-white"
+                  : "bg-red-500 text-white"
+              }`}
+            >
+              {starSaveToast.message}
+            </div>
+          </div>
+        )}
 
         <div className={`grid grid-cols-1 ${activeTab === "star" ? "lg:grid-cols-2" : ""} gap-6`}>
           {/* 활동 설명 */}
@@ -624,19 +1057,86 @@ Result(결과): ${starResult}`;
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
                             e.preventDefault();
-                            handleSkillAdd();
+                            void handleSkillAdd();
                           }
                         }}
-                        placeholder="기술 입력 후 Enter 또는 추가 버튼"
+                        placeholder="기술을 직접 입력하거나, 비워둔 뒤 추가 버튼으로 추천을 불러오세요."
                         className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
                       />
                       <button
-                        onClick={handleSkillAdd}
-                        className="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-sm hover:bg-gray-200 transition-all"
+                        onClick={() => void handleSkillAdd()}
+                        disabled={skillSuggestionLoading}
+                        className="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-sm hover:bg-gray-200 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                       >
-                        추가
+                        {skillSuggestionLoading ? "불러오는 중..." : "추가"}
                       </button>
                     </div>
+                  )}
+
+                  {skillsDraft.length < 10 && (
+                    <>
+                      <p className="mt-2 text-[11px] text-gray-400">
+                        역할을 입력한 뒤 입력칸을 비우고 추가 버튼을 누르면 기술 태그를 추천합니다.
+                      </p>
+
+                      {skillSuggestionError && (
+                        <p className="mt-2 text-xs text-red-500">{skillSuggestionError}</p>
+                      )}
+
+                      {skillSuggestions.length > 0 && (
+                        <div className="mt-3 rounded-2xl border border-blue-100 bg-blue-50/60 p-3">
+                          <div className="flex items-center justify-between gap-3 mb-2">
+                            <p className="text-xs font-semibold text-blue-700">
+                              역할 기반 추천
+                            </p>
+                            {skillSuggestionRoleLabel && (
+                              <span className="text-[11px] text-blue-500">
+                                기준 역할: {skillSuggestionRoleLabel}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {skillSuggestions.map((skill) => {
+                              const selected = isSkillSelected(skill);
+                              const disabled = !selected && skillsDraft.length >= 10;
+
+                              return (
+                                <button
+                                  key={skill}
+                                  type="button"
+                                  onClick={() => handleSuggestedSkillToggle(skill)}
+                                  disabled={disabled}
+                                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-all ${
+                                    selected
+                                      ? "border-blue-600 bg-blue-600 text-white"
+                                      : "border-blue-200 bg-white text-blue-700 hover:border-blue-300 hover:bg-blue-50"
+                                  } ${disabled ? "cursor-not-allowed opacity-50" : ""}`}
+                                >
+                                  {selected && (
+                                    <svg
+                                      width="12"
+                                      height="12"
+                                      viewBox="0 0 20 20"
+                                      fill="none"
+                                      aria-hidden="true"
+                                    >
+                                      <path
+                                        d="M5 10.5L8.5 14L15 7.5"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                      />
+                                    </svg>
+                                  )}
+                                  <span>{skill}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
 
@@ -680,6 +1180,24 @@ Result(결과): ${starResult}`;
                     <label className="text-xs font-semibold text-gray-500">
                       어떤 활동이었는지 간단한 소개를 적어주세요. <span className="text-red-400">*</span>
                     </label>
+                    {isNewActivity && (
+                      <button
+                        type="button"
+                        onClick={() => void handleGenerateIntroCandidates()}
+                        disabled={!hasContributionContent || introGenerateLoading}
+                        title={
+                          hasContributionContent
+                            ? "기여 내용을 바탕으로 소개글 후보를 생성합니다."
+                            : "기여내용을 먼저 작성해주세요"
+                        }
+                        className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 transition-all hover:border-blue-300 hover:bg-blue-100 disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-100 disabled:text-gray-400"
+                      >
+                        <span aria-hidden="true">AI</span>
+                        <span>
+                          {introGenerateLoading ? "소개글 생성 중..." : "소개글 생성"}
+                        </span>
+                      </button>
+                    )}
                   </div>
                   <textarea
                     value={descriptionDraft}
@@ -688,6 +1206,62 @@ Result(결과): ${starResult}`;
                     className="w-full border border-gray-200 rounded-xl p-3 text-sm resize-none focus:outline-none focus:border-blue-400"
                     rows={5}
                   />
+
+                  {isNewActivity && (
+                    <>
+                      <p className="mt-2 text-[11px] text-gray-400">
+                        기여 내용을 먼저 작성한 뒤 소개글 생성 버튼을 누르면 AI가 후보 1~3개를 제안합니다.
+                      </p>
+
+                      {introGenerateError && (
+                        <p className="mt-2 text-xs text-red-500">{introGenerateError}</p>
+                      )}
+
+                      {introCandidates.length > 0 && (
+                        <div className="mt-3 space-y-2">
+                          {introCandidates.map((candidate, index) => {
+                            const selected = descriptionDraft.trim() === candidate.trim();
+
+                            return (
+                              <button
+                                key={`${index}-${candidate}`}
+                                type="button"
+                                onClick={() => {
+                                  setDescriptionDraft(candidate);
+                                  setIntroGenerateError(null);
+                                }}
+                                className={`w-full rounded-2xl border p-3 text-left transition-all ${
+                                  selected
+                                    ? "border-blue-500 bg-blue-50 shadow-sm"
+                                    : "border-gray-200 bg-white hover:border-blue-200 hover:bg-blue-50/40"
+                                }`}
+                              >
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <p className="text-[11px] font-semibold text-gray-500">
+                                      소개글 후보 {index + 1}
+                                    </p>
+                                    <p className="mt-1 text-sm leading-6 text-gray-700">
+                                      {candidate}
+                                    </p>
+                                  </div>
+                                  <span
+                                    className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-medium ${
+                                      selected
+                                        ? "bg-blue-600 text-white"
+                                        : "bg-gray-100 text-gray-500"
+                                    }`}
+                                  >
+                                    {selected ? "선택됨" : "선택"}
+                                  </span>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
 
                 <div>
@@ -720,7 +1294,14 @@ Result(결과): ${starResult}`;
                   )}
 
                   {imageUrls.length < 5 && (
-                    <label className="flex items-center gap-2 w-fit cursor-pointer border border-dashed border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-500 hover:bg-gray-50 transition-all">
+                    <label
+                      title={isGuestMode() ? "로그인 후 이용 가능합니다" : "이미지를 선택해 추가합니다"}
+                      className={`flex items-center gap-2 w-fit border border-dashed rounded-xl px-4 py-3 text-sm transition-all ${
+                        isGuestMode()
+                          ? "cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400"
+                          : "cursor-pointer border-gray-300 text-gray-500 hover:bg-gray-50"
+                      }`}
+                    >
                       <span>🖼</span>
                       <span>{imageUploading ? "업로드 중..." : "이미지 선택"}</span>
                       <input
@@ -729,9 +1310,12 @@ Result(결과): ${starResult}`;
                         multiple
                         className="hidden"
                         onChange={handleImageUpload}
-                        disabled={imageUploading}
+                        disabled={imageUploading || isGuestMode()}
                       />
                     </label>
+                  )}
+                  {isGuestMode() && (
+                    <p className="mt-2 text-xs text-gray-400">로그인 후 이용 가능합니다.</p>
                   )}
                 </div>
 
@@ -910,6 +1494,61 @@ Result(결과): ${starResult}`;
           )}
         </div>
       </div>
+      {showPostSaveModal && postSaveActivity && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl">
+            <p className="text-sm font-semibold text-blue-500">저장 완료</p>
+            <h2 className="mt-2 text-2xl font-bold text-gray-900">
+              다음 단계로 바로 이어서 작업하시겠어요?
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-gray-500">
+              방금 저장한 활동을 STAR 기록으로 정리하거나, 포트폴리오 초안으로
+              변환해 이어서 보실 수 있습니다.
+            </p>
+
+            <div className="mt-6 space-y-3">
+              <button
+                type="button"
+                onClick={() => void handleSendToStar()}
+                disabled={postSaveAction !== null}
+                className="w-full rounded-2xl border border-blue-200 bg-blue-50 px-4 py-4 text-left transition hover:border-blue-300 hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <p className="text-sm font-semibold text-blue-700">
+                  {postSaveAction === "star" ? "STAR로 변환 중..." : "STAR로 보내기"}
+                </p>
+                <p className="mt-1 text-xs leading-5 text-blue-600">
+                  활동 내용을 STAR 탭으로 옮겨서 바로 다듬을 수 있습니다.
+                </p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => void handleSendToPortfolio()}
+                disabled={postSaveAction !== null}
+                className="w-full rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-4 text-left transition hover:border-emerald-300 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <p className="text-sm font-semibold text-emerald-700">
+                  {postSaveAction === "portfolio"
+                    ? "포트폴리오 초안 생성 중..."
+                    : "포트폴리오에 추가하기"}
+                </p>
+                <p className="mt-1 text-xs leading-5 text-emerald-600">
+                  현재 활동을 포트폴리오 구조로 변환한 초안을 확인할 수 있습니다.
+                </p>
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={handlePostSaveLater}
+              disabled={postSaveAction !== null}
+              className="mt-6 w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              나중에 하기
+            </button>
+          </div>
+        </div>
+      )}
       {showDeleteModal && !isNewActivity && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-8 w-80 text-center shadow-xl">

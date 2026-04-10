@@ -154,6 +154,19 @@ export interface CoachFeedbackRequest {
   history: CoachMessage[];
 }
 
+export interface CoachIntroGenerateRequest {
+  mode: "intro_generate";
+  activity_description: string;
+  activity_type: string;
+  org_name: string;
+  period: string;
+  team_size: number;
+  role: string;
+  skills: string[];
+  contribution: string;
+  section_type?: Activity["type"] | "요약";
+}
+
 export interface CoachFeedbackResponse {
   session_id: string;
   feedback: string;
@@ -162,6 +175,10 @@ export interface CoachFeedbackResponse {
   missing_elements: string[];
   iteration_count: number;
   updated_history: CoachMessage[];
+}
+
+export interface CoachIntroGenerateResponse {
+  intro_candidates: string[];
 }
 
 export interface CoachSessionSummary {
@@ -199,6 +216,108 @@ export interface MatchAnalyzeRequest {
     skills?: string[];
     self_intro?: string;
   };
+}
+
+export interface SkillSuggestResponse {
+  input_role: string;
+  normalized_job_key: string;
+  display_name_ko: string;
+  job_family: string;
+  job_bucket: string;
+  matched_alias?: string | null;
+  recommended_skill_tags: string[];
+  evidence_keywords: string[];
+  source_refs: string[];
+}
+
+export interface ActivityConvertRequest {
+  target: "star" | "portfolio" | "both";
+  activity: {
+    id?: string | null;
+    type: Activity["type"];
+    title: string;
+    organization?: string | null;
+    team_size?: number | null;
+    team_composition?: string | null;
+    my_role?: string | null;
+    contributions?: string[];
+    period?: string | null;
+    role?: string | null;
+    skills?: string[];
+    description?: string | null;
+    star_situation?: string | null;
+    star_task?: string | null;
+    star_action?: string | null;
+    star_result?: string | null;
+  };
+}
+
+export interface StarConversionResponse {
+  activity_id: string | null;
+  title: string;
+  type: Activity["type"];
+  star_situation: string;
+  star_task: string;
+  star_action: string;
+  star_result: string;
+  missing_fields: string[];
+  review_tags: string[];
+}
+
+export interface PortfolioMetricResponse {
+  value: string;
+  label: string;
+}
+
+export interface PortfolioOverviewResponse {
+  title: string;
+  activity_type: Activity["type"];
+  organization?: string | null;
+  period?: string | null;
+  period_start?: string | null;
+  period_end?: string | null;
+  duration?: string | null;
+  team_size?: number | null;
+  team_composition?: string | null;
+  role?: string | null;
+  skills: string[];
+  summary: string;
+  contributions: string[];
+}
+
+export interface PortfolioTextSectionResponse {
+  label: string;
+  content: string;
+}
+
+export interface PortfolioImplementationResponse {
+  label: string;
+  summary: string;
+  highlights: string[];
+}
+
+export interface PortfolioResultResponse {
+  label: string;
+  summary: string;
+  metrics: PortfolioMetricResponse[];
+}
+
+export interface PortfolioConversionResponse {
+  activity_id: string | null;
+  project_overview: PortfolioOverviewResponse;
+  problem_definition: PortfolioTextSectionResponse;
+  tech_decision: PortfolioTextSectionResponse;
+  implementation_detail: PortfolioImplementationResponse;
+  quantified_result: PortfolioResultResponse;
+  role_clarification: PortfolioTextSectionResponse;
+  missing_elements: string[];
+  review_tags: string[];
+}
+
+export interface ActivityConvertResponse {
+  target: "star" | "portfolio" | "both";
+  star: StarConversionResponse | null;
+  portfolio: PortfolioConversionResponse | null;
 }
 
 export interface MatchDetailedScore {

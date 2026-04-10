@@ -8,7 +8,7 @@ from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 
-from chains.coach_graph import run_coach_graph
+from chains.coach_graph import IntroGenerateResponse, run_coach_graph
 from rag.schema import CoachResponse
 from repositories.coach_session_repo import (
     CoachSessionRecord,
@@ -41,11 +41,19 @@ class CoachRequest(BaseModel):
 
     model_config = ConfigDict(str_strip_whitespace=True)
 
+    mode: Literal["feedback", "intro_generate"] = "feedback"
     session_id: str | None = None
     user_id: str | None = None
     activity_description: str
-    job_title: str
-    section_type: str
+    activity_type: str | None = None
+    org_name: str | None = None
+    period: str | None = None
+    team_size: int | None = None
+    role: str | None = None
+    skills: list[str] | None = None
+    contribution: str | None = None
+    job_title: str = ""
+    section_type: str = ""
     selected_suggestion_index: int | None = None
     history: list[CoachMessage] = Field(default_factory=list)
 
@@ -55,6 +63,10 @@ class CoachFeedbackApiResponse(CoachResponse):
 
     session_id: str
     updated_history: list[CoachMessage] = Field(default_factory=list)
+
+
+class CoachIntroGenerateApiResponse(IntroGenerateResponse):
+    """Response payload for POST /coach/feedback with mode=intro_generate."""
 
 
 class CoachSessionSummaryResponse(BaseModel):
@@ -119,6 +131,36 @@ def _detail_payload(session: CoachSessionRecord) -> dict[str, Any]:
     }
 
 
+def _build_intro_generate_activity_text(request: CoachRequest) -> str:
+    """Build intro-generation source text from structured fields when present."""
+
+    structured_segments: list[str] = []
+
+    if request.activity_type:
+        structured_segments.append(f"활동 유형: {request.activity_type}")
+    if request.org_name:
+        structured_segments.append(f"조직: {request.org_name}")
+    if request.period:
+        structured_segments.append(f"기간: {request.period}")
+    if request.team_size and request.team_size > 0:
+        structured_segments.append(f"인원: {request.team_size}명")
+    if request.role:
+        structured_segments.append(f"역할: {request.role}")
+    if request.skills:
+        normalized_skills = [skill.strip() for skill in request.skills if str(skill).strip()]
+        if normalized_skills:
+            structured_segments.append(f"사용 기술: {', '.join(normalized_skills)}")
+    if request.contribution:
+        structured_segments.append(f"기여 내용: {request.contribution}")
+
+    if structured_segments:
+        if request.activity_description:
+            structured_segments.append(f"소개 초안: {request.activity_description}")
+        return "\n".join(structured_segments)
+
+    return request.activity_description
+
+
 def _resolve_suggestion_type(
     rewrite_suggestions: list[dict[str, Any]],
     selected_index: int | None,
@@ -134,23 +176,38 @@ def _resolve_suggestion_type(
     return str(focus) if focus is not None else None
 
 
-@router.post("/feedback", response_model=CoachFeedbackApiResponse)
+@router.post(
+    "/feedback",
+    response_model=CoachFeedbackApiResponse | CoachIntroGenerateApiResponse,
+)
 async def get_coach_feedback(request: CoachRequest):
     """Create or load a coach session, run coaching, and persist the latest result."""
 
-    if len(request.activity_description) < 10:
+    activity_input_text = request.activity_description
+    if request.mode == "intro_generate":
+        activity_input_text = _build_intro_generate_activity_text(request)
+
+    if len(activity_input_text) < 10:
         return _validation_error("활동 설명은 최소 10자 이상 입력해주세요.")
 
-    if not request.job_title:
+    if request.mode == "feedback" and not request.job_title:
         return _validation_error("목표 직무를 입력해주세요.")
 
-    if request.section_type not in ALLOWED_SECTION_TYPES:
+    if request.mode == "feedback" and not request.section_type:
+        return _validation_error("section_type을 입력해주세요.")
+
+    if request.section_type and request.section_type not in ALLOWED_SECTION_TYPES:
         allowed = ", ".join(sorted(ALLOWED_SECTION_TYPES))
         return _validation_error(f"section_type은 다음 값만 허용됩니다: {allowed}")
 
-    if request.selected_suggestion_index is not None and request.selected_suggestion_index < 0:
+    if (
+        request.mode == "feedback"
+        and request.selected_suggestion_index is not None
+        and request.selected_suggestion_index < 0
+    ):
         return _validation_error("selected_suggestion_index는 0 이상의 값만 허용됩니다.")
 
+    should_persist_session = request.mode == "feedback"
     # Allow coaching to continue even when session persistence is not configured.
     repo = get_coach_session_repo() if request.user_id else None
 
@@ -159,7 +216,7 @@ async def get_coach_feedback(request: CoachRequest):
     session_id = request.session_id or ""
 
     try:
-        if repo is not None and request.user_id:
+        if should_persist_session and repo is not None and request.user_id:
             if request.session_id:
                 saved_session = await repo.get_session(request.session_id, request.user_id)
 
@@ -179,14 +236,15 @@ async def get_coach_feedback(request: CoachRequest):
 
         result = await run_coach_graph(
             session_id=session_id,
-            activity_text=request.activity_description,
-            job_title=request.job_title,
+            activity_text=activity_input_text,
+            job_title=request.job_title or "일반",
             section_type=request.section_type,
             selected_suggestion_index=request.selected_suggestion_index,
             history=restored_history,
+            mode=request.mode,
         )
 
-        if repo is not None and request.user_id:
+        if should_persist_session and repo is not None and request.user_id:
             await repo.update_session(
                 session_id=session_id,
                 user_id=request.user_id,
@@ -205,10 +263,10 @@ async def get_coach_feedback(request: CoachRequest):
                 missing_elements=list(result["missing_elements"]),
             )
 
-        payload = {
-            **result,
-            "session_id": session_id,
-        }
+        if request.mode == "intro_generate":
+            return CoachIntroGenerateApiResponse.model_validate(result)
+
+        payload = {**result, "session_id": session_id}
         return CoachFeedbackApiResponse.model_validate(payload)
     except CoachSessionRepoError as exc:
         raise HTTPException(status_code=500, detail=f"coach session persistence error: {exc}") from exc

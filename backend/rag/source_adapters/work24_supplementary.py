@@ -5,7 +5,7 @@ import os
 import re
 import time
 from collections import defaultdict
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 from xml.etree import ElementTree
@@ -372,8 +372,13 @@ class Work24SupplementaryAdapter:
                 },
                 sample_name=f"job_info_detail_{job_code}",
             )
-            summary = _extract_records(detail, ("jobCd", "jobSum", "way", "jobLrclNm")) or [{}]
-            summary_row = summary[0]
+            summary_row: dict[str, Any] = {}
+            raw_summary = _find_first_value(detail, ("jobSum",))
+            if isinstance(raw_summary, dict):
+                summary_row = raw_summary
+            else:
+                summary = _extract_records(detail, ("jobCd", "jobSum", "way", "jobLrclNm")) or [{}]
+                summary_row = summary[0] if isinstance(summary[0], dict) else {}
             results.append(
                 {
                     "job_code": job_code,
@@ -618,7 +623,7 @@ class Work24SupplementaryAdapter:
             )
 
         return {
-            "generated_at": datetime.now(UTC).isoformat(),
+            "generated_at": datetime.now(timezone.utc).isoformat(),
             "source": SOURCE_NAME,
             "guide_urls": {
                 "job_info": JOB_INFO_SOURCE.get_guide_url(),

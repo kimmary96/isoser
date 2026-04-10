@@ -6,11 +6,12 @@ import json
 import logging
 import os
 import re
-from typing import Any, TypedDict
+from typing import Any, Literal, TypedDict
 
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import END, StateGraph
+from pydantic import BaseModel, ConfigDict, field_validator
 
 from logging_config import get_logger, log_event
 from rag.fallback import generate_fallback_response
@@ -136,13 +137,55 @@ rewrite_suggestions.text는 바로 이력서에 붙여 넣을 수 있는 완성 
 문제 정의, 기술 선택 근거, 구현 디테일, 정량적 성과가 자연스럽게 연결되도록 구성한다.
 """.strip()
 
+INTRO_GENERATE_SYSTEM_PROMPT = """
+너는 이력서/포트폴리오 활동 소개 문장을 정리하는 Coach AI다.
+사용자가 적은 활동 메모, 기여 내용, 초안 문장을 바탕으로
+"어떤 활동이었는지 간단한 소개를 적어주세요" 칸에 바로 넣을 수 있는 소개글 후보를 만든다.
+
+반드시 JSON 객체만 반환한다. 마크다운, 설명 문장, 코드펜스는 금지한다.
+응답 JSON은 아래 형식을 따른다.
+- intro_candidates: 1개 이상 3개 이하의 소개글 후보 리스트
+
+규칙:
+1. 한국어로 작성한다.
+2. 각 후보는 1~2문장 분량의 자연스러운 소개글로 쓴다.
+3. 입력에 없는 수치, 기간, 역할, 성과를 지어내지 않는다.
+4. section_type이 있으면 활동 유형을 자연스럽게 드러낸다.
+5. 후보끼리는 표현만 조금 다르게 하고, 핵심 사실은 유지한다.
+6. RAG 문구는 표현 참고만 하고 그대로 복사하지 않는다.
+""".strip()
+
 COACH_RETRIEVER = CoachRetriever()
 logger = get_logger(__name__)
+CoachMode = Literal["feedback", "intro_generate"]
+
+
+class IntroGenerateResponse(BaseModel):
+    """One-shot activity intro candidates for the new activity flow."""
+
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    intro_candidates: list[str]
+
+    @field_validator("intro_candidates")
+    @classmethod
+    def validate_intro_candidates(cls, value: list[str]) -> list[str]:
+        normalized: list[str] = []
+        for item in value:
+            text = str(item).strip()
+            if text and text not in normalized:
+                normalized.append(text)
+
+        if not 1 <= len(normalized) <= 3:
+            raise ValueError("intro_candidates must contain between 1 and 3 items")
+
+        return normalized
 
 
 class CoachPromptInput(TypedDict, total=False):
     """Prompt builder input payload."""
 
+    mode: CoachMode
     activity_description: str
     job_title: str
     section_type: str
@@ -153,6 +196,7 @@ class CoachPromptInput(TypedDict, total=False):
 class CoachState(TypedDict):
     """Graph state for Coach AI execution."""
 
+    mode: CoachMode
     session_id: str
     activity_text: str
     job_title: str
@@ -165,6 +209,7 @@ class CoachState(TypedDict):
     missing_elements: list[str]
     structure_diagnosis: dict[str, Any]
     rewrite_suggestions: list[dict[str, Any]]
+    intro_candidates: list[str]
     iteration_count: int
 
 
@@ -304,6 +349,35 @@ def build_coach_prompt(
 4. 첫 번째 suggestion에는 가장 우선순위가 높은 누락 요소를 반드시 반영한다.
 5. 기술 선택 근거가 부족하면 대안 비교를 넣고, 정량 수치가 부족하면 현실적인 숫자를 포함한다.
 6. JSON 객체만 반환한다.
+""".strip()
+
+
+def build_intro_generate_prompt(
+    rag_context: str,
+    user_input: CoachPromptInput,
+) -> str:
+    """Build the intro-generation prompt for one-shot activity summaries."""
+
+    section_type = _safe_text(user_input.get("section_type"))
+    job_title = _safe_text(user_input.get("job_title"))
+
+    return f"""
+---
+{rag_context}
+---
+
+[사용자 입력]
+- mode: intro_generate
+- 목표 직무: {job_title or "없음"}
+- 활동 유형: {section_type or "없음"}
+- 기여 내용/초안: {_safe_text(user_input.get("activity_description"))}
+
+[작업 지시]
+1. 입력을 바탕으로 활동 소개글 후보를 3개 생성한다.
+2. 사용자가 어떤 활동을 했는지 한눈에 이해되도록 요약한다.
+3. 입력에 없는 수치, 기간, 역할, 성과는 추가하지 않는다.
+4. 한 후보는 바로 description 필드에 붙여 넣을 수 있는 완성 문장으로 쓴다.
+5. JSON 객체만 반환한다.
 """.strip()
 
 
@@ -476,7 +550,78 @@ def _normalize_rewrite_suggestions(
     return suggestions[:3]
 
 
-def _parse_llm_response(
+def _fallback_intro_candidates(
+    activity_text: str,
+    section_type: str,
+) -> list[str]:
+    """Build deterministic intro candidates when the model response is unavailable."""
+
+    base = re.sub(r"\s+", " ", _safe_text(activity_text)).strip(" -")
+    if not base:
+        base = "활동 내용을 정리한 경험입니다."
+
+    section_prefix = f"{section_type} 활동으로, " if _safe_text(section_type) else ""
+    candidates = [
+        base,
+        f"{section_prefix}{base}" if section_prefix else f"이 활동은 {base}",
+        (
+            f"{base} 내용을 바탕으로 진행한 {_safe_text(section_type)} 경험입니다."
+            if _safe_text(section_type)
+            else f"{base} 내용을 바탕으로 진행한 활동입니다."
+        ),
+    ]
+
+    normalized: list[str] = []
+    for item in candidates:
+        text = re.sub(r"\s+", " ", _safe_text(item))
+        if text and text not in normalized:
+            normalized.append(text)
+
+    return normalized[:3]
+
+
+def _normalize_intro_candidates(
+    raw_value: Any,
+    activity_text: str,
+    section_type: str,
+) -> list[str]:
+    """Normalize intro candidates from flexible LLM payload shapes."""
+
+    candidates: list[str] = []
+    if isinstance(raw_value, list):
+        for item in raw_value:
+            if isinstance(item, str):
+                text = _safe_text(item)
+            elif isinstance(item, dict):
+                text = (
+                    _safe_text(item.get("text"))
+                    or _safe_text(item.get("intro"))
+                    or _safe_text(item.get("candidate"))
+                )
+            else:
+                text = _safe_text(item)
+
+            if text and text not in candidates:
+                candidates.append(text)
+
+    if not candidates:
+        candidates = _fallback_intro_candidates(activity_text, section_type)
+
+    return candidates[:3]
+
+
+def _build_intro_fallback_response(
+    activity_text: str,
+    section_type: str,
+) -> IntroGenerateResponse:
+    """Return a safe intro-generation response without the LLM."""
+
+    return IntroGenerateResponse(
+        intro_candidates=_fallback_intro_candidates(activity_text, section_type)
+    )
+
+
+def _parse_feedback_llm_response(
     raw_content: Any,
     activity_text: str,
     iteration_count: int,
@@ -533,6 +678,28 @@ def _parse_llm_response(
     return response
 
 
+def _parse_intro_generate_llm_response(
+    raw_content: Any,
+    activity_text: str,
+    section_type: str,
+) -> IntroGenerateResponse:
+    """Parse and validate the intro-generation response."""
+
+    raw_text = _response_content_to_text(raw_content)
+    payload = json.loads(_extract_json_text(raw_text))
+    if not isinstance(payload, dict):
+        raise ValueError("LLM response must be a JSON object")
+
+    raw_candidates = payload.get("intro_candidates")
+    if raw_candidates is None:
+        raw_candidates = payload.get("candidates")
+    if raw_candidates is None and isinstance(payload.get("rewrite_suggestions"), list):
+        raw_candidates = payload.get("rewrite_suggestions")
+
+    candidates = _normalize_intro_candidates(raw_candidates, activity_text, section_type)
+    return IntroGenerateResponse(intro_candidates=candidates)
+
+
 def rag_search_node(state: CoachState) -> CoachState:
     """Retrieve job patterns and STAR examples, then build the prompt context."""
 
@@ -567,70 +734,118 @@ def rag_search_node(state: CoachState) -> CoachState:
 async def coach_response_node(state: CoachState) -> CoachState:
     """Generate a structured coach response from the LLM."""
 
-    prompt = build_coach_prompt(
-        rag_context=state["rag_context"],
-        user_input={
-            "activity_description": state["activity_text"],
-            "job_title": state["job_title"],
-            "section_type": state["section_type"],
-            "history": state["history"],
-            "selected_suggestion_index": state["selected_suggestion_index"],
-        },
-        iteration_count=state["iteration_count"],
-    )
+    prompt_input: CoachPromptInput = {
+        "mode": state["mode"],
+        "activity_description": state["activity_text"],
+        "job_title": state["job_title"],
+        "section_type": state["section_type"],
+        "history": state["history"],
+        "selected_suggestion_index": state["selected_suggestion_index"],
+    }
+    if state["mode"] == "intro_generate":
+        prompt = build_intro_generate_prompt(
+            rag_context=state["rag_context"],
+            user_input=prompt_input,
+        )
+        system_prompt = INTRO_GENERATE_SYSTEM_PROMPT
+    else:
+        prompt = build_coach_prompt(
+            rag_context=state["rag_context"],
+            user_input=prompt_input,
+            iteration_count=state["iteration_count"],
+        )
+        system_prompt = COACH_SYSTEM_PROMPT
 
     try:
         llm = _get_llm()
         response = await llm.ainvoke(
             [
-                SystemMessage(content=COACH_SYSTEM_PROMPT),
+                SystemMessage(content=system_prompt),
                 HumanMessage(content=prompt),
             ]
         )
-        coach_response = _parse_llm_response(
-            raw_content=response.content,
-            activity_text=state["activity_text"],
-            iteration_count=state["iteration_count"],
-        )
+        if state["mode"] == "intro_generate":
+            intro_response = _parse_intro_generate_llm_response(
+                raw_content=response.content,
+                activity_text=state["activity_text"],
+                section_type=state["section_type"],
+            )
+        else:
+            coach_response = _parse_feedback_llm_response(
+                raw_content=response.content,
+                activity_text=state["activity_text"],
+                iteration_count=state["iteration_count"],
+            )
     except Exception as exc:
         log_event(
             logger,
             logging.ERROR,
             "gemini_failed",
             session_id=state["session_id"],
+            mode=state["mode"],
             job_title=state["job_title"],
             section_type=state["section_type"],
             error=str(exc),
         )
-        fallback_response = generate_fallback_response(
-            activity_description=state["activity_text"],
-            rag_results=state["rag_results"],
-            job_title=state["job_title"],
-            section_type=state["section_type"],
-        )
+        if state["mode"] == "intro_generate":
+            intro_response = _build_intro_fallback_response(
+                activity_text=state["activity_text"],
+                section_type=state["section_type"],
+            )
+            log_event(
+                logger,
+                logging.WARNING,
+                "fallback_triggered",
+                session_id=state["session_id"],
+                mode=state["mode"],
+                candidate_count=len(intro_response.intro_candidates),
+            )
+        else:
+            fallback_response = generate_fallback_response(
+                activity_description=state["activity_text"],
+                rag_results=state["rag_results"],
+                job_title=state["job_title"],
+                section_type=state["section_type"],
+            )
+            log_event(
+                logger,
+                logging.WARNING,
+                "fallback_triggered",
+                session_id=state["session_id"],
+                mode=state["mode"],
+                missing=fallback_response.missing_elements,
+                priority=fallback_response.structure_diagnosis.priority_focus,
+            )
+            coach_response = fallback_response.model_copy(
+                update={
+                    "feedback": (
+                        f"피드백 생성 중 오류가 발생했습니다: {str(exc)}. "
+                        f"{fallback_response.feedback}"
+                    ),
+                    "iteration_count": state["iteration_count"],
+                }
+            )
+
+    if state["mode"] == "intro_generate":
         log_event(
             logger,
-            logging.WARNING,
-            "fallback_triggered",
+            logging.INFO,
+            "coach_response",
             session_id=state["session_id"],
-            missing=fallback_response.missing_elements,
-            priority=fallback_response.structure_diagnosis.priority_focus,
+            mode=state["mode"],
+            candidate_count=len(intro_response.intro_candidates),
         )
-        coach_response = fallback_response.model_copy(
-            update={
-                "feedback": (
-                    f"피드백 생성 중 오류가 발생했습니다: {str(exc)}. "
-                    f"{fallback_response.feedback}"
-                ),
-                "iteration_count": state["iteration_count"],
-            }
-        )
+        return {
+            **state,
+            "intro_candidates": intro_response.intro_candidates,
+        }
 
     log_event(
         logger,
         logging.INFO,
         "coach_response",
         session_id=state["session_id"],
+        mode=state["mode"],
         suggestion_count=len(coach_response.rewrite_suggestions),
         missing=coach_response.missing_elements,
         priority=coach_response.structure_diagnosis.priority_focus,
@@ -668,8 +883,9 @@ async def run_coach_graph(
     history: list | None = None,
     section_type: str = "",
     selected_suggestion_index: int | None = None,
+    mode: CoachMode = "feedback",
 ) -> dict:
-    """Run the Coach AI graph and return a CoachResponse-compatible payload."""
+    """Run the Coach AI graph and return a mode-specific response payload."""
 
     history = history or []
     log_event(
@@ -677,11 +893,13 @@ async def run_coach_graph(
         logging.INFO,
         "session",
         session_id=session_id,
+        mode=mode,
         job_title=job_title,
         section_type=section_type,
         history_count=len(history),
     )
     initial_state: CoachState = {
+        "mode": mode,
         "session_id": session_id,
         "activity_text": activity_text,
         "job_title": job_title,
@@ -698,10 +916,17 @@ async def run_coach_graph(
         "missing_elements": [],
         "structure_diagnosis": {},
         "rewrite_suggestions": [],
+        "intro_candidates": [],
         "iteration_count": len(history) // 2 + 1,
     }
 
     result = await _coach_graph.ainvoke(initial_state)
+    if mode == "intro_generate":
+        response = IntroGenerateResponse(
+            intro_candidates=result["intro_candidates"],
+        )
+        return response.model_dump()
+
     response = CoachResponse(
         feedback=result["feedback"],
         structure_diagnosis=StructureDiagnosis.model_validate(result["structure_diagnosis"]),

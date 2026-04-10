@@ -12,7 +12,7 @@ configure_logging()
 load_backend_dotenv()
 assert_python_version()
 
-from routers import parse, coach, match, company
+from routers import activities, parse, coach, match, company, skills
 from rag.chroma_client import get_chroma_health_summary, init_chroma
 
 
@@ -49,6 +49,8 @@ app.add_middleware(
 app.include_router(parse.router, prefix="/parse", tags=["parse"])
 app.include_router(coach.router, prefix="/coach", tags=["coach"])
 app.include_router(match.router, prefix="/match", tags=["match"])
+app.include_router(skills.router, prefix="/skills", tags=["skills"])
+app.include_router(activities.router, prefix="/activities", tags=["activities"])
 app.include_router(company.router, prefix="/company", tags=["company"])
 
 
