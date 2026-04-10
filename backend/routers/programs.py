@@ -100,7 +100,7 @@ async def _request_supabase(
     prefer: str | None = None,
 ) -> Any:
     supabase_url, service_role_key, timeout_seconds = _get_supabase_settings()
-    async with httpx.AsyncClient(timeout=timeout_seconds) as client:
+    async with httpx.AsyncClient(timeout=timeout_seconds, trust_env=False) as client:
         response = await client.request(
             method,
             f"{supabase_url}{path}",
@@ -135,7 +135,7 @@ async def _get_current_user(authorization: str = Header(...)) -> CurrentUser:
         "Authorization": f"Bearer {token}",
         "Accept": "application/json",
     }
-    async with httpx.AsyncClient(timeout=timeout_seconds) as client:
+    async with httpx.AsyncClient(timeout=timeout_seconds, trust_env=False) as client:
         response = await client.get(f"{supabase_url}/auth/v1/user", headers=headers)
 
     if response.status_code in {401, 403}:
@@ -270,4 +270,3 @@ async def recommend_programs(
         items=[ProgramRecommendationItem.model_validate(item.__dict__) for item in items],
         synced_count=synced_count,
     )
-

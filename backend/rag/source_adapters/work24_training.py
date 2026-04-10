@@ -106,7 +106,19 @@ def _extract_records(value: Any) -> list[dict[str, Any]]:
     if not isinstance(value, dict):
         return []
 
-    if any(key in value for key in ("TRPR_ID", "TITLE", "NCS_CD", "ADDRESS")):
+    if any(
+        key in value
+        for key in (
+            "TRPR_ID",
+            "TITLE",
+            "NCS_CD",
+            "ADDRESS",
+            "trprId",
+            "title",
+            "ncsCd",
+            "address",
+        )
+    ):
         return [value]
 
     for key in LIST_CONTAINER_KEYS:
@@ -165,7 +177,7 @@ class Work24TrainingAdapter:
         self.retry_count = retry_count
         self.page_size = page_size
         self.sleep_seconds = sleep_seconds
-        self.client = client or httpx.Client(timeout=self.timeout_seconds)
+        self.client = client or httpx.Client(timeout=self.timeout_seconds, trust_env=False)
         self.sample_dir.mkdir(parents=True, exist_ok=True)
         self.saved_samples: list[str] = []
 
@@ -256,17 +268,17 @@ class Work24TrainingAdapter:
     @staticmethod
     def _normalize_program(row: dict[str, Any]) -> dict[str, Any]:
         return {
-            "hrd_id": _pick_first(row, ("TRPR_ID",)),
-            "title": _pick_first(row, ("TITLE",)),
-            "category": _pick_first(row, ("NCS_CD",)),
-            "location": _pick_first(row, ("ADDRESS",)),
-            "start_date": _pick_first(row, ("TRA_START_DATE",)),
-            "end_date": _pick_first(row, ("TRA_END_DATE",)),
-            "cost": _to_int(row.get("COURSE_MAN")),
-            "subsidy_amount": _to_int(row.get("REAL_MAN")),
-            "target": _pick_first(row, ("TRAIN_TARGET",)),
-            "provider": _pick_first(row, ("TRAINST_CST_ID",)),
-            "source_url": _pick_first(row, ("TITLE_LINK",)),
+            "hrd_id": _pick_first(row, ("TRPR_ID", "trprId")),
+            "title": _pick_first(row, ("TITLE", "title")),
+            "category": _pick_first(row, ("NCS_CD", "ncsCd")),
+            "location": _pick_first(row, ("ADDRESS", "address")),
+            "start_date": _pick_first(row, ("TRA_START_DATE", "traStartDate")),
+            "end_date": _pick_first(row, ("TRA_END_DATE", "traEndDate")),
+            "cost": _to_int(row.get("COURSE_MAN") if "COURSE_MAN" in row else row.get("courseMan")),
+            "subsidy_amount": _to_int(row.get("REAL_MAN") if "REAL_MAN" in row else row.get("realMan")),
+            "target": _pick_first(row, ("TRAIN_TARGET", "trainTarget")),
+            "provider": _pick_first(row, ("TRAINST_CST_ID", "trainstCstId")),
+            "source_url": _pick_first(row, ("TITLE_LINK", "titleLink")),
             "total_count": _to_int(row.get("scn_cnt")),
             "source": SOURCE.source_name,
             "raw": row,

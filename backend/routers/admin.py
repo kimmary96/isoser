@@ -69,7 +69,7 @@ async def _request_supabase(
     prefer: str | None = None,
 ) -> Any:
     supabase_url, service_role_key, timeout_seconds = _get_supabase_settings()
-    async with httpx.AsyncClient(timeout=timeout_seconds) as client:
+    async with httpx.AsyncClient(timeout=timeout_seconds, trust_env=False) as client:
         response = await client.request(
             method,
             f"{supabase_url}{path}",

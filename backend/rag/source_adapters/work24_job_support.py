@@ -166,7 +166,7 @@ class Work24JobSupportAdapter:
         self.retry_count = retry_count
         self.page_size = page_size
         self.sleep_seconds = sleep_seconds
-        self.client = client or httpx.Client(timeout=self.timeout_seconds)
+        self.client = client or httpx.Client(timeout=self.timeout_seconds, trust_env=False)
         self.sample_dir.mkdir(parents=True, exist_ok=True)
         self.saved_samples: list[str] = []
 
