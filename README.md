@@ -1,33 +1,64 @@
 # 이소서 (Isoser)
 
-AI 코치 기반 이력서/경력기술서 편집 서비스입니다.
-"AI가 대신 작성"이 아니라, 사용자가 직접 고칠 수 있도록 STAR 기준 피드백을 제공하는 데 초점을 둡니다.
+이소서는 기존 이력서 PDF에서 시작해 활동 데이터를 정리하고, AI 코치와 공고 매칭 분석을 통해 이력서와 자기소개서를 다듬는 취업 문서 편집 서비스입니다.
 
-## 개발 상태 (2026-04-06 기준)
+## 현재 개발 상태 (2026-04-10 기준)
 
 ### 구현 완료
-- Google OAuth 로그인 + 게스트 모드
-- 이력서 PDF 업로드 후 프로필/활동 자동 추출 (`/parse/pdf`)
-- 대시보드 프로필 편집(이름/희망 직무/아바타), 자기소개/스킬/경력/학력/수상/자격/외국어 편집
-- 활동 목록/상세 조회, 활동 편집, STAR 저장
-- 활동 상세 STAR 기반 AI 코치 멀티턴 피드백 (`/coach/feedback`)
-- 채용 공고 매칭 분석 + 저장/조회/삭제 (`/match/analyze`)
-- 이력서 생성 후 문서 저장소(` /dashboard/documents`)에 저장 및 PDF 내보내기
-- PDF 한글 폰트 적용(`@react-pdf/renderer` + NotoSansKR)
+- Google OAuth 로그인, Supabase 세션 기반 인증, 게스트 모드
+- 이력서 PDF 업로드 후 프로필/활동 자동 추출 (`POST /parse/pdf`)
+- 대시보드 프로필 편집
+  - 이름, 희망 직무(`profiles.bio`), 이메일, 전화번호
+  - 프로필 이미지 업로드
+  - 포트폴리오 링크 저장(`profiles.portfolio_url`)
+- 활동 저장소
+  - 활동 목록/상세/수정/삭제
+  - STAR 항목 저장
+  - AI 요약 생성 (`frontend/app/api/summary`)
+- AI 코치
+  - 활동 설명 기반 멀티턴 피드백 (`POST /coach/feedback`)
+  - 세션 저장/복원 조회 (`GET /coach/sessions`, `GET /coach/sessions/{session_id}`)
+- 공고 매칭 분석
+  - 공고 전문 직접 입력
+  - 이미지 OCR 기반 공고 텍스트 추출 (`POST /match/extract-job-image`)
+  - PDF 공고 텍스트 추출 (`POST /match/extract-job-pdf`)
+  - 활동/이력서 기준 매칭 분석 저장 (`POST /match/analyze`)
+  - 기업 정보 요약 조회 (`POST /company/insight`)
+- 이력서 편집/문서 저장소
+  - 활동, 기술, 자기소개서 문항 선택 기반 이력서 생성
+  - 문서 저장소에서 생성 이력서 조회
+  - PDF 내보내기 (`/dashboard/resume/export`)
+- 자기소개서 저장소
+  - 목록 조회, 검색, 상세 편집, 문항(`qa_items`) 저장
 
 ### 현재 제약
-- 템플릿은 UI에 여러 옵션이 보이지만 실제 PDF 출력 포맷은 단순형 중심
-- 게스트 모드에서는 DB 영속 저장이 아닌 로컬 저장 기반
+- 포트폴리오 전용 페이지(`/dashboard/portfolio`)는 아직 준비 중이며, 현재는 프로필의 링크 저장/열기만 지원합니다.
+- 이력서 템플릿 선택 UI는 있으나 실제 PDF 출력 포맷은 기본형 중심입니다.
+- 이력서 편집 화면의 우측 AI 어시스턴트와 활동 상세 요약은 프론트 내부 Gemini 호출에 의존합니다.
+- 게스트 모드는 LocalStorage 기반이며 Supabase 영속 저장을 사용하지 않습니다.
+- 백엔드는 Python 3.10.x만 허용합니다. (`backend/check_python_version.py`)
+
+## 주요 화면
+
+- `/dashboard`: 프로필, 경력 카드, 스킬, 활동 요약
+- `/dashboard/onboarding`: PDF 업로드 및 초기 데이터 저장
+- `/dashboard/activities`: 활동 저장소
+- `/dashboard/activities/[id]`: 활동 상세, STAR 편집, AI 코치 진입
+- `/dashboard/match`: 공고 분석, 기업 정보 요약, 분석 이력
+- `/dashboard/resume`: 이력서 조립/생성
+- `/dashboard/documents`: 생성 이력서 목록
+- `/dashboard/resume/export`: PDF 내보내기
+- `/dashboard/cover-letter`: 자기소개서 저장소
 
 ## 기술 스택
 
 | 영역 | 기술 |
 |------|------|
-| Frontend | Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS, `@react-pdf/renderer` |
-| Backend | Python 3.11, FastAPI, LangChain, LangGraph, PyMuPDF |
-| AI | Gemini 2.5 Flash (`gemini-2.5-flash`) |
+| Frontend | Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS |
+| Backend | FastAPI, LangChain, LangGraph, PyMuPDF |
+| AI | Gemini 2.5 Flash(백엔드), Gemini 2.0 Flash(프론트 요약 API) |
+| DB/Auth/Storage | Supabase |
 | Vector DB | ChromaDB |
-| Auth/DB | Supabase (Auth + PostgreSQL + Storage) |
 | Deploy | Vercel (frontend), Render (backend) |
 
 ## 폴더 구조
@@ -35,19 +66,18 @@ AI 코치 기반 이력서/경력기술서 편집 서비스입니다.
 ```text
 isoser/
 ├── frontend/
-│   ├── app/(auth)/
-│   ├── app/dashboard/
+│   ├── app/
 │   └── lib/
 ├── backend/
 │   ├── routers/
 │   ├── chains/
+│   ├── repositories/
 │   └── rag/
 ├── supabase/
 │   ├── migrations/
-│   │   ├── 001_init_schema.sql
-│   │   └── 002_add_bio_to_profiles.sql
 │   └── README.md
-└── README.md
+└── docs/
+    └── prd.md
 ```
 
 ## 로컬 실행
@@ -55,10 +85,7 @@ isoser/
 ### 1) 환경변수 준비
 
 ```bash
-# frontend
 cp frontend/.env.local.example frontend/.env.local
-
-# backend
 cp backend/.env.example backend/.env
 ```
 
@@ -66,17 +93,17 @@ cp backend/.env.example backend/.env
 
 ```bash
 cd backend
-python -m venv venv
-
-# macOS/Linux
-source venv/bin/activate
+python -m venv .venv
 
 # Windows
-venv\Scripts\activate
+.venv\Scripts\activate
+
+# macOS/Linux
+source .venv/bin/activate
 
 pip install -r requirements.txt
 python rag/seed.py
-uvicorn main:app --reload
+uvicorn main:app --reload --port 8000
 ```
 
 ### 3) 프론트엔드 실행
@@ -87,6 +114,10 @@ npm install
 npm run dev
 ```
 
+기본 접속 주소
+- Frontend: `http://localhost:3000`
+- Backend: `http://localhost:8000`
+
 ## 환경변수
 
 ### `frontend/.env.local`
@@ -95,41 +126,61 @@ npm run dev
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
+GEMINI_API_KEY=your_gemini_api_key
 ```
 
 ### `backend/.env`
 
 ```bash
 GOOGLE_API_KEY=your_gemini_api_key
-CHROMA_PERSIST_DIR=./chroma_store
+CHROMA_PERSIST_DIR=./chroma_store_v2
 ```
 
 ## API 엔드포인트
 
 | Method | Path | 설명 |
 |--------|------|------|
-| GET | `/` | 헬스체크 (`{"status":"ok"}`) |
-| POST | `/parse/pdf` | PDF에서 프로필/활동 추출 |
-| POST | `/coach/feedback` | STAR 기반 코치 피드백 생성 |
-| POST | `/match/analyze` | 공고 매칭 점수/키워드/요약 분석 |
+| GET | `/` | 헬스체크 |
+| GET | `/health` | 앱 상태 + Chroma 상태 |
+| POST | `/parse/pdf` | 이력서 PDF 구조화 |
+| POST | `/coach/feedback` | 활동 기반 AI 코치 피드백 |
+| GET | `/coach/sessions` | 사용자 코치 세션 목록 |
+| GET | `/coach/sessions/{session_id}` | 코치 세션 상세 |
+| POST | `/match/analyze` | 공고 매칭 분석 |
+| POST | `/match/rewrite` | 공고 기반 리라이팅 |
+| POST | `/match/extract-job-image` | 공고 이미지 텍스트 추출 |
+| POST | `/match/extract-job-pdf` | 공고 PDF 텍스트 추출 |
+| POST | `/company/insight` | 기업 정보 요약 |
 
-## Supabase 스키마 관리
+## Supabase 스키마
 
-DB DDL은 SQL Editor에서 직접 작성하지 말고 아래 마이그레이션 파일 기준으로 관리합니다.
+주요 테이블
+- `profiles`
+- `activities`
+- `resumes`
+- `coach_sessions`
+- `match_analyses`
+- `cover_letters`
+- `portfolios`
 
-- `supabase/migrations/001_init_schema.sql` (기본 테이블/RLS/스토리지)
-- `supabase/migrations/002_add_bio_to_profiles.sql` (`profiles.bio` 추가)
+주요 스토리지 버킷
+- `activity-images`
 
-실행 가이드는 `supabase/README.md`를 참고하세요.
+마이그레이션은 `supabase/migrations` 기준으로 관리합니다.
 
-## 배포
+## 배포 메모
 
 ### Frontend (Vercel)
-1. 저장소 연결 후 Root Directory를 `frontend`로 지정
-2. `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_BACKEND_URL` 설정
-3. 배포 후 Supabase OAuth Redirect URL에 `https://<your-domain>/callback` 등록
+- Root Directory: `frontend`
+- 필수 환경변수
+  - `NEXT_PUBLIC_SUPABASE_URL`
+  - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+  - `NEXT_PUBLIC_BACKEND_URL`
+  - `GEMINI_API_KEY`
 
 ### Backend (Render)
-1. `backend/render.yaml` 기준 Blueprint 배포
-2. 필수 환경변수: `GOOGLE_API_KEY`, `CHROMA_PERSIST_DIR`
-3. Start command에서 `python rag/seed.py && uvicorn main:app ...` 순으로 실행
+- Root Directory: `backend`
+- 필수 환경변수
+  - `GOOGLE_API_KEY`
+  - `CHROMA_PERSIST_DIR`
+- 시작 전에 `python rag/seed.py` 실행이 필요합니다.

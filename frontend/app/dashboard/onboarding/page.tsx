@@ -2,12 +2,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { parsePdf } from "@/lib/api/backend";
 import { isGuestMode } from "@/lib/guest";
 import { createBrowserClient } from "@/lib/supabase/client";
-import type { ParsedProfile, ParsedActivity } from "@/lib/types";
+import type { ParsedActivity, ParsedProfile } from "@/lib/types";
 
 const ALLOWED_TYPES = ["회사경력", "프로젝트", "대외활동", "학생활동"] as const;
 
@@ -26,6 +27,17 @@ function normalizeType(type: string): ParsedActivity["type"] {
   return "프로젝트";
 }
 
+function countByType(activities: ParsedActivity[]) {
+  return ALLOWED_TYPES.map((type) => ({
+    type,
+    count: activities.filter((activity) => activity.type === type).length,
+  }));
+}
+
+function previewValue(value?: string | null) {
+  return value && value.trim() ? value : "미추출";
+}
+
 export default function OnboardingPage() {
   const router = useRouter();
   const supabase = useMemo(() => createBrowserClient(), []);
@@ -39,14 +51,8 @@ export default function OnboardingPage() {
   const [parsedActivities, setParsedActivities] = useState<ParsedActivity[]>([]);
   const [analyzed, setAnalyzed] = useState(false);
 
-  const [coverLetterFile, setCoverLetterFile] = useState<File | null>(null);
-  const [jobTitle, setJobTitle] = useState("");
-  const [showJobModal, setShowJobModal] = useState(false);
-  const [showGuestLoginPrompt, setShowGuestLoginPrompt] = useState(false);
   const [showAnalyzingModal, setShowAnalyzingModal] = useState(false);
   const [analyzeStep, setAnalyzeStep] = useState<1 | 2>(1);
-  const [surveyAnswer, setSurveyAnswer] = useState<string | null>(null);
-  const [showCompleteModal, setShowCompleteModal] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -82,26 +88,37 @@ export default function OnboardingPage() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
-    if (selected && selected.type === "application/pdf") {
-      setFile(selected);
-      setError(null);
-      setAnalyzed(false);
-      setParsedProfile(null);
-      setParsedActivities([]);
-    } else {
+    if (!selected) return;
+
+    if (selected.type !== "application/pdf") {
       setError("PDF 파일만 업로드 가능합니다.");
+      return;
     }
+
+    setFile(selected);
+    setError(null);
+    setAnalyzed(false);
+    setParsedProfile(null);
+    setParsedActivities([]);
   };
 
   const handleAnalyze = async () => {
     if (isGuestMode()) {
-      setError("게스트 모드에서는 업로드 저장을 지원하지 않습니다. 활동 페이지의 샘플 데이터로 QA를 진행해주세요.");
+      setError("게스트 모드에서는 PDF 추출을 사용할 수 없습니다. 로그인 후 업로드해 주세요.");
       return;
     }
 
-    if (!file) return;
+    if (!file) {
+      setError("먼저 이력서 PDF를 선택해 주세요.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
+    setShowAnalyzingModal(true);
+    setAnalyzeStep(1);
+
+    window.setTimeout(() => setAnalyzeStep(2), 1300);
 
     try {
       const result = await parsePdf(file);
@@ -133,6 +150,7 @@ export default function OnboardingPage() {
       setError(err instanceof Error ? err.message : "분석 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
+      setShowAnalyzingModal(false);
     }
   };
 
@@ -146,7 +164,9 @@ export default function OnboardingPage() {
     setError(null);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("로그인이 필요합니다.");
 
       const {
@@ -201,7 +221,11 @@ export default function OnboardingPage() {
 
       if (parsedActivities.length > 0) {
         const { error: activityError } = await supabase.from("activities").insert(
-          parsedActivities.map((a) => ({ ...a, type: normalizeType(a.type), user_id: user.id }))
+          parsedActivities.map((activity) => ({
+            ...activity,
+            type: normalizeType(activity.type),
+            user_id: user.id,
+          }))
         );
         if (activityError) {
           throw new Error(activityError.message);
@@ -216,347 +240,330 @@ export default function OnboardingPage() {
     }
   };
 
-  const handleStartAnalyze = async () => {
-    setShowJobModal(false);
-    setShowAnalyzingModal(true);
-    setAnalyzeStep(1);
-
-    setTimeout(() => setAnalyzeStep(2), 1500);
-
-    await handleAnalyze();
-  };
-
-  useEffect(() => {
-    if (analyzed) {
-      setShowAnalyzingModal(false);
-      setShowCompleteModal(true);
-    }
-  }, [analyzed]);
-
   if (authChecking) {
     return (
-      <main className="min-h-screen bg-slate-100 flex items-center justify-center">
+      <main className="flex min-h-screen items-center justify-center bg-slate-100">
         <p className="text-gray-500">로그인 상태를 확인 중입니다...</p>
       </main>
     );
   }
 
+  const activityCounts = countByType(parsedActivities);
+
   return (
-    <main className="min-h-screen bg-slate-100">
-      <div className="max-w-2xl mx-auto px-6 py-16">
-        <h1 className="text-blue-500 font-bold text-2xl text-center">이력서와 자기소개서를 업로드해주세요!</h1>
-        <p className="text-gray-500 text-sm text-center mt-2">
-          이력서 업로드 후, 자기소개서까지 제출하면 더 정교한 분석이 완성돼요.
-        </p>
+    <main className="min-h-screen bg-[linear-gradient(180deg,#eef4ff,#f8fafc)]">
+      <div className="mx-auto max-w-6xl px-6 py-12">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+          <section className="rounded-[2rem] bg-[#071a36] p-8 text-white shadow-xl shadow-slate-900/10">
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-sky-200">
+              Onboarding
+            </p>
+            <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-tight">
+              이력서 PDF를 올리고,
+              <br />
+              추출 결과를 확인한 뒤 저장하세요.
+            </h1>
+            <p className="mt-4 text-base leading-7 text-slate-300">
+              온보딩에서는 먼저 프로필과 활동을 읽어옵니다. 저장 후에는 성과 저장소,
+              공고 매칭, 이력서 생성으로 바로 이어집니다.
+            </p>
 
-        {!file ? (
-          <div className="border-2 border-dashed border-blue-400 bg-white rounded-2xl p-10 text-center mt-8">
-            <svg width="72" height="60" viewBox="0 0 72 60" fill="none" className="mx-auto mb-4">
-              <path d="M4 8C4 5.8 5.8 4 8 4H28L36 12H64C66.2 12 68 13.8 68 16V52C68 54.2 66.2 56 64 56H8C5.8 56 4 54.2 4 52V8Z" fill="#3B82F6"/>
-              <path d="M4 20H68V52C68 54.2 66.2 56 64 56H8C5.8 56 4 54.2 4 52V20Z" fill="#60A5FA"/>
-            </svg>
-
-            <div className="flex items-center justify-center">
-              <span className="text-red-500 text-sm mr-2">필수</span>
-              <p className="text-gray-900 text-xl font-bold">이력서를 첨부해주세요.</p>
-            </div>
-            <p className="text-gray-400 text-sm mt-2">텍스트 인식이 가능한 PDF를 첨부해주세요(최대 10MB).</p>
-
-            <input
-              id="resume-upload"
-              type="file"
-              accept="application/pdf"
-              onChange={handleFileChange}
-              className="hidden"
-            />
-            <label htmlFor="resume-upload" className="inline-block border border-gray-300 rounded-lg px-6 py-2 text-sm mt-4 cursor-pointer">
-              파일 선택 ↑
-            </label>
-          </div>
-        ) : (
-          <div className="border-2 border-blue-400 bg-white rounded-2xl p-4 mt-8">
-            <div className="flex justify-between items-center gap-3">
-              <div className="flex items-center gap-2 min-w-0">
-                <svg width="20" height="24" viewBox="0 0 20 24" fill="none" className="shrink-0">
-                  <path d="M4 1H11L16 6V22C16 22.55 15.55 23 15 23H4C3.45 23 3 22.55 3 22V2C3 1.45 3.45 1 4 1Z" stroke="#3B82F6" strokeWidth="1.5"/>
-                  <path d="M11 1V6H16" stroke="#3B82F6" strokeWidth="1.5"/>
-                </svg>
-                <p className="text-blue-500 text-sm truncate">{file.name}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setFile(null)}
-                className="text-gray-400 hover:text-gray-600"
-                aria-label="이력서 삭제"
-              >
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M3 5H17" stroke="currentColor" strokeWidth="1.5"/>
-                  <path d="M8 2H12" stroke="currentColor" strokeWidth="1.5"/>
-                  <path d="M6 5V16C6 16.55 6.45 17 7 17H13C13.55 17 14 16.55 14 16V5" stroke="currentColor" strokeWidth="1.5"/>
-                </svg>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {!coverLetterFile ? (
-          <div className="border border-dashed border-gray-300 bg-white rounded-2xl p-8 text-center mt-4">
-            <div className="flex items-center justify-center">
-              <span className="text-gray-400 text-sm mr-2">선택</span>
-              <p className="text-gray-900 text-xl font-bold">자기소개서를 첨부해주세요.</p>
-            </div>
-
-            <input
-              id="cover-letter-upload"
-              type="file"
-              accept="application/pdf"
-              onChange={(e) => {
-                const selected = e.target.files?.[0] ?? null;
-                if (!selected || selected.type === "application/pdf") {
-                  setCoverLetterFile(selected);
-                  setError(null);
-                } else {
-                  setError("PDF 파일만 업로드 가능합니다.");
-                }
-              }}
-              className="hidden"
-            />
-            <label htmlFor="cover-letter-upload" className="inline-block border border-gray-300 rounded-lg px-6 py-2 text-sm mt-4 cursor-pointer">
-              파일 선택 ↑
-            </label>
-          </div>
-        ) : (
-          <div className="border-2 border-blue-400 bg-white rounded-2xl p-4 mt-4">
-            <div className="flex justify-between items-center gap-3">
-              <div className="flex items-center gap-2 min-w-0">
-                <svg width="20" height="24" viewBox="0 0 20 24" fill="none" className="shrink-0">
-                  <path d="M4 1H11L16 6V22C16 22.55 15.55 23 15 23H4C3.45 23 3 22.55 3 22V2C3 1.45 3.45 1 4 1Z" stroke="#3B82F6" strokeWidth="1.5"/>
-                  <path d="M11 1V6H16" stroke="#3B82F6" strokeWidth="1.5"/>
-                </svg>
-                <p className="text-blue-500 text-sm truncate">{coverLetterFile.name}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setCoverLetterFile(null)}
-                className="text-gray-400 hover:text-gray-600"
-                aria-label="자기소개서 삭제"
-              >
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M3 5H17" stroke="currentColor" strokeWidth="1.5"/>
-                  <path d="M8 2H12" stroke="currentColor" strokeWidth="1.5"/>
-                  <path d="M6 5V16C6 16.55 6.45 17 7 17H13C13.55 17 14 16.55 14 16V5" stroke="currentColor" strokeWidth="1.5"/>
-                </svg>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {error && <p className="text-sm text-red-600 mt-4 text-center">{error}</p>}
-
-        {!file ? (
-          <div className="mt-16 text-center">
-            <div className="bg-gray-900 text-white text-sm rounded-lg px-4 py-2 inline-block">이력서가 없다면?</div>
-            <div className="w-0 h-0 border-l-[8px] border-r-[8px] border-t-[10px] border-l-transparent border-r-transparent border-t-gray-900 mx-auto" />
-            <button
-              type="button"
-              onClick={() => router.push("/dashboard")}
-              className="border border-gray-300 bg-white rounded-lg px-20 py-3 text-gray-700 mt-4"
-            >
-              직접 입력하기
-            </button>
-          </div>
-        ) : (
-          <div className="mt-8 flex justify-center">
-            <button
-              type="button"
-              onClick={() => {
-                if (isGuestMode()) {
-                  setShowGuestLoginPrompt(true);
-                  setShowJobModal(true);
-                  return;
-                }
-                setShowGuestLoginPrompt(false);
-                setShowJobModal(true);
-              }}
-              disabled={loading}
-              className="bg-blue-500 text-white rounded-xl px-20 py-4 text-base font-bold disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              추출하기
-            </button>
-          </div>
-        )}
-      </div>
-
-      {showJobModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
-          <div className="bg-white rounded-2xl p-8 w-96 relative">
-            <button
-              type="button"
-              onClick={() => {
-                setShowJobModal(false);
-                setShowGuestLoginPrompt(false);
-              }}
-              className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
-              aria-label="닫기"
-            >
-              ×
-            </button>
-
-            {!showGuestLoginPrompt ? (
-              <>
-                <h2 className="text-blue-500 font-bold text-xl text-center">지원 직무를 입력해주세요!</h2>
-                <p className="text-gray-400 text-sm text-center mt-1">직무 기반으로 이력서를 분석합니다.</p>
-
-                <input
-                  type="text"
-                  placeholder="예) 서비스 기획자"
-                  value={jobTitle}
-                  onChange={(e) => setJobTitle(e.target.value)}
-                  className="border border-gray-200 rounded-lg px-4 py-3 w-full mt-4"
-                />
-
-                <label className="flex items-center gap-2 mt-4 text-sm text-gray-700">
-                  <input type="checkbox" defaultChecked />
-                  <span>이력서 기반으로 프로필 업데이트 하기</span>
-                </label>
-
-                <button
-                  type="button"
-                  className={`rounded-full px-6 py-3 w-full mt-4 text-white ${
-                    isGuestMode() ? "bg-gray-300 cursor-not-allowed" : "bg-blue-400"
-                  }`}
-                  onClick={() => {
-                    if (isGuestMode()) {
-                      setShowGuestLoginPrompt(true);
-                      return;
-                    }
-                    void handleStartAnalyze();
-                  }}
-                >
-                  이력서 분석 시작하기
-                </button>
-              </>
-            ) : (
-              <>
-                <h2 className="text-blue-500 font-bold text-xl text-center">로그인이 필요합니다</h2>
-                <p className="text-gray-500 text-sm text-center mt-3">
-                  게스트 모드에서는 이력서 추출 기능을 사용할 수 없습니다. 로그인 해주세요.
+            <div className="mt-10 space-y-4">
+              <div className="rounded-2xl border border-white/10 bg-white/6 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
+                  Step 1
                 </p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowGuestLoginPrompt(false);
-                    setShowJobModal(false);
-                  }}
-                  className="bg-gray-900 text-white rounded-full px-6 py-3 w-full mt-6"
-                >
-                  뒤로가기
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-
-      {showAnalyzingModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
-          <div className="bg-white rounded-2xl p-8 w-[480px]">
-            <h2 className="font-bold text-xl text-center">이력서를 분석하고 있습니다.</h2>
-            <p className="text-gray-400 text-sm text-center mt-1">30초에서 1분 정도 소요됩니다.</p>
-
-            <div className="mt-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-7 h-7 rounded-full bg-blue-500 text-white text-sm flex items-center justify-center">1</div>
-                  <p className="text-blue-500 text-sm">이력서에서 커리어 분석</p>
-                </div>
-                <div>
-                  {analyzeStep === 1 ? (
-                    <div>
-                      <span className="dot" />
-                      <span className="dot" />
-                      <span className="dot" />
-                    </div>
-                  ) : (
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                      <path d="M4 10L8 14L16 6" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  )}
-                </div>
+                <p className="mt-2 text-lg font-semibold">PDF 업로드</p>
+                <p className="mt-1 text-sm leading-6 text-slate-300">
+                  텍스트 인식 가능한 PDF를 업로드하면 기본 정보와 활동을 추출합니다.
+                </p>
               </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`w-7 h-7 rounded-full text-sm flex items-center justify-center ${analyzeStep === 1 ? "bg-gray-200 text-gray-500" : "bg-blue-500 text-white"}`}>
-                    2
-                  </div>
-                  <p className={analyzeStep === 1 ? "text-gray-400 text-sm" : "text-blue-500 text-sm"}>경력에서 핵심 경험을 추출</p>
-                </div>
-                <div>
-                  {analyzeStep === 2 ? (
-                    <div>
-                      <span className="dot" />
-                      <span className="dot" />
-                      <span className="dot" />
-                    </div>
-                  ) : null}
-                </div>
+              <div className="rounded-2xl border border-white/10 bg-white/6 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
+                  Step 2
+                </p>
+                <p className="mt-2 text-lg font-semibold">추출 결과 확인</p>
+                <p className="mt-1 text-sm leading-6 text-slate-300">
+                  이름, 연락처, 학력, 활동 개수를 바로 확인하고 저장 여부를 결정합니다.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/6 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
+                  Step 3
+                </p>
+                <p className="mt-2 text-lg font-semibold">대시보드로 이동</p>
+                <p className="mt-1 text-sm leading-6 text-slate-300">
+                  저장 후에는 성과 저장소, 합격률 분석, 문서 저장소를 바로 사용할 수 있습니다.
+                </p>
               </div>
             </div>
 
-            <div className="mt-6">
-              <p className="font-bold text-sm">설문 조사</p>
-              <p className="text-gray-400 text-sm">이력서 분석 시 어떠한 것이 더 필요한가요?</p>
+            <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+              <Link
+                href="/dashboard"
+                className="rounded-full bg-white px-5 py-3 text-center text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
+              >
+                직접 입력으로 이동
+              </Link>
+              {isGuestMode() && (
+                <Link
+                  href="/login"
+                  className="rounded-full border border-white/16 px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-white/8"
+                >
+                  로그인하고 업로드하기
+                </Link>
+              )}
+            </div>
+          </section>
 
-              {surveyAnswer ? (
-                <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50 p-4">
-                  <p className="mt-1 text-sm font-bold text-gray-900">내 이력서와 맞는 공고를 바로 찾아보세요</p>
-                  <p className="mt-1 text-xs text-gray-500">
-                    공고 매칭 분석에서 내 경험과 직무 키워드 적합도를 확인할 수 있어요.
-                  </p>
-                </div>
-              ) : (
-                [
-                  "다양한 템플릿",
-                  "다양한 항목 (경력, 프로젝트, 기술 스택 등)",
-                  "보다 더 정교한 결과",
-                ].map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    onClick={() => setSurveyAnswer(option)}
-                    className="py-3 w-full text-sm mt-2 rounded-lg border border-gray-200 text-gray-700"
-                  >
-                    {option}
-                  </button>
-                ))
+          <section className="rounded-[2rem] bg-white p-8 shadow-xl shadow-slate-900/5">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-6">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.22em] text-blue-700">
+                  Upload
+                </p>
+                <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
+                  업로드 후 바로 미리보기
+                </h2>
+                <p className="mt-3 text-sm leading-6 text-slate-600">
+                  자기소개서 업로드나 지원 직무 입력은 온보딩에서 제거했습니다. 먼저 이력서
+                  데이터가 제대로 들어오는지 확인하는 것이 우선입니다.
+                </p>
+              </div>
+              {file && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFile(null);
+                    setAnalyzed(false);
+                    setParsedProfile(null);
+                    setParsedActivities([]);
+                    setError(null);
+                  }}
+                  className="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+                >
+                  다시 선택
+                </button>
               )}
             </div>
 
-            <style>{`
-              .dot { width:8px; height:8px; border-radius:50%; background:#3B82F6; display:inline-block; margin:0 2px; animation: blink 1.2s infinite; }
-              .dot:nth-child(2) { animation-delay: 0.2s; }
-              .dot:nth-child(3) { animation-delay: 0.4s; }
-              @keyframes blink { 0%,80%,100%{opacity:0.2} 40%{opacity:1} }
-            `}</style>
-          </div>
-        </div>
-      )}
+            <div className="mt-8">
+              {!file ? (
+                <label
+                  htmlFor="resume-upload"
+                  className="block cursor-pointer rounded-[1.75rem] border-2 border-dashed border-blue-200 bg-blue-50/60 p-10 text-center transition hover:border-blue-300 hover:bg-blue-50"
+                >
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-sm">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="1.8">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 16V4m0 0l-4 4m4-4l4 4" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+                    </svg>
+                  </div>
+                  <p className="mt-5 text-xl font-semibold text-slate-950">이력서 PDF를 첨부해 주세요</p>
+                  <p className="mt-2 text-sm text-slate-500">
+                    텍스트 인식 가능한 PDF, 최대 10MB
+                  </p>
+                  <div className="mt-6 inline-flex rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white">
+                    파일 선택
+                  </div>
+                  <input
+                    id="resume-upload"
+                    type="file"
+                    accept="application/pdf"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                </label>
+              ) : (
+                <div className="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-5">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                        Selected File
+                      </p>
+                      <p className="mt-2 truncate text-base font-semibold text-slate-950">{file.name}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleAnalyze}
+                      disabled={loading || isGuestMode()}
+                      className="rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {loading ? "분석 중..." : "추출 시작"}
+                    </button>
+                  </div>
+                  {isGuestMode() && (
+                    <p className="mt-4 text-sm text-amber-700">
+                      게스트 모드에서는 업로드 분석이 비활성화되어 있습니다. 로그인 후 이용해
+                      주세요.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
 
-      {showCompleteModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
-          <div className="bg-white rounded-2xl p-8 w-96 text-center">
-            <h2 className="font-bold text-xl">추출이 완료되었습니다.</h2>
-            <p className="text-gray-400 text-sm mt-2">추출된 활동 내용을 확인해주세요!</p>
-            <button
-              type="button"
-              className="bg-blue-500 text-white rounded-lg px-6 py-3 w-full mt-6"
-              onClick={async () => {
-                await handleSave();
-              }}
-            >
-              확인
-            </button>
+            {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
+
+            <div className="mt-8 border-t border-slate-100 pt-8">
+              {!analyzed || !parsedProfile ? (
+                <div className="rounded-[1.75rem] border border-dashed border-slate-200 bg-slate-50 p-8 text-center">
+                  <p className="text-lg font-semibold text-slate-900">추출 결과가 여기에 표시됩니다</p>
+                  <p className="mt-2 text-sm text-slate-500">
+                    업로드 후 이름, 연락처, 학력, 활동 개수를 먼저 검토할 수 있습니다.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                        Profile Preview
+                      </p>
+                      <div className="mt-4 space-y-3 text-sm text-slate-700">
+                        <div>
+                          <p className="text-xs text-slate-400">이름</p>
+                          <p className="mt-1 font-medium text-slate-950">
+                            {previewValue(parsedProfile.name)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-slate-400">이메일</p>
+                          <p className="mt-1">{previewValue(parsedProfile.email)}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-slate-400">연락처</p>
+                          <p className="mt-1">{previewValue(parsedProfile.phone)}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-slate-400">학력</p>
+                          <p className="mt-1">{previewValue(parsedProfile.education)}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl border border-slate-200 bg-white p-5">
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                        Activity Summary
+                      </p>
+                      <div className="mt-4 grid grid-cols-2 gap-3">
+                        {activityCounts.map((item) => (
+                          <div key={item.type} className="rounded-2xl bg-slate-50 p-4">
+                            <p className="text-xs text-slate-400">{item.type}</p>
+                            <p className="mt-2 text-2xl font-semibold text-slate-950">{item.count}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-200 bg-white p-5">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                          Activity Preview
+                        </p>
+                        <p className="mt-2 text-lg font-semibold text-slate-950">
+                          추출된 활동 {parsedActivities.length}개
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 grid gap-3">
+                      {parsedActivities.length === 0 ? (
+                        <p className="text-sm text-slate-500">추출된 활동이 없습니다.</p>
+                      ) : (
+                        parsedActivities.slice(0, 6).map((activity, index) => (
+                          <div key={`${activity.title}-${index}`} className="rounded-2xl bg-slate-50 p-4">
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0">
+                                <p className="text-xs font-semibold text-blue-700">{activity.type}</p>
+                                <p className="mt-1 truncate text-sm font-semibold text-slate-950">
+                                  {activity.title || "제목 미추출"}
+                                </p>
+                              </div>
+                              <p className="shrink-0 text-xs text-slate-400">
+                                {previewValue(activity.period)}
+                              </p>
+                            </div>
+                            {activity.description && (
+                              <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">
+                                {activity.description}
+                              </p>
+                            )}
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    {parsedActivities.length > 6 && (
+                      <p className="mt-4 text-xs text-slate-400">
+                        나머지 활동은 저장 후 성과 저장소에서 확인할 수 있습니다.
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col gap-3 border-t border-slate-100 pt-2 sm:flex-row">
+                    <button
+                      type="button"
+                      onClick={handleSave}
+                      disabled={loading}
+                      className="rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-50"
+                    >
+                      {loading ? "저장 중..." : "이 결과로 저장하고 대시보드로 이동"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAnalyzed(false);
+                        setParsedProfile(null);
+                        setParsedActivities([]);
+                        setError(null);
+                      }}
+                      className="rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                    >
+                      다시 추출하기
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+        </div>
+      </div>
+
+      {showAnalyzingModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-md rounded-[1.75rem] bg-white p-8 shadow-xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-700">
+              Parsing Resume
+            </p>
+            <h2 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">
+              이력서에서 데이터를 추출하고 있습니다
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-slate-500">
+              30초에서 1분 정도 소요될 수 있습니다.
+            </p>
+
+            <div className="mt-8 space-y-4">
+              <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
+                <div>
+                  <p className="text-sm font-semibold text-slate-950">프로필 읽기</p>
+                  <p className="text-xs text-slate-400">이름, 연락처, 학력 추출</p>
+                </div>
+                <div className="text-sm font-semibold text-blue-700">
+                  {analyzeStep === 1 ? "진행 중" : "완료"}
+                </div>
+              </div>
+              <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
+                <div>
+                  <p className="text-sm font-semibold text-slate-950">활동 구조화</p>
+                  <p className="text-xs text-slate-400">경력, 프로젝트, 활동 정리</p>
+                </div>
+                <div className="text-sm font-semibold text-blue-700">
+                  {analyzeStep === 2 ? "진행 중" : "대기"}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

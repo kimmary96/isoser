@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { getGuestActivities, isGuestMode } from "@/lib/guest";
@@ -11,6 +12,7 @@ const EMPTY_PROFILE: Profile = {
   id: "",
   name: null,
   bio: null,
+  portfolio_url: null,
   email: null,
   phone: null,
   education: null,
@@ -29,7 +31,8 @@ type EditableSection = "career" | "education_history" | "awards" | "certificatio
 type CareerEntry = {
   company: string;
   position: string;
-  period: string;
+  start: string;
+  end: string;
 };
 
 type CareerCard = {
@@ -60,31 +63,45 @@ function normalizeText(value: string): string {
 function parseCareerLine(line: string): CareerEntry {
   const trimmed = line.trim();
   if (!trimmed) {
-    return { company: "", position: "", period: "" };
+    return { company: "", position: "", start: "", end: "" };
   }
 
   const pipeParts = trimmed.split("|").map((part) => part.trim()).filter(Boolean);
-  if (pipeParts.length >= 3) {
+  if (pipeParts.length >= 4) {
     return {
       company: pipeParts[0],
       position: pipeParts[1],
-      period: pipeParts.slice(2).join(" | "),
+      start: pipeParts[2],
+      end: pipeParts[3],
+    };
+  }
+
+  if (pipeParts.length >= 3) {
+    const [start, end] = splitPeriod(pipeParts.slice(2).join(" | "));
+    return {
+      company: pipeParts[0],
+      position: pipeParts[1],
+      start,
+      end,
     };
   }
 
   const slashParts = trimmed.split("/").map((part) => part.trim()).filter(Boolean);
   if (slashParts.length >= 3) {
+    const [start, end] = splitPeriod(slashParts.slice(2).join(" / "));
     return {
       company: slashParts[0],
       position: slashParts[1],
-      period: slashParts.slice(2).join(" / "),
+      start,
+      end,
     };
   }
 
   return {
     company: trimmed,
     position: "",
-    period: "",
+    start: "",
+    end: "",
   };
 }
 
@@ -106,7 +123,7 @@ function getCareerItemsFromActivities(activities: Activity[]): string[] {
     const line = serializeCareerEntry({
       company: activity.title || "",
       position: activity.role || "",
-      period: activity.period || "",
+      ...toCareerPeriodParts(activity.period || ""),
     });
     if (line) unique.add(line);
   });
@@ -117,17 +134,39 @@ function getCareerItemsFromActivities(activities: Activity[]): string[] {
 function serializeCareerEntry(entry: CareerEntry): string {
   const company = entry.company.trim();
   const position = entry.position.trim();
-  const period = entry.period.trim();
+  const start = entry.start.trim();
+  const end = entry.end.trim();
 
-  if (!company && !position && !period) {
+  if (!company && !position && !start && !end) {
     return "";
   }
 
-  if (!position && !period) {
+  if (!position && !start && !end) {
     return company;
   }
 
-  return [company || "-", position || "-", period || "-"].join(" | ");
+  return [company || "-", position || "-", start || "-", end || "-"].join(" | ");
+}
+
+function splitPeriod(periodText: string): [string, string] {
+  const normalized = periodText.replace(/–|—|-/g, "~");
+  const parts = normalized.split("~").map((part) => part.trim()).filter(Boolean);
+  if (parts.length === 0) return ["", ""];
+  if (parts.length === 1) return [parts[0], ""];
+  return [parts[0], parts[1]];
+}
+
+function toCareerPeriodParts(periodText: string): Pick<CareerEntry, "start" | "end"> {
+  const [start, end] = splitPeriod(periodText);
+  return { start, end };
+}
+
+function formatCareerPeriod(entry: CareerEntry): string {
+  const start = entry.start.trim();
+  const end = entry.end.trim();
+  if (!start && !end) return "";
+  if (!end) return start;
+  return `${start} ~ ${end}`;
 }
 
 function parsePeriodRange(periodText: string): { start: number; end: number } | null {
@@ -176,13 +215,14 @@ function isPeriodOverlapped(a: string, b: string): boolean {
 
 function getLinkedActivities(career: CareerEntry, activities: Activity[]): Activity[] {
   const companyKey = normalizeText(career.company);
+  const periodText = formatCareerPeriod(career);
 
   const linked = activities.filter((activity) => {
-    if (!companyKey && !career.period) return false;
+    if (!companyKey && !periodText) return false;
 
     const textBlob = normalizeText(`${activity.title} ${activity.description || ""}`);
     const companyMatched = companyKey.length > 1 && textBlob.includes(companyKey);
-    const periodMatched = Boolean(career.period && activity.period && isPeriodOverlapped(career.period, activity.period));
+    const periodMatched = Boolean(periodText && activity.period && isPeriodOverlapped(periodText, activity.period));
 
     return companyMatched || periodMatched;
   });
@@ -195,7 +235,7 @@ function buildCareerCards(careerItems: string[], activities: Activity[]): Career
   const parsed = careerItems
     .filter(isStructuredCareerLine)
     .map(parseCareerLine)
-    .filter((item) => item.company || item.position || item.period);
+    .filter((item) => item.company || item.position || item.start || item.end);
 
   if (parsed.length === 0) return [];
 
@@ -211,8 +251,8 @@ function buildCareerCards(careerItems: string[], activities: Activity[]): Career
 
   grouped.forEach((entries) => {
     const sortedEntries = [...entries].sort((a, b) => {
-      const endA = parsePeriodRange(a.period)?.end || 0;
-      const endB = parsePeriodRange(b.period)?.end || 0;
+      const endA = parsePeriodRange(formatCareerPeriod(a))?.end || 0;
+      const endB = parsePeriodRange(formatCareerPeriod(b))?.end || 0;
       return endB - endA;
     });
 
@@ -232,7 +272,7 @@ function buildCareerCards(careerItems: string[], activities: Activity[]): Career
     manualCards.push({
       company: primary.company || "미입력",
       position: primary.position || "미입력",
-      period: primary.period || "미입력",
+      period: formatCareerPeriod(primary) || "미입력",
       activities: linkedActivities,
     });
   });
@@ -406,7 +446,7 @@ function CareerEditorModal({
 
   useEffect(() => {
     const parsed = initialItems.map(parseCareerLine);
-    setEntries(parsed.length > 0 ? parsed : [{ company: "", position: "", period: "" }]);
+    setEntries(parsed.length > 0 ? parsed : [{ company: "", position: "", start: "", end: "" }]);
   }, [initialItems, open]);
 
   const updateEntry = (index: number, patch: Partial<CareerEntry>) => {
@@ -414,7 +454,7 @@ function CareerEditorModal({
   };
 
   const addEntry = () => {
-    setEntries((prev) => [...prev, { company: "", position: "", period: "" }]);
+    setEntries((prev) => [...prev, { company: "", position: "", start: "", end: "" }]);
   };
 
   const deleteEntry = (index: number) => {
@@ -435,32 +475,51 @@ function CareerEditorModal({
     <ModalFrame open={open} title="경력 수정" onClose={onClose}>
       <div className="space-y-3">
         {entries.map((entry, idx) => (
-          <div key={`career-${idx}`} className="rounded-lg border border-gray-200 p-3">
-            <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
-              <input
-                value={entry.company}
-                onChange={(e) => updateEntry(idx, { company: e.target.value })}
-                placeholder="회사/조직"
-                className="rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-gray-400"
-              />
-              <input
-                value={entry.position}
-                onChange={(e) => updateEntry(idx, { position: e.target.value })}
-                placeholder="직무/포지션"
-                className="rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-gray-400"
-              />
-              <input
-                value={entry.period}
-                onChange={(e) => updateEntry(idx, { period: e.target.value })}
-                placeholder="기간 (예: 2024.01 ~ 2025.03)"
-                className="rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-gray-400"
-              />
-            </div>
-            <div className="mt-2 flex justify-end">
+          <div key={`career-${idx}`} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1.1fr_1.9fr_auto] lg:items-end">
+              <div>
+                <label className="mb-1 block text-xs font-medium text-slate-500">재직 기간</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    value={entry.start}
+                    onChange={(e) => updateEntry(idx, { start: e.target.value })}
+                    placeholder="2024.09"
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+                  />
+                  <input
+                    value={entry.end}
+                    onChange={(e) => updateEntry(idx, { end: e.target.value })}
+                    placeholder="2025.12 또는 현재"
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-500">회사 정보</label>
+                  <input
+                    value={entry.company}
+                    onChange={(e) => updateEntry(idx, { company: e.target.value })}
+                    placeholder="회사명"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-500">직무명</label>
+                  <input
+                    value={entry.position}
+                    onChange={(e) => updateEntry(idx, { position: e.target.value })}
+                    placeholder="Game Designer/PM"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+                  />
+                </div>
+              </div>
+
               <button
                 type="button"
                 onClick={() => deleteEntry(idx)}
-                className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50"
+                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600 hover:bg-slate-100"
               >
                 삭제
               </button>
@@ -473,9 +532,9 @@ function CareerEditorModal({
         <button
           type="button"
           onClick={addEntry}
-          className="rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          className="rounded-xl border border-dashed border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
         >
-          + 경력 추가
+          + 추가하기
         </button>
         <div className="flex gap-2">
           <button
@@ -511,18 +570,18 @@ function ReadonlyListSection({
   emptyMessage: string;
 }) {
   return (
-    <section className="rounded-2xl bg-white p-6 shadow-sm">
+    <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.05)]">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="font-bold text-gray-900" style={{ fontFamily: "Noto Serif, serif" }}>{title}</h3>
+        <h3 className="text-base font-semibold tracking-tight text-slate-950">{title}</h3>
         <PencilButton onClick={onEdit} label={`${title} 수정`} />
       </div>
 
       {items.length === 0 ? (
-        <p className="text-sm text-gray-400">{emptyMessage}</p>
+        <p className="text-sm text-slate-400">{emptyMessage}</p>
       ) : (
-        <ul className="space-y-2 text-sm text-gray-700">
+        <ul className="space-y-2 text-sm text-slate-700">
           {items.map((item, idx) => (
-            <li key={`${title}-${idx}`} className="rounded-lg bg-gray-50 px-3 py-2 leading-relaxed">
+            <li key={`${title}-${idx}`} className="rounded-2xl bg-slate-50 px-3 py-3 leading-relaxed">
               {item}
             </li>
           ))}
@@ -534,6 +593,7 @@ function ReadonlyListSection({
 
 export default function DashboardPage() {
   const supabase = useMemo(() => createBrowserClient(), []);
+  const router = useRouter();
 
   const [profile, setProfile] = useState<Profile>(EMPTY_PROFILE);
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -547,8 +607,10 @@ export default function DashboardPage() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [profileModalSaving, setProfileModalSaving] = useState(false);
   const [profileNameInput, setProfileNameInput] = useState("");
-  const [profileNameEnInput, setProfileNameEnInput] = useState("");
   const [profileBioInput, setProfileBioInput] = useState("");
+  const [profileEmailInput, setProfileEmailInput] = useState("");
+  const [profilePhoneInput, setProfilePhoneInput] = useState("");
+  const [profilePortfolioUrlInput, setProfilePortfolioUrlInput] = useState("");
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -607,7 +669,12 @@ export default function DashboardPage() {
           { data: matchRows, error: matchError },
         ] = await Promise.all([
           supabase.from("profiles").select("*").eq("id", authData.user.id).maybeSingle(),
-          supabase.from("activities").select("*").eq("is_visible", true).order("created_at", { ascending: false }),
+          supabase
+            .from("activities")
+            .select("*")
+            .eq("user_id", authData.user.id)
+            .eq("is_visible", true)
+            .order("created_at", { ascending: false }),
           supabase
             .from("match_analyses")
             .select("*")
@@ -634,6 +701,7 @@ export default function DashboardPage() {
           skills: toArray(profileRow?.skills),
           self_intro: profileRow?.self_intro ?? "",
           bio: profileRow?.bio ?? "",
+          portfolio_url: profileRow?.portfolio_url ?? "",
         };
 
         setProfile(normalizedProfile);
@@ -678,6 +746,9 @@ export default function DashboardPage() {
       if (patch.skills !== undefined) payload.skills = patch.skills;
       if (patch.self_intro !== undefined) payload.self_intro = patch.self_intro;
       if (patch.bio !== undefined) payload.bio = patch.bio;
+      if (patch.email !== undefined) payload.email = patch.email;
+      if (patch.phone !== undefined) payload.phone = patch.phone;
+      if (patch.portfolio_url !== undefined) payload.portfolio_url = patch.portfolio_url;
 
       let { error: updateError } = await supabase
         .from("profiles")
@@ -775,8 +846,10 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!isProfileModalOpen) return;
     setProfileNameInput(profile.name ?? "");
-    setProfileNameEnInput("");
     setProfileBioInput(profileAny.bio ?? "");
+    setProfileEmailInput(profile.email ?? "");
+    setProfilePhoneInput(profile.phone ?? "");
+    setProfilePortfolioUrlInput((profile as Profile & { portfolio_url?: string | null }).portfolio_url ?? "");
     setAvatarPreviewUrl(profileAny.avatar_url ?? null);
     setAvatarFile(null);
   }, [isProfileModalOpen, profile, profileAny.avatar_url, profileAny.bio]);
@@ -798,9 +871,14 @@ export default function DashboardPage() {
     setProfileModalSaving(true);
     setError(null);
     try {
-      let nextAvatarUrl = profileAny.avatar_url ?? null;
+        let nextAvatarUrl = profileAny.avatar_url ?? null;
+        const normalizedPortfolioUrl = profilePortfolioUrlInput.trim()
+          ? /^(https?:)?\/\//i.test(profilePortfolioUrlInput.trim())
+            ? profilePortfolioUrlInput.trim()
+            : `https://${profilePortfolioUrlInput.trim()}`
+          : null;
 
-      if (!isGuestMode()) {
+        if (!isGuestMode()) {
         const { data: authData, error: authError } = await supabase.auth.getUser();
         if (authError || !authData.user) {
           throw new Error("로그인이 필요합니다.");
@@ -824,6 +902,9 @@ export default function DashboardPage() {
             id: authData.user.id,
             name: profileNameInput.trim(),
             bio: profileBioInput.trim() || null,
+            email: profileEmailInput.trim() || null,
+            phone: profilePhoneInput.trim() || null,
+            portfolio_url: normalizedPortfolioUrl,
             avatar_url: nextAvatarUrl,
           },
           { onConflict: "id" }
@@ -833,6 +914,9 @@ export default function DashboardPage() {
             {
               id: authData.user.id,
               name: profileNameInput.trim(),
+              email: profileEmailInput.trim() || null,
+              phone: profilePhoneInput.trim() || null,
+              portfolio_url: normalizedPortfolioUrl,
               avatar_url: nextAvatarUrl,
             },
             { onConflict: "id" }
@@ -850,6 +934,9 @@ export default function DashboardPage() {
         ...prev,
         name: profileNameInput.trim(),
         bio: profileBioInput.trim() || null,
+        email: profileEmailInput.trim() || null,
+        phone: profilePhoneInput.trim() || null,
+        portfolio_url: normalizedPortfolioUrl,
         avatar_url: nextAvatarUrl ?? undefined,
       }));
       setIsProfileModalOpen(false);
@@ -861,11 +948,11 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="p-8">
-      <div className="mx-auto max-w-6xl space-y-6 px-4 py-8">
-        <section className="bg-white rounded-2xl p-6 mb-6 shadow-sm">
+    <div className="min-h-screen bg-[#f3f6fb] px-6 py-8">
+      <div className="mx-auto max-w-6xl space-y-6">
+        <section className="mb-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: "Noto Serif, serif" }}>내 이력 완성도</h2>
+            <h2 className="text-2xl font-semibold tracking-tight text-slate-950">내 이력 완성도</h2>
             <div className="flex flex-col items-end gap-2">
               <Link href="/dashboard/onboarding" className="text-white rounded-xl px-6 py-2.5 text-sm font-semibold" style={{ background: "linear-gradient(135deg, #094cb2, #3b82f6)" }}>
                 기존 이력서로 한번에 채우기
@@ -884,13 +971,13 @@ export default function DashboardPage() {
         {error && <p className="text-sm text-red-600">{error}</p>}
 
         {loading ? (
-          <div className="rounded-2xl bg-white p-8 text-gray-500 shadow-sm">불러오는 중...</div>
+          <div className="rounded-3xl border border-slate-200 bg-white p-8 text-slate-500 shadow-[0_16px_40px_rgba(15,23,42,0.05)]">불러오는 중...</div>
         ) : (
           <>
-            <div className="flex gap-6 mb-6">
-              <div className="w-56 flex-shrink-0">
+            <div className="mb-6 grid gap-6 xl:grid-cols-[14rem_minmax(0,42rem)_14rem] xl:items-start xl:justify-between">
+              <div className="w-56 flex-shrink-0 xl:w-auto">
                 <div
-                  className="bg-gray-700 rounded-2xl overflow-hidden relative h-[200px] cursor-pointer"
+                  className="relative h-[220px] cursor-pointer overflow-hidden rounded-3xl border border-slate-200 bg-slate-700 shadow-[0_16px_40px_rgba(15,23,42,0.08)]"
                   onClick={() => setIsProfileModalOpen(true)}
                 >
                   {profileAny.avatar_url ? (
@@ -905,48 +992,64 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="flex-1">
-                <div className="bg-white rounded-2xl p-5 mb-4 shadow-sm">
+              <div className="min-w-0">
+                <div className="mb-4 flex h-[220px] flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.05)]">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm text-gray-500">자기소개</p>
-                    <button onClick={() => setEditing("self_intro")} className="text-gray-400 hover:text-gray-600 text-xs">편집</button>
+                    <p className="text-sm font-medium text-slate-500">자기소개</p>
+                    <PencilButton onClick={() => setEditing("self_intro")} label="자기소개 수정" />
                   </div>
-                  <p className="text-gray-700 text-sm leading-relaxed mb-3">
+                  <p className="mb-3 line-clamp-[6] text-sm leading-6 text-slate-700">
                     {profile.self_intro ? profile.self_intro : "자기소개를 생성해보세요."}
                   </p>
                   {!profile.self_intro && (
-                    <div className="outline outline-1 outline-gray-200/20 rounded-xl p-3 text-center">
-                      <p className="text-gray-400 text-sm mb-2">자기소개 생성하기</p>
-                      <button className="outline outline-1 outline-gray-200/20 rounded-lg px-4 py-1.5 text-sm text-gray-600 hover:bg-gray-50">
-                        생성하기
+                    <div className="mt-auto rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 text-center">
+                      <p className="mb-2 text-sm text-slate-400">자기소개 생성하기</p>
+                      <button
+                        type="button"
+                        onClick={() => setEditing("self_intro")}
+                        className="rounded-xl border border-slate-200 px-4 py-1.5 text-sm text-slate-600 hover:bg-white"
+                      >
+                        작성 시작
                       </button>
                     </div>
                   )}
                 </div>
-                <div className="flex gap-4 text-sm text-gray-500 flex-wrap">
+                <div className="flex flex-wrap gap-4 px-1 text-sm text-slate-500">
                   {profile.phone && <span>📞 {profile.phone}</span>}
                   {profile.email && <span>✉️ {profile.email}</span>}
+                  {(profile as Profile & { portfolio_url?: string | null }).portfolio_url && (
+                    <a
+                      href={(profile as Profile & { portfolio_url?: string | null }).portfolio_url ?? "#"}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-blue-600 underline underline-offset-2"
+                    >
+                      포트폴리오 링크
+                    </a>
+                  )}
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-white p-6 shadow-sm">
+              <div className="w-56 rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.05)] xl:w-auto xl:h-[220px]">
                 <div className="mb-3 flex items-center justify-between">
-                  <p className="font-bold text-sm text-gray-900" style={{ fontFamily: "Noto Serif, serif" }}>Skills</p>
-                  <button onClick={() => setEditing("skills")} className="text-gray-400 hover:text-gray-600 text-xs">편집</button>
+                  <p className="text-sm font-semibold tracking-tight text-slate-950">Skills</p>
+                  <PencilButton onClick={() => setEditing("skills")} label="스킬 수정" />
                 </div>
-                <div className="space-y-3">
-                  {toArray(profile.skills).slice(0, 5).map((skill, i) => (
+                <div className="h-[164px] space-y-3 overflow-y-auto pr-1">
+                  {toArray(profile.skills).map((skill, i) => (
                     <div key={i}>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="text-gray-700">{skill}</span>
+                      <div className="mb-1 flex justify-between text-xs">
+                        <span className="font-medium text-slate-700">{skill}</span>
                       </div>
-                      <div className="h-1.5 bg-gray-100 rounded-full">
-                        <div className="h-1.5 bg-gray-900 rounded-full" style={{ width: "80%" }} />
+                      <div className="h-2 rounded-full bg-slate-100">
+                        <div className="h-2 rounded-full bg-slate-900" style={{ width: "80%" }} />
                       </div>
                     </div>
                   ))}
                   {toArray(profile.skills).length === 0 && (
-                    <p className="text-gray-400 text-xs">스킬을 추가해주세요.</p>
+                    <div className="flex h-[150px] items-center justify-center rounded-2xl bg-slate-50 text-xs text-slate-400">
+                      스킬을 추가해주세요.
+                    </div>
                   )}
                 </div>
               </div>
@@ -966,7 +1069,7 @@ export default function DashboardPage() {
                       key={tab.type}
                       onClick={() => setActiveTab(tab.type)}
                       className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                        activeTab === tab.type ? "bg-gray-900 text-white" : "bg-white text-gray-600 hover:bg-gray-100"
+                        activeTab === tab.type ? "bg-slate-900 text-white" : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
                       }`}
                     >
                       {tab.label}
@@ -977,8 +1080,9 @@ export default function DashboardPage() {
                   );
                 })}
                 <button
-                  onClick={() => setEditing("career")}
-                  className="flex items-center gap-1 px-4 py-2 rounded-full text-sm text-gray-500 bg-white hover:bg-gray-100"
+                  type="button"
+                  onClick={() => router.push("/dashboard/activities")}
+                  className="flex items-center gap-1 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-500 hover:bg-slate-50"
                 >
                   ⚙ 활동 관리
                 </button>
@@ -988,21 +1092,23 @@ export default function DashboardPage() {
                 {tabActivities.map((activity) => (
                   <div
                     key={activity.id}
-                    className="flex-shrink-0 w-56 bg-gray-100 rounded-2xl overflow-hidden cursor-pointer hover:bg-gray-200 transition-all"
+                    onClick={() => router.push(`/dashboard/activities/${activity.id}`)}
+                    className="flex-shrink-0 w-56 overflow-hidden rounded-3xl border border-slate-200 bg-white cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(15,23,42,0.08)]"
                     style={{ height: "220px" }}
                   >
-                    <div className="h-28 bg-gray-300 flex items-center justify-center">
-                      <span className="text-gray-400 text-2xl">🖼</span>
+                    <div className="flex h-28 items-center justify-center bg-[linear-gradient(135deg,#dbeafe,#e2e8f0)]">
+                      <span className="text-2xl text-slate-400">🖼</span>
                     </div>
                     <div className="p-3">
-                      <p className="text-xs text-gray-400 mb-1">{activity.period}</p>
-                      <p className="text-sm font-bold text-gray-900 line-clamp-2">{activity.title}</p>
-                      <p className="text-xs text-gray-500 mt-1 line-clamp-2">{activity.description}</p>
+                      <p className="mb-1 text-xs text-slate-400">{activity.period}</p>
+                      <p className="line-clamp-2 text-sm font-semibold text-slate-900">{activity.title}</p>
+                      <p className="mt-1 line-clamp-2 text-xs text-slate-500">{activity.description}</p>
                     </div>
                   </div>
                 ))}
                 <div
-                  className="flex-shrink-0 w-24 flex flex-col items-center justify-center gap-2 cursor-pointer text-gray-400 hover:text-gray-600"
+                  onClick={() => router.push("/dashboard/activities/new")}
+                  className="flex-shrink-0 flex w-24 flex-col items-center justify-center gap-2 rounded-3xl border border-dashed border-slate-300 bg-white cursor-pointer text-slate-400 hover:text-slate-600"
                   style={{ height: "220px" }}
                 >
                   <span className="text-2xl">+</span>
@@ -1011,27 +1117,27 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-6 mb-6">
-              <div className="bg-white rounded-2xl p-6 shadow-sm">
+            <div className="mb-6 grid grid-cols-2 gap-6">
+              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.05)]">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-bold text-gray-900" style={{ fontFamily: "Noto Serif, serif" }}>🗂 경력</h3>
-                  <button onClick={() => setEditing("career")} className="text-gray-400 hover:text-gray-600 text-xs">편집</button>
+                  <h3 className="text-base font-semibold tracking-tight text-slate-950">🗂 경력</h3>
+                  <PencilButton onClick={() => setEditing("career")} label="경력 수정" />
                 </div>
                 {careerCards.length === 0 ? (
-                  <p className="text-gray-400 text-sm">저장된 경력이 없습니다.</p>
+                  <p className="text-sm text-slate-400">저장된 경력이 없습니다.</p>
                 ) : (
                   careerCards.map((card, i) => (
                     <div key={i} className="mb-4">
                       <div className="flex justify-between items-start mb-1">
                         <div>
-                          <p className="font-bold text-sm text-gray-900">{card.company}</p>
-                          <p className="text-xs text-gray-500">{card.position}</p>
+                          <p className="text-sm font-semibold text-slate-900">{card.company}</p>
+                          <p className="text-xs text-slate-500">{card.position}</p>
                         </div>
-                        <p className="text-xs text-gray-400 flex-shrink-0 ml-2">{card.period}</p>
+                        <p className="ml-2 shrink-0 text-xs text-slate-400">{card.period}</p>
                       </div>
-                      <div className="outline outline-1 outline-gray-200/20 pl-3 space-y-1 mt-2 rounded-lg">
+                      <div className="mt-2 space-y-1 rounded-2xl border border-slate-200 bg-slate-50 p-3">
                         {card.activities.map((act, j) => (
-                          <p key={j} className="text-xs text-gray-600">- {act.title}</p>
+                          <p key={j} className="text-xs text-slate-600">- {act.title}</p>
                         ))}
                       </div>
                     </div>
@@ -1039,7 +1145,7 @@ export default function DashboardPage() {
                 )}
               </div>
 
-              <div className="bg-white rounded-2xl p-6 shadow-sm">
+              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.05)]">
                 <ReadonlyListSection
                   title="🎓 학력"
                   items={educationItems}
@@ -1049,8 +1155,8 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-6 mb-6">
-              <div className="bg-white rounded-2xl p-6 shadow-sm">
+            <div className="mb-6 grid grid-cols-3 gap-6">
+              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.05)]">
                 <ReadonlyListSection
                   title="🏆 수상경력"
                   items={awardItems}
@@ -1059,7 +1165,7 @@ export default function DashboardPage() {
                 />
               </div>
 
-              <div className="bg-white rounded-2xl p-6 shadow-sm">
+              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.05)]">
                 <ReadonlyListSection
                   title="📋 자격증"
                   items={certItems}
@@ -1068,7 +1174,7 @@ export default function DashboardPage() {
                 />
               </div>
 
-              <div className="bg-white rounded-2xl p-6 shadow-sm">
+              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.05)]">
                 <ReadonlyListSection
                   title="🌐 외국어"
                   items={languageItems}
@@ -1079,11 +1185,22 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex justify-end gap-3 mb-8">
-              <button className="flex items-center gap-2 outline outline-1 outline-gray-200/20 rounded-xl px-4 py-2 text-sm text-gray-600 hover:bg-gray-50">
+              <button className="flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50">
                 ⚙ 설정
               </button>
-              <button className="flex items-center gap-2 bg-gray-900 text-white rounded-xl px-5 py-2 text-sm font-medium hover:bg-gray-700">
-                프로필 링크 공유하기
+              <button
+                type="button"
+                onClick={() => {
+                  const portfolioUrl = (profile as Profile & { portfolio_url?: string | null }).portfolio_url;
+                  if (portfolioUrl) {
+                    window.open(portfolioUrl, "_blank", "noopener,noreferrer");
+                    return;
+                  }
+                  setIsProfileModalOpen(true);
+                }}
+                className="flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2 text-sm font-medium text-white hover:bg-slate-800"
+              >
+                {(profile as Profile & { portfolio_url?: string | null }).portfolio_url ? "포트폴리오 링크 열기" : "포트폴리오 링크 설정"}
               </button>
             </div>
           </>
@@ -1204,19 +1321,40 @@ export default function DashboardPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">영어 이름 (선택)</label>
-                  <input
-                    value={profileNameEnInput}
-                    onChange={(e) => setProfileNameEnInput(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
-                  />
-                </div>
-                <div>
                   <label className="block text-xs text-gray-500 mb-1">희망 직무 (선택)</label>
                   <input
                     value={profileBioInput}
                     onChange={(e) => setProfileBioInput(e.target.value)}
                     placeholder="5년차 마케터 | 브랜드 기획 전문"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
+                  />
+                </div>
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">이메일</label>
+                    <input
+                      value={profileEmailInput}
+                      onChange={(e) => setProfileEmailInput(e.target.value)}
+                      placeholder="name@example.com"
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">전화번호</label>
+                    <input
+                      value={profilePhoneInput}
+                      onChange={(e) => setProfilePhoneInput(e.target.value)}
+                      placeholder="010-0000-0000"
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">포트폴리오 링크</label>
+                  <input
+                    value={profilePortfolioUrlInput}
+                    onChange={(e) => setProfilePortfolioUrlInput(e.target.value)}
+                    placeholder="portfolio.example.com 또는 https://portfolio.example.com"
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
                   />
                 </div>
@@ -1233,8 +1371,8 @@ export default function DashboardPage() {
               </button>
               <button
                 type="button"
-                onClick={handleSaveProfileModal}
                 disabled={profileModalSaving}
+                onClick={handleSaveProfileModal}
                 className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm hover:bg-blue-700 disabled:opacity-50"
               >
                 {profileModalSaving ? "저장 중..." : "저장하기"}

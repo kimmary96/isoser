@@ -36,9 +36,18 @@ export default function ActivitiesPage() {
       }
 
       try {
+        const {
+          data: { user },
+          error: authError,
+        } = await supabase.auth.getUser();
+        if (authError || !user) {
+          throw new Error("로그인이 필요합니다.");
+        }
+
         const { data, error: queryError } = await supabase
           .from("activities")
           .select("*")
+          .eq("user_id", user.id)
           .order("created_at", { ascending: false });
         if (queryError) {
           throw new Error(queryError.message);

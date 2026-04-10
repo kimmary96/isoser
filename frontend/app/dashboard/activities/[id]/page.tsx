@@ -11,7 +11,7 @@ import type { Activity, CoachMessage } from "@/lib/types";
 export default function ActivityDetailPage() {
   const params = useParams();
   const activityId = params.id as string;
-  const isNewActivity = activityId === "new";
+  const isNewActivity = activityId === "new" || activityId === "__new__";
   const router = useRouter();
   const supabase = useMemo(() => createBrowserClient(), []);
   const [activity, setActivity] = useState<Activity | null>(null);
@@ -77,7 +77,7 @@ export default function ActivityDetailPage() {
           setLoading(false);
           return;
         }
-        const found = getGuestActivities().find((item) => item.id === (params.id as string)) ?? null;
+        const found = getGuestActivities().find((item) => item.id === activityId) ?? null;
         setActivity(found);
         setDescriptionDraft(found?.description ?? "");
         setStarSituation(found?.star_situation || "");
@@ -115,7 +115,7 @@ export default function ActivityDetailPage() {
         const { data, error: activityError } = await supabase
           .from("activities")
           .select("*")
-          .eq("id", params.id as string)
+          .eq("id", activityId)
           .single();
         if (activityError) {
           throw new Error(activityError.message);
@@ -145,7 +145,7 @@ export default function ActivityDetailPage() {
       }
     };
     fetchActivity();
-  }, [isNewActivity, params.id, supabase]);
+  }, [activityId, isNewActivity, supabase]);
 
   const handleSaveDescription = async () => {
     if (!activity) return;

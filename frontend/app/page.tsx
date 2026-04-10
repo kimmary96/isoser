@@ -1,254 +1,290 @@
 import Link from "next/link";
 
-function ExploreButton() {
-  return (
-    <div className="flex flex-col items-start gap-3">
-      <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700 shadow-sm animate-bounce">
-        <span className="relative flex h-2.5 w-2.5">
-          <span className="absolute inline-flex h-full w-full rounded-full bg-gray-500 opacity-75 animate-ping" />
-          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-gray-700" />
-        </span>
-        아직 이력서가 없다면?
-      </div>
-      <Link
-        href="/login"
-        className="border border-gray-300 text-gray-900 rounded-lg px-6 py-3 hover:bg-gray-50 transition"
-      >
-        커리어의 첫 발자취 남겨보기
-      </Link>
-    </div>
-  );
-}
+const featureItems = [
+  {
+    title: "PDF에서 바로 시작",
+    body: "기존 이력서 PDF를 올리면 이름, 연락처, 경력, 프로젝트를 한 번에 정리합니다.",
+  },
+  {
+    title: "성과 저장소로 자산화",
+    body: "회사경력, 프로젝트, 대외활동을 흩어지지 않게 보관하고 필요할 때 다시 조합합니다.",
+  },
+  {
+    title: "공고 매칭 분석",
+    body: "지원 공고와 내 경험을 비교해 강점, 부족 키워드, 추천 활동을 바로 확인합니다.",
+  },
+  {
+    title: "문서 저장과 PDF 출력",
+    body: "선택한 활동으로 이력서를 만들고 문서 저장소에서 다시 꺼내 PDF로 내보냅니다.",
+  },
+];
+
+const workflowItems = [
+  {
+    step: "01",
+    title: "업로드",
+    body: "기존 이력서 PDF에서 프로필과 활동을 추출합니다.",
+  },
+  {
+    step: "02",
+    title: "정리",
+    body: "성과 저장소에서 경험을 다듬고 STAR 기준으로 문장을 보강합니다.",
+  },
+  {
+    step: "03",
+    title: "분석",
+    body: "지원 공고와 비교해 맞는 경험과 보완 포인트를 확인합니다.",
+  },
+  {
+    step: "04",
+    title: "생성",
+    body: "선택한 활동으로 이력서를 만들고 문서 저장소에 저장합니다.",
+  },
+];
+
+const proofItems = [
+  "활동 상세 AI 코치 피드백",
+  "공고 매칭 분석 저장/조회",
+  "문서 저장소와 PDF 내보내기",
+  "게스트 모드와 직접 입력 시작",
+];
 
 export default function Home() {
   return (
-    <div className="bg-white text-gray-900">
-      <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
-        <nav className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="font-semibold text-lg">
+    <div className="bg-[#f5f7fb] text-slate-950">
+      <header className="absolute inset-x-0 top-0 z-20">
+        <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
+          <Link href="/" className="text-lg font-semibold tracking-tight text-white">
             이소서
           </Link>
-          <div className="flex items-center gap-6">
-            <a href="#about" className="text-sm text-gray-700 hover:text-gray-900 transition">
-              서비스 소개
+          <div className="hidden items-center gap-6 text-sm text-white/78 md:flex">
+            <a href="#features" className="transition hover:text-white">
+              기능
             </a>
-            <a href="#pricing" className="text-sm text-gray-700 hover:text-gray-900 transition">
-              요금제
+            <a href="#workflow" className="transition hover:text-white">
+              흐름
             </a>
-            <a href="#reviews" className="text-sm text-gray-700 hover:text-gray-900 transition">
-              후기
+            <a href="#cta" className="transition hover:text-white">
+              시작하기
             </a>
-            <Link
-              href="/login"
-              className="bg-gray-900 text-white rounded-lg px-6 py-3 hover:bg-gray-700 transition"
-            >
-              무료로 시작하기
-            </Link>
           </div>
+          <Link
+            href="/login"
+            className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur transition hover:bg-white/16"
+          >
+            무료로 시작
+          </Link>
         </nav>
       </header>
 
       <main>
-        <section id="about" className="py-20">
-          <div className="max-w-5xl mx-auto px-6">
-            <div className="max-w-3xl">
-              <span className="inline-flex bg-gray-100 text-gray-600 rounded-full text-sm px-4 py-1">
-                PDF 업로드 1분 · 무료 시작
-              </span>
-              <h1 className="mt-6 text-4xl md:text-4xl font-semibold leading-tight">
-                포털마다 이력서를 새로 쓰고 계신가요?
-              </h1>
-              <h2 className="mt-4 text-2xl md:text-3xl text-gray-700 font-medium">
-                한 번 정리한 경력, 어디서든 꺼내 쓰세요.
-              </h2>
-              <p className="mt-6 text-lg text-gray-600 leading-relaxed">
-                이력서 PDF 한 장 올리면 경력이 자동으로 정리됩니다. AI 코치가 한 줄씩 다듬고,
-                지원 직무에 맞는 이력서를 바로 꺼낼 수 있어요.
+        <section className="relative overflow-hidden bg-[#071a36] text-white">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(74,144,226,0.34),_transparent_38%),radial-gradient(circle_at_80%_20%,_rgba(44,99,235,0.42),_transparent_28%),linear-gradient(135deg,_rgba(6,18,38,0.82),_rgba(7,26,54,0.98))]" />
+          <div className="absolute inset-y-0 right-0 hidden w-[48%] bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02))] lg:block" />
+
+          <div className="relative mx-auto grid min-h-screen max-w-7xl items-end gap-16 px-6 pb-16 pt-28 lg:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)] lg:items-center lg:pb-20">
+            <div className="max-w-2xl">
+              <p className="text-sm font-medium uppercase tracking-[0.24em] text-sky-200/86">
+                Career Asset Workspace
               </p>
-              <div className="mt-8 flex flex-col sm:flex-row gap-4">
+              <h1 className="mt-6 text-5xl font-semibold leading-[1.02] tracking-tight md:text-6xl">
+                흩어진 경력을 한 번 정리하면,
+                <br />
+                공고마다 다시 꺼내 쓸 수 있습니다.
+              </h1>
+              <p className="mt-6 max-w-xl text-lg leading-8 text-slate-200">
+                이소서는 AI가 대신 써주는 서비스가 아니라, 내 경험을 저장하고 다듬고 조합할 수
+                있게 만드는 이력서 작업 공간입니다.
+              </p>
+
+              <div className="mt-10 flex flex-col gap-4 sm:flex-row">
                 <Link
                   href="/login"
-                  className="bg-gray-900 text-white rounded-lg px-6 py-3 hover:bg-gray-700 transition"
+                  className="rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
                 >
-                  이력서 PDF로 바로 시작하기
+                  PDF 업로드로 시작하기
                 </Link>
-                <ExploreButton />
+                <Link
+                  href="/dashboard/onboarding"
+                  className="rounded-full border border-white/20 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/8"
+                >
+                  온보딩 먼저 보기
+                </Link>
               </div>
-              <p className="mt-4 text-sm text-gray-500">
-                PDF 없어도 직접 입력으로 시작 가능합니다
-              </p>
+
+              <div className="mt-10 grid gap-3 text-sm text-slate-200 sm:grid-cols-2">
+                {proofItems.map((item) => (
+                  <div key={item} className="flex items-center gap-3">
+                    <span className="h-2 w-2 rounded-full bg-sky-300" />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-gray-100 rounded-xl p-6 text-center">
-                <p className="text-2xl font-semibold">91%</p>
-                <p className="mt-2 text-sm text-gray-600">Z세대 AI 자소서 활용 경험 (캐치, 2025)</p>
-              </div>
-              <div className="bg-gray-100 rounded-xl p-6 text-center">
-                <p className="text-2xl font-semibold">6.4개사</p>
-                <p className="mt-2 text-sm text-gray-600">취준생 1인 평균 동시 지원 수</p>
-              </div>
-              <div className="bg-gray-100 rounded-xl p-6 text-center">
-                <p className="text-2xl font-semibold">107만 명</p>
-                <p className="mt-2 text-sm text-gray-600">국내 이직 준비 인구 (통계청, 2024)</p>
+            <div className="relative">
+              <div className="rounded-[2rem] border border-white/12 bg-white/8 p-4 shadow-2xl shadow-slate-950/35 backdrop-blur">
+                <div className="rounded-[1.5rem] bg-[#f6f8fc] p-5 text-slate-900">
+                  <div className="flex items-start justify-between gap-4 border-b border-slate-200 pb-5">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+                        Resume Pipeline
+                      </p>
+                      <p className="mt-2 text-2xl font-semibold">업로드 후 바로 이어지는 흐름</p>
+                    </div>
+                    <div className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                      Live
+                    </div>
+                  </div>
+
+                  <div className="mt-5 space-y-3">
+                    <div className="rounded-2xl bg-white p-4 shadow-sm">
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                        Step 1
+                      </p>
+                      <p className="mt-2 text-base font-semibold">PDF에서 프로필과 활동 추출</p>
+                      <p className="mt-1 text-sm leading-6 text-slate-600">
+                        이름, 연락처, 경력, 프로젝트를 자동 정리
+                      </p>
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="rounded-2xl bg-[#0d4fd7] p-4 text-white">
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100">
+                          Step 2
+                        </p>
+                        <p className="mt-2 text-base font-semibold">성과 저장소</p>
+                        <p className="mt-1 text-sm leading-6 text-blue-50">
+                          회사경력과 프로젝트를 한 화면에서 관리
+                        </p>
+                      </div>
+                      <div className="rounded-2xl bg-slate-900 p-4 text-white">
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                          Step 3
+                        </p>
+                        <p className="mt-2 text-base font-semibold">공고 매칭 분석</p>
+                        <p className="mt-1 text-sm leading-6 text-slate-300">
+                          강점과 부족 키워드를 바로 확인
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold">문서 저장소</p>
+                          <p className="mt-1 text-sm text-slate-600">
+                            생성한 이력서를 저장하고 PDF로 다시 출력
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs uppercase tracking-[0.18em] text-slate-400">
+                            Final
+                          </p>
+                          <p className="text-lg font-semibold">Ready to send</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        <section id="pain" className="py-20 border-t border-gray-100">
-          <div className="max-w-5xl mx-auto px-6">
-            <h3 className="text-3xl font-semibold">이런 불편함, 겪어본 적 있으신가요?</h3>
-            <p className="mt-3 text-gray-600">이소서는 이 고통에서 시작했습니다.</p>
-            <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
-              <article className="bg-gray-50 border border-gray-200 rounded-xl p-6">
-                <p className="text-lg font-medium">"사람인 이력서랑 잡코리아 이력서 내용이 또 달라져버렸어요"</p>
-                <p className="mt-3 text-sm text-gray-600">포털 동기화 문제</p>
+        <section id="features" className="mx-auto max-w-6xl px-6 py-24">
+          <div className="max-w-2xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-blue-700">
+              What Works Today
+            </p>
+            <h2 className="mt-4 text-4xl font-semibold tracking-tight text-slate-950">
+              이미 구현된 흐름을 첫 화면에서 바로 이해할 수 있어야 합니다.
+            </h2>
+            <p className="mt-4 text-base leading-7 text-slate-600">
+              지금 제품의 설득 포인트는 미래 기능이 아니라, 이미 연결된 작업 흐름입니다.
+            </p>
+          </div>
+
+          <div className="mt-14 grid gap-x-8 gap-y-10 md:grid-cols-2">
+            {featureItems.map((item, index) => (
+              <article key={item.title} className="border-t border-slate-200 pt-5">
+                <p className="text-sm font-semibold text-slate-400">0{index + 1}</p>
+                <h3 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">
+                  {item.title}
+                </h3>
+                <p className="mt-3 max-w-md text-sm leading-7 text-slate-600">{item.body}</p>
               </article>
-              <article className="bg-gray-50 border border-gray-200 rounded-xl p-6">
-                <p className="text-lg font-medium">"부트캠프 프로젝트 3개를 어디다 정리해야 할지 모르겠어요"</p>
-                <p className="mt-3 text-sm text-gray-600">활동 기록 분산</p>
-              </article>
-              <article className="bg-gray-50 border border-gray-200 rounded-xl p-6">
-                <p className="text-lg font-medium">"ChatGPT가 써준 이력서엔 내 경험이 하나도 없었어요"</p>
-                <p className="mt-3 text-sm text-gray-600">AI 생성의 한계</p>
-              </article>
-            </div>
+            ))}
           </div>
         </section>
 
-        <section className="py-20 border-t border-gray-100">
-          <div className="max-w-5xl mx-auto px-6">
-            <h3 className="text-3xl font-semibold">3단계로 끝납니다</h3>
-            <p className="mt-3 text-gray-600">복잡한 설정 없이, PDF 한 장으로 시작하세요.</p>
-            <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
-              <article className="bg-gray-50 border border-gray-200 rounded-xl p-6">
-                <p className="text-sm text-gray-500 font-medium">01</p>
-                <h4 className="mt-2 text-xl font-semibold">PDF 업로드</h4>
-                <p className="mt-3 text-gray-600">
-                  기존 이력서 PDF를 올리면 경력·프로젝트·학력이 자동으로 정리됩니다.
+        <section
+          id="workflow"
+          className="border-y border-slate-200 bg-[linear-gradient(180deg,#ffffff,#edf3ff)]"
+        >
+          <div className="mx-auto max-w-6xl px-6 py-24">
+            <div className="grid gap-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.22em] text-blue-700">
+                  Workflow
                 </p>
-              </article>
-              <article className="bg-gray-50 border border-gray-200 rounded-xl p-6">
-                <p className="text-sm text-gray-500 font-medium">02</p>
-                <h4 className="mt-2 text-xl font-semibold">AI 코치 피드백</h4>
-                <p className="mt-3 text-gray-600">
-                  STAR 기법 기준으로 내 문장을 한 줄씩 더 강하게 다듬습니다.
-                </p>
-              </article>
-              <article className="bg-gray-50 border border-gray-200 rounded-xl p-6">
-                <p className="text-sm text-gray-500 font-medium">03</p>
-                <h4 className="mt-2 text-xl font-semibold">직무 맞춤 출력</h4>
-                <p className="mt-3 text-gray-600">
-                  지원 직무를 선택하면 그 회사에 맞는 이력서가 바로 완성됩니다.
-                </p>
-              </article>
-            </div>
-          </div>
-        </section>
-
-        <section className="py-20 border-t border-gray-100">
-          <div className="max-w-5xl mx-auto px-6">
-            <h3 className="text-3xl font-semibold">이소서가 다른 이유</h3>
-            <p className="mt-3 text-gray-600">포털도, ChatGPT도 해결 못 한 문제를 해결합니다.</p>
-            <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
-              <article className="bg-gray-50 border border-gray-200 rounded-xl p-6">
-                <h4 className="text-xl font-semibold">경력은 영구 보존됩니다</h4>
-                <p className="mt-3 text-gray-600">
-                  한 번 입력하면 삭제되지 않습니다. 지원 직무마다 조합만 바꾸면 됩니다.
-                </p>
-              </article>
-              <article className="bg-gray-50 border border-gray-200 rounded-xl p-6">
-                <h4 className="text-xl font-semibold">AI가 대신 쓰지 않습니다</h4>
-                <p className="mt-3 text-gray-600">
-                  내 문장을 AI가 코치합니다. 결과물은 온전히 내 언어로 남습니다.
-                </p>
-              </article>
-              <article className="bg-gray-50 border border-gray-200 rounded-xl p-6">
-                <h4 className="text-xl font-semibold">0초 시작, 빈칸 없음</h4>
-                <p className="mt-3 text-gray-600">
-                  PDF 업로드 한 번으로 즉시 시작됩니다. 빈칸부터 채우지 않아도 됩니다.
-                </p>
-              </article>
-            </div>
-          </div>
-        </section>
-
-        <section id="reviews" className="py-20 border-t border-gray-100">
-          <div className="max-w-5xl mx-auto px-6">
-            <h3 className="text-3xl font-semibold">
-              이 문제, 생각보다 훨씬 많은 분들이 겪고 있습니다
-            </h3>
-            <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-gray-100 rounded-xl p-6 text-center">
-                <p className="text-2xl font-semibold">69%</p>
-                <p className="mt-2 text-sm text-gray-600">
-                  2025년 AI 자소서 활용률 (2023년 7%에서 9배 증가)
+                <h2 className="mt-4 text-4xl font-semibold tracking-tight text-slate-950">
+                  업로드 다음 행동이 명확해야 사용자가 남습니다.
+                </h2>
+                <p className="mt-4 text-base leading-7 text-slate-600">
+                  그래서 홈과 온보딩 모두 같은 순서로 말해야 합니다. 업로드, 정리, 분석, 생성.
                 </p>
               </div>
-              <div className="bg-gray-100 rounded-xl p-6 text-center">
-                <p className="text-2xl font-semibold">6.4개사</p>
-                <p className="mt-2 text-sm text-gray-600">취준생 1인 평균 동시 지원 기업 수</p>
-              </div>
-              <div className="bg-gray-100 rounded-xl p-6 text-center">
-                <p className="text-2xl font-semibold">107만 명</p>
-                <p className="mt-2 text-sm text-gray-600">국내 이직 준비 실업자 (2024년 기준)</p>
-              </div>
-            </div>
 
-            <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-              <article className="bg-gray-50 border border-gray-200 rounded-xl p-6">
-                <p className="text-gray-800 leading-relaxed">
-                  "포트폴리오 프로젝트 정리하는데 이소서 쓰고 나서 이력서 버전 관리가 진짜 편해졌어요.
-                  직무별로 꺼내 쓰니까 복붙 실수가 없어졌습니다."
-                </p>
-                <p className="mt-4 text-sm text-gray-600">부트캠프 수료 취준생, 27세</p>
-              </article>
-              <article className="bg-gray-50 border border-gray-200 rounded-xl p-6">
-                <p className="text-gray-800 leading-relaxed">
-                  "ChatGPT로 썼더니 면접관이 AI 썼죠? 라고 바로 알아봤어요. 이소서 코치 방식은 내
-                  말투가 살아있어서 달랐습니다."
-                </p>
-                <p className="mt-4 text-sm text-gray-600">5년차 마케터, 이직 준비 중</p>
-              </article>
+              <div className="space-y-6">
+                {workflowItems.map((item) => (
+                  <div
+                    key={item.step}
+                    className="grid gap-4 border-t border-slate-200 pt-5 sm:grid-cols-[64px_minmax(0,1fr)]"
+                  >
+                    <p className="text-sm font-semibold text-slate-400">{item.step}</p>
+                    <div>
+                      <h3 className="text-2xl font-semibold tracking-tight text-slate-950">
+                        {item.title}
+                      </h3>
+                      <p className="mt-2 text-sm leading-7 text-slate-600">{item.body}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>
 
-        <section id="pricing" className="py-20 border-t border-gray-100">
-          <div className="max-w-5xl mx-auto px-6 text-center">
-            <h3 className="text-3xl font-semibold">
-              지금 이력서 PDF 한 장만 있으면 됩니다. 무료로 시작하세요.
-            </h3>
-            <p className="mt-4 text-gray-600">경력 정리부터 PDF 출력 첫 1회까지 완전 무료입니다.</p>
-            <div className="mt-8 flex justify-center">
+        <section id="cta" className="mx-auto max-w-6xl px-6 py-24">
+          <div className="rounded-[2rem] bg-[#081a36] px-8 py-12 text-white md:px-12">
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-sky-200">
+              Start From Your Existing Resume
+            </p>
+            <h2 className="mt-4 max-w-3xl text-4xl font-semibold tracking-tight">
+              포털마다 다시 쓰는 대신, 한 번 정리한 경력을 작업 가능한 데이터로 바꾸세요.
+            </h2>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
+              PDF 업로드로 시작해도 되고, 바로 직접 입력으로 들어가도 됩니다. 중요한 건 처음부터
+              빈 문서와 싸우지 않는 것입니다.
+            </p>
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
               <Link
                 href="/login"
-                className="bg-gray-900 text-white rounded-lg px-6 py-3 hover:bg-gray-700 transition"
+                className="rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
               >
-                이력서 PDF 업로드하기
+                무료로 시작하기
+              </Link>
+              <Link
+                href="/dashboard"
+                className="rounded-full border border-white/18 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/8"
+              >
+                직접 입력으로 둘러보기
               </Link>
             </div>
-            <p className="mt-4 text-sm text-gray-500">
-              PDF 없이 직접 입력으로도 시작 가능 · 신용카드 불필요
-            </p>
           </div>
         </section>
       </main>
-
-      <footer className="border-t border-gray-200">
-        <div className="max-w-5xl mx-auto px-6 py-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between text-sm text-gray-600">
-          <p>© 2026 이소서</p>
-          <div className="flex items-center gap-4">
-            <a href="#" className="hover:text-gray-900 transition">
-              개인정보처리방침
-            </a>
-            <a href="#" className="hover:text-gray-900 transition">
-              이용약관
-            </a>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
