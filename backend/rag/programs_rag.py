@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
@@ -17,6 +18,7 @@ except ImportError:
     from rag.chroma_client import SearchResult, get_chroma_manager
 
 logger = get_logger(__name__)
+TOKEN_PATTERN = re.compile(r"[0-9A-Za-z가-힣+#]+")
 
 PROGRAM_RECOMMEND_PROMPT = """
 너는 사용자의 경력 프로필에 맞는 훈련 과정을 추천하는 커리어 코치다.
@@ -160,6 +162,172 @@ class ProgramsRAG:
         except Exception:
             return 0.0
 
+    def _semantic_score(self, distance: float | None) -> float:
+        if distance is None:
+            return 0.0
+        try:
+            return max(0.0, min(1.0, 1.0 - float(distance)))
+        except Exception:
+            return 0.0
+
+    def _tokenize_text(self, value: Any) -> list[str]:
+        if value is None:
+            return []
+        text = str(value).strip().lower()
+        if not text:
+            return []
+        return [token for token in TOKEN_PATTERN.findall(text) if len(token) >= 2]
+
+    def _profile_keywords(
+        self,
+        profile: Mapping[str, Any],
+        activities: Sequence[Mapping[str, Any]],
+    ) -> list[str]:
+        keywords: list[str] = []
+        seen: set[str] = set()
+
+        def add_tokens(tokens: Sequence[str]) -> None:
+            for token in tokens:
+                normalized = token.strip().lower()
+                if not normalized or normalized in seen:
+                    continue
+                seen.add(normalized)
+                keywords.append(normalized)
+
+        for key in ("skills", "career", "education_history", "certifications", "bio", "self_intro"):
+            value = profile.get(key)
+            if isinstance(value, list):
+                for item in value:
+                    add_tokens(self._tokenize_text(item))
+            else:
+                add_tokens(self._tokenize_text(value))
+
+        for activity in activities[:20]:
+            for key in ("skills", "title", "role", "description"):
+                value = activity.get(key)
+                if isinstance(value, list):
+                    for item in value:
+                        add_tokens(self._tokenize_text(item))
+                else:
+                    add_tokens(self._tokenize_text(value))
+
+        return keywords[:40]
+
+    def _program_match_context(
+        self,
+        program: Mapping[str, Any],
+        keywords: Sequence[str],
+    ) -> tuple[list[str], float]:
+        title_text = " ".join(self._tokenize_text(program.get("title") or program.get("name")))
+        category_text = " ".join(self._tokenize_text(program.get("category")))
+        location_text = " ".join(self._tokenize_text(program.get("location")))
+        body_text = " ".join(
+            self._tokenize_text(
+                " ".join(
+                    str(program.get(key) or "")
+                    for key in (
+                        "summary",
+                        "description",
+                        "provider",
+                        "curriculum",
+                        "target",
+                        "location",
+                        "category",
+                    )
+                )
+            )
+        )
+        matched_keywords: list[str] = []
+        title_hits = 0
+        category_hits = 0
+        location_hits = 0
+        body_hits = 0
+
+        for keyword in keywords:
+            if keyword in title_text:
+                matched_keywords.append(keyword)
+                title_hits += 1
+                continue
+            if keyword in category_text:
+                matched_keywords.append(keyword)
+                category_hits += 1
+                continue
+            if keyword in location_text:
+                matched_keywords.append(keyword)
+                location_hits += 1
+                continue
+            if keyword in body_text:
+                matched_keywords.append(keyword)
+                body_hits += 1
+
+        keyword_budget = max(1, min(len(keywords), 8))
+        relevance_score = min(
+            1.0,
+            (
+                title_hits * 1.4
+                + category_hits * 1.1
+                + location_hits * 0.8
+                + body_hits * 0.6
+            )
+            / keyword_budget,
+        )
+        return matched_keywords[:5], relevance_score
+
+    def _build_fallback_reason(
+        self,
+        program: Mapping[str, Any],
+        matched_keywords: Sequence[str],
+    ) -> str:
+        if matched_keywords:
+            top_keywords = ", ".join(matched_keywords[:3])
+            title = _safe_text(program.get("title") or program.get("name")) or "이 과정"
+            return f"{top_keywords} 경험과 연결되는 내용이 있어 {title}을 추천합니다."
+        return "프로필과 활동 이력을 기준으로 현재 조건에 맞는 과정이라 추천합니다."
+
+    def _fallback_recommend(
+        self,
+        *,
+        profile: Mapping[str, Any],
+        activities: Sequence[Mapping[str, Any]],
+        programs: Sequence[Mapping[str, Any]],
+        top_k: int,
+    ) -> list[ProgramRecommendation]:
+        keywords = self._profile_keywords(profile, activities)
+        if not keywords:
+            return []
+
+        recommendations: list[ProgramRecommendation] = []
+        for program in programs:
+            program_id = _safe_text(program.get("id"))
+            if not program_id:
+                continue
+            program_record = dict(program)
+            matched_keywords, relevance_score = self._program_match_context(program_record, keywords)
+            urgency_score = self._urgency_score(program_record)
+            final_score = round(relevance_score * 0.8 + urgency_score * 0.2, 4)
+            program_record["urgency_score"] = urgency_score
+            program_record["final_score"] = final_score
+            if final_score <= 0:
+                continue
+            recommendations.append(
+                ProgramRecommendation(
+                    program_id=program_id,
+                    score=final_score,
+                    reason=self._build_fallback_reason(program_record, matched_keywords),
+                    fit_keywords=list(matched_keywords[:3]),
+                    program=program_record,
+                )
+            )
+
+        recommendations.sort(
+            key=lambda item: (
+                item.program.get("final_score", 0.0),
+                item.program.get("urgency_score", 0.0),
+            ),
+            reverse=True,
+        )
+        return recommendations[:top_k]
+
     def sync(self, programs: Sequence[Mapping[str, Any]]) -> int:
         ids: list[str] = []
         documents: list[str] = []
@@ -210,7 +378,12 @@ class ProgramsRAG:
 
         search_results = self._manager.search(self.collection_name, query, n_results=top_k)
         if not search_results:
-            return []
+            return self._fallback_recommend(
+                profile=profile,
+                activities=activities,
+                programs=programs,
+                top_k=top_k,
+            )
 
         reasons = await self._generate_reasons(query=query, results=search_results, program_by_id=program_by_id)
         recommendations: list[ProgramRecommendation] = []
@@ -222,12 +395,15 @@ class ProgramsRAG:
                 continue
             program_record = dict(program)
             urgency_score = self._urgency_score(program_record)
+            semantic_score = self._semantic_score(result.score)
+            final_score = round(semantic_score * 0.8 + urgency_score * 0.2, 4)
             program_record["urgency_score"] = urgency_score
+            program_record["final_score"] = final_score
             reason_payload = reasons.get(program_id, {})
             recommendations.append(
                 ProgramRecommendation(
                     program_id=program_id,
-                    score=result.score if result.score is not None else urgency_score,
+                    score=final_score,
                     reason=_safe_text(reason_payload.get("reason")) or "프로필과 연관성이 높아 추천합니다.",
                     fit_keywords=[
                         str(item).strip()
@@ -238,6 +414,13 @@ class ProgramsRAG:
                 )
             )
 
+        recommendations.sort(
+            key=lambda item: (
+                item.program.get("final_score", 0.0),
+                item.program.get("urgency_score", 0.0),
+            ),
+            reverse=True,
+        )
         return recommendations
 
     async def _generate_reasons(

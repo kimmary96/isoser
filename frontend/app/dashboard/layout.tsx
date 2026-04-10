@@ -9,9 +9,15 @@ import { disableGuestMode } from '@/lib/guest'
 
 const navGroups = [
   {
-    label: '프로필',
+    label: '',
     items: [
       { label: '대시보드', href: '/dashboard' },
+    ],
+  },
+  {
+    label: '프로필',
+    items: [
+      { label: '내 프로필', href: '/dashboard/profile' },
       { label: '성과저장소', href: '/dashboard/activities' },
       { label: '자기소개서', href: '/dashboard/cover-letter' },
     ],

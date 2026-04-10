@@ -223,7 +223,7 @@ class Work24TrainingAdapter:
         end_dt: str | None,
         area_code: str | None,
         ncs_code: str | None,
-        sample_name: str,
+        sample_name: str | None = None,
     ) -> Any | None:
         auth_key = self._resolve_auth_key()
         if not auth_key:
@@ -255,14 +255,16 @@ class Work24TrainingAdapter:
                 response = self.client.get(self.list_endpoint, params=request_params)
                 response.raise_for_status()
                 payload = self._parse_response_payload(response)
-                self._save_api_sample(sample_name, payload)
+                if sample_name:
+                    self._save_api_sample(sample_name, payload)
                 return payload
             except Exception as exc:
                 last_error = exc
                 if attempt < self.retry_count:
                     time.sleep(min(0.5 * attempt, 2.0))
 
-        print(f"[work24_training] {sample_name} request failed: {last_error}")
+        request_label = sample_name or f"page_{page_num}"
+        print(f"[work24_training] {request_label} request failed: {last_error}")
         return None
 
     @staticmethod
@@ -303,7 +305,6 @@ class Work24TrainingAdapter:
                 end_dt=end_dt,
                 area_code=area_code,
                 ncs_code=ncs_code,
-                sample_name=f"training_list_page_{page_num}",
             )
             if payload is None:
                 return None
@@ -329,7 +330,6 @@ class Work24TrainingAdapter:
                 end_dt=end_dt,
                 area_code=area_code,
                 ncs_code=ncs_code,
-                sample_name="training_list_page_1",
             )
             if first_page_payload is None:
                 return None

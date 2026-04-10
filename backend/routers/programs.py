@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import asdict
 import logging
 import os
 from typing import Any
@@ -248,9 +249,7 @@ async def recommend_programs(
     current_user = await _get_current_user(authorization)
     profile = await _fetch_profile(current_user.id)
     activities = await _fetch_visible_activities(current_user.id)
-    programs = await _fetch_programs(is_active=True, page=1, page_size=500)
-
-    synced_count = programs_rag.sync(programs)
+    programs = await _fetch_programs(is_active=True, page=1, page_size=2000)
     items = await programs_rag.recommend(
         profile=profile,
         activities=activities,
@@ -267,6 +266,6 @@ async def recommend_programs(
         recommendation_count=len(items),
     )
     return ProgramRecommendResponse(
-        items=[ProgramRecommendationItem.model_validate(item.__dict__) for item in items],
-        synced_count=synced_count,
+        items=[ProgramRecommendationItem.model_validate(asdict(item)) for item in items],
+        synced_count=0,
     )
