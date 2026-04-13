@@ -302,9 +302,17 @@ class ProgramsRAG:
             if not program_id:
                 continue
             program_record = dict(program)
+            from datetime import date
+
+            date_str = program_record.get("deadline") or program_record.get("end_date")
+            if date_str:
+                days_left = (date.fromisoformat(str(date_str)[:10]) - date.today()).days
+            else:
+                days_left = None
             matched_keywords, relevance_score = self._program_match_context(program_record, keywords)
             urgency_score = self._urgency_score(program_record)
             final_score = round(relevance_score * 0.8 + urgency_score * 0.2, 4)
+            program_record["days_left"] = days_left
             program_record["urgency_score"] = urgency_score
             program_record["final_score"] = final_score
             if final_score <= 0:
@@ -394,9 +402,17 @@ class ProgramsRAG:
             if not program:
                 continue
             program_record = dict(program)
+            from datetime import date
+
+            date_str = program_record.get("deadline") or program_record.get("end_date")
+            if date_str:
+                days_left = (date.fromisoformat(str(date_str)[:10]) - date.today()).days
+            else:
+                days_left = None
             urgency_score = self._urgency_score(program_record)
             semantic_score = self._semantic_score(result.score)
             final_score = round(semantic_score * 0.8 + urgency_score * 0.2, 4)
+            program_record["days_left"] = days_left
             program_record["urgency_score"] = urgency_score
             program_record["final_score"] = final_score
             reason_payload = reasons.get(program_id, {})
