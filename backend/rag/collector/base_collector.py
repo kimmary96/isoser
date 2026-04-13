@@ -3,6 +3,7 @@ from typing import List, Dict
 
 
 class BaseCollector(ABC):
+    tier: int = 1
     source_type: str = "national_api"
     source_name: str = ""
     collection_method: str = "public_api"
@@ -16,6 +17,7 @@ class BaseCollector(ABC):
 
     def get_source_meta(self) -> Dict:
         return {
+            "tier": self.tier,
             "source_type": self.source_type,
             "source_name": self.source_name,
             "collection_method": self.collection_method,

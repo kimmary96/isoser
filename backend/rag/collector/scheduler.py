@@ -3,10 +3,16 @@ from typing import Dict, List
 
 import requests
 
-from rag.collector.hrd_collector import HRDCollector as HrdCollector
-from rag.collector.kstartup_collector import KStartupCollector as KstartupCollector
-from rag.collector.normalizer import normalize
-from rag.collector.work24_collector import Work24Collector
+try:
+    from rag.collector.hrd_collector import HrdCollector
+    from rag.collector.kstartup_collector import KstartupApiCollector
+    from rag.collector.normalizer import normalize
+    from rag.collector.work24_collector import Work24Collector
+except ImportError:
+    from backend.rag.collector.hrd_collector import HrdCollector
+    from backend.rag.collector.kstartup_collector import KstartupApiCollector
+    from backend.rag.collector.normalizer import normalize
+    from backend.rag.collector.work24_collector import Work24Collector
 
 
 class SupabaseClient:
@@ -43,9 +49,9 @@ def _create_supabase_client() -> SupabaseClient:
 
 
 COLLECTORS = [
-    HrdCollector,
-    Work24Collector,
-    KstartupCollector,
+    HrdCollector(),
+    Work24Collector(),
+    KstartupApiCollector(),
 ]
 
 
@@ -57,15 +63,28 @@ def run_all_collectors() -> Dict:
         supabase = _create_supabase_client()
     except Exception as exc:
         print(f"[scheduler] failed to create Supabase client: {exc}")
-        return {"saved_count": 0, "failed_count": len(COLLECTORS)}
+        return {"saved_count": 0, "failed_count": len(COLLECTORS), "sources": []}
 
-    for collector_cls in COLLECTORS:
+    ordered_collectors = sorted(COLLECTORS, key=lambda collector: (collector.tier, collector.source_name))
+    source_results: List[Dict] = []
+
+    for collector in ordered_collectors:
+        source_saved = 0
+        source_failed = 0
         try:
-            collector = collector_cls()
             raw_items = collector.collect()
         except Exception as exc:
-            print(f"[scheduler] collector failed: {collector_cls.__name__}: {exc}")
+            print(f"[scheduler] collector failed: {collector.__class__.__name__}: {exc}")
             failed_count += 1
+            source_failed += 1
+            source_results.append(
+                {
+                    "tier": collector.tier,
+                    "source": collector.source_name,
+                    "saved": source_saved,
+                    "failed": source_failed,
+                }
+            )
             continue
 
         normalized_rows: List[Dict] = []
@@ -74,20 +93,41 @@ def run_all_collectors() -> Dict:
                 row = normalize(raw_item)
                 if row is None:
                     failed_count += 1
+                    source_failed += 1
                     continue
                 normalized_rows.append(row)
             except Exception as exc:
-                print(f"[scheduler] normalize failed in {collector_cls.__name__}: {exc}")
+                print(f"[scheduler] normalize failed in {collector.__class__.__name__}: {exc}")
                 failed_count += 1
+                source_failed += 1
 
         if not normalized_rows:
+            source_results.append(
+                {
+                    "tier": collector.tier,
+                    "source": collector.source_name,
+                    "saved": source_saved,
+                    "failed": source_failed,
+                }
+            )
             continue
 
         try:
             supabase.upsert_programs(normalized_rows)
             saved_count += len(normalized_rows)
+            source_saved += len(normalized_rows)
         except Exception as exc:
-            print(f"[scheduler] supabase upsert failed for {collector_cls.__name__}: {exc}")
+            print(f"[scheduler] supabase upsert failed for {collector.__class__.__name__}: {exc}")
             failed_count += len(normalized_rows)
+            source_failed += len(normalized_rows)
 
-    return {"saved_count": saved_count, "failed_count": failed_count}
+        source_results.append(
+            {
+                "tier": collector.tier,
+                "source": collector.source_name,
+                "saved": source_saved,
+                "failed": source_failed,
+            }
+        )
+
+    return {"saved_count": saved_count, "failed_count": failed_count, "sources": source_results}
