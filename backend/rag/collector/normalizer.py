@@ -8,7 +8,7 @@ def normalize(raw_item: Dict) -> Optional[Dict]:
     title = raw_item.get("title", "").strip()
     if not title:
         return None
-    category_hint = str(raw_item.get("category_hint") or raw_item.get("raw", {}).get("category_hint") or "").strip()
+    category_hint = raw_item.get("category_hint")
 
     return {
         "source": meta.get("source_name", ""),
@@ -16,7 +16,7 @@ def normalize(raw_item: Dict) -> Optional[Dict]:
         "collection_method": meta.get("collection_method", "public_api"),
         "scope": meta.get("scope", "national"),
         "title": title,
-        "category": category_hint or _classify_category(title),
+        "category": category_hint if category_hint else _classify_category(title),
         "target": _extract_targets(title),
         "region": meta.get("region", "전국"),
         "region_detail": meta.get("region_detail", ""),

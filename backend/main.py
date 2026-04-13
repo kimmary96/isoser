@@ -55,6 +55,12 @@ app.include_router(company.router, prefix="/company", tags=["company"])
 app.include_router(programs.router, prefix="/programs", tags=["programs"])
 app.include_router(bookmarks.router, prefix="/bookmarks", tags=["bookmarks"])
 app.include_router(admin.router, prefix="/admin", tags=["admin"])
+try:
+    from routers.programs import router as programs_router
+except ImportError:
+    from backend.routers.programs import router as programs_router
+
+app.include_router(programs_router)
 
 
 @app.get("/")

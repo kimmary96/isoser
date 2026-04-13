@@ -1,10 +1,13 @@
 import os
 from typing import Any
 
-import httpx
+import requests
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Query
 
-from rag.collector.scheduler import run_all_collectors
+try:
+    from rag.collector.scheduler import run_all_collectors
+except ImportError:
+    from backend.rag.collector.scheduler import run_all_collectors
 
 programs_router = APIRouter(prefix="/programs", tags=["programs"])
 
@@ -28,15 +31,16 @@ async def _request_supabase(
     headers = {
         "apikey": supabase_key,
         "Authorization": f"Bearer {supabase_key}",
+        "Content-Type": "application/json",
     }
 
-    async with httpx.AsyncClient(timeout=timeout_seconds) as client:
-        response = await client.request(
-            method,
-            f"{supabase_url}{path}",
-            headers=headers,
-            params=params,
-        )
+    response = requests.request(
+        method,
+        f"{supabase_url}{path}",
+        headers=headers,
+        params=params,
+        timeout=timeout_seconds,
+    )
     if response.status_code >= 400:
         raise HTTPException(status_code=response.status_code, detail=response.text)
     return response.json()
@@ -93,7 +97,7 @@ async def get_program(program_id: str) -> Any:
 @programs_router.post("/sync")
 async def sync_programs(background_tasks: BackgroundTasks) -> dict[str, str]:
     background_tasks.add_task(run_all_collectors)
-    return {"message": "동기화 시작됨"}
+    return {"message": "동기화 시작됨", "status": "running"}
 
 
 # main.py에 추가: app.include_router(programs_router)
