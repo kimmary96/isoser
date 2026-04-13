@@ -8,7 +8,9 @@ import { createBrowserClient } from "@/lib/supabase/client";
 type RecommendedProgram = {
   title: string | null;
   source: string | null;
+  start_date: string | null;
   end_date: string | null;
+  deadline: string | null;
   days_left: number | null;
   final_score: number | null;
   link: string | null;
@@ -23,7 +25,7 @@ function formatUserName(value: string | null | undefined): string {
   return trimmed || "사용자";
 }
 
-function formatEndDate(value: string | null | undefined): string | null {
+function formatMonthDay(value: string | null | undefined): string | null {
   if (!value) return null;
 
   const date = new Date(value);
@@ -31,7 +33,34 @@ function formatEndDate(value: string | null | undefined): string | null {
 
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
-  return `~${month}/${day}까지`;
+  return `${month}/${day}`;
+}
+
+function formatTrainingPeriod(
+  startDate: string | null | undefined,
+  endDate: string | null | undefined
+): string {
+  const start = formatMonthDay(startDate);
+  const end = formatMonthDay(endDate);
+
+  if (start && end) {
+    return `${start} ~ ${end}`;
+  }
+
+  if (start) {
+    return `${start} ~ 정보 없음`;
+  }
+
+  if (end) {
+    return `정보 없음 ~ ${end}`;
+  }
+
+  return "정보 없음";
+}
+
+function formatDeadline(value: string | null | undefined): string {
+  const formatted = formatMonthDay(value);
+  return formatted ? `${formatted}까지` : "정보 없음";
 }
 
 function toDateKey(value: string): string | null {
@@ -53,28 +82,48 @@ function formatRelevance(score: number | null | undefined): string {
   return `관련도 ${percent}%`;
 }
 
+function formatSource(source: string | null | undefined): string {
+  if (source === "work24_training") {
+    return "Work24 훈련과정";
+  }
+
+  return source || "출처 미상";
+}
+
+function getCardBorderClass(daysLeft: number | null | undefined): string {
+  if (typeof daysLeft !== "number" || Number.isNaN(daysLeft) || daysLeft > 14) {
+    return "border-l-4 border-l-green-400";
+  }
+
+  if (daysLeft <= 7) {
+    return "border-l-4 border-l-red-500";
+  }
+
+  return "border-l-4 border-l-yellow-400";
+}
+
 function getDdayBadge(daysLeft: number | null | undefined) {
-  if (typeof daysLeft !== "number" || Number.isNaN(daysLeft)) {
+  if (typeof daysLeft !== "number" || Number.isNaN(daysLeft) || daysLeft < 0) {
     return null;
   }
 
   if (daysLeft <= 7) {
     return {
       label: `D-${daysLeft}`,
-      className: "bg-red-50 text-red-600 ring-1 ring-inset ring-red-200",
+      className: "bg-red-100 text-red-700",
     };
   }
 
   if (daysLeft <= 14) {
     return {
       label: `D-${daysLeft}`,
-      className: "bg-yellow-50 text-yellow-700 ring-1 ring-inset ring-yellow-200",
+      className: "bg-yellow-100 text-yellow-700",
     };
   }
 
   return {
     label: `D-${daysLeft}`,
-    className: "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200",
+    className: "bg-green-100 text-green-700",
   };
 }
 
@@ -95,19 +144,33 @@ function SkeletonCard() {
   );
 }
 
-function ProgramCard({ program, cardId }: { program: RecommendedProgram; cardId?: string }) {
-  const endDateLabel = formatEndDate(program.end_date);
-  const ddayBadge = program.end_date ? getDdayBadge(program.days_left) : null;
+function ProgramCard({
+  program,
+  cardId,
+  onMouseEnter,
+  onMouseLeave,
+}: {
+  program: RecommendedProgram;
+  cardId?: string;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
+}) {
+  const trainingPeriodLabel = formatTrainingPeriod(program.start_date, program.end_date);
+  const deadlineLabel = formatDeadline(program.deadline);
+  const ddayBadge = getDdayBadge(program.days_left);
+  const cardBorderClass = getCardBorderClass(program.days_left);
 
   return (
     <article
       id={cardId}
-      className="flex min-h-[220px] flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md"
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      className={`flex min-h-[220px] flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md ${cardBorderClass}`}
     >
       <div className="mb-4 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="line-clamp-2 text-base font-semibold text-slate-950">{program.title || "제목 없음"}</h3>
-          <p className="mt-2 text-sm text-slate-500">{program.source || "출처 미상"}</p>
+          <p className="mt-2 text-sm text-slate-500">{formatSource(program.source)}</p>
         </div>
         {ddayBadge ? (
           <span
@@ -118,7 +181,9 @@ function ProgramCard({ program, cardId }: { program: RecommendedProgram; cardId?
         ) : null}
       </div>
 
-      <div className="mb-3 text-sm text-slate-600">{endDateLabel || "종료일 정보 없음"}</div>
+      <div className="mb-2 text-sm text-slate-600">훈련 기간: {trainingPeriodLabel}</div>
+
+      <div className="mb-3 text-sm text-slate-600">신청 마감: {deadlineLabel}</div>
 
       <div className="mb-6 text-sm font-medium text-slate-800">{formatRelevance(program.final_score)}</div>
 
@@ -145,15 +210,28 @@ export default function DashboardPage() {
 
   const [userName, setUserName] = useState("사용자");
   const [programs, setPrograms] = useState<RecommendedProgram[]>([]);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [highlightedProgram, setHighlightedProgram] = useState<{
+    start_date?: string;
+    end_date?: string;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const handleDateClick = (date: string) => {
-    const target = document.getElementById(`card-${date}`);
-    if (target) {
-      target.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
+    setSelectedDate((current) => (current === date ? null : date));
   };
+
+  const filteredPrograms = useMemo(() => {
+    if (!selectedDate) {
+      return programs;
+    }
+
+    return programs.filter((program) => {
+      const dateKey = program.end_date ? toDateKey(program.end_date) : null;
+      return dateKey === selectedDate;
+    });
+  }, [programs, selectedDate]);
 
   useEffect(() => {
     let mounted = true;
@@ -252,8 +330,11 @@ export default function DashboardPage() {
         <MiniCalendar
           programs={programs.map((program) => ({
             title: program.title || "제목 없음",
+            start_date: program.start_date || undefined,
             end_date: program.end_date || undefined,
           }))}
+          selectedDate={selectedDate}
+          highlightedProgram={highlightedProgram}
           onDateClick={handleDateClick}
         />
 
@@ -270,9 +351,9 @@ export default function DashboardPage() {
               <SkeletonCard />
               <SkeletonCard />
             </div>
-          ) : programs.length > 0 ? (
+          ) : filteredPrograms.length > 0 ? (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {programs.map((program, index) => {
+              {filteredPrograms.map((program, index) => {
                 const dateKey = program.end_date ? toDateKey(program.end_date) : null;
 
                 return (
@@ -280,6 +361,13 @@ export default function DashboardPage() {
                     key={`${program.link ?? program.title ?? "program"}-${index}`}
                     cardId={dateKey ? `card-${dateKey}` : undefined}
                     program={program}
+                    onMouseEnter={() =>
+                      setHighlightedProgram({
+                        start_date: program.start_date ?? undefined,
+                        end_date: program.end_date ?? undefined,
+                      })
+                    }
+                    onMouseLeave={() => setHighlightedProgram(null)}
                   />
                 );
               })}
@@ -287,7 +375,13 @@ export default function DashboardPage() {
           ) : (
             <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-12 text-center">
               <p className="text-sm text-slate-500">
-                {error ? error : "추천 프로그램이 없습니다"}
+                {error
+                  ? error
+                  : selectedDate
+                    ? "해당 날짜에 마감되는 프로그램이 없습니다"
+                    : programs.length > 0
+                      ? "추천 프로그램이 없습니다"
+                      : "추천 프로그램이 없습니다"}
               </p>
             </div>
           )}

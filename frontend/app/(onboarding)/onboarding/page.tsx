@@ -3,6 +3,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { parsePdf } from "@/lib/api/backend";
 import { createBrowserClient } from "@/lib/supabase/client";
@@ -38,6 +39,7 @@ function previewValue(value?: string | null) {
 
 export default function OnboardingPage() {
   const supabase = useMemo(() => createBrowserClient(), []);
+  const router = useRouter();
 
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
