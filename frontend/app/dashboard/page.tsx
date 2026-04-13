@@ -147,13 +147,9 @@ function SkeletonCard() {
 function ProgramCard({
   program,
   cardId,
-  onMouseEnter,
-  onMouseLeave,
 }: {
   program: RecommendedProgram;
   cardId?: string;
-  onMouseEnter?: () => void;
-  onMouseLeave?: () => void;
 }) {
   const trainingPeriodLabel = formatTrainingPeriod(program.start_date, program.end_date);
   const deadlineLabel = formatDeadline(program.deadline);
@@ -163,8 +159,6 @@ function ProgramCard({
   return (
     <article
       id={cardId}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
       className={`flex min-h-[220px] flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md ${cardBorderClass}`}
     >
       <div className="mb-4 flex items-start justify-between gap-3">
@@ -211,10 +205,6 @@ export default function DashboardPage() {
   const [userName, setUserName] = useState("사용자");
   const [programs, setPrograms] = useState<RecommendedProgram[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [highlightedProgram, setHighlightedProgram] = useState<{
-    start_date?: string;
-    end_date?: string;
-  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -330,11 +320,9 @@ export default function DashboardPage() {
         <MiniCalendar
           programs={programs.map((program) => ({
             title: program.title || "제목 없음",
-            start_date: program.start_date || undefined,
             end_date: program.end_date || undefined,
           }))}
           selectedDate={selectedDate}
-          highlightedProgram={highlightedProgram}
           onDateClick={handleDateClick}
         />
 
@@ -361,13 +349,6 @@ export default function DashboardPage() {
                     key={`${program.link ?? program.title ?? "program"}-${index}`}
                     cardId={dateKey ? `card-${dateKey}` : undefined}
                     program={program}
-                    onMouseEnter={() =>
-                      setHighlightedProgram({
-                        start_date: program.start_date ?? undefined,
-                        end_date: program.end_date ?? undefined,
-                      })
-                    }
-                    onMouseLeave={() => setHighlightedProgram(null)}
                   />
                 );
               })}

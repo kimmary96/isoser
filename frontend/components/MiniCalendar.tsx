@@ -1,7 +1,6 @@
 "use client";
 
 type MiniCalendarProgram = {
-  start_date?: string;
   end_date?: string;
   title: string;
 };
@@ -9,7 +8,6 @@ type MiniCalendarProgram = {
 type MiniCalendarProps = {
   programs: MiniCalendarProgram[];
   selectedDate?: string | null;
-  highlightedProgram?: { start_date?: string; end_date?: string } | null;
   onDateClick: (date: string) => void;
 };
 
@@ -33,7 +31,6 @@ function isSameDate(a: Date, b: Date): boolean {
 export default function MiniCalendar({
   programs,
   selectedDate,
-  highlightedProgram,
   onDateClick,
 }: MiniCalendarProps) {
   const today = new Date();
@@ -66,67 +63,48 @@ export default function MiniCalendar({
     cells.push(new Date(currentYear, currentMonth, day));
   }
 
-  const highlightedDates = new Set<string>();
-  if (highlightedProgram?.start_date && highlightedProgram?.end_date) {
-    const start = new Date(highlightedProgram.start_date);
-    const end = new Date(highlightedProgram.end_date);
-
-    if (!Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime()) && start <= end) {
-      const cursor = new Date(start);
-      while (cursor <= end) {
-        if (cursor.getFullYear() === currentYear && cursor.getMonth() === currentMonth) {
-          highlightedDates.add(toDateKey(cursor));
-        }
-        cursor.setDate(cursor.getDate() + 1);
-      }
-    }
-  }
-
   return (
-    <div className="mb-8 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="mb-4 flex items-center justify-between">
+    <div className="mb-8 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="mb-3 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-slate-950">이번 달 마감 일정</h2>
         <p className="text-sm text-slate-500">
           {currentMonth + 1}월 {currentYear}
         </p>
       </div>
 
-      <div className="mb-2 grid grid-cols-7 gap-2">
+      <div className="mb-1 grid grid-cols-7 gap-1.5">
         {WEEKDAY_LABELS.map((label) => (
-          <div key={label} className="py-2 text-center text-xs font-medium text-slate-400">
+          <div key={label} className="py-1 text-center text-[11px] font-medium text-slate-400">
             {label}
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-7 gap-1.5">
         {cells.map((cell, index) => {
           if (!cell) {
-            return <div key={`empty-${index}`} className="h-16 rounded-xl bg-transparent" />;
+            return <div key={`empty-${index}`} className="h-14 rounded-lg bg-transparent" />;
           }
 
           const dateKey = toDateKey(cell);
           const isToday = isSameDate(cell, today);
           const hasProgram = markedDates.has(dateKey);
           const isSelected = selectedDate === dateKey;
-          const isHighlighted = highlightedDates.has(dateKey);
 
           return (
             <button
               key={dateKey}
               type="button"
               onClick={() => onDateClick(dateKey)}
-              className={`flex h-16 flex-col items-center justify-center rounded-xl border text-sm transition-colors ${
+              className={`flex h-14 flex-col items-center justify-start rounded-lg border bg-white px-1 py-2 text-sm transition-colors ${
                 isSelected
                   ? "border-blue-600 bg-white text-slate-700"
                   : isToday
                   ? "border-blue-600 bg-blue-600 text-white"
-                  : isHighlighted
-                    ? "border-blue-200 bg-blue-100 text-slate-700 hover:bg-blue-100"
-                  : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100"
+                  : "border-gray-100 text-slate-700 hover:bg-slate-50"
               }`}
             >
-              <span className="font-medium">{cell.getDate()}</span>
+              <span className="text-xs font-medium leading-none">{cell.getDate()}</span>
               <span
                 className={`mt-1 h-1.5 w-1.5 rounded-full ${
                   hasProgram ? "bg-red-500" : isToday ? "bg-white/70" : "bg-transparent"
