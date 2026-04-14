@@ -20,6 +20,8 @@ BLOCKED_DIR = "./tasks/blocked"
 REPORTS_DIR = "./reports"
 PROJECT_PATH = r"D:\02_2025_AI_Lab\isoser"
 STALE_RUNNING_MINUTES = 20
+MOVE_RETRY_ATTEMPTS = 5
+MOVE_RETRY_DELAY_SECONDS = 0.5
 REQUIRED_FIELDS = (
     "id",
     "status",
@@ -135,6 +137,22 @@ def append_run_metadata(
         file.write("\n".join(lines) + "\n")
 
 
+def move_task_file(src: str, dst: str) -> None:
+    last_error: Optional[PermissionError] = None
+    for _ in range(MOVE_RETRY_ATTEMPTS):
+        try:
+            if os.path.exists(dst):
+                raise FileExistsError(f"Destination already exists: {dst}")
+            os.replace(src, dst)
+            return
+        except PermissionError as error:
+            last_error = error
+            time.sleep(MOVE_RETRY_DELAY_SECONDS)
+
+    if last_error is not None:
+        raise last_error
+
+
 def move_stale_running_tasks() -> None:
     now = time.time()
     stale_seconds = STALE_RUNNING_MINUTES * 60
@@ -166,7 +184,7 @@ def move_stale_running_tasks() -> None:
         )
         blocked_path = os.path.join(BLOCKED_DIR, filename)
         try:
-            shutil.move(running_path, blocked_path)
+            move_task_file(running_path, blocked_path)
             print(f"차단됨: {filename} (stale running task 자동 정리)")
         except PermissionError as error:
             write_report(
@@ -232,6 +250,8 @@ def run_codex(task_filename: str, task_id: str, task_type: str) -> tuple[int, Op
         cwd=PROJECT_PATH,
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
     )
     if result.stdout:
         print(result.stdout, end="" if result.stdout.endswith("\n") else "\n")
@@ -245,7 +265,36 @@ def handle_task(task_path: str) -> None:
     filename = os.path.basename(task_path)
     running_path = os.path.join(RUNNING_DIR, filename)
 
-    shutil.move(task_path, running_path)
+    try:
+        move_task_file(task_path, running_path)
+    except (PermissionError, FileExistsError) as error:
+        task_id = sanitize_task_id(filename.removesuffix(".md"))
+        if os.path.exists(task_path):
+            try:
+                metadata, _ = read_task_metadata(task_path)
+                task_id = sanitize_task_id(metadata.get("id", task_id))
+            except OSError:
+                pass
+
+        write_report(
+            task_id,
+            "blocked",
+            "\n".join(
+                [
+                    f"# Blocked: {task_id}",
+                    "",
+                    "Watcher could not move the task packet into running.",
+                    "",
+                    f"- file: `tasks/inbox/{filename}`",
+                    f"- attempted_destination: `tasks/running/{filename}`",
+                    f"- error: `{type(error).__name__}: {error}`",
+                    "- action: retry after any editor or sync lock is cleared",
+                ]
+            ),
+        )
+        print(f"차단됨: {filename} (running 이동 실패)")
+        return
+
     print(f"실행 시작: {filename}")
 
     metadata, missing_fields = read_task_metadata(running_path)
@@ -269,7 +318,7 @@ def handle_task(task_path: str) -> None:
             ),
         )
         blocked_path = os.path.join(BLOCKED_DIR, filename)
-        shutil.move(running_path, blocked_path)
+        move_task_file(running_path, blocked_path)
         print(f"차단됨: {filename} (frontmatter 누락)")
         return
 
@@ -299,7 +348,7 @@ def handle_task(task_path: str) -> None:
             ),
         )
         blocked_path = os.path.join(BLOCKED_DIR, filename)
-        shutil.move(running_path, blocked_path)
+        move_task_file(running_path, blocked_path)
         print(f"차단됨: {filename} (watcher 예외 발생)")
         return
 
@@ -310,12 +359,12 @@ def handle_task(task_path: str) -> None:
     if exit_code == 0 and os.path.exists(result_report):
         append_run_metadata(result_report, exit_code=exit_code, token_count=token_count)
         done_path = os.path.join(DONE_DIR, filename)
-        shutil.move(running_path, done_path)
+        move_task_file(running_path, done_path)
         print(f"완료: {filename}")
         return
 
     blocked_path = os.path.join(BLOCKED_DIR, filename)
-    shutil.move(running_path, blocked_path)
+    move_task_file(running_path, blocked_path)
     if os.path.exists(drift_report):
         append_run_metadata(drift_report, exit_code=exit_code, token_count=token_count)
         print(f"드리프트 중단: {filename}")

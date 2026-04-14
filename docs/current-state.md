@@ -2,7 +2,7 @@
 
 ## Repository workflow
 - Planning and specification are expected to happen outside the implementation loop, then arrive as markdown task packets.
-- Local Codex automation watches `tasks/inbox/` and moves tasks through `tasks/running/`, `tasks/done/`, or `tasks/blocked/`.
+- Local Codex automation polls `tasks/inbox/` every 10 seconds and moves tasks through `tasks/running/`, `tasks/done/`, or `tasks/blocked/`.
 - Remote fallback automation uses `tasks/remote/` and a GitHub Action path.
 - Task execution is governed by `AGENTS.md`.
 - Codex outputs reports into `reports/`.
