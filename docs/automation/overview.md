@@ -9,6 +9,7 @@
 - Codex: 로컬 저장소 검사, 구현, 검증, 보고서 작성
 - `cowork_watcher.py`: cowork scratch packet review와 promotion 자동화
 - `watcher.py`: `tasks/inbox/` 기반 구현 자동화
+- `scripts/watcher_shared.py`: watcher 두 종류가 공유하는 lock, frontmatter, file-io, retry 유틸
 - Claude Code GitHub Action: 로컬 머신이 없을 때 remote fallback
 
 ## Main paths

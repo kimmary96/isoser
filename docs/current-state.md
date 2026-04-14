@@ -5,6 +5,7 @@
 ## Summary
 - 로컬 구현 자동화는 `watcher.py`가 담당한다.
 - cowork scratch review와 promotion은 `cowork_watcher.py`가 담당한다.
+- watcher 공통 파일 처리, lock, frontmatter 파싱, CLI 해석은 `scripts/watcher_shared.py`로 분리되어 있다.
 - local terminal outcome은 `dispatch/alerts/`에 기록된다.
 - 성공 task는 watcher가 task-scoped git automation을 시도한다.
 - remote fallback은 `tasks/remote/` + GitHub Action 경로를 사용한다.
@@ -24,6 +25,7 @@
 - `dispatch/alerts/`: local watcher terminal alerts
 - `reports/`: implementation, drift, blocked reports
 - `docs/`: reference docs and operational docs
+- `scripts/`: watcher 실행 스크립트와 watcher 공통 유틸
   - `docs/automation/`: watcher, dispatch, task packet, 운영 흐름
   - `docs/rules/`: 규칙 문서와 템플릿
   - `docs/specs/`: PRD, API 계약, 출력 스펙

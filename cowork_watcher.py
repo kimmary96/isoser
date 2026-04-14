@@ -11,6 +11,22 @@ from datetime import datetime
 from shutil import which
 from typing import Optional
 
+from scripts.watcher_shared import (
+    acquire_lock_file,
+    current_head as shared_current_head,
+    ensure_directories_exist,
+    extract_frontmatter,
+    move_file_with_retries,
+    parse_token_count,
+    read_markdown,
+    read_task_metadata as shared_read_task_metadata,
+    release_lock_file,
+    resolve_cli_command,
+    sanitize_task_id,
+    write_lock_file,
+    write_markdown,
+)
+
 COWORK_PACKETS_DIR = "./cowork/packets"
 COWORK_REVIEWS_DIR = "./cowork/reviews"
 COWORK_APPROVALS_DIR = "./cowork/approvals"
@@ -39,118 +55,54 @@ CODEX_CANDIDATES = (
 
 
 def ensure_directories() -> None:
-    for directory in [
-        COWORK_PACKETS_DIR,
-        COWORK_REVIEWS_DIR,
-        COWORK_APPROVALS_DIR,
-        COWORK_DISPATCH_DIR,
-        TASKS_INBOX_DIR,
-        TASKS_REMOTE_DIR,
-    ]:
-        os.makedirs(directory, exist_ok=True)
+    ensure_directories_exist(
+        [
+            COWORK_PACKETS_DIR,
+            COWORK_REVIEWS_DIR,
+            COWORK_APPROVALS_DIR,
+            COWORK_DISPATCH_DIR,
+            TASKS_INBOX_DIR,
+            TASKS_REMOTE_DIR,
+        ]
+    )
 
 
 def acquire_watcher_lock() -> Optional[int]:
-    try:
-        return os.open(COWORK_WATCHER_LOCK_PATH, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
-    except FileExistsError:
-        return None
+    return acquire_lock_file(COWORK_WATCHER_LOCK_PATH)
 
 
 def write_watcher_lock(lock_handle: int) -> None:
-    payload = (
-        f"pid={os.getpid()}\n"
-        f"started_at={datetime.now().isoformat(timespec='seconds')}\n"
-    )
-    os.write(lock_handle, payload.encode("utf-8"))
-    os.fsync(lock_handle)
+    write_lock_file(lock_handle)
 
 
 def release_watcher_lock(lock_handle: Optional[int]) -> None:
-    if lock_handle is None:
-        return
-
-    try:
-        os.close(lock_handle)
-    finally:
-        if os.path.exists(COWORK_WATCHER_LOCK_PATH):
-            os.remove(COWORK_WATCHER_LOCK_PATH)
+    release_lock_file(lock_handle, COWORK_WATCHER_LOCK_PATH)
 
 
 def resolve_codex_command() -> str:
-    for candidate in CODEX_CANDIDATES:
-        if candidate and os.path.exists(candidate):
-            return candidate
-    raise FileNotFoundError("Unable to resolve Codex CLI executable.")
-
-
-def extract_frontmatter(text: str) -> dict[str, str]:
-    if not text.startswith("---\n"):
-        return {}
-
-    end_index = text.find("\n---\n", 4)
-    if end_index == -1:
-        return {}
-
-    metadata: dict[str, str] = {}
-    frontmatter = text[4:end_index]
-    for raw_line in frontmatter.splitlines():
-        line = raw_line.strip()
-        if not line or ":" not in line:
-            continue
-        key, value = line.split(":", 1)
-        metadata[key.strip()] = value.strip()
-    return metadata
-
-
-def read_markdown(path: str) -> str:
-    with open(path, "r", encoding="utf-8") as file:
-        return file.read()
+    return resolve_cli_command(CODEX_CANDIDATES)
 
 
 def read_task_metadata(task_path: str) -> tuple[dict[str, str], list[str]]:
-    metadata = extract_frontmatter(read_markdown(task_path))
-    missing_fields = [field for field in REQUIRED_FIELDS if not metadata.get(field)]
-    return metadata, missing_fields
-
-
-def sanitize_task_id(raw_value: str) -> str:
-    cleaned = re.sub(r"[^A-Za-z0-9._-]+", "-", raw_value).strip("-")
-    return cleaned or "unknown-task"
-
-
-def write_markdown(path: str, body: str) -> None:
-    with open(path, "w", encoding="utf-8") as file:
-        file.write(body.rstrip() + "\n")
+    return shared_read_task_metadata(task_path, REQUIRED_FIELDS)
 
 
 def move_file(src: str, dst: str) -> None:
-    last_error: Optional[PermissionError] = None
-    for _ in range(MOVE_RETRY_ATTEMPTS):
-        try:
-            if os.path.exists(dst):
-                raise FileExistsError(f"Destination already exists: {dst}")
-            os.replace(src, dst)
-            return
-        except PermissionError as error:
-            last_error = error
-            time.sleep(MOVE_RETRY_DELAY_SECONDS)
-
-    if last_error is not None:
-        raise last_error
+    move_file_with_retries(
+        src,
+        dst,
+        attempts=MOVE_RETRY_ATTEMPTS,
+        delay_seconds=MOVE_RETRY_DELAY_SECONDS,
+        path_exists=os.path.exists,
+        replace_file=os.replace,
+        sleep=time.sleep,
+    )
 
 
 def copy_file(src: str, dst: str) -> None:
     if os.path.exists(dst):
         raise FileExistsError(f"Destination already exists: {dst}")
     write_markdown(dst, read_markdown(src))
-
-
-def parse_token_count(output: str) -> Optional[int]:
-    match = re.search(r"tokens used\s+([\d,]+)", output, flags=re.IGNORECASE | re.MULTILINE)
-    if not match:
-        return None
-    return int(match.group(1).replace(",", ""))
 
 
 def append_review_metadata(review_path: str, *, exit_code: int, token_count: Optional[int]) -> None:
@@ -169,14 +121,7 @@ def append_review_metadata(review_path: str, *, exit_code: int, token_count: Opt
 
 
 def current_head() -> str:
-    result = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=PROJECT_PATH,
-        capture_output=True,
-        text=True,
-        check=True,
-    )
-    return result.stdout.strip()
+    return shared_current_head(PROJECT_PATH)
 
 
 def build_review_prompt(packet_filename: str, task_id: str) -> str:

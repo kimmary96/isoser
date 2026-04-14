@@ -1,3 +1,5 @@
+import os
+import time
 from pathlib import Path
 
 import cowork_watcher
@@ -91,6 +93,8 @@ def test_handle_approval_moves_packet_to_remote(tmp_path: Path, monkeypatch) -> 
         ),
         encoding="utf-8",
     )
+    review = reviews_dir / "TASK-TEST-PROMOTE-review.md"
+    review.write_text("# ready review\n", encoding="utf-8")
 
     approval = approvals_dir / "TASK-TEST-PROMOTE.ok"
     approval.write_text("target: remote\n", encoding="utf-8")
@@ -104,7 +108,7 @@ def test_handle_approval_moves_packet_to_remote(tmp_path: Path, monkeypatch) -> 
 
     cowork_watcher.handle_approval(str(packet))
 
-    assert not packet.exists()
+    assert packet.exists()
     assert (remote_dir / "TASK-TEST-PROMOTE.md").exists()
     assert (dispatch_dir / "TASK-TEST-PROMOTE-promoted.md").exists()
 
@@ -149,7 +153,8 @@ def test_stale_review_blocks_promotion(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setattr(cowork_watcher, "TASKS_INBOX_DIR", str(inbox_dir))
     monkeypatch.setattr(cowork_watcher, "TASKS_REMOTE_DIR", str(remote_dir))
 
-    # Force the packet to look newer than the review.
+    stale_timestamp = time.time() - 10
+    os.utime(review, (stale_timestamp, stale_timestamp))
     packet.touch()
 
     cowork_watcher.handle_approval(str(packet))

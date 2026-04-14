@@ -11,6 +11,11 @@
 - `SLACK_WEBHOOK_URL`이 있으면 terminal alert를 Slack에도 전송한다
 - 없으면 watcher 시작 시 경고를 출력하고 `dispatch/alerts/`에만 기록한다
 
+## Shared watcher utilities
+- `scripts/watcher_shared.py`는 watcher 공통 저수준 유틸만 담당한다
+- queue 정책, alert 포맷, promotion 규칙 같은 workflow 판단은 각 watcher 파일에 남긴다
+- 공통 경계 변경 시 [watcher-shared.md](./watcher-shared.md)도 같이 갱신한다
+
 ## Restart checklist
 - short checklist: [../rules/watcher-restart-checklist.md](../rules/watcher-restart-checklist.md)
 
