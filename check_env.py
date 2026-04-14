@@ -10,10 +10,8 @@ candidates = [
 for p in candidates:
     if p.exists():
         vals = dotenv_values(p)
-        sk = str(vals.get("SUPABASE_SERVICE_KEY", "EMPTY"))[:20]
-        uk = str(vals.get("SUPABASE_KEY", "EMPTY"))[:20]
+        srk = str(vals.get("SUPABASE_SERVICE_ROLE_KEY", "EMPTY"))[:20]
         print(f"파일: {p}")
-        print(f"  SUPABASE_SERVICE_KEY: {sk}")
-        print(f"  SUPABASE_KEY: {uk}")
+        print(f"  SUPABASE_SERVICE_ROLE_KEY: {srk}")
     else:
         print(f"없음: {p}")

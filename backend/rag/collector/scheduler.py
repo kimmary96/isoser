@@ -44,13 +44,9 @@ class SupabaseClient:
 
 def _create_supabase_client() -> SupabaseClient:
     supabase_url = os.getenv("SUPABASE_URL", "").strip()
-    supabase_service_key = (
-        os.getenv("SUPABASE_SERVICE_ROLE_KEY", "").strip()
-        or os.getenv("SUPABASE_SERVICE_KEY", "").strip()
-        or os.getenv("SUPABASE_KEY", "").strip()
-    )
+    supabase_service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "").strip()
     if not supabase_url or not supabase_service_key:
-        raise RuntimeError("SUPABASE_URL or SUPABASE_SERVICE_KEY is not configured.")
+        raise RuntimeError("SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY is not configured.")
     return SupabaseClient(supabase_url, supabase_service_key)
 
 
