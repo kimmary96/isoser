@@ -2,10 +2,11 @@
 
 ## Repository workflow
 - Planning and specification are expected to happen outside the implementation loop, then arrive as markdown task packets.
-- Local Codex automation polls `tasks/inbox/` every 10 seconds and moves tasks through `tasks/running/`, `tasks/done/`, or `tasks/blocked/`.
+- Local Codex automation polls `tasks/inbox/` every 10 seconds and moves tasks through `tasks/running/`, `tasks/done/`, `tasks/drifted/`, or `tasks/blocked/`.
 - Remote fallback automation uses `tasks/remote/` and a GitHub Action path.
 - Task execution is governed by `AGENTS.md`.
 - Codex outputs reports into `reports/`.
+- The watcher writes terminal-state alert notes into `dispatch/alerts/` so drift and blocked outcomes are visible without opening reports first.
 - Successful local Codex runs are auto-synced by `watcher.py`, which attempts a task-scoped `[codex]` commit and push after writing the success report and moving the packet to `tasks/done/`.
 
 ## Task packet contract
@@ -45,6 +46,7 @@
 - `backend/`: FastAPI application with its own virtual environment under `backend/.venv`
 - `docs/`: project documents, current-state, refactoring log, contracts, PRD
 - `tasks/`: local task queue state
+- `dispatch/alerts/`: human-visible terminal-state alerts for completed, drifted, blocked, or push-failed local runs
 - `tasks/remote/`: remote-only task packets for GitHub Action execution
 - `reports/`: implementation, drift, and blocked reports
 - `tasks/archive/` and `reports/archive/`: optional monthly archive locations for older task and report history

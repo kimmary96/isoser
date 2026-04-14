@@ -17,7 +17,9 @@ REMOTE_DIR = "./tasks/remote"
 RUNNING_DIR = "./tasks/running"
 DONE_DIR = "./tasks/done"
 BLOCKED_DIR = "./tasks/blocked"
+DRIFTED_DIR = "./tasks/drifted"
 REPORTS_DIR = "./reports"
+ALERTS_DIR = "./dispatch/alerts"
 WATCHER_LOCK_PATH = "./.watcher.lock"
 PROJECT_PATH = r"D:\02_2025_AI_Lab\isoser"
 STALE_RUNNING_MINUTES = 20
@@ -53,7 +55,7 @@ CODE_QUICK_RULES = (
 
 
 def ensure_directories() -> None:
-    for directory in [INBOX_DIR, REMOTE_DIR, RUNNING_DIR, DONE_DIR, BLOCKED_DIR, REPORTS_DIR]:
+    for directory in [INBOX_DIR, REMOTE_DIR, RUNNING_DIR, DONE_DIR, BLOCKED_DIR, DRIFTED_DIR, REPORTS_DIR, ALERTS_DIR]:
         os.makedirs(directory, exist_ok=True)
 
 
@@ -156,6 +158,37 @@ def write_report(task_id: str, suffix: str, body: str) -> str:
     return report_path
 
 
+def write_alert(
+    task_id: str,
+    stage: str,
+    *,
+    status: str,
+    packet_path: str,
+    report_path: Optional[str] = None,
+    note: Optional[str] = None,
+    next_action: Optional[str] = None,
+) -> str:
+    alert_path = os.path.join(ALERTS_DIR, f"{task_id}-{stage}.md")
+    lines = [
+        f"# Alert: {task_id}",
+        "",
+        f"stage: {stage}",
+        f"status: {status}",
+        f"packet: `{packet_path}`",
+        f"created_at: `{datetime.now().isoformat(timespec='seconds')}`",
+    ]
+    if report_path:
+        lines.append(f"report: `{report_path}`")
+    if note:
+        lines.append(f"- note: {note}")
+    if next_action:
+        lines.append(f"- next_action: {next_action}")
+
+    with open(alert_path, "w", encoding="utf-8") as file:
+        file.write("\n".join(lines).rstrip() + "\n")
+    return alert_path
+
+
 def parse_token_count(output: str) -> Optional[int]:
     match = re.search(r"tokens used\s+([\d,]+)", output, flags=re.IGNORECASE | re.MULTILINE)
     if not match:
@@ -214,6 +247,10 @@ def append_git_metadata(
         file.write("\n".join(lines) + "\n")
 
 
+def report_relpath(path: str) -> str:
+    return os.path.relpath(path, PROJECT_PATH).replace("\\", "/")
+
+
 def parse_changed_files_from_result_report(report_path: str) -> list[str]:
     if not os.path.exists(report_path):
         return []
@@ -244,7 +281,7 @@ def sync_completed_task_to_git(
     running_path: str,
     done_path: str,
     result_report: str,
-) -> None:
+) -> tuple[str, str, Optional[str], Optional[str]]:
     branch = current_branch()
     commit_message = f"[codex] {task_id} 구현 완료."
     changed_files = parse_changed_files_from_result_report(result_report)
@@ -268,7 +305,7 @@ def sync_completed_task_to_git(
             branch=branch,
             message="No staged task-specific changes were detected after watcher finalization.",
         )
-        return
+        return ("skipped", "No staged task-specific changes were detected after watcher finalization.", branch, None)
 
     commit_result = run_git(["commit", "-m", commit_message], check=False)
     commit_output = (commit_result.stdout or "") + (commit_result.stderr or "")
@@ -279,7 +316,7 @@ def sync_completed_task_to_git(
             branch=branch,
             message=commit_output.strip() or "git commit failed",
         )
-        return
+        return ("commit-failed", commit_output.strip() or "git commit failed", branch, None)
 
     commit_sha = current_head()
     push_result = run_git(["push", "origin", branch], check=False)
@@ -292,7 +329,7 @@ def sync_completed_task_to_git(
             commit_sha=commit_sha,
             message=push_output.strip() or "git push failed",
         )
-        return
+        return ("push-failed", push_output.strip() or "git push failed", branch, commit_sha)
 
     append_git_metadata(
         result_report,
@@ -301,6 +338,7 @@ def sync_completed_task_to_git(
         commit_sha=commit_sha,
         message=commit_message,
     )
+    return ("pushed", commit_message, branch, commit_sha)
 
 
 def move_task_file(src: str, dst: str) -> None:
@@ -348,6 +386,15 @@ def move_stale_running_tasks() -> None:
                 ]
             ),
         )
+        write_alert(
+            task_id,
+            "blocked",
+            status="action-required",
+            packet_path=f"tasks/running/{filename}",
+            report_path=f"reports/{task_id}-blocked.md",
+            note="Stale running task was auto-blocked by the watcher.",
+            next_action="Review the blocked report and requeue the task only after confirming the previous run is no longer active.",
+        )
         blocked_path = os.path.join(BLOCKED_DIR, filename)
         try:
             move_task_file(running_path, blocked_path)
@@ -369,6 +416,15 @@ def move_stale_running_tasks() -> None:
                         "- action: close any process using the file and retry",
                     ]
                 ),
+            )
+            write_alert(
+                task_id,
+                "blocked",
+                status="action-required",
+                packet_path=f"tasks/running/{filename}",
+                report_path=f"reports/{task_id}-blocked.md",
+                note="Stale running task could not be moved because the file is locked.",
+                next_action="Clear the file lock, inspect the blocked report, and retry the task.",
             )
             print(f"보류: {filename} (파일 잠금으로 stale task 이동 실패)")
 
@@ -466,6 +522,15 @@ def handle_task(task_path: str) -> None:
                 ]
             ),
         )
+        write_alert(
+            task_id,
+            "blocked",
+            status="action-required",
+            packet_path=f"tasks/inbox/{filename}",
+            report_path=f"reports/{task_id}-blocked.md",
+            note="Watcher could not move the task packet into running.",
+            next_action="Clear any editor or sync lock on the task file, then requeue it.",
+        )
         print(f"차단됨: {filename} (running 이동 실패)")
         return
 
@@ -490,6 +555,15 @@ def handle_task(task_path: str) -> None:
                     f"- missing_fields: {', '.join(missing_fields)}",
                 ]
             ),
+        )
+        write_alert(
+            task_id,
+            "blocked",
+            status="action-required",
+            packet_path=f"tasks/running/{filename}",
+            report_path=f"reports/{task_id}-blocked.md",
+            note="Task packet is missing required frontmatter fields.",
+            next_action="Fill the missing frontmatter fields and resubmit the task packet.",
         )
         blocked_path = os.path.join(BLOCKED_DIR, filename)
         move_task_file(running_path, blocked_path)
@@ -521,6 +595,15 @@ def handle_task(task_path: str) -> None:
                 ]
             ),
         )
+        write_alert(
+            task_id,
+            "blocked",
+            status="action-required",
+            packet_path=f"tasks/running/{filename}",
+            report_path=f"reports/{task_id}-blocked.md",
+            note="Watcher failed before Codex completed.",
+            next_action="Inspect the blocked report and watcher exception before retrying the task.",
+        )
         blocked_path = os.path.join(BLOCKED_DIR, filename)
         move_task_file(running_path, blocked_path)
         print(f"차단됨: {filename} (watcher 예외 발생)")
@@ -535,7 +618,7 @@ def handle_task(task_path: str) -> None:
         done_path = os.path.join(DONE_DIR, filename)
         move_task_file(running_path, done_path)
         try:
-            sync_completed_task_to_git(
+            git_status, git_message, git_branch, git_commit_sha = sync_completed_task_to_git(
                 task_id=task_id,
                 task_filename=filename,
                 running_path=running_path,
@@ -548,18 +631,88 @@ def handle_task(task_path: str) -> None:
                 status="watcher-sync-failed",
                 message=f"{type(error).__name__}: {error}",
             )
+            write_alert(
+                task_id,
+                "push-failed",
+                status="action-required",
+                packet_path=f"tasks/done/{filename}",
+                report_path=f"reports/{task_id}-result.md",
+                note=f"Watcher git sync failed: {type(error).__name__}: {error}",
+                next_action="Review the result report Git Automation section and push manually if needed.",
+            )
+        else:
+            if git_status in {"push-failed", "commit-failed", "watcher-sync-failed"}:
+                note = git_message
+                if git_branch:
+                    note = f"{note} (branch={git_branch})"
+                if git_commit_sha:
+                    note = f"{note}, commit={git_commit_sha}"
+                write_alert(
+                    task_id,
+                    "push-failed",
+                    status="action-required",
+                    packet_path=f"tasks/done/{filename}",
+                    report_path=f"reports/{task_id}-result.md",
+                    note=note,
+                    next_action="Review the result report Git Automation section and push manually if needed.",
+                )
+            else:
+                note = "Task completed successfully."
+                if git_status == "pushed" and git_branch and git_commit_sha:
+                    note = f"Task completed and pushed to origin/{git_branch} at {git_commit_sha}."
+                elif git_status == "skipped":
+                    note = "Task completed but watcher found no task-scoped staged changes to commit."
+                write_alert(
+                    task_id,
+                    "completed",
+                    status="done",
+                    packet_path=f"tasks/done/{filename}",
+                    report_path=f"reports/{task_id}-result.md",
+                    note=note,
+                    next_action="No action required unless you want to inspect the result report.",
+                )
         print(f"완료: {filename}")
         return
 
-    blocked_path = os.path.join(BLOCKED_DIR, filename)
-    move_task_file(running_path, blocked_path)
     if os.path.exists(drift_report):
+        drifted_path = os.path.join(DRIFTED_DIR, filename)
+        move_task_file(running_path, drifted_path)
         append_run_metadata(drift_report, exit_code=exit_code, token_count=token_count)
+        write_alert(
+            task_id,
+            "drift",
+            status="action-required",
+            packet_path=f"tasks/drifted/{filename}",
+            report_path=f"reports/{task_id}-drift.md",
+            note="Codex stopped because the task packet no longer matched the current repository state.",
+            next_action="Read the drift report, regenerate or revise the task packet against the current HEAD, then requeue it.",
+        )
         print(f"드리프트 중단: {filename}")
     elif os.path.exists(blocked_report):
+        blocked_path = os.path.join(BLOCKED_DIR, filename)
+        move_task_file(running_path, blocked_path)
         append_run_metadata(blocked_report, exit_code=exit_code, token_count=token_count)
+        write_alert(
+            task_id,
+            "blocked",
+            status="action-required",
+            packet_path=f"tasks/blocked/{filename}",
+            report_path=f"reports/{task_id}-blocked.md",
+            note="Codex stopped with a blocked report.",
+            next_action="Read the blocked report, fix the issue, and requeue the task when ready.",
+        )
         print(f"차단됨: {filename}")
     else:
+        blocked_path = os.path.join(BLOCKED_DIR, filename)
+        move_task_file(running_path, blocked_path)
+        write_alert(
+            task_id,
+            "blocked",
+            status="action-required",
+            packet_path=f"tasks/blocked/{filename}",
+            note=f"Task failed without an explicit drift or blocked report (exit_code={exit_code}).",
+            next_action="Inspect the watcher output and recreate the task or report before retrying.",
+        )
         print(f"실패: {filename} (exit_code={exit_code})")
 
 

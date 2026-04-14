@@ -34,9 +34,11 @@ def test_handle_task_writes_blocked_report_when_move_to_running_fails(tmp_path, 
     inbox_dir = tmp_path / "tasks" / "inbox"
     running_dir = tmp_path / "tasks" / "running"
     reports_dir = tmp_path / "reports"
+    alerts_dir = tmp_path / "dispatch" / "alerts"
     inbox_dir.mkdir(parents=True)
     running_dir.mkdir(parents=True)
     reports_dir.mkdir(parents=True)
+    alerts_dir.mkdir(parents=True)
 
     task_path = inbox_dir / "TASK-TEST-WATCHER-MOVE.md"
     task_path.write_text(
@@ -61,6 +63,8 @@ def test_handle_task_writes_blocked_report_when_move_to_running_fails(tmp_path, 
 
     monkeypatch.setattr(watcher, "RUNNING_DIR", str(running_dir))
     monkeypatch.setattr(watcher, "REPORTS_DIR", str(reports_dir))
+    monkeypatch.setattr(watcher, "ALERTS_DIR", str(alerts_dir))
+    monkeypatch.setattr(watcher, "PROJECT_PATH", str(tmp_path))
 
     def fail_move(src: str, dst: str) -> None:
         raise PermissionError("locked")
@@ -70,9 +74,12 @@ def test_handle_task_writes_blocked_report_when_move_to_running_fails(tmp_path, 
     watcher.handle_task(str(task_path))
 
     report_path = reports_dir / "TASK-TEST-WATCHER-MOVE-blocked.md"
+    alert_path = alerts_dir / "TASK-TEST-WATCHER-MOVE-blocked.md"
     assert task_path.exists()
     assert report_path.exists()
+    assert alert_path.exists()
     assert "Watcher could not move the task packet into running." in report_path.read_text(encoding="utf-8")
+    assert "stage: blocked" in alert_path.read_text(encoding="utf-8")
 
 
 def test_parse_changed_files_from_result_report_reads_bullets(tmp_path) -> None:
@@ -175,3 +182,26 @@ def test_sync_completed_task_to_git_stages_task_paths_and_appends_git_metadata(t
     updated_report = result_report.read_text(encoding="utf-8")
     assert "## Git Automation" in updated_report
     assert "- status: `pushed`" in updated_report
+
+
+def test_write_alert_creates_dispatch_file(tmp_path, monkeypatch) -> None:
+    alerts_dir = tmp_path / "dispatch" / "alerts"
+    alerts_dir.mkdir(parents=True)
+
+    monkeypatch.setattr(watcher, "ALERTS_DIR", str(alerts_dir))
+
+    alert_path = watcher.write_alert(
+        "TASK-TEST-DRIFT",
+        "drift",
+        status="action-required",
+        packet_path="tasks/drifted/TASK-TEST-DRIFT.md",
+        report_path="reports/TASK-TEST-DRIFT-drift.md",
+        note="Codex stopped because of repository drift.",
+        next_action="Regenerate the task packet against current HEAD.",
+    )
+
+    body = Path(alert_path).read_text(encoding="utf-8")
+    assert "stage: drift" in body
+    assert "status: action-required" in body
+    assert "tasks/drifted/TASK-TEST-DRIFT.md" in body
+    assert "reports/TASK-TEST-DRIFT-drift.md" in body
