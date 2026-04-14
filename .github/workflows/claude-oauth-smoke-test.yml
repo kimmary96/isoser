@@ -1,0 +1,43 @@
+name: Claude OAuth Smoke Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  oauth-smoke-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify OAuth secret is configured
+        shell: bash
+        run: |
+          if [[ -z "${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}" ]]; then
+            echo "Missing secret: CLAUDE_CODE_OAUTH_TOKEN"
+            exit 1
+          fi
+
+      - name: Run Claude Code Action with OAuth token
+        id: claude_oauth_test
+        uses: anthropics/claude-code-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            This is a smoke test for Claude Code Action OAuth authentication.
+            Do not modify files.
+            Inspect the repository briefly and respond with a short confirmation that:
+            1. authentication worked
+            2. you can read the repository
+            3. no code changes were made
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+      - name: Summarize result
+        if: always()
+        shell: bash
+        run: |
+          echo "OAuth smoke test completed."
+          echo "Check whether the Claude action step succeeded and whether no file changes were produced."

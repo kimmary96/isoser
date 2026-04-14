@@ -69,9 +69,23 @@ isoser/
 │   └── main.py
 ├── docs/
 │   ├── 이소서 (Isoser) v2 — 통합 사업계획서.md
+│   ├── current-state.md
 │   ├── refactoring-log.md
 │   ├── api-contract.md               # Next App API + FastAPI 계약 문서
-│   └── prd.md
+│   ├── prd.md
+│   ├── claude-project-instructions.md
+│   └── codex-workflow.md
+├── tasks/
+│   ├── inbox/                        # 로컬 Codex watcher 입력
+│   ├── running/                      # 로컬 실행 중 task
+│   ├── done/                         # 로컬 완료 task
+│   ├── blocked/                      # 필드 누락/실패/드리프트 검토 필요 task
+│   └── remote/                       # 원격 GitHub Action용 task
+├── reports/                          # Codex 결과/차단/드리프트 보고서
+├── scripts/
+│   └── run_watcher.ps1               # Windows watcher 실행 스크립트 (-B)
+├── AGENTS.md                         # Codex 작업 규칙
+├── watcher.py                        # tasks/inbox 감시 -> Codex 실행
 └── CLAUDE.md
 ```
 
@@ -104,6 +118,42 @@ uvicorn main:app --reload                         # http://localhost:8000/docs
 ```
 
 - 로컬 표준 가상환경 경로는 `backend/venv`
+
+---
+
+## 작업 자동화 구조
+
+### 기본 원칙
+- Claude는 기획과 명세 작성 담당
+- 로컬 구현 자동화는 Codex가 담당
+- 원격 fallback 자동화는 현재 Claude Code GitHub Action 사용
+
+### 로컬 우선 경로
+```text
+Claude에서 기획
+-> Task Packet 출력
+-> tasks/inbox/<task-id>.md 저장
+-> watcher.py 감지
+-> tasks/running 이동
+-> Codex가 AGENTS.md를 읽고 구현/검사/보고서 작성
+-> 성공 시 [codex] 커밋으로 push
+-> tasks/done 이동
+```
+
+### 원격 fallback 경로
+```text
+PC가 꺼져 있을 때
+-> tasks/remote/<task-id>.md push
+-> .github/workflows/claude-dev.yml 실행
+-> Claude Code가 repo 확인 후 원격 구현 진행
+```
+
+### 주의
+- 로컬 주 경로는 `tasks/inbox`
+- 원격 보조 경로는 `tasks/remote`
+- `[codex]` 커밋 메시지는 로컬 Codex 자동화 전용
+- 원격 워크플로는 `[codex]` 커밋으로 재트리거되지 않게 설정됨
+- 상세 규칙은 `AGENTS.md`, `docs/current-state.md`, `docs/codex-workflow.md` 참고
 
 ---
 
@@ -275,6 +325,32 @@ Render 512MB 대응을 위해 에피머럴 모드 사용. 재시작 시 `seed.py
 - 오버엔지니어링 금지: 현재 스펙에 불필요한 기술·추상화 추가하지 않음
 - 프론트 새 페이지는 hook(`_hooks/`) + 컴포넌트(`_components/`) 분리 패턴 유지
 - Next API route는 반드시 `apiOk` / `apiError` 헬퍼로 응답
+
+---
+
+## Task Packet 규칙
+
+- Claude는 구현 프롬프트 대신 Task Packet만 출력
+- 표준 템플릿은 `docs/task-packet-template.md`
+- 필수 frontmatter:
+  - `id`
+  - `status`
+  - `type`
+  - `title`
+  - `planned_at`
+  - `planned_against_commit`
+- 로컬 실행용 packet은 `tasks/inbox/`
+- 원격 실행용 packet은 `tasks/remote/`
+
+---
+
+## 운영 문서
+
+- `AGENTS.md`: Codex 작업 규칙
+- `docs/current-state.md`: 현재 자동화 구조와 운영 상태
+- `docs/refactoring-log.md`: 구조 변경 로그
+- `docs/claude-project-instructions.md`: Claude 프로젝트 instructions 원본
+- `docs/codex-workflow.md`: Codex/Claude 자동화 운영 문서
 
 ---
 
