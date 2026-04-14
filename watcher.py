@@ -5,7 +5,6 @@ sys.dont_write_bytecode = True
 import glob
 import os
 import re
-import shutil
 import subprocess
 import time
 from shutil import which
@@ -18,6 +17,7 @@ RUNNING_DIR = "./tasks/running"
 DONE_DIR = "./tasks/done"
 BLOCKED_DIR = "./tasks/blocked"
 REPORTS_DIR = "./reports"
+WATCHER_LOCK_PATH = "./.watcher.lock"
 PROJECT_PATH = r"D:\02_2025_AI_Lab\isoser"
 STALE_RUNNING_MINUTES = 20
 MOVE_RETRY_ATTEMPTS = 5
@@ -54,6 +54,33 @@ CODE_QUICK_RULES = (
 def ensure_directories() -> None:
     for directory in [INBOX_DIR, REMOTE_DIR, RUNNING_DIR, DONE_DIR, BLOCKED_DIR, REPORTS_DIR]:
         os.makedirs(directory, exist_ok=True)
+
+
+def acquire_watcher_lock() -> Optional[int]:
+    try:
+        return os.open(WATCHER_LOCK_PATH, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+    except FileExistsError:
+        return None
+
+
+def write_watcher_lock(lock_handle: int) -> None:
+    payload = (
+        f"pid={os.getpid()}\n"
+        f"started_at={datetime.now().isoformat(timespec='seconds')}\n"
+    )
+    os.write(lock_handle, payload.encode("utf-8"))
+    os.fsync(lock_handle)
+
+
+def release_watcher_lock(lock_handle: Optional[int]) -> None:
+    if lock_handle is None:
+        return
+
+    try:
+        os.close(lock_handle)
+    finally:
+        if os.path.exists(WATCHER_LOCK_PATH):
+            os.remove(WATCHER_LOCK_PATH)
 
 
 def extract_frontmatter(text: str) -> dict[str, str]:
@@ -245,20 +272,28 @@ def build_codex_prompt(task_filename: str, task_id: str, task_type: str) -> str:
 def run_codex(task_filename: str, task_id: str, task_type: str) -> tuple[int, Optional[int]]:
     prompt = build_codex_prompt(task_filename, task_id, task_type)
     codex_command = resolve_codex_command()
-    result = subprocess.run(
+    print(f"Codex 실행: {task_filename}")
+    process = subprocess.Popen(
         [codex_command, "exec", "--full-auto", prompt],
         cwd=PROJECT_PATH,
-        capture_output=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
         text=True,
         encoding="utf-8",
         errors="replace",
+        bufsize=1,
     )
-    if result.stdout:
-        print(result.stdout, end="" if result.stdout.endswith("\n") else "\n")
-    if result.stderr:
-        print(result.stderr, end="" if result.stderr.endswith("\n") else "\n")
-    token_count = parse_token_count(f"{result.stdout}\n{result.stderr}")
-    return result.returncode, token_count
+    collected_output: list[str] = []
+
+    assert process.stdout is not None
+    for line in process.stdout:
+        print(line, end="")
+        collected_output.append(line)
+
+    exit_code = process.wait()
+    combined_output = "".join(collected_output)
+    token_count = parse_token_count(combined_output)
+    return exit_code, token_count
 
 
 def handle_task(task_path: str) -> None:
@@ -377,14 +412,22 @@ def handle_task(task_path: str) -> None:
 
 def main() -> None:
     ensure_directories()
+    lock_handle = acquire_watcher_lock()
+    if lock_handle is None:
+        print("watcher 중복 실행 감지됨. 기존 watcher를 종료한 뒤 다시 실행하세요.")
+        return
+
+    write_watcher_lock(lock_handle)
     move_stale_running_tasks()
     print("watcher 시작됨. tasks/inbox 감시 중...")
-
-    while True:
-        move_stale_running_tasks()
-        for task_file in sorted(glob.glob(f"{INBOX_DIR}/*.md")):
-            handle_task(task_file)
-        time.sleep(10)
+    try:
+        while True:
+            move_stale_running_tasks()
+            for task_file in sorted(glob.glob(f"{INBOX_DIR}/*.md")):
+                handle_task(task_file)
+            time.sleep(10)
+    finally:
+        release_watcher_lock(lock_handle)
 
 
 if __name__ == "__main__":
