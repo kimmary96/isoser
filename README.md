@@ -65,6 +65,13 @@
 
 ```text
 isoser/
+├── tasks/
+│   ├── inbox/
+│   ├── running/
+│   ├── done/
+│   ├── blocked/
+│   └── remote/
+├── reports/
 ├── frontend/
 │   ├── app/
 │   └── lib/
@@ -76,8 +83,58 @@ isoser/
 ├── supabase/
 │   ├── migrations/
 │   └── README.md
+├── AGENTS.md
+├── watcher.py
 └── docs/
+    ├── current-state.md
+    ├── codex-workflow.md
+    ├── claude-project-instructions.md
     └── prd.md
+```
+
+## 자동화 흐름
+
+이 저장소는 Claude와 Codex의 역할을 분리해서 운용합니다.
+
+- Claude: 기획/명세 작성
+- Codex: 로컬 구현 자동화
+- Claude Code GitHub Action: 원격 fallback
+
+### 로컬 기본 경로
+
+```text
+Claude에서 Task Packet 작성
+-> tasks/inbox/<task-id>.md 저장
+-> watcher.py 감지
+-> tasks/running 이동
+-> Codex가 AGENTS.md 기준으로 구현/검사/보고서 작성
+-> 성공 시 [codex] 커밋 후 push
+-> tasks/done 이동
+```
+
+### 원격 fallback 경로
+
+```text
+PC가 꺼져 있거나 로컬 watcher를 못 쓰는 경우
+-> tasks/remote/<task-id>.md push
+-> .github/workflows/claude-dev.yml 실행
+-> Claude Code가 원격 구현 진행
+```
+
+### 관련 문서
+
+- `AGENTS.md`: Codex 작업 규칙
+- `docs/current-state.md`: 현재 자동화/구조 상태
+- `docs/codex-workflow.md`: Codex/Claude 운용 문서
+- `docs/claude-project-instructions.md`: Claude 프로젝트 instructions 원본
+- `docs/task-packet-template.md`: 표준 Task Packet 템플릿
+
+### 로컬 watcher 실행
+
+Windows PowerShell 기준:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/run_watcher.ps1
 ```
 
 ## 로컬 실행

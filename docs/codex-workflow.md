@@ -27,6 +27,7 @@
 2. Push the branch.
 3. `.github/workflows/claude-dev.yml` runs on pushes affecting `tasks/remote/*.md`.
 4. The workflow uses Claude Code as the remote fallback executor.
+5. The current stable operating path uses `ANTHROPIC_API_KEY`, not OAuth.
 
 ## Task packet requirements
 - Use YAML-style frontmatter.
@@ -48,5 +49,6 @@
 
 ## Current limitations
 - The remote fallback path currently uses Claude Code, not Codex GitHub Action.
+- OAuth smoke testing exists only as a retained experiment and is not part of the active operating path.
 - There is no automatic bridge from external planning tools directly into `tasks/inbox/` or `tasks/remote/`.
 - Manual `workflow_dispatch` fallback assumes `tasks/remote/manual-task.md` or another remote task file has been prepared intentionally.

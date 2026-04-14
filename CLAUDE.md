@@ -148,6 +148,9 @@ PC가 꺼져 있을 때
 -> Claude Code가 repo 확인 후 원격 구현 진행
 ```
 
+- 현재 안정 운영 기준의 원격 fallback 인증 방식은 `ANTHROPIC_API_KEY`
+- OAuth smoke test workflow는 보관 중이지만 운영 경로는 아님
+
 ### 주의
 - 로컬 주 경로는 `tasks/inbox`
 - 원격 보조 경로는 `tasks/remote`

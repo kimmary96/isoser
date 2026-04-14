@@ -39,7 +39,8 @@
 
 ## Known gaps
 - There is no automated task creation bridge from external planning tools into `tasks/inbox` or `tasks/remote` yet.
-- The remote fallback workflow currently delegates implementation to Claude Code, not Codex GitHub Action.
+- The remote fallback workflow currently delegates implementation to Claude Code using `ANTHROPIC_API_KEY`.
+- OAuth smoke testing is retained as a reference check only, not an active operating path.
 
 ## Operational intent
 - Claude should produce task packets, not implementation prompts.
