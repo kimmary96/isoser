@@ -3,6 +3,7 @@ import sys
 sys.dont_write_bytecode = True
 
 import glob
+import json
 import os
 import re
 import subprocess
@@ -11,6 +12,8 @@ from shutil import which
 from datetime import datetime
 from typing import Optional
 from pathlib import Path
+from urllib import error as urllib_error
+from urllib import request as urllib_request
 
 INBOX_DIR = "./tasks/inbox"
 REMOTE_DIR = "./tasks/remote"
@@ -22,6 +25,7 @@ REPORTS_DIR = "./reports"
 ALERTS_DIR = "./dispatch/alerts"
 WATCHER_LOCK_PATH = "./.watcher.lock"
 PROJECT_PATH = r"D:\02_2025_AI_Lab\isoser"
+SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL", "").strip()
 STALE_RUNNING_MINUTES = 20
 MOVE_RETRY_ATTEMPTS = 5
 MOVE_RETRY_DELAY_SECONDS = 0.5
@@ -165,28 +169,115 @@ def write_alert(
     status: str,
     packet_path: str,
     report_path: Optional[str] = None,
-    note: Optional[str] = None,
+    summary: Optional[str] = None,
     next_action: Optional[str] = None,
 ) -> str:
     alert_path = os.path.join(ALERTS_DIR, f"{task_id}-{stage}.md")
+    severity = {
+        "completed": "info",
+        "drift": "warning",
+        "blocked": "error",
+        "push-failed": "error",
+    }.get(stage, "info")
     lines = [
         f"# Alert: {task_id}",
         "",
+        "type: watcher-alert",
         f"stage: {stage}",
         f"status: {status}",
+        f"severity: {severity}",
         f"packet: `{packet_path}`",
         f"created_at: `{datetime.now().isoformat(timespec='seconds')}`",
     ]
     if report_path:
         lines.append(f"report: `{report_path}`")
-    if note:
-        lines.append(f"- note: {note}")
+    if summary:
+        lines.append(f"summary: {summary}")
     if next_action:
-        lines.append(f"- next_action: {next_action}")
+        lines.append(f"next_action: {next_action}")
 
     with open(alert_path, "w", encoding="utf-8") as file:
         file.write("\n".join(lines).rstrip() + "\n")
+
+    notify_slack_for_alert(
+        task_id=task_id,
+        stage=stage,
+        status=status,
+        packet_path=packet_path,
+        report_path=report_path,
+        summary=summary,
+        next_action=next_action,
+    )
     return alert_path
+
+
+def format_slack_alert_message(
+    *,
+    task_id: str,
+    stage: str,
+    status: str,
+    packet_path: str,
+    report_path: Optional[str] = None,
+    summary: Optional[str] = None,
+    next_action: Optional[str] = None,
+) -> str:
+    emoji = {
+        "completed": "✅",
+        "drift": "⚠️",
+        "blocked": "⛔",
+        "push-failed": "🚨",
+    }.get(stage, "ℹ️")
+    lines = [
+        f"{emoji} watcher alert",
+        f"task: `{task_id}`",
+        f"stage: `{stage}`",
+        f"status: `{status}`",
+        f"packet: `{packet_path}`",
+    ]
+    if report_path:
+        lines.append(f"report: `{report_path}`")
+    if summary:
+        lines.append(f"summary: {summary}")
+    if next_action:
+        lines.append(f"next action: {next_action}")
+    return "\n".join(lines)
+
+
+def notify_slack_for_alert(
+    *,
+    task_id: str,
+    stage: str,
+    status: str,
+    packet_path: str,
+    report_path: Optional[str] = None,
+    summary: Optional[str] = None,
+    next_action: Optional[str] = None,
+) -> None:
+    if not SLACK_WEBHOOK_URL:
+        return
+
+    payload = {
+        "text": format_slack_alert_message(
+            task_id=task_id,
+            stage=stage,
+            status=status,
+            packet_path=packet_path,
+            report_path=report_path,
+            summary=summary,
+            next_action=next_action,
+        )
+    }
+    request = urllib_request.Request(
+        SLACK_WEBHOOK_URL,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib_request.urlopen(request, timeout=10) as response:
+            response.read()
+    except (urllib_error.URLError, TimeoutError) as error:
+        print(f"Slack alert 전송 실패: {type(error).__name__}: {error}")
 
 
 def parse_token_count(output: str) -> Optional[int]:
@@ -392,7 +483,7 @@ def move_stale_running_tasks() -> None:
             status="action-required",
             packet_path=f"tasks/running/{filename}",
             report_path=f"reports/{task_id}-blocked.md",
-            note="Stale running task was auto-blocked by the watcher.",
+            summary="Stale running task was auto-blocked by the watcher.",
             next_action="Review the blocked report and requeue the task only after confirming the previous run is no longer active.",
         )
         blocked_path = os.path.join(BLOCKED_DIR, filename)
@@ -423,7 +514,7 @@ def move_stale_running_tasks() -> None:
                 status="action-required",
                 packet_path=f"tasks/running/{filename}",
                 report_path=f"reports/{task_id}-blocked.md",
-                note="Stale running task could not be moved because the file is locked.",
+                summary="Stale running task could not be moved because the file is locked.",
                 next_action="Clear the file lock, inspect the blocked report, and retry the task.",
             )
             print(f"보류: {filename} (파일 잠금으로 stale task 이동 실패)")
@@ -528,7 +619,7 @@ def handle_task(task_path: str) -> None:
             status="action-required",
             packet_path=f"tasks/inbox/{filename}",
             report_path=f"reports/{task_id}-blocked.md",
-            note="Watcher could not move the task packet into running.",
+            summary="Watcher could not move the task packet into running.",
             next_action="Clear any editor or sync lock on the task file, then requeue it.",
         )
         print(f"차단됨: {filename} (running 이동 실패)")
@@ -562,7 +653,7 @@ def handle_task(task_path: str) -> None:
             status="action-required",
             packet_path=f"tasks/running/{filename}",
             report_path=f"reports/{task_id}-blocked.md",
-            note="Task packet is missing required frontmatter fields.",
+            summary="Task packet is missing required frontmatter fields.",
             next_action="Fill the missing frontmatter fields and resubmit the task packet.",
         )
         blocked_path = os.path.join(BLOCKED_DIR, filename)
@@ -601,7 +692,7 @@ def handle_task(task_path: str) -> None:
             status="action-required",
             packet_path=f"tasks/running/{filename}",
             report_path=f"reports/{task_id}-blocked.md",
-            note="Watcher failed before Codex completed.",
+            summary="Watcher failed before Codex completed.",
             next_action="Inspect the blocked report and watcher exception before retrying the task.",
         )
         blocked_path = os.path.join(BLOCKED_DIR, filename)
@@ -637,38 +728,38 @@ def handle_task(task_path: str) -> None:
                 status="action-required",
                 packet_path=f"tasks/done/{filename}",
                 report_path=f"reports/{task_id}-result.md",
-                note=f"Watcher git sync failed: {type(error).__name__}: {error}",
-                next_action="Review the result report Git Automation section and push manually if needed.",
-            )
+                    summary=f"Watcher git sync failed: {type(error).__name__}: {error}",
+                    next_action="Review the result report Git Automation section and push manually if needed.",
+                )
         else:
             if git_status in {"push-failed", "commit-failed", "watcher-sync-failed"}:
-                note = git_message
+                summary = git_message
                 if git_branch:
-                    note = f"{note} (branch={git_branch})"
+                    summary = f"{summary} (branch={git_branch})"
                 if git_commit_sha:
-                    note = f"{note}, commit={git_commit_sha}"
+                    summary = f"{summary}, commit={git_commit_sha}"
                 write_alert(
                     task_id,
                     "push-failed",
                     status="action-required",
                     packet_path=f"tasks/done/{filename}",
                     report_path=f"reports/{task_id}-result.md",
-                    note=note,
+                    summary=summary,
                     next_action="Review the result report Git Automation section and push manually if needed.",
                 )
             else:
-                note = "Task completed successfully."
+                summary = "Task completed successfully."
                 if git_status == "pushed" and git_branch and git_commit_sha:
-                    note = f"Task completed and pushed to origin/{git_branch} at {git_commit_sha}."
+                    summary = f"Task completed and pushed to origin/{git_branch} at {git_commit_sha}."
                 elif git_status == "skipped":
-                    note = "Task completed but watcher found no task-scoped staged changes to commit."
+                    summary = "Task completed but watcher found no task-scoped staged changes to commit."
                 write_alert(
                     task_id,
                     "completed",
                     status="done",
                     packet_path=f"tasks/done/{filename}",
                     report_path=f"reports/{task_id}-result.md",
-                    note=note,
+                    summary=summary,
                     next_action="No action required unless you want to inspect the result report.",
                 )
         print(f"완료: {filename}")
@@ -684,7 +775,7 @@ def handle_task(task_path: str) -> None:
             status="action-required",
             packet_path=f"tasks/drifted/{filename}",
             report_path=f"reports/{task_id}-drift.md",
-            note="Codex stopped because the task packet no longer matched the current repository state.",
+            summary="Codex stopped because the task packet no longer matched the current repository state.",
             next_action="Read the drift report, regenerate or revise the task packet against the current HEAD, then requeue it.",
         )
         print(f"드리프트 중단: {filename}")
@@ -698,7 +789,7 @@ def handle_task(task_path: str) -> None:
             status="action-required",
             packet_path=f"tasks/blocked/{filename}",
             report_path=f"reports/{task_id}-blocked.md",
-            note="Codex stopped with a blocked report.",
+            summary="Codex stopped with a blocked report.",
             next_action="Read the blocked report, fix the issue, and requeue the task when ready.",
         )
         print(f"차단됨: {filename}")
@@ -710,7 +801,7 @@ def handle_task(task_path: str) -> None:
             "blocked",
             status="action-required",
             packet_path=f"tasks/blocked/{filename}",
-            note=f"Task failed without an explicit drift or blocked report (exit_code={exit_code}).",
+            summary=f"Task failed without an explicit drift or blocked report (exit_code={exit_code}).",
             next_action="Inspect the watcher output and recreate the task or report before retrying.",
         )
         print(f"실패: {filename} (exit_code={exit_code})")

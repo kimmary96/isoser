@@ -114,6 +114,10 @@ Claude에서 Task Packet 작성
 -> drift/blocked/completed 상태를 dispatch/alerts/<task-id>-*.md로 기록
 -> watcher가 성공 report 기준으로 task 관련 파일만 stage해서 [codex] 커밋 후 push 시도
 -> tasks/done 이동
+
+채널 구분:
+- `cowork/dispatch/`: cowork packet review, stale-review, promoted 같은 scratch workflow 상태
+- `dispatch/alerts/`: local watcher의 최종 실행 결과 (`completed`, `drift`, `blocked`, `push-failed`)
 ```
 
 ### 원격 fallback 경로
@@ -143,6 +147,13 @@ PC가 꺼져 있거나 로컬 watcher를 못 쓰는 경우
 Windows PowerShell 기준:
 
 ```powershell
+powershell -ExecutionPolicy Bypass -File scripts/run_watcher.ps1
+```
+
+Slack으로 watcher alert를 받고 싶으면 watcher를 실행하기 전에 webhook 환경변수를 설정합니다.
+
+```powershell
+$env:SLACK_WEBHOOK_URL = "https://hooks.slack.com/services/..."
 powershell -ExecutionPolicy Bypass -File scripts/run_watcher.ps1
 ```
 

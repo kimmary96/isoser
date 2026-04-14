@@ -14,7 +14,8 @@
 - Put meeting notes or raw thinking in `cowork/notes/`.
 - Put document reviews, change proposals, or promotion notes in `cowork/reviews/`.
 - Put approval markers in `cowork/approvals/`.
-- Put watcher-generated alert or status notes in `cowork/dispatch/`.
+- Put cowork watcher-generated review and promotion status notes in `cowork/dispatch/`.
+- Put local implementation watcher terminal alerts in `dispatch/alerts/` at the repository root, not under `cowork/`.
 
 ### 3. Task Packet draft rules
 - Files in `cowork/packets/` are drafts only.
@@ -36,3 +37,4 @@
 - `cowork/reviews/`
 - `cowork/approvals/`
 - `cowork/dispatch/`
+- `dispatch/alerts/`

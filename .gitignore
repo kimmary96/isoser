@@ -48,6 +48,7 @@ Thumbs.db
 /docs/2019년_한국직업정보(KNOW)_재직자조사_성격·지식_원자료.csv
 /docs/2019년_한국직업정보(KNOW)_재직자조사_성격·지식_코드북.xlsx
 /tmp/
+/.tmp_*/
 /output/
 /backend/*.log
 /frontend/*.log

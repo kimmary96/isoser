@@ -7,6 +7,7 @@
 - Task execution is governed by `AGENTS.md`.
 - Codex outputs reports into `reports/`.
 - The watcher writes terminal-state alert notes into `dispatch/alerts/` so drift and blocked outcomes are visible without opening reports first.
+- When `SLACK_WEBHOOK_URL` is present in the watcher process environment, the same terminal-state alerts are also posted to Slack.
 - Successful local Codex runs are auto-synced by `watcher.py`, which attempts a task-scoped `[codex]` commit and push after writing the success report and moving the packet to `tasks/done/`.
 
 ## Task packet contract
@@ -30,6 +31,7 @@
   - approved packets are promoted to `tasks/inbox/` by default or `tasks/remote/` when approval says `target: remote`
 - Local automation path:
   - `tasks/inbox/*.md` -> watcher -> Codex CLI
+  - terminal alerts: `dispatch/alerts/*.md`
   - Recommended watcher launch: `powershell -ExecutionPolicy Bypass -File scripts/run_watcher.ps1`
   - Watcher uses a token-efficient prompt and should inspect only task-relevant files first
   - Docs tasks use a short inline rules summary instead of reading full `AGENTS.md`

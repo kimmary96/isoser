@@ -22,13 +22,25 @@
 8. Codex reads `AGENTS.md`, inspects the repository, evaluates drift, and implements if safe.
 9. Codex writes reports to `reports/`.
 10. The watcher writes a human-visible alert note to `dispatch/alerts/<task-id>-<stage>.md` for terminal states such as `completed`, `drift`, `blocked`, and `push-failed`.
-11. On success, the watcher appends run metadata, moves the packet to `tasks/done/`, and then attempts task-scoped git automation:
+11. If `SLACK_WEBHOOK_URL` is set in the watcher process environment, the same terminal-state alert is also posted to Slack.
+12. On success, the watcher appends run metadata, moves the packet to `tasks/done/`, and then attempts task-scoped git automation:
    - stage the task packet move, the result report, and paths listed in the result report's `Changed files`
    - commit with `[codex] <task-id> 구현 완료`
    - push to `origin/<current-branch>`
-12. Git automation status is appended to the result report under `## Git Automation`.
-13. If Codex writes a drift report, the watcher moves the packet to `tasks/drifted/`.
-14. If the task is invalid, blocked, or fails for a non-drift reason, the watcher moves it to `tasks/blocked/`.
+13. Git automation status is appended to the result report under `## Git Automation`.
+14. If Codex writes a drift report, the watcher moves the packet to `tasks/drifted/`.
+15. If the task is invalid, blocked, or fails for a non-drift reason, the watcher moves it to `tasks/blocked/`.
+
+## Dispatch channel split
+- `cowork/dispatch/`
+  - owner: `cowork_watcher.py`
+  - purpose: packet review and promotion workflow
+  - typical stages: `review-ready`, `approval-blocked-stale-review`, `promoted`
+- `dispatch/alerts/`
+  - owner: `watcher.py`
+  - purpose: local execution terminal outcomes
+  - standard stages: `completed`, `drift`, `blocked`, `push-failed`
+  - format reference: `dispatch/alerts/README.md`
 
 ## Remote fallback flow
 1. Save a task packet to `tasks/remote/<task-id>.md`.

@@ -80,6 +80,7 @@ def test_handle_task_writes_blocked_report_when_move_to_running_fails(tmp_path, 
     assert alert_path.exists()
     assert "Watcher could not move the task packet into running." in report_path.read_text(encoding="utf-8")
     assert "stage: blocked" in alert_path.read_text(encoding="utf-8")
+    assert "type: watcher-alert" in alert_path.read_text(encoding="utf-8")
 
 
 def test_parse_changed_files_from_result_report_reads_bullets(tmp_path) -> None:
@@ -196,12 +197,34 @@ def test_write_alert_creates_dispatch_file(tmp_path, monkeypatch) -> None:
         status="action-required",
         packet_path="tasks/drifted/TASK-TEST-DRIFT.md",
         report_path="reports/TASK-TEST-DRIFT-drift.md",
-        note="Codex stopped because of repository drift.",
+        summary="Codex stopped because of repository drift.",
         next_action="Regenerate the task packet against current HEAD.",
     )
 
     body = Path(alert_path).read_text(encoding="utf-8")
+    assert "type: watcher-alert" in body
     assert "stage: drift" in body
     assert "status: action-required" in body
+    assert "severity: warning" in body
     assert "tasks/drifted/TASK-TEST-DRIFT.md" in body
     assert "reports/TASK-TEST-DRIFT-drift.md" in body
+    assert "summary: Codex stopped because of repository drift." in body
+    assert "next_action: Regenerate the task packet against current HEAD." in body
+
+
+def test_format_slack_alert_message_contains_core_fields() -> None:
+    message = watcher.format_slack_alert_message(
+        task_id="TASK-TEST",
+        stage="drift",
+        status="action-required",
+        packet_path="tasks/drifted/TASK-TEST.md",
+        report_path="reports/TASK-TEST-drift.md",
+        summary="Codex stopped because of repository drift.",
+        next_action="Regenerate the packet.",
+    )
+
+    assert "task: `TASK-TEST`" in message
+    assert "stage: `drift`" in message
+    assert "packet: `tasks/drifted/TASK-TEST.md`" in message
+    assert "report: `reports/TASK-TEST-drift.md`" in message
+    assert "summary: Codex stopped because of repository drift." in message

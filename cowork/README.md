@@ -8,7 +8,11 @@ This folder is a local cowork scratch workspace for planning artifacts that are 
 - `notes/`: meeting notes and raw working notes
 - `reviews/`: review notes, change proposals, and promotion notes
 - `approvals/`: human approval markers such as `<task-id>.ok`
-- `dispatch/`: watcher-generated status notes and local alerts
+- `dispatch/`: cowork watcher status notes for review-ready, approval-blocked, promoted, or rejected cowork packets
+
+## Not in this folder
+- local implementation watcher terminal alerts do not go to `cowork/dispatch/`
+- those alerts go to root `dispatch/alerts/` and cover `completed`, `drift`, `blocked`, and `push-failed`
 
 ## Promotion flow
 - Review automation: `cowork_watcher.py` reviews new packets and writes `cowork/reviews/<task-id>-review.md`
