@@ -840,3 +840,10 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 프론트 계층, Next API 계층, FastAPI 계층, Supabase 계층을
 현재 코드 기준으로 실제 흐름 위주로 정리해줘.
 ```
+
+---
+
+## 2026-04-14 추가 메모
+
+- `frontend/app/dashboard/resume/_hooks/use-resume-builder.ts`
+  - resume preview의 `bio` 저장에 마지막 saved trimmed 값 비교와 저장 중 가드를 추가해서 `Enter` 후 `blur`로 같은 값이 중복 저장되는 요청을 막음

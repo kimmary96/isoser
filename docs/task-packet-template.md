@@ -1,5 +1,5 @@
 ---
-id: TASK-YYYY-MM-DD-001
+id: TASK-YYYY-MM-DD-HHMM-short-slug
 status: queued
 type: feature
 title: Short task title
@@ -59,3 +59,5 @@ Describe the user-visible outcome.
 - Local execution target: `tasks/inbox/<task-id>.md`
 - Remote fallback target: `tasks/remote/<task-id>.md`
 - Keep the same packet format for both paths.
+- Prefer task ids and filenames that include local time for same-day sorting.
+- Recommended pattern: `TASK-YYYY-MM-DD-HHMM-short-slug`

@@ -4,7 +4,7 @@
 
 ```md
 ---
-id: TASK-2026-04-14-DOCS-LINK-CHECK
+id: TASK-2026-04-14-2245-docs-link-check
 status: queued
 type: docs
 title: Fix one outdated internal docs link in README
@@ -48,7 +48,7 @@ Fix a single outdated documentation link in the root README.
 
 ```md
 ---
-id: TASK-2026-04-14-ACTIVITY-SAVE-FEEDBACK
+id: TASK-2026-04-14-2250-activity-save-feedback
 status: queued
 type: fix
 title: Improve save feedback in activity detail without changing page structure
@@ -91,3 +91,11 @@ Make activity detail save feedback clearer for the user without redesigning the 
 # Open Questions
 - None.
 ```
+
+## Naming recommendation
+
+- Include local time in both the `id` and filename when creating task packets on the same day.
+- Recommended format:
+  - `TASK-YYYY-MM-DD-HHMM-short-slug.md`
+- Example:
+  - `TASK-2026-04-14-2250-activity-save-feedback.md`

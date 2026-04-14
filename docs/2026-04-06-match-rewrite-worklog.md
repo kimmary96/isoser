@@ -115,7 +115,7 @@
 
 - 정식 `pytest` 실행은 하지 못했습니다.
   - 원인:
-    - `backend/venv`와 시스템 Python 모두 `pytest`가 설치되어 있지 않았습니다.
+    - `backend/.venv`와 시스템 Python 모두 `pytest`가 설치되어 있지 않았습니다.
   - 대응:
     - 테스트 파일은 추가해 두었고, 이번에는 `py_compile`과 인라인 스모크 검증으로 대신 확인했습니다.
 

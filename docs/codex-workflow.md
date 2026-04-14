@@ -40,6 +40,7 @@
   - `planned_against_commit`
 - Use `docs/task-packet-template.md` as the base template.
 - Use `tasks/remote/manual-task.md` as the manual remote fallback template when needed.
+- Prefer task ids and filenames in `TASK-YYYY-MM-DD-HHMM-short-slug` format so same-day packets sort cleanly.
 
 ## Guardrails
 - `AGENTS.md` is the source of truth for Codex behavior.
@@ -52,3 +53,11 @@
 - OAuth smoke testing exists only as a retained experiment and is not part of the active operating path.
 - There is no automatic bridge from external planning tools directly into `tasks/inbox/` or `tasks/remote/`.
 - Manual `workflow_dispatch` fallback assumes `tasks/remote/manual-task.md` or another remote task file has been prepared intentionally.
+
+## Report retention
+- `tasks/done/` and `reports/` can keep accumulating small markdown files during normal operation.
+- This does not materially bloat the repository in the short to medium term, but it does increase browsing noise.
+- Prefer periodic archive moves over deletion:
+  - `tasks/archive/<YYYY-MM>/`
+  - `reports/archive/<YYYY-MM>/`
+- Keep recent active history in place, and archive older low-signal task packets or reports when the folders become cluttered.

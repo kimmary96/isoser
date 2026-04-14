@@ -51,7 +51,7 @@ isoser/
 │       │   └── route-response.ts     # apiOk / apiError 헬퍼 (공통 에러 계약)
 │       ├── supabase/                 # client.ts, server.ts
 │       └── types/index.ts            # 전체 TypeScript 인터페이스
-├── backend/                          # FastAPI (Python 3.11)
+├── backend/                          # FastAPI (Python 3.10)
 │   ├── chains/                       # LangGraph AI 체인
 │   ├── rag/                          # ChromaDB RAG 시스템
 │   │   ├── collector/                # Work24/HRD/K-Startup 데이터 수집기
@@ -112,12 +112,13 @@ cd frontend && npm install && npm run dev        # http://localhost:3000
 
 # backend
 cd backend
-python -m venv venv && source venv/bin/activate  # Windows: venv\Scripts\activate
+python -m venv .venv                 # Windows: .venv\Scripts\activate
+source .venv/bin/activate
 pip install -r requirements.txt
 uvicorn main:app --reload                         # http://localhost:8000/docs
 ```
 
-- 로컬 표준 가상환경 경로는 `backend/venv`
+- 로컬 표준 가상환경 경로는 `backend/.venv`
 
 ---
 

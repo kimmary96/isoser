@@ -5,7 +5,7 @@
 ## 현재 개발 상태 (2026-04-10 기준)
 
 ### 구현 완료
-- Google OAuth 로그인, Supabase 세션 기반 인증, 게스트 모드
+- Google OAuth 로그인, Supabase 세션 기반 인증
 - 이력서 PDF 업로드 후 프로필/활동 자동 추출 (`POST /parse/pdf`)
 - 대시보드 프로필 편집
   - 이름, 희망 직무(`profiles.bio`), 이메일, 전화번호
@@ -35,7 +35,7 @@
 - 포트폴리오 전용 페이지(`/dashboard/portfolio`)는 아직 준비 중이며, 현재는 프로필의 링크 저장/열기만 지원합니다.
 - 이력서 템플릿 선택 UI는 있으나 실제 PDF 출력 포맷은 기본형 중심입니다.
 - 이력서 편집 화면의 우측 AI 어시스턴트와 활동 상세 요약은 프론트 내부 Gemini 호출에 의존합니다.
-- 게스트 모드는 LocalStorage 기반이며 Supabase 영속 저장을 사용하지 않습니다.
+- 게스트 모드는 제거되었으며 현재는 로그인 사용자 기준으로만 동작합니다.
 - 백엔드는 Python 3.10.x만 허용합니다. (`backend/check_python_version.py`)
 
 ## 주요 화면

@@ -13,6 +13,7 @@ Always output a single markdown task packet that can be handed to Codex or the r
 - If the current commit is unknown, leave a clear placeholder and explicitly note that the runner must verify drift first.
 - The final output must be one markdown document only.
 - Do not add explanation before or after the task packet.
+- Prefer task ids and filenames that include local time for same-day sorting, using `TASK-YYYY-MM-DD-HHMM-short-slug`.
 
 ## Required task packet shape
 - YAML-style frontmatter
