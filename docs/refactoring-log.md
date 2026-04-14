@@ -847,3 +847,5 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 
 - `frontend/app/dashboard/resume/_hooks/use-resume-builder.ts`
   - resume preview의 `bio` 저장에 마지막 saved trimmed 값 비교와 저장 중 가드를 추가해서 `Enter` 후 `blur`로 같은 값이 중복 저장되는 요청을 막음
+- workspace 정리
+  - VS Code 재시작 시 불필요한 `cowork/` 스캐폴딩과 루트 `__pycache__/` 노출을 줄이기 위해 워크스페이스 설정과 automation 문구를 정리함

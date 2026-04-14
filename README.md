@@ -129,6 +129,11 @@ PC가 꺼져 있거나 로컬 watcher를 못 쓰는 경우
 - `docs/claude-project-instructions.md`: Claude 프로젝트 instructions 원본
 - `docs/task-packet-template.md`: 표준 Task Packet 템플릿
 
+참고:
+- `cowork/`는 기본 워크플로 디렉터리가 아닙니다.
+- 필요 시에만 사람이 직접 만들거나 임시로 사용합니다.
+- 자동화나 에이전트가 VS Code 시작 시 `cowork/`를 만들도록 가정하지 않습니다.
+
 ### 로컬 watcher 실행
 
 Windows PowerShell 기준:

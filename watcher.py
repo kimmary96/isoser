@@ -1,3 +1,7 @@
+import sys
+
+sys.dont_write_bytecode = True
+
 import glob
 import os
 import re

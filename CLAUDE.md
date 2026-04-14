@@ -155,6 +155,7 @@ PC가 꺼져 있을 때
 ### 주의
 - 로컬 주 경로는 `tasks/inbox`
 - 원격 보조 경로는 `tasks/remote`
+- 코워크용 임시 폴더는 기본 구조가 아니며, 필요 시에만 사람이 명시적으로 생성함
 - `[codex]` 커밋 메시지는 로컬 Codex 자동화 전용
 - 원격 워크플로는 `[codex]` 커밋으로 재트리거되지 않게 설정됨
 - 상세 규칙은 `AGENTS.md`, `docs/current-state.md`, `docs/codex-workflow.md` 참고
@@ -355,6 +356,13 @@ Render 512MB 대응을 위해 에피머럴 모드 사용. 재시작 시 `seed.py
 - `docs/refactoring-log.md`: 구조 변경 로그
 - `docs/claude-project-instructions.md`: Claude 프로젝트 instructions 원본
 - `docs/codex-workflow.md`: Codex/Claude 자동화 운영 문서
+
+## 코워크 규칙
+
+- `CLAUDE.md`, `AGENTS.md`, `README.md`, `docs/*.md`는 기준 문서로 취급하며 코워크에서 읽기만 한다.
+- 코워크용 임시 작업공간은 사용자가 명시적으로 요청한 경우에만 만든다.
+- 코워크는 기준 문서를 직접 수정하지 않고, 변경 제안이 필요하면 채팅으로만 제안한다.
+- 실제 실행용 Task Packet은 사람 검토 후 `tasks/inbox/` 또는 `tasks/remote/`로 옮긴다.
 
 ---
 

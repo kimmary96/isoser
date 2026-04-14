@@ -11,16 +11,16 @@
 
 ## Local flow
 1. Claude produces a task packet.
-2. Save it to `tasks/inbox/<task-id>.md`.
+2. Promote the approved packet to `tasks/inbox/<task-id>.md`.
 3. Start the watcher with:
    - `powershell -ExecutionPolicy Bypass -File scripts/run_watcher.ps1`
-4. The watcher moves the packet to `tasks/running/`.
-5. Codex reads `AGENTS.md`, inspects the repository, evaluates drift, and implements if safe.
-6. Codex writes reports to `reports/`.
-7. On success, Codex is expected to commit and push with:
+5. The watcher moves the packet to `tasks/running/`.
+6. Codex reads `AGENTS.md`, inspects the repository, evaluates drift, and implements if safe.
+7. Codex writes reports to `reports/`.
+8. On success, Codex is expected to commit and push with:
    - `[codex] <task-id> 구현 완료`
-8. The watcher moves the packet to `tasks/done/`.
-9. If the task is invalid, blocked, or fails, the watcher moves it to `tasks/blocked/`.
+9. The watcher moves the packet to `tasks/done/`.
+10. If the task is invalid, blocked, or fails, the watcher moves it to `tasks/blocked/`.
 
 ## Remote fallback flow
 1. Save a task packet to `tasks/remote/<task-id>.md`.
@@ -47,6 +47,8 @@
 - The watcher blocks tasks with missing required frontmatter.
 - Commit mismatch does not automatically block local execution, but Codex must evaluate drift before risky edits.
 - `[codex]` commit messages are reserved for local Codex automation and should not retrigger the remote fallback workflow.
+- Cowork-style scratch space is optional and should only be created on explicit user request.
+- Scratch output should never directly modify `CLAUDE.md`, `AGENTS.md`, `README.md`, or core `docs/*.md` files.
 
 ## Current limitations
 - The remote fallback path currently uses Claude Code, not Codex GitHub Action.

@@ -32,6 +32,7 @@
   - `tasks/remote/*.md` push -> `.github/workflows/claude-dev.yml`
   - `workflow_dispatch` can still be used for manual fallback runs
 - Primary day-to-day flow is local-first through `tasks/inbox`.
+- Claude cowork scratch output, if used at all, should stay outside the default execution flow and should not be auto-created on editor start.
 
 ## Project structure notes
 - `frontend/`: Next.js application
@@ -52,6 +53,8 @@
 - Claude should produce task packets, not implementation prompts.
 - Codex should inspect the live repository before making changes.
 - Drift detection and reporting must happen before risky edits.
+- `CLAUDE.md`, `AGENTS.md`, `README.md`, and core `docs/*.md` files are reference documents and should not be directly edited by cowork-style scratch output.
+- Any cowork-style scratch files should be created only on explicit user request and reviewed before promotion into `tasks/inbox/` or `tasks/remote/`.
 - Local watcher execution should avoid writing Python bytecode on this machine because `__pycache__` rename/delete operations are intermittently denied by Windows.
 - `[codex]` commit messages are reserved for local Codex automation and should not retrigger remote automation.
 - `tasks/done/` and `reports/` are expected to accumulate small markdown files; that is acceptable for normal use.
