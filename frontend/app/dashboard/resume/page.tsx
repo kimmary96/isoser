@@ -2,15 +2,20 @@
 // 이력서 편집 페이지 - 활동 선택 및 이력서 구성
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createBrowserClient } from "@/lib/supabase/client";
+import {
+  createResumeDocument,
+  getResumeBuilderData,
+  updateDashboardProfileSection,
+} from "@/lib/api/app";
 import { getGuestActivities, isGuestMode, saveGuestResume } from "@/lib/guest";
 import type { Activity } from "@/lib/types";
+import { ResumeAssistantSidebar } from "./_components/resume-assistant-sidebar";
+import { ResumePreviewPane } from "./_components/resume-preview-pane";
 
 export default function ResumePage() {
   const router = useRouter();
-  const supabase = useMemo(() => createBrowserClient(), []);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [targetJob, setTargetJob] = useState("");
@@ -107,56 +112,10 @@ export default function ResumePage() {
       }
 
       try {
-        const { data, error: queryError } = await supabase
-          .from("activities")
-          .select("*")
-          .eq("is_visible", true)
-          .order("created_at", { ascending: false });
-        if (queryError) {
-          throw new Error(queryError.message);
-        }
-        setActivities(data || []);
-
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (user) {
-          const profileWithBio = await supabase
-            .from("profiles")
-            .select("name, bio, email, phone, self_intro, skills")
-            .eq("id", user.id)
-            .maybeSingle();
-
-          let profileData = profileWithBio.data;
-          if (
-            profileWithBio.error &&
-            (profileWithBio.error.code === "42703" ||
-              profileWithBio.error.message.toLowerCase().includes("bio"))
-          ) {
-            const profileWithoutBio = await supabase
-              .from("profiles")
-              .select("name, email, phone, self_intro, skills")
-              .eq("id", user.id)
-              .maybeSingle();
-            profileData = profileWithoutBio.data
-              ? { ...profileWithoutBio.data, bio: "" }
-              : null;
-          }
-
-          if (profileData) {
-            setProfile(
-              profileData as {
-                name: string;
-                bio?: string;
-                email: string;
-                phone: string;
-                self_intro: string;
-                skills: string[];
-              }
-            );
-            setBioInput((profileData as { bio?: string | null }).bio ?? "");
-          }
-        }
+        const data = await getResumeBuilderData();
+        setActivities(data.activities || []);
+        setProfile(data.profile);
+        setBioInput(data.profile?.bio ?? "");
       } catch (e) {
         setError(e instanceof Error ? e.message : "활동을 불러오지 못했습니다.");
       } finally {
@@ -164,7 +123,7 @@ export default function ResumePage() {
       }
     };
     fetchActivities();
-  }, [supabase]);
+  }, []);
 
   const toggleSelect = (id: string) => {
     setSelected((prev) => {
@@ -183,26 +142,7 @@ export default function ResumePage() {
 
     try {
       setBioSaving(true);
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser();
-      if (authError || !user) {
-        throw new Error("로그인이 필요합니다.");
-      }
-
-      const updateWithBio = await supabase
-        .from("profiles")
-        .update({ bio: bioInput.trim() })
-        .eq("id", user.id);
-
-      if (
-        updateWithBio.error &&
-        updateWithBio.error.code !== "42703" &&
-        !updateWithBio.error.message.toLowerCase().includes("bio")
-      ) {
-        throw new Error(updateWithBio.error.message);
-      }
+      await updateDashboardProfileSection({ bio: bioInput.trim() });
       setProfile((prev) => (prev ? { ...prev, bio: bioInput.trim() } : prev));
     } catch (e) {
       setError(e instanceof Error ? e.message : "bio 저장에 실패했습니다.");
@@ -262,27 +202,14 @@ export default function ResumePage() {
         return;
       }
 
-      const { data: authData, error: authError } = await supabase.auth.getUser();
-      if (authError || !authData.user) {
-        throw new Error("로그인이 필요합니다.");
-      }
-
       const payload = {
-        user_id: authData.user.id,
         title: `이력서 ${new Date().toISOString().slice(0, 10)}`,
         target_job: targetJob || null,
         template_id: templateId,
         selected_activity_ids: Array.from(selected),
       };
 
-      const { data, error: insertError } = await supabase
-        .from("resumes")
-        .insert(payload)
-        .select("id")
-        .single();
-      if (insertError || !data) {
-        throw new Error(insertError?.message ?? "이력서 저장에 실패했습니다.");
-      }
+      const data = await createResumeDocument(payload);
 
       router.push(`/dashboard/documents?resumeId=${data.id}`);
     } catch (e) {
@@ -650,320 +577,35 @@ export default function ResumePage() {
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto flex flex-col">
-        <div className="sticky top-0 bg-white/80 backdrop-blur-sm border-b border-gray-100 px-8 py-3 flex items-center gap-3 z-10">
-          <div className="flex-1 flex items-center gap-2 bg-gray-50 rounded-lg px-4 py-2">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="text-gray-400"
-            >
-              <circle cx="11" cy="11" r="8" />
-              <path d="M21 21l-4.35-4.35" />
-            </svg>
-            <span className="text-sm text-gray-400">문서 검색...</span>
-          </div>
-        </div>
+      <ResumePreviewPane
+        profile={profile}
+        bioInput={bioInput}
+        onBioInputChange={setBioInput}
+        onBioSave={saveBio}
+        bioSaving={bioSaving}
+        targetJob={targetJob}
+        selectedCareerActivities={selectedCareerActivities}
+        selectedProjectActivities={selectedProjectActivities}
+        selectedSkillsList={selectedSkillsList}
+        selectedQuestions={Array.from(selectedCommonQuestions)}
+      />
 
-        <div className="flex-1 p-8">
-          <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm p-10 min-h-[800px]">
-            <div className="flex items-start justify-between mb-4 pb-4 border-b border-gray-200">
-              <div>
-                <h1
-                  className="text-3xl font-bold text-gray-900 mb-1"
-                  style={{ fontFamily: "Pretendard, sans-serif" }}
-                >
-                  {profile?.name || "이름을 입력해주세요"}
-                </h1>
-                <input
-                  type="text"
-                  value={bioInput}
-                  onChange={(e) => setBioInput(e.target.value)}
-                  onBlur={saveBio}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      saveBio();
-                    }
-                  }}
-                  placeholder="5년차 마케터 | 브랜드 기획 전문"
-                  className="text-gray-500 text-sm mt-0.5 w-full bg-transparent border-b border-transparent focus:border-gray-300 outline-none"
-                />
-                {targetJob && <p className="text-gray-500 text-sm mt-0.5">{targetJob}</p>}
-                <div className="flex gap-3 mt-2 text-xs text-gray-400">
-                  {profile?.email && <span>✉ {profile.email}</span>}
-                  {profile?.phone && <span>☎ {profile.phone}</span>}
-                </div>
-                {bioSaving && <p className="text-[10px] text-gray-400 mt-1">bio 저장 중...</p>}
-              </div>
-              <p className="text-xs text-gray-400">Seoul, South Korea</p>
-            </div>
-
-            {profile?.self_intro && (
-              <div className="mb-6">
-                <p className="text-[10px] font-semibold text-gray-400 tracking-widest mb-2">
-                  PROFESSIONAL PROFILE
-                </p>
-                <p className="text-xs text-gray-600 leading-relaxed">{profile.self_intro}</p>
-              </div>
-            )}
-
-            {selectedCareerActivities.length > 0 && (
-              <div className="mb-6">
-                <p className="text-[10px] font-semibold text-gray-400 tracking-widest mb-3">
-                  WORK EXPERIENCE
-                </p>
-                <div className="space-y-4">
-                  {selectedCareerActivities.map((activity, i) => (
-                    <div key={activity.id} className="flex gap-3">
-                      <div
-                        className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
-                          i === 0 ? "bg-blue-500" : "bg-gray-300"
-                        }`}
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between mb-1">
-                          <h3 className="font-bold text-gray-900 text-sm">{activity.title}</h3>
-                          <span className="text-xs text-gray-400 flex-shrink-0 ml-4">
-                            {activity.period}
-                          </span>
-                        </div>
-                        {activity.description && (
-                          <p className="text-xs text-gray-600 leading-relaxed">
-                            {activity.description}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedProjectActivities.length > 0 && (
-              <div className="mb-6">
-                <p className="text-[10px] font-semibold text-gray-400 tracking-widest mb-3">
-                  KEY EXPERIENCE
-                </p>
-                <div className="space-y-4">
-                  {selectedProjectActivities.map((activity, i) => (
-                    <div key={activity.id} className="flex gap-3">
-                      <div
-                        className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
-                          i === 0 ? "bg-blue-500" : "bg-gray-300"
-                        }`}
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between mb-1">
-                          <h3 className="font-bold text-gray-900 text-sm">{activity.title}</h3>
-                          <span className="text-xs text-gray-400 flex-shrink-0 ml-4">
-                            {activity.period}
-                          </span>
-                        </div>
-                        {activity.description && (
-                          <p className="text-xs text-gray-600 leading-relaxed">
-                            {activity.description}
-                          </p>
-                        )}
-                        {Array.isArray(activity.skills) && activity.skills.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5 mt-2">
-                            {activity.skills.map((s, j) => (
-                              <span
-                                key={j}
-                                className="text-[10px] px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full"
-                              >
-                                {s}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedSkillsList.length > 0 && (
-              <div className="mb-6">
-                <p className="text-[10px] font-semibold text-gray-400 tracking-widest mb-3">SKILLS</p>
-                <div className="flex flex-wrap gap-2">
-                  {selectedSkillsList.map((skill, i) => (
-                    <span
-                      key={i}
-                      className="text-xs px-3 py-1 bg-gray-100 text-gray-700 rounded-full"
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedCommonQuestions.size > 0 && (
-              <div className="mb-6">
-                <p className="text-[10px] font-semibold text-gray-400 tracking-widest mb-3">
-                  COVER LETTER
-                </p>
-                <div className="space-y-4">
-                  {Array.from(selectedCommonQuestions).map((q, i) => (
-                    <div key={i}>
-                      <p className="text-xs font-bold text-gray-700 mb-1">{q}</p>
-                      <div className="h-16 border border-dashed border-gray-200 rounded-xl flex items-center justify-center">
-                        <p className="text-xs text-gray-300">내용을 입력해주세요</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedCareerActivities.length === 0 &&
-              selectedProjectActivities.length === 0 &&
-              selectedSkillsList.length === 0 &&
-              selectedCommonQuestions.size === 0 && (
-                <div className="text-center py-16 text-gray-300">
-                  <p className="text-base mb-2">왼쪽에서 항목을 선택하세요.</p>
-                  <p className="text-sm">경력, 프로젝트, 기술스택 순으로 구성됩니다.</p>
-                </div>
-              )}
-          </div>
-        </div>
-      </div>
-
-      <div className="w-64 flex-shrink-0 bg-white border-l border-gray-100 flex flex-col h-full overflow-y-auto">
-        <div className="p-4 border-b border-gray-100">
-          <div className="flex items-center gap-2 bg-blue-600 text-white rounded-xl px-3 py-2">
-            <span className="text-xs font-bold">✦ PREMIUM AI</span>
-            <span className="text-[10px] bg-blue-500 rounded px-1.5 py-0.5">
-              ACTIVE
-            </span>
-          </div>
-        </div>
-
-        <div className="p-4 border-b border-gray-100 space-y-2">
-          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-3">
-            문서 제어
-          </p>
-
-          <input
-            value={targetJob}
-            onChange={(e) => setTargetJob(e.target.value)}
-            placeholder="지원 직무 입력..."
-            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-blue-400 mb-2"
-          />
-
-          <button
-            onClick={handleCreateResume}
-            disabled={saving || selected.size === 0}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50"
-            style={{ background: "linear-gradient(135deg, #094cb2, #3b82f6)" }}
-          >
-            {saving ? "저장 중..." : "✦ 문서 생성하기"}
-          </button>
-
-          {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
-        </div>
-
-        <div className="p-4 border-b border-gray-100">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
-              템플릿 선택
-            </p>
-            <button className="text-[10px] text-blue-500 hover:underline">
-              모두 보기
-            </button>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            {TEMPLATES.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => t.free && setTemplateId(t.id)}
-                className={`relative p-2 rounded-xl border text-center transition-all ${
-                  templateId === t.id
-                    ? "border-blue-400 bg-blue-50"
-                    : "border-gray-200 hover:border-gray-300"
-                } ${
-                  !t.free ? "opacity-60 cursor-not-allowed" : "cursor-pointer"
-                }`}
-              >
-                <div className="h-12 bg-gray-100 rounded-lg mb-1 flex items-center justify-center">
-                  <span className="text-[10px] text-gray-400">
-                    {t.free ? "미리보기" : "🔒"}
-                  </span>
-                </div>
-                <p className="text-[10px] font-medium text-gray-700">{t.label}</p>
-                {!t.free && (
-                  <span className="absolute top-1 right-1 text-[8px] bg-amber-400 text-white px-1 rounded">
-                    PRO
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex-1 flex flex-col p-4">
-          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-3">
-            ✦ AI 조립 어시스턴트
-          </p>
-
-          <div className="flex-1 space-y-2 overflow-y-auto mb-3 min-h-[120px]">
-            {chatMessages.length === 0 && (
-              <p className="text-[10px] text-gray-400 leading-relaxed">
-                선택한 성과 카드를 분석하여 채용 공고의 핵심 키워드에 맞춰 문장을
-                최적화할까요?
-              </p>
-            )}
-            {chatMessages.map((msg, i) => (
-              <div
-                key={i}
-                className={`text-[10px] leading-relaxed rounded-xl p-2 ${
-                  msg.role === "user"
-                    ? "bg-blue-50 text-blue-800 text-right ml-4"
-                    : "bg-gray-50 text-gray-700 mr-4"
-                }`}
-              >
-                {msg.text}
-              </div>
-            ))}
-            {chatLoading && (
-              <div className="bg-gray-50 rounded-xl p-2 text-[10px] text-gray-400">
-                분석 중...
-              </div>
-            )}
-          </div>
-
-          <div className="border border-gray-200 rounded-xl overflow-hidden">
-            <textarea
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleChatSend();
-                }
-              }}
-              placeholder="공고 URL이나 직무 정보를 입력하세요..."
-              className="w-full px-3 py-2 text-[10px] resize-none focus:outline-none"
-              rows={3}
-            />
-            <div className="flex justify-end px-2 pb-2">
-              <button
-                onClick={handleChatSend}
-                disabled={chatLoading || !chatInput.trim()}
-                className="text-[10px] px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 transition-all"
-              >
-                키워드 최적화 실행
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ResumeAssistantSidebar
+        targetJob={targetJob}
+        onTargetJobChange={setTargetJob}
+        onCreateResume={handleCreateResume}
+        saving={saving}
+        canCreate={selected.size > 0}
+        error={error}
+        templates={TEMPLATES.map((template) => ({ ...template }))}
+        templateId={templateId}
+        onTemplateChange={setTemplateId}
+        chatMessages={chatMessages}
+        chatLoading={chatLoading}
+        chatInput={chatInput}
+        onChatInputChange={setChatInput}
+        onChatSend={handleChatSend}
+      />
     </div>
   );
 }

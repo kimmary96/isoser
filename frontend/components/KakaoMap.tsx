@@ -19,7 +19,6 @@ const BOOTCAMPS: Bootcamp[] = [
 
 export default function KakaoMap() {
   const [activeMarker, setActiveMarker] = useState<string | null>(null);
-  console.log("kakao key:", process.env.NEXT_PUBLIC_KAKAO_MAP_KEY);
 
   const [loading, error] = useKakaoLoader({
     appkey: process.env.NEXT_PUBLIC_KAKAO_MAP_KEY!,

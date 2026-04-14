@@ -1,6 +1,7 @@
 // 활동 상세 페이지 - 활동 내용 편집 + AI 코치 대화
 "use client";
 
+import type { ChangeEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { createBrowserClient } from "@/lib/supabase/client";
@@ -17,6 +18,10 @@ import {
   upsertGuestActivity,
 } from "@/lib/guest";
 import type { Activity, ActivityConvertRequest, CoachMessage } from "@/lib/types";
+import { ActivityBasicTab } from "../_components/activity-basic-tab";
+import { ActivityCoachPanel } from "../_components/activity-coach-panel";
+import { ActivityDetailModals } from "../_components/activity-detail-modals";
+import { ActivityStarTab } from "../_components/activity-star-tab";
 
 const PENDING_STAR_CONVERSION_KEY = "isoser:pending-star-conversion";
 const PENDING_PORTFOLIO_CONVERSION_KEY = "isoser:pending-portfolio-conversion";
@@ -433,7 +438,7 @@ export default function ActivityDetailPage() {
     }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (isGuestMode() || !files || imageUrls.length >= 5) return;
 
@@ -940,640 +945,99 @@ Result(결과): ${starResult}`;
             </div>
 
             {activeTab === "basic" && (
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs font-semibold text-gray-500 mb-2 block">활동 유형</label>
-                    <div className="flex gap-2 flex-wrap">
-                      {["회사경력", "프로젝트", "대외활동", "학생활동"].map((type) => (
-                        <button
-                          key={type}
-                          onClick={() => setTypeDraft(type)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${
-                            typeDraft === type
-                              ? "bg-gray-900 text-white border-gray-900"
-                              : "bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100"
-                          }`}
-                        >
-                          {type}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold text-gray-500 mb-2 block">소속 조직</label>
-                    <input
-                      value={organization}
-                      onChange={(e) => setOrganization(e.target.value)}
-                      placeholder="활동 소속 조직을 입력해주세요."
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-gray-500 mb-2 block">
-                    활동 기간 <span className="text-red-400">*</span>
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      value={periodStart}
-                      onChange={(e) => setPeriodStart(e.target.value)}
-                      placeholder="예) 2025.03"
-                      className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm w-32 focus:outline-none focus:border-blue-400"
-                    />
-                    <span className="text-gray-400">~</span>
-                    <input
-                      value={periodEnd}
-                      onChange={(e) => setPeriodEnd(e.target.value)}
-                      placeholder="예) 2025.07"
-                      className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm w-32 focus:outline-none focus:border-blue-400"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs font-semibold text-gray-500 mb-2 block">인원</label>
-                    <input
-                      type="number"
-                      value={teamSize || ""}
-                      onChange={(e) => setTeamSize(Number(e.target.value))}
-                      placeholder="예) 5"
-                      min={1}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold text-gray-500 mb-2 block">팀 구성</label>
-                    <input
-                      value={teamComposition}
-                      onChange={(e) => setTeamComposition(e.target.value)}
-                      placeholder="예) PM 1 / 백엔드 2 / 프론트엔드 1"
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-gray-500 mb-2 block">
-                    어떤 역할을 담당하셨나요? <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    value={myRole}
-                    onChange={(e) => setMyRole(e.target.value)}
-                    placeholder="예) 백엔드 개발자로 참여"
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-gray-500 mb-2 block">
-                    사용 기술 ({skillsDraft.length}/10)
-                  </label>
-
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {skillsDraft.map((skill, i) => (
-                      <span
-                        key={i}
-                        className="flex items-center gap-1.5 px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs"
-                      >
-                        {skill}
-                        <button
-                          onClick={() => handleSkillRemove(i)}
-                          className="text-gray-400 hover:text-red-400 transition-all"
-                        >
-                          ✕
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-
-                  {skillsDraft.length < 10 && (
-                    <div className="flex gap-2">
-                      <input
-                        value={skillInput}
-                        onChange={(e) => setSkillInput(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            void handleSkillAdd();
-                          }
-                        }}
-                        placeholder="기술을 직접 입력하거나, 비워둔 뒤 추가 버튼으로 추천을 불러오세요."
-                        className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
-                      />
-                      <button
-                        onClick={() => void handleSkillAdd()}
-                        disabled={skillSuggestionLoading}
-                        className="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-sm hover:bg-gray-200 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-                      >
-                        {skillSuggestionLoading ? "불러오는 중..." : "추가"}
-                      </button>
-                    </div>
-                  )}
-
-                  {skillsDraft.length < 10 && (
-                    <>
-                      <p className="mt-2 text-[11px] text-gray-400">
-                        역할을 입력한 뒤 입력칸을 비우고 추가 버튼을 누르면 기술 태그를 추천합니다.
-                      </p>
-
-                      {skillSuggestionError && (
-                        <p className="mt-2 text-xs text-red-500">{skillSuggestionError}</p>
-                      )}
-
-                      {skillSuggestions.length > 0 && (
-                        <div className="mt-3 rounded-2xl border border-blue-100 bg-blue-50/60 p-3">
-                          <div className="flex items-center justify-between gap-3 mb-2">
-                            <p className="text-xs font-semibold text-blue-700">
-                              역할 기반 추천
-                            </p>
-                            {skillSuggestionRoleLabel && (
-                              <span className="text-[11px] text-blue-500">
-                                기준 역할: {skillSuggestionRoleLabel}
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            {skillSuggestions.map((skill) => {
-                              const selected = isSkillSelected(skill);
-                              const disabled = !selected && skillsDraft.length >= 10;
-
-                              return (
-                                <button
-                                  key={skill}
-                                  type="button"
-                                  onClick={() => handleSuggestedSkillToggle(skill)}
-                                  disabled={disabled}
-                                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-all ${
-                                    selected
-                                      ? "border-blue-600 bg-blue-600 text-white"
-                                      : "border-blue-200 bg-white text-blue-700 hover:border-blue-300 hover:bg-blue-50"
-                                  } ${disabled ? "cursor-not-allowed opacity-50" : ""}`}
-                                >
-                                  {selected && (
-                                    <svg
-                                      width="12"
-                                      height="12"
-                                      viewBox="0 0 20 20"
-                                      fill="none"
-                                      aria-hidden="true"
-                                    >
-                                      <path
-                                        d="M5 10.5L8.5 14L15 7.5"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                      />
-                                    </svg>
-                                  )}
-                                  <span>{skill}</span>
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-xs font-semibold text-gray-500">기여 내용</label>
-                    {contributions.length < 6 && (
-                      <button
-                        onClick={handleContributionAdd}
-                        className="text-xs text-blue-500 hover:underline"
-                      >
-                        + 항목 추가
-                      </button>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    {contributions.map((c, i) => (
-                      <div key={i} className="flex gap-2 items-center">
-                        <span className="text-gray-400 text-sm">-</span>
-                        <input
-                          value={c}
-                          onChange={(e) => handleContributionChange(i, e.target.value)}
-                          placeholder={`기여 내용 ${i + 1}`}
-                          className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
-                        />
-                        {contributions.length > 1 && (
-                          <button
-                            onClick={() => handleContributionRemove(i)}
-                            className="text-gray-300 hover:text-red-400 text-sm"
-                          >
-                            ✕
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-xs font-semibold text-gray-500">
-                      어떤 활동이었는지 간단한 소개를 적어주세요. <span className="text-red-400">*</span>
-                    </label>
-                    {isNewActivity && (
-                      <button
-                        type="button"
-                        onClick={() => void handleGenerateIntroCandidates()}
-                        disabled={!hasContributionContent || introGenerateLoading}
-                        title={
-                          hasContributionContent
-                            ? "기여 내용을 바탕으로 소개글 후보를 생성합니다."
-                            : "기여내용을 먼저 작성해주세요"
-                        }
-                        className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 transition-all hover:border-blue-300 hover:bg-blue-100 disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-100 disabled:text-gray-400"
-                      >
-                        <span aria-hidden="true">AI</span>
-                        <span>
-                          {introGenerateLoading ? "소개글 생성 중..." : "소개글 생성"}
-                        </span>
-                      </button>
-                    )}
-                  </div>
-                  <textarea
-                    value={descriptionDraft}
-                    onChange={(e) => setDescriptionDraft(e.target.value)}
-                    placeholder="활동에 대한 간단한 소개를 작성해주세요."
-                    className="w-full border border-gray-200 rounded-xl p-3 text-sm resize-none focus:outline-none focus:border-blue-400"
-                    rows={5}
-                  />
-
-                  {isNewActivity && (
-                    <>
-                      <p className="mt-2 text-[11px] text-gray-400">
-                        기여 내용을 먼저 작성한 뒤 소개글 생성 버튼을 누르면 AI가 후보 1~3개를 제안합니다.
-                      </p>
-
-                      {introGenerateError && (
-                        <p className="mt-2 text-xs text-red-500">{introGenerateError}</p>
-                      )}
-
-                      {introCandidates.length > 0 && (
-                        <div className="mt-3 space-y-2">
-                          {introCandidates.map((candidate, index) => {
-                            const selected = descriptionDraft.trim() === candidate.trim();
-
-                            return (
-                              <button
-                                key={`${index}-${candidate}`}
-                                type="button"
-                                onClick={() => {
-                                  setDescriptionDraft(candidate);
-                                  setIntroGenerateError(null);
-                                }}
-                                className={`w-full rounded-2xl border p-3 text-left transition-all ${
-                                  selected
-                                    ? "border-blue-500 bg-blue-50 shadow-sm"
-                                    : "border-gray-200 bg-white hover:border-blue-200 hover:bg-blue-50/40"
-                                }`}
-                              >
-                                <div className="flex items-start justify-between gap-3">
-                                  <div>
-                                    <p className="text-[11px] font-semibold text-gray-500">
-                                      소개글 후보 {index + 1}
-                                    </p>
-                                    <p className="mt-1 text-sm leading-6 text-gray-700">
-                                      {candidate}
-                                    </p>
-                                  </div>
-                                  <span
-                                    className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-medium ${
-                                      selected
-                                        ? "bg-blue-600 text-white"
-                                        : "bg-gray-100 text-gray-500"
-                                    }`}
-                                  >
-                                    {selected ? "선택됨" : "선택"}
-                                  </span>
-                                </div>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-gray-500 mb-1 block">
-                    활동 이미지 추가하기{" "}
-                    <span className="text-blue-500">{imageUrls.length}/5</span>
-                  </label>
-                  <p className="text-xs text-gray-400 mb-3">
-                    대표 이미지가 성과저장소 카드에 표시됩니다. 최대 5개까지 첨부 가능합니다.
-                  </p>
-
-                  {imageUrls.length > 0 && (
-                    <div className="flex gap-3 flex-wrap mb-3">
-                      {imageUrls.map((url, i) => (
-                        <div key={i} className="relative w-24 h-24">
-                          <img
-                            src={url}
-                            alt={`activity-${i}`}
-                            className="w-24 h-24 object-cover rounded-xl border border-gray-200"
-                          />
-                          <button
-                            onClick={() => handleImageRemove(i)}
-                            className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center hover:bg-red-600"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {imageUrls.length < 5 && (
-                    <label
-                      title={isGuestMode() ? "로그인 후 이용 가능합니다" : "이미지를 선택해 추가합니다"}
-                      className={`flex items-center gap-2 w-fit border border-dashed rounded-xl px-4 py-3 text-sm transition-all ${
-                        isGuestMode()
-                          ? "cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400"
-                          : "cursor-pointer border-gray-300 text-gray-500 hover:bg-gray-50"
-                      }`}
-                    >
-                      <span>🖼</span>
-                      <span>{imageUploading ? "업로드 중..." : "이미지 선택"}</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        className="hidden"
-                        onChange={handleImageUpload}
-                        disabled={imageUploading || isGuestMode()}
-                      />
-                    </label>
-                  )}
-                  {isGuestMode() && (
-                    <p className="mt-2 text-xs text-gray-400">로그인 후 이용 가능합니다.</p>
-                  )}
-                </div>
-
-                <div className="flex justify-end pt-2">
-                  <button
-                    onClick={handleSaveBasicInfo}
-                    disabled={basicSaving}
-                    className="px-6 py-2.5 bg-blue-500 text-white rounded-xl text-sm font-medium hover:bg-blue-600 disabled:opacity-50 transition-all"
-                  >
-                    {basicSaving ? "저장 중..." : "저장"}
-                  </button>
-                </div>
-              </div>
+              <ActivityBasicTab
+                activity={activity}
+                isNewActivity={isNewActivity}
+                typeDraft={typeDraft}
+                onTypeDraftChange={setTypeDraft}
+                organization={organization}
+                onOrganizationChange={setOrganization}
+                periodStart={periodStart}
+                onPeriodStartChange={setPeriodStart}
+                periodEnd={periodEnd}
+                onPeriodEndChange={setPeriodEnd}
+                teamSize={teamSize}
+                onTeamSizeChange={setTeamSize}
+                teamComposition={teamComposition}
+                onTeamCompositionChange={setTeamComposition}
+                myRole={myRole}
+                onMyRoleChange={setMyRole}
+                skillsDraft={skillsDraft}
+                skillInput={skillInput}
+                onSkillInputChange={setSkillInput}
+                skillSuggestions={skillSuggestions}
+                skillSuggestionRoleLabel={skillSuggestionRoleLabel}
+                skillSuggestionLoading={skillSuggestionLoading}
+                skillSuggestionError={skillSuggestionError}
+                isSkillSelected={isSkillSelected}
+                onSkillAdd={handleSkillAdd}
+                onSkillRemove={handleSkillRemove}
+                onSuggestedSkillToggle={handleSuggestedSkillToggle}
+                contributions={contributions}
+                onContributionChange={handleContributionChange}
+                onContributionAdd={handleContributionAdd}
+                onContributionRemove={handleContributionRemove}
+                descriptionDraft={descriptionDraft}
+                onDescriptionDraftChange={setDescriptionDraft}
+                hasContributionContent={hasContributionContent}
+                introGenerateLoading={introGenerateLoading}
+                introGenerateError={introGenerateError}
+                introCandidates={introCandidates}
+                onGenerateIntroCandidates={handleGenerateIntroCandidates}
+                imageUrls={imageUrls}
+                imageUploading={imageUploading}
+                onImageUpload={handleImageUpload}
+                onImageRemove={handleImageRemove}
+                isGuestMode={isGuestMode()}
+                basicSaving={basicSaving}
+                onSaveBasicInfo={handleSaveBasicInfo}
+              />
             )}
 
             {activeTab === "star" && (
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-semibold text-blue-600 mb-1 block">
-                    S - Situation (상황)
-                  </label>
-                  <p className="text-xs text-gray-400 mb-2">
-                    프로젝트가 시작된 배경이나 당시 직면했던 구체적인 상황은 무엇인가요?
-                  </p>
-                  <textarea
-                    value={starSituation}
-                    onChange={(e) => setStarSituation(e.target.value)}
-                    placeholder="예) 신규 서비스 출시를 앞두고 기존 온보딩 이탈률이 68%에 달하는 상황이었습니다."
-                    className="w-full border border-gray-200 rounded-xl p-3 text-sm resize-none focus:outline-none focus:border-blue-400"
-                    rows={3}
-                  />
-                </div>
-
-                <div>
-                  <label className="text-sm font-semibold text-blue-600 mb-1 block">
-                    T - Task (과제)
-                  </label>
-                  <p className="text-xs text-gray-400 mb-2">
-                    본인이 해결해야 했던 핵심 과제와 목표 수치는 무엇이었나요?
-                  </p>
-                  <textarea
-                    value={starTask}
-                    onChange={(e) => setStarTask(e.target.value)}
-                    placeholder="예) 온보딩 완료율을 3개월 내 85% 이상으로 개선하는 것이 목표였습니다."
-                    className="w-full border border-gray-200 rounded-xl p-3 text-sm resize-none focus:outline-none focus:border-blue-400"
-                    rows={3}
-                  />
-                </div>
-
-                <div>
-                  <label className="text-sm font-semibold text-blue-600 mb-1 block">
-                    A - Action (행동)
-                  </label>
-                  <p className="text-xs text-gray-400 mb-2">
-                    목표 달성을 위해 어떤 구체적인 행동과 전략을 실행했나요?
-                  </p>
-                  <textarea
-                    value={starAction}
-                    onChange={(e) => setStarAction(e.target.value)}
-                    placeholder="예) 사용자 인터뷰 20건을 진행하고 이탈 구간을 특정해 단계를 5단계에서 3단계로 축소했습니다."
-                    className="w-full border border-gray-200 rounded-xl p-3 text-sm resize-none focus:outline-none focus:border-blue-400"
-                    rows={3}
-                  />
-                </div>
-
-                <div>
-                  <label className="text-sm font-semibold text-blue-600 mb-1 block">
-                    R - Result (결과)
-                  </label>
-                  <p className="text-xs text-gray-400 mb-2">
-                    결과적으로 어떤 성과를 냈나요? 숫자, 퍼센트, 비즈니스 임팩트 중심으로 작성해주세요.
-                  </p>
-                  <textarea
-                    value={starResult}
-                    onChange={(e) => setStarResult(e.target.value)}
-                    placeholder="예) 온보딩 완료율 89% 달성, 첫 주 리텐션 41% 향상, 고객 문의 32% 감소."
-                    className="w-full border border-gray-200 rounded-xl p-3 text-sm resize-none focus:outline-none focus:border-blue-400"
-                    rows={3}
-                  />
-                </div>
-
-                <div className="flex gap-3 pt-2">
-                  <button
-                    onClick={handleStarSave}
-                    disabled={starSaving}
-                    className="px-5 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50"
-                  >
-                    {starSaving ? "저장 중..." : "저장"}
-                  </button>
-                  <button
-                    onClick={handleGenerateSummary}
-                    disabled={summaryLoading || (!starSituation && !starTask && !starAction && !starResult)}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-blue-500 text-white rounded-xl text-sm font-medium hover:bg-blue-600 disabled:opacity-50 transition-all"
-                  >
-                    {summaryLoading ? "생성 중..." : "✦ AI 요약 생성"}
-                  </button>
-                </div>
-
-                {summaryLoading && (
-                  <p className="text-xs text-blue-400 text-center">
-                    STAR 내용을 분석해 활동 소개를 작성하고 있습니다...
-                  </p>
-                )}
-              </div>
+              <ActivityStarTab
+                starSituation={starSituation}
+                onStarSituationChange={setStarSituation}
+                starTask={starTask}
+                onStarTaskChange={setStarTask}
+                starAction={starAction}
+                onStarActionChange={setStarAction}
+                starResult={starResult}
+                onStarResultChange={setStarResult}
+                starSaving={starSaving}
+                onStarSave={handleStarSave}
+                summaryLoading={summaryLoading}
+                onGenerateSummary={handleGenerateSummary}
+              />
             )}
           </div>
 
-          {/* AI 코치 */}
           {activeTab === "star" && (
-            <div className="bg-white rounded-xl border border-gray-200 flex flex-col h-[500px]">
-              <div className="p-4 border-b border-gray-100">
-                <h2 className="font-semibold text-gray-900">AI 코치</h2>
-                <input
-                  type="text"
-                  placeholder="지원 직무 (예: PM, 백엔드 개발자)"
-                  value={jobTitle}
-                  onChange={(e) => setJobTitle(e.target.value)}
-                  className="mt-2 w-full text-sm border border-gray-200 rounded-lg px-3 py-1.5 outline-none focus:border-gray-400"
-                />
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                {messages.length === 0 && (
-                  <p className="text-sm text-gray-400 text-center mt-8">
-                    활동 내용을 입력하면 AI 코치가 STAR 기법으로 피드백을 드립니다.
-                  </p>
-                )}
-                {messages.map((msg, i) => (
-                  <div
-                    key={i}
-                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                  >
-                    <div
-                      className={`max-w-[85%] rounded-xl px-4 py-2.5 text-sm ${
-                        msg.role === "user"
-                          ? "bg-black text-white"
-                          : "bg-gray-100 text-gray-800"
-                      }`}
-                    >
-                      <p className="whitespace-pre-wrap">{msg.content}</p>
-                    </div>
-                  </div>
-                ))}
-                {sending && (
-                  <div className="flex justify-start">
-                    <div className="bg-gray-100 rounded-xl px-4 py-2.5 text-sm text-gray-500">
-                      분석 중...
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="p-3 border-t border-gray-100 flex gap-2">
-                <textarea
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendMessage();
-                    }
-                  }}
-                  placeholder="활동 내용을 입력하세요..."
-                  rows={2}
-                  className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-gray-400 resize-none"
-                />
-                <button
-                  onClick={handleSendMessage}
-                  disabled={sending || !input.trim()}
-                  className="px-3 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50"
-                >
-                  전송
-                </button>
-              </div>
-            </div>
+            <ActivityCoachPanel
+              jobTitle={jobTitle}
+              onJobTitleChange={setJobTitle}
+              messages={messages}
+              sending={sending}
+              input={input}
+              onInputChange={setInput}
+              onSendMessage={handleSendMessage}
+            />
           )}
         </div>
       </div>
-      {showPostSaveModal && postSaveActivity && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl">
-            <p className="text-sm font-semibold text-blue-500">저장 완료</p>
-            <h2 className="mt-2 text-2xl font-bold text-gray-900">
-              다음 단계로 바로 이어서 작업하시겠어요?
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-gray-500">
-              방금 저장한 활동을 STAR 기록으로 정리하거나, 포트폴리오 초안으로
-              변환해 이어서 보실 수 있습니다.
-            </p>
-
-            <div className="mt-6 space-y-3">
-              <button
-                type="button"
-                onClick={() => void handleSendToStar()}
-                disabled={postSaveAction !== null}
-                className="w-full rounded-2xl border border-blue-200 bg-blue-50 px-4 py-4 text-left transition hover:border-blue-300 hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                <p className="text-sm font-semibold text-blue-700">
-                  {postSaveAction === "star" ? "STAR로 변환 중..." : "STAR로 보내기"}
-                </p>
-                <p className="mt-1 text-xs leading-5 text-blue-600">
-                  활동 내용을 STAR 탭으로 옮겨서 바로 다듬을 수 있습니다.
-                </p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => void handleSendToPortfolio()}
-                disabled={postSaveAction !== null}
-                className="w-full rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-4 text-left transition hover:border-emerald-300 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                <p className="text-sm font-semibold text-emerald-700">
-                  {postSaveAction === "portfolio"
-                    ? "포트폴리오 초안 생성 중..."
-                    : "포트폴리오에 추가하기"}
-                </p>
-                <p className="mt-1 text-xs leading-5 text-emerald-600">
-                  현재 활동을 포트폴리오 구조로 변환한 초안을 확인할 수 있습니다.
-                </p>
-              </button>
-            </div>
-
-            <button
-              type="button"
-              onClick={handlePostSaveLater}
-              disabled={postSaveAction !== null}
-              className="mt-6 w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              나중에 하기
-            </button>
-          </div>
-        </div>
-      )}
-      {showDeleteModal && !isNewActivity && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-8 w-80 text-center shadow-xl">
-            <p className="font-bold text-gray-900 text-lg mb-2">성과를 삭제할까요?</p>
-            <p className="text-sm text-gray-400 mb-6">
-              삭제된 성과는 복구할 수 없습니다.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50"
-              >
-                취소
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={deleting}
-                className="flex-1 py-2.5 bg-red-500 text-white rounded-xl text-sm font-medium hover:bg-red-600 disabled:opacity-50"
-              >
-                {deleting ? "삭제 중..." : "삭제"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ActivityDetailModals
+        showPostSaveModal={showPostSaveModal}
+        postSaveActivity={postSaveActivity}
+        postSaveAction={postSaveAction}
+        onSendToStar={handleSendToStar}
+        onSendToPortfolio={handleSendToPortfolio}
+        onPostSaveLater={handlePostSaveLater}
+        showDeleteModal={showDeleteModal}
+        isNewActivity={isNewActivity}
+        onCloseDeleteModal={() => setShowDeleteModal(false)}
+        onDelete={handleDelete}
+        deleting={deleting}
+      />
     </main>
   );
 }

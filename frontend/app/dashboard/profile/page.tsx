@@ -1,12 +1,18 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import {
+  getDashboardProfile,
+  saveDashboardProfile,
+  updateDashboardProfileSection,
+} from "@/lib/api/app";
 import { getGuestActivities, isGuestMode } from "@/lib/guest";
-import { createBrowserClient } from "@/lib/supabase/client";
 import type { Activity, MatchAnalysisRecord, Profile } from "@/lib/types";
+import { ProfileCompletionCard } from "./_components/profile-completion-card";
+import { ProfileEditModal } from "./_components/profile-edit-modal";
+import { ProfileHeroSection } from "./_components/profile-hero-section";
 
 const EMPTY_PROFILE: Profile = {
   id: "",
@@ -592,7 +598,6 @@ function ReadonlyListSection({
 }
 
 export default function DashboardPage() {
-  const supabase = useMemo(() => createBrowserClient(), []);
   const router = useRouter();
 
   const [profile, setProfile] = useState<Profile>(EMPTY_PROFILE);
@@ -658,60 +663,10 @@ export default function DashboardPage() {
           return;
         }
 
-        const { data: authData, error: authError } = await supabase.auth.getUser();
-        if (authError || !authData.user) {
-          throw new Error("로그인이 필요합니다.");
-        }
-
-        const [
-          { data: profileRow, error: profileError },
-          { data: activityRows, error: activityError },
-          { data: matchRows, error: matchError },
-        ] = await Promise.all([
-          supabase.from("profiles").select("*").eq("id", authData.user.id).maybeSingle(),
-          supabase
-            .from("activities")
-            .select("*")
-            .eq("user_id", authData.user.id)
-            .eq("is_visible", true)
-            .order("created_at", { ascending: false }),
-          supabase
-            .from("match_analyses")
-            .select("*")
-            .eq("user_id", authData.user.id)
-            .order("created_at", { ascending: false })
-            .limit(10),
-        ]);
-
-        if (profileError) {
-          throw new Error(profileError.message);
-        }
-        if (activityError) {
-          throw new Error(activityError.message);
-        }
-
-        const normalizedProfile: Profile = {
-          ...EMPTY_PROFILE,
-          ...(profileRow ?? {}),
-          career: toArray(profileRow?.career),
-          education_history: toArray(profileRow?.education_history),
-          awards: toArray(profileRow?.awards),
-          certifications: toArray(profileRow?.certifications),
-          languages: toArray(profileRow?.languages),
-          skills: toArray(profileRow?.skills),
-          self_intro: profileRow?.self_intro ?? "",
-          bio: profileRow?.bio ?? "",
-          portfolio_url: profileRow?.portfolio_url ?? "",
-        };
-
-        setProfile(normalizedProfile);
-        setActivities(activityRows || []);
-        if (matchError) {
-          console.warn("match_analyses 조회 실패:", matchError.message);
-          setMatchAnalyses([]);
-        } else {
-          setMatchAnalyses((matchRows as MatchAnalysisRecord[] | null) ?? []);
-        }
+        const data = await getDashboardProfile();
+        setProfile(data.profile ?? EMPTY_PROFILE);
+        setActivities(data.activities ?? []);
+        setMatchAnalyses((data.matchAnalyses as MatchAnalysisRecord[] | null) ?? []);
       } catch (e) {
         setError(e instanceof Error ? e.message : "대시보드 데이터를 불러오지 못했습니다.");
       } finally {
@@ -720,7 +675,7 @@ export default function DashboardPage() {
     };
 
     fetchData();
-  }, [supabase]);
+  }, []);
 
   const updateProfileSection = async (patch: Partial<Profile>) => {
     setSaving(true);
@@ -732,48 +687,8 @@ export default function DashboardPage() {
         return;
       }
 
-      const { data: authData, error: authError } = await supabase.auth.getUser();
-      if (authError || !authData.user) {
-        throw new Error("로그인이 필요합니다.");
-      }
-
-      const payload: Record<string, unknown> = {};
-      if (patch.career !== undefined) payload.career = patch.career;
-      if (patch.education_history !== undefined) payload.education_history = patch.education_history;
-      if (patch.awards !== undefined) payload.awards = patch.awards;
-      if (patch.certifications !== undefined) payload.certifications = patch.certifications;
-      if (patch.languages !== undefined) payload.languages = patch.languages;
-      if (patch.skills !== undefined) payload.skills = patch.skills;
-      if (patch.self_intro !== undefined) payload.self_intro = patch.self_intro;
-      if (patch.bio !== undefined) payload.bio = patch.bio;
-      if (patch.email !== undefined) payload.email = patch.email;
-      if (patch.phone !== undefined) payload.phone = patch.phone;
-      if (patch.portfolio_url !== undefined) payload.portfolio_url = patch.portfolio_url;
-
-      let { error: updateError } = await supabase
-        .from("profiles")
-        .update(payload)
-        .eq("id", authData.user.id);
-
-      if (
-        (updateError?.code === "42703" ||
-          updateError?.message.toLowerCase().includes("bio")) &&
-        "bio" in payload
-      ) {
-        const payloadWithoutBio = { ...payload };
-        delete payloadWithoutBio.bio;
-        const retry = await supabase
-          .from("profiles")
-          .update(payloadWithoutBio)
-          .eq("id", authData.user.id);
-        updateError = retry.error;
-      }
-
-      if (updateError) {
-        throw new Error(updateError.message);
-      }
-
-      setProfile((prev) => ({ ...prev, ...patch }));
+      const data = await updateDashboardProfileSection(patch);
+      setProfile(data.profile);
     } catch (e) {
       setError(e instanceof Error ? e.message : "저장 중 오류가 발생했습니다.");
       throw e;
@@ -871,74 +786,38 @@ export default function DashboardPage() {
     setProfileModalSaving(true);
     setError(null);
     try {
-        let nextAvatarUrl = profileAny.avatar_url ?? null;
         const normalizedPortfolioUrl = profilePortfolioUrlInput.trim()
           ? /^(https?:)?\/\//i.test(profilePortfolioUrlInput.trim())
             ? profilePortfolioUrlInput.trim()
             : `https://${profilePortfolioUrlInput.trim()}`
           : null;
 
-        if (!isGuestMode()) {
-        const { data: authData, error: authError } = await supabase.auth.getUser();
-        if (authError || !authData.user) {
-          throw new Error("로그인이 필요합니다.");
-        }
-
+      if (!isGuestMode()) {
+        const payload = new FormData();
+        payload.set("name", profileNameInput.trim());
+        payload.set("bio", profileBioInput.trim());
+        payload.set("email", profileEmailInput.trim());
+        payload.set("phone", profilePhoneInput.trim());
+        payload.set("portfolio_url", normalizedPortfolioUrl ?? "");
+        payload.set("current_avatar_url", profileAny.avatar_url ?? "");
         if (avatarFile) {
-          const ext = avatarFile.name.split(".").pop() ?? "png";
-          const path = `${authData.user.id}/profile/${Date.now()}.${ext}`;
-          const { error: uploadError } = await supabase.storage
-            .from("activity-images")
-            .upload(path, avatarFile, { upsert: true });
-          if (uploadError) {
-            throw new Error(uploadError.message);
-          }
-          const { data: urlData } = supabase.storage.from("activity-images").getPublicUrl(path);
-          nextAvatarUrl = urlData.publicUrl;
+          payload.set("avatar", avatarFile);
         }
 
-        let { error: upsertError } = await supabase.from("profiles").upsert(
-          {
-            id: authData.user.id,
-            name: profileNameInput.trim(),
-            bio: profileBioInput.trim() || null,
-            email: profileEmailInput.trim() || null,
-            phone: profilePhoneInput.trim() || null,
-            portfolio_url: normalizedPortfolioUrl,
-            avatar_url: nextAvatarUrl,
-          },
-          { onConflict: "id" }
-        );
-        if (upsertError?.code === "42703" || upsertError?.message.toLowerCase().includes("bio")) {
-          const retry = await supabase.from("profiles").upsert(
-            {
-              id: authData.user.id,
-              name: profileNameInput.trim(),
-              email: profileEmailInput.trim() || null,
-              phone: profilePhoneInput.trim() || null,
-              portfolio_url: normalizedPortfolioUrl,
-              avatar_url: nextAvatarUrl,
-            },
-            { onConflict: "id" }
-          );
-          upsertError = retry.error;
-        }
-        if (upsertError) {
-          throw new Error(upsertError.message);
-        }
-      } else if (avatarFile && avatarPreviewUrl) {
-        nextAvatarUrl = avatarPreviewUrl;
+        const data = await saveDashboardProfile(payload);
+        setProfile(data.profile);
+      } else {
+        const nextAvatarUrl = avatarFile && avatarPreviewUrl ? avatarPreviewUrl : profileAny.avatar_url ?? null;
+        setProfile((prev) => ({
+          ...prev,
+          name: profileNameInput.trim(),
+          bio: profileBioInput.trim() || null,
+          email: profileEmailInput.trim() || null,
+          phone: profilePhoneInput.trim() || null,
+          portfolio_url: normalizedPortfolioUrl,
+          avatar_url: nextAvatarUrl ?? undefined,
+        }));
       }
-
-      setProfile((prev) => ({
-        ...prev,
-        name: profileNameInput.trim(),
-        bio: profileBioInput.trim() || null,
-        email: profileEmailInput.trim() || null,
-        phone: profilePhoneInput.trim() || null,
-        portfolio_url: normalizedPortfolioUrl,
-        avatar_url: nextAvatarUrl ?? undefined,
-      }));
       setIsProfileModalOpen(false);
     } catch (e) {
       setError(e instanceof Error ? e.message : "프로필 저장에 실패했습니다.");
@@ -950,23 +829,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-[#f3f6fb] px-6 py-8">
       <div className="mx-auto max-w-6xl space-y-6">
-        <section className="mb-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-2xl font-semibold tracking-tight text-slate-950">내 이력 완성도</h2>
-            <div className="flex flex-col items-end gap-2">
-              <Link href="/onboarding" className="text-white rounded-xl px-6 py-2.5 text-sm font-semibold" style={{ background: "linear-gradient(135deg, #094cb2, #3b82f6)" }}>
-                기존 이력서로 한번에 채우기
-              </Link>
-              <p className="text-2xl font-bold text-blue-600">{completionScore}%</p>
-            </div>
-          </div>
-          <div className="mt-4 h-2 w-full rounded-full bg-gray-200">
-            <div
-              className="h-2 rounded-full transition-all duration-500"
-              style={{ width: `${completionScore}%`, backgroundColor: "#094cb2" }}
-            />
-          </div>
-        </section>
+        <ProfileCompletionCard completionScore={completionScore} />
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
@@ -974,86 +837,13 @@ export default function DashboardPage() {
           <div className="rounded-3xl border border-slate-200 bg-white p-8 text-slate-500 shadow-[0_16px_40px_rgba(15,23,42,0.05)]">불러오는 중...</div>
         ) : (
           <>
-            <div className="mb-6 grid gap-6 xl:grid-cols-[14rem_minmax(0,42rem)_14rem] xl:items-start xl:justify-between">
-              <div className="w-56 flex-shrink-0 xl:w-auto">
-                <div
-                  className="relative h-[220px] cursor-pointer overflow-hidden rounded-3xl border border-slate-200 bg-slate-700 shadow-[0_16px_40px_rgba(15,23,42,0.08)]"
-                  onClick={() => setIsProfileModalOpen(true)}
-                >
-                  {profileAny.avatar_url ? (
-                    <img src={profileAny.avatar_url} alt="profile" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full bg-gray-600" />
-                  )}
-                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60">
-                    <p className="text-white font-bold text-lg leading-tight">{profile.name || "사용자"}</p>
-                    <p className="text-gray-300 text-sm">{profileAny.bio || "직무를 입력해주세요"}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="min-w-0">
-                <div className="mb-4 flex h-[220px] flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.05)]">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-medium text-slate-500">자기소개</p>
-                    <PencilButton onClick={() => setEditing("self_intro")} label="자기소개 수정" />
-                  </div>
-                  <p className="mb-3 line-clamp-[6] text-sm leading-6 text-slate-700">
-                    {profile.self_intro ? profile.self_intro : "자기소개를 생성해보세요."}
-                  </p>
-                  {!profile.self_intro && (
-                    <div className="mt-auto rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 text-center">
-                      <p className="mb-2 text-sm text-slate-400">자기소개 생성하기</p>
-                      <button
-                        type="button"
-                        onClick={() => setEditing("self_intro")}
-                        className="rounded-xl border border-slate-200 px-4 py-1.5 text-sm text-slate-600 hover:bg-white"
-                      >
-                        작성 시작
-                      </button>
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-4 px-1 text-sm text-slate-500">
-                  {profile.phone && <span>📞 {profile.phone}</span>}
-                  {profile.email && <span>✉️ {profile.email}</span>}
-                  {(profile as Profile & { portfolio_url?: string | null }).portfolio_url && (
-                    <a
-                      href={(profile as Profile & { portfolio_url?: string | null }).portfolio_url ?? "#"}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-blue-600 underline underline-offset-2"
-                    >
-                      포트폴리오 링크
-                    </a>
-                  )}
-                </div>
-              </div>
-
-              <div className="w-56 rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.05)] xl:w-auto xl:h-[220px]">
-                <div className="mb-3 flex items-center justify-between">
-                  <p className="text-sm font-semibold tracking-tight text-slate-950">Skills</p>
-                  <PencilButton onClick={() => setEditing("skills")} label="스킬 수정" />
-                </div>
-                <div className="h-[164px] space-y-3 overflow-y-auto pr-1">
-                  {toArray(profile.skills).map((skill, i) => (
-                    <div key={i}>
-                      <div className="mb-1 flex justify-between text-xs">
-                        <span className="font-medium text-slate-700">{skill}</span>
-                      </div>
-                      <div className="h-2 rounded-full bg-slate-100">
-                        <div className="h-2 rounded-full bg-slate-900" style={{ width: "80%" }} />
-                      </div>
-                    </div>
-                  ))}
-                  {toArray(profile.skills).length === 0 && (
-                    <div className="flex h-[150px] items-center justify-center rounded-2xl bg-slate-50 text-xs text-slate-400">
-                      스킬을 추가해주세요.
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+            <ProfileHeroSection
+              profile={profile as Profile & { avatar_url?: string | null; portfolio_url?: string | null }}
+              skillItems={skillItems}
+              onOpenProfileModal={() => setIsProfileModalOpen(true)}
+              onEditSelfIntro={() => setEditing("self_intro")}
+              onEditSkills={() => setEditing("skills")}
+            />
 
             <div className="mb-6">
               <div className="flex gap-2 mb-4 flex-wrap">
@@ -1275,112 +1065,25 @@ export default function DashboardPage() {
         onSave={async (items) => updateProfileSection({ self_intro: items[0] ?? "" })}
       />
 
-      {isProfileModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">프로필 편집</h3>
-
-            <div className="border border-gray-200 rounded-xl p-4 mb-4">
-              <p className="text-sm font-medium text-gray-700 mb-3">프로필 사진 변경</p>
-              <div className="flex items-center gap-4">
-                <div className="w-20 h-20 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center">
-                  {avatarPreviewUrl ? (
-                    <img src={avatarPreviewUrl} alt="avatar preview" className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-2xl text-gray-400">👤</span>
-                  )}
-                </div>
-                <div>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleAvatarFileChange}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="px-3 py-2 rounded-lg border border-gray-300 text-sm text-gray-700 hover:bg-gray-50"
-                  >
-                    사진 선택
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="border border-gray-200 rounded-xl p-4">
-              <p className="text-sm font-medium text-gray-700 mb-3">기본 정보</p>
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">이름 (필수)</label>
-                  <input
-                    value={profileNameInput}
-                    onChange={(e) => setProfileNameInput(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">희망 직무 (선택)</label>
-                  <input
-                    value={profileBioInput}
-                    onChange={(e) => setProfileBioInput(e.target.value)}
-                    placeholder="5년차 마케터 | 브랜드 기획 전문"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
-                  />
-                </div>
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">이메일</label>
-                    <input
-                      value={profileEmailInput}
-                      onChange={(e) => setProfileEmailInput(e.target.value)}
-                      placeholder="name@example.com"
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">전화번호</label>
-                    <input
-                      value={profilePhoneInput}
-                      onChange={(e) => setProfilePhoneInput(e.target.value)}
-                      placeholder="010-0000-0000"
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">포트폴리오 링크</label>
-                  <input
-                    value={profilePortfolioUrlInput}
-                    onChange={(e) => setProfilePortfolioUrlInput(e.target.value)}
-                    placeholder="portfolio.example.com 또는 https://portfolio.example.com"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-5 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setIsProfileModalOpen(false)}
-                className="px-4 py-2 rounded-lg border border-gray-300 text-sm text-gray-700 hover:bg-gray-50"
-              >
-                취소
-              </button>
-              <button
-                type="button"
-                disabled={profileModalSaving}
-                onClick={handleSaveProfileModal}
-                className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm hover:bg-blue-700 disabled:opacity-50"
-              >
-                {profileModalSaving ? "저장 중..." : "저장하기"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ProfileEditModal
+        open={isProfileModalOpen}
+        avatarPreviewUrl={avatarPreviewUrl}
+        fileInputRef={fileInputRef}
+        onAvatarFileChange={handleAvatarFileChange}
+        profileNameInput={profileNameInput}
+        onProfileNameInputChange={setProfileNameInput}
+        profileBioInput={profileBioInput}
+        onProfileBioInputChange={setProfileBioInput}
+        profileEmailInput={profileEmailInput}
+        onProfileEmailInputChange={setProfileEmailInput}
+        profilePhoneInput={profilePhoneInput}
+        onProfilePhoneInputChange={setProfilePhoneInput}
+        profilePortfolioUrlInput={profilePortfolioUrlInput}
+        onProfilePortfolioUrlInputChange={setProfilePortfolioUrlInput}
+        profileModalSaving={profileModalSaving}
+        onClose={() => setIsProfileModalOpen(false)}
+        onSave={handleSaveProfileModal}
+      />
     </div>
   );
 }
