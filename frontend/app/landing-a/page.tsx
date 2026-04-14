@@ -236,7 +236,7 @@ const toneClassMap: Record<TickerItem["tone"], string> = {
   green: "bg-[rgba(255,255,255,0.18)]",
 };
 
-export default function LandingV2Page() {
+export default function LandingAPage() {
   const [activeChip, setActiveChip] = useState("전체");
   const [keyword, setKeyword] = useState("");
 

@@ -1,12 +1,12 @@
 ## Overall assessment
 
-Promotable with minor changes. The packet has all required frontmatter fields, the target path `frontend/app/landing-v2/page.tsx` is valid in the current Next.js app structure, the referenced draft file `cowork/drafts/isoser-landing-v2.html` exists, and the destination routes `/login` and `/programs` are present in the repository. Drift risk against `planned_against_commit: af8aa5bef4d3c249ae0187c23fbc0837373c7589` is low for the touched area: since that commit, `frontend/app` has only gained `landing-b/page.tsx`, and there is no existing `landing-v2` route.
+Promotable with minor changes. The packet has all required frontmatter fields, the target path `frontend/app/landing-a/page.tsx` is valid in the current Next.js app structure, the referenced draft file `cowork/drafts/isoser-landing-A.html` exists, and the destination routes `/login` and `/programs` are present in the repository. Drift risk against `planned_against_commit: af8aa5bef4d3c249ae0187c23fbc0837373c7589` is low for the touched area: since that commit, `frontend/app` has only gained `landing-b/page.tsx`, and there is no existing `landing-a` route.
 
 ## Findings
 
 1. Frontmatter completeness is acceptable. Required fields `id`, `status`, `type`, `title`, `planned_at`, and `planned_against_commit` are present.
 
-2. Repository path accuracy is acceptable. `frontend/app/landing-v2/page.tsx` does not exist yet, so the route can be added without conflict. `frontend/app/page.tsx` exists as stated and can remain untouched.
+2. Repository path accuracy is acceptable. `frontend/app/landing-a/page.tsx` does not exist yet, so the route can be added without conflict. `frontend/app/page.tsx` exists as stated and can remain untouched.
 
 3. Drift risk is low, not zero. The packet was planned against an older commit than current `HEAD` (`55415cc6e0b57c01a507112820fcf3a6cc4514c2`), but the only `frontend/app` delta since then is `frontend/app/landing-b/page.tsx`. That does not materially invalidate this packet, though it does create an adjacent precedent that an executor may copy from unless the packet is explicit about visual independence.
 
@@ -16,11 +16,11 @@ Promotable with minor changes. The packet has all required frontmatter fields, t
 
 6. The sticky behavior is mostly clear but still leaves a small ambiguity. The packet says the search bar should stick "nav below" and `top: nav height`, while nav is defined as 64px in the draft. That number should be stated directly in the packet if exact offset matters.
 
-7. The packet mixes "구현 대상은 `frontend/app/landing-v2/page.tsx`와 여기에 직접 필요한 로컬 스타일링 범위" with UI requirements that likely need either inline styles, CSS modules, or `styled-jsx`, but it does not constrain which local styling mechanism is preferred. That is not blocking, but it leaves execution variance.
+7. The packet mixes "구현 대상은 `frontend/app/landing-a/page.tsx`와 여기에 직접 필요한 로컬 스타일링 범위" with UI requirements that likely need either inline styles, CSS modules, or `styled-jsx`, but it does not constrain which local styling mechanism is preferred. That is not blocking, but it leaves execution variance.
 
 8. The packet explicitly says "`use client` 지시어 필요" because of chip toggle state. That is coherent with the requested UI-only interactions and current app usage patterns.
 
-9. References are sufficient but partially indirect. The packet correctly identifies `cowork/drafts/isoser-landing-v2.html` as a draft-only visual reference, but several design expectations still rely on "mockup 기준" rather than packet-local values.
+9. References are sufficient but partially indirect. The packet correctly identifies `cowork/drafts/isoser-landing-A.html` as a draft-only visual reference, but several design expectations still rely on "mockup 기준" rather than packet-local values.
 
 ## Recommendation
 

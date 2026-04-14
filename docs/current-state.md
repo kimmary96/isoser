@@ -41,7 +41,7 @@
 
 ## Project structure notes
 - `frontend/`: Next.js application
-- `frontend/app/landing-v2/page.tsx`: separate information-hub landing experiment route that does not replace the existing `/` page
+- `frontend/app/landing-a/page.tsx`: separate information-hub landing A experiment route that does not replace the existing `/` page
 - `backend/`: FastAPI application with its own virtual environment under `backend/.venv`
 - `docs/`: project documents, current-state, refactoring log, contracts, PRD
 - `tasks/`: local task queue state
