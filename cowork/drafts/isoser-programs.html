@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>프로그램 — 이소서</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --ink:    #0A0F1E;
+  --blue:   #2563EB;
+  --sky:    #60A5FA;
+  --fire:   #F97316;
+  --red:    #EF4444;
+  --amber:  #F59E0B;
+  --green:  #22C55E;
+  --violet: #7C3AED;
+  --surface:#F1F5F9;
+  --white:  #FFFFFF;
+  --border: #E2E8F0;
+  --muted:  #94A3B8;
+  --sub:    #64748B;
+}
+body { font-family:'Noto Sans KR',sans-serif; background:var(--surface); color:var(--ink); }
+
+/* ── NAV ─────────────── */
+nav {
+  position:sticky; top:0; z-index:200;
+  height:60px; background:rgba(10,15,30,0.97);
+  backdrop-filter:blur(16px);
+  display:flex; align-items:center;
+  padding:0 40px; gap:28px;
+  border-bottom:1px solid rgba(255,255,255,0.07);
+}
+.logo { font-family:'Syne',sans-serif; font-weight:800; font-size:20px; color:white; margin-right:8px; }
+.logo em { font-style:normal; color:var(--sky); }
+a.tab {
+  font-size:13px; color:rgba(255,255,255,0.5);
+  text-decoration:none; font-weight:500;
+  padding-bottom:2px; border-bottom:2px solid transparent;
+  transition:all 0.2s;
+}
+a.tab:hover { color:white; }
+a.tab.on { color:white; border-color:var(--fire); }
+a.cta {
+  margin-left:auto; background:var(--fire); color:white;
+  padding:8px 20px; border-radius:8px;
+  font-size:13px; font-weight:700; text-decoration:none;
+}
+
+/* ── PAGE HEADER ──────── */
+.phd {
+  background:var(--ink);
+  padding:28px 40px 24px;
+  border-bottom:1px solid rgba(255,255,255,0.07);
+}
+.phd-in {
+  max-width:1200px; margin:0 auto;
+  display:flex; align-items:flex-end; justify-content:space-between;
+}
+.phd h1 {
+  font-family:'Syne',sans-serif; font-size:26px;
+  font-weight:800; color:white; letter-spacing:-0.5px; margin-bottom:4px;
+}
+.phd p { font-size:13px; color:var(--muted); }
+.phd-right { display:flex; gap:8px; align-items:center; }
+.sort-btn {
+  background:rgba(255,255,255,0.07);
+  border:1px solid rgba(255,255,255,0.12);
+  color:rgba(255,255,255,0.6);
+  padding:7px 14px; border-radius:8px;
+  font-size:12px; font-weight:600;
+  cursor:pointer; font-family:inherit;
+  transition:all 0.15s;
+}
+.sort-btn.on { background:var(--fire); border-color:var(--fire); color:white; }
+.sort-btn:hover:not(.on) { color:white; border-color:rgba(255,255,255,0.3); }
+
+/* ── LAYOUT ───────────── */
+.layout {
+  max-width:1200px; margin:0 auto;
+  padding:28px 40px 60px;
+  display:grid;
+  grid-template-columns:220px 1fr;
+  gap:24px;
+  align-items:start;
+}
+
+/* ── SIDEBAR ──────────── */
+.sidebar {
+  background:white; border-radius:14px;
+  border:1.5px solid var(--border);
+  overflow:hidden;
+  position:sticky; top:80px;
+}
+.sb-section { border-bottom:1px solid var(--border); }
+.sb-section:last-child { border-bottom:none; }
+.sb-title {
+  padding:12px 16px;
+  font-size:11px; font-weight:700;
+  color:var(--sub); letter-spacing:0.3px;
+  text-transform:uppercase;
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:space-between;
+  user-select:none;
+  transition:color 0.15s;
+}
+.sb-title:hover { color:var(--ink); }
+.sb-title .arrow {
+  font-size:10px; color:var(--muted);
+  transition:transform 0.2s;
+}
+.sb-section.closed .arrow { transform:rotate(-90deg); }
+
+/* 접힌 상태 — 콘텐츠 숨김 */
+.sb-section.closed .sb-items,
+.sb-section.closed .sb-checks { display:none; }
+.sb-items { padding:0 10px 12px; display:flex; flex-direction:column; gap:2px; }
+.sb-item {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:7px 8px; border-radius:8px;
+  cursor:pointer; transition:background 0.15s;
+}
+.sb-item:hover { background:var(--surface); }
+.sb-item.on { background:#EFF6FF; }
+.sb-item-left { display:flex; align-items:center; gap:8px; }
+.sb-dot {
+  width:8px; height:8px; border-radius:2px; flex-shrink:0;
+}
+.sb-label { font-size:13px; color:var(--ink); font-weight:500; }
+.sb-item.on .sb-label { color:var(--blue); font-weight:700; }
+.sb-count { font-size:11px; color:var(--muted); font-weight:500; }
+.sb-item.on .sb-count { color:var(--blue); }
+
+/* 지역 체크박스 */
+.sb-checks { padding:0 10px 12px; display:flex; flex-direction:column; gap:2px; }
+.sb-check {
+  display:flex; align-items:center; gap:8px;
+  padding:6px 8px; border-radius:7px;
+  cursor:pointer; transition:background 0.15s;
+}
+.sb-check:hover { background:var(--surface); }
+.cb {
+  width:15px; height:15px; border-radius:4px;
+  border:1.5px solid var(--border); flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:9px; color:white; transition:all 0.15s;
+}
+.cb.on { background:var(--blue); border-color:var(--blue); }
+.sb-check-label { font-size:13px; color:var(--ink); }
+.sb-check-cnt   { font-size:11px; color:var(--muted); margin-left:auto; }
+
+/* 지원 조건 슬라이더 느낌 */
+.sb-range { padding:0 16px 14px; }
+.range-labels { display:flex; justify-content:space-between; margin-bottom:6px; }
+.range-labels span { font-size:11px; color:var(--muted); }
+.range-track {
+  height:4px; background:var(--border); border-radius:2px;
+  position:relative;
+}
+.range-fill {
+  position:absolute; left:0; top:0;
+  height:100%; width:100%;
+  background:linear-gradient(90deg,var(--blue),var(--sky));
+  border-radius:2px;
+}
+.range-hint { font-size:11px; color:var(--sub); margin-top:6px; text-align:center; }
+
+.sb-reset {
+  margin:8px 10px 10px;
+  width:calc(100% - 20px);
+  padding:8px; border-radius:8px;
+  background:var(--surface); color:var(--sub);
+  border:1px solid var(--border);
+  font-size:12px; font-weight:600;
+  cursor:pointer; font-family:inherit;
+  transition:all 0.15s;
+}
+.sb-reset:hover { border-color:var(--blue); color:var(--blue); }
+
+/* ── MAIN CONTENT ─────── */
+.main { min-width:0; }
+
+/* 결과 바 */
+.result-bar {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:16px;
+}
+.result-count { font-size:14px; color:var(--sub); }
+.result-count strong { color:var(--ink); font-weight:700; }
+.view-toggle { display:flex; gap:4px; }
+.vt {
+  width:32px; height:32px; border-radius:7px;
+  border:1.5px solid var(--border); background:white;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:14px; transition:all 0.15s;
+  color:var(--muted);
+}
+.vt.on { border-color:var(--blue); color:var(--blue); background:#EFF6FF; }
+
+/* 활성 필터 태그 */
+.active-filters { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px; }
+.af {
+  display:inline-flex; align-items:center; gap:5px;
+  background:var(--ink); color:white;
+  font-size:11px; font-weight:600;
+  padding:4px 10px; border-radius:20px;
+}
+.af-x { cursor:pointer; opacity:0.6; font-size:12px; }
+.af-x:hover { opacity:1; }
+
+/* 카드 그리드 */
+.cards { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+
+/* ── 프로그램 카드 ─────── */
+.card {
+  background:white; border-radius:14px;
+  border:1.5px solid var(--border);
+  padding:18px 18px 16px;
+  cursor:pointer; transition:all 0.18s;
+  display:flex; flex-direction:column; gap:0;
+  position:relative;
+}
+.card:hover {
+  border-color:var(--blue);
+  transform:translateY(-2px);
+  box-shadow:0 6px 20px rgba(37,99,235,0.1);
+}
+.card.ad {
+  border-color:rgba(37,99,235,0.25);
+  background:linear-gradient(160deg,#F8FBFF 0%,white 60%);
+}
+.card.urgent { border-color:rgba(239,68,68,0.3); }
+.card.urgent:hover { border-color:var(--red); }
+
+/* 카드 상단 — 출처 + D-day */
+.card-top {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:10px;
+}
+.card-src { font-size:10px; color:var(--muted); font-weight:500; }
+.dday {
+  font-family:'Syne',sans-serif; font-size:14px; font-weight:800;
+}
+.dday.r { color:var(--red); }
+.dday.o { color:var(--fire); }
+.dday.a { color:var(--amber); }
+.dday.g { color:var(--green); }
+
+/* 제목 */
+.card-title {
+  font-size:14px; font-weight:700;
+  line-height:1.45; margin-bottom:10px;
+  letter-spacing:-0.1px;
+  display:-webkit-box; -webkit-line-clamp:2;
+  -webkit-box-orient:vertical; overflow:hidden;
+}
+
+/* 카테고리 + 지원율 */
+.card-meta {
+  display:flex; align-items:center;
+  justify-content:space-between;
+  margin-top:auto; padding-top:10px;
+  border-top:1px solid var(--border);
+}
+.cat-tag {
+  font-size:11px; font-weight:600;
+  padding:3px 9px; border-radius:5px;
+  border:1px solid;
+}
+.cat-tag.ai   { color:var(--violet); background:#F5F3FF; border-color:#DDD6FE; }
+.cat-tag.it   { color:var(--blue);   background:#EFF6FF; border-color:#BFDBFE; }
+.cat-tag.des  { color:#DB2777;       background:#FDF2F8; border-color:#FBCFE8; }
+.cat-tag.biz  { color:#059669;       background:#ECFDF5; border-color:#A7F3D0; }
+.cat-tag.start{ color:var(--fire);   background:#FFF7ED; border-color:#FED7AA; }
+.cat-tag.etc  { color:var(--sub);    background:var(--surface); border-color:var(--border); }
+
+.support-rate {
+  font-size:12px; font-weight:700; color:var(--ink);
+}
+.support-rate .free { color:var(--green); }
+.support-rate .partial { color:var(--blue); }
+
+/* 모집중 토글 */
+.recruit-toggle {
+  display:flex; align-items:center; gap:8px;
+  padding:12px 16px;
+  border-bottom:1px solid var(--border);
+}
+.toggle-track {
+  width:36px; height:20px; border-radius:10px;
+  background:var(--blue); position:relative;
+  cursor:pointer; flex-shrink:0; transition:background 0.2s;
+}
+.toggle-thumb {
+  position:absolute; top:3px; right:3px;
+  width:14px; height:14px; border-radius:50%;
+  background:white; transition:right 0.2s;
+}
+.toggle-label { font-size:13px; font-weight:600; color:var(--ink); }
+.toggle-sub   { font-size:11px; color:var(--muted); margin-left:auto; }
+
+/* 우수훈련기관 배지 */
+.cert-badge {
+  display:inline-flex; align-items:center; gap:3px;
+  font-size:10px; font-weight:700;
+  color:#92400E; background:#FEF3C7;
+  border:1px solid #FDE68A;
+  padding:2px 7px; border-radius:4px;
+  white-space:nowrap;
+}
+
+/* 수업방식 태그 (온라인/오프라인) */
+.mode-tag {
+  font-size:10px; font-weight:600;
+  padding:2px 7px; border-radius:4px;
+  border:1px solid var(--border);
+  color:var(--sub); background:var(--surface);
+}
+.mode-tag.online  { color:#0891B2; background:#ECFEFF; border-color:#A5F3FC; }
+.mode-tag.offline { color:#7C3AED; background:#F5F3FF; border-color:#DDD6FE; }
+.mode-tag.hybrid  { color:#059669; background:#ECFDF5; border-color:#A7F3D0; }
+
+.card-duration {
+  font-size:11px; color:var(--sub); font-weight:500;
+  display:flex; align-items:center; gap:3px;
+  margin-bottom:10px;
+}
+.card-duration .dur-icon { color:var(--muted); font-size:12px; }
+
+/* 광고 배지 */
+.ad-badge {
+  position:absolute; top:12px; right:12px;
+  font-size:9px; font-weight:700; color:var(--blue);
+  border:1px solid rgba(37,99,235,0.3);
+  padding:2px 6px; border-radius:4px;
+}
+
+/* 비교 추가 버튼 — 호버 시 노출 */
+.card-cmp {
+  position:absolute; bottom:0; left:0; right:0;
+  padding:10px 18px;
+  background:rgba(10,15,30,0.03);
+  border-top:1px solid var(--border);
+  font-size:11px; font-weight:700; color:var(--fire);
+  cursor:pointer; border:none; font-family:inherit;
+  border-radius:0 0 12px 12px;
+  opacity:0; transition:opacity 0.15s;
+  text-align:center;
+}
+.card:hover .card-cmp { opacity:1; }
+
+/* ── 페이지네이션 ─────── */
+.pagination {
+  display:flex; justify-content:center;
+  align-items:center; gap:4px;
+  margin-top:28px;
+}
+.pg {
+  width:36px; height:36px; border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; font-weight:600;
+  border:1.5px solid var(--border); background:white;
+  cursor:pointer; color:var(--sub); transition:all 0.15s;
+}
+.pg:hover { border-color:var(--blue); color:var(--blue); }
+.pg.on { background:var(--blue); border-color:var(--blue); color:white; }
+.pg.arr { font-size:16px; color:var(--muted); }
+.pg.arr:hover { color:var(--ink); }
+
+/* ── 빈 상태 ──────────── */
+.empty-state {
+  grid-column:1 / -1;
+  text-align:center; padding:60px 20px;
+  color:var(--muted);
+}
+.empty-state .ei { font-size:40px; margin-bottom:12px; }
+.empty-state p { font-size:14px; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">이소<em>서</em></div>
+  <a href="#" class="tab on">프로그램</a>
+  <a href="#" class="tab">부트캠프 비교</a>
+  <a href="#" class="tab">AI 추천</a>
+  <a href="#" class="tab">이력서 만들기</a>
+  <a href="#" class="cta">무료로 시작하기</a>
+</nav>
+
+<!-- PAGE HEADER -->
+<div class="phd">
+  <div class="phd-in">
+    <div>
+      <h1>국가 취업 지원 프로그램</h1>
+      <p>HRD넷 · 고용24 · K-디지털 · 서울시 일자리 — 847개 프로그램</p>
+    </div>
+    <div class="phd-right">
+      <button class="sort-btn on">마감 임박순</button>
+      <button class="sort-btn">관련도순</button>
+      <button class="sort-btn">최신순</button>
+    </div>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- ── 사이드바 필터 ── -->
+  <aside class="sidebar">
+
+    <!-- 모집중만 보기 토글 -->
+    <div class="recruit-toggle">
+      <div class="toggle-track"><div class="toggle-thumb"></div></div>
+      <span class="toggle-label">모집중만 보기</span>
+      <span class="toggle-sub">568개</span>
+    </div>
+
+    <!-- 카테고리 -->
+    <div class="sb-section">
+      <div class="sb-title">카테고리 <span class="arrow">▾</span></div>
+      <div class="sb-items">
+        <div class="sb-item on">
+          <div class="sb-item-left">
+            <span class="sb-dot" style="background:var(--ink)"></span>
+            <span class="sb-label">전체</span>
+          </div>
+          <span class="sb-count">847</span>
+        </div>
+        <div class="sb-item">
+          <div class="sb-item-left">
+            <span class="sb-dot" style="background:var(--violet)"></span>
+            <span class="sb-label">AI · 데이터</span>
+          </div>
+          <span class="sb-count">214</span>
+        </div>
+        <div class="sb-item">
+          <div class="sb-item-left">
+            <span class="sb-dot" style="background:var(--blue)"></span>
+            <span class="sb-label">IT · 개발</span>
+          </div>
+          <span class="sb-count">198</span>
+        </div>
+        <div class="sb-item">
+          <div class="sb-item-left">
+            <span class="sb-dot" style="background:#DB2777"></span>
+            <span class="sb-label">디자인</span>
+          </div>
+          <span class="sb-count">112</span>
+        </div>
+        <div class="sb-item">
+          <div class="sb-item-left">
+            <span class="sb-dot" style="background:#059669"></span>
+            <span class="sb-label">경영 · 마케팅</span>
+          </div>
+          <span class="sb-count">143</span>
+        </div>
+        <div class="sb-item">
+          <div class="sb-item-left">
+            <span class="sb-dot" style="background:var(--fire)"></span>
+            <span class="sb-label">창업</span>
+          </div>
+          <span class="sb-count">87</span>
+        </div>
+        <div class="sb-item">
+          <div class="sb-item-left">
+            <span class="sb-dot" style="background:var(--muted)"></span>
+            <span class="sb-label">기타</span>
+          </div>
+          <span class="sb-count">93</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 지역 -->
+    <div class="sb-section">
+      <div class="sb-title">지역 <span class="arrow">▾</span></div>
+      <div class="sb-checks">
+        <label class="sb-check">
+          <span class="cb on">✓</span>
+          <span class="sb-check-label">서울</span>
+          <span class="sb-check-cnt">382</span>
+        </label>
+        <label class="sb-check">
+          <span class="cb"></span>
+          <span class="sb-check-label">경기</span>
+          <span class="sb-check-cnt">214</span>
+        </label>
+        <label class="sb-check">
+          <span class="cb"></span>
+          <span class="sb-check-label">부산</span>
+          <span class="sb-check-cnt">98</span>
+        </label>
+        <label class="sb-check">
+          <span class="cb"></span>
+          <span class="sb-check-label">대전 · 충청</span>
+          <span class="sb-check-cnt">67</span>
+        </label>
+        <label class="sb-check">
+          <span class="cb"></span>
+          <span class="sb-check-label">대구 · 경북</span>
+          <span class="sb-check-cnt">44</span>
+        </label>
+        <label class="sb-check">
+          <span class="cb on">✓</span>
+          <span class="sb-check-label">온라인</span>
+          <span class="sb-check-cnt">186</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- 서울 지역구 (서울 선택 시 노출) -->
+    <div class="sb-section">
+      <div class="sb-title">서울 지역구 <span class="arrow">▾</span></div>
+      <div class="sb-checks">
+        <label class="sb-check">
+          <span class="cb"></span>
+          <span class="sb-check-label">강남 · 서초</span>
+          <span class="sb-check-cnt">84</span>
+        </label>
+        <label class="sb-check">
+          <span class="cb"></span>
+          <span class="sb-check-label">마포 · 용산</span>
+          <span class="sb-check-cnt">62</span>
+        </label>
+        <label class="sb-check">
+          <span class="cb"></span>
+          <span class="sb-check-label">성동 · 광진</span>
+          <span class="sb-check-cnt">48</span>
+        </label>
+        <label class="sb-check">
+          <span class="cb"></span>
+          <span class="sb-check-label">구로 · 금천</span>
+          <span class="sb-check-cnt">41</span>
+        </label>
+        <label class="sb-check">
+          <span class="cb"></span>
+          <span class="sb-check-label">노원 · 도봉</span>
+          <span class="sb-check-cnt">37</span>
+        </label>
+        <label class="sb-check">
+          <span class="cb"></span>
+          <span class="sb-check-label">기타 자치구</span>
+          <span class="sb-check-cnt">110</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- 지원 조건 -->
+    <div class="sb-section">
+      <div class="sb-title">지원 조건 <span class="arrow">▾</span></div>
+      <div class="sb-items">
+        <div class="sb-item">
+          <div class="sb-item-left">
+            <span class="sb-label">국비 100%</span>
+          </div>
+          <span class="sb-count">312</span>
+        </div>
+        <div class="sb-item">
+          <div class="sb-item-left">
+            <span class="sb-label">국비 50% 이상</span>
+          </div>
+          <span class="sb-count">489</span>
+        </div>
+        <div class="sb-item">
+          <div class="sb-item-left">
+            <span class="sb-label">재직자 가능</span>
+          </div>
+          <span class="sb-count">203</span>
+        </div>
+        <div class="sb-item">
+          <div class="sb-item-left">
+            <span class="sb-label">비개발자 가능</span>
+          </div>
+          <span class="sb-count">441</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 수업 방식 -->
+    <div class="sb-section">
+      <div class="sb-title">수업 방식 <span class="arrow">▾</span></div>
+      <div class="sb-items">
+        <div class="sb-item">
+          <div class="sb-item-left">
+            <span class="sb-dot" style="background:#0891B2"></span>
+            <span class="sb-label">온라인</span>
+          </div>
+          <span class="sb-count">386</span>
+        </div>
+        <div class="sb-item">
+          <div class="sb-item-left">
+            <span class="sb-dot" style="background:#7C3AED"></span>
+            <span class="sb-label">오프라인</span>
+          </div>
+          <span class="sb-count">298</span>
+        </div>
+        <div class="sb-item">
+          <div class="sb-item-left">
+            <span class="sb-dot" style="background:#059669"></span>
+            <span class="sb-label">온·오프 혼합</span>
+          </div>
+          <span class="sb-count">163</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 수업 일정 -->
+    <div class="sb-section">
+      <div class="sb-title">수업 일정 <span class="arrow">▾</span></div>
+      <div class="sb-items">
+        <div class="sb-item">
+          <div class="sb-item-left">
+            <span class="sb-label">주중</span>
+          </div>
+          <span class="sb-count">412</span>
+        </div>
+        <div class="sb-item">
+          <div class="sb-item-left">
+            <span class="sb-label">주말</span>
+          </div>
+          <span class="sb-count">187</span>
+        </div>
+        <div class="sb-item">
+          <div class="sb-item-left">
+            <span class="sb-label">주야혼합</span>
+          </div>
+          <span class="sb-count">248</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 인증 여부 -->
+    <div class="sb-section">
+      <div class="sb-title">인증 여부 <span class="arrow">▾</span></div>
+      <div class="sb-items">
+        <div class="sb-item">
+          <div class="sb-item-left">
+            <span style="font-size:11px">⭐</span>
+            <span class="sb-label">우수훈련기관 인증</span>
+          </div>
+          <span class="sb-count">134</span>
+        </div>
+        <div class="sb-item">
+          <div class="sb-item-left">
+            <span style="font-size:11px">🏅</span>
+            <span class="sb-label">K-디지털 인증</span>
+          </div>
+          <span class="sb-count">89</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 훈련 기간 -->
+    <div class="sb-section">
+      <div class="sb-title">훈련 기간 <span class="arrow">▾</span></div>
+      <div class="sb-items">
+        <div class="sb-item">
+          <div class="sb-item-left">
+            <span class="sb-label">1개월 미만</span>
+          </div>
+          <span class="sb-count">54</span>
+        </div>
+        <div class="sb-item">
+          <div class="sb-item-left">
+            <span class="sb-label">1~3개월</span>
+          </div>
+          <span class="sb-count">178</span>
+        </div>
+        <div class="sb-item">
+          <div class="sb-item-left">
+            <span class="sb-label">3~6개월</span>
+          </div>
+          <span class="sb-count">312</span>
+        </div>
+        <div class="sb-item">
+          <div class="sb-item-left">
+            <span class="sb-label">6개월 이상</span>
+          </div>
+          <span class="sb-count">143</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 마감 임박 -->
+    <div class="sb-section">
+      <div class="sb-title">마감 기준 <span class="arrow">▾</span></div>
+      <div class="sb-items">
+        <div class="sb-item">
+          <div class="sb-item-left">
+            <span class="sb-dot" style="background:var(--red)"></span>
+            <span class="sb-label">D-7 이내</span>
+          </div>
+          <span class="sb-count">23</span>
+        </div>
+        <div class="sb-item">
+          <div class="sb-item-left">
+            <span class="sb-dot" style="background:var(--amber)"></span>
+            <span class="sb-label">D-30 이내</span>
+          </div>
+          <span class="sb-count">147</span>
+        </div>
+        <div class="sb-item">
+          <div class="sb-item-left">
+            <span class="sb-dot" style="background:var(--green)"></span>
+            <span class="sb-label">상시 모집</span>
+          </div>
+          <span class="sb-count">89</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="sb-reset">필터 초기화</button>
+
+  </aside>
+
+  <!-- ── 메인 콘텐츠 ── -->
+  <div class="main">
+
+    <!-- 결과 바 -->
+    <div class="result-bar">
+      <div class="result-count"><strong>568개</strong> 프로그램 · 서울 + 온라인</div>
+      <div class="view-toggle">
+        <button class="vt on">⊞</button>
+        <button class="vt">☰</button>
+      </div>
+    </div>
+
+    <!-- 활성 필터 태그 -->
+    <div class="active-filters">
+      <span class="af">서울 <span class="af-x">×</span></span>
+      <span class="af">온라인 <span class="af-x">×</span></span>
+      <span class="af">마감 임박순 <span class="af-x">×</span></span>
+      <span class="af">우수훈련기관 <span class="af-x">×</span></span>
+    </div>
+
+    <!-- 카드 그리드 -->
+    <div class="cards">
+
+      <!-- 카드 1 — 긴급 -->
+      <div class="card urgent">
+        <div class="card-top">
+          <span class="card-src">HRD넷 · 강남구</span>
+          <span class="dday r">D-1</span>
+        </div>
+        <div class="card-title">K-디지털 풀스택 개발자 과정 6기</div>
+        <div class="card-duration"><span class="dur-icon">📅</span> 6개월 &nbsp;·&nbsp; <span class="mode-tag offline">오프라인</span> &nbsp;·&nbsp; <span class="cert-badge">⭐ 우수훈련기관</span></div>
+        <div class="card-meta">
+          <span class="cat-tag it">IT · 개발</span>
+          <span class="support-rate"><span class="free">국비 100%</span></span>
+        </div>
+        <button class="card-cmp">+ 비교에 추가</button>
+      </div>
+
+      <!-- 카드 2 -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-src">고용24 · 온라인</span>
+          <span class="dday o">D-3</span>
+        </div>
+        <div class="card-title">청년 AI 데이터 분석 인턴십 2기</div>
+        <div class="card-duration"><span class="dur-icon">📅</span> 3개월 &nbsp;·&nbsp; <span class="mode-tag online">온라인</span></div>
+        <div class="card-meta">
+          <span class="cat-tag ai">AI · 데이터</span>
+          <span class="support-rate">월 <span class="partial">200만원</span></span>
+        </div>
+        <button class="card-cmp">+ 비교에 추가</button>
+      </div>
+
+      <!-- 카드 3 — 광고 -->
+      <div class="card ad">
+        <span class="ad-badge">광고</span>
+        <div class="card-top">
+          <span class="card-src">코드잇 스프린트 · 서울</span>
+          <span class="dday g">상시</span>
+        </div>
+        <div class="card-title">코드잇 스프린트 프론트엔드 6기</div>
+        <div class="card-duration"><span class="dur-icon">📅</span> 5개월 &nbsp;·&nbsp; <span class="mode-tag online">온라인</span> &nbsp;·&nbsp; <span class="cert-badge">⭐ 우수훈련기관</span></div>
+        <div class="card-meta">
+          <span class="cat-tag it">IT · 개발</span>
+          <span class="support-rate"><span class="partial">국비 80%</span></span>
+        </div>
+        <button class="card-cmp">+ 비교에 추가</button>
+      </div>
+
+      <!-- 카드 4 -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-src">서울시 · 마포구</span>
+          <span class="dday a">D-7</span>
+        </div>
+        <div class="card-title">UX/UI 디자이너 양성과정 4기</div>
+        <div class="card-duration"><span class="dur-icon">📅</span> 4개월 &nbsp;·&nbsp; <span class="mode-tag hybrid">혼합</span></div>
+        <div class="card-meta">
+          <span class="cat-tag des">디자인</span>
+          <span class="support-rate"><span class="partial">국비 90%</span></span>
+        </div>
+        <button class="card-cmp">+ 비교에 추가</button>
+      </div>
+
+      <!-- 카드 5 -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-src">K-Startup · 온라인</span>
+          <span class="dday o">D-4</span>
+        </div>
+        <div class="card-title">예비창업 패키지 2026 상반기</div>
+        <div class="card-duration"><span class="dur-icon">📅</span> 6개월 &nbsp;·&nbsp; <span class="mode-tag online">온라인</span></div>
+        <div class="card-meta">
+          <span class="cat-tag start">창업</span>
+          <span class="support-rate"><span class="free">최대 1억</span></span>
+        </div>
+        <button class="card-cmp">+ 비교에 추가</button>
+      </div>
+
+      <!-- 카드 6 -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-src">고용24 · 서울</span>
+          <span class="dday a">D-9</span>
+        </div>
+        <div class="card-title">청년 디지털 일자리 사업 5기</div>
+        <div class="card-duration"><span class="dur-icon">📅</span> 3개월 &nbsp;·&nbsp; <span class="mode-tag hybrid">혼합</span></div>
+        <div class="card-meta">
+          <span class="cat-tag biz">경영 · 마케팅</span>
+          <span class="support-rate">월 <span class="partial">180만원</span></span>
+        </div>
+        <button class="card-cmp">+ 비교에 추가</button>
+      </div>
+
+      <!-- 카드 7 -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-src">HRD넷 · 온라인</span>
+          <span class="dday a">D-12</span>
+        </div>
+        <div class="card-title">내일배움카드 AI 활용 실무 과정</div>
+        <div class="card-duration"><span class="dur-icon">📅</span> 2개월 &nbsp;·&nbsp; <span class="mode-tag online">온라인</span></div>
+        <div class="card-meta">
+          <span class="cat-tag ai">AI · 데이터</span>
+          <span class="support-rate"><span class="partial">국비 80%</span></span>
+        </div>
+        <button class="card-cmp">+ 비교에 추가</button>
+      </div>
+
+      <!-- 카드 8 — 광고 -->
+      <div class="card ad">
+        <span class="ad-badge">광고</span>
+        <div class="card-top">
+          <span class="card-src">패스트캠퍼스 · 온라인</span>
+          <span class="dday a">D-14</span>
+        </div>
+        <div class="card-title">데이터 사이언스 부트캠프 5기</div>
+        <div class="card-duration"><span class="dur-icon">📅</span> 4개월 &nbsp;·&nbsp; <span class="mode-tag online">온라인</span> &nbsp;·&nbsp; <span class="cert-badge">⭐ 우수훈련기관</span></div>
+        <div class="card-meta">
+          <span class="cat-tag ai">AI · 데이터</span>
+          <span class="support-rate"><span class="partial">국비 70%</span></span>
+        </div>
+        <button class="card-cmp">+ 비교에 추가</button>
+      </div>
+
+      <!-- 카드 9 -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-src">서울창업허브 · 성동구</span>
+          <span class="dday a">D-18</span>
+        </div>
+        <div class="card-title">스타트업 IR 피칭 집중 과정</div>
+        <div class="card-duration"><span class="dur-icon">📅</span> 1개월 &nbsp;·&nbsp; <span class="mode-tag offline">오프라인</span></div>
+        <div class="card-meta">
+          <span class="cat-tag start">창업</span>
+          <span class="support-rate"><span class="free">무료</span></span>
+        </div>
+        <button class="card-cmp">+ 비교에 추가</button>
+      </div>
+
+    </div><!-- /cards -->
+
+    <!-- 페이지네이션 -->
+    <div class="pagination">
+      <button class="pg arr">‹</button>
+      <button class="pg on">1</button>
+      <button class="pg">2</button>
+      <button class="pg">3</button>
+      <button class="pg">4</button>
+      <button class="pg">5</button>
+      <button class="pg">···</button>
+      <button class="pg">64</button>
+      <button class="pg arr">›</button>
+    </div>
+
+  </div><!-- /main -->
+
+</div><!-- /layout -->
+
+<script>
+  // 사이드바 필터 아코디언
+  document.querySelectorAll('.sb-title').forEach(title => {
+    title.addEventListener('click', () => {
+      const section = title.closest('.sb-section');
+      section.classList.toggle('closed');
+    });
+  });
+</script>
+
+</body>
+</html>
