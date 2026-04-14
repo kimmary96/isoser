@@ -3,7 +3,6 @@ from dotenv import dotenv_values
 
 candidates = [
     Path("D:/02_2025_AI_Lab/isoser/backend/.env"),
-    Path("D:/02_2025_AI_Lab/isoser/.env"),
     Path("D:/02_2025_AI_Lab/.env"),
 ]
 
