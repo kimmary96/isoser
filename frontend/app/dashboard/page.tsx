@@ -2,9 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import { recommendPrograms } from "@/lib/api/backend";
 import MiniCalendar from "@/components/MiniCalendar";
-import { createBrowserClient } from "@/lib/supabase/client";
+import { getDashboardMe, getRecommendedPrograms } from "@/lib/api/app";
 import type { Program } from "@/lib/types";
 
 function formatUserName(value: string | null | undefined): string {
@@ -188,8 +187,6 @@ function ProgramCard({
 }
 
 export default function DashboardPage() {
-  const supabase = useMemo(() => createBrowserClient(), []);
-
   const [userName, setUserName] = useState("사용자");
   const [programs, setPrograms] = useState<Program[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -219,46 +216,16 @@ export default function DashboardPage() {
       setError(null);
 
       try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
+        const [meResult, programResult] = await Promise.all([
+          getDashboardMe(),
+          getRecommendedPrograms(),
+        ]);
 
-        const user = session?.user ?? null;
-        const accessToken = session?.access_token;
-
-        if (!mounted) return;
-
-        const metadataName =
-          typeof user?.user_metadata?.name === "string"
-            ? user.user_metadata.name
-            : typeof user?.user_metadata?.full_name === "string"
-              ? user.user_metadata.full_name
-              : typeof user?.email === "string"
-                ? user.email.split("@")[0]
-                : "사용자";
-
-        setUserName(formatUserName(metadataName));
-
-        if (user?.id) {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("name")
-            .eq("id", user.id)
-            .maybeSingle();
-
-          if (mounted && typeof profile?.name === "string" && profile.name.trim()) {
-            setUserName(profile.name.trim());
-          }
-        }
-
-        const data = await recommendPrograms(9, accessToken);
-        const nextPrograms = (data.items ?? [])
-          .map((item) => item.program)
-          .filter((program): program is Program => Boolean(program))
-          .slice(0, 9);
+        const nextPrograms = programResult.programs;
 
         if (!mounted) return;
 
+        setUserName(formatUserName(meResult.user?.displayName));
         setPrograms(nextPrograms);
       } catch (e) {
         if (!mounted) return;
@@ -276,7 +243,7 @@ export default function DashboardPage() {
     return () => {
       mounted = false;
     };
-  }, [supabase]);
+  }, []);
 
   return (
     <div className="min-h-screen bg-slate-50">

@@ -1,16 +1,21 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 
-import { getCoachFeedback } from "@/lib/api/backend";
+import {
+  createCoverLetter,
+  deleteCoverLetter,
+  getCoverLetterDetail,
+  requestCoverLetterCoaching,
+  updateCoverLetter,
+} from "@/lib/api/app";
 import {
   deleteGuestCoverLetter,
   getGuestCoverLetterById,
   isGuestMode,
   saveGuestCoverLetter,
 } from "@/lib/guest";
-import { createBrowserClient } from "@/lib/supabase/client";
 import type { CoverLetter } from "@/lib/types";
 
 const ANSWER_MAX_LENGTH = 3000;
@@ -65,16 +70,9 @@ function buildCombinedContent(items: QaItem[]): string {
     .join("\n\n");
 }
 
-function isQaColumnMissingError(error: { code?: string; message?: string } | null): boolean {
-  if (!error) return false;
-  if (error.code === "42703") return true;
-  return (error.message || "").toLowerCase().includes("qa_items");
-}
-
 export default function CoverLetterDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const supabase = useMemo(() => createBrowserClient(), []);
 
   const letterId = params.id as string;
   const isNew = letterId === "new";
@@ -132,17 +130,12 @@ export default function CoverLetterDetailPage() {
           return;
         }
 
-        const { data, error: queryError } = await supabase
-          .from("cover_letters")
-          .select("*")
-          .eq("id", letterId)
-          .single();
-
-        if (queryError) {
-          throw new Error(queryError.message);
+        const result = await getCoverLetterDetail(letterId);
+        if (!result.coverLetter) {
+          throw new Error("자기소개서를 찾을 수 없습니다.");
         }
 
-        const next = data as CoverLetter;
+        const next = result.coverLetter;
         setItem(next);
         setTitle(next.title);
         setCompanyName(next.company_name || "");
@@ -159,7 +152,7 @@ export default function CoverLetterDetailPage() {
     };
 
     fetchItem();
-  }, [isNew, letterId, supabase]);
+  }, [isNew, letterId]);
 
   const updateQaItem = (index: number, patch: Partial<QaItem>) => {
     setQaItems((prev) => prev.map((entry, idx) => (idx === index ? { ...entry, ...patch } : entry)));
@@ -233,13 +226,6 @@ export default function CoverLetterDetailPage() {
         return;
       }
 
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        throw new Error("로그인이 필요합니다.");
-      }
-
       const payload = {
         title: title.trim(),
         company_name: companyName.trim() || null,
@@ -247,53 +233,17 @@ export default function CoverLetterDetailPage() {
         prompt_question: firstItem.question,
         content: combinedContent,
         qa_items: usedItems,
-        tags: tags.length > 0 ? tags : [],
-      };
-      const legacyPayload = {
-        title: title.trim(),
-        company_name: companyName.trim() || null,
-        job_title: jobTitle.trim() || null,
-        prompt_question: firstItem.question,
-        content: combinedContent,
-        tags: tags.length > 0 ? tags : [],
+        tags,
       };
 
       if (isNew) {
-        let { data, error: insertError } = await supabase
-          .from("cover_letters")
-          .insert({ user_id: user.id, ...payload })
-          .select("*")
-          .single();
-        if (isQaColumnMissingError(insertError)) {
-          const retry = await supabase
-            .from("cover_letters")
-            .insert({ user_id: user.id, ...legacyPayload })
-            .select("*")
-            .single();
-          data = retry.data;
-          insertError = retry.error;
-        }
-        if (insertError) {
-          throw new Error(insertError.message);
-        }
-        router.replace(`/dashboard/cover-letter/${(data as CoverLetter).id}`);
+        const result = await createCoverLetter(payload);
+        router.replace(`/dashboard/cover-letter/${result.coverLetter.id}`);
         return;
       }
 
-      let { error: updateError } = await supabase
-        .from("cover_letters")
-        .update(payload)
-        .eq("id", letterId);
-      if (isQaColumnMissingError(updateError)) {
-        const retry = await supabase
-          .from("cover_letters")
-          .update(legacyPayload)
-          .eq("id", letterId);
-        updateError = retry.error;
-      }
-      if (updateError) {
-        throw new Error(updateError.message);
-      }
+      const result = await updateCoverLetter(letterId, payload);
+      setItem(result.coverLetter);
     } catch (e) {
       setError(e instanceof Error ? e.message : "저장에 실패했습니다.");
     } finally {
@@ -313,10 +263,6 @@ export default function CoverLetterDetailPage() {
     setCoachInput("");
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
       const activityDescription = [
         `자기소개서 문항 코칭 요청`,
         `[지원 회사] ${companyName || "(미입력)"}`,
@@ -326,9 +272,8 @@ export default function CoverLetterDetailPage() {
         `[추가 요청] ${trimmed}`,
       ].join("\n");
 
-      const result = await getCoachFeedback({
+      const result = await requestCoverLetterCoaching({
         session_id: coachSessionId,
-        user_id: user?.id ?? null,
         activity_description: activityDescription,
         job_title: coachJobTitle || jobTitle || "일반",
         section_type: "요약",
@@ -359,11 +304,7 @@ export default function CoverLetterDetailPage() {
         return;
       }
 
-      const { error: deleteError } = await supabase
-        .from("cover_letters")
-        .delete()
-        .eq("id", letterId);
-      if (deleteError) throw new Error(deleteError.message);
+      await deleteCoverLetter(letterId);
       router.push("/dashboard/cover-letter");
     } catch (e) {
       setError(e instanceof Error ? e.message : "삭제에 실패했습니다.");

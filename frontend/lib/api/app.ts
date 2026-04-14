@@ -1,5 +1,13 @@
-import type { Activity, MatchAnalysisRecord, Profile, Resume } from "@/lib/types";
-import type { CoachMessage } from "@/lib/types";
+import type {
+  Activity,
+  CoachFeedbackResponse,
+  CoachMessage,
+  CoverLetter,
+  MatchAnalysisRecord,
+  Profile,
+  Program,
+  Resume,
+} from "@/lib/types";
 
 type DashboardProfileResponse = {
   profile: Profile | null;
@@ -41,6 +49,20 @@ type MatchDashboardResponse = {
   }>;
 };
 
+type DashboardMeResponse = {
+  user: {
+    id: string;
+    email: string | null;
+    displayName: string;
+    avatarUrl: string | null;
+  } | null;
+};
+
+type ResumeExportResponse = {
+  resume: Resume | null;
+  activities: Activity[];
+};
+
 async function handleResponse<T>(
   response: Response,
   fallbackMessage: string
@@ -67,6 +89,30 @@ export async function getDashboardProfile(): Promise<DashboardProfileResponse> {
     "/api/dashboard/profile",
     { method: "GET" },
     "프로필 데이터를 불러오지 못했습니다."
+  );
+}
+
+export async function getDashboardMe(): Promise<DashboardMeResponse> {
+  return requestAppJson<DashboardMeResponse>(
+    "/api/dashboard/me",
+    { method: "GET" },
+    "사용자 정보를 불러오지 못했습니다."
+  );
+}
+
+export async function signOutDashboard(): Promise<{ ok: true }> {
+  return requestAppJson<{ ok: true }>(
+    "/api/auth/signout",
+    { method: "POST" },
+    "로그아웃에 실패했습니다."
+  );
+}
+
+export async function getRecommendedPrograms(): Promise<{ programs: Program[] }> {
+  return requestAppJson<{ programs: Program[] }>(
+    "/api/dashboard/recommended-programs",
+    { method: "GET" },
+    "추천 프로그램을 불러오지 못했습니다."
   );
 }
 
@@ -105,6 +151,17 @@ export async function getResumeBuilderData(): Promise<ResumeBuilderResponse> {
   );
 }
 
+export async function getResumeExportData(
+  resumeId?: string | null
+): Promise<ResumeExportResponse> {
+  const query = resumeId ? `?resumeId=${encodeURIComponent(resumeId)}` : "";
+  return requestAppJson<ResumeExportResponse>(
+    `/api/dashboard/resume-export${query}`,
+    { method: "GET" },
+    "PDF 데이터 로딩에 실패했습니다."
+  );
+}
+
 export async function createResumeDocument(payload: {
   title: string;
   target_job: string | null;
@@ -127,6 +184,93 @@ export async function getDocuments(): Promise<{ documents: Resume[] }> {
     "/api/dashboard/documents",
     { method: "GET" },
     "문서 목록을 불러오지 못했습니다."
+  );
+}
+
+export async function listCoverLetters(): Promise<{ coverLetters: CoverLetter[] }> {
+  return requestAppJson<{ coverLetters: CoverLetter[] }>(
+    "/api/dashboard/cover-letters",
+    { method: "GET" },
+    "자기소개서 목록을 불러오지 못했습니다."
+  );
+}
+
+export async function getCoverLetterDetail(
+  id: string
+): Promise<{ coverLetter: CoverLetter | null }> {
+  return requestAppJson<{ coverLetter: CoverLetter | null }>(
+    `/api/dashboard/cover-letters/${encodeURIComponent(id)}`,
+    { method: "GET" },
+    "자기소개서를 불러오지 못했습니다."
+  );
+}
+
+export async function createCoverLetter(payload: {
+  title: string;
+  company_name: string | null;
+  job_title: string | null;
+  prompt_question: string;
+  content: string;
+  qa_items: Array<{ question: string; answer: string }>;
+  tags: string[];
+}): Promise<{ coverLetter: CoverLetter }> {
+  return requestAppJson<{ coverLetter: CoverLetter }>(
+    "/api/dashboard/cover-letters",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+    "자기소개서 저장에 실패했습니다."
+  );
+}
+
+export async function updateCoverLetter(
+  id: string,
+  payload: {
+    title: string;
+    company_name: string | null;
+    job_title: string | null;
+    prompt_question: string;
+    content: string;
+    qa_items: Array<{ question: string; answer: string }>;
+    tags: string[];
+  }
+): Promise<{ coverLetter: CoverLetter }> {
+  return requestAppJson<{ coverLetter: CoverLetter }>(
+    `/api/dashboard/cover-letters/${encodeURIComponent(id)}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+    "자기소개서 저장에 실패했습니다."
+  );
+}
+
+export async function deleteCoverLetter(id: string): Promise<{ id: string }> {
+  return requestAppJson<{ id: string }>(
+    `/api/dashboard/cover-letters/${encodeURIComponent(id)}`,
+    { method: "DELETE" },
+    "자기소개서 삭제에 실패했습니다."
+  );
+}
+
+export async function requestCoverLetterCoaching(payload: {
+  session_id?: string;
+  activity_description: string;
+  job_title: string;
+  section_type: "요약";
+  history: CoachMessage[];
+}): Promise<CoachFeedbackResponse> {
+  return requestAppJson<CoachFeedbackResponse>(
+    "/api/dashboard/cover-letters/coach",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+    "AI 코칭 요청에 실패했습니다."
   );
 }
 

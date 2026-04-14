@@ -1,7 +1,7 @@
 // PDF 출력 페이지 - react-pdf로 이력서 PDF 미리보기용 문서 생성
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
@@ -14,8 +14,8 @@ import {
   View,
 } from "@react-pdf/renderer";
 
+import { getResumeExportData } from "@/lib/api/app";
 import { getGuestActivities, getGuestResume, isGuestMode } from "@/lib/guest";
-import { createBrowserClient } from "@/lib/supabase/client";
 import type { Activity, Resume } from "@/lib/types";
 
 Font.register({
@@ -105,7 +105,6 @@ function ResumePdfDocument({
 }
 
 function ResumeExportContent() {
-  const supabase = useMemo(() => createBrowserClient(), []);
   const searchParams = useSearchParams();
   const resumeId = searchParams.get("resumeId");
   const [resume, setResume] = useState<Resume | null>(null);
@@ -125,29 +124,8 @@ function ResumeExportContent() {
           return;
         }
 
-        let resumeRow: Resume | null = null;
-        if (resumeId) {
-          const { data, error: resumeError } = await supabase
-            .from("resumes")
-            .select("*")
-            .eq("id", resumeId)
-            .single();
-          if (resumeError) {
-            throw new Error(resumeError.message);
-          }
-          resumeRow = data;
-        } else {
-          const { data, error: resumeError } = await supabase
-            .from("resumes")
-            .select("*")
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          if (resumeError) {
-            throw new Error(resumeError.message);
-          }
-          resumeRow = data;
-        }
+        const result = await getResumeExportData(resumeId);
+        const resumeRow = result.resume;
 
         if (!resumeRow) {
           setResume(null);
@@ -156,20 +134,7 @@ function ResumeExportContent() {
         }
 
         setResume(resumeRow);
-        const ids = resumeRow.selected_activity_ids ?? [];
-        if (ids.length === 0) {
-          setActivities([]);
-          return;
-        }
-
-        const { data: activityRows, error: activityError } = await supabase
-          .from("activities")
-          .select("*")
-          .in("id", ids);
-        if (activityError) {
-          throw new Error(activityError.message);
-        }
-        setActivities(activityRows || []);
+        setActivities(result.activities);
       } catch (e) {
         setError(e instanceof Error ? e.message : "PDF 데이터 로딩에 실패했습니다.");
       } finally {
@@ -178,7 +143,7 @@ function ResumeExportContent() {
     };
 
     fetchResumeData();
-  }, [resumeId, supabase]);
+  }, [resumeId]);
 
   return (
     <main className="min-h-screen bg-gray-50">
