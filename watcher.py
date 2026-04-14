@@ -4,6 +4,8 @@ import re
 import shutil
 import subprocess
 import time
+from shutil import which
+from datetime import datetime
 
 INBOX_DIR = "./tasks/inbox"
 REMOTE_DIR = "./tasks/remote"
@@ -12,6 +14,7 @@ DONE_DIR = "./tasks/done"
 BLOCKED_DIR = "./tasks/blocked"
 REPORTS_DIR = "./reports"
 PROJECT_PATH = r"D:\02_2025_AI_Lab\isoser"
+STALE_RUNNING_MINUTES = 20
 REQUIRED_FIELDS = (
     "id",
     "status",
@@ -19,6 +22,12 @@ REQUIRED_FIELDS = (
     "title",
     "planned_at",
     "planned_against_commit",
+)
+CODEX_CANDIDATES = (
+    which("codex"),
+    which("codex.cmd"),
+    r"C:\Users\User\AppData\Roaming\npm\codex.cmd",
+    r"c:\Users\User\.vscode\extensions\openai.chatgpt-26.409.20454\bin\windows-x86_64\codex.exe",
 )
 
 
@@ -78,21 +87,64 @@ def write_report(task_id: str, suffix: str, body: str) -> str:
     return report_path
 
 
+def move_stale_running_tasks() -> None:
+    now = time.time()
+    stale_seconds = STALE_RUNNING_MINUTES * 60
+
+    for running_path in glob.glob(f"{RUNNING_DIR}/*.md"):
+        filename = os.path.basename(running_path)
+        if filename == ".gitkeep":
+            continue
+
+        modified_at = os.path.getmtime(running_path)
+        if now - modified_at < stale_seconds:
+            continue
+
+        task_id = sanitize_task_id(filename.removesuffix(".md"))
+        write_report(
+            task_id,
+            "blocked",
+            "\n".join(
+                [
+                    f"# Blocked: {task_id}",
+                    "",
+                    "Stale task was found in running and moved to blocked automatically.",
+                    "",
+                    f"- file: `tasks/running/{filename}`",
+                    f"- stale_after_minutes: {STALE_RUNNING_MINUTES}",
+                    f"- moved_at: `{datetime.now().isoformat(timespec='seconds')}`",
+                ]
+            ),
+        )
+        blocked_path = os.path.join(BLOCKED_DIR, filename)
+        shutil.move(running_path, blocked_path)
+        print(f"차단됨: {filename} (stale running task 자동 정리)")
+
+
+def resolve_codex_command() -> str:
+    for candidate in CODEX_CANDIDATES:
+        if candidate and os.path.exists(candidate):
+            return candidate
+    raise FileNotFoundError("Unable to resolve Codex CLI executable.")
+
+
 def run_codex(task_filename: str, task_id: str) -> int:
     prompt = (
         f"Read AGENTS.md and tasks/running/{task_filename}. "
-        f"Treat it as a formal task packet. "
-        f"Inspect the repository first, compare the task packet against the actual codebase, "
-        f"and check planned_against_commit before editing. "
-        f"If drift is significant, write reports/{task_id}-drift.md and stop without risky edits. "
-        f"If required fields are missing or the task is blocked, write reports/{task_id}-blocked.md and stop. "
-        f"Otherwise implement the task with minimal safe changes, run relevant checks, "
-        f"write reports/{task_id}-result.md, update docs/current-state.md if needed, "
-        f"append a concise entry to docs/refactoring-log.md, then commit and push only if the work is complete. "
-        f"Use the commit message format: [codex] {task_id} 구현 완료."
+        f"Use a token-efficient workflow. "
+        f"Inspect only files directly relevant to the task before editing. "
+        f"Check planned_against_commit against the current codebase. "
+        f"If drift is significant, write reports/{task_id}-drift.md and stop. "
+        f"If blocked, write reports/{task_id}-blocked.md and stop. "
+        f"Otherwise make minimal safe changes, run only relevant checks, "
+        f"write reports/{task_id}-result.md, update docs/current-state.md only if structure changed, "
+        f"append a short note to docs/refactoring-log.md only if meaningful, "
+        f"and commit/push only if the task is actually completed. "
+        f"Use commit message: [codex] {task_id} 구현 완료."
     )
+    codex_command = resolve_codex_command()
     result = subprocess.run(
-        ["codex", "exec", "--full-auto", prompt],
+        [codex_command, "exec", "--full-auto", prompt],
         cwd=PROJECT_PATH,
     )
     return result.returncode
@@ -137,7 +189,28 @@ def handle_task(task_path: str) -> None:
             "최종 drift 판단은 Codex가 수행합니다."
         )
 
-    exit_code = run_codex(filename, task_id)
+    try:
+        exit_code = run_codex(filename, task_id)
+    except Exception as error:
+        write_report(
+            task_id,
+            "blocked",
+            "\n".join(
+                [
+                    f"# Blocked: {task_id}",
+                    "",
+                    "Watcher failed before Codex completed.",
+                    "",
+                    f"- file: `tasks/running/{filename}`",
+                    f"- error: `{type(error).__name__}: {error}`",
+                ]
+            ),
+        )
+        blocked_path = os.path.join(BLOCKED_DIR, filename)
+        shutil.move(running_path, blocked_path)
+        print(f"차단됨: {filename} (watcher 예외 발생)")
+        return
+
     result_report = os.path.join(REPORTS_DIR, f"{task_id}-result.md")
     drift_report = os.path.join(REPORTS_DIR, f"{task_id}-drift.md")
     blocked_report = os.path.join(REPORTS_DIR, f"{task_id}-blocked.md")
@@ -159,9 +232,11 @@ def handle_task(task_path: str) -> None:
 
 
 ensure_directories()
+move_stale_running_tasks()
 print("watcher 시작됨. tasks/inbox 감시 중...")
 
 while True:
+    move_stale_running_tasks()
     for task_file in sorted(glob.glob(f"{INBOX_DIR}/*.md")):
         handle_task(task_file)
     time.sleep(10)

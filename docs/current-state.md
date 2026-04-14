@@ -24,6 +24,7 @@
 - Local automation path:
   - `tasks/inbox/*.md` -> watcher -> Codex CLI
   - Recommended watcher launch: `powershell -ExecutionPolicy Bypass -File scripts/run_watcher.ps1`
+  - Watcher uses a token-efficient prompt and should inspect only task-relevant files first
 - Existing remote automation path:
   - `tasks/remote/*.md` push -> `.github/workflows/claude-dev.yml`
   - `workflow_dispatch` can still be used for manual fallback runs
@@ -41,6 +42,7 @@
 - There is no automated task creation bridge from external planning tools into `tasks/inbox` or `tasks/remote` yet.
 - The remote fallback workflow currently delegates implementation to Claude Code using `ANTHROPIC_API_KEY`.
 - OAuth smoke testing is retained as a reference check only, not an active operating path.
+- Stale tasks in `tasks/running` are now auto-moved to `tasks/blocked` after 20 minutes, which is a safety rule rather than a true semantic failure detector.
 
 ## Operational intent
 - Claude should produce task packets, not implementation prompts.
