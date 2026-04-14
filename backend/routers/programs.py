@@ -10,11 +10,16 @@ except ImportError:
     from backend.rag.collector.scheduler import run_all_collectors
 
 programs_router = APIRouter(prefix="/programs", tags=["programs"])
+router = programs_router
 
 
 def _get_supabase_settings() -> tuple[str, str, float]:
     supabase_url = os.getenv("SUPABASE_URL", "").strip()
-    supabase_key = os.getenv("SUPABASE_KEY", "").strip()
+    supabase_key = (
+        os.getenv("SUPABASE_SERVICE_ROLE_KEY", "").strip()
+        or os.getenv("SUPABASE_SERVICE_KEY", "").strip()
+        or os.getenv("SUPABASE_KEY", "").strip()
+    )
     timeout_seconds = 10.0
     if not supabase_url or not supabase_key:
         raise HTTPException(status_code=500, detail="SUPABASE_URL or SUPABASE_KEY is not configured.")
@@ -34,13 +39,15 @@ async def _request_supabase(
         "Content-Type": "application/json",
     }
 
-    response = requests.request(
-        method,
-        f"{supabase_url}{path}",
-        headers=headers,
-        params=params,
-        timeout=timeout_seconds,
-    )
+    with requests.Session() as session:
+        session.trust_env = False
+        response = session.request(
+            method,
+            f"{supabase_url}{path}",
+            headers=headers,
+            params=params,
+            timeout=timeout_seconds,
+        )
     if response.status_code >= 400:
         raise HTTPException(status_code=response.status_code, detail=response.text)
     return response.json()

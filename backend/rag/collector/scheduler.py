@@ -30,19 +30,25 @@ class SupabaseClient:
             "Content-Type": "application/json",
             "Prefer": "resolution=merge-duplicates,return=minimal",
         }
-        response = requests.post(
-            f"{self.url}/rest/v1/programs",
-            params={"on_conflict": "title,source"},
-            json=rows,
-            headers=headers,
-            timeout=10,
-        )
+        with requests.Session() as session:
+            session.trust_env = False
+            response = session.post(
+                f"{self.url}/rest/v1/programs",
+                params={"on_conflict": "title,source"},
+                json=rows,
+                headers=headers,
+                timeout=10,
+            )
         response.raise_for_status()
 
 
 def _create_supabase_client() -> SupabaseClient:
     supabase_url = os.getenv("SUPABASE_URL", "").strip()
-    supabase_service_key = os.getenv("SUPABASE_SERVICE_KEY", "").strip()
+    supabase_service_key = (
+        os.getenv("SUPABASE_SERVICE_ROLE_KEY", "").strip()
+        or os.getenv("SUPABASE_SERVICE_KEY", "").strip()
+        or os.getenv("SUPABASE_KEY", "").strip()
+    )
     if not supabase_url or not supabase_service_key:
         raise RuntimeError("SUPABASE_URL or SUPABASE_SERVICE_KEY is not configured.")
     return SupabaseClient(supabase_url, supabase_service_key)
