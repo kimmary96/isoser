@@ -218,6 +218,43 @@ export interface MatchAnalyzeRequest {
   };
 }
 
+export interface Program {
+  id: string | number | null;
+  title: string | null;
+  category: string | null;
+  location: string | null;
+  provider: string | null;
+  summary: string | null;
+  description?: string | null;
+  tags: string[] | string | null;
+  skills: string[] | string | null;
+  application_url?: string | null;
+  application_method?: string | null;
+  source?: string | null;
+  source_url?: string | null;
+  link?: string | null;
+  deadline?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  is_active?: boolean | null;
+  is_ad?: boolean | null;
+  final_score?: number | null;
+  urgency_score?: number | null;
+  days_left?: number | null;
+}
+
+export interface ProgramRecommendItem {
+  program_id: string;
+  score: number | null;
+  reason: string;
+  fit_keywords: string[];
+  program: Program;
+}
+
+export interface ProgramRecommendResponse {
+  items: ProgramRecommendItem[];
+}
+
 export interface SkillSuggestResponse {
   input_role: string;
   normalized_job_key: string;

@@ -2,23 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { recommendPrograms } from "@/lib/api/backend";
 import MiniCalendar from "@/components/MiniCalendar";
 import { createBrowserClient } from "@/lib/supabase/client";
-
-type RecommendedProgram = {
-  title: string | null;
-  source: string | null;
-  start_date: string | null;
-  end_date: string | null;
-  deadline: string | null;
-  days_left: number | null;
-  final_score: number | null;
-  link: string | null;
-};
-
-type RecommendResponseItem = {
-  program?: RecommendedProgram | null;
-};
+import type { Program } from "@/lib/types";
 
 function formatUserName(value: string | null | undefined): string {
   const trimmed = value?.trim();
@@ -148,13 +135,14 @@ function ProgramCard({
   program,
   cardId,
 }: {
-  program: RecommendedProgram;
+  program: Program;
   cardId?: string;
 }) {
   const trainingPeriodLabel = formatTrainingPeriod(program.start_date, program.end_date);
   const deadlineLabel = formatDeadline(program.deadline);
   const ddayBadge = getDdayBadge(program.days_left);
   const cardBorderClass = getCardBorderClass(program.days_left);
+  const programLink = program.link || program.application_url || program.source_url;
 
   return (
     <article
@@ -182,9 +170,9 @@ function ProgramCard({
       <div className="mb-6 text-sm font-medium text-slate-800">{formatRelevance(program.final_score)}</div>
 
       <div className="mt-auto">
-        {program.link ? (
+        {programLink ? (
           <a
-            href={program.link}
+            href={programLink}
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-700"
@@ -203,7 +191,7 @@ export default function DashboardPage() {
   const supabase = useMemo(() => createBrowserClient(), []);
 
   const [userName, setUserName] = useState("사용자");
-  const [programs, setPrograms] = useState<RecommendedProgram[]>([]);
+  const [programs, setPrograms] = useState<Program[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -263,28 +251,10 @@ export default function DashboardPage() {
           }
         }
 
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL?.trim();
-        if (!backendUrl) {
-          throw new Error("NEXT_PUBLIC_BACKEND_URL is not configured.");
-        }
-
-        const response = await fetch(`${backendUrl}/programs/recommend`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-          },
-          body: JSON.stringify({ top_k: 9 }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`추천 프로그램 요청 실패 (${response.status})`);
-        }
-
-        const data = (await response.json()) as { items?: RecommendResponseItem[] | null };
+        const data = await recommendPrograms(9, accessToken);
         const nextPrograms = (data.items ?? [])
           .map((item) => item.program)
-          .filter((program): program is RecommendedProgram => Boolean(program))
+          .filter((program): program is Program => Boolean(program))
           .slice(0, 9);
 
         if (!mounted) return;

@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import os
 from typing import Any, Mapping
 
 import httpx
+from fastapi import HTTPException
+
+from utils.supabase_admin import build_service_headers, get_supabase_admin_settings
 
 SELECT_COLUMNS = ",".join(
     [
@@ -113,34 +115,19 @@ class CoachSessionRepo:
     def from_env(cls) -> CoachSessionRepo | None:
         """Create a repository instance from environment variables when configured."""
 
-        supabase_url = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL")
-        service_role_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-        timeout_raw = os.getenv("SUPABASE_TIMEOUT_SECONDS")
-
-        if not supabase_url or not service_role_key:
+        try:
+            settings = get_supabase_admin_settings()
+        except HTTPException:
             return None
 
-        try:
-            timeout_seconds = float(timeout_raw) if timeout_raw else 10.0
-        except ValueError:
-            timeout_seconds = 10.0
-
         return cls(
-            supabase_url=supabase_url,
-            service_role_key=service_role_key,
-            timeout_seconds=timeout_seconds,
+            supabase_url=settings.url,
+            service_role_key=settings.service_role_key,
+            timeout_seconds=settings.timeout_seconds,
         )
 
     def _headers(self, *, prefer: str | None = None) -> dict[str, str]:
-        headers = {
-            "apikey": self._service_role_key,
-            "Authorization": f"Bearer {self._service_role_key}",
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-        }
-        if prefer:
-            headers["Prefer"] = prefer
-        return headers
+        return build_service_headers(self._service_role_key, prefer=prefer)
 
     async def _request(
         self,
@@ -150,7 +137,7 @@ class CoachSessionRepo:
         payload: Mapping[str, Any] | None = None,
         prefer: str | None = None,
     ) -> Any:
-        async with httpx.AsyncClient(timeout=self._timeout_seconds) as client:
+        async with httpx.AsyncClient(timeout=self._timeout_seconds, trust_env=False) as client:
             response = await client.request(
                 method,
                 self._endpoint,

@@ -1,20 +1,8 @@
 import Link from "next/link";
 
+import { listPrograms } from "@/lib/api/backend";
 import { PROGRAM_CATEGORIES } from "@/lib/program-categories";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
-
-type Program = {
-  id: string | number;
-  title: string | null;
-  category: string | null;
-  location: string | null;
-  provider: string | null;
-  summary: string | null;
-  tags: string[] | string | null;
-  skills: string[] | string | null;
-  application_url: string | null;
-  is_active: boolean | null;
-};
+import type { Program } from "@/lib/types";
 
 type ProgramsPageProps = {
   searchParams: Promise<{
@@ -52,22 +40,18 @@ function normalizeTextList(value: string[] | string | null): string[] {
 export default async function ProgramsPage({ searchParams }: ProgramsPageProps) {
   const resolvedSearchParams = await searchParams;
   const selectedCategory = normalizeSelectedCategory(resolvedSearchParams.category);
-  const supabase = await createServerSupabaseClient();
+  let programs: Program[] = [];
+  let error: string | null = null;
 
-  let query = supabase
-    .from("programs")
-    .select(
-      "id, title, category, location, provider, summary, tags, skills, application_url, is_active",
-    )
-    .eq("is_active", true)
-    .order("id", { ascending: false });
-
-  if (selectedCategory !== "전체") {
-    query = query.eq("category", selectedCategory);
+  try {
+    programs = await listPrograms({
+      category: selectedCategory !== "전체" ? selectedCategory : undefined,
+      limit: 60,
+      offset: 0,
+    });
+  } catch (e) {
+    error = e instanceof Error ? e.message : "프로그램을 불러오는 중 문제가 발생했습니다.";
   }
-
-  const { data, error } = await query;
-  const programs = (data ?? []) as Program[];
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-950">
@@ -112,7 +96,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
         <section className="rounded-2xl border border-slate-200 bg-white p-8">
           {error ? (
             <div className="rounded-xl border border-rose-200 bg-rose-50 px-6 py-10 text-center text-sm text-rose-700">
-              프로그램을 불러오는 중 문제가 발생했습니다.
+              {error}
             </div>
           ) : programs.length === 0 ? (
             <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-6 py-16 text-center">
@@ -163,8 +147,14 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                       )}
                     </div>
 
-                    {program.application_url ? (
-                      <div className="mt-6">
+                    <div className="mt-6 flex flex-wrap gap-2">
+                      <Link
+                        href={`/programs/${program.id}`}
+                        className="inline-flex rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+                      >
+                        상세 보기
+                      </Link>
+                      {program.application_url ? (
                         <a
                           href={program.application_url}
                           target="_blank"
@@ -173,8 +163,8 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                         >
                           지원 링크 보기
                         </a>
-                      </div>
-                    ) : null}
+                      ) : null}
+                    </div>
                   </article>
                 );
               })}
