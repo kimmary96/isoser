@@ -108,7 +108,7 @@ Claude에서 Task Packet 작성
 -> watcher.py 감지
 -> tasks/running 이동
 -> Codex가 AGENTS.md 기준으로 구현/검사/보고서 작성
--> 성공 시 [codex] 커밋 후 push
+-> watcher가 성공 report 기준으로 task 관련 파일만 stage해서 [codex] 커밋 후 push 시도
 -> tasks/done 이동
 ```
 

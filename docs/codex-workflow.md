@@ -21,9 +21,11 @@
 7. The watcher moves the packet to `tasks/running/`.
 8. Codex reads `AGENTS.md`, inspects the repository, evaluates drift, and implements if safe.
 9. Codex writes reports to `reports/`.
-10. On success, Codex is expected to commit and push with:
-   - `[codex] <task-id> 구현 완료`
-11. The watcher moves the packet to `tasks/done/`.
+10. On success, the watcher appends run metadata, moves the packet to `tasks/done/`, and then attempts task-scoped git automation:
+   - stage the task packet move, the result report, and paths listed in the result report's `Changed files`
+   - commit with `[codex] <task-id> 구현 완료`
+   - push to `origin/<current-branch>`
+11. Git automation status is appended to the result report under `## Git Automation`.
 12. If the task is invalid, blocked, or fails, the watcher moves it to `tasks/blocked/`.
 
 ## Remote fallback flow
@@ -51,6 +53,7 @@
 - The watcher blocks tasks with missing required frontmatter.
 - Commit mismatch does not automatically block local execution, but Codex must evaluate drift before risky edits.
 - `[codex]` commit messages are reserved for local Codex automation and should not retrigger the remote fallback workflow.
+- The watcher stages only task-scoped paths for auto-commit instead of sweeping the whole worktree.
 - Cowork-style scratch space is optional and should only be created on explicit user request.
 - Scratch output should never directly modify `CLAUDE.md`, `AGENTS.md`, `README.md`, or core `docs/*.md` files.
 - Approval markers should stay in `cowork/approvals/` and should not be replaced by ad hoc root files.

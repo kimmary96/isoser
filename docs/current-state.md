@@ -6,7 +6,7 @@
 - Remote fallback automation uses `tasks/remote/` and a GitHub Action path.
 - Task execution is governed by `AGENTS.md`.
 - Codex outputs reports into `reports/`.
-- Successful local Codex runs are expected to commit and push using the `[codex]` commit prefix.
+- Successful local Codex runs are auto-synced by `watcher.py`, which attempts a task-scoped `[codex]` commit and push after writing the success report and moving the packet to `tasks/done/`.
 
 ## Task packet contract
 - Task packets must be markdown files with YAML-style frontmatter.

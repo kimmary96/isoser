@@ -10,6 +10,7 @@ import time
 from shutil import which
 from datetime import datetime
 from typing import Optional
+from pathlib import Path
 
 INBOX_DIR = "./tasks/inbox"
 REMOTE_DIR = "./tasks/remote"
@@ -127,6 +128,27 @@ def current_head() -> str:
     return result.stdout.strip()
 
 
+def current_branch() -> str:
+    result = subprocess.run(
+        ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+        cwd=PROJECT_PATH,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return result.stdout.strip()
+
+
+def run_git(args: list[str], *, check: bool = True) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["git", *args],
+        cwd=PROJECT_PATH,
+        capture_output=True,
+        text=True,
+        check=check,
+    )
+
+
 def write_report(task_id: str, suffix: str, body: str) -> str:
     report_path = os.path.join(REPORTS_DIR, f"{task_id}-{suffix}.md")
     with open(report_path, "w", encoding="utf-8") as file:
@@ -162,6 +184,123 @@ def append_run_metadata(
 
     with open(report_path, "a", encoding="utf-8") as file:
         file.write("\n".join(lines) + "\n")
+
+
+def append_git_metadata(
+    report_path: str,
+    *,
+    status: str,
+    branch: Optional[str] = None,
+    commit_sha: Optional[str] = None,
+    message: Optional[str] = None,
+) -> None:
+    if not os.path.exists(report_path):
+        return
+
+    lines = [
+        "",
+        "## Git Automation",
+        "",
+        f"- status: `{status}`",
+    ]
+    if branch:
+        lines.append(f"- branch: `{branch}`")
+    if commit_sha:
+        lines.append(f"- commit: `{commit_sha}`")
+    if message:
+        lines.append(f"- note: {message}")
+
+    with open(report_path, "a", encoding="utf-8") as file:
+        file.write("\n".join(lines) + "\n")
+
+
+def parse_changed_files_from_result_report(report_path: str) -> list[str]:
+    if not os.path.exists(report_path):
+        return []
+
+    lines = Path(report_path).read_text(encoding="utf-8").splitlines()
+    in_changed_files = False
+    changed_files: list[str] = []
+
+    for line in lines:
+        stripped = line.strip()
+        if stripped == "## Changed files":
+            in_changed_files = True
+            continue
+        if in_changed_files and stripped.startswith("## "):
+            break
+        if not in_changed_files:
+            continue
+        if stripped.startswith("- `") and stripped.endswith("`"):
+            changed_files.append(stripped[3:-1])
+
+    return changed_files
+
+
+def sync_completed_task_to_git(
+    *,
+    task_id: str,
+    task_filename: str,
+    running_path: str,
+    done_path: str,
+    result_report: str,
+) -> None:
+    branch = current_branch()
+    commit_message = f"[codex] {task_id} 구현 완료."
+    changed_files = parse_changed_files_from_result_report(result_report)
+
+    stage_targets = [
+        os.path.relpath(running_path, PROJECT_PATH).replace("\\", "/"),
+        os.path.relpath(done_path, PROJECT_PATH).replace("\\", "/"),
+        os.path.relpath(result_report, PROJECT_PATH).replace("\\", "/"),
+        *changed_files,
+    ]
+
+    # Stage only task-specific paths so unrelated worktree changes are not swept in.
+    unique_targets = list(dict.fromkeys(stage_targets))
+    run_git(["add", "-A", "--", *unique_targets])
+
+    staged = run_git(["diff", "--cached", "--name-only"], check=False)
+    if not staged.stdout.strip():
+        append_git_metadata(
+            result_report,
+            status="skipped",
+            branch=branch,
+            message="No staged task-specific changes were detected after watcher finalization.",
+        )
+        return
+
+    commit_result = run_git(["commit", "-m", commit_message], check=False)
+    commit_output = (commit_result.stdout or "") + (commit_result.stderr or "")
+    if commit_result.returncode != 0:
+        append_git_metadata(
+            result_report,
+            status="commit-failed",
+            branch=branch,
+            message=commit_output.strip() or "git commit failed",
+        )
+        return
+
+    commit_sha = current_head()
+    push_result = run_git(["push", "origin", branch], check=False)
+    push_output = (push_result.stdout or "") + (push_result.stderr or "")
+    if push_result.returncode != 0:
+        append_git_metadata(
+            result_report,
+            status="push-failed",
+            branch=branch,
+            commit_sha=commit_sha,
+            message=push_output.strip() or "git push failed",
+        )
+        return
+
+    append_git_metadata(
+        result_report,
+        status="pushed",
+        branch=branch,
+        commit_sha=commit_sha,
+        message=commit_message,
+    )
 
 
 def move_task_file(src: str, dst: str) -> None:
@@ -395,6 +534,20 @@ def handle_task(task_path: str) -> None:
         append_run_metadata(result_report, exit_code=exit_code, token_count=token_count)
         done_path = os.path.join(DONE_DIR, filename)
         move_task_file(running_path, done_path)
+        try:
+            sync_completed_task_to_git(
+                task_id=task_id,
+                task_filename=filename,
+                running_path=running_path,
+                done_path=done_path,
+                result_report=result_report,
+            )
+        except Exception as error:
+            append_git_metadata(
+                result_report,
+                status="watcher-sync-failed",
+                message=f"{type(error).__name__}: {error}",
+            )
         print(f"완료: {filename}")
         return
 

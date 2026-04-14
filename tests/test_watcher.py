@@ -74,3 +74,104 @@ def test_handle_task_writes_blocked_report_when_move_to_running_fails(tmp_path, 
     assert report_path.exists()
     assert "Watcher could not move the task packet into running." in report_path.read_text(encoding="utf-8")
 
+
+def test_parse_changed_files_from_result_report_reads_bullets(tmp_path) -> None:
+    report_path = tmp_path / "TASK-TEST-result.md"
+    report_path.write_text(
+        "\n".join(
+            [
+                "# Result: TASK-TEST",
+                "",
+                "## Changed files",
+                "",
+                "- `frontend/app/example/page.tsx`",
+                "- `docs/current-state.md`",
+                "",
+                "## Why changes were made",
+                "",
+                "- test",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    assert watcher.parse_changed_files_from_result_report(str(report_path)) == [
+        "frontend/app/example/page.tsx",
+        "docs/current-state.md",
+    ]
+
+
+def test_sync_completed_task_to_git_stages_task_paths_and_appends_git_metadata(tmp_path, monkeypatch) -> None:
+    project_path = tmp_path
+    running_path = project_path / "tasks" / "running" / "TASK-TEST.md"
+    done_path = project_path / "tasks" / "done" / "TASK-TEST.md"
+    result_report = project_path / "reports" / "TASK-TEST-result.md"
+    changed_file = project_path / "frontend" / "app" / "example" / "page.tsx"
+
+    running_path.parent.mkdir(parents=True)
+    done_path.parent.mkdir(parents=True)
+    result_report.parent.mkdir(parents=True)
+    changed_file.parent.mkdir(parents=True)
+
+    running_path.write_text("running", encoding="utf-8")
+    done_path.write_text("done", encoding="utf-8")
+    changed_file.write_text("export default function Example() {}", encoding="utf-8")
+    result_report.write_text(
+        "\n".join(
+            [
+                "# Result: TASK-TEST",
+                "",
+                "## Changed files",
+                "",
+                "- `frontend/app/example/page.tsx`",
+                "",
+                "## Why changes were made",
+                "",
+                "- test",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(watcher, "PROJECT_PATH", str(project_path))
+    monkeypatch.setattr(watcher, "current_branch", lambda: "develop")
+    monkeypatch.setattr(watcher, "current_head", lambda: "abc123")
+
+    calls: list[list[str]] = []
+
+    class FakeResult:
+        def __init__(self, stdout: str = "", stderr: str = "", returncode: int = 0) -> None:
+            self.stdout = stdout
+            self.stderr = stderr
+            self.returncode = returncode
+
+    def fake_run_git(args: list[str], *, check: bool = True) -> FakeResult:
+        calls.append(args)
+        if args[:3] == ["diff", "--cached", "--name-only"]:
+            return FakeResult(stdout="tasks/done/TASK-TEST.md\n")
+        if args[:2] == ["commit", "-m"]:
+            return FakeResult(stdout="[develop abc123] [codex] TASK-TEST 구현 완료.\n")
+        if args[:3] == ["push", "origin", "develop"]:
+            return FakeResult(stdout="pushed\n")
+        return FakeResult()
+
+    monkeypatch.setattr(watcher, "run_git", fake_run_git)
+
+    watcher.sync_completed_task_to_git(
+        task_id="TASK-TEST",
+        task_filename="TASK-TEST.md",
+        running_path=str(running_path),
+        done_path=str(done_path),
+        result_report=str(result_report),
+    )
+
+    assert calls[0][:3] == ["add", "-A", "--"]
+    assert "tasks/running/TASK-TEST.md" in calls[0]
+    assert "tasks/done/TASK-TEST.md" in calls[0]
+    assert "reports/TASK-TEST-result.md" in calls[0]
+    assert "frontend/app/example/page.tsx" in calls[0]
+    updated_report = result_report.read_text(encoding="utf-8")
+    assert "## Git Automation" in updated_report
+    assert "- status: `pushed`" in updated_report

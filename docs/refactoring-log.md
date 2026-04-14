@@ -861,6 +861,9 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 
 ## 2026-04-15 추가 메모
 
+- `watcher.py`
+  - 성공 task에서 `reports/<task-id>-result.md`의 `Changed files` 목록과 task/report 파일만 stage해서 `[codex] <task-id> 구현 완료` 자동 commit/push를 시도하도록 보강함
+  - git 자동화 결과는 result report의 `## Git Automation` 섹션에 남기도록 정리함
 - `frontend/app/landing-a/page.tsx`
   - 기존 `/`를 유지한 채 `/landing-a`에 정보 허브 중심 랜딩 A를 별도 route로 추가함
   - ticker, sticky nav/search, 프로그램 카드, 비교 섹션, 이용 흐름, CTA를 페이지 내부 정적 데이터와 로컬 스타일로만 구성해 전역 수정 범위를 피함
