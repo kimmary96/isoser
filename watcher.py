@@ -63,6 +63,15 @@ def ensure_directories() -> None:
         os.makedirs(directory, exist_ok=True)
 
 
+def startup_warning_messages() -> list[str]:
+    warnings: list[str] = []
+    if not SLACK_WEBHOOK_URL:
+        warnings.append(
+            "경고: SLACK_WEBHOOK_URL 이 설정되지 않아 watcher alert는 dispatch/alerts 에만 기록되고 Slack 전송은 생략됩니다."
+        )
+    return warnings
+
+
 def acquire_watcher_lock() -> Optional[int]:
     try:
         return os.open(WATCHER_LOCK_PATH, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
@@ -816,6 +825,8 @@ def main() -> None:
 
     write_watcher_lock(lock_handle)
     move_stale_running_tasks()
+    for warning in startup_warning_messages():
+        print(warning)
     print("watcher 시작됨. tasks/inbox 감시 중...")
     try:
         while True:

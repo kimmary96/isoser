@@ -228,3 +228,12 @@ def test_format_slack_alert_message_contains_core_fields() -> None:
     assert "packet: `tasks/drifted/TASK-TEST.md`" in message
     assert "report: `reports/TASK-TEST-drift.md`" in message
     assert "summary: Codex stopped because of repository drift." in message
+
+
+def test_startup_warning_messages_warns_when_slack_webhook_missing(monkeypatch) -> None:
+    monkeypatch.setattr(watcher, "SLACK_WEBHOOK_URL", "")
+
+    warnings = watcher.startup_warning_messages()
+
+    assert len(warnings) == 1
+    assert "SLACK_WEBHOOK_URL" in warnings[0]

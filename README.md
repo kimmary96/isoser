@@ -150,6 +150,8 @@ Windows PowerShell 기준:
 powershell -ExecutionPolicy Bypass -File scripts/run_watcher.ps1
 ```
 
+재시작이 필요할 때는 `docs/watcher-restart-checklist.md`를 참고합니다.
+
 Slack으로 watcher alert를 받고 싶으면 루트에 `.watcher.env`를 만들고 webhook 값을 넣습니다.
 
 ```powershell
