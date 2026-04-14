@@ -150,12 +150,15 @@ Windows PowerShell 기준:
 powershell -ExecutionPolicy Bypass -File scripts/run_watcher.ps1
 ```
 
-Slack으로 watcher alert를 받고 싶으면 watcher를 실행하기 전에 webhook 환경변수를 설정합니다.
+Slack으로 watcher alert를 받고 싶으면 루트에 `.watcher.env`를 만들고 webhook 값을 넣습니다.
 
 ```powershell
-$env:SLACK_WEBHOOK_URL = "https://hooks.slack.com/services/..."
+Copy-Item .watcher.env.example .watcher.env
+# Then edit .watcher.env and set the real webhook URL.
 powershell -ExecutionPolicy Bypass -File scripts/run_watcher.ps1
 ```
+
+`.watcher.env`는 git ignore 대상이라 로컬 값이 커밋되지 않습니다.
 
 ## 로컬 실행
 

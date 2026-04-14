@@ -33,6 +33,7 @@
   - `tasks/inbox/*.md` -> watcher -> Codex CLI
   - terminal alerts: `dispatch/alerts/*.md`
   - Recommended watcher launch: `powershell -ExecutionPolicy Bypass -File scripts/run_watcher.ps1`
+  - `scripts/run_watcher.ps1` loads `.watcher.env` into the watcher process when present
   - Watcher uses a token-efficient prompt and should inspect only task-relevant files first
   - Docs tasks use a short inline rules summary instead of reading full `AGENTS.md`
   - Code tasks still read `AGENTS.md`
