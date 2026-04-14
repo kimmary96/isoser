@@ -6,12 +6,11 @@ import os
 from datetime import date
 from time import perf_counter
 from typing import Any
-
-import httpx
 from fastapi import APIRouter, Header, HTTPException, Query
 
 from rag.programs_rag import ProgramsRAG
 from rag.source_adapters.work24_training import Work24TrainingAdapter
+from utils.supabase_admin import request_supabase
 
 try:
     from backend.logging_config import get_logger, log_event
@@ -31,67 +30,8 @@ if not os.getenv("ADMIN_SECRET_KEY", "").strip():
     )
 
 
-def _get_supabase_settings() -> tuple[str, str, float]:
-    supabase_url = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL")
-    service_role_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-    timeout_raw = os.getenv("SUPABASE_TIMEOUT_SECONDS")
-    if not supabase_url or not service_role_key:
-        raise HTTPException(status_code=503, detail="Supabase is not configured")
-
-    try:
-        timeout_seconds = float(timeout_raw) if timeout_raw else 10.0
-    except ValueError:
-        timeout_seconds = 10.0
-    return supabase_url.rstrip("/"), service_role_key, timeout_seconds
-
-
 def _build_prefer_header(*values: str) -> str:
     return ",".join(value for value in values if value)
-
-
-def _service_headers(service_role_key: str, *, prefer: str | None = None) -> dict[str, str]:
-    headers = {
-        "apikey": service_role_key,
-        "Authorization": f"Bearer {service_role_key}",
-        "Accept": "application/json",
-        "Content-Type": "application/json",
-    }
-    if prefer:
-        headers["Prefer"] = prefer
-    return headers
-
-
-async def _request_supabase(
-    *,
-    method: str,
-    path: str,
-    params: dict[str, str] | None = None,
-    payload: dict[str, Any] | list[dict[str, Any]] | None = None,
-    prefer: str | None = None,
-) -> Any:
-    supabase_url, service_role_key, timeout_seconds = _get_supabase_settings()
-    async with httpx.AsyncClient(timeout=timeout_seconds, trust_env=False) as client:
-        response = await client.request(
-            method,
-            f"{supabase_url}{path}",
-            params=params,
-            json=payload,
-            headers=_service_headers(service_role_key, prefer=prefer),
-        )
-
-    if response.is_success:
-        if not response.content:
-            return None
-        return response.json()
-
-    detail = response.text
-    try:
-        body = response.json()
-    except ValueError:
-        body = None
-    if isinstance(body, dict):
-        detail = str(body.get("message") or body.get("hint") or body.get("details") or detail)
-    raise HTTPException(status_code=500, detail=f"Supabase request failed: {detail}")
 
 
 def _require_admin_secret(authorization: str | None) -> None:
@@ -154,7 +94,7 @@ def _deduplicate_program_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]
 
 
 async def _fetch_chroma_sync_candidates() -> list[dict[str, Any]]:
-    rows = await _request_supabase(
+    rows = await request_supabase(
         method="GET",
         path="/rest/v1/programs",
         params={
@@ -284,7 +224,7 @@ async def sync_programs(
             }
 
         upsert_started_at = perf_counter()
-        rows = await _request_supabase(
+        rows = await request_supabase(
             method="POST",
             path="/rest/v1/programs",
             params={"on_conflict": "hrd_id"},

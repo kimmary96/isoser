@@ -1,184 +1,27 @@
 // PDF 출력 페이지 - react-pdf로 이력서 PDF 미리보기용 문서 생성
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import { Suspense } from "react";
+import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
-import {
-  Document,
-  Font,
-  Page,
-  PDFDownloadLink,
-  StyleSheet,
-  Text,
-  View,
-} from "@react-pdf/renderer";
+import { useResumeExport } from "./_hooks/use-resume-export";
 
-import { getGuestActivities, getGuestResume, isGuestMode } from "@/lib/guest";
-import { createBrowserClient } from "@/lib/supabase/client";
-import type { Activity, Resume } from "@/lib/types";
-
-Font.register({
-  family: "NotoSansKR",
-  fonts: [
-    {
-      src: "https://fonts.gstatic.com/ea/notosanskr/v2/NotoSansKR-Regular.otf",
-      fontWeight: 400,
-    },
-    {
-      src: "https://fonts.gstatic.com/ea/notosanskr/v2/NotoSansKR-Bold.otf",
-      fontWeight: 700,
-    },
-  ],
-});
-
-const styles = StyleSheet.create({
-  page: {
-    paddingTop: 24,
-    paddingBottom: 24,
-    paddingHorizontal: 24,
-    fontFamily: "NotoSansKR",
-    fontSize: 11,
-    lineHeight: 1.4,
-  },
-  title: {
-    fontSize: 18,
-    marginBottom: 8,
-    fontWeight: 700,
-  },
-  subtitle: {
-    fontSize: 10,
-    marginBottom: 12,
-    color: "#666666",
-  },
-  section: {
-    marginBottom: 10,
-  },
-  sectionTitle: {
-    fontSize: 12,
-    marginBottom: 4,
-    fontWeight: 700,
-  },
-  itemTitle: {
-    fontSize: 11,
-    fontWeight: 700,
-  },
-  itemMeta: {
-    fontSize: 10,
-    color: "#555555",
-  },
-  itemBody: {
-    marginTop: 2,
-    fontSize: 10,
-  },
-});
-
-function ResumePdfDocument({
-  resume,
-  activities,
-}: {
-  resume: Resume;
-  activities: Activity[];
-}) {
-  return (
-    <Document>
-      <Page size="A4" style={styles.page}>
-        <View style={styles.section}>
-          <Text style={styles.title}>{resume.title}</Text>
-          <Text style={styles.subtitle}>지원 직무: {resume.target_job ?? "미입력"}</Text>
-        </View>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>활동</Text>
-          {activities.map((activity) => (
-            <View key={activity.id} style={{ marginBottom: 8 }}>
-              <Text style={styles.itemTitle}>{activity.title}</Text>
-              <Text style={styles.itemMeta}>
-                {activity.type} | {activity.period ?? "기간 미입력"} | {activity.role ?? "역할 미입력"}
-              </Text>
-              <Text style={styles.itemBody}>{activity.description ?? ""}</Text>
-            </View>
-          ))}
-        </View>
-      </Page>
-    </Document>
-  );
-}
+const ResumePdfDownload = dynamic(
+  () => import("./_components/resume-pdf-download").then((mod) => mod.ResumePdfDownload),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="block w-full rounded-lg bg-gray-100 px-4 py-3 text-center font-medium text-gray-500">
+        PDF 모듈 로딩 중...
+      </div>
+    ),
+  }
+);
 
 function ResumeExportContent() {
-  const supabase = useMemo(() => createBrowserClient(), []);
   const searchParams = useSearchParams();
   const resumeId = searchParams.get("resumeId");
-  const [resume, setResume] = useState<Resume | null>(null);
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchResumeData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        if (isGuestMode()) {
-          const guestResume = getGuestResume();
-          setResume(guestResume);
-          setActivities(getGuestActivities());
-          return;
-        }
-
-        let resumeRow: Resume | null = null;
-        if (resumeId) {
-          const { data, error: resumeError } = await supabase
-            .from("resumes")
-            .select("*")
-            .eq("id", resumeId)
-            .single();
-          if (resumeError) {
-            throw new Error(resumeError.message);
-          }
-          resumeRow = data;
-        } else {
-          const { data, error: resumeError } = await supabase
-            .from("resumes")
-            .select("*")
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          if (resumeError) {
-            throw new Error(resumeError.message);
-          }
-          resumeRow = data;
-        }
-
-        if (!resumeRow) {
-          setResume(null);
-          setActivities([]);
-          return;
-        }
-
-        setResume(resumeRow);
-        const ids = resumeRow.selected_activity_ids ?? [];
-        if (ids.length === 0) {
-          setActivities([]);
-          return;
-        }
-
-        const { data: activityRows, error: activityError } = await supabase
-          .from("activities")
-          .select("*")
-          .in("id", ids);
-        if (activityError) {
-          throw new Error(activityError.message);
-        }
-        setActivities(activityRows || []);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "PDF 데이터 로딩에 실패했습니다.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchResumeData();
-  }, [resumeId, supabase]);
+  const { resume, activities, loading, error } = useResumeExport(resumeId);
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -232,15 +75,7 @@ function ResumeExportContent() {
               </div>
             </div>
 
-            {!loading && resume && (
-              <PDFDownloadLink
-                document={<ResumePdfDocument resume={resume} activities={activities} />}
-                fileName={`${resume.title}.pdf`}
-                className="block w-full px-4 py-3 bg-black text-white rounded-lg font-medium text-center hover:bg-gray-800 transition-colors"
-              >
-                {({ loading: pdfLoading }) => (pdfLoading ? "생성 중..." : "PDF 다운로드")}
-              </PDFDownloadLink>
-            )}
+            {!loading && resume && <ResumePdfDownload resume={resume} activities={activities} />}
           </div>
         </div>
       </div>

@@ -52,7 +52,7 @@ app.include_router(match.router, prefix="/match", tags=["match"])
 app.include_router(skills.router, prefix="/skills", tags=["skills"])
 app.include_router(activities.router, prefix="/activities", tags=["activities"])
 app.include_router(company.router, prefix="/company", tags=["company"])
-app.include_router(programs.router, prefix="/programs", tags=["programs"])
+app.include_router(programs.router)
 app.include_router(bookmarks.router, prefix="/bookmarks", tags=["bookmarks"])
 app.include_router(admin.router, prefix="/admin", tags=["admin"])
 

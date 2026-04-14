@@ -1,0 +1,25 @@
+name: Claude Code Auto Dev
+
+on:
+  push:
+    paths:
+      - 'specs/*.md'
+
+jobs:
+  claude-dev:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            specs/ 폴더 안에 가장 최근에 추가된 .md 파일을 읽고
+            해당 스펙대로 개발을 진행해줘.
+            CLAUDE.md 파일을 참고해서 프로젝트 구조와 규칙을 파악하고,
+            작업이 끝나면 새 브랜치를 만들고 PR을 생성해줘.

@@ -2,10 +2,8 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useEffect, useMemo, useState } from 'react'
-import type { User } from '@supabase/supabase-js'
-import { createBrowserClient } from '@/lib/supabase/client'
-import { disableGuestMode } from '@/lib/guest'
+import { useEffect, useState } from 'react'
+import { getDashboardMe, signOutDashboard } from '@/lib/api/app'
 
 const navGroups = [
   {
@@ -46,85 +44,38 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname()
   const router = useRouter()
-  const supabase = useMemo(() => createBrowserClient(), [])
   const [authChecking, setAuthChecking] = useState(true)
   const [signingOut, setSigningOut] = useState(false)
-  const [user, setUser] = useState<User | null>(null)
-  const [profile, setProfile] = useState<{ name: string | null; avatar_url: string | null } | null>(null)
+  const [user, setUser] = useState<{
+    id: string
+    email: string | null
+    displayName: string
+    avatarUrl: string | null
+  } | null>(null)
 
   useEffect(() => {
     let mounted = true
 
-    const fetchProfile = async (nextUser: User) => {
-      const { data } = await supabase
-        .from('profiles')
-        .select('name, avatar_url')
-        .eq('id', nextUser.id)
-        .maybeSingle()
-
-      if (!mounted) {
-        return
-      }
-
-      setProfile({
-        name: data?.name ?? null,
-        avatar_url: data?.avatar_url ?? null,
-      })
-    }
-
-    const applySignedOut = () => {
-      if (!mounted) return
-      setUser(null)
-      setProfile(null)
-      setAuthChecking(false)
-    }
-
-    const applySignedIn = async (nextUser: User | null) => {
-      if (!nextUser) {
-        applySignedOut()
-        return
-      }
-
-      setUser(nextUser)
-      await fetchProfile(nextUser)
-      if (mounted) {
-        setAuthChecking(false)
-      }
-    }
-
     const initializeAuth = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-      await applySignedIn(session?.user ?? null)
+      try {
+        const result = await getDashboardMe()
+        if (!mounted) return
+        setUser(result.user)
+      } finally {
+        if (mounted) {
+          setAuthChecking(false)
+        }
+      }
     }
 
     void initializeAuth()
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT') {
-        applySignedOut()
-        return
-      }
-
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
-        void applySignedIn(session?.user ?? null)
-        return
-      }
-
-      // Covers INITIAL_SESSION and other auth events.
-      void applySignedIn(session?.user ?? null)
-    })
-
     return () => {
       mounted = false
-      subscription.unsubscribe()
     }
-  }, [supabase])
+  }, [])
 
-  const displayName = profile?.name?.trim() || user?.email?.split('@')[0] || '사용자'
+  const displayName = user?.displayName?.trim() || user?.email?.split('@')[0] || '사용자'
   const fallbackInitial = displayName.slice(0, 1) || 'U'
   const showLoginButton = !user
 
@@ -132,7 +83,8 @@ export default function DashboardLayout({
     if (signingOut) return
     setSigningOut(true)
     try {
-      await supabase.auth.signOut()
+      await signOutDashboard()
+      setUser(null)
       router.replace('/login')
     } finally {
       setSigningOut(false)
@@ -147,7 +99,7 @@ export default function DashboardLayout({
 
         {/* 상단 로고 */}
         <div className="p-6">
-          <p className="font-bold text-lg text-gray-900 tracking-tight">Isosoer</p>
+          <p className="font-bold text-lg text-gray-900 tracking-tight">Isoser</p>
           <p className="text-[10px] text-gray-400 tracking-widest mt-0.5">CAREER CURATOR</p>
 
           {/* 네비게이션 */}
@@ -188,16 +140,15 @@ export default function DashboardLayout({
           ) : showLoginButton ? (
             <Link
               href="/login"
-              onClick={() => disableGuestMode()}
               className="block w-full rounded-lg bg-blue-600 px-3 py-2 text-center text-sm font-medium text-white hover:bg-blue-700 transition-colors"
             >
               회원가입 / 로그인
             </Link>
           ) : (
             <div className="flex items-center gap-3">
-              {profile?.avatar_url ? (
+              {user?.avatarUrl ? (
                 <img
-                  src={profile.avatar_url}
+                  src={user.avatarUrl}
                   alt={`${displayName} 프로필 이미지`}
                   className="w-8 h-8 rounded-full object-cover flex-shrink-0"
                 />
@@ -208,7 +159,7 @@ export default function DashboardLayout({
               )}
               <div className="min-w-0">
                 <p className="text-sm font-medium text-gray-900 truncate">{displayName}</p>
-                <p className="text-xs text-gray-400 truncate">{user.email ?? ''}</p>
+                <p className="text-xs text-gray-400 truncate">{user?.email ?? ''}</p>
                 <button
                   type="button"
                   onClick={() => void handleSignOut()}

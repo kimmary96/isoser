@@ -2,14 +2,12 @@
 
 import Link from "next/link";
 import { Suspense } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { createBrowserClient } from "@/lib/supabase/client";
-import { getGuestResume, isGuestMode } from "@/lib/guest";
+import { getDocuments } from "@/lib/api/app";
 import type { Resume } from "@/lib/types";
 
 function DocumentsContent() {
-  const supabase = useMemo(() => createBrowserClient(), []);
   const searchParams = useSearchParams();
   const highlightedResumeId = searchParams.get("resumeId");
   const [documents, setDocuments] = useState<Resume[]>([]);
@@ -21,30 +19,8 @@ function DocumentsContent() {
       setLoading(true);
       setError(null);
       try {
-        if (isGuestMode()) {
-          const guestResume = getGuestResume();
-          setDocuments(guestResume ? [guestResume] : []);
-          return;
-        }
-
-        const {
-          data: { user },
-          error: authError,
-        } = await supabase.auth.getUser();
-        if (authError || !user) {
-          throw new Error("로그인이 필요합니다.");
-        }
-
-        const { data, error: queryError } = await supabase
-          .from("resumes")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false });
-
-        if (queryError) {
-          throw new Error(queryError.message);
-        }
-        setDocuments(data || []);
+        const data = await getDocuments();
+        setDocuments(data.documents || []);
       } catch (e) {
         setError(e instanceof Error ? e.message : "문서 목록을 불러오지 못했습니다.");
       } finally {
@@ -53,7 +29,7 @@ function DocumentsContent() {
     };
 
     fetchDocuments();
-  }, [supabase]);
+  }, []);
 
   return (
     <main className="min-h-screen bg-gray-50">

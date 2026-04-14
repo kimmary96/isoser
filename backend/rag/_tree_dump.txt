@@ -1,0 +1,6846 @@
+TREE
+rag/
+├── __pycache__
+│   ├── __init__.cpython-310.pyc
+│   ├── __init__.cpython-313.pyc.2070284746544
+│   ├── __init__.cpython-313.pyc.2317299181872
+│   ├── __init__.cpython-313.pyc.2769850052944
+│   ├── __init__.cpython-313.pyc.2778694443568
+│   ├── __init__.cpython-313.pyc.2778742856880
+│   ├── __init__.cpython-313.pyc.2785345037232
+│   ├── __init__.cpython-313.pyc.2833879772080
+│   ├── __init__.cpython-313.pyc.2974903432752
+│   ├── chroma_client.cpython-310.pyc
+│   ├── chroma_client.cpython-310.pyc.1275434018992
+│   ├── chroma_client.cpython-310.pyc.1408841066672
+│   ├── chroma_client.cpython-310.pyc.1457501612336
+│   ├── chroma_client.cpython-310.pyc.1648744629040
+│   ├── chroma_client.cpython-310.pyc.1739816237936
+│   ├── chroma_client.cpython-310.pyc.1834810081968
+│   ├── chroma_client.cpython-310.pyc.1835653314480
+│   ├── chroma_client.cpython-310.pyc.2146707241264
+│   ├── chroma_client.cpython-310.pyc.2252585281840
+│   ├── chroma_client.cpython-310.pyc.2335833696560
+│   ├── chroma_client.cpython-310.pyc.2397044648112
+│   ├── chroma_client.cpython-310.pyc.2406674334384
+│   ├── chroma_client.cpython-310.pyc.2462905313584
+│   ├── chroma_client.cpython-310.pyc.2468526336176
+│   ├── chroma_client.cpython-310.pyc.2575998691632
+│   ├── chroma_client.cpython-310.pyc.2763580877104
+│   ├── chroma_client.cpython-313.pyc.2769850052944
+│   ├── fallback.cpython-310.pyc
+│   ├── programs_rag.cpython-310.pyc
+│   ├── programs_rag.cpython-313.pyc.2121833474992
+│   ├── programs_rag.cpython-313.pyc.2309533872176
+│   ├── programs_rag.cpython-313.pyc.2317299182128
+│   ├── programs_rag.cpython-313.pyc.2785345036848
+│   ├── programs_rag.cpython-313.pyc.2833879772336
+│   ├── programs_rag.cpython-313.pyc.2974903433008
+│   ├── retrievers.cpython-310.pyc
+│   ├── runtime_config.cpython-310.pyc
+│   ├── runtime_config.cpython-313.pyc.2778742857136
+│   ├── schema.cpython-310.pyc
+│   ├── seed.cpython-310.pyc
+│   ├── seed.cpython-313.pyc.2070284333360
+│   └── seed.cpython-313.pyc.2769850052944
+├── collector
+│   ├── __pycache__
+│   │   ├── __init__.cpython-310.pyc
+│   │   ├── base_api_collector.cpython-310.pyc
+│   │   ├── base_collector.cpython-310.pyc
+│   │   ├── base_collector.cpython-313.pyc.2163004625664
+│   │   ├── hrd_collector.cpython-310.pyc
+│   │   ├── kstartup_collector.cpython-310.pyc
+│   │   ├── normalizer.cpython-310.pyc
+│   │   ├── scheduler.cpython-310.pyc
+│   │   └── work24_collector.cpython-310.pyc
+│   ├── __init__.py
+│   ├── base_api_collector.py
+│   ├── base_collector.py
+│   ├── hrd_collector.py
+│   ├── kstartup_collector.py
+│   ├── normalizer.py
+│   ├── scheduler.py
+│   └── work24_collector.py
+├── generators
+│   ├── __init__.py
+│   ├── pattern_generator.py
+│   └── star_generator.py
+├── seed_data
+│   ├── api_samples
+│   │   ├── ncs_reference
+│   │   │   ├── ability_units_01_01_01_01_page_1.json
+│   │   │   ├── ability_units_01_01_01_02_page_1.json
+│   │   │   ├── ability_units_01_01_01_03_page_1.json
+│   │   │   ├── ability_units_01_01_02_01_page_1.json
+│   │   │   ├── ability_units_01_01_02_02_page_1.json
+│   │   │   ├── ability_units_02_01_01_01_page_1.json
+│   │   │   ├── ability_units_02_01_01_02_page_1.json
+│   │   │   ├── ability_units_02_01_02_01_page_1.json
+│   │   │   ├── ability_units_02_01_02_02_page_1.json
+│   │   │   ├── ability_units_02_01_03_01_page_1.json
+│   │   │   ├── ability_units_02_01_03_02_page_1.json
+│   │   │   ├── ability_units_02_01_03_03_page_1.json
+│   │   │   ├── ability_units_02_01_03_04_page_1.json
+│   │   │   ├── ability_units_02_02_01_01_page_1.json
+│   │   │   ├── ability_units_02_02_01_02_page_1.json
+│   │   │   ├── ability_units_02_02_01_03_page_1.json
+│   │   │   ├── ability_units_02_02_02_01_page_1.json
+│   │   │   ├── ability_units_02_02_02_02_page_1.json
+│   │   │   ├── ability_units_02_02_03_01_page_1.json
+│   │   │   ├── ability_units_02_02_03_02_page_1.json
+│   │   │   ├── ability_units_02_03_01_01_page_1.json
+│   │   │   ├── ability_units_02_03_01_02_page_1.json
+│   │   │   ├── ability_units_02_03_02_01_page_1.json
+│   │   │   ├── ability_units_02_03_02_02_page_1.json
+│   │   │   ├── ability_units_02_04_01_01_page_1.json
+│   │   │   ├── ability_units_02_04_01_02_page_1.json
+│   │   │   ├── ability_units_02_04_01_03_page_1.json
+│   │   │   ├── ability_units_02_04_01_04_page_1.json
+│   │   │   ├── ability_units_02_04_02_01_page_1.json
+│   │   │   ├── ability_units_02_04_03_02_page_1.json
+│   │   │   ├── ability_units_02_04_03_03_page_1.json
+│   │   │   ├── ability_units_02_04_03_05_page_1.json
+│   │   │   ├── ability_units_02_04_03_06_page_1.json
+│   │   │   ├── ability_units_02_04_03_07_page_1.json
+│   │   │   ├── classification_large_page_1.json
+│   │   │   ├── classification_middle_01_page_1.json
+│   │   │   ├── classification_middle_02_page_1.json
+│   │   │   ├── classification_middle_03_page_1.json
+│   │   │   ├── classification_middle_04_page_1.json
+│   │   │   ├── classification_middle_05_page_1.json
+│   │   │   ├── classification_middle_06_page_1.json
+│   │   │   ├── classification_middle_07_page_1.json
+│   │   │   ├── classification_middle_08_page_1.json
+│   │   │   ├── classification_middle_09_page_1.json
+│   │   │   ├── classification_middle_10_page_1.json
+│   │   │   ├── classification_middle_11_page_1.json
+│   │   │   ├── classification_middle_12_page_1.json
+│   │   │   ├── classification_middle_13_page_1.json
+│   │   │   ├── classification_middle_14_page_1.json
+│   │   │   ├── classification_middle_15_page_1.json
+│   │   │   ├── classification_middle_16_page_1.json
+│   │   │   ├── classification_middle_17_page_1.json
+│   │   │   ├── classification_middle_18_page_1.json
+│   │   │   ├── classification_middle_19_page_1.json
+│   │   │   ├── classification_middle_20_page_1.json
+│   │   │   ├── classification_middle_21_page_1.json
+│   │   │   ├── classification_middle_22_page_1.json
+│   │   │   ├── classification_middle_23_page_1.json
+│   │   │   ├── classification_middle_24_page_1.json
+│   │   │   ├── classification_page_1.json
+│   │   │   ├── classification_small_01_01_page_1.json
+│   │   │   ├── classification_small_02_01_page_1.json
+│   │   │   ├── classification_small_02_02_page_1.json
+│   │   │   ├── classification_small_02_03_page_1.json
+│   │   │   ├── classification_small_02_04_page_1.json
+│   │   │   ├── classification_small_03_01_page_1.json
+│   │   │   ├── classification_small_03_02_page_1.json
+│   │   │   ├── classification_small_04_01_page_1.json
+│   │   │   ├── classification_small_04_02_page_1.json
+│   │   │   ├── classification_small_04_03_page_1.json
+│   │   │   ├── classification_small_05_01_page_1.json
+│   │   │   ├── classification_small_05_02_page_1.json
+│   │   │   ├── classification_small_06_01_page_1.json
+│   │   │   ├── classification_small_06_02_page_1.json
+│   │   │   ├── classification_small_07_01_page_1.json
+│   │   │   ├── classification_small_07_02_page_1.json
+│   │   │   ├── classification_small_07_03_page_1.json
+│   │   │   ├── classification_small_08_01_page_1.json
+│   │   │   ├── classification_small_08_02_page_1.json
+│   │   │   ├── classification_small_08_03_page_1.json
+│   │   │   ├── classification_small_09_01_page_1.json
+│   │   │   ├── classification_small_09_02_page_1.json
+│   │   │   ├── classification_small_09_03_page_1.json
+│   │   │   ├── classification_small_09_04_page_1.json
+│   │   │   ├── classification_small_10_01_page_1.json
+│   │   │   ├── classification_small_10_02_page_1.json
+│   │   │   ├── classification_small_10_03_page_1.json
+│   │   │   ├── classification_small_11_01_page_1.json
+│   │   │   ├── classification_small_11_02_page_1.json
+│   │   │   ├── classification_small_12_01_page_1.json
+│   │   │   ├── classification_small_12_02_page_1.json
+│   │   │   ├── classification_small_12_03_page_1.json
+│   │   │   ├── classification_small_12_04_page_1.json
+│   │   │   ├── classification_small_13_01_page_1.json
+│   │   │   ├── classification_small_14_01_page_1.json
+│   │   │   ├── classification_small_14_02_page_1.json
+│   │   │   ├── classification_small_14_03_page_1.json
+│   │   │   ├── classification_small_14_04_page_1.json
+│   │   │   ├── classification_small_14_05_page_1.json
+│   │   │   ├── classification_small_14_06_page_1.json
+│   │   │   ├── classification_small_14_07_page_1.json
+│   │   │   ├── classification_small_14_08_page_1.json
+│   │   │   ├── classification_small_15_01_page_1.json
+│   │   │   ├── classification_small_15_02_page_1.json
+│   │   │   ├── classification_small_15_03_page_1.json
+│   │   │   ├── classification_small_15_04_page_1.json
+│   │   │   ├── classification_small_15_05_page_1.json
+│   │   │   ├── classification_small_15_06_page_1.json
+│   │   │   ├── classification_small_15_07_page_1.json
+│   │   │   ├── classification_small_15_08_page_1.json
+│   │   │   ├── classification_small_15_09_page_1.json
+│   │   │   ├── classification_small_15_10_page_1.json
+│   │   │   ├── classification_small_15_11_page_1.json
+│   │   │   ├── classification_small_16_01_page_1.json
+│   │   │   ├── classification_small_16_02_page_1.json
+│   │   │   ├── classification_small_17_01_page_1.json
+│   │   │   ├── classification_small_17_02_page_1.json
+│   │   │   ├── classification_small_17_03_page_1.json
+│   │   │   ├── classification_small_17_04_page_1.json
+│   │   │   ├── classification_small_17_05_page_1.json
+│   │   │   ├── classification_small_18_01_page_1.json
+│   │   │   ├── classification_small_18_02_page_1.json
+│   │   │   ├── classification_small_18_03_page_1.json
+│   │   │   ├── classification_small_19_01_page_1.json
+│   │   │   ├── classification_small_19_02_page_1.json
+│   │   │   ├── classification_small_19_03_page_1.json
+│   │   │   ├── classification_small_20_01_page_1.json
+│   │   │   ├── classification_small_20_02_page_1.json
+│   │   │   ├── classification_small_20_03_page_1.json
+│   │   │   ├── classification_small_21_01_page_1.json
+│   │   │   ├── classification_small_21_02_page_1.json
+│   │   │   ├── classification_small_22_01_page_1.json
+│   │   │   ├── classification_small_22_02_page_1.json
+│   │   │   ├── classification_small_23_01_page_1.json
+│   │   │   ├── classification_small_23_02_page_1.json
+│   │   │   ├── classification_small_23_03_page_1.json
+│   │   │   ├── classification_small_23_04_page_1.json
+│   │   │   ├── classification_small_23_05_page_1.json
+│   │   │   ├── classification_small_23_06_page_1.json
+│   │   │   ├── classification_small_24_01_page_1.json
+│   │   │   ├── classification_small_24_02_page_1.json
+│   │   │   ├── classification_small_24_03_page_1.json
+│   │   │   ├── classification_small_24_04_page_1.json
+│   │   │   ├── classification_sub_01_01_01_page_1.json
+│   │   │   ├── classification_sub_01_01_02_page_1.json
+│   │   │   ├── classification_sub_02_01_01_page_1.json
+│   │   │   ├── classification_sub_02_01_02_page_1.json
+│   │   │   ├── classification_sub_02_01_03_page_1.json
+│   │   │   ├── classification_sub_02_02_01_page_1.json
+│   │   │   ├── classification_sub_02_02_02_page_1.json
+│   │   │   ├── classification_sub_02_02_03_page_1.json
+│   │   │   ├── classification_sub_02_03_01_page_1.json
+│   │   │   ├── classification_sub_02_03_02_page_1.json
+│   │   │   ├── classification_sub_02_04_01_page_1.json
+│   │   │   ├── classification_sub_02_04_02_page_1.json
+│   │   │   ├── classification_sub_02_04_03_page_1.json
+│   │   │   ├── classification_sub_03_01_01_page_1.json
+│   │   │   ├── classification_sub_03_01_02_page_1.json
+│   │   │   ├── classification_sub_03_01_03_page_1.json
+│   │   │   ├── classification_sub_03_01_04_page_1.json
+│   │   │   ├── classification_sub_03_01_05_page_1.json
+│   │   │   ├── classification_sub_03_01_06_page_1.json
+│   │   │   ├── classification_sub_03_02_01_page_1.json
+│   │   │   ├── classification_sub_03_02_02_page_1.json
+│   │   │   ├── classification_sub_03_02_03_page_1.json
+│   │   │   ├── classification_sub_04_01_01_page_1.json
+│   │   │   ├── classification_sub_04_02_01_page_1.json
+│   │   │   ├── classification_sub_04_02_02_page_1.json
+│   │   │   ├── classification_sub_04_03_01_page_1.json
+│   │   │   ├── classification_sub_04_03_02_page_1.json
+│   │   │   ├── classification_sub_05_01_01_page_1.json
+│   │   │   ├── classification_sub_05_01_02_page_1.json
+│   │   │   ├── classification_sub_05_02_01_page_1.json
+│   │   │   ├── classification_sub_05_02_02_page_1.json
+│   │   │   ├── classification_sub_05_02_03_page_1.json
+│   │   │   ├── classification_sub_06_01_01_page_1.json
+│   │   │   ├── classification_sub_06_01_02_page_1.json
+│   │   │   ├── classification_sub_06_01_03_page_1.json
+│   │   │   ├── classification_sub_06_02_01_page_1.json
+│   │   │   ├── classification_sub_06_02_02_page_1.json
+│   │   │   ├── classification_sub_06_02_03_page_1.json
+│   │   │   ├── classification_sub_06_02_04_page_1.json
+│   │   │   ├── classification_sub_07_01_01_page_1.json
+│   │   │   ├── classification_sub_07_01_02_page_1.json
+│   │   │   ├── classification_sub_07_02_01_page_1.json
+│   │   │   ├── classification_sub_07_02_02_page_1.json
+│   │   │   ├── classification_sub_07_02_03_page_1.json
+│   │   │   ├── classification_sub_07_03_01_page_1.json
+│   │   │   ├── classification_sub_08_01_01_page_1.json
+│   │   │   ├── classification_sub_08_01_02_page_1.json
+│   │   │   ├── classification_sub_08_01_03_page_1.json
+│   │   │   ├── classification_sub_08_01_04_page_1.json
+│   │   │   ├── classification_sub_08_02_01_page_1.json
+│   │   │   ├── classification_sub_08_03_01_page_1.json
+│   │   │   ├── classification_sub_08_03_02_page_1.json
+│   │   │   ├── classification_sub_08_03_03_page_1.json
+│   │   │   ├── classification_sub_08_03_04_page_1.json
+│   │   │   ├── classification_sub_09_01_01_page_1.json
+│   │   │   ├── classification_sub_09_02_01_page_1.json
+│   │   │   ├── classification_sub_09_02_02_page_1.json
+│   │   │   ├── classification_sub_09_03_01_page_1.json
+│   │   │   ├── classification_sub_09_03_02_page_1.json
+│   │   │   ├── classification_sub_09_04_01_page_1.json
+│   │   │   ├── classification_sub_09_04_02_page_1.json
+│   │   │   ├── classification_sub_09_04_03_page_1.json
+│   │   │   ├── classification_sub_10_01_01_page_1.json
+│   │   │   ├── classification_sub_10_02_01_page_1.json
+│   │   │   ├── classification_sub_10_02_02_page_1.json
+│   │   │   ├── classification_sub_10_02_03_page_1.json
+│   │   │   ├── classification_sub_10_02_04_page_1.json
+│   │   │   ├── classification_sub_10_03_01_page_1.json
+│   │   │   ├── classification_sub_10_03_02_page_1.json
+│   │   │   ├── classification_sub_10_03_03_page_1.json
+│   │   │   ├── classification_sub_11_01_01_page_1.json
+│   │   │   ├── classification_sub_11_02_01_page_1.json
+│   │   │   ├── classification_sub_12_01_01_page_1.json
+│   │   │   ├── classification_sub_12_02_01_page_1.json
+│   │   │   ├── classification_sub_12_02_02_page_1.json
+│   │   │   ├── classification_sub_12_03_01_page_1.json
+│   │   │   ├── classification_sub_12_03_02_page_1.json
+│   │   │   ├── classification_sub_12_03_03_page_1.json
+│   │   │   ├── classification_sub_12_03_04_page_1.json
+│   │   │   ├── classification_sub_12_04_01_page_1.json
+│   │   │   ├── classification_sub_12_04_02_page_1.json
+│   │   │   ├── classification_sub_12_04_03_page_1.json
+│   │   │   ├── classification_sub_12_04_04_page_1.json
+│   │   │   ├── classification_sub_12_04_05_page_1.json
+│   │   │   ├── classification_sub_13_01_01_page_1.json
+│   │   │   ├── classification_sub_13_01_02_page_1.json
+│   │   │   ├── classification_sub_13_01_03_page_1.json
+│   │   │   ├── classification_sub_14_01_01_page_1.json
+│   │   │   ├── classification_sub_14_01_02_page_1.json
+│   │   │   ├── classification_sub_14_01_03_page_1.json
+│   │   │   ├── classification_sub_14_01_04_page_1.json
+│   │   │   ├── classification_sub_14_02_01_page_1.json
+│   │   │   ├── classification_sub_14_02_02_page_1.json
+│   │   │   ├── classification_sub_14_02_03_page_1.json
+│   │   │   ├── classification_sub_14_03_01_page_1.json
+│   │   │   ├── classification_sub_14_03_02_page_1.json
+│   │   │   ├── classification_sub_14_03_03_page_1.json
+│   │   │   ├── classification_sub_14_04_01_page_1.json
+│   │   │   ├── classification_sub_14_04_02_page_1.json
+│   │   │   ├── classification_sub_14_04_03_page_1.json
+│   │   │   ├── classification_sub_14_05_01_page_1.json
+│   │   │   ├── classification_sub_14_06_01_page_1.json
+│   │   │   ├── classification_sub_14_06_02_page_1.json
+│   │   │   ├── classification_sub_14_06_03_page_1.json
+│   │   │   ├── classification_sub_14_06_04_page_1.json
+│   │   │   ├── classification_sub_14_07_01_page_1.json
+│   │   │   ├── classification_sub_14_07_02_page_1.json
+│   │   │   ├── classification_sub_14_07_03_page_1.json
+│   │   │   ├── classification_sub_14_07_04_page_1.json
+│   │   │   ├── classification_sub_14_07_05_page_1.json
+│   │   │   ├── classification_sub_14_07_06_page_1.json
+│   │   │   ├── classification_sub_14_08_01_page_1.json
+│   │   │   ├── classification_sub_14_08_02_page_1.json
+│   │   │   ├── classification_sub_14_08_03_page_1.json
+│   │   │   ├── classification_sub_14_08_04_page_1.json
+│   │   │   ├── classification_sub_14_08_05_page_1.json
+│   │   │   ├── classification_sub_15_01_01_page_1.json
+│   │   │   ├── classification_sub_15_01_02_page_1.json
+│   │   │   ├── classification_sub_15_02_01_page_1.json
+│   │   │   ├── classification_sub_15_02_02_page_1.json
+│   │   │   ├── classification_sub_15_03_01_page_1.json
+│   │   │   ├── classification_sub_15_03_02_page_1.json
+│   │   │   ├── classification_sub_15_04_01_page_1.json
+│   │   │   ├── classification_sub_15_05_01_page_1.json
+│   │   │   ├── classification_sub_15_05_02_page_1.json
+│   │   │   ├── classification_sub_15_05_03_page_1.json
+│   │   │   ├── classification_sub_15_06_01_page_1.json
+│   │   │   ├── classification_sub_15_06_02_page_1.json
+│   │   │   ├── classification_sub_15_06_03_page_1.json
+│   │   │   ├── classification_sub_15_06_04_page_1.json
+│   │   │   ├── classification_sub_15_06_05_page_1.json
+│   │   │   ├── classification_sub_15_07_01_page_1.json
+│   │   │   ├── classification_sub_15_07_02_page_1.json
+│   │   │   ├── classification_sub_15_08_01_page_1.json
+│   │   │   ├── classification_sub_15_08_02_page_1.json
+│   │   │   ├── classification_sub_15_08_03_page_1.json
+│   │   │   ├── classification_sub_15_08_04_page_1.json
+│   │   │   ├── classification_sub_15_08_05_page_1.json
+│   │   │   ├── classification_sub_15_08_06_page_1.json
+│   │   │   ├── classification_sub_15_08_07_page_1.json
+│   │   │   ├── classification_sub_15_08_08_page_1.json
+│   │   │   ├── classification_sub_15_09_01_page_1.json
+│   │   │   ├── classification_sub_15_09_02_page_1.json
+│   │   │   ├── classification_sub_15_09_03_page_1.json
+│   │   │   ├── classification_sub_15_09_04_page_1.json
+│   │   │   ├── classification_sub_15_10_00_page_1.json
+│   │   │   ├── classification_sub_15_10_01_page_1.json
+│   │   │   ├── classification_sub_15_10_02_page_1.json
+│   │   │   ├── classification_sub_15_10_03_page_1.json
+│   │   │   ├── classification_sub_15_11_01_page_1.json
+│   │   │   ├── classification_sub_15_11_02_page_1.json
+│   │   │   ├── classification_sub_15_11_03_page_1.json
+│   │   │   ├── classification_sub_16_01_01_page_1.json
+│   │   │   ├── classification_sub_16_01_02_page_1.json
+│   │   │   ├── classification_sub_16_01_03_page_1.json
+│   │   │   ├── classification_sub_16_01_04_page_1.json
+│   │   │   ├── classification_sub_16_01_05_page_1.json
+│   │   │   ├── classification_sub_16_01_06_page_1.json
+│   │   │   ├── classification_sub_16_02_00_page_1.json
+│   │   │   ├── classification_sub_16_02_03_page_1.json
+│   │   │   ├── classification_sub_16_02_04_page_1.json
+│   │   │   ├── classification_sub_16_02_05_page_1.json
+│   │   │   ├── classification_sub_17_01_01_page_1.json
+│   │   │   ├── classification_sub_17_01_02_page_1.json
+│   │   │   ├── classification_sub_17_01_03_page_1.json
+│   │   │   ├── classification_sub_17_02_00_page_1.json
+│   │   │   ├── classification_sub_17_02_01_page_1.json
+│   │   │   ├── classification_sub_17_02_02_page_1.json
+│   │   │   ├── classification_sub_17_02_03_page_1.json
+│   │   │   ├── classification_sub_17_03_00_page_1.json
+│   │   │   ├── classification_sub_17_03_01_page_1.json
+│   │   │   ├── classification_sub_17_03_02_page_1.json
+│   │   │   ├── classification_sub_17_03_06_page_1.json
+│   │   │   ├── classification_sub_17_03_07_page_1.json
+│   │   │   ├── classification_sub_17_04_01_page_1.json
+│   │   │   ├── classification_sub_17_04_02_page_1.json
+│   │   │   ├── classification_sub_17_05_01_page_1.json
+│   │   │   ├── classification_sub_17_05_02_page_1.json
+│   │   │   ├── classification_sub_17_05_03_page_1.json
+│   │   │   ├── classification_sub_18_01_01_page_1.json
+│   │   │   ├── classification_sub_18_01_02_page_1.json
+│   │   │   ├── classification_sub_18_01_03_page_1.json
+│   │   │   ├── classification_sub_18_02_01_page_1.json
+│   │   │   ├── classification_sub_18_02_02_page_1.json
+│   │   │   ├── classification_sub_18_02_03_page_1.json
+│   │   │   ├── classification_sub_18_02_04_page_1.json
+│   │   │   ├── classification_sub_18_03_01_page_1.json
+│   │   │   ├── classification_sub_19_01_01_page_1.json
+│   │   │   ├── classification_sub_19_01_02_page_1.json
+│   │   │   ├── classification_sub_19_01_03_page_1.json
+│   │   │   ├── classification_sub_19_01_04_page_1.json
+│   │   │   ├── classification_sub_19_01_05_page_1.json
+│   │   │   ├── classification_sub_19_01_06_page_1.json
+│   │   │   ├── classification_sub_19_01_07_page_1.json
+│   │   │   ├── classification_sub_19_01_08_page_1.json
+│   │   │   ├── classification_sub_19_01_09_page_1.json
+│   │   │   ├── classification_sub_19_01_10_page_1.json
+│   │   │   ├── classification_sub_19_01_11_page_1.json
+│   │   │   ├── classification_sub_19_01_12_page_1.json
+│   │   │   ├── classification_sub_19_01_13_page_1.json
+│   │   │   ├── classification_sub_19_01_14_page_1.json
+│   │   │   ├── classification_sub_19_02_01_page_1.json
+│   │   │   ├── classification_sub_19_02_02_page_1.json
+│   │   │   ├── classification_sub_19_02_03_page_1.json
+│   │   │   ├── classification_sub_19_03_05_page_1.json
+│   │   │   ├── classification_sub_19_03_06_page_1.json
+│   │   │   ├── classification_sub_19_03_07_page_1.json
+│   │   │   ├── classification_sub_19_03_08_page_1.json
+│   │   │   ├── classification_sub_19_03_09_page_1.json
+│   │   │   ├── classification_sub_19_03_10_page_1.json
+│   │   │   ├── classification_sub_19_03_11_page_1.json
+│   │   │   ├── classification_sub_19_03_12_page_1.json
+│   │   │   ├── classification_sub_19_03_13_page_1.json
+│   │   │   ├── classification_sub_19_03_14_page_1.json
+│   │   │   ├── classification_sub_19_03_15_page_1.json
+│   │   │   ├── classification_sub_19_03_16_page_1.json
+│   │   │   ├── classification_sub_19_03_17_page_1.json
+│   │   │   ├── classification_sub_19_03_18_page_1.json
+│   │   │   ├── classification_sub_19_03_19_page_1.json
+│   │   │   ├── classification_sub_19_03_20_page_1.json
+│   │   │   ├── classification_sub_20_01_01_page_1.json
+│   │   │   ├── classification_sub_20_01_02_page_1.json
+│   │   │   ├── classification_sub_20_01_03_page_1.json
+│   │   │   ├── classification_sub_20_01_04_page_1.json
+│   │   │   ├── classification_sub_20_01_05_page_1.json
+│   │   │   ├── classification_sub_20_01_06_page_1.json
+│   │   │   ├── classification_sub_20_01_07_page_1.json
+│   │   │   ├── classification_sub_20_01_08_page_1.json
+│   │   │   ├── classification_sub_20_01_09_page_1.json
+│   │   │   ├── classification_sub_20_01_10_page_1.json
+│   │   │   ├── classification_sub_20_01_11_page_1.json
+│   │   │   ├── classification_sub_20_02_01_page_1.json
+│   │   │   ├── classification_sub_20_02_02_page_1.json
+│   │   │   ├── classification_sub_20_02_03_page_1.json
+│   │   │   ├── classification_sub_20_02_04_page_1.json
+│   │   │   ├── classification_sub_20_03_01_page_1.json
+│   │   │   ├── classification_sub_20_03_02_page_1.json
+│   │   │   ├── classification_sub_20_03_03_page_1.json
+│   │   │   ├── classification_sub_21_01_01_page_1.json
+│   │   │   ├── classification_sub_21_01_02_page_1.json
+│   │   │   ├── classification_sub_21_01_03_page_1.json
+│   │   │   ├── classification_sub_21_02_01_page_1.json
+│   │   │   ├── classification_sub_22_01_01_page_1.json
+│   │   │   ├── classification_sub_22_01_02_page_1.json
+│   │   │   ├── classification_sub_22_02_01_page_1.json
+│   │   │   ├── classification_sub_22_02_02_page_1.json
+│   │   │   ├── classification_sub_23_01_01_page_1.json
+│   │   │   ├── classification_sub_23_01_02_page_1.json
+│   │   │   ├── classification_sub_23_01_03_page_1.json
+│   │   │   ├── classification_sub_23_01_04_page_1.json
+│   │   │   ├── classification_sub_23_01_05_page_1.json
+│   │   │   ├── classification_sub_23_02_01_page_1.json
+│   │   │   ├── classification_sub_23_03_01_page_1.json
+│   │   │   ├── classification_sub_23_04_01_page_1.json
+│   │   │   ├── classification_sub_23_04_02_page_1.json
+│   │   │   ├── classification_sub_23_05_01_page_1.json
+│   │   │   ├── classification_sub_23_05_02_page_1.json
+│   │   │   ├── classification_sub_23_05_03_page_1.json
+│   │   │   ├── classification_sub_23_05_04_page_1.json
+│   │   │   ├── classification_sub_23_05_05_page_1.json
+│   │   │   ├── classification_sub_23_05_06_page_1.json
+│   │   │   ├── classification_sub_23_05_07_page_1.json
+│   │   │   ├── classification_sub_23_06_01_page_1.json
+│   │   │   ├── classification_sub_23_06_02_page_1.json
+│   │   │   ├── classification_sub_23_06_03_page_1.json
+│   │   │   ├── classification_sub_24_01_01_page_1.json
+│   │   │   ├── classification_sub_24_01_02_page_1.json
+│   │   │   ├── classification_sub_24_01_03_page_1.json
+│   │   │   ├── classification_sub_24_01_04_page_1.json
+│   │   │   ├── classification_sub_24_02_01_page_1.json
+│   │   │   ├── classification_sub_24_02_02_page_1.json
+│   │   │   ├── classification_sub_24_03_01_page_1.json
+│   │   │   ├── classification_sub_24_03_02_page_1.json
+│   │   │   ├── classification_sub_24_03_03_page_1.json
+│   │   │   ├── classification_sub_24_04_01_page_1.json
+│   │   │   ├── classification_sub_24_04_02_page_1.json
+│   │   │   ├── classification_sub_24_04_03_page_1.json
+│   │   │   ├── classification_sub_24_04_04_page_1.json
+│   │   │   ├── job_descriptions_01_page_1.json
+│   │   │   ├── job_descriptions_01_page_2.json
+│   │   │   ├── job_descriptions_02_page_1.json
+│   │   │   ├── job_descriptions_02_page_2.json
+│   │   │   ├── verify_large_page_1.json
+│   │   │   ├── verify_middle_01_page_1.json
+│   │   │   ├── verify_small_01_01_page_1.json
+│   │   │   └── verify_sub_01_01_01_page_1.json
+│   │   └── work24_training
+│   ├── job_keyword_patterns.json
+│   ├── job_keywords.json
+│   ├── job_posting_snippets.json
+│   ├── job_taxonomy_unmapped.json
+│   ├── job_taxonomy.json
+│   ├── know_question_labels.json
+│   ├── know_skill_weights.json
+│   ├── manifest.json
+│   ├── ncs_taxonomy_supplement.json
+│   └── star_examples.json
+├── source_adapters
+│   ├── __pycache__
+│   │   ├── __init__.cpython-310.pyc
+│   │   ├── __init__.cpython-313.pyc.2778693555744
+│   │   ├── __init__.cpython-313.pyc.2778742166784
+│   │   ├── base.cpython-310.pyc
+│   │   ├── base.cpython-313.pyc.2778742857776
+│   │   ├── work24_training.cpython-310.pyc
+│   │   └── work24_training.cpython-313.pyc.2778693556032
+│   ├── __init__.py
+│   ├── base.py
+│   ├── catalog.py
+│   ├── know_files.py
+│   ├── know_survey.py
+│   ├── models.py
+│   ├── ncs_reference.py
+│   ├── ncs_resources.py
+│   ├── work24_common_codes.py
+│   ├── work24_job_duty.py
+│   ├── work24_job_info.py
+│   ├── work24_job_support.py
+│   ├── work24_major_info.py
+│   ├── work24_supplementary.py
+│   ├── work24_training.py
+│   └── worknet_standard_job_description.py
+├── __init__.py
+├── build_job_taxonomy.py
+├── chroma_client.py
+├── fallback.py
+├── manage_chroma.py
+├── migrate_legacy_chroma_metadata.py
+├── programs_rag.py
+├── retrievers.py
+├── runtime_config.py
+├── schema.py
+├── seed_version.py
+├── seed.py
+└── taxonomy.py
+
+SNIPPETS
+FILE: __init__.py
+"""RAG package for Coach AI data loading and retrieval."""
+---
+FILE: __pycache__/__init__.cpython-310.pyc
+o
+
+    j:�i<   �                   @   s   d Z dS )z4RAG package for Coach AI data loading and retrieval.N)�__doc__� r   r   �0D:\02_2025_AI_Lab\isoser\backend\rag\__init__.py�<module>   s    
+---
+FILE: __pycache__/__init__.cpython-313.pyc.2070284746544
+�
+
+    j:�i<   �                   �   � S r g)z4RAG package for Coach AI data loading and retrieval.N)�__doc__� �    �0D:\02_2025_AI_Lab\isoser\backend\rag\__init__.py�<module>r      s   �� :r   
+---
+FILE: __pycache__/__init__.cpython-313.pyc.2317299181872
+�
+
+    j:�i<   �                   �   � S r g)z4RAG package for Coach AI data loading and retrieval.N)�__doc__� �    �0d:\02_2025_AI_Lab\isoser\backend\rag\__init__.py�<module>r      s   �� :r   
+---
+FILE: __pycache__/__init__.cpython-313.pyc.2769850052944
+�
+
+    2��i    �                   �   � g )N� r   �    �backend\rag\__init__.py�<module>r      s   �r   
+---
+FILE: __pycache__/__init__.cpython-313.pyc.2778694443568
+�
+
+    j:�i<   �                   �   � S r g)z4RAG package for Coach AI data loading and retrieval.N)�__doc__� �    �0d:\02_2025_AI_Lab\isoser\backend\rag\__init__.py�<module>r      s   �� :r   
+---
+FILE: __pycache__/__init__.cpython-313.pyc.2778742856880
+�
+
+    j:�i<   �                   �   � S r g)z4RAG package for Coach AI data loading and retrieval.N)�__doc__� �    �0D:\02_2025_AI_Lab\isoser\backend\rag\__init__.py�<module>r      s   �� :r   
+---
+FILE: __pycache__/__init__.cpython-313.pyc.2785345037232
+�
+
+    j:�i<   �                   �   � S r g)z4RAG package for Coach AI data loading and retrieval.N)�__doc__� �    �0d:\02_2025_AI_Lab\isoser\backend\rag\__init__.py�<module>r      s   �� :r   
+---
+FILE: __pycache__/__init__.cpython-313.pyc.2833879772080
+�
+
+    j:�i<   �                   �   � S r g)z4RAG package for Coach AI data loading and retrieval.N)�__doc__� �    �0D:\02_2025_AI_Lab\isoser\backend\rag\__init__.py�<module>r      s   �� :r   
+---
+FILE: __pycache__/__init__.cpython-313.pyc.2974903432752
+�
+
+    j:�i<   �                   �   � S r g)z4RAG package for Coach AI data loading and retrieval.N)�__doc__� �    �0D:\02_2025_AI_Lab\isoser\backend\rag\__init__.py�<module>r      s   �� :r   
+---
+FILE: __pycache__/chroma_client.cpython-310.pyc
+o
+
+    �s�i�E  �                   @  sx  U d Z ddlmZ ddlmZ ddlmZmZ ddlZddl	Z	ddl
+mZmZm
+Z
+mZ ddlZddlmZmZ ddlmZ dd	lmZ dd
+lmZ zddlmZmZ ddlmZmZmZ W n e yx   ddl!mZmZ ddl"mZmZmZ Y nw e�  ee#�Z$d
+didd�d
+didd�d
+didd�d
+---
+FILE: __pycache__/chroma_client.cpython-310.pyc.1275434018992
+o
+
+    �i�i�B  �                   @  sZ  U d Z ddlmZ ddlmZ ddlmZmZ ddlZddl	Z	ddl
+mZmZm
+Z
+mZ ddlZddlmZmZ ddlmZ dd	lmZ dd
+lmZ zddlmZmZ ddlmZmZmZ W n e yx   ddl!mZmZ ddl"mZmZmZ Y nw e�  ee#�Z$d
+didd�d
+didd�d
+didd�d�Z%de&d< dZ'G dd� de�Z(dddd�Z)dedd�Z*dfd!d"�Z+	dgdhd&d'�Z,did,d-�Z-ed.d/�G d0d1� d1��Z.djd3d4�Z/dkd8d9�Z0G d:d;� d;�Z1dld<d=�Z2dmd?d@�Z3dndBdC�Z4dodDdE�Z5dodFdG�Z6dodHdI�Z7dpdJdK�Z8	LdqdrdQdR�Z9dsdSdT�Z:	LdqdtdVdW�Z;	XdudvdZd[�Z<	Xdudwd\d]�Z=dudxd_d`�Z>dydzdbdc�Z?dS ){zIChromaDB bootstrap, singleton access, and retrieval helpers for Coach AI.�    )�annotations)�Counter)�	dataclass�fieldN)�Any�ClassVar�Mapping�Sequence)�EmbeddingFunction�
+---
+FILE: __pycache__/chroma_client.cpython-310.pyc.1408841066672
+o
+
+    �i�i�A  �                   @  sN  U d Z ddlmZ ddlmZ ddlmZmZ ddlZddl	Z	ddl
+mZmZm
+Z
+mZ ddlZddlmZmZ ddlmZ dd	lmZ zdd
+lmZmZ ddlmZmZmZ W n eyr   dd
+lmZmZ ddlmZmZmZ Y nw e�  ee �Z!dd
+idd�dd
+idd�dd
+---
+FILE: __pycache__/chroma_client.cpython-310.pyc.1457501612336
+o
+
+    �j�ilB  �                   @  sZ  U d Z ddlmZ ddlmZ ddlmZmZ ddlZddl	Z	ddl
+mZmZm
+Z
+mZ ddlZddlmZmZ ddlmZ dd	lmZ dd
+lmZ zddlmZmZ ddlmZmZmZ W n e yx   ddl!mZmZ ddl"mZmZmZ Y nw e�  ee#�Z$d
+didd�d
+didd�d
+didd�d�Z%de&d< dZ'G dd� de�Z(dddd�Z)dedd�Z*dfd!d"�Z+	dgdhd&d'�Z,did,d-�Z-ed.d/�G d0d1� d1��Z.djd3d4�Z/dkd8d9�Z0G d:d;� d;�Z1dld<d=�Z2dmd?d@�Z3dndBdC�Z4dodDdE�Z5dodFdG�Z6dodHdI�Z7dpdJdK�Z8	LdqdrdQdR�Z9dsdSdT�Z:	LdqdtdVdW�Z;	XdudvdZd[�Z<	Xdudwd\d]�Z=dudxd_d`�Z>dydzdbdc�Z?dS ){zIChromaDB bootstrap, singleton access, and retrieval helpers for Coach AI.�    )�annotations)�Counter)�	dataclass�fieldN)�Any�ClassVar�Mapping�Sequence)�EmbeddingFunction�
+---
+FILE: __pycache__/chroma_client.cpython-310.pyc.1648744629040
+o
+
+    h�i�B  �                   @  sN  U d Z ddlmZ ddlmZ ddlmZmZ ddlZddl	Z	ddl
+mZmZm
+Z
+mZ ddlZddlmZmZ ddlmZ ddlmZ zdd	lmZmZ dd
+lmZmZmZ W n eyr   dd	lmZmZ dd
+l mZmZmZ Y nw e�  ee!�Z"ddid
+d�ddidd�ddidd�d�Z#de$d< dZ%G dd� de�Z&dbdd�Z'dcdd�Z(dddd �Z)	dedfd$d%�Z*dgd*d+�Z+ed,d-�G d.d/� d/��Z,dhd1d2�Z-did6d7�Z.G d8d9� d9�Z/djd:d;�Z0dkd=d>�Z1dld@dA�Z2dmdBdC�Z3dmdDdE�Z4dmdFdG�Z5dndHdI�Z6	JdodpdOdP�Z7dqdQdR�Z8	JdodrdTdU�Z9	VdsdtdXdY�Z:	VdsdudZd[�Z;dsdvd]d^�Z<dwdxd`da�Z=dS )yzIChromaDB bootstrap, singleton access, and retrieval helpers for Coach AI.�    )�annotations)�Counter)�	dataclass�fieldN)�Any�ClassVar�Mapping�Sequence)�EmbeddingFunction�
+Embeddings)�Settings)�
+---
+FILE: __pycache__/chroma_client.cpython-310.pyc.1739816237936
+o
+
+    h�i�B  �                   @  sN  U d Z ddlmZ ddlmZ ddlmZmZ ddlZddl	Z	ddl
+mZmZm
+Z
+mZ ddlZddlmZmZ ddlmZ ddlmZ zdd	lmZmZ dd
+lmZmZmZ W n eyr   dd	lmZmZ dd
+l mZmZmZ Y nw e�  ee!�Z"ddid
+d�ddidd�ddidd�d�Z#de$d< dZ%G dd� de�Z&dbdd�Z'dcdd�Z(dddd �Z)	dedfd$d%�Z*dgd*d+�Z+ed,d-�G d.d/� d/��Z,dhd1d2�Z-did6d7�Z.G d8d9� d9�Z/djd:d;�Z0dkd=d>�Z1dld@dA�Z2dmdBdC�Z3dmdDdE�Z4dmdFdG�Z5dndHdI�Z6	JdodpdOdP�Z7dqdQdR�Z8	JdodrdTdU�Z9	VdsdtdXdY�Z:	VdsdudZd[�Z;dsdvd]d^�Z<dwdxd`da�Z=dS )yzIChromaDB bootstrap, singleton access, and retrieval helpers for Coach AI.�    )�annotations)�Counter)�	dataclass�fieldN)�Any�ClassVar�Mapping�Sequence)�EmbeddingFunction�
+Embeddings)�Settings)�
+---
+FILE: __pycache__/chroma_client.cpython-310.pyc.1834810081968
+o
+
+    ���i�E  �                   @  sx  U d Z ddlmZ ddlmZ ddlmZmZ ddlZddl	Z	ddl
+mZmZm
+Z
+mZ ddlZddlmZmZ ddlmZ dd	lmZ dd
+lmZ zddlmZmZ ddlmZmZmZ W n e yx   ddl!mZmZ ddl"mZmZmZ Y nw e�  ee#�Z$d
+didd�d
+didd�d
+didd�d
+---
+FILE: __pycache__/chroma_client.cpython-310.pyc.1835653314480
+o
+
+    ���i�E  �                   @  sx  U d Z ddlmZ ddlmZ ddlmZmZ ddlZddl	Z	ddl
+mZmZm
+Z
+mZ ddlZddlmZmZ ddlmZ dd	lmZ dd
+lmZ zddlmZmZ ddlmZmZmZ W n e yx   ddl!mZmZ ddl"mZmZmZ Y nw e�  ee#�Z$d
+didd�d
+didd�d
+didd�d
+---
+FILE: __pycache__/chroma_client.cpython-310.pyc.2146707241264
+o
+
+    ���i�E  �                   @  sx  U d Z ddlmZ ddlmZ ddlmZmZ ddlZddl	Z	ddl
+mZmZm
+Z
+mZ ddlZddlmZmZ ddlmZ dd	lmZ dd
+lmZ zddlmZmZ ddlmZmZmZ W n e yx   ddl!mZmZ ddl"mZmZmZ Y nw e�  ee#�Z$d
+didd�d
+didd�d
+didd�d
+---
+FILE: __pycache__/chroma_client.cpython-310.pyc.2252585281840
+o
+
+    �j�ilB  �                   @  sZ  U d Z ddlmZ ddlmZ ddlmZmZ ddlZddl	Z	ddl
+mZmZm
+Z
+mZ ddlZddlmZmZ ddlmZ dd	lmZ dd
+lmZ zddlmZmZ ddlmZmZmZ W n e yx   ddl!mZmZ ddl"mZmZmZ Y nw e�  ee#�Z$d
+didd�d
+didd�d
+didd�d�Z%de&d< dZ'G dd� de�Z(dddd�Z)dedd�Z*dfd!d"�Z+	dgdhd&d'�Z,did,d-�Z-ed.d/�G d0d1� d1��Z.djd3d4�Z/dkd8d9�Z0G d:d;� d;�Z1dld<d=�Z2dmd?d@�Z3dndBdC�Z4dodDdE�Z5dodFdG�Z6dodHdI�Z7dpdJdK�Z8	LdqdrdQdR�Z9dsdSdT�Z:	LdqdtdVdW�Z;	XdudvdZd[�Z<	Xdudwd\d]�Z=dudxd_d`�Z>dydzdbdc�Z?dS ){zIChromaDB bootstrap, singleton access, and retrieval helpers for Coach AI.�    )�annotations)�Counter)�	dataclass�fieldN)�Any�ClassVar�Mapping�Sequence)�EmbeddingFunction�
+---
+FILE: __pycache__/chroma_client.cpython-310.pyc.2335833696560
+o
+
+    �j�ilB  �                   @  sZ  U d Z ddlmZ ddlmZ ddlmZmZ ddlZddl	Z	ddl
+mZmZm
+Z
+mZ ddlZddlmZmZ ddlmZ dd	lmZ dd
+lmZ zddlmZmZ ddlmZmZmZ W n e yx   ddl!mZmZ ddl"mZmZmZ Y nw e�  ee#�Z$d
+didd�d
+didd�d
+didd�d�Z%de&d< dZ'G dd� de�Z(dddd�Z)dedd�Z*dfd!d"�Z+	dgdhd&d'�Z,did,d-�Z-ed.d/�G d0d1� d1��Z.djd3d4�Z/dkd8d9�Z0G d:d;� d;�Z1dld<d=�Z2dmd?d@�Z3dndBdC�Z4dodDdE�Z5dodFdG�Z6dodHdI�Z7dpdJdK�Z8	LdqdrdQdR�Z9dsdSdT�Z:	LdqdtdVdW�Z;	XdudvdZd[�Z<	Xdudwd\d]�Z=dudxd_d`�Z>dydzdbdc�Z?dS ){zIChromaDB bootstrap, singleton access, and retrieval helpers for Coach AI.�    )�annotations)�Counter)�	dataclass�fieldN)�Any�ClassVar�Mapping�Sequence)�EmbeddingFunction�
+---
+FILE: __pycache__/chroma_client.cpython-310.pyc.2397044648112
+o
+
+    ci�i�B  �                   @  sZ  U d Z ddlmZ ddlmZ ddlmZmZ ddlZddl	Z	ddl
+mZmZm
+Z
+mZ ddlZddlmZmZ ddlmZ dd	lmZ dd
+lmZ zddlmZmZ ddlmZmZmZ W n e yx   ddl!mZmZ ddl"mZmZmZ Y nw e�  ee#�Z$d
+didd�d
+didd�d
+didd�d�Z%de&d< dZ'G dd� de�Z(dddd�Z)dedd�Z*dfd!d"�Z+	dgdhd&d'�Z,did,d-�Z-ed.d/�G d0d1� d1��Z.djd3d4�Z/dkd8d9�Z0G d:d;� d;�Z1dld<d=�Z2dmd?d@�Z3dndBdC�Z4dodDdE�Z5dodFdG�Z6dodHdI�Z7dpdJdK�Z8	LdqdrdQdR�Z9dsdSdT�Z:	LdqdtdVdW�Z;	XdudvdZd[�Z<	Xdudwd\d]�Z=dudxd_d`�Z>dydzdbdc�Z?dS ){zIChromaDB bootstrap, singleton access, and retrieval helpers for Coach AI.�    )�annotations)�Counter)�	dataclass�fieldN)�Any�ClassVar�Mapping�Sequence)�EmbeddingFunction�
+---
+FILE: __pycache__/chroma_client.cpython-310.pyc.2406674334384
+o
+
+    h�i�B  �                   @  sN  U d Z ddlmZ ddlmZ ddlmZmZ ddlZddl	Z	ddl
+mZmZm
+Z
+mZ ddlZddlmZmZ ddlmZ ddlmZ zdd	lmZmZ dd
+lmZmZmZ W n eyr   dd	lmZmZ dd
+l mZmZmZ Y nw e�  ee!�Z"ddid
+d�ddidd�ddidd�d�Z#de$d< dZ%G dd� de�Z&dbdd�Z'dcdd�Z(dddd �Z)	dedfd$d%�Z*dgd*d+�Z+ed,d-�G d.d/� d/��Z,dhd1d2�Z-did6d7�Z.G d8d9� d9�Z/djd:d;�Z0dkd=d>�Z1dld@dA�Z2dmdBdC�Z3dmdDdE�Z4dmdFdG�Z5dndHdI�Z6	JdodpdOdP�Z7dqdQdR�Z8	JdodrdTdU�Z9	VdsdtdXdY�Z:	VdsdudZd[�Z;dsdvd]d^�Z<dwdxd`da�Z=dS )yzIChromaDB bootstrap, singleton access, and retrieval helpers for Coach AI.�    )�annotations)�Counter)�	dataclass�fieldN)�Any�ClassVar�Mapping�Sequence)�EmbeddingFunction�
+Embeddings)�Settings)�
+---
+FILE: __pycache__/chroma_client.cpython-310.pyc.2462905313584
+o
+
+    �j�ilB  �                   @  sZ  U d Z ddlmZ ddlmZ ddlmZmZ ddlZddl	Z	ddl
+mZmZm
+Z
+mZ ddlZddlmZmZ ddlmZ dd	lmZ dd
+lmZ zddlmZmZ ddlmZmZmZ W n e yx   ddl!mZmZ ddl"mZmZmZ Y nw e�  ee#�Z$d
+didd�d
+didd�d
+didd�d�Z%de&d< dZ'G dd� de�Z(dddd�Z)dedd�Z*dfd!d"�Z+	dgdhd&d'�Z,did,d-�Z-ed.d/�G d0d1� d1��Z.djd3d4�Z/dkd8d9�Z0G d:d;� d;�Z1dld<d=�Z2dmd?d@�Z3dndBdC�Z4dodDdE�Z5dodFdG�Z6dodHdI�Z7dpdJdK�Z8	LdqdrdQdR�Z9dsdSdT�Z:	LdqdtdVdW�Z;	XdudvdZd[�Z<	Xdudwd\d]�Z=dudxd_d`�Z>dydzdbdc�Z?dS ){zIChromaDB bootstrap, singleton access, and retrieval helpers for Coach AI.�    )�annotations)�Counter)�	dataclass�fieldN)�Any�ClassVar�Mapping�Sequence)�EmbeddingFunction�
+---
+FILE: __pycache__/chroma_client.cpython-310.pyc.2468526336176
+o
+
+    �j�ilB  �                   @  sZ  U d Z ddlmZ ddlmZ ddlmZmZ ddlZddl	Z	ddl
+mZmZm
+Z
+mZ ddlZddlmZmZ ddlmZ dd	lmZ dd
+lmZ zddlmZmZ ddlmZmZmZ W n e yx   ddl!mZmZ ddl"mZmZmZ Y nw e�  ee#�Z$d
+didd�d
+didd�d
+didd�d�Z%de&d< dZ'G dd� de�Z(dddd�Z)dedd�Z*dfd!d"�Z+	dgdhd&d'�Z,did,d-�Z-ed.d/�G d0d1� d1��Z.djd3d4�Z/dkd8d9�Z0G d:d;� d;�Z1dld<d=�Z2dmd?d@�Z3dndBdC�Z4dodDdE�Z5dodFdG�Z6dodHdI�Z7dpdJdK�Z8	LdqdrdQdR�Z9dsdSdT�Z:	LdqdtdVdW�Z;	XdudvdZd[�Z<	Xdudwd\d]�Z=dudxd_d`�Z>dydzdbdc�Z?dS ){zIChromaDB bootstrap, singleton access, and retrieval helpers for Coach AI.�    )�annotations)�Counter)�	dataclass�fieldN)�Any�ClassVar�Mapping�Sequence)�EmbeddingFunction�
+---
+FILE: __pycache__/chroma_client.cpython-310.pyc.2575998691632
+o
+
+    �j�ilB  �                   @  sZ  U d Z ddlmZ ddlmZ ddlmZmZ ddlZddl	Z	ddl
+mZmZm
+Z
+mZ ddlZddlmZmZ ddlmZ dd	lmZ dd
+lmZ zddlmZmZ ddlmZmZmZ W n e yx   ddl!mZmZ ddl"mZmZmZ Y nw e�  ee#�Z$d
+didd�d
+didd�d
+didd�d�Z%de&d< dZ'G dd� de�Z(dddd�Z)dedd�Z*dfd!d"�Z+	dgdhd&d'�Z,did,d-�Z-ed.d/�G d0d1� d1��Z.djd3d4�Z/dkd8d9�Z0G d:d;� d;�Z1dld<d=�Z2dmd?d@�Z3dndBdC�Z4dodDdE�Z5dodFdG�Z6dodHdI�Z7dpdJdK�Z8	LdqdrdQdR�Z9dsdSdT�Z:	LdqdtdVdW�Z;	XdudvdZd[�Z<	Xdudwd\d]�Z=dudxd_d`�Z>dydzdbdc�Z?dS ){zIChromaDB bootstrap, singleton access, and retrieval helpers for Coach AI.�    )�annotations)�Counter)�	dataclass�fieldN)�Any�ClassVar�Mapping�Sequence)�EmbeddingFunction�
+---
+FILE: __pycache__/chroma_client.cpython-310.pyc.2763580877104
+o
+
+    �j�ilB  �                   @  sZ  U d Z ddlmZ ddlmZ ddlmZmZ ddlZddl	Z	ddl
+mZmZm
+Z
+mZ ddlZddlmZmZ ddlmZ dd	lmZ dd
+lmZ zddlmZmZ ddlmZmZmZ W n e yx   ddl!mZmZ ddl"mZmZmZ Y nw e�  ee#�Z$d
+didd�d
+didd�d
+didd�d�Z%de&d< dZ'G dd� de�Z(dddd�Z)dedd�Z*dfd!d"�Z+	dgdhd&d'�Z,did,d-�Z-ed.d/�G d0d1� d1��Z.djd3d4�Z/dkd8d9�Z0G d:d;� d;�Z1dld<d=�Z2dmd?d@�Z3dndBdC�Z4dodDdE�Z5dodFdG�Z6dodHdI�Z7dpdJdK�Z8	LdqdrdQdR�Z9dsdSdT�Z:	LdqdtdVdW�Z;	XdudvdZd[�Z<	Xdudwd\d]�Z=dudxd_d`�Z>dydzdbdc�Z?dS ){zIChromaDB bootstrap, singleton access, and retrieval helpers for Coach AI.�    )�annotations)�Counter)�	dataclass�fieldN)�Any�ClassVar�Mapping�Sequence)�EmbeddingFunction�
+---
+FILE: __pycache__/chroma_client.cpython-313.pyc.2769850052944
+�
+
+    
+��i�  �                   �4  � % S SK r S SKrS SKJr  Sq\R
+                  S-  \S'   Sq\R                  S-  \S'   Sq	\R                  S-  \S'   SS jr
+S\R                  S-  4S jrS\R                  S-  4S	 jrSS
+\
+S\S\\
+   4S jjrSS
+\
+---
+FILE: __pycache__/fallback.cpython-310.pyc
+o
+
+    j:�i*<  �                   @  s�  d Z ddlmZ ddlZddlZddlmZ z
+ddlmZm	Z	 W n e
+y1   ddlmZm	Z	 Y nw zddlm
+Z
+mZmZ W n e
+yQ   ddlm
+Z
+mZmZ Y nw g d�g d�g d	�g d
+---
+FILE: __pycache__/programs_rag.cpython-310.pyc
+o
+
+    �s�iF  �                   @  s@  d dl mZ d dlZd dlZd dlZd dlZd dlmZ d dlm	Z	m
+Z
+mZ d dlm
+Z
+mZ d dlmZ zd dlmZmZ d dlmZmZ W n ey_   d dlmZmZ d dlmZmZ Y nw ee�Ze�d	�Zd
+�� Zedd�G d
+d� d��Z d(dd�Z!d)dd�Z"d*dd�Z#d+dd�Z$d,d!d"�Z%d-d$d%�Z&G d&d'� d'�Z'dS ).�    )�annotationsN)�	dataclass)�Any�Mapping�Sequence)�HumanMessage�
+SystemMessage)�ChatGoogleGenerativeAI)�
+---
+FILE: __pycache__/programs_rag.cpython-313.pyc.2121833474992
+�
+
+    c��imA  �                  �  � S SK Jr  S SKrS SKrS SKrS SKrS SKJr  S SKJ	r	J
+r
+Jr  S SKJ
+r
+Jr  S SKJr   S SKJrJr  S SKJrJr  \" \5      r\R8                  " S	5      rS
+R=                  5       r\" SS9 " S
+ S5      5       r SS jr!SS jr"SS jr#SS jr$SS jr%SS jr& " S S5      r'g! \ a    S SKJrJr  S SKJrJr   N~f = f)�    )�annotationsN)�	dataclass)�Any�Mapping�Sequence)�HumanMessage�
+SystemMessage)�ChatGoogleGenerativeAI)�
+---
+FILE: __pycache__/programs_rag.cpython-313.pyc.2309533872176
+�
+
+    c��imA  �                  �  � S SK Jr  S SKrS SKrS SKrS SKrS SKJr  S SKJ	r	J
+r
+Jr  S SKJ
+r
+Jr  S SKJr   S SKJrJr  S SKJrJr  \" \5      r\R8                  " S	5      rS
+R=                  5       r\" SS9 " S
+ S5      5       r SS jr!SS jr"SS jr#SS jr$SS jr%SS jr& " S S5      r'g! \ a    S SKJrJr  S SKJrJr   N~f = f)�    )�annotationsN)�	dataclass)�Any�Mapping�Sequence)�HumanMessage�
+SystemMessage)�ChatGoogleGenerativeAI)�
+---
+FILE: __pycache__/programs_rag.cpython-313.pyc.2317299182128
+�
+
+    %��i�$  �                  �d  � S SK Jr  S SKrS SKrS SKrS SKJr  S SKJrJ	r	J
+r
+  S SKJrJ
+r
+  S SKJr   S SKJrJr  S SKJrJr  \" \5      rS	R7                  5       r\" S
+S9 " S S
+5      5       rSS jrSS jrSS jr SS jr!SS jr"SS jr# " S S5      r$g! \ a    S SKJrJr  S SKJrJr   Nlf = f)�    )�annotationsN)�	dataclass)�Any�Mapping�Sequence)�HumanMessage�
+SystemMessage)�ChatGoogleGenerativeAI)�
+---
+FILE: __pycache__/programs_rag.cpython-313.pyc.2785345036848
+�
+
+    %��i�$  �                  �d  � S SK Jr  S SKrS SKrS SKrS SKJr  S SKJrJ	r	J
+r
+  S SKJrJ
+r
+  S SKJr   S SKJrJr  S SKJrJr  \" \5      rS	R7                  5       r\" S
+S9 " S S
+5      5       rSS jrSS jrSS jr SS jr!SS jr"SS jr# " S S5      r$g! \ a    S SKJrJr  S SKJrJr   Nlf = f)�    )�annotationsN)�	dataclass)�Any�Mapping�Sequence)�HumanMessage�
+SystemMessage)�ChatGoogleGenerativeAI)�
+---
+FILE: __pycache__/programs_rag.cpython-313.pyc.2833879772336
+�
+
+    %��i�$  �                  �d  � S SK Jr  S SKrS SKrS SKrS SKJr  S SKJrJ	r	J
+r
+  S SKJrJ
+r
+  S SKJr   S SKJrJr  S SKJrJr  \" \5      rS	R7                  5       r\" S
+S9 " S S
+5      5       rSS jrSS jrSS jr SS jr!SS jr"SS jr# " S S5      r$g! \ a    S SKJrJr  S SKJrJr   Nlf = f)�    )�annotationsN)�	dataclass)�Any�Mapping�Sequence)�HumanMessage�
+SystemMessage)�ChatGoogleGenerativeAI)�
+---
+FILE: __pycache__/programs_rag.cpython-313.pyc.2974903433008
+�
+
+    c��imA  �                  �  � S SK Jr  S SKrS SKrS SKrS SKrS SKJr  S SKJ	r	J
+r
+Jr  S SKJ
+r
+Jr  S SKJr   S SKJrJr  S SKJrJr  \" \5      r\R8                  " S	5      rS
+R=                  5       r\" SS9 " S
+ S5      5       r SS jr!SS jr"SS jr#SS jr$SS jr%SS jr& " S S5      r'g! \ a    S SKJrJr  S SKJrJr   N~f = f)�    )�annotationsN)�	dataclass)�Any�Mapping�Sequence)�HumanMessage�
+SystemMessage)�ChatGoogleGenerativeAI)�
+---
+FILE: __pycache__/retrievers.cpython-310.pyc
+o
+
+    j:�iO8  �                
+   @  s�  U d Z ddlmZ ddlZddlZddlZddlmZ ddlm	Z	 ddl
+mZ ddlm
+Z
+ ddlZzddlmZmZ dd	lmZmZmZ dd
+lmZ W n! eyl   ddlmZmZ dd	lmZmZmZ dd
+lmZ Y nw ee�jd d Zd
+dg d�d�ddg d�d�ddg d�d�ddg d�d�ddg d�d�d�Zde d< dd iZ!d!d!d"d"d#d#d$d$d%�Z"d&d&d'd'd(d(d)d)d*d*d+d+d,�Z#d-Z$d.Z%ee&�Z'ed/d0�G d1d2� d2��Z(dId6d7�Z)e	d8d9�dJd;d<��Z*dKd>d?�Z+dLd@dA�Z,dMdEdF�Z-G dGdH� dH�Z.dHd?gZ/dS )Nz6Retriever layer for coaching-oriented Chroma searches.�    )�annotationsN)�	dataclass)�	lru_cache)�Path)�Any)�
+---
+FILE: __pycache__/runtime_config.cpython-310.pyc
+o
+
+    j:�i�  �                   @  sp   d dl mZ d dlZd dlmZ d dlmZ ee��� j	j	Z
+dZdZdd	d
+�Z
+ddd�Zddd�Zddd�ZdS )�    )�annotationsN)�Path)�load_dotenvz./chroma_store�
+persistent�returnr   c                  C  s   t d } t| dd� | S )zILoad backend/.env so local scripts and app startup share the same config.z.envF)�dotenv_path�override)�BACKEND_DIRr   )r   � r
+   �6D:\02_2025_AI_Lab\isoser\backend\rag\runtime_config.py�load_backend_dotenv
+   s   r   �	raw_value�
+str | None�default_relative_path�strc                 C  s,   | p|� � }t|�}|�� st| �� }|S )zPResolve relative env paths from the backend directory instead of the caller cwd.)�stripr   �is_absoluter	   �resolve)r
+---
+FILE: __pycache__/runtime_config.cpython-313.pyc.2778742857136
+�
+
+    j:�i�  �                  �   � S SK Jr  S SKrS SKJr  S SKJr  \" \5      R                  5       R                  R                  r
+SrSrSS jr
+SS jrSS	 jrS
+S
+ jrg)�    )�annotationsN)�Path)�load_dotenvz./chroma_store�
+persistentc                 �,   � [         S-  n [        U SS9  U $ )zILoad backend/.env so local scripts and app startup share the same config.z.envF)�dotenv_path�override)�BACKEND_DIRr   )r   s    �6D:\02_2025_AI_Lab\isoser\backend\rag\runtime_config.py�load_backend_dotenvr   
+   s   � ���&�K��K�%�8���    c                �   � U =(       d    UR                  5       n[        U5      nUR                  5       (       d  [        U-  R	                  5       nU$ )zPResolve relative env paths from the backend directory instead of the caller cwd.)�stripr   �is_absoluter
+   �resolve)�	raw_value�default_relative_path�	candidate�paths       r   �resolve_backend_pathr      sF   � ��3�3�:�:�<�I��	�?�D�������d�"�+�+�-���Kr
+---
+FILE: __pycache__/schema.cpython-310.pyc
+o
+
+    j:�ig  �                   @  s�   d Z ddlmZ ddlmZ ddlmZmZmZ ed Z	ed Z
+ed Zed Zed	 Z
+G d
+d� de�ZG dd
+� d
+e�ZG dd� de�ZG dd� de�ZG dd� de�ZG dd� de�Zg d�ZdS )uR   ChromaDB Coach AI  Seed & Response Schemas (6단계 포트폴리오 구조 반영)�    )�annotations)�Literal)�	BaseModel�
+ConfigDict�field_validator)�ncsZreal_posting)�result_statement�problem_statement�decision_statement�implementation_statement)ZsaraminZjobkoreaZwanted)u   자격요건u   우대사항u   주요업무)�star_gap�quantification�
+verb_strength�job_fit�
+---
+FILE: __pycache__/seed.cpython-310.pyc
+o
+
+    �s�i5  �                   @  s�  d dl mZ d dlZd dlZd dlZd dlmZ d dlmZ d dlm	Z	 d dl
+mZ d dlZd dl
+mZ e	e��� jd Zee�ejvrMej�d ee�� d d	lmZmZ d d
+lmZmZ d dlmZmZmZ d dl m!Z!m"Z" zd d
+l#m$Z% W n e&y�   d d
+l'm$Z% Y nw e	e�j(d Z)ee*�Z+e�  dFdd�Z,dGdd�Z-dHd$d%�Z.dId'd(�Z/dJd*d+�Z0dKd-d.�Z1		dLdMd6d7�Z2		dLdNd9d:�Z3		dLdOd<d=�Z4dPdAdB�Z5dQdCdD�Z$e*dEkr�e%�  e$�  dS dS )R�    )�annotationsN)�Counter)�JSONDecodeError)�Path)�Any)�ValidationError�   )�
+get_logger�	log_event)�load_backend_dotenv�resolve_chroma_persist_dir)�JobKeywordPatternSeed�JobPostingSnippetSeed�StarExampleSeed)�create_chroma_client�get_or_create_collections)�main�	seed_data�pathr   �return�list[dict[str, Any]]c              
+   C  s�   z| j dd��
+---
+FILE: __pycache__/seed.cpython-313.pyc.2070284333360
+�
+
+    j:�i�4  �                  �  � S SK Jr  S SKrS SKrS SKrS SKJr  S SKJr  S SKJ	r	  S SK
+Jr  S SKrS SK
+Jr  \	" \5      R!                  5       R"                  S   r\" \5      \R(                  ;  a"  \R(                  R+                  S \" \5      5        S S	KJrJr  S S
+KJrJr  S SKJrJrJr  S SK J!r!J"r"  S S
+K#J$r%  \	" \5      RL                  S-  r'\" \(5      r)\" 5         SS jr*SS jr+            SS jr,SS jr-SS jr.S S jr/  S!       S"S jjr0  S!       S#S jjr1  S!       S$S jjr2        S%S jr3S&S jr$\(S:X  a  \%" 5         \$" 5         gg)'�    )�annotationsN)�Counter)�JSONDecodeError)�Path)�Any)�ValidationError�   )�
+get_logger�	log_event)�load_backend_dotenv�resolve_chroma_persist_dir)�JobKeywordPatternSeed�JobPostingSnippetSeed�StarExampleSeed)�create_chroma_client�get_or_create_collections)�main�	seed_datac                �  �  U R                  SS9 n[        R                  " U5      nSSS5        [
+        W[        5      (       d  [        SU  35      eU$ ! , (       d  f       N3= f! [        [        4 a  n[        SU  35      UeSnAff = f)u>   시드 JSON 파일을 읽고 리스트 형태로 반환한다.zutf-8)�encodingNzfailed to read seed file: zseed file must contain a list: )�open�json�load�OSErrorr   �RuntimeError�
+isinstance�list)�path�file�data�excs       �,D:\02_2025_AI_Lab\isoser\backend\rag\seed.py�_read_seed_jsonr#   #   s�   � �I�
+---
+FILE: __pycache__/seed.cpython-313.pyc.2769850052944
+�
+
+    ��i  �                   �  � S SK r S SKrS SKrS SKJr  S SKrS SKJr  \" \5      R                  S-  r
+\R                  R                  SS5      r
+S\R                  SS4S	 jrS\R                  SS4S
+ jrS
+S jr\S:X  aD  \R&                  R)                  S \" \" \5      R                  R                  5      5        \" 5         gg)�    N)�Path)�Settings�	seed_data�CHROMA_PERSIST_DIRz./chroma_store�
+collection�returnc                 �"  � U R                  5       S:�  a  [        S5        g[        [        S-  SS9 n[        R
+                  " U5      nSSS5        W(       d  [        S5        gU Vs/ s H  o3S   PM	     nnU Vs/ s H  o3S	   S
+R
+---
+FILE: build_job_taxonomy.py
+"""KNOW 직업분류 CSV를 기반으로 초기 job taxonomy를 생성한다."""
+
+from __future__ import annotations
+
+import json
+import os
+import sys
+from pathlib import Path
+
+BACKEND_DIR = Path(__file__).parent.parent
+---
+FILE: chroma_client.py
+"""ChromaDB bootstrap, singleton access, and retrieval helpers for Coach AI."""
+
+from __future__ import annotations
+
+from collections import Counter
+from dataclasses import dataclass, field
+import logging
+import os
+from typing import Any, ClassVar, Mapping, Sequence
+
+---
+FILE: collector/__init__.py
+[empty]
+---
+FILE: collector/__pycache__/__init__.cpython-310.pyc
+o
+
+    ���i   �                   @   s   d S )N� r   r   r   �:D:\02_2025_AI_Lab\isoser\backend\rag\collector\__init__.py�<module>   s    
+---
+FILE: collector/__pycache__/base_api_collector.cpython-310.pyc
+o
+
+    ���i  �                   @   sL   d dl Z d dlmZ d dlmZmZ d dlZddlmZ G dd� de�Z	dS )�    N)�abstractmethod)�Dict�List�   )�
+BaseCollectorc                	   @   s�   e Zd ZU dZeed< dZeed< dZeed< dZ	eed< dZ
+eed	< d
+ee fdd�Z
+ed
+eded
+eeef fdd��Zeded
+ee fdd��Zededed
+---
+FILE: collector/__pycache__/base_collector.cpython-310.pyc
+o
+
+    ���i�  �                   @   s4   d dl mZmZ d dlmZmZ G dd� de�ZdS )�    )�ABC�abstractmethod)�List�Dictc                   @   s�   e Zd ZU dZeed< dZeed< dZeed< dZ	eed< d	Z
+eed
+< dZeed< dZeed
+< e
+dee fdd��Zdefdd�ZdS )�
+BaseCollector�   �tierZnational_api�source_type� �source_name�
+public_api�collection_methodZnational�scopeu   전국�region�
+region_detail�returnc                 C   s   d S )N� ��selfr   r   �@D:\02_2025_AI_Lab\isoser\backend\rag\collector\base_collector.py�collect   s   zBaseCollector.collectc                 C   s"   | j | j| j| j| j| j| jd�S )N�r   r	   r   r
+---
+FILE: collector/__pycache__/base_collector.cpython-313.pyc.2163004625664
+�
+
+    ���i�  �                   �:   � S SK JrJr  S SKJrJr   " S S\5      rg)�    )�ABC�abstractmethod)�List�Dictc                   �   � \ rS rSr% Sr\\S'   Sr\\S'   Sr	\\S'   Sr
+\\S	'   S
+r\\S'   Sr\\S
+'   Sr
+\\S'   \S\\   4S j5       rS\4S jrSrg)�
+BaseCollector�   �   �tier�national_api�source_type� �source_name�
+public_api�collection_method�national�scopeu   전국�region�
+region_detail�returnc                 �   � g )N� ��selfs    �'backend/rag/collector/base_collector.py�collect�BaseCollector.collect   s   � ��    c                 �   � U R                   U R                  U R                  U R                  U R                  U R
+---
+FILE: collector/__pycache__/hrd_collector.cpython-310.pyc
+o
+
+    ���i�  �                   @   sD   d dl mZmZ d dlmZmZ ddlmZ G dd� de�ZeZ	dS )�    )�date�	timedelta)�Dict�List�   )�BaseApiCollectorc                   @   s�   e Zd ZU dZeed< dZeed< dZeed< dZ	eed< dZ
+eed	< d
+Zeed< dZeed
+< dZ
+eed< dZeed< dededeeef fdd�Zdedee fdd�Zdededefdd�ZdS )�HrdCollectorr   �tieru   HRD넷�source_nameu   서울�region�
+region_detailz>https://www.hrd.go.kr/jsp/HRDP/HRDPO00/HRDPOA60/HRDPOA60_1.jsp�endpointZHRD_API_KEY�api_key_env�
+   �timeout_seconds�   �	max_pages�d   �	page_size�api_key�page_num�returnc             	   C   sB   t �� }|tdd� }|ddt|�t| j�|�d�|�d�dd�S )N�Z   )�days�JSON�1z%Y%m%d�11)�authKey�
+returnType�outType�pageNum�pageSize�srchTraStDt�srchTraEndDt�srchTraArea1)r   �todayr   �strr   �strftime)�selfr   r   r%   �end_date� r*   �?D:\02_2025_AI_Lab\isoser\backend\rag\collector\hrd_collector.py�build_params   s   �zHrdCollector.build_params�payloadc                 C   sv   t |t�rdd� |D �S t |t�sg S dD ]}|�|�}| �|�}|r'|  S qg }|�� D ]
+---
+FILE: collector/__pycache__/kstartup_collector.cpython-310.pyc
+o
+
+    ���i�  �                   @   s4   d dl mZmZ ddlmZ G dd� de�ZeZdS )�    )�Dict�List�   )�BaseApiCollectorc                   @   s�   e Zd ZU dZeed< dZeed< dZeed< dZ	eed< d	Z
+eed
+< dZeed< d
+Zeed< dZ
+eed< dededeeef fdd�Zdedee fdd�Zdededefdd�ZdS )�KstartupApiCollectorr   �tieru   K-Startup 창업진흥원�source_name�national_api�source_typezOhttps://apis.data.go.kr/B552735/kisedKstartupService/getAnnouncementInformation�endpointZKSTARTUP_API_KEY�api_key_env�
+   �timeout_seconds�   �	max_pages�d   �	page_size�api_key�page_num�returnc                C   s   |dt |�t | j�d�S )N�json)Z
+serviceKey�type�pageZperPage)�strr   )�selfr   r   � r   �DD:\02_2025_AI_Lab\isoser\backend\rag\collector\kstartup_collector.py�build_params   s
+   �z!KstartupApiCollector.build_params�payloadc                 C   s4   t |t�sg S |�d�}t |t�rdd� |D �S g S )N�datac                 S   s   g | ]	}t |t�r|�qS r   )�
+---
+FILE: collector/__pycache__/normalizer.cpython-310.pyc
+o
+
+    ���iW
+  �                   @   sx   d dl m Z  d dlmZmZ d dlZdedee fdd�Zdedefd	d
+�Zdedefdd�Z	d
+edee fdd�Z
+dS )�    )�datetime)�Dict�OptionalN�raw_item�returnc                 C   s�   | � di �}| � dd��� }|sd S t| � d�p"| � di �� d�p"d��� }|� dd�|� dd�|� d	d
+�|� dd�||p@t|�t|�|� d
+d�|� dd�t| � dd��| � dd�dd d�
+S )N�source_meta�title� �
+---
+FILE: collector/__pycache__/scheduler.cpython-310.pyc
+o
+
+    ���i�  �                   @   s�   d dl Z d dlmZmZ d dlZzd dlmZ d dlmZ d dl	m
+Z
+ d dlmZ W n! e
+yK   d dlmZ d dlmZ d dlm
+Z
+ d dlmZ Y nw G dd� d�Zd	efd
+d�Ze� e� e� gZd	efdd
+�ZdS )�    N)�Dict�List)�HrdCollector)�KstartupApiCollector)�	normalize)�Work24Collectorc                   @   s8   e Zd Zdededdfdd�Zdee ddfdd	�ZdS )
+---
+FILE: collector/__pycache__/work24_collector.cpython-310.pyc
+o
+
+    ���i�  �                   @   s0   d dl mZmZ ddlmZ G dd� de�ZdS )�    )�Dict�List�   )�BaseApiCollectorc                   @   s�   e Zd ZU dZeed< dZeed< dZeed< dZ	eed< dZ
+eed	< d
+Zeed< dZeed
+< dZ
+eed< dZeed< dededeeef fdd�Zdedee fdd�Zdededefdd�ZdS )�Work24Collectorr   �tieru   고용24�source_nameu   서울�region�
+region_detailz:https://www.work24.go.kr/cm/openApi/call/wantedInfoSrch.do�endpointZWORK24_API_KEY�api_key_env�
+   �timeout_seconds�   �	max_pages�d   �	page_size�api_key�page_num�returnc                C   s   dd|t |�t | j�dd�S )N�L�JSON�11)ZcallTp�
+returnType�authKey�pageNum�pageSizer	   )�strr   )�selfr   r   � r   �BD:\02_2025_AI_Lab\isoser\backend\rag\collector\work24_collector.py�build_params   s   �zWork24Collector.build_params�payloadc                 C   sH   t |t�sg S |�d�}t |t�r"|�d�}t |t�r"dd� |D �S g S )N�resultZ
+---
+FILE: collector/base_api_collector.py
+import os
+from abc import abstractmethod
+from typing import Dict, List
+
+import requests
+
+from .base_collector import BaseCollector
+
+
+class BaseApiCollector(BaseCollector):
+---
+FILE: collector/base_collector.py
+from abc import ABC, abstractmethod
+from typing import List, Dict
+
+
+class BaseCollector(ABC):
+    tier: int = 1
+    source_type: str = "national_api"
+    source_name: str = ""
+    collection_method: str = "public_api"
+    scope: str = "national"
+---
+FILE: collector/hrd_collector.py
+from datetime import date, timedelta
+from typing import Dict, List
+
+from .base_api_collector import BaseApiCollector
+
+
+class HrdCollector(BaseApiCollector):
+    tier: int = 1
+    source_name: str = "HRD넷"
+    region: str = "서울"
+---
+FILE: collector/kstartup_collector.py
+from typing import Dict, List
+
+from .base_api_collector import BaseApiCollector
+
+
+class KstartupApiCollector(BaseApiCollector):
+    tier: int = 1
+    source_name: str = "K-Startup 창업진흥원"
+    source_type: str = "national_api"
+
+---
+FILE: collector/normalizer.py
+from datetime import datetime
+from typing import Dict, Optional
+import re
+
+
+def normalize(raw_item: Dict) -> Optional[Dict]:
+    meta = raw_item.get("source_meta", {})
+    title = raw_item.get("title", "").strip()
+    if not title:
+        return None
+---
+FILE: collector/scheduler.py
+import os
+from typing import Dict, List
+
+import requests
+
+try:
+    from rag.collector.hrd_collector import HrdCollector
+    from rag.collector.kstartup_collector import KstartupApiCollector
+    from rag.collector.normalizer import normalize
+    from rag.collector.work24_collector import Work24Collector
+---
+FILE: collector/work24_collector.py
+from typing import Dict, List
+
+from .base_api_collector import BaseApiCollector
+
+
+class Work24Collector(BaseApiCollector):
+    tier: int = 1
+    source_name: str = "고용24"
+    region: str = "서울"
+    region_detail: str = "서울"
+---
+FILE: fallback.py
+"""Rule-based fallback response generation for Coach AI."""
+
+from __future__ import annotations
+
+import logging
+import re
+from typing import Any
+
+try:
+    from backend.logging_config import get_logger, log_event
+---
+FILE: generators/__init__.py
+"""Generators for corpus-driven RAG seed creation."""
+
+from .pattern_generator import PatternGenerator
+from .star_generator import StarGenerator
+
+__all__ = ["PatternGenerator", "StarGenerator"]
+---
+FILE: generators/pattern_generator.py
+"""Corpus-driven generator for v2 job keyword pattern seeds."""
+
+from __future__ import annotations
+
+import argparse
+import csv
+import json
+import os
+import re
+from collections import defaultdict
+---
+FILE: generators/star_generator.py
+"""Generator for expanding STAR example seeds with review gating."""
+
+from __future__ import annotations
+
+import argparse
+import csv
+import json
+import os
+import re
+from collections import Counter
+---
+FILE: manage_chroma.py
+# ChromaDB 작업용 보조 CLI - taxonomy 생성, seed 적재, 상태 점검을 한 곳에서 수행
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+import chromadb
+from chromadb.config import Settings
+---
+FILE: migrate_legacy_chroma_metadata.py
+"""In-place migration for legacy Chroma metadata.
+
+This script updates metadata only (no re-embedding) for legacy collections:
+- job_keyword_patterns: {"job","keywords"} -> adds job_bucket/pattern_type schema
+- star_examples: {"original","missing_before"} -> adds activity_type/job_family schema
+"""
+
+from __future__ import annotations
+
+import argparse
+---
+FILE: programs_rag.py
+from __future__ import annotations
+
+import json
+import logging
+import os
+import re
+from dataclasses import dataclass
+from typing import Any, Mapping, Sequence
+
+from langchain_core.messages import HumanMessage, SystemMessage
+---
+FILE: retrievers.py
+"""Retriever layer for coaching-oriented Chroma searches."""
+
+from __future__ import annotations
+
+import json
+import logging
+import re
+from dataclasses import dataclass
+from functools import lru_cache
+from pathlib import Path
+---
+FILE: runtime_config.py
+from __future__ import annotations
+
+import os
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+DEFAULT_CHROMA_PERSIST_DIR = "./chroma_store"
+DEFAULT_CHROMA_MODE = "persistent"
+---
+FILE: schema.py
+"""ChromaDB Coach AI  Seed & Response Schemas (6단계 포트폴리오 구조 반영)"""
+
+from __future__ import annotations
+
+from typing import Literal
+
+from pydantic import BaseModel, ConfigDict, field_validator
+
+SeedSource = Literal["ncs", "real_posting"]
+PatternType = Literal[
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_01_01_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_01_01_01_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_01_01_01_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_01_01_02_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_01_01_02_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_02_01_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_02_01_01_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_02_01_02_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_02_01_02_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_02_01_03_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_02_01_03_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_02_01_03_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_02_01_03_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_02_02_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_02_02_01_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_02_02_01_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_02_02_02_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_02_02_02_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_02_02_03_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_02_02_03_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_02_03_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_02_03_01_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_02_03_02_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_02_03_02_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_02_04_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_02_04_01_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_02_04_01_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_02_04_01_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_02_04_02_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_02_04_03_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_02_04_03_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_02_04_03_05_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_02_04_03_06_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/ability_units_02_04_03_07_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_large_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_middle_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_middle_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_middle_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_middle_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_middle_05_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_middle_06_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_middle_07_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_middle_08_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_middle_09_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_middle_10_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_middle_11_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_middle_12_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_middle_13_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_middle_14_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_middle_15_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_middle_16_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_middle_17_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_middle_18_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_middle_19_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_middle_20_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_middle_21_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_middle_22_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_middle_23_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_middle_24_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_page_1.json
+{
+  "message": "INVALID REQUEST PARAMETER ERROR."
+}
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_02_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_02_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_02_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_02_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_03_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_03_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_04_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_04_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_04_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_05_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_05_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_06_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_06_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_07_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_07_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_07_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_08_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_08_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_08_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_09_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_09_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_09_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_09_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_10_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_10_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_10_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_11_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_11_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_12_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_12_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_12_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_12_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_13_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_14_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_14_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_14_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_14_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_14_05_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_14_06_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_14_07_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_14_08_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_15_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_15_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_15_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_15_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_15_05_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_15_06_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_15_07_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_15_08_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_15_09_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_15_10_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_15_11_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_16_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_16_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_17_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_17_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_17_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_17_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_17_05_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_18_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_18_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_18_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_19_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_19_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_19_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_20_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_20_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_20_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_21_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_21_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_22_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_22_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_23_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_23_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_23_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_23_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_23_05_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_23_06_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_24_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_24_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_24_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_small_24_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_01_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_01_01_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_02_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_02_01_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_02_01_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_02_02_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_02_02_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_02_02_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_02_03_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_02_03_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_02_04_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_02_04_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_02_04_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_03_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_03_01_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_03_01_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_03_01_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_03_01_05_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_03_01_06_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_03_02_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_03_02_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_03_02_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_04_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "03",
+      "resultMsg": "NODATA_ERROR"
+    }
+  }
+}
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_04_02_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "03",
+      "resultMsg": "NODATA_ERROR"
+    }
+  }
+}
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_04_02_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_04_03_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_04_03_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_05_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "03",
+      "resultMsg": "NODATA_ERROR"
+    }
+  }
+}
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_05_01_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_05_02_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_05_02_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_05_02_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_06_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_06_01_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_06_01_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "03",
+      "resultMsg": "NODATA_ERROR"
+    }
+  }
+}
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_06_02_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "03",
+      "resultMsg": "NODATA_ERROR"
+    }
+  }
+}
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_06_02_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "03",
+      "resultMsg": "NODATA_ERROR"
+    }
+  }
+}
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_06_02_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "03",
+      "resultMsg": "NODATA_ERROR"
+    }
+  }
+}
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_06_02_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "03",
+      "resultMsg": "NODATA_ERROR"
+    }
+  }
+}
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_07_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_07_01_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_07_02_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_07_02_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_07_02_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_07_03_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_08_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_08_01_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_08_01_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_08_01_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_08_02_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_08_03_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_08_03_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_08_03_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_08_03_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_09_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_09_02_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_09_02_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_09_03_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_09_03_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_09_04_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_09_04_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_09_04_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_10_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_10_02_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_10_02_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_10_02_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_10_02_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_10_03_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_10_03_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_10_03_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_11_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_11_02_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_12_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_12_02_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_12_02_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_12_03_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_12_03_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_12_03_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_12_03_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_12_04_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_12_04_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_12_04_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_12_04_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_12_04_05_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_13_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_13_01_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_13_01_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_14_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_14_01_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_14_01_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_14_01_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_14_02_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_14_02_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_14_02_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_14_03_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_14_03_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_14_03_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_14_04_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_14_04_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_14_04_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_14_05_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_14_06_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_14_06_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_14_06_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_14_06_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_14_07_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_14_07_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_14_07_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_14_07_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_14_07_05_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_14_07_06_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_14_08_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_14_08_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_14_08_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_14_08_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_14_08_05_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_01_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_02_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_02_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_03_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_03_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_04_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_05_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_05_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_05_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_06_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_06_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_06_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_06_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_06_05_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_07_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_07_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_08_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_08_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_08_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_08_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_08_05_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_08_06_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_08_07_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_08_08_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_09_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_09_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_09_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_09_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_10_00_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_10_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_10_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_10_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_11_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_11_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_15_11_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_16_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_16_01_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_16_01_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_16_01_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_16_01_05_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_16_01_06_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_16_02_00_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_16_02_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_16_02_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_16_02_05_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_17_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_17_01_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_17_01_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_17_02_00_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "03",
+      "resultMsg": "NODATA_ERROR"
+    }
+  }
+}
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_17_02_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_17_02_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_17_02_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_17_03_00_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_17_03_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_17_03_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_17_03_06_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_17_03_07_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_17_04_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_17_04_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_17_05_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_17_05_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_17_05_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_18_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_18_01_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_18_01_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_18_02_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_18_02_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_18_02_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_18_02_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_18_03_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_01_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_01_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_01_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_01_05_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_01_06_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_01_07_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_01_08_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_01_09_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_01_10_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_01_11_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_01_12_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_01_13_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_01_14_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_02_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_02_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_02_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_03_05_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_03_06_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_03_07_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_03_08_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_03_09_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_03_10_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_03_11_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_03_12_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_03_13_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_03_14_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_03_15_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_03_16_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_03_17_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_03_18_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_03_19_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_19_03_20_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "03",
+      "resultMsg": "NODATA_ERROR"
+    }
+  }
+}
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_20_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_20_01_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_20_01_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_20_01_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_20_01_05_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_20_01_06_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_20_01_07_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_20_01_08_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_20_01_09_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_20_01_10_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_20_01_11_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_20_02_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_20_02_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_20_02_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_20_02_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_20_03_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_20_03_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_20_03_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_21_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_21_01_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_21_01_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_21_02_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_22_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_22_01_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_22_02_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_22_02_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_23_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_23_01_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_23_01_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_23_01_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_23_01_05_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_23_02_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_23_03_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_23_04_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_23_04_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_23_05_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_23_05_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_23_05_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_23_05_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_23_05_05_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_23_05_06_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_23_05_07_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_23_06_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_23_06_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_23_06_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_24_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_24_01_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_24_01_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_24_01_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_24_02_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_24_02_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_24_03_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_24_03_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_24_03_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_24_04_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_24_04_02_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_24_04_03_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/classification_sub_24_04_04_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/job_descriptions_01_page_1.json
+{
+  "data": [
+    {
+      "ncsLclasCd": "01",
+      "ncsLclasCdnm": "사업관리",
+      "ncsMclasCd": "01",
+      "ncsMclasCdnm": "사업관리",
+      "ncsSclasCd": "01",
+      "ncsSclasCdnm": "프로젝트관리",
+      "ncsSubdCd": "01",
+---
+FILE: seed_data/api_samples/ncs_reference/job_descriptions_01_page_2.json
+{
+  "data": [
+    {
+      "ncsLclasCd": "01",
+      "ncsLclasCdnm": "사업관리",
+      "ncsMclasCd": "01",
+      "ncsMclasCdnm": "사업관리",
+      "ncsSclasCd": "01",
+      "ncsSclasCdnm": "프로젝트관리",
+      "ncsSubdCd": "01",
+---
+FILE: seed_data/api_samples/ncs_reference/job_descriptions_02_page_1.json
+{
+  "data": [
+    {
+      "ncsLclasCd": "02",
+      "ncsLclasCdnm": "경영·회계·사무",
+      "ncsMclasCd": "01",
+      "ncsMclasCdnm": "기획사무",
+      "ncsSclasCd": "01",
+      "ncsSclasCdnm": "경영기획",
+      "ncsSubdCd": "01",
+---
+FILE: seed_data/api_samples/ncs_reference/job_descriptions_02_page_2.json
+{
+  "data": [
+    {
+      "ncsLclasCd": "02",
+      "ncsLclasCdnm": "경영·회계·사무",
+      "ncsMclasCd": "04",
+      "ncsMclasCdnm": "생산·품질관리",
+      "ncsSclasCd": "01",
+      "ncsSclasCdnm": "생산관리",
+      "ncsSubdCd": "02",
+---
+FILE: seed_data/api_samples/ncs_reference/verify_large_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/verify_middle_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/verify_small_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/api_samples/ncs_reference/verify_sub_01_01_01_page_1.json
+{
+  "response": {
+    "header": {
+      "resultCode": "00",
+      "resultMsg": "NORMAL_SERVICE"
+    },
+    "body": {
+      "items": {
+        "item": [
+          {
+---
+FILE: seed_data/job_keyword_patterns.json
+[
+  {
+    "id": "jk:pm:v1:001",
+    "job_title": "PM / 서비스 기획자",
+    "job_family": "product",
+    "job_bucket": "product_management",
+    "section_types": ["회사경력", "프로젝트"],
+    "keywords": ["사용자 리서치", "인터뷰", "VOC", "인사이트"],
+    "source": "real_posting",
+    "pattern_type": "problem_statement",
+---
+FILE: seed_data/job_keywords.json
+[
+  {
+    "job": "PM",
+    "pattern": "6개월간 B2C 온보딩 퍼널을 재설계해 가입 완료율을 42%에서 61%로 개선하고 월 신규 유저 1.4만 명 유입을 달성했습니다.",
+    "keywords": ["온보딩", "퍼널", "가입 완료율", "A/B 테스트", "지표 개선"]
+  },
+  {
+    "job": "PM",
+    "pattern": "결제 이탈 구간을 분석해 3단계 결제 플로우를 2단계로 단순화했고 결제 전환율을 18%p 끌어올려 월 매출을 9.2% 증대했습니다.",
+    "keywords": ["결제 전환율", "이탈 분석", "플로우 최적화", "매출 증대", "UX"]
+---
+FILE: seed_data/job_posting_snippets.json
+[
+  {
+    "id": "jp:saramin:pm:001",
+    "job_slug": "pm",
+    "job_family": "product",
+    "job_bucket": "product_management",
+    "source": "saramin",
+    "section_type": "자격요건",
+    "lang": "ko",
+    "version": "v1",
+---
+FILE: seed_data/job_taxonomy_unmapped.json
+[
+  {
+    "normalized_job_key": "know_1_5_9_1_3",
+    "display_name_ko": "3D프린팅모델러",
+    "aliases": [
+      "3D프린팅모델러"
+    ],
+    "job_family": "unmapped",
+    "know_code": "1-5-9-1-3",
+    "know_mid_category": "제조 연구개발직 및 공학기술직",
+---
+FILE: seed_data/job_taxonomy.json
+[
+  {
+    "normalized_job_key": "backend_engineer",
+    "display_name_ko": "백엔드 개발자",
+    "job_family": "engineering",
+    "aliases": [
+      "API 개발자",
+      "API개발자",
+      "Backend Developer",
+      "Backend Engineer",
+---
+FILE: seed_data/know_question_labels.json
+{
+  "metadata": {
+    "generated_at": "2026-04-03T09:01:02.734587Z",
+    "codebook_path": "C:\\Users\\LG\\Desktop\\isoser\\docs\\2019년_한국직업정보(KNOW)_재직자조사_성격·지식_코드북.xlsx",
+    "personality_question_count": 16,
+    "knowledge_question_count": 33,
+    "know_code_label_count": 627
+  },
+  "know_code_labels": {
+    "110101": "철학연구원",
+---
+FILE: seed_data/know_skill_weights.json
+{
+  "metadata": {
+    "generated_at": "2026-04-03T09:01:03.651933Z",
+    "raw_csv_path": "C:\\Users\\LG\\Desktop\\isoser\\docs\\2019년_한국직업정보(KNOW)_재직자조사_성격·지식_원자료.csv",
+    "codebook_path": "C:\\Users\\LG\\Desktop\\isoser\\docs\\2019년_한국직업정보(KNOW)_재직자조사_성격·지식_코드북.xlsx",
+    "top_k": 10,
+    "job_count": 559,
+    "raw_row_count": 17143,
+    "status": "ok"
+  },
+---
+FILE: seed_data/manifest.json
+{
+  "updated_at": "2026-04-03T00:00:00+00:00",
+  "collections": {
+    "job_keyword_patterns": {
+      "active_version": "v1",
+      "count": 50,
+      "source_files": [
+        "job_keyword_patterns.json"
+      ],
+      "active_file": "job_keyword_patterns.json",
+---
+FILE: seed_data/ncs_taxonomy_supplement.json
+{
+  "generated_at": "2026-04-03T06:26:08.078139+00:00",
+  "source": "ncs_reference",
+  "guide_url": "https://www.data.go.kr/data/15128213/openapi.do",
+  "resource_guide_url": "https://www.data.go.kr/data/15086446/openapi.do",
+  "classification_count": 34,
+  "total_classification_count": null,
+  "limit_lclas": 2,
+  "supplement_count": 34,
+  "failed_count": 0,
+---
+FILE: seed_data/star_examples.json
+[
+  {
+    "id": "se:v1:001",
+    "activity_type": "star_gap",
+    "section_type": "회사경력",
+    "job_family": "pm",
+    "original_text": "온보딩 화면을 개선해 가입 흐름을 정리했습니다.",
+    "missing_before": ["Situation", "Task", "Result"],
+    "rewrite_focus": "가입 흐름을 개선하게 된 배경과 목표, 정량 결과를 추가해 STAR 구조를 완성",
+    "lang": "ko",
+---
+FILE: seed_version.py
+"""Seed manifest management with upgrade and rollback helpers."""
+
+from __future__ import annotations
+
+from datetime import datetime, timezone
+import json
+import shutil
+from pathlib import Path
+from typing import Any
+
+---
+FILE: seed.py
+# ChromaDB 초기 시드 데이터 적재 스크립트 - 서버 첫 시작 또는 수동 실행
+from __future__ import annotations
+
+import json
+import sys
+import logging
+from collections import Counter
+from json import JSONDecodeError
+from pathlib import Path
+from typing import Any
+---
+FILE: source_adapters/__init__.py
+"""Source adapter package."""
+---
+FILE: source_adapters/__pycache__/__init__.cpython-310.pyc
+o
+
+    j:�i   �                   @   s   d Z dS )zSource adapter package.N)�__doc__� r   r   �@D:\02_2025_AI_Lab\isoser\backend\rag\source_adapters\__init__.py�<module>   s    
+---
+FILE: source_adapters/__pycache__/__init__.cpython-313.pyc.2778693555744
+�
+
+    j:�i   �                   �   � S r g)zSource adapter package.N)�__doc__� �    �@d:\02_2025_AI_Lab\isoser\backend\rag\source_adapters\__init__.py�<module>r      s   �� r   
+---
+FILE: source_adapters/__pycache__/__init__.cpython-313.pyc.2778742166784
+�
+
+    j:�i   �                   �   � S r g)zSource adapter package.N)�__doc__� �    �@D:\02_2025_AI_Lab\isoser\backend\rag\source_adapters\__init__.py�<module>r      s   �� r   
+---
+FILE: source_adapters/__pycache__/base.cpython-310.pyc
+o
+
+    j:�i�  �                   @  s�   d dl mZ d dlmZmZmZ d dlZzd dlmZ W n e	y+   d dl
+mZ Y nw eG dd� d��ZeG dd� d��ZG d	d
+� d
+�Z
+dS )�    )�annotations)�asdict�	dataclass�fieldN��load_backend_dotenvc                   @  s�   e Zd ZU ded< ded< dZded< eed�Zded< eed�Zded	< d
+Z	ded< ddd�Z
+eddd��Zddd�ddd�Z
+dS ) �SourceRequestSpec�str�source_name�endpoint_url�GET�method)�default_factoryzdict[str, str]�params�headers�   �int�timeout_seconds�return�dictc                 C  �   t | �S �N�r   ��self� r   �<D:\02_2025_AI_Lab\isoser\backend\rag\source_adapters\base.py�to_dict   �   zSourceRequestSpec.to_dict�valuec                 C  s6   t | �dkrdt | � S | d d� � d| dd � � �S )N�   �*�   z...�����)�len)r   r   r   r   �_mask_secret   s   zSourceRequestSpec._mask_secretNT)�secret_param_names�redact_authorizationr&   �set[str] | Noner'   �boolc          
+---
+FILE: source_adapters/__pycache__/base.cpython-313.pyc.2778742857776
+�
+
+    j:�i�  �                  �   � S SK Jr  S SKJrJrJr  S SKr S SKJr  \ " S S5      5       r\ " S S5      5       r " S	 S
+5      r
+g! \	 a	    S SK
+Jr   N7f = f)�    )�annotations)�asdict�	dataclass�fieldN��load_backend_dotenvc                  �   � \ rS rSr% S\S'   S\S'   SrS\S'   \" \S9rS\S	'   \" \S9r	S\S
+'   Sr
+S\S
+'   SS jr\SS j5       r
+SSS.     SS jjrSrg)�SourceRequestSpec�   �str�source_name�endpoint_url�GET�method)�default_factoryzdict[str, str]�params�headers�   �int�timeout_secondsc                �   � [        U 5      $ �N�r   ��selfs    �<D:\02_2025_AI_Lab\isoser\backend\rag\source_adapters\base.py�to_dict�SourceRequestSpec.to_dict   �   � ��d�|��    c                �V   � [        U 5      S::  a  S[        U 5      -  $ U S S  SU SS   3$ )N�   �*�   z...�����)�len)�values    r   �_mask_secret�SourceRequestSpec._mask_secret   s9   � ��u�:��?���U��#�#����)��C��b�c�
+---
+FILE: source_adapters/__pycache__/work24_training.cpython-310.pyc
+o
+
+    �s�i]0  �                   @  sf  d dl mZ d dlZd dlZd dlZd dlZd dlmZ d dlm	Z	 d dl
+mZ d dlZzd dl
+mZ d dlmZ W n eyO   d dlmZ d dlmZ Y nw edd	d
+ddd
+d�Zee��� jd d Zed d ZdZdZdZdZdZdZdZ d;dd�Z!d<dd �Z"d=d"d#�Z#d>d(d)�Z$d?d,d-�Z%d@d/d0�Z&dAd3d4�Z'G d5d6� d6�Z(dBd8d9�Z)e*d:kr�e)�  dS dS )C�    )�annotationsN)�Path)�Any)�ElementTree)�load_backend_dotenv)�ApiSourceAdapter�work24_trainingu6   고용24 국민내일배움카드 훈련과정 OpenAPIuE   훈련과정 목록 수집 및 프로그램 메타데이터 정규화ZWORK24_TRAINING_AUTH_KEYZauthKeyZWORK24_OPEN_API_GUIDE_URL)�source_name�display_name�purpose�key_env_name�auth_param_nameZguide_url_env_name�   �	seed_dataZapi_sampleszGhttps://www.work24.go.kr/cm/openApi/call/hr/callOpenApiSvcInfo310L01.do�   �   �d   �      �?)	�response�body�result�results�data�items�item�listZsrchList)�scn_cntZ
+totalCountZtotalCnt�total_count�total�count�value�str�returnc                 C  s   t �dd| ��d�}|p
+dS )Nz[^0-9A-Za-z_-]+�_�sample)�re�sub�strip)r    Zslug� r(   �GD:\02_2025_AI_Lab\isoser\backend\rag\source_adapters\work24_training.py�
+_safe_slug4   s   r*   r   c                 C  s&   | d u rdS t �ddt| ���� }|S )N� z\s+� )r%   r&   r!   r'   )r    �textr(   r(   r)   �_clean_text9   s   r.   �
+---
+FILE: source_adapters/__pycache__/work24_training.cpython-313.pyc.2778693556032
+�
+
+    ���i�.  �            	      �  � S SK Jr  S SKrS SKrS SKrS SKrS SKJr  S SKJ	r	  S SK
+Jr  S SKr S SK
+Jr  S SKJr  \" SS	S
+SSS
+S9r\" \5      R-                  5       R.                  S   S-  r\S-  S-  rSrSrSrSrSrSrSr S$S jr!S%S jr"S&S jr#S'S jr$S(S jr%S)S jr&S*S jr' " S  S!5      r(S+S" jr)\*S#:X  a  \)" 5         gg! \ a    S SKJr  S SKJr   N�f = f),�    )�annotationsN)�Path)�Any)�ElementTree)�load_backend_dotenv)�ApiSourceAdapter�work24_trainingu6   고용24 국민내일배움카드 훈련과정 OpenAPIuE   훈련과정 목록 수집 및 프로그램 메타데이터 정규화�WORK24_TRAINING_AUTH_KEY�authKey�WORK24_OPEN_API_GUIDE_URL)�source_name�display_name�purpose�key_env_name�auth_param_name�guide_url_env_name�   �	seed_data�api_sampleszGhttps://www.work24.go.kr/cm/openApi/call/hr/callOpenApiSvcInfo310L01.do�   �   �d   �      �?)	�response�body�result�results�data�items�item�list�srchList)�scn_cnt�
+totalCount�totalCnt�total_count�total�countc                �f   � [         R                  " SSU 5      R                  S5      nU=(       d    S$ )Nz[^0-9A-Za-z_-]+�_�sample)�re�sub�strip)�value�slugs     �Gd:\02_2025_AI_Lab\isoser\backend\rag\source_adapters\work24_training.py�
+_safe_slugr2   4   s+   � �
+�6�6�$�c�5�1�7�7��<�D���8��    c                �l   � U c  g[         R                  " SS[        U 5      5      R                  5       nU$ )N� z\s+� )r,   r-   �strr.   )r/   �texts     r1   �_clean_textr9   9   s.   � ��}��
+---
+FILE: source_adapters/base.py
+from __future__ import annotations
+
+from dataclasses import asdict, dataclass, field
+import os
+
+try:
+    from backend.rag.runtime_config import load_backend_dotenv
+except ImportError:
+    from rag.runtime_config import load_backend_dotenv
+
+---
+FILE: source_adapters/catalog.py
+from __future__ import annotations
+
+from rag.source_adapters.ncs_reference import SOURCE as NCS_REFERENCE_SOURCE
+from rag.source_adapters.ncs_resources import SOURCE as NCS_RESOURCES_SOURCE
+from rag.source_adapters.work24_common_codes import SOURCE as WORK24_COMMON_CODES_SOURCE
+from rag.source_adapters.work24_job_support import SOURCE as WORK24_JOB_SUPPORT_SOURCE
+from rag.source_adapters.work24_job_duty import SOURCE as WORK24_JOB_DUTY_SOURCE
+from rag.source_adapters.work24_job_info import SOURCE as WORK24_JOB_INFO_SOURCE
+from rag.source_adapters.work24_major_info import SOURCE as WORK24_MAJOR_INFO_SOURCE
+from rag.source_adapters.work24_training import SOURCE as WORK24_TRAINING_SOURCE
+---
+FILE: source_adapters/know_files.py
+from __future__ import annotations
+
+import csv
+from pathlib import Path
+
+try:
+    from backend.rag.taxonomy import (
+        TaxonomyNode,
+        build_canonical_nodes,
+        match_normalized_job_key,
+---
+FILE: source_adapters/know_survey.py
+from __future__ import annotations
+
+from collections import Counter, defaultdict
+from datetime import datetime, timezone
+import json
+import os
+from pathlib import Path
+import sys
+from statistics import fmean
+import zipfile
+---
+FILE: source_adapters/models.py
+from __future__ import annotations
+
+from dataclasses import asdict, dataclass, field
+
+
+@dataclass
+class NcsUnit:
+    name: str
+    description: str = ""
+
+---
+FILE: source_adapters/ncs_reference.py
+from __future__ import annotations
+
+import json
+import os
+import re
+import time
+from collections import Counter
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+---
+FILE: source_adapters/ncs_resources.py
+from __future__ import annotations
+
+try:
+    from backend.rag.source_adapters.base import ApiSourceAdapter
+except ImportError:
+    from rag.source_adapters.base import ApiSourceAdapter
+
+
+SOURCE = ApiSourceAdapter(
+    source_name="ncs_resources",
+---
+FILE: source_adapters/work24_common_codes.py
+from __future__ import annotations
+
+from rag.source_adapters.base import ApiSourceAdapter
+
+SOURCE = ApiSourceAdapter(
+    source_name="work24_common_codes",
+    display_name="고용24 공통코드 OpenAPI",
+    purpose="직종/분류 코드 정규화",
+    key_env_name="WORK24_COMMON_CODES_AUTH_KEY",
+    auth_param_name="authKey",
+---
+FILE: source_adapters/work24_job_duty.py
+from __future__ import annotations
+
+import json
+import os
+import re
+import time
+from pathlib import Path
+from typing import Any
+from xml.etree import ElementTree
+
+---
+FILE: source_adapters/work24_job_info.py
+from __future__ import annotations
+
+from rag.source_adapters.base import ApiSourceAdapter
+
+SOURCE = ApiSourceAdapter(
+    source_name="work24_job_info",
+    display_name="고용24 직업정보 OpenAPI",
+    purpose="직업명, 직업설명, 분류 메타데이터 보강",
+    key_env_name="WORK24_JOB_INFO_AUTH_KEY",
+    auth_param_name="authKey",
+---
+FILE: source_adapters/work24_job_support.py
+from __future__ import annotations
+
+import json
+import os
+import re
+import time
+from pathlib import Path
+from typing import Any
+from xml.etree import ElementTree
+
+---
+FILE: source_adapters/work24_major_info.py
+from __future__ import annotations
+
+from rag.source_adapters.base import ApiSourceAdapter
+
+SOURCE = ApiSourceAdapter(
+    source_name="work24_major_info",
+    display_name="고용24 학과정보 OpenAPI",
+    purpose="학과명/학과 상세와 직무 연계 보강",
+    key_env_name="WORK24_MAJOR_INFO_AUTH_KEY",
+    auth_param_name="authKey",
+---
+FILE: source_adapters/work24_supplementary.py
+from __future__ import annotations
+
+import json
+import os
+import re
+import time
+from collections import defaultdict
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+---
+FILE: source_adapters/work24_training.py
+from __future__ import annotations
+
+import json
+import os
+import re
+import time
+from pathlib import Path
+from typing import Any
+from xml.etree import ElementTree
+
+---
+FILE: source_adapters/worknet_standard_job_description.py
+from __future__ import annotations
+
+from rag.source_adapters.base import ApiSourceAdapter
+
+SOURCE = ApiSourceAdapter(
+    source_name="worknet_standard_job_description",
+    display_name="워크넷 표준직무기술서 API",
+    purpose="직무 설명/능력단위 기반 프로파일 보강",
+    key_env_name="WORKNET_STANDARD_JOB_DESCRIPTION_API_KEY",
+    auth_param_name="serviceKey",
+---
+FILE: taxonomy.py
+"""Chroma Coach AI용 직무 taxonomy 생성 규칙."""
+
+from __future__ import annotations
+
+from dataclasses import asdict, dataclass, field
+import re
+from pathlib import Path
+
+
+@dataclass
+---

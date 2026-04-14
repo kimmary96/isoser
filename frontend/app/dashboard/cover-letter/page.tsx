@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
-import { getGuestCoverLetters, isGuestMode } from "@/lib/guest";
-import { createBrowserClient } from "@/lib/supabase/client";
+import { listCoverLetters } from "@/lib/api/app";
 import type { CoverLetter } from "@/lib/types";
 
 function formatDate(value: string): string {
@@ -18,7 +17,6 @@ function normalizeText(value: string): string {
 }
 
 export default function CoverLetterPage() {
-  const supabase = useMemo(() => createBrowserClient(), []);
   const [items, setItems] = useState<CoverLetter[]>([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -29,19 +27,8 @@ export default function CoverLetterPage() {
       setLoading(true);
       setError(null);
       try {
-        if (isGuestMode()) {
-          setItems(getGuestCoverLetters());
-          return;
-        }
-
-        const { data, error: queryError } = await supabase
-          .from("cover_letters")
-          .select("*")
-          .order("updated_at", { ascending: false });
-        if (queryError) {
-          throw new Error(queryError.message);
-        }
-        setItems((data || []) as CoverLetter[]);
+        const result = await listCoverLetters();
+        setItems(result.coverLetters);
       } catch (e) {
         setError(e instanceof Error ? e.message : "자기소개서를 불러오지 못했습니다.");
       } finally {
@@ -50,7 +37,7 @@ export default function CoverLetterPage() {
     };
 
     fetchItems();
-  }, [supabase]);
+  }, []);
 
   const filtered = useMemo(() => {
     const q = normalizeText(query);

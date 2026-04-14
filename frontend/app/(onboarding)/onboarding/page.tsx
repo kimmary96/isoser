@@ -5,8 +5,8 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+import { saveOnboardingData } from "@/lib/api/app";
 import { parsePdf } from "@/lib/api/backend";
-import { createBrowserClient } from "@/lib/supabase/client";
 import type { ParsedActivity, ParsedProfile } from "@/lib/types";
 
 const ALLOWED_TYPES = ["회사경력", "프로젝트", "대외활동", "학생활동"] as const;
@@ -38,7 +38,6 @@ function previewValue(value?: string | null) {
 }
 
 export default function OnboardingPage() {
-  const supabase = useMemo(() => createBrowserClient(), []);
   const router = useRouter();
 
   const [file, setFile] = useState<File | null>(null);
@@ -125,73 +124,13 @@ export default function OnboardingPage() {
     setError(null);
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("로그인이 필요합니다.");
-
-      const {
-        name,
-        email,
-        phone,
-        bio,
-        education,
-        career,
-        education_history,
-        awards,
-        certifications,
-        languages,
-        skills,
-        self_intro,
-      } = parsedProfile;
-      let { error: profileError } = await supabase.from("profiles").upsert({
-        id: user.id,
-        name,
-        email,
-        phone,
-        bio: bio ?? "",
-        education,
-        career: career ?? [],
-        education_history: education_history ?? [],
-        awards: awards ?? [],
-        certifications: certifications ?? [],
-        languages: languages ?? [],
-        skills: skills ?? [],
-        self_intro: self_intro ?? "",
+      await saveOnboardingData({
+        profile: parsedProfile,
+        activities: parsedActivities.map((activity) => ({
+          ...activity,
+          type: normalizeType(activity.type),
+        })),
       });
-      if (profileError?.code === "42703" || profileError?.message.toLowerCase().includes("bio")) {
-        const retry = await supabase.from("profiles").upsert({
-          id: user.id,
-          name,
-          email,
-          phone,
-          education,
-          career: career ?? [],
-          education_history: education_history ?? [],
-          awards: awards ?? [],
-          certifications: certifications ?? [],
-          languages: languages ?? [],
-          skills: skills ?? [],
-          self_intro: self_intro ?? "",
-        });
-        profileError = retry.error;
-      }
-      if (profileError) {
-        throw new Error(profileError.message);
-      }
-
-      if (parsedActivities.length > 0) {
-        const { error: activityError } = await supabase.from("activities").insert(
-          parsedActivities.map((activity) => ({
-            ...activity,
-            type: normalizeType(activity.type),
-            user_id: user.id,
-          }))
-        );
-        if (activityError) {
-          throw new Error(activityError.message);
-        }
-      }
 
       router.push("/dashboard");
     } catch (err) {

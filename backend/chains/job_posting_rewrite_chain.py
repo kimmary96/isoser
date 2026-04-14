@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import re
 import asyncio
 from collections import Counter
@@ -34,6 +33,8 @@ except ImportError:
         MatchRewriteResponse,
         RewriteSuggestion as MatchRewriteSuggestion,
     )
+
+from utils.supabase_admin import build_service_headers, get_supabase_admin_settings
 
 AUTO_SELECTED_ACTIVITY_LIMIT = 5
 ACTIVITY_TEXT_LIMIT = 1000
@@ -163,16 +164,6 @@ def _truncate_text(text: str, limit: int) -> str:
     return normalized[:limit].rstrip() + "..."
 
 
-def _build_supabase_headers(service_role_key: str) -> dict[str, str]:
-    """Supabase REST 호출 헤더를 생성합니다."""
-
-    return {
-        "apikey": service_role_key,
-        "Authorization": f"Bearer {service_role_key}",
-        "Accept": "application/json",
-    }
-
-
 async def _fetch_activities_from_supabase(
     *,
     user_id: str,
@@ -181,17 +172,13 @@ async def _fetch_activities_from_supabase(
 ) -> list[dict[str, Any]]:
     """Supabase activities 테이블에서 대상 활동을 조회합니다."""
 
-    supabase_url = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL")
-    service_role_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-    timeout_raw = os.getenv("SUPABASE_TIMEOUT_SECONDS")
-
-    if not supabase_url or not service_role_key:
-        raise RuntimeError("Supabase activity lookup is not configured")
-
     try:
-        timeout_seconds = float(timeout_raw) if timeout_raw else 10.0
-    except ValueError:
-        timeout_seconds = 10.0
+        settings = get_supabase_admin_settings()
+    except Exception as exc:
+        raise RuntimeError("Supabase activity lookup is not configured") from exc
+
+    if not settings.url or not settings.service_role_key:
+        raise RuntimeError("Supabase activity lookup is not configured")
 
     params: dict[str, str] = {
         "select": ACTIVITY_SELECT_COLUMNS,
@@ -206,12 +193,12 @@ async def _fetch_activities_from_supabase(
     elif section_type in ALLOWED_ACTIVITY_SECTION_TYPES:
         params["type"] = f"eq.{section_type}"
 
-    endpoint = f"{supabase_url.rstrip('/')}/rest/v1/activities"
-    async with httpx.AsyncClient(timeout=timeout_seconds) as client:
+    endpoint = f"{settings.url}/rest/v1/activities"
+    async with httpx.AsyncClient(timeout=settings.timeout_seconds, trust_env=False) as client:
         response = await client.get(
             endpoint,
             params=params,
-            headers=_build_supabase_headers(service_role_key),
+            headers=build_service_headers(settings.service_role_key),
         )
 
     if response.is_success:

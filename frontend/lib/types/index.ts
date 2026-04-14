@@ -218,6 +218,43 @@ export interface MatchAnalyzeRequest {
   };
 }
 
+export interface Program {
+  id: string | number | null;
+  title: string | null;
+  category: string | null;
+  location: string | null;
+  provider: string | null;
+  summary: string | null;
+  description?: string | null;
+  tags: string[] | string | null;
+  skills: string[] | string | null;
+  application_url?: string | null;
+  application_method?: string | null;
+  source?: string | null;
+  source_url?: string | null;
+  link?: string | null;
+  deadline?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  is_active?: boolean | null;
+  is_ad?: boolean | null;
+  final_score?: number | null;
+  urgency_score?: number | null;
+  days_left?: number | null;
+}
+
+export interface ProgramRecommendItem {
+  program_id: string;
+  score: number | null;
+  reason: string;
+  fit_keywords: string[];
+  program: Program;
+}
+
+export interface ProgramRecommendResponse {
+  items: ProgramRecommendItem[];
+}
+
 export interface SkillSuggestResponse {
   input_role: string;
   normalized_job_key: string;
@@ -394,4 +431,94 @@ export interface MatchAnalysisRecord {
   missing_keywords: string[] | null;
   recommended_activities: string[] | null;
   created_at: string;
+}
+
+export interface DashboardMeResponse {
+  user: {
+    id: string;
+    email: string | null;
+    displayName: string;
+    avatarUrl: string | null;
+  } | null;
+}
+
+export interface DashboardProfileResponse {
+  profile: Profile | null;
+  activities: Activity[];
+  matchAnalyses: MatchAnalysisRecord[];
+}
+
+export interface ResumeBuilderProfile {
+  name: string;
+  bio?: string;
+  email: string;
+  phone: string;
+  self_intro: string;
+  skills: string[];
+}
+
+export interface ResumeBuilderResponse {
+  activities: Activity[];
+  profile: ResumeBuilderProfile | null;
+}
+
+export interface MatchResumeOption {
+  id: string;
+  title: string;
+  target_job: string | null;
+  selected_activity_ids: string[] | null;
+  created_at: string;
+}
+
+export interface SavedMatchAnalysis {
+  id: string;
+  job_title: string;
+  job_posting: string;
+  total_score: number;
+  grade: string;
+  summary: string;
+  created_at: string;
+  result: MatchResult | null;
+}
+
+export interface MatchDashboardResponse {
+  savedAnalyses: SavedMatchAnalysis[];
+  resumeOptions: MatchResumeOption[];
+}
+
+export interface ResumeExportResponse {
+  resume: Resume | null;
+  activities: Activity[];
+}
+
+export interface DocumentsResponse {
+  documents: Resume[];
+}
+
+export interface ActivityListResponse {
+  activities: Activity[];
+}
+
+export interface ActivityDetailResponse {
+  activity: Activity | null;
+}
+
+export interface ActivityMutationResponse {
+  activity: Activity;
+}
+
+export interface CoverLetterListResponse {
+  coverLetters: CoverLetter[];
+}
+
+export interface CoverLetterDetailResponse {
+  coverLetter: CoverLetter | null;
+}
+
+export interface CoverLetterMutationResponse {
+  coverLetter: CoverLetter;
+}
+
+export interface ProgramListResponse {
+  programs: Program[];
 }

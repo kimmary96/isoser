@@ -13,6 +13,8 @@ import type {
   MatchAnalyzeRequest,
   MatchResult,
   ParsePdfResponse,
+  Program,
+  ProgramRecommendResponse,
   SkillSuggestResponse,
 } from "@/lib/types";
 
@@ -219,5 +221,57 @@ export async function convertActivity(
       body: JSON.stringify(payload),
     },
     "Activity conversion failed."
+  );
+}
+
+export async function listPrograms(params?: {
+  category?: string;
+  scope?: string;
+  region_detail?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<Program[]> {
+  const searchParams = new URLSearchParams();
+  if (params?.category) searchParams.set("category", params.category);
+  if (params?.scope) searchParams.set("scope", params.scope);
+  if (params?.region_detail) searchParams.set("region_detail", params.region_detail);
+  if (typeof params?.limit === "number") searchParams.set("limit", String(params.limit));
+  if (typeof params?.offset === "number") searchParams.set("offset", String(params.offset));
+
+  const query = searchParams.toString();
+  return requestJson<Program[]>(
+    `/programs/${query ? `?${query}` : ""}`,
+    {
+      method: "GET",
+    },
+    "Failed to load programs."
+  );
+}
+
+export async function getProgram(programId: string): Promise<Program> {
+  return requestJson<Program>(
+    `/programs/${programId}`,
+    {
+      method: "GET",
+    },
+    "Failed to load the program."
+  );
+}
+
+export async function recommendPrograms(
+  topK = 9,
+  accessToken?: string | null
+): Promise<ProgramRecommendResponse> {
+  return requestJson<ProgramRecommendResponse>(
+    "/programs/recommend",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      },
+      body: JSON.stringify({ top_k: topK }),
+    },
+    "Failed to load recommended programs."
   );
 }
