@@ -52,5 +52,4 @@ Thumbs.db
 /backend/*.log
 /frontend/*.log
 
-# Local AI scratch space should stay out of the repo by default
-/cowork/
+# Local AI scratch space may be kept in the repo when explicitly used
