@@ -1,5 +1,4 @@
-import { NextResponse } from "next/server";
-
+import { apiError, apiOk } from "@/lib/api/route-response";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { ParsedActivity, ParsedProfile } from "@/lib/types";
 
@@ -40,7 +39,7 @@ export async function POST(request: Request) {
     const activities = Array.isArray(body.activities) ? body.activities : [];
 
     if (!profile) {
-      return NextResponse.json({ error: "프로필 정보가 필요합니다." }, { status: 400 });
+      return apiError("프로필 정보가 필요합니다.", 400, "BAD_REQUEST");
     }
 
     const profilePayload = {
@@ -82,9 +81,9 @@ export async function POST(request: Request) {
       }
     }
 
-    return NextResponse.json({ ok: true });
+    return apiOk({ ok: true as const });
   } catch (error) {
     const message = error instanceof Error ? error.message : "온보딩 저장에 실패했습니다.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(message, 400, "BAD_REQUEST");
   }
 }

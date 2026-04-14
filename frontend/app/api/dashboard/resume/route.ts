@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { apiError, apiOk } from "@/lib/api/route-response";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 async function getAuthenticatedClient() {
@@ -51,13 +52,13 @@ export async function GET() {
       throw new Error(profileWithBio.error.message);
     }
 
-    return NextResponse.json({
+    return apiOk({
       activities: activities ?? [],
       profile: profileData ?? null,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "이력서 데이터를 불러오지 못했습니다.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(message, 400, "BAD_REQUEST");
   }
 }
 
@@ -78,7 +79,7 @@ export async function POST(request: Request) {
       : [];
 
     if (!title || !templateId || selectedActivityIds.length === 0) {
-      return NextResponse.json({ error: "이력서 생성 요청이 올바르지 않습니다." }, { status: 400 });
+      return apiError("이력서 생성 요청이 올바르지 않습니다.", 400, "BAD_REQUEST");
     }
 
     const { data, error } = await supabase
@@ -97,9 +98,9 @@ export async function POST(request: Request) {
       throw new Error(error?.message ?? "이력서 저장에 실패했습니다.");
     }
 
-    return NextResponse.json({ id: data.id });
+    return apiOk({ id: data.id });
   } catch (error) {
     const message = error instanceof Error ? error.message : "이력서 저장에 실패했습니다.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(message, 400, "BAD_REQUEST");
   }
 }

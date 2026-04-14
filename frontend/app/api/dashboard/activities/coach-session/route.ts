@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { apiError, apiOk } from "@/lib/api/route-response";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 async function getAuthenticatedClient() {
@@ -26,7 +27,7 @@ export async function POST(request: Request) {
     };
 
     if (!body.sessionId || !body.activityId || !Array.isArray(body.messages)) {
-      return NextResponse.json({ error: "세션 저장 요청이 올바르지 않습니다." }, { status: 400 });
+      return apiError("세션 저장 요청이 올바르지 않습니다.", 400, "BAD_REQUEST");
     }
 
     const { error } = await supabase.from("coach_sessions").upsert({
@@ -38,9 +39,9 @@ export async function POST(request: Request) {
 
     if (error) throw new Error(error.message);
 
-    return NextResponse.json({ ok: true as const });
+    return apiOk({ ok: true as const });
   } catch (error) {
     const message = error instanceof Error ? error.message : "코치 세션 저장에 실패했습니다.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(message, 400, "BAD_REQUEST");
   }
 }

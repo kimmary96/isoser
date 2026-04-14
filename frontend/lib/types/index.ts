@@ -432,3 +432,93 @@ export interface MatchAnalysisRecord {
   recommended_activities: string[] | null;
   created_at: string;
 }
+
+export interface DashboardMeResponse {
+  user: {
+    id: string;
+    email: string | null;
+    displayName: string;
+    avatarUrl: string | null;
+  } | null;
+}
+
+export interface DashboardProfileResponse {
+  profile: Profile | null;
+  activities: Activity[];
+  matchAnalyses: MatchAnalysisRecord[];
+}
+
+export interface ResumeBuilderProfile {
+  name: string;
+  bio?: string;
+  email: string;
+  phone: string;
+  self_intro: string;
+  skills: string[];
+}
+
+export interface ResumeBuilderResponse {
+  activities: Activity[];
+  profile: ResumeBuilderProfile | null;
+}
+
+export interface MatchResumeOption {
+  id: string;
+  title: string;
+  target_job: string | null;
+  selected_activity_ids: string[] | null;
+  created_at: string;
+}
+
+export interface SavedMatchAnalysis {
+  id: string;
+  job_title: string;
+  job_posting: string;
+  total_score: number;
+  grade: string;
+  summary: string;
+  created_at: string;
+  result: MatchResult | null;
+}
+
+export interface MatchDashboardResponse {
+  savedAnalyses: SavedMatchAnalysis[];
+  resumeOptions: MatchResumeOption[];
+}
+
+export interface ResumeExportResponse {
+  resume: Resume | null;
+  activities: Activity[];
+}
+
+export interface DocumentsResponse {
+  documents: Resume[];
+}
+
+export interface ActivityListResponse {
+  activities: Activity[];
+}
+
+export interface ActivityDetailResponse {
+  activity: Activity | null;
+}
+
+export interface ActivityMutationResponse {
+  activity: Activity;
+}
+
+export interface CoverLetterListResponse {
+  coverLetters: CoverLetter[];
+}
+
+export interface CoverLetterDetailResponse {
+  coverLetter: CoverLetter | null;
+}
+
+export interface CoverLetterMutationResponse {
+  coverLetter: CoverLetter;
+}
+
+export interface ProgramListResponse {
+  programs: Program[];
+}

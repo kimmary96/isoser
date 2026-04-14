@@ -1,5 +1,4 @@
-import { NextResponse } from "next/server";
-
+import { apiError, apiOk } from "@/lib/api/route-response";
 import type { CoachFeedbackRequest, CoachFeedbackResponse } from "@/lib/types";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -16,8 +15,8 @@ async function getAuthenticatedUserId() {
     throw new Error("로그인이 필요합니다.");
   }
 
-  return user.id;
-}
+    return user.id;
+  }
 
 export async function POST(request: Request) {
   try {
@@ -35,13 +34,17 @@ export async function POST(request: Request) {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.detail || "AI 코칭 요청에 실패했습니다.");
+      return apiError(
+        errorData?.detail || "AI 코칭 요청에 실패했습니다.",
+        response.status >= 500 ? 502 : 400,
+        response.status >= 500 ? "UPSTREAM_ERROR" : "BAD_REQUEST"
+      );
     }
 
     const data = (await response.json()) as CoachFeedbackResponse;
-    return NextResponse.json(data);
+    return apiOk(data);
   } catch (error) {
     const message = error instanceof Error ? error.message : "AI 코칭 요청에 실패했습니다.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(message, 400, "BAD_REQUEST");
   }
 }

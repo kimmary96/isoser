@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { apiError, apiOk } from "@/lib/api/route-response";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Profile } from "@/lib/types";
 
@@ -85,7 +86,7 @@ export async function GET() {
     if (activityError) throw new Error(activityError.message);
     if (matchError) throw new Error(matchError.message);
 
-    return NextResponse.json({
+    return apiOk({
       profile: normalizeProfile((profileRow as Record<string, unknown> | null) ?? null),
       activities: activityRows ?? [],
       matchAnalyses: matchRows ?? [],
@@ -93,7 +94,7 @@ export async function GET() {
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "프로필 데이터를 불러오지 못했습니다.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(message, 400, "BAD_REQUEST");
   }
 }
 
@@ -141,10 +142,10 @@ export async function PATCH(request: Request) {
 
     if (profileError) throw new Error(profileError.message);
 
-    return NextResponse.json({ profile: normalizeProfile((profileRow as Record<string, unknown> | null) ?? null) });
+    return apiOk({ profile: normalizeProfile((profileRow as Record<string, unknown> | null) ?? null) });
   } catch (error) {
     const message = error instanceof Error ? error.message : "프로필 저장에 실패했습니다.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(message, 400, "BAD_REQUEST");
   }
 }
 
@@ -155,7 +156,7 @@ export async function PUT(request: Request) {
 
     const name = String(formData.get("name") ?? "").trim();
     if (!name) {
-      return NextResponse.json({ error: "이름은 필수입니다." }, { status: 400 });
+      return apiError("이름은 필수입니다.", 400, "BAD_REQUEST");
     }
 
     const bio = String(formData.get("bio") ?? "").trim() || null;
@@ -222,11 +223,11 @@ export async function PUT(request: Request) {
 
     if (profileError) throw new Error(profileError.message);
 
-    return NextResponse.json({
+    return apiOk({
       profile: normalizeProfile((profileRow as Record<string, unknown> | null) ?? null),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "프로필 저장에 실패했습니다.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(message, 400, "BAD_REQUEST");
   }
 }

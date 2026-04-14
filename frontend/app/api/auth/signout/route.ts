@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { apiError, apiOk } from "@/lib/api/route-response";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export async function POST() {
@@ -9,9 +10,9 @@ export async function POST() {
 
     if (error) throw new Error(error.message);
 
-    return NextResponse.json({ ok: true });
+    return apiOk({ ok: true as const });
   } catch (error) {
     const message = error instanceof Error ? error.message : "로그아웃에 실패했습니다.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(message, 400, "BAD_REQUEST");
   }
 }

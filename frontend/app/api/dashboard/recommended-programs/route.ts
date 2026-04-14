@@ -1,5 +1,4 @@
-import { NextResponse } from "next/server";
-
+import { apiError, apiOk } from "@/lib/api/route-response";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { ProgramRecommendResponse } from "@/lib/types";
 
@@ -37,10 +36,10 @@ export async function GET() {
       .filter((program): program is NonNullable<typeof program> => Boolean(program))
       .slice(0, 9);
 
-    return NextResponse.json({ programs });
+    return apiOk({ programs });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "추천 프로그램을 불러오지 못했습니다.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(message, 400, "BAD_REQUEST");
   }
 }

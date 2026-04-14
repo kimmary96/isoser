@@ -3,65 +3,24 @@ import type {
   CoachFeedbackResponse,
   CoachMessage,
   CoverLetter,
-  MatchAnalysisRecord,
   Profile,
   Program,
   Resume,
+  ActivityDetailResponse,
+  ActivityListResponse,
+  ActivityMutationResponse,
+  CoverLetterDetailResponse,
+  CoverLetterListResponse,
+  CoverLetterMutationResponse,
+  DashboardMeResponse,
+  DashboardProfileResponse,
+  DocumentsResponse,
+  MatchDashboardResponse,
+  ProgramListResponse,
+  ResumeBuilderResponse,
+  ResumeExportResponse,
+  SavedMatchAnalysis,
 } from "@/lib/types";
-
-type DashboardProfileResponse = {
-  profile: Profile | null;
-  activities: Activity[];
-  matchAnalyses: MatchAnalysisRecord[];
-};
-
-type ResumeBuilderProfile = {
-  name: string;
-  bio?: string;
-  email: string;
-  phone: string;
-  self_intro: string;
-  skills: string[];
-} | null;
-
-type ResumeBuilderResponse = {
-  activities: Activity[];
-  profile: ResumeBuilderProfile;
-};
-
-type MatchDashboardResponse = {
-  savedAnalyses: Array<{
-    id: string;
-    job_title: string;
-    job_posting: string;
-    total_score: number;
-    grade: string;
-    summary: string;
-    created_at: string;
-    result: import("@/lib/types").MatchResult | null;
-  }>;
-  resumeOptions: Array<{
-    id: string;
-    title: string;
-    target_job: string | null;
-    selected_activity_ids: string[] | null;
-    created_at: string;
-  }>;
-};
-
-type DashboardMeResponse = {
-  user: {
-    id: string;
-    email: string | null;
-    displayName: string;
-    avatarUrl: string | null;
-  } | null;
-};
-
-type ResumeExportResponse = {
-  resume: Resume | null;
-  activities: Activity[];
-};
 
 type OnboardingPayload = {
   profile: {
@@ -94,7 +53,9 @@ async function handleResponse<T>(
 ): Promise<T> {
   if (!response.ok) {
     const errorData = await response.json().catch(() => null);
-    throw new Error(errorData?.error || errorData?.detail || fallbackMessage);
+    const message = errorData?.error || errorData?.detail || fallbackMessage;
+    const code = errorData?.code ? ` [${errorData.code}]` : "";
+    throw new Error(`${message}${code}`);
   }
 
   return response.json() as Promise<T>;
@@ -146,7 +107,7 @@ export async function saveOnboardingData(payload: OnboardingPayload): Promise<{ 
 }
 
 export async function getRecommendedPrograms(): Promise<{ programs: Program[] }> {
-  return requestAppJson<{ programs: Program[] }>(
+  return requestAppJson<ProgramListResponse>(
     "/api/dashboard/recommended-programs",
     { method: "GET" },
     "추천 프로그램을 불러오지 못했습니다."
@@ -217,7 +178,7 @@ export async function createResumeDocument(payload: {
 }
 
 export async function getDocuments(): Promise<{ documents: Resume[] }> {
-  return requestAppJson<{ documents: Resume[] }>(
+  return requestAppJson<DocumentsResponse>(
     "/api/dashboard/documents",
     { method: "GET" },
     "문서 목록을 불러오지 못했습니다."
@@ -225,7 +186,7 @@ export async function getDocuments(): Promise<{ documents: Resume[] }> {
 }
 
 export async function listCoverLetters(): Promise<{ coverLetters: CoverLetter[] }> {
-  return requestAppJson<{ coverLetters: CoverLetter[] }>(
+  return requestAppJson<CoverLetterListResponse>(
     "/api/dashboard/cover-letters",
     { method: "GET" },
     "자기소개서 목록을 불러오지 못했습니다."
@@ -234,8 +195,8 @@ export async function listCoverLetters(): Promise<{ coverLetters: CoverLetter[] 
 
 export async function getCoverLetterDetail(
   id: string
-): Promise<{ coverLetter: CoverLetter | null }> {
-  return requestAppJson<{ coverLetter: CoverLetter | null }>(
+): Promise<CoverLetterDetailResponse> {
+  return requestAppJson<CoverLetterDetailResponse>(
     `/api/dashboard/cover-letters/${encodeURIComponent(id)}`,
     { method: "GET" },
     "자기소개서를 불러오지 못했습니다."
@@ -250,8 +211,8 @@ export async function createCoverLetter(payload: {
   content: string;
   qa_items: Array<{ question: string; answer: string }>;
   tags: string[];
-}): Promise<{ coverLetter: CoverLetter }> {
-  return requestAppJson<{ coverLetter: CoverLetter }>(
+}): Promise<CoverLetterMutationResponse> {
+  return requestAppJson<CoverLetterMutationResponse>(
     "/api/dashboard/cover-letters",
     {
       method: "POST",
@@ -273,8 +234,8 @@ export async function updateCoverLetter(
     qa_items: Array<{ question: string; answer: string }>;
     tags: string[];
   }
-): Promise<{ coverLetter: CoverLetter }> {
-  return requestAppJson<{ coverLetter: CoverLetter }>(
+): Promise<CoverLetterMutationResponse> {
+  return requestAppJson<CoverLetterMutationResponse>(
     `/api/dashboard/cover-letters/${encodeURIComponent(id)}`,
     {
       method: "PATCH",
@@ -311,24 +272,24 @@ export async function requestCoverLetterCoaching(payload: {
   );
 }
 
-export async function listActivities(): Promise<{ activities: Activity[] }> {
-  return requestAppJson<{ activities: Activity[] }>(
+export async function listActivities(): Promise<ActivityListResponse> {
+  return requestAppJson<ActivityListResponse>(
     "/api/dashboard/activities",
     { method: "GET" },
     "활동 목록을 불러오지 못했습니다."
   );
 }
 
-export async function getActivityDetail(id: string): Promise<{ activity: Activity | null }> {
-  return requestAppJson<{ activity: Activity | null }>(
+export async function getActivityDetail(id: string): Promise<ActivityDetailResponse> {
+  return requestAppJson<ActivityDetailResponse>(
     `/api/dashboard/activities/${encodeURIComponent(id)}`,
     { method: "GET" },
     "활동을 불러오지 못했습니다."
   );
 }
 
-export async function createActivity(payload: Record<string, unknown>): Promise<{ activity: Activity }> {
-  return requestAppJson<{ activity: Activity }>(
+export async function createActivity(payload: Record<string, unknown>): Promise<ActivityMutationResponse> {
+  return requestAppJson<ActivityMutationResponse>(
     "/api/dashboard/activities",
     {
       method: "POST",
@@ -339,8 +300,8 @@ export async function createActivity(payload: Record<string, unknown>): Promise<
   );
 }
 
-export async function updateActivity(id: string, payload: Record<string, unknown>): Promise<{ activity: Activity }> {
-  return requestAppJson<{ activity: Activity }>(
+export async function updateActivity(id: string, payload: Record<string, unknown>): Promise<ActivityMutationResponse> {
+  return requestAppJson<ActivityMutationResponse>(
     `/api/dashboard/activities/${encodeURIComponent(id)}`,
     {
       method: "PATCH",
@@ -405,16 +366,7 @@ export async function createMatchAnalysis(payload: {
   analysisMode: "resume" | "activity";
   selectedResumeId?: string;
 }): Promise<{
-  analysis: {
-    id: string;
-    job_title: string;
-    job_posting: string;
-    total_score: number;
-    grade: string;
-    summary: string;
-    created_at: string;
-    result: import("@/lib/types").MatchResult | null;
-  };
+  analysis: SavedMatchAnalysis;
 }> {
   return requestAppJson(
     "/api/dashboard/match",

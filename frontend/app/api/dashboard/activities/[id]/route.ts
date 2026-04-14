@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { apiError, apiOk } from "@/lib/api/route-response";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 async function getAuthenticatedClient() {
@@ -31,10 +32,10 @@ export async function GET(
       .maybeSingle();
 
     if (error) throw new Error(error.message);
-    return NextResponse.json({ activity: data ?? null });
+    return apiOk({ activity: data ?? null });
   } catch (error) {
     const message = error instanceof Error ? error.message : "활동을 불러오지 못했습니다.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(message, 400, "BAD_REQUEST");
   }
 }
 
@@ -59,10 +60,10 @@ export async function PATCH(
       throw new Error(error?.message ?? "활동 저장에 실패했습니다.");
     }
 
-    return NextResponse.json({ activity: data });
+    return apiOk({ activity: data });
   } catch (error) {
     const message = error instanceof Error ? error.message : "활동 저장에 실패했습니다.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(message, 400, "BAD_REQUEST");
   }
 }
 
@@ -85,9 +86,9 @@ export async function DELETE(
       throw new Error("활동 삭제 권한이 없습니다.");
     }
 
-    return NextResponse.json({ id });
+    return apiOk({ id });
   } catch (error) {
     const message = error instanceof Error ? error.message : "활동 삭제에 실패했습니다.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(message, 400, "BAD_REQUEST");
   }
 }

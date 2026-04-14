@@ -1,5 +1,4 @@
-import { NextResponse } from "next/server";
-
+import { apiError, apiOk } from "@/lib/api/route-response";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 function fallbackName(email: string | null | undefined, metadataName: unknown): string {
@@ -23,7 +22,7 @@ export async function GET() {
     } = await supabase.auth.getUser();
 
     if (error || !user) {
-      return NextResponse.json({ user: null }, { status: 401 });
+      return apiError("로그인이 필요합니다.", 401, "UNAUTHORIZED");
     }
 
     const { data: profile, error: profileError } = await supabase
@@ -38,7 +37,7 @@ export async function GET() {
       (typeof profile?.name === "string" && profile.name.trim()) ||
       fallbackName(user.email, user.user_metadata?.name ?? user.user_metadata?.full_name);
 
-    return NextResponse.json({
+    return apiOk({
       user: {
         id: user.id,
         email: user.email ?? null,
@@ -49,6 +48,6 @@ export async function GET() {
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "사용자 정보를 불러오지 못했습니다.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(message, 400, "BAD_REQUEST");
   }
 }

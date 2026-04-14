@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { apiError, apiOk } from "@/lib/api/route-response";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 async function getAuthenticatedClient() {
@@ -24,7 +25,7 @@ export async function POST(request: Request) {
     const files = formData.getAll("files").filter((file): file is File => file instanceof File);
 
     if (files.length === 0) {
-      return NextResponse.json({ error: "업로드할 파일이 없습니다." }, { status: 400 });
+      return apiError("업로드할 파일이 없습니다.", 400, "BAD_REQUEST");
     }
 
     const urls: string[] = [];
@@ -46,9 +47,9 @@ export async function POST(request: Request) {
       urls.push(data.publicUrl);
     }
 
-    return NextResponse.json({ urls });
+    return apiOk({ urls });
   } catch (error) {
     const message = error instanceof Error ? error.message : "이미지 업로드에 실패했습니다.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(message, 400, "BAD_REQUEST");
   }
 }

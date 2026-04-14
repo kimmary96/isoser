@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { apiError, apiOk } from "@/lib/api/route-response";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 async function getAuthenticatedClient() {
@@ -36,7 +37,7 @@ export async function GET(request: Request) {
     if (resumeError) throw new Error(resumeError.message);
 
     if (!resumeRow) {
-      return NextResponse.json({ resume: null, activities: [] });
+      return apiOk({ resume: null, activities: [] });
     }
 
     const rawIds = Array.isArray(resumeRow.selected_activity_ids)
@@ -50,7 +51,7 @@ export async function GET(request: Request) {
       : [];
 
     if (ids.length === 0) {
-      return NextResponse.json({ resume: resumeRow, activities: [] });
+      return apiOk({ resume: resumeRow, activities: [] });
     }
 
     const { data: activityRows, error: activityError } = await supabase
@@ -66,12 +67,12 @@ export async function GET(request: Request) {
       .map((id) => activityMap.get(id))
       .filter((activity): activity is NonNullable<typeof activity> => Boolean(activity));
 
-    return NextResponse.json({
+    return apiOk({
       resume: resumeRow,
       activities: orderedActivities,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "PDF 데이터 로딩에 실패했습니다.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(message, 400, "BAD_REQUEST");
   }
 }

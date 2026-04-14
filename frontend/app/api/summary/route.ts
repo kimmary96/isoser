@@ -1,24 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { apiError, apiOk } from "@/lib/api/route-response";
+
 export async function POST(req: NextRequest) {
   try {
     const contentType = req.headers.get("content-type") || "";
     if (!contentType.includes("application/json")) {
-      return NextResponse.json({ error: "Invalid content type" }, { status: 415 });
+      return apiError("Invalid content type", 415, "BAD_REQUEST");
     }
 
     const body = (await req.json()) as { prompt?: unknown };
     const prompt = typeof body.prompt === "string" ? body.prompt.trim() : "";
     if (!prompt) {
-      return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
+      return apiError("Prompt is required", 400, "BAD_REQUEST");
     }
     if (prompt.length > 6000) {
-      return NextResponse.json({ error: "Prompt is too long" }, { status: 400 });
+      return apiError("Prompt is too long", 400, "BAD_REQUEST");
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      return NextResponse.json({ error: "API key missing" }, { status: 500 });
+      return apiError("API key missing", 500, "INTERNAL_ERROR");
     }
 
     const response = await fetch(
@@ -33,17 +35,18 @@ export async function POST(req: NextRequest) {
     );
 
     if (!response.ok) {
-      return NextResponse.json(
-        { error: "Summary generation failed" },
-        { status: response.status >= 500 ? 502 : 400 }
+      return apiError(
+        "Summary generation failed",
+        response.status >= 500 ? 502 : 400,
+        response.status >= 500 ? "UPSTREAM_ERROR" : "BAD_REQUEST"
       );
     }
 
     const data = await response.json();
     const summary = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
-    return NextResponse.json({ summary });
+    return apiOk({ summary });
   } catch {
-    return NextResponse.json({ error: "Summary generation failed" }, { status: 500 });
+    return apiError("Summary generation failed", 500, "INTERNAL_ERROR");
   }
 }

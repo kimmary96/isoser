@@ -1,5 +1,4 @@
-import { NextResponse } from "next/server";
-
+import { apiError, apiOk } from "@/lib/api/route-response";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 function isQaColumnMissingError(error: { code?: string; message?: string } | null): boolean {
@@ -37,10 +36,10 @@ export async function GET(
       .maybeSingle();
 
     if (error) throw new Error(error.message);
-    return NextResponse.json({ coverLetter: data ?? null });
+    return apiOk({ coverLetter: data ?? null });
   } catch (error) {
     const message = error instanceof Error ? error.message : "자기소개서를 불러오지 못했습니다.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(message, 400, "BAD_REQUEST");
   }
 }
 
@@ -79,7 +78,7 @@ export async function PATCH(
       : [];
 
     if (!title || !companyName || !jobTitle || !promptQuestion || !content || qaItems.length === 0) {
-      return NextResponse.json({ error: "자기소개서 저장 요청이 올바르지 않습니다." }, { status: 400 });
+      return apiError("자기소개서 저장 요청이 올바르지 않습니다.", 400, "BAD_REQUEST");
     }
 
     const payload = {
@@ -124,10 +123,10 @@ export async function PATCH(
       throw new Error(error?.message ?? "자기소개서 저장에 실패했습니다.");
     }
 
-    return NextResponse.json({ coverLetter: data });
+    return apiOk({ coverLetter: data });
   } catch (error) {
     const message = error instanceof Error ? error.message : "자기소개서 저장에 실패했습니다.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(message, 400, "BAD_REQUEST");
   }
 }
 
@@ -150,9 +149,9 @@ export async function DELETE(
       throw new Error("자기소개서 삭제 권한이 없습니다.");
     }
 
-    return NextResponse.json({ id });
+    return apiOk({ id });
   } catch (error) {
     const message = error instanceof Error ? error.message : "자기소개서 삭제에 실패했습니다.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(message, 400, "BAD_REQUEST");
   }
 }

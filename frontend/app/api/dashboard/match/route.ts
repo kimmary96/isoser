@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { apiError, apiOk } from "@/lib/api/route-response";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { MatchResult } from "@/lib/types";
 
@@ -96,10 +97,10 @@ async function loadSavedAnalysesAndResumes() {
 export async function GET() {
   try {
     const { savedAnalyses, resumeOptions } = await loadSavedAnalysesAndResumes();
-    return NextResponse.json({ savedAnalyses, resumeOptions });
+    return apiOk({ savedAnalyses, resumeOptions });
   } catch (error) {
     const message = error instanceof Error ? error.message : "분석 데이터를 불러오지 못했습니다.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(message, 400, "BAD_REQUEST");
   }
 }
 
@@ -120,10 +121,10 @@ export async function POST(request: NextRequest) {
     const analysisMode = body.analysisMode;
 
     if (!companyName || !positionName || !jobPosting || !analysisMode) {
-      return NextResponse.json({ error: "분석 요청이 올바르지 않습니다." }, { status: 400 });
+      return apiError("분석 요청이 올바르지 않습니다.", 400, "BAD_REQUEST");
     }
     if (analysisMode === "resume" && !body.selectedResumeId) {
-      return NextResponse.json({ error: "분석할 이력서를 선택해 주세요." }, { status: 400 });
+      return apiError("분석할 이력서를 선택해 주세요.", 400, "BAD_REQUEST");
     }
 
     const [
@@ -236,7 +237,7 @@ export async function POST(request: NextRequest) {
         throw new Error(fallbackInsert.error?.message ?? "분석 저장에 실패했습니다.");
       }
       insertedId = fallbackInsert.data.id;
-      return NextResponse.json({
+      return apiOk({
         analysis: {
           id: insertedId,
           job_title: jobTitle,
@@ -255,7 +256,7 @@ export async function POST(request: NextRequest) {
     }
 
     insertedId = insertResult.data.id;
-    return NextResponse.json({
+    return apiOk({
       analysis: {
         id: insertedId,
         job_title: jobTitle,
@@ -269,7 +270,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "합격률 분석에 실패했습니다.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(message, 400, "BAD_REQUEST");
   }
 }
 
@@ -277,7 +278,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const id = request.nextUrl.searchParams.get("id")?.trim();
     if (!id) {
-      return NextResponse.json({ error: "삭제할 분석 ID가 필요합니다." }, { status: 400 });
+      return apiError("삭제할 분석 ID가 필요합니다.", 400, "BAD_REQUEST");
     }
 
     const { supabase, user } = await getAuthenticatedClient();
@@ -293,9 +294,9 @@ export async function DELETE(request: NextRequest) {
       throw new Error("삭제 권한이 없어 DB에서 삭제되지 않았습니다.");
     }
 
-    return NextResponse.json({ id });
+    return apiOk({ id });
   } catch (error) {
     const message = error instanceof Error ? error.message : "분석 삭제에 실패했습니다.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(message, 400, "BAD_REQUEST");
   }
 }

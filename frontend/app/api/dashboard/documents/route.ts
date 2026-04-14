@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { apiError, apiOk } from "@/lib/api/route-response";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export async function GET() {
@@ -22,9 +23,9 @@ export async function GET() {
 
     if (error) throw new Error(error.message);
 
-    return NextResponse.json({ documents: data ?? [] });
+    return apiOk({ documents: data ?? [] });
   } catch (error) {
     const message = error instanceof Error ? error.message : "문서 목록을 불러오지 못했습니다.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(message, 400, "BAD_REQUEST");
   }
 }
