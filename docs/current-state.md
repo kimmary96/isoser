@@ -22,6 +22,11 @@
 - Recommended task id and filename convention is `TASK-YYYY-MM-DD-HHMM-short-slug` for same-day chronological sorting.
 
 ## Current automation split
+- Cowork review path:
+  - `cowork/packets/*.md` -> `cowork_watcher.py` -> `cowork/reviews/*.md`
+  - approval marker: `cowork/approvals/<task-id>.ok`
+  - dispatch notes: `cowork/dispatch/*.md`
+  - approved packets are promoted to `tasks/inbox/` by default or `tasks/remote/` when approval says `target: remote`
 - Local automation path:
   - `tasks/inbox/*.md` -> watcher -> Codex CLI
   - Recommended watcher launch: `powershell -ExecutionPolicy Bypass -File scripts/run_watcher.ps1`
@@ -36,6 +41,7 @@
 
 ## Project structure notes
 - `frontend/`: Next.js application
+- `frontend/app/landing-v2/page.tsx`: separate information-hub landing experiment route that does not replace the existing `/` page
 - `backend/`: FastAPI application with its own virtual environment under `backend/.venv`
 - `docs/`: project documents, current-state, refactoring log, contracts, PRD
 - `tasks/`: local task queue state
@@ -44,7 +50,7 @@
 - `tasks/archive/` and `reports/archive/`: optional monthly archive locations for older task and report history
 
 ## Known gaps
-- There is no automated task creation bridge from external planning tools into `tasks/inbox` or `tasks/remote` yet.
+- There is still no fully automatic task creation bridge from external planning tools, but cowork packet review and promotion can now be automated locally.
 - The remote fallback workflow currently delegates implementation to Claude Code using `ANTHROPIC_API_KEY`.
 - OAuth smoke testing is retained as a reference check only, not an active operating path.
 - Stale tasks in `tasks/running` are now auto-moved to `tasks/blocked` after 20 minutes, which is a safety rule rather than a true semantic failure detector.

@@ -10,17 +10,21 @@
 - Claude Code GitHub Action: remote fallback when the local machine is unavailable
 
 ## Local flow
-1. Claude produces a task packet.
-2. Promote the approved packet to `tasks/inbox/<task-id>.md`.
-3. Start the watcher with:
+1. Claude produces a task packet under `cowork/packets/<task-id>.md`.
+2. Start the cowork watcher with:
+   - `powershell -ExecutionPolicy Bypass -File scripts/run_cowork_watcher.ps1`
+3. Read the generated review in `cowork/reviews/<task-id>-review.md`.
+4. Approve by creating `cowork/approvals/<task-id>.ok`.
+5. The cowork watcher promotes the packet to `tasks/inbox/<task-id>.md` by default.
+6. Start the implementation watcher with:
    - `powershell -ExecutionPolicy Bypass -File scripts/run_watcher.ps1`
-5. The watcher moves the packet to `tasks/running/`.
-6. Codex reads `AGENTS.md`, inspects the repository, evaluates drift, and implements if safe.
-7. Codex writes reports to `reports/`.
-8. On success, Codex is expected to commit and push with:
+7. The watcher moves the packet to `tasks/running/`.
+8. Codex reads `AGENTS.md`, inspects the repository, evaluates drift, and implements if safe.
+9. Codex writes reports to `reports/`.
+10. On success, Codex is expected to commit and push with:
    - `[codex] <task-id> 구현 완료`
-9. The watcher moves the packet to `tasks/done/`.
-10. If the task is invalid, blocked, or fails, the watcher moves it to `tasks/blocked/`.
+11. The watcher moves the packet to `tasks/done/`.
+12. If the task is invalid, blocked, or fails, the watcher moves it to `tasks/blocked/`.
 
 ## Remote fallback flow
 1. Save a task packet to `tasks/remote/<task-id>.md`.
@@ -49,6 +53,7 @@
 - `[codex]` commit messages are reserved for local Codex automation and should not retrigger the remote fallback workflow.
 - Cowork-style scratch space is optional and should only be created on explicit user request.
 - Scratch output should never directly modify `CLAUDE.md`, `AGENTS.md`, `README.md`, or core `docs/*.md` files.
+- Approval markers should stay in `cowork/approvals/` and should not be replaced by ad hoc root files.
 
 ## Current limitations
 - The remote fallback path currently uses Claude Code, not Codex GitHub Action.

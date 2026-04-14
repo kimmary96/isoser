@@ -7,10 +7,14 @@ This folder is a local cowork scratch workspace for planning artifacts that are 
 - `packets/`: Task Packet drafts before approval
 - `notes/`: meeting notes and raw working notes
 - `reviews/`: review notes, change proposals, and promotion notes
+- `approvals/`: human approval markers such as `<task-id>.ok`
+- `dispatch/`: watcher-generated status notes and local alerts
 
 ## Promotion flow
-- Local execution: move an approved packet from `cowork/packets/` to `tasks/inbox/`
-- Remote fallback: move an approved packet from `cowork/packets/` to `tasks/remote/`
+- Review automation: `cowork_watcher.py` reviews new packets and writes `cowork/reviews/<task-id>-review.md`
+- Approval step: create `cowork/approvals/<task-id>.ok`
+- Local execution: default approval target promotes the packet to `tasks/inbox/`
+- Remote fallback: put `target: remote` inside the approval file to promote to `tasks/remote/`
 
 ## Guardrails
 - Do not directly edit `CLAUDE.md`, `AGENTS.md`, `README.md`, or `docs/*.md` from cowork output.
