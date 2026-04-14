@@ -20,8 +20,8 @@
   - 공통코드
   - 직업정보
 - 로컬 파일
-  - `docs/직업중분류.CSV`
-  - `docs/직업세세분류.CSV`
+  - `docs/data/직업중분류.CSV`
+  - `docs/data/직업세세분류.CSV`
   - `docs/2019년_한국직업정보(KNOW)_재직자조사_성격·지식_원자료.csv`
   - `docs/2019년_한국직업정보(KNOW)_재직자조사_성격·지식_코드북.xlsx`
 
@@ -42,8 +42,8 @@
 | `NCS_REFERENCE_API_URL` | NCS 기준정보 조회 API 안내/기준 URL | `https://www.data.go.kr/data/15128213/openapi.do` |
 | `NCS_RESOURCE_API_URL` | NCS 활용자료 API 안내/기준 URL | `https://www.data.go.kr/data/15086446/openapi.do` |
 | `JOB_ABILITY_CODE_MAPPING_URL` | 직업능력 코드매핑정보 파일 데이터 기준 URL | `https://www.data.go.kr/data/15154290/fileData.do` |
-| `KNOW_MID_CATEGORY_CSV_PATH` | KNOW 직업 중분류 CSV 경로 | `../docs/직업중분류.CSV` |
-| `KNOW_DETAIL_CATEGORY_CSV_PATH` | KNOW 직업 세세분류 CSV 경로 | `../docs/직업세세분류.CSV` |
+| `KNOW_MID_CATEGORY_CSV_PATH` | KNOW 직업 중분류 CSV 경로 | `../docs/data/직업중분류.CSV` |
+| `KNOW_DETAIL_CATEGORY_CSV_PATH` | KNOW 직업 세세분류 CSV 경로 | `../docs/data/직업세세분류.CSV` |
 | `KNOW_SURVEY_RAW_CSV_PATH` | KNOW 재직자조사 원자료 경로 | `../docs/2019년_한국직업정보(KNOW)_재직자조사_성격·지식_원자료.csv` |
 | `KNOW_SURVEY_CODEBOOK_XLSX_PATH` | KNOW 재직자조사 코드북 경로 | `../docs/2019년_한국직업정보(KNOW)_재직자조사_성격·지식_코드북.xlsx` |
 
@@ -69,8 +69,8 @@
 | NCS 기준정보 조회 API | `backend/rag/source_adapters/ncs_reference.py` | `job_taxonomy.json` | NCS 대/중/소/세분류, 능력단위, 능력단위 요소, 키워드 검색 결과 | 직무 taxonomy, 직무명 정규화 |
 | NCS 활용자료 API | `backend/rag/source_adapters/ncs_resources.py` | `job_profile_corpus.jsonl` 보강 | 직무기술내용, 경력개발경로체계도, 직무숙련기간 | 패턴 문장 보강, 설명 다양화 |
 | 직업능력 코드매핑정보 파일데이터 | `backend/rag/source_adapters/job_code_mapping.py` | `job_taxonomy.json` 보강 | NCS, KECO, 관련 직종 코드 매핑 | 서로 다른 직무 체계 정렬 |
-| `docs/직업중분류.CSV` | `backend/rag/source_adapters/know_files.py` | `job_taxonomy.json` | KNOW 중분류 코드와 분류명 | 직군 버킷 정의 |
-| `docs/직업세세분류.CSV` | `backend/rag/source_adapters/know_files.py` | `job_taxonomy.json` | KNOW 세세분류 코드와 직업명 | 세부 직무 alias 확장 |
+| `docs/data/직업중분류.CSV` | `backend/rag/source_adapters/know_files.py` | `job_taxonomy.json` | KNOW 중분류 코드와 분류명 | 직군 버킷 정의 |
+| `docs/data/직업세세분류.CSV` | `backend/rag/source_adapters/know_files.py` | `job_taxonomy.json` | KNOW 세세분류 코드와 직업명 | 세부 직무 alias 확장 |
 | `docs/2019년_한국직업정보(KNOW)_재직자조사_성격·지식_원자료.csv` | `backend/rag/source_adapters/know_survey.py` | `know_skill_weights.json` | 직업별 지식/성격/업무 관련 설문값 | 직무별 중요 역량 가중치 |
 | `docs/2019년_한국직업정보(KNOW)_재직자조사_성격·지식_코드북.xlsx` | `backend/rag/source_adapters/know_survey.py` | `know_question_labels.json` | 설문 문항 의미 해석용 라벨 | KNOW 원자료 해석 |
 
@@ -138,7 +138,7 @@
 ### 단계 1. taxonomy 구축
 
 - NCS 기준정보 조회 API에서 직무 분류를 가져온다.
-- `직업중분류.CSV`, `직업세세분류.CSV`를 읽어 KNOW 직업명을 붙인다.
+- `docs/data/직업중분류.CSV`, `docs/data/직업세세분류.CSV`를 읽어 KNOW 직업명을 붙인다.
 - 내부적으로 사용할 `normalized_job_key`와 alias 사전을 만든다.
 
 ### 단계 2. 직무 프로파일 수집

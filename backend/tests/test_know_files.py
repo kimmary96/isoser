@@ -9,7 +9,7 @@ from backend.rag.source_adapters.know_files import (
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DOCS_DIR = REPO_ROOT / "docs"
+DOCS_DIR = REPO_ROOT / "docs" / "data"
 
 
 def test_load_csv_rows_supports_know_csv_encoding() -> None:

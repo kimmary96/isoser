@@ -76,7 +76,7 @@
 - `backend/chains/job_posting_rewrite_chain.py`
 - `backend/tests/test_job_posting_rewrite_chain.py`
 - `backend/tests/test_match_rewrite_api.py`
-- `docs/2026-04-06-match-rewrite-worklog.md`
+- `docs/worklogs/2026-04-06-match-rewrite-worklog.md`
 
 ### 수정된 파일
 
@@ -84,7 +84,7 @@
 
 ## 4. 현재 TODO 체크리스트
 
-아래 체크리스트는 `docs/chroma-coach-ai-plan.md` 기준 TODO 중, 오늘 작업 범위와 직접 연결되는 항목만 다시 정리한 것입니다.
+아래 체크리스트는 `docs/research/chroma-coach-ai-plan.md` 기준 TODO 중, 오늘 작업 범위와 직접 연결되는 항목만 다시 정리한 것입니다.
 
 ### A. `/match/rewrite` 계약 / 체인 / API
 

@@ -120,9 +120,9 @@
 
 생성/수정 파일:
 
-- `docs/prd.md`
-- `docs/prd.html`
-- `docs/prd.pdf`
+- `docs/specs/prd.md`
+- `docs/specs/prd.html`
+- `docs/specs/prd.pdf`
 - `scripts/generate_prd_pdf.py`
 
 내용:
@@ -394,7 +394,7 @@
 
 생성 파일:
 
-- `docs/api-contract.md`
+- `docs/specs/api-contract.md`
 
 포함 내용:
 
@@ -645,7 +645,7 @@
 - `backend/repositories/coach_session_repo.py`
 - `backend/chains/job_posting_rewrite_chain.py`
 - `backend/utils/supabase_admin.py`
-- `docs/api-contract.md`
+- `docs/specs/api-contract.md`
 - `docs/prd.*`
 
 ### 간접 영향
@@ -835,7 +835,7 @@ backend/rag/source_adapters/work24_job_support.py를 포함해서
 ### 5. 리팩토링 후 문서 보강
 
 ```md
-docs/api-contract.md와 이번 리팩토링 로그를 기준으로
+docs/specs/api-contract.md와 이번 리팩토링 로그를 기준으로
 docs/architecture-overview.md 문서를 새로 만들어줘.
 프론트 계층, Next API 계층, FastAPI 계층, Supabase 계층을
 현재 코드 기준으로 실제 흐름 위주로 정리해줘.
@@ -869,6 +869,9 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - alert 본문 포맷을 `type`, `stage`, `status`, `severity`, `packet`, `created_at`, `report`, `summary`, `next_action` 기준으로 표준화함
 - `scripts/run_watcher.ps1`, `.watcher.env.example`
   - watcher 실행 스크립트가 저장소 루트 `.watcher.env`를 자동 로드하도록 하고, Slack webhook 로컬 설정 템플릿을 추가함
+- `docs/`
+  - 루트에 평평하게 쌓여 있던 문서를 `automation`, `rules`, `specs`, `data`, `research`, `worklogs`로 재분류함
+  - `docs/current-state.md`와 `docs/codex-workflow.md`는 루트 인덱스 성격을 유지하고, 세부 문서는 하위 폴더로 이동해 탐색성을 높임
 - `dispatch/alerts/README.md`, `dispatch/alerts/DISPATCH_ALERT_PROMPT.md`
   - root `dispatch/alerts`를 local watcher terminal outcome 채널로 문서화하고, Dispatch가 alert를 읽고 대응하는 표준 프롬프트를 추가함
 - `cowork/FOLDER_INSTRUCTIONS.md`, `cowork/README.md`

@@ -21,11 +21,11 @@
     - `backend/rag/seed.py`
     - `backend/chains/coach_graph.py`
     - `backend/routers/coach.py`
-    - `docs/prd.md`
+    - `docs/specs/prd.md`
 
 - [x] PRD 기준 Chroma Coach AI 아키텍처/할 일 문서화
   - 작업 결과:
-    - `docs/chroma-coach-ai-plan.md` 생성 및 보강
+    - `docs/research/chroma-coach-ai-plan.md` 생성 및 보강
   - 포함 내용:
     - 현재 구현 상태
     - 목표 아키텍처
@@ -54,11 +54,11 @@
 
 - [x] 받은 데이터와 받지 못한 데이터 링크를 문서에 구분 반영
   - 작업 결과:
-    - `docs/chroma-coach-ai-plan.md`에 `수신 완료`, `권한/신청 미확보`, `보조 후보` 섹션 추가
+    - `docs/research/chroma-coach-ai-plan.md`에 `수신 완료`, `권한/신청 미확보`, `보조 후보` 섹션 추가
 
 - [x] 공공 API/로컬 파일 -> Chroma seed 파이프라인 매핑 문서 작성
   - 작업 결과:
-    - `docs/chroma-coach-ai-source-mapping.md` 생성
+    - `docs/research/chroma-coach-ai-source-mapping.md` 생성
   - 포함 내용:
     - 환경 변수
     - 소스별 로더 제안
@@ -102,9 +102,9 @@
 
 ### 문서
 
-- `docs/chroma-coach-ai-plan.md`
-- `docs/chroma-coach-ai-source-mapping.md`
-- `docs/2026-04-02-chroma-coach-ai-worklog.md`
+- `docs/research/chroma-coach-ai-plan.md`
+- `docs/research/chroma-coach-ai-source-mapping.md`
+- `docs/worklogs/2026-04-02-chroma-coach-ai-worklog.md`
 
 ### 코드/설정
 

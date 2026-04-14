@@ -89,10 +89,16 @@ isoser/
 ├── AGENTS.md
 ├── watcher.py
 └── docs/
+    ├── README.md
     ├── current-state.md
     ├── codex-workflow.md
-    ├── claude-project-instructions.md
-    └── prd.md
+    ├── refactoring-log.md
+    ├── automation/
+    ├── rules/
+    ├── specs/
+    ├── data/
+    ├── research/
+    └── worklogs/
 ```
 
 ## 자동화 흐름
@@ -132,10 +138,12 @@ PC가 꺼져 있거나 로컬 watcher를 못 쓰는 경우
 ### 관련 문서
 
 - `AGENTS.md`: Codex 작업 규칙
+- `docs/README.md`: docs 구조 인덱스
 - `docs/current-state.md`: 현재 자동화/구조 상태
 - `docs/codex-workflow.md`: Codex/Claude 운용 문서
-- `docs/claude-project-instructions.md`: Claude 프로젝트 instructions 원본
-- `docs/task-packet-template.md`: 표준 Task Packet 템플릿
+- `docs/automation/README.md`: 자동화 운영 문서 인덱스
+- `docs/rules/claude-project-instructions.md`: Claude 프로젝트 instructions 원본
+- `docs/rules/task-packet-template.md`: 표준 Task Packet 템플릿
 
 참고:
 - `cowork/`는 기본 워크플로 디렉터리가 아닙니다.
@@ -150,7 +158,7 @@ Windows PowerShell 기준:
 powershell -ExecutionPolicy Bypass -File scripts/run_watcher.ps1
 ```
 
-재시작이 필요할 때는 `docs/watcher-restart-checklist.md`를 참고합니다.
+재시작이 필요할 때는 `docs/rules/watcher-restart-checklist.md`를 참고합니다.
 
 Slack으로 watcher alert를 받고 싶으면 루트에 `.watcher.env`를 만들고 webhook 값을 넣습니다.
 

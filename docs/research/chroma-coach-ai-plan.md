@@ -737,7 +737,7 @@
 
 공공 API, 로컬 CSV/XLSX, Chroma seed 생성 파이프라인 사이의 상세 매핑은 아래 문서를 기준으로 구현한다.
 
-- [chroma-coach-ai-source-mapping.md](C:/Users/LG/Desktop/isoser/docs/chroma-coach-ai-source-mapping.md)
+- [chroma-coach-ai-source-mapping.md](./chroma-coach-ai-source-mapping.md)
 
 ## 9. 이번 담당 범위 정의
 
