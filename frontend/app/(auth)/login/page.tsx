@@ -1,23 +1,15 @@
 // 로그인 페이지 - Supabase 소셜 로그인 (Google)
 "use client";
 
-import { createBrowserClient } from "@/lib/supabase/client";
 import { disableGuestMode, enableGuestMode } from "@/lib/guest";
 import { useRouter } from "next/navigation";
-import { useMemo } from "react";
 
 export default function LoginPage() {
   const router = useRouter();
-  const supabase = useMemo(() => createBrowserClient(), []);
 
   const handleGoogleLogin = async () => {
     disableGuestMode();
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/callback`,
-      },
-    });
+    window.location.href = "/api/auth/google";
   };
 
   const handleGuestStart = () => {

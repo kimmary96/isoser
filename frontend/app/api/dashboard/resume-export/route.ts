@@ -39,8 +39,12 @@ export async function GET(request: Request) {
       return NextResponse.json({ resume: null, activities: [] });
     }
 
-    const ids: string[] = Array.isArray(resumeRow.selected_activity_ids)
-      ? resumeRow.selected_activity_ids
+    const rawIds = Array.isArray(resumeRow.selected_activity_ids)
+      ? (resumeRow.selected_activity_ids as unknown[])
+      : [];
+
+    const ids: string[] = rawIds.length > 0
+      ? rawIds
           .map((id) => String(id))
           .filter(Boolean)
       : [];

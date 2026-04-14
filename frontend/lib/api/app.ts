@@ -63,6 +63,31 @@ type ResumeExportResponse = {
   activities: Activity[];
 };
 
+type OnboardingPayload = {
+  profile: {
+    name: string;
+    email: string;
+    phone: string;
+    bio?: string;
+    education: string;
+    career?: string[];
+    education_history?: string[];
+    awards?: string[];
+    certifications?: string[];
+    languages?: string[];
+    skills?: string[];
+    self_intro?: string;
+  };
+  activities: Array<{
+    type: Activity["type"];
+    title: string;
+    period: string;
+    role: string;
+    skills: string[];
+    description: string;
+  }>;
+};
+
 async function handleResponse<T>(
   response: Response,
   fallbackMessage: string
@@ -105,6 +130,18 @@ export async function signOutDashboard(): Promise<{ ok: true }> {
     "/api/auth/signout",
     { method: "POST" },
     "로그아웃에 실패했습니다."
+  );
+}
+
+export async function saveOnboardingData(payload: OnboardingPayload): Promise<{ ok: true }> {
+  return requestAppJson<{ ok: true }>(
+    "/api/onboarding",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+    "온보딩 저장에 실패했습니다."
   );
 }
 
