@@ -2,9 +2,16 @@
 "use client";
 
 import type { ChangeEvent } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { createBrowserClient } from "@/lib/supabase/client";
+import {
+  createActivity,
+  deleteActivity,
+  getActivityDetail,
+  saveCoachSession,
+  updateActivity,
+  uploadActivityImages,
+} from "@/lib/api/app";
 import {
   convertActivity,
   generateActivityIntro,
@@ -32,7 +39,6 @@ export default function ActivityDetailPage() {
   const activityId = params.id as string;
   const isNewActivity = activityId === "new" || activityId === "__new__";
   const router = useRouter();
-  const supabase = useMemo(() => createBrowserClient(), []);
   const [activity, setActivity] = useState<Activity | null>(null);
   const [messages, setMessages] = useState<CoachMessage[]>([]);
   const [input, setInput] = useState("");
@@ -161,32 +167,29 @@ export default function ActivityDetailPage() {
           setLoading(false);
           return;
         }
-        const { data, error: activityError } = await supabase
-          .from("activities")
-          .select("*")
-          .eq("id", activityId)
-          .single();
-        if (activityError) {
-          throw new Error(activityError.message);
+        const data = await getActivityDetail(activityId);
+        const loaded = data.activity;
+        if (!loaded) {
+          throw new Error("활동을 찾을 수 없습니다.");
         }
-        setActivity(data);
-        setDescriptionDraft(data?.description ?? "");
-        setStarSituation(data.star_situation || "");
-        setStarTask(data.star_task || "");
-        setStarAction(data.star_action || "");
-        setStarResult(data.star_result || "");
-        setOrganization(data.organization || "");
-        setTeamSize(data.team_size || 0);
-        setTeamComposition(data.team_composition || "");
-        setMyRole(data.my_role || "");
-        setContributions(data.contributions?.length ? data.contributions : [""]);
-        setImageUrls(data.image_urls || []);
-        setTitleDraft(data.title || "");
-        setTypeDraft(data.type || "");
-        const parts = (data.period || "").split("~");
+        setActivity(loaded);
+        setDescriptionDraft(loaded.description ?? "");
+        setStarSituation(loaded.star_situation || "");
+        setStarTask(loaded.star_task || "");
+        setStarAction(loaded.star_action || "");
+        setStarResult(loaded.star_result || "");
+        setOrganization(loaded.organization || "");
+        setTeamSize(loaded.team_size || 0);
+        setTeamComposition(loaded.team_composition || "");
+        setMyRole(loaded.my_role || "");
+        setContributions(loaded.contributions?.length ? loaded.contributions : [""]);
+        setImageUrls(loaded.image_urls || []);
+        setTitleDraft(loaded.title || "");
+        setTypeDraft(loaded.type || "");
+        const parts = (loaded.period || "").split("~");
         setPeriodStart(parts[0]?.trim() || "");
         setPeriodEnd(parts[1]?.trim() || "");
-        setSkillsDraft(Array.isArray(data.skills) ? data.skills : []);
+        setSkillsDraft(Array.isArray(loaded.skills) ? loaded.skills : []);
       } catch (e) {
         setError(e instanceof Error ? e.message : "활동을 불러오지 못했습니다.");
       } finally {
@@ -194,7 +197,7 @@ export default function ActivityDetailPage() {
       }
     };
     fetchActivity();
-  }, [activityId, isNewActivity, supabase]);
+  }, [activityId, isNewActivity]);
 
   useEffect(() => {
     setSkillSuggestions([]);
@@ -258,14 +261,8 @@ export default function ActivityDetailPage() {
     setSaving(true);
     setError(null);
     try {
-      const { error: updateError } = await supabase
-        .from("activities")
-        .update({ description: descriptionDraft })
-        .eq("id", activity.id);
-      if (updateError) {
-        throw new Error(updateError.message);
-      }
-      setActivity({ ...activity, description: descriptionDraft });
+      const data = await updateActivity(activity.id, { description: descriptionDraft });
+      setActivity(data.activity);
     } catch (e) {
       setError(e instanceof Error ? e.message : "설명 저장에 실패했습니다.");
     } finally {
@@ -303,18 +300,11 @@ export default function ActivityDetailPage() {
         return;
       }
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { error: sessionError } = await supabase.from("coach_sessions").upsert({
-          id: sessionId,
-          user_id: user.id,
-          activity_id: activity.id,
-          messages: [...updatedHistory, assistantMessage],
-        });
-        if (sessionError) {
-          throw new Error(sessionError.message);
-        }
-      }
+      await saveCoachSession({
+        sessionId,
+        activityId: activity.id,
+        messages: [...updatedHistory, assistantMessage],
+      });
     } catch (e) {
       setError(e instanceof Error ? e.message : "코치 피드백 요청에 실패했습니다.");
       setMessages([
@@ -366,59 +356,27 @@ export default function ActivityDetailPage() {
       }
 
       if (isNewActivity) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          throw new Error("로그인이 필요합니다.");
-        }
-        const { data: insertedActivity, error: insertError } = await supabase
-          .from("activities")
-          .insert({
-            user_id: user.id,
-            type: typeDraft || activity.type,
-            title: titleDraft || organization.trim() || "새 성과 기록",
-            period: periodValue,
-            role: activity.role,
-            skills: skillsDraft,
-            description: descriptionDraft || null,
-            organization,
-            team_size: teamSize,
-            team_composition: teamComposition,
-            my_role: myRole,
-            contributions: filteredContributions,
-            image_urls: imageUrls,
-            is_visible: true,
-          })
-          .select("*")
-          .single();
-        if (insertError) {
-          throw insertError;
-        }
-        setPostSaveActivity(insertedActivity as Activity);
-        setShowPostSaveModal(true);
-        return;
-      }
-
-      const { error: updateError } = await supabase
-        .from("activities")
-        .update({
-          description: descriptionDraft,
+        const data = await createActivity({
+          type: typeDraft || activity.type,
+          title: titleDraft || organization.trim() || "새 성과 기록",
+          period: periodValue,
+          role: activity.role,
+          skills: skillsDraft,
+          description: descriptionDraft || null,
           organization,
           team_size: teamSize,
           team_composition: teamComposition,
           my_role: myRole,
           contributions: filteredContributions,
           image_urls: imageUrls,
-          title: titleDraft,
-          type: typeDraft,
-          period: periodValue,
-          skills: skillsDraft,
-        })
-        .eq("id", activity.id);
-      if (updateError) {
-        throw updateError;
+          is_visible: true,
+        });
+        setPostSaveActivity(data.activity);
+        setShowPostSaveModal(true);
+        return;
       }
-      setActivity({
-        ...activity,
+
+      const data = await updateActivity(activity.id, {
         description: descriptionDraft,
         organization,
         team_size: teamSize,
@@ -427,10 +385,11 @@ export default function ActivityDetailPage() {
         contributions: filteredContributions,
         image_urls: imageUrls,
         title: titleDraft,
-        type: (typeDraft || activity.type) as Activity["type"],
+        type: typeDraft,
         period: periodValue,
         skills: skillsDraft,
       });
+      setActivity(data.activity);
     } catch (e) {
       setError(e instanceof Error ? e.message : "?쒕룞 ??μ뿉 ?ㅽ뙣?덉뒿?덈떎.");
     } finally {
@@ -444,24 +403,9 @@ export default function ActivityDetailPage() {
 
     setImageUploading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const uploadPromises = Array.from(files).slice(0, 5 - imageUrls.length).map(async (file) => {
-        const ext = file.name.split(".").pop();
-        const path = `${user.id}/${activity?.id}/${Date.now()}.${ext}`;
-        const { error: uploadError } = await supabase.storage
-          .from("activity-images")
-          .upload(path, file, { upsert: true });
-        if (uploadError) throw uploadError;
-        const { data: urlData } = supabase.storage
-          .from("activity-images")
-          .getPublicUrl(path);
-        return urlData.publicUrl;
-      });
-
-      const newUrls = await Promise.all(uploadPromises);
-      setImageUrls((prev) => [...prev, ...newUrls].slice(0, 5));
+      const uploadFiles = Array.from(files).slice(0, 5 - imageUrls.length);
+      const data = await uploadActivityImages(activity?.id || "new", uploadFiles);
+      setImageUrls((prev) => [...prev, ...data.urls].slice(0, 5));
     } finally {
       setImageUploading(false);
     }
@@ -732,10 +676,7 @@ export default function ActivityDetailPage() {
         return;
       }
 
-      await supabase
-        .from("activities")
-        .delete()
-        .eq("id", activity.id);
+      await deleteActivity(activity.id);
       router.push("/dashboard/activities");
     } finally {
       setDeleting(false);
@@ -779,36 +720,22 @@ export default function ActivityDetailPage() {
         return;
       }
 
-      const { error: updateError } = await supabase
-        .from("activities")
-        .update({
-          star_situation: starSituation,
-          star_task: starTask,
-          star_action: starAction,
-          star_result: starResult,
-        })
-        .eq("id", activity.id);
-
-      if (updateError) {
-        console.error("STAR save error:", updateError);
-        setError(updateError.message);
-        setStarSaveToast({
-          tone: "error",
-          message: "저장에 실패했습니다.",
-        });
-        return;
-      }
-
-      setActivity({
-        ...activity,
+      const data = await updateActivity(activity.id, {
         star_situation: starSituation,
         star_task: starTask,
         star_action: starAction,
         star_result: starResult,
       });
+      setActivity(data.activity);
       setStarSaveToast({
         tone: "success",
         message: "STAR 기록이 저장되었습니다.",
+      });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "저장에 실패했습니다.");
+      setStarSaveToast({
+        tone: "error",
+        message: "저장에 실패했습니다.",
       });
     } finally {
       setStarSaving(false);

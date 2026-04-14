@@ -1,10 +1,10 @@
 ﻿"use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
+import { createMatchAnalysis, deleteMatchAnalysis, getMatchDashboardData } from "@/lib/api/app";
 import { analyzeMatch, extractJobImage, extractJobPdf, getCompanyInsight } from "@/lib/api/backend";
 import { getGuestActivities, getGuestResume, isGuestMode } from "@/lib/guest";
-import { createBrowserClient } from "@/lib/supabase/client";
 import type { CompanyInsightResponse, MatchResult } from "@/lib/types";
 
 type DetailedScore = {
@@ -240,8 +240,6 @@ function ResultDetail({
 }
 
 export default function MatchPage() {
-  const supabase = useMemo(() => createBrowserClient(), []);
-
   const [savedAnalyses, setSavedAnalyses] = useState<SavedAnalysisCard[]>([]);
   const [selectedAnalysis, setSelectedAnalysis] = useState<SavedAnalysisCard | null>(null);
 
@@ -312,24 +310,8 @@ export default function MatchPage() {
         return;
       }
 
-      const { data: authData, error: authError } = await supabase.auth.getUser();
-      if (authError || !authData.user) {
-        setResumeOptions([]);
-        return;
-      }
-
-      const { data, error: resumeError } = await supabase
-        .from("resumes")
-        .select("id, title, target_job, selected_activity_ids, created_at")
-        .eq("user_id", authData.user.id)
-        .order("created_at", { ascending: false })
-        .limit(50);
-
-      if (resumeError) {
-        throw new Error(resumeError.message);
-      }
-
-      setResumeOptions((data as ResumeOption[] | null) ?? []);
+      const data = await getMatchDashboardData();
+      setResumeOptions((data.resumeOptions as ResumeOption[] | null) ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "이력서 목록을 불러오는 중 오류가 발생했습니다.");
       setResumeOptions([]);
@@ -346,53 +328,12 @@ export default function MatchPage() {
 
     setLoadingList(true);
     try {
-      const { data: authData, error: authError } = await supabase.auth.getUser();
-      if (authError || !authData.user) {
-        setSavedAnalyses([]);
-        return;
-      }
-
-      const withPayload = await supabase
-        .from("match_analyses")
-        .select("id, job_title, job_posting, total_score, grade, summary, created_at, analysis_payload")
-        .eq("user_id", authData.user.id)
-        .order("created_at", { ascending: false })
-        .limit(30);
-
-      let rows: Array<Record<string, unknown>> = [];
-
-      if (withPayload.error && withPayload.error.code === "42703") {
-        const withoutPayload = await supabase
-          .from("match_analyses")
-          .select("id, job_title, job_posting, total_score, grade, summary, created_at")
-          .eq("user_id", authData.user.id)
-          .order("created_at", { ascending: false })
-          .limit(30);
-
-        if (withoutPayload.error) {
-          setSavedAnalyses([]);
-          return;
-        }
-
-        rows = (withoutPayload.data as Array<Record<string, unknown>> | null) ?? [];
-      } else if (withPayload.error) {
-        setSavedAnalyses([]);
-        return;
-      } else {
-        rows = (withPayload.data as Array<Record<string, unknown>> | null) ?? [];
-      }
-      const mapped: SavedAnalysisCard[] = rows.map((row) => ({
-        id: String(row.id ?? ""),
-        job_title: String(row.job_title ?? "제목 미지정 공고"),
-        job_posting: String(row.job_posting ?? ""),
-        total_score: Number(row.total_score ?? 0),
-        grade: String(row.grade ?? "-"),
-        summary: String(row.summary ?? ""),
-        created_at: String(row.created_at ?? ""),
-        result: (row.analysis_payload as MatchResult | null) ?? null,
-      }));
-
-      setSavedAnalyses(mapped);
+      const data = await getMatchDashboardData();
+      setSavedAnalyses((data.savedAnalyses as SavedAnalysisCard[] | null) ?? []);
+      setResumeOptions((data.resumeOptions as ResumeOption[] | null) ?? []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "분석 목록을 불러오는 중 오류가 발생했습니다.");
+      setSavedAnalyses([]);
     } finally {
       setLoadingList(false);
     }
@@ -525,113 +466,36 @@ export default function MatchPage() {
           skills: ["Next.js", "FastAPI"],
           self_intro: "게스트 모드 프로필",
         };
-      } else {
-        const { data: authData, error: authError } = await supabase.auth.getUser();
-        if (authError || !authData.user) {
-          throw new Error("로그인이 필요합니다.");
-        }
-
-        const [
-          { data: activityData, error: activityError },
-          { data: profileData, error: profileError },
-        ] = await Promise.all([
-          supabase
-            .from("activities")
-            .select("id, title, description")
-            .eq("is_visible", true)
-            .eq("user_id", authData.user.id),
-          supabase
-            .from("profiles")
-            .select("name, education, career, education_history, awards, certifications, languages, skills, self_intro")
-            .eq("id", authData.user.id)
-            .maybeSingle(),
-        ]);
-
-        if (activityError) throw new Error(activityError.message);
-        if (profileError) throw new Error(profileError.message);
-
-        const allActivities = activityData || [];
-        if (analysisMode === "resume") {
-          const selectedResume = resumeOptions.find((resume) => resume.id === selectedResumeId);
-          if (!selectedResume) {
-            throw new Error("선택한 이력서 정보를 찾지 못했습니다.");
-          }
-          const selectedIds = new Set(selectedResume.selected_activity_ids ?? []);
-          activities = allActivities.filter((item) => selectedIds.has(item.id));
-          if (activities.length === 0) {
-            throw new Error("선택한 이력서에 연결된 활동이 없습니다.");
-          }
-        } else {
-          activities = allActivities;
-        }
-        profileContext = {
-          name: profileData?.name ?? undefined,
-          education: profileData?.education ?? undefined,
-          career: profileData?.career ?? [],
-          education_history: profileData?.education_history ?? [],
-          awards: profileData?.awards ?? [],
-          certifications: profileData?.certifications ?? [],
-          languages: profileData?.languages ?? [],
-          skills: profileData?.skills ?? [],
-          self_intro: profileData?.self_intro ?? "",
-        };
       }
-
-      const matchResult = await analyzeMatch({
-        job_posting: jobPosting,
-        activities,
-        profile_context: profileContext,
-      });
-
-      const jobTitle = makeJobTitle(companyName, positionName);
 
       if (!isGuestMode()) {
-        const { data: authData, error: authError } = await supabase.auth.getUser();
+        const result = await createMatchAnalysis({
+          companyName,
+          positionName,
+          jobPosting,
+          analysisMode,
+          selectedResumeId: analysisMode === "resume" ? selectedResumeId : undefined,
+        });
+        await loadSavedAnalyses();
+        setSelectedAnalysis(result.analysis as SavedAnalysisCard);
+      } else {
+        const matchResult = await analyzeMatch({
+          job_posting: jobPosting,
+          activities,
+          profile_context: profileContext,
+        });
 
-        if (!authError && authData?.user) {
-          const { error: saveError } = await supabase.from("match_analyses").insert({
-            user_id: authData.user.id,
-            job_title: jobTitle,
-            job_posting: jobPosting.trim(),
-            total_score: matchResult.total_score,
-            grade: matchResult.grade,
-            summary: matchResult.summary,
-            matched_keywords: matchResult.matched_keywords ?? [],
-            missing_keywords: matchResult.missing_keywords ?? [],
-            recommended_activities: matchResult.recommended_activities ?? [],
-            analysis_payload: matchResult,
-          });
-
-          if (saveError?.code === "42703") {
-            await supabase.from("match_analyses").insert({
-              user_id: authData.user.id,
-              job_title: jobTitle,
-              job_posting: jobPosting.trim(),
-              total_score: matchResult.total_score,
-              grade: matchResult.grade,
-              summary: matchResult.summary,
-              matched_keywords: matchResult.matched_keywords ?? [],
-              missing_keywords: matchResult.missing_keywords ?? [],
-              recommended_activities: matchResult.recommended_activities ?? [],
-            });
-          }
-        }
+        setSelectedAnalysis({
+          id: `tmp-${Date.now()}`,
+          job_title: makeJobTitle(companyName, positionName),
+          job_posting: jobPosting,
+          total_score: matchResult.total_score,
+          grade: matchResult.grade,
+          summary: matchResult.summary,
+          created_at: new Date().toISOString(),
+          result: matchResult,
+        });
       }
-
-      await loadSavedAnalyses();
-
-      const newItem: SavedAnalysisCard = {
-        id: `tmp-${Date.now()}`,
-        job_title: jobTitle,
-        job_posting: jobPosting,
-        total_score: matchResult.total_score,
-        grade: matchResult.grade,
-        summary: matchResult.summary,
-        created_at: new Date().toISOString(),
-        result: matchResult,
-      };
-
-      setSelectedAnalysis(newItem);
       setShowDetailModal(true);
       setShowInputModal(false);
       setSaveNotice("분석이 완료되어 저장되었습니다.");
@@ -652,24 +516,7 @@ export default function MatchPage() {
 
     try {
       if (!isGuestMode()) {
-        const { data: authData, error: authError } = await supabase.auth.getUser();
-        if (authError || !authData.user) {
-          throw new Error("로그인이 필요합니다.");
-        }
-
-        const { data: deletedRows, error: deleteError } = await supabase
-          .from("match_analyses")
-          .delete()
-          .eq("id", item.id)
-          .eq("user_id", authData.user.id)
-          .select("id");
-
-        if (deleteError) {
-          throw new Error(deleteError.message);
-        }
-        if (!deletedRows || deletedRows.length === 0) {
-          throw new Error("삭제 권한이 없어 DB에서 삭제되지 않았습니다. Supabase RLS delete 정책을 확인해 주세요.");
-        }
+        await deleteMatchAnalysis(item.id);
       }
 
       await loadSavedAnalyses();

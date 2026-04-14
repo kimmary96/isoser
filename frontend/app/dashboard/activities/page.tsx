@@ -1,14 +1,13 @@
 // 활동 목록 페이지 - 모든 활동을 카드로 표시
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { listActivities } from "@/lib/api/app";
 import { getGuestActivities, isGuestMode } from "@/lib/guest";
-import { createBrowserClient } from "@/lib/supabase/client";
 import type { Activity } from "@/lib/types";
 
 export default function ActivitiesPage() {
-  const supabase = useMemo(() => createBrowserClient(), []);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,23 +35,8 @@ export default function ActivitiesPage() {
       }
 
       try {
-        const {
-          data: { user },
-          error: authError,
-        } = await supabase.auth.getUser();
-        if (authError || !user) {
-          throw new Error("로그인이 필요합니다.");
-        }
-
-        const { data, error: queryError } = await supabase
-          .from("activities")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false });
-        if (queryError) {
-          throw new Error(queryError.message);
-        }
-        setActivities(data || []);
+        const data = await listActivities();
+        setActivities(data.activities || []);
       } catch (e) {
         setError(e instanceof Error ? e.message : "활동을 불러오지 못했습니다.");
       } finally {
@@ -60,7 +44,7 @@ export default function ActivitiesPage() {
       }
     };
     fetchActivities();
-  }, [supabase]);
+  }, []);
 
   if (loading) {
     return (
