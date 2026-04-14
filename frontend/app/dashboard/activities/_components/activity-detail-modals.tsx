@@ -1,4 +1,5 @@
 import type { Activity } from "@/lib/types";
+import { ModalShell } from "../../_components/modal-shell";
 
 type ActivityDetailModalsProps = {
   showPostSaveModal: boolean;
@@ -30,18 +31,16 @@ export function ActivityDetailModals({
   return (
     <>
       {showPostSaveModal && postSaveActivity && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl">
-            <p className="text-sm font-semibold text-blue-500">저장 완료</p>
-            <h2 className="mt-2 text-2xl font-bold text-gray-900">
-              다음 단계로 바로 이어서 작업하시겠어요?
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-gray-500">
-              방금 저장한 활동을 STAR 기록으로 정리하거나, 포트폴리오 초안으로
-              변환해 이어서 보실 수 있습니다.
-            </p>
-
-            <div className="mt-6 space-y-3">
+        <ModalShell
+          open={showPostSaveModal}
+          onClose={onPostSaveLater}
+          maxWidthClassName="max-w-md"
+          eyebrow="저장 완료"
+          title="다음 단계로 바로 이어서 작업하시겠어요?"
+          subtitle="방금 저장한 활동을 STAR 기록으로 정리하거나, 포트폴리오 초안으로 변환해 이어서 보실 수 있습니다."
+          bodyClassName="px-6 py-6"
+        >
+          <div className="space-y-3">
               <button
                 type="button"
                 onClick={() => void onSendToStar()}
@@ -71,28 +70,29 @@ export function ActivityDetailModals({
                   현재 활동을 포트폴리오 구조로 변환한 초안을 확인할 수 있습니다.
                 </p>
               </button>
-            </div>
-
-            <button
-              type="button"
-              onClick={onPostSaveLater}
-              disabled={postSaveAction !== null}
-              className="mt-6 w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              나중에 하기
-            </button>
           </div>
-        </div>
+
+          <button
+            type="button"
+            onClick={onPostSaveLater}
+            disabled={postSaveAction !== null}
+            className="mt-6 w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            나중에 하기
+          </button>
+        </ModalShell>
       )}
 
       {showDeleteModal && !isNewActivity && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-8 w-80 text-center shadow-xl">
-            <p className="font-bold text-gray-900 text-lg mb-2">성과를 삭제할까요?</p>
-            <p className="text-sm text-gray-400 mb-6">
-              삭제된 성과는 복구할 수 없습니다.
-            </p>
-            <div className="flex gap-3">
+        <ModalShell
+          open={showDeleteModal}
+          onClose={onCloseDeleteModal}
+          maxWidthClassName="max-w-sm"
+          title="성과를 삭제할까요?"
+          subtitle="삭제된 성과는 복구할 수 없습니다."
+          bodyClassName="px-6 pb-6 pt-4"
+        >
+          <div className="flex gap-3">
               <button
                 onClick={onCloseDeleteModal}
                 className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50"
@@ -106,9 +106,8 @@ export function ActivityDetailModals({
               >
                 {deleting ? "삭제 중..." : "삭제"}
               </button>
-            </div>
           </div>
-        </div>
+        </ModalShell>
       )}
     </>
   );

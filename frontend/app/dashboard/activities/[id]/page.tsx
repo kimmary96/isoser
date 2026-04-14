@@ -76,7 +76,6 @@ export default function ActivityDetailPage() {
     starSaveToast,
     deleting,
     error,
-    isGuest,
     hasContributionContent,
     isSkillSelected,
     handleSendMessage,
@@ -243,7 +242,6 @@ export default function ActivityDetailPage() {
                 imageUploading={imageUploading}
                 onImageUpload={handleImageUpload}
                 onImageRemove={handleImageRemove}
-                isGuestMode={isGuest}
                 basicSaving={basicSaving}
                 onSaveBasicInfo={handleSaveBasicInfo}
               />

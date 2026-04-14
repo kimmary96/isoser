@@ -1,6 +1,7 @@
 "use client";
 
 import type { MatchResult } from "@/lib/types";
+import { ModalShell } from "../../_components/modal-shell";
 import type { SavedAnalysisCard } from "../_hooks/use-match-page";
 
 type DetailedScore = {
@@ -92,19 +93,15 @@ export function MatchAnalysisDetailModal({
   if (!open || !selectedAnalysis) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="max-h-[92vh] w-full max-w-5xl overflow-y-auto rounded-2xl border border-gray-200 bg-white">
-        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">{selectedAnalysis.job_title}</h3>
-            <p className="mt-1 text-xs text-gray-500">{formatDateTime(selectedAnalysis.created_at)}</p>
-          </div>
-          <button type="button" onClick={onClose} className="rounded-md px-2 py-1 text-2xl text-gray-500 hover:bg-gray-100" aria-label="닫기">
-            ×
-          </button>
-        </div>
-
-        <div className="px-6 py-5">
+    <ModalShell
+      open={open}
+      onClose={onClose}
+      maxWidthClassName="max-w-5xl"
+      title={selectedAnalysis.job_title}
+      subtitle={formatDateTime(selectedAnalysis.created_at)}
+      bodyClassName="px-6 py-5"
+    >
+      <>
           {savedAnalyses.some((item) => item.id === selectedAnalysis.id) && (
             <div className="mb-4 flex justify-end">
               <button
@@ -127,8 +124,7 @@ export function MatchAnalysisDetailModal({
               <p className="mt-3 text-xs text-gray-400">상세 데이터가 없는 과거 분석입니다. 새로 분석하면 상세 결과까지 카드에 저장됩니다.</p>
             </div>
           )}
-        </div>
-      </div>
-    </div>
+      </>
+    </ModalShell>
   );
 }

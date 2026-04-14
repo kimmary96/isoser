@@ -5,7 +5,6 @@ import { Suspense } from "react";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { getDocuments } from "@/lib/api/app";
-import { getGuestResume, isGuestMode } from "@/lib/guest";
 import type { Resume } from "@/lib/types";
 
 function DocumentsContent() {
@@ -20,12 +19,6 @@ function DocumentsContent() {
       setLoading(true);
       setError(null);
       try {
-        if (isGuestMode()) {
-          const guestResume = getGuestResume();
-          setDocuments(guestResume ? [guestResume] : []);
-          return;
-        }
-
         const data = await getDocuments();
         setDocuments(data.documents || []);
       } catch (e) {

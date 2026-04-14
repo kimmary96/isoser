@@ -1,5 +1,6 @@
 "use client";
 
+import { ModalShell } from "../../_components/modal-shell";
 import type { AnalysisMode, ResumeOption } from "../_hooks/use-match-page";
 
 export function MatchAnalysisInputModal({
@@ -59,19 +60,31 @@ export function MatchAnalysisInputModal({
   loadingAnalyze: boolean;
   onAnalyze: () => Promise<void>;
 }) {
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl border border-gray-200 bg-white">
-        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
-          <h2 className="text-2xl font-bold text-gray-900">공고 입력</h2>
-          <button type="button" onClick={onClose} className="rounded-md px-2 py-1 text-2xl text-gray-500 hover:bg-gray-100" aria-label="닫기">
-            ×
+    <ModalShell
+      open={open}
+      onClose={onClose}
+      maxWidthClassName="max-w-4xl"
+      title="공고 입력"
+      subtitle="회사명, 직무명, 채용 공고를 입력한 뒤 현재 이력서 또는 활동 기준으로 합격률을 분석합니다."
+      bodyClassName="space-y-4 px-6 py-5"
+      footer={
+        <div className="flex items-center justify-end gap-2">
+          <button type="button" onClick={onClose} className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            취소
+          </button>
+          <button
+            type="button"
+            onClick={() => void onAnalyze()}
+            disabled={loadingAnalyze || !jobPosting.trim() || !companyName.trim() || !positionName.trim() || !analysisMode || (analysisMode === "resume" && !selectedResumeId)}
+            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+          >
+            {loadingAnalyze ? "분석 중..." : "합격률 분석하기"}
           </button>
         </div>
-
-        <div className="space-y-4 px-6 py-5">
+      }
+    >
+      <>
           <section className="rounded-xl border border-gray-200 bg-gray-50 p-4">
             <p className="text-sm font-semibold text-gray-800">0. 분석 방식 선택</p>
             <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -184,22 +197,7 @@ export function MatchAnalysisInputModal({
           </section>
 
           {error && <p className="text-sm text-red-600">{error}</p>}
-        </div>
-
-        <div className="flex items-center justify-end gap-2 border-t border-gray-100 px-6 py-4">
-          <button type="button" onClick={onClose} className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-            취소
-          </button>
-          <button
-            type="button"
-            onClick={() => void onAnalyze()}
-            disabled={loadingAnalyze || !jobPosting.trim() || !companyName.trim() || !positionName.trim() || !analysisMode || (analysisMode === "resume" && !selectedResumeId)}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
-          >
-            {loadingAnalyze ? "분석 중..." : "합격률 분석하기"}
-          </button>
-        </div>
-      </div>
-    </div>
+      </>
+    </ModalShell>
   );
 }

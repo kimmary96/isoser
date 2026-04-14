@@ -8,7 +8,6 @@ import {
   getResumeBuilderData,
   updateDashboardProfileSection,
 } from "@/lib/api/app";
-import { getGuestActivities, isGuestMode, saveGuestResume } from "@/lib/guest";
 import type { Activity } from "@/lib/types";
 
 export function useResumeBuilder() {
@@ -46,12 +45,6 @@ export function useResumeBuilder() {
 
   useEffect(() => {
     const fetchActivities = async () => {
-      if (isGuestMode()) {
-        setActivities(getGuestActivities());
-        setLoading(false);
-        return;
-      }
-
       try {
         const data = await getResumeBuilderData();
         setActivities(data.activities || []);
@@ -77,11 +70,6 @@ export function useResumeBuilder() {
   };
 
   const saveBio = async () => {
-    if (isGuestMode()) {
-      setProfile((prev) => (prev ? { ...prev, bio: bioInput.trim() } : prev));
-      return;
-    }
-
     try {
       setBioSaving(true);
       await updateDashboardProfileSection({ bio: bioInput.trim() });
@@ -127,22 +115,6 @@ export function useResumeBuilder() {
     setSaving(true);
     setError(null);
     try {
-      if (isGuestMode()) {
-        const now = new Date().toISOString();
-        saveGuestResume({
-          id: "guest-resume-1",
-          user_id: "guest",
-          title: `게스트 이력서 ${new Date().toISOString().slice(0, 10)}`,
-          target_job: targetJob || null,
-          template_id: "simple",
-          selected_activity_ids: Array.from(selected),
-          created_at: now,
-          updated_at: now,
-        });
-        router.push("/dashboard/documents");
-        return;
-      }
-
       const data = await createResumeDocument({
         title: `이력서 ${new Date().toISOString().slice(0, 10)}`,
         target_job: targetJob || null,

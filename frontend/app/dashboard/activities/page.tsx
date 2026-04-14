@@ -4,7 +4,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { listActivities } from "@/lib/api/app";
-import { getGuestActivities, isGuestMode } from "@/lib/guest";
 import type { Activity } from "@/lib/types";
 
 export default function ActivitiesPage() {
@@ -28,12 +27,6 @@ export default function ActivitiesPage() {
 
   useEffect(() => {
     const fetchActivities = async () => {
-      if (isGuestMode()) {
-        setActivities(getGuestActivities());
-        setLoading(false);
-        return;
-      }
-
       try {
         const data = await listActivities();
         setActivities(data.activities || []);

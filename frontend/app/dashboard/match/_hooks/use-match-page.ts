@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { createMatchAnalysis, deleteMatchAnalysis, getMatchDashboardData } from "@/lib/api/app";
-import { analyzeMatch, extractJobImage, extractJobPdf } from "@/lib/api/backend";
-import { getGuestActivities, getGuestResume, isGuestMode } from "@/lib/guest";
+import { extractJobImage, extractJobPdf } from "@/lib/api/backend";
 import type { MatchResult } from "@/lib/types";
 
 export type SavedAnalysisCard = {
@@ -27,15 +26,6 @@ export type ResumeOption = {
   selected_activity_ids: string[] | null;
   created_at: string;
 };
-
-function makeJobTitle(company: string, position: string): string {
-  const c = company.trim();
-  const p = position.trim();
-  if (c && p) return `${c} ${p}`;
-  if (c) return c;
-  if (p) return p;
-  return "제목 미지정 공고";
-}
 
 export function useMatchPage() {
   const [savedAnalyses, setSavedAnalyses] = useState<SavedAnalysisCard[]>([]);
@@ -86,24 +76,6 @@ export function useMatchPage() {
   const loadResumeOptions = async () => {
     setLoadingResumes(true);
     try {
-      if (isGuestMode()) {
-        const guestResume = getGuestResume();
-        if (!guestResume) {
-          setResumeOptions([]);
-          return;
-        }
-        setResumeOptions([
-          {
-            id: guestResume.id,
-            title: guestResume.title ?? "게스트 이력서",
-            target_job: guestResume.target_job ?? null,
-            selected_activity_ids: guestResume.selected_activity_ids ?? [],
-            created_at: guestResume.created_at ?? new Date().toISOString(),
-          },
-        ]);
-        return;
-      }
-
       const data = await getMatchDashboardData();
       setResumeOptions((data.resumeOptions as ResumeOption[] | null) ?? []);
     } catch (err) {
@@ -115,10 +87,6 @@ export function useMatchPage() {
   };
 
   const loadSavedAnalyses = async () => {
-    if (isGuestMode()) {
-      setSavedAnalyses([]);
-      return;
-    }
     setLoadingList(true);
     try {
       const data = await getMatchDashboardData();
@@ -208,76 +176,15 @@ export function useMatchPage() {
     setSaveNotice(null);
 
     try {
-      let activities: { id: string; title: string; description: string | null }[] = [];
-      let profileContext: {
-        name?: string;
-        education?: string;
-        career?: string[];
-        education_history?: string[];
-        awards?: string[];
-        certifications?: string[];
-        languages?: string[];
-        skills?: string[];
-        self_intro?: string;
-      } = {};
-
-      if (isGuestMode()) {
-        const allGuestActivities = getGuestActivities().map((item) => ({
-          id: item.id,
-          title: item.title,
-          description: item.description,
-        }));
-        if (analysisMode === "resume") {
-          const guestResume = getGuestResume();
-          const selectedIds = new Set(guestResume?.selected_activity_ids ?? []);
-          activities = allGuestActivities.filter((item) => selectedIds.has(item.id));
-          if (activities.length === 0) {
-            throw new Error("선택한 이력서에 연결된 활동이 없습니다.");
-          }
-        } else {
-          activities = allGuestActivities;
-        }
-
-        profileContext = {
-          name: "게스트 사용자",
-          education: "게스트 모드",
-          career: ["게스트 QA 경력"],
-          education_history: ["게스트 학력"],
-          awards: [],
-          certifications: [],
-          languages: ["한국어"],
-          skills: ["Next.js", "FastAPI"],
-          self_intro: "게스트 모드 프로필",
-        };
-      }
-
-      if (!isGuestMode()) {
-        const result = await createMatchAnalysis({
-          companyName,
-          positionName,
-          jobPosting,
-          analysisMode,
-          selectedResumeId: analysisMode === "resume" ? selectedResumeId : undefined,
-        });
-        await loadSavedAnalyses();
-        setSelectedAnalysis(result.analysis as SavedAnalysisCard);
-      } else {
-        const matchResult = await analyzeMatch({
-          job_posting: jobPosting,
-          activities,
-          profile_context: profileContext,
-        });
-        setSelectedAnalysis({
-          id: `tmp-${Date.now()}`,
-          job_title: makeJobTitle(companyName, positionName),
-          job_posting: jobPosting,
-          total_score: matchResult.total_score,
-          grade: matchResult.grade,
-          summary: matchResult.summary,
-          created_at: new Date().toISOString(),
-          result: matchResult,
-        });
-      }
+      const result = await createMatchAnalysis({
+        companyName,
+        positionName,
+        jobPosting,
+        analysisMode,
+        selectedResumeId: analysisMode === "resume" ? selectedResumeId : undefined,
+      });
+      await loadSavedAnalyses();
+      setSelectedAnalysis(result.analysis as SavedAnalysisCard);
 
       setShowDetailModal(true);
       setShowInputModal(false);
@@ -296,9 +203,7 @@ export function useMatchPage() {
     setError(null);
     setSaveNotice(null);
     try {
-      if (!isGuestMode()) {
-        await deleteMatchAnalysis(item.id);
-      }
+      await deleteMatchAnalysis(item.id);
       await loadSavedAnalyses();
       if (selectedAnalysis?.id === item.id) {
         setShowDetailModal(false);

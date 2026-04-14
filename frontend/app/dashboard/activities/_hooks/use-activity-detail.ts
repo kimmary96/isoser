@@ -18,12 +18,6 @@ import {
   getCoachFeedback,
   getSkillSuggestions,
 } from "@/lib/api/backend";
-import {
-  deleteGuestActivity,
-  getGuestActivities,
-  isGuestMode,
-  upsertGuestActivity,
-} from "@/lib/guest";
 import type { Activity, ActivityConvertRequest, CoachMessage } from "@/lib/types";
 
 const PENDING_STAR_CONVERSION_KEY = "isoser:pending-star-conversion";
@@ -102,41 +96,6 @@ export function useActivityDetail(activityId: string, isNewActivity: boolean, in
         created_at: now,
         updated_at: now,
       };
-
-      if (isGuestMode()) {
-        if (isNewActivity) {
-          setActivity(blankActivity);
-          setDescriptionDraft("");
-          setTitleDraft(blankActivity.title || "");
-          setTypeDraft(blankActivity.type || "");
-          setPeriodStart("");
-          setPeriodEnd("");
-          setSkillsDraft(Array.isArray(blankActivity.skills) ? blankActivity.skills : []);
-          setLoading(false);
-          return;
-        }
-        const found = getGuestActivities().find((item) => item.id === activityId) ?? null;
-        setActivity(found);
-        setDescriptionDraft(found?.description ?? "");
-        setStarSituation(found?.star_situation || "");
-        setStarTask(found?.star_task || "");
-        setStarAction(found?.star_action || "");
-        setStarResult(found?.star_result || "");
-        setOrganization(found?.organization || "");
-        setTeamSize(found?.team_size || 0);
-        setTeamComposition(found?.team_composition || "");
-        setMyRole(found?.my_role || "");
-        setContributions(found?.contributions?.length ? found.contributions : [""]);
-        setImageUrls(found?.image_urls || []);
-        setTitleDraft(found?.title || "");
-        setTypeDraft(found?.type || "");
-        const foundParts = (found?.period || "").split("~");
-        setPeriodStart(foundParts[0]?.trim() || "");
-        setPeriodEnd(foundParts[1]?.trim() || "");
-        setSkillsDraft(Array.isArray(found?.skills) ? found.skills : []);
-        setLoading(false);
-        return;
-      }
 
       try {
         if (isNewActivity) {
@@ -231,9 +190,7 @@ export function useActivityDetail(activityId: string, isNewActivity: boolean, in
       });
       const assistantMessage: CoachMessage = { role: "assistant", content: result.feedback };
       setMessages([...updatedHistory, assistantMessage]);
-      if (!isGuestMode()) {
-        await saveCoachSession({ sessionId, activityId: activity.id, messages: [...updatedHistory, assistantMessage] });
-      }
+      await saveCoachSession({ sessionId, activityId: activity.id, messages: [...updatedHistory, assistantMessage] });
     } catch (e) {
       setError(e instanceof Error ? e.message : "코치 피드백 요청에 실패했습니다.");
       setMessages([...updatedHistory, { role: "assistant", content: "오류가 발생했습니다. 다시 시도해주세요." }]);
@@ -247,36 +204,6 @@ export function useActivityDetail(activityId: string, isNewActivity: boolean, in
     setBasicSaving(true);
     setError(null);
     try {
-      if (isGuestMode()) {
-        const now = new Date().toISOString();
-        const guestActivity: Activity = {
-          ...activity,
-          id: isNewActivity ? `guest-activity-${Date.now()}` : activity.id,
-          user_id: "guest",
-          type: (typeDraft || activity.type) as Activity["type"],
-          title: titleDraft || organization.trim() || "새 성과 기록",
-          period: periodValue || null,
-          role: myRole || activity.role,
-          skills: skillsDraft,
-          description: descriptionDraft || null,
-          organization,
-          team_size: teamSize,
-          team_composition: teamComposition,
-          my_role: myRole,
-          contributions: filteredContributions,
-          image_urls: imageUrls,
-          updated_at: now,
-          created_at: isNewActivity ? now : activity.created_at,
-        };
-        upsertGuestActivity(guestActivity);
-        if (isNewActivity) {
-          setPostSaveActivity(guestActivity);
-          setShowPostSaveModal(true);
-          return;
-        }
-        setActivity(guestActivity);
-        return;
-      }
       if (isNewActivity) {
         const data = await createActivity({
           type: typeDraft || activity.type,
@@ -320,7 +247,7 @@ export function useActivityDetail(activityId: string, isNewActivity: boolean, in
 
   const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (isGuestMode() || !files || imageUrls.length >= 5) return;
+    if (!files || imageUrls.length >= 5) return;
     setImageUploading(true);
     try {
       const uploadFiles = Array.from(files).slice(0, 5 - imageUrls.length);
@@ -499,11 +426,6 @@ export function useActivityDetail(activityId: string, isNewActivity: boolean, in
     if (!activity) return;
     setDeleting(true);
     try {
-      if (isGuestMode()) {
-        deleteGuestActivity(activity.id);
-        router.push("/dashboard/activities");
-        return;
-      }
       await deleteActivity(activity.id);
       router.push("/dashboard/activities");
     } finally {
@@ -516,33 +438,6 @@ export function useActivityDetail(activityId: string, isNewActivity: boolean, in
     setStarSaving(true);
     setError(null);
     try {
-      if (isGuestMode()) {
-        const now = new Date().toISOString();
-        const guestActivity: Activity = {
-          ...activity,
-          type: (typeDraft || activity.type) as Activity["type"],
-          title: titleDraft || activity.title,
-          period: periodValue || activity.period,
-          role: myRole || activity.role,
-          skills: skillsDraft,
-          description: descriptionDraft || activity.description,
-          organization,
-          team_size: teamSize,
-          team_composition: teamComposition,
-          my_role: myRole,
-          contributions: filteredContributions,
-          image_urls: imageUrls,
-          star_situation: starSituation,
-          star_task: starTask,
-          star_action: starAction,
-          star_result: starResult,
-          updated_at: now,
-        };
-        upsertGuestActivity(guestActivity);
-        setActivity(guestActivity);
-        setStarSaveToast({ tone: "success", message: "STAR 기록이 저장되었습니다." });
-        return;
-      }
       const data = await updateActivity(activity.id, {
         star_situation: starSituation,
         star_task: starTask,
@@ -648,7 +543,6 @@ Result(결과): ${starResult}`;
     starSaveToast,
     deleting,
     error,
-    isGuest: isGuestMode(),
     hasContributionContent,
     isSkillSelected,
     handleSendMessage,

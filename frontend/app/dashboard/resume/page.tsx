@@ -1,8 +1,6 @@
 
-// 이력서 편집 페이지 - 활동 선택 및 이력서 구성
 "use client";
 
-import { isGuestMode } from "@/lib/guest";
 import type { Activity } from "@/lib/types";
 import { useResumeBuilder } from "./_hooks/use-resume-builder";
 import { ResumeAssistantSidebar } from "./_components/resume-assistant-sidebar";

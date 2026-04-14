@@ -10,12 +10,6 @@ import {
   requestCoverLetterCoaching,
   updateCoverLetter,
 } from "@/lib/api/app";
-import {
-  deleteGuestCoverLetter,
-  getGuestCoverLetterById,
-  isGuestMode,
-  saveGuestCoverLetter,
-} from "@/lib/guest";
 import type { CoverLetter } from "@/lib/types";
 
 const ANSWER_MAX_LENGTH = 3000;
@@ -108,19 +102,6 @@ export function useCoverLetterDetail(letterId: string, isNew: boolean) {
           return;
         }
 
-        if (isGuestMode()) {
-          const found = getGuestCoverLetterById(letterId);
-          if (!found) throw new Error("자기소개서를 찾을 수 없습니다.");
-          setItem(found);
-          setTitle(found.title);
-          setCompanyName(found.company_name || "");
-          setJobTitle(found.job_title || "");
-          setTagInput(toTagInput(found.tags));
-          setQaItems(normalizeQaItems(found.qa_items, found.prompt_question, found.content || ""));
-          setActiveQaIndex(0);
-          return;
-        }
-
         const result = await getCoverLetterDetail(letterId);
         if (!result.coverLetter) throw new Error("자기소개서를 찾을 수 없습니다.");
         const next = result.coverLetter;
@@ -183,30 +164,8 @@ export function useCoverLetterDetail(letterId: string, isNew: boolean) {
     setError(null);
     try {
       const tags = splitTags(tagInput);
-      const now = new Date().toISOString();
       const firstItem = usedItems[0];
       const combinedContent = buildCombinedContent(usedItems);
-
-      if (isGuestMode()) {
-        const next: CoverLetter = {
-          id: item?.id || crypto.randomUUID(),
-          user_id: "guest",
-          title: title.trim(),
-          company_name: companyName.trim() || null,
-          job_title: jobTitle.trim() || null,
-          prompt_question: firstItem.question,
-          content: combinedContent,
-          qa_items: usedItems,
-          tags: tags.length > 0 ? tags : null,
-          created_at: item?.created_at || now,
-          updated_at: now,
-        };
-        saveGuestCoverLetter(next);
-        setItem(next);
-        setQaItems(usedItems);
-        if (isNew) router.replace(`/dashboard/cover-letter/${next.id}`);
-        return;
-      }
 
       const payload = {
         title: title.trim(),
@@ -272,11 +231,6 @@ export function useCoverLetterDetail(letterId: string, isNew: boolean) {
     setDeleting(true);
     setError(null);
     try {
-      if (isGuestMode()) {
-        deleteGuestCoverLetter(letterId);
-        router.push("/dashboard/cover-letter");
-        return;
-      }
       await deleteCoverLetter(letterId);
       router.push("/dashboard/cover-letter");
     } catch (e) {

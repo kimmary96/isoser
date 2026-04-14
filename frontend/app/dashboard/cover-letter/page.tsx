@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import { listCoverLetters } from "@/lib/api/app";
-import { getGuestCoverLetters, isGuestMode } from "@/lib/guest";
 import type { CoverLetter } from "@/lib/types";
 
 function formatDate(value: string): string {
@@ -28,11 +27,6 @@ export default function CoverLetterPage() {
       setLoading(true);
       setError(null);
       try {
-        if (isGuestMode()) {
-          setItems(getGuestCoverLetters());
-          return;
-        }
-
         const result = await listCoverLetters();
         setItems(result.coverLetters);
       } catch (e) {

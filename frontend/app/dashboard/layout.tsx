@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { getDashboardMe, signOutDashboard } from '@/lib/api/app'
-import { disableGuestMode } from '@/lib/guest'
 
 const navGroups = [
   {
@@ -100,7 +99,7 @@ export default function DashboardLayout({
 
         {/* 상단 로고 */}
         <div className="p-6">
-          <p className="font-bold text-lg text-gray-900 tracking-tight">Isosoer</p>
+          <p className="font-bold text-lg text-gray-900 tracking-tight">Isoser</p>
           <p className="text-[10px] text-gray-400 tracking-widest mt-0.5">CAREER CURATOR</p>
 
           {/* 네비게이션 */}
@@ -141,7 +140,6 @@ export default function DashboardLayout({
           ) : showLoginButton ? (
             <Link
               href="/login"
-              onClick={() => disableGuestMode()}
               className="block w-full rounded-lg bg-blue-600 px-3 py-2 text-center text-sm font-medium text-white hover:bg-blue-700 transition-colors"
             >
               회원가입 / 로그인

@@ -1,20 +1,8 @@
-// 로그인 페이지 - Supabase 소셜 로그인 (Google)
 "use client";
 
-import { disableGuestMode, enableGuestMode } from "@/lib/guest";
-import { useRouter } from "next/navigation";
-
 export default function LoginPage() {
-  const router = useRouter();
-
   const handleGoogleLogin = async () => {
-    disableGuestMode();
     window.location.href = "/api/auth/google";
-  };
-
-  const handleGuestStart = () => {
-    enableGuestMode();
-    router.push("/dashboard");
   };
 
   return (
@@ -48,13 +36,6 @@ export default function LoginPage() {
             />
           </svg>
           Google로 계속하기
-        </button>
-
-        <button
-          onClick={handleGuestStart}
-          className="w-full px-4 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
-        >
-          게스트로 둘러보기
         </button>
       </div>
     </main>

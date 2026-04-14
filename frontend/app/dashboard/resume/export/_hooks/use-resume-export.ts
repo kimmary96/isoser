@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 
 import { getResumeExportData } from "@/lib/api/app";
-import { getGuestActivities, getGuestResume, isGuestMode } from "@/lib/guest";
 import type { Activity, Resume } from "@/lib/types";
 
 export function useResumeExport(resumeId: string | null) {
@@ -17,12 +16,6 @@ export function useResumeExport(resumeId: string | null) {
       setLoading(true);
       setError(null);
       try {
-        if (isGuestMode()) {
-          setResume(getGuestResume());
-          setActivities(getGuestActivities());
-          return;
-        }
-
         const result = await getResumeExportData(resumeId);
         const resumeRow = result.resume;
 

@@ -45,7 +45,6 @@ type ActivityBasicTabProps = {
   imageUploading: boolean;
   onImageUpload: (event: ChangeEvent<HTMLInputElement>) => Promise<void>;
   onImageRemove: (index: number) => void;
-  isGuestMode: boolean;
   basicSaving: boolean;
   onSaveBasicInfo: () => Promise<void>;
 };
@@ -93,7 +92,6 @@ export function ActivityBasicTab({
   imageUploading,
   onImageUpload,
   onImageRemove,
-  isGuestMode,
   basicSaving,
   onSaveBasicInfo,
 }: ActivityBasicTabProps) {
@@ -441,12 +439,8 @@ export function ActivityBasicTab({
 
         {imageUrls.length < 5 && (
           <label
-            title={isGuestMode ? "로그인 후 이용 가능합니다" : "이미지를 선택해 추가합니다"}
-            className={`flex items-center gap-2 w-fit border border-dashed rounded-xl px-4 py-3 text-sm transition-all ${
-              isGuestMode
-                ? "cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400"
-                : "cursor-pointer border-gray-300 text-gray-500 hover:bg-gray-50"
-            }`}
+            title="이미지를 선택해 추가합니다"
+            className="flex w-fit cursor-pointer items-center gap-2 rounded-xl border border-dashed border-gray-300 px-4 py-3 text-sm text-gray-500 transition-all hover:bg-gray-50"
           >
             <span>🖼</span>
             <span>{imageUploading ? "업로드 중..." : "이미지 선택"}</span>
@@ -456,12 +450,9 @@ export function ActivityBasicTab({
               multiple
               className="hidden"
               onChange={(event) => void onImageUpload(event)}
-              disabled={imageUploading || isGuestMode}
+              disabled={imageUploading}
             />
           </label>
-        )}
-        {isGuestMode && (
-          <p className="mt-2 text-xs text-gray-400">로그인 후 이용 가능합니다.</p>
         )}
       </div>
 
