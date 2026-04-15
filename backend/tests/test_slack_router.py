@@ -312,9 +312,16 @@ def test_slack_cowork_interactivity_acknowledges_fast_when_response_url_present(
 
     posted: dict[str, str] = {}
 
-    def fake_post_to_response_url(response_url: str, *, message: str, replace_original: bool = False) -> None:
+    def fake_post_to_response_url(
+        response_url: str,
+        *,
+        message: str,
+        replace_original: bool = False,
+        response_type: str = "ephemeral",
+    ) -> None:
         posted["response_url"] = response_url
         posted["message"] = message
+        posted["response_type"] = response_type
 
     monkeypatch.setattr(slack, "_post_to_slack_response_url", fake_post_to_response_url)
 
@@ -345,5 +352,6 @@ def test_slack_cowork_interactivity_acknowledges_fast_when_response_url_present(
     assert response.status_code == 200
     assert "처리 중" in response.text
     assert posted["response_url"] == "https://example.com/slack-response"
+    assert posted["response_type"] == "in_channel"
     assert "승인 처리 완료" in posted["message"]
     assert (approvals_dir / "TASK-TEST.ok").exists()

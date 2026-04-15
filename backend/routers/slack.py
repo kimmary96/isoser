@@ -129,10 +129,15 @@ def _slack_message(message: str, status_code: int = 200) -> PlainTextResponse:
     return PlainTextResponse(message, status_code=status_code)
 
 
-def _slack_interactive_message(message: str, *, replace_original: bool = False) -> JSONResponse:
+def _slack_interactive_message(
+    message: str,
+    *,
+    replace_original: bool = False,
+    response_type: str = "ephemeral",
+) -> JSONResponse:
     return JSONResponse(
         {
-            "response_type": "ephemeral",
+            "response_type": response_type,
             "replace_original": replace_original,
             "text": message,
         }
@@ -144,9 +149,10 @@ def _post_to_slack_response_url(
     *,
     message: str,
     replace_original: bool = False,
+    response_type: str = "ephemeral",
 ) -> None:
     payload = {
-        "response_type": "ephemeral",
+        "response_type": response_type,
         "replace_original": replace_original,
         "text": message,
     }
@@ -379,6 +385,7 @@ async def slack_cowork_interactivity(request: Request, background_tasks: Backgro
                 user_id=user_id,
                 user_name=user_name,
             ),
+            response_type="in_channel",
         )
         return _slack_interactive_message("승인 요청을 처리 중입니다. 잠시 후 결과를 다시 보냅니다.")
 

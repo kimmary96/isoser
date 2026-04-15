@@ -223,9 +223,9 @@ def test_review_ready_resets_old_approval_and_promoted_state(tmp_path: Path, mon
 def test_format_slack_dispatch_message_contains_core_fields(monkeypatch) -> None:
     monkeypatch.setattr(cowork_watcher, "packet_title_for", lambda task_id: "테스트 비교 페이지")
     monkeypatch.setattr(cowork_watcher, "review_snapshot_for", lambda task_id: [
-        "Not ready for promotion yet.",
-        "- blocker one",
-        "- blocker two",
+        "Not ready for promotion.",
+        "- Frontmatter completeness: complete. Required fields `id`, `status`, `type`, `title`, `planned_at`, `planned_against_commit` are present.",
+        "- Drift risk: material in the touched area even though commit drift is zero.",
     ])
 
     message = cowork_watcher.format_slack_dispatch_message(
@@ -239,6 +239,7 @@ def test_format_slack_dispatch_message_contains_core_fields(monkeypatch) -> None
             "packet: `cowork/packets/TASK-TEST.md`",
             "review: `cowork/reviews/TASK-TEST-review.md`",
             "- next_step: reviewer reads the review and creates `cowork/approvals/<task-id>.ok` when approved",
+            "- supersedes_previous_review_ready: `2026-04-15T17:00:00`",
         ],
     )
 
@@ -253,9 +254,12 @@ def test_format_slack_dispatch_message_contains_core_fields(monkeypatch) -> None
     assert "`cowork/reviews/TASK-TEST-review.md`" in message
     assert "*리뷰 요약*" in message
     assert "아직 승격 준비가 되지 않았습니다." in message
-    assert "- blocker one" in message
+    assert "- 프론트매터 완성도:" in message
+    assert "- 드리프트 위험:" in message
     assert "*승인 방법*" in message
     assert "/isoser-approve TASK-TEST inbox" in message
+    assert "*최신본 안내*" in message
+    assert "이 알림은 이전 검토 준비 메시지를 대체합니다." in message
 
 
 def test_build_slack_dispatch_payload_adds_buttons_for_review_ready() -> None:

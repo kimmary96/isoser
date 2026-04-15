@@ -184,6 +184,19 @@ def run_codex_review(packet_filename: str, task_id: str) -> tuple[int, Optional[
 
 def write_dispatch(task_id: str, stage: str, lines: list[str]) -> str:
     dispatch_path = os.path.join(COWORK_DISPATCH_DIR, f"{task_id}-{stage}.md")
+    if stage == "review-ready" and os.path.exists(dispatch_path):
+        existing_lines = read_markdown(dispatch_path).splitlines()
+        previous_created_at = ""
+        for existing_line in existing_lines:
+            stripped = existing_line.strip()
+            if stripped.startswith("created_at:"):
+                previous_created_at = stripped.removeprefix("created_at:").strip()
+                break
+        if previous_created_at:
+            lines = [
+                *lines,
+                f"- supersedes_previous_review_ready: {previous_created_at}",
+            ]
     write_markdown(dispatch_path, "\n".join(lines))
     notify_slack_for_dispatch(task_id=task_id, stage=stage, lines=lines)
     return dispatch_path
@@ -231,16 +244,44 @@ def review_snapshot_for(task_id: str) -> list[str]:
 
 
 def localize_review_snapshot_line(line: str) -> str:
-    translations = {
-        "Not ready for promotion yet.": "아직 승격 준비가 되지 않았습니다.",
-        "Ready for promotion.": "승격 가능한 상태입니다.",
-        "- Frontmatter completeness: OK. Required fields `id`, `status`, `type`, `title`, `planned_at`, `planned_against_commit` are all present.": "- 프론트매터 필수 항목이 모두 채워져 있습니다.",
-        "- Planned commit / drift: OK at repo level. Current `HEAD` matches the packet exactly.": "- planned commit 기준 드리프트는 없습니다. 현재 HEAD와 packet이 일치합니다.",
-        "- Direct reference paths: mostly valid, but the packet mixes route paths and repository paths.": "- 참조 경로는 대부분 유효하지만 route 경로와 저장소 경로 표기가 혼용되어 있습니다.",
-        "- `frontend/lib/types/index.ts` exists.": "- `frontend/lib/types/index.ts` 경로가 확인되었습니다.",
-        "- `cowork/drafts/isoser-compare-v3.html` exists.": "- `cowork/drafts/isoser-compare-v3.html` 초안 파일이 존재합니다.",
-    }
-    return translations.get(line, line)
+    localized = line
+    replacements = [
+        ("Not ready for promotion yet.", "아직 승격 준비가 되지 않았습니다."),
+        ("Not ready for promotion.", "아직 승격 준비가 되지 않았습니다."),
+        ("Ready for promotion.", "승격 가능한 상태입니다."),
+        ("Frontmatter is complete", "프론트매터는 완전합니다"),
+        ("planned_against_commit", "`planned_against_commit`"),
+        ("matches current `HEAD`", "현재 `HEAD`와 일치합니다"),
+        ("so this is not blocked by packet metadata or general repo drift.", "따라서 packet 메타데이터나 일반적인 저장소 드리프트 때문에 막힌 상태는 아닙니다."),
+        ("The packet is still execution-risky because", "다만 이 packet은 실행 관점에서 아직 위험합니다. 이유는"),
+        ("do not match the current repository closely enough.", "현재 저장소와 충분히 맞지 않기 때문입니다."),
+        ("- Frontmatter completeness:", "- 프론트매터 완성도:"),
+        ("- Planned commit / drift:", "- planned commit / 드리프트:"),
+        ("- Repository path accuracy:", "- 저장소 경로 정확성:"),
+        ("- Drift risk:", "- 드리프트 위험:"),
+        ("- Scheduler behavior:", "- 스케줄러 동작:"),
+        ("- Category mismatch:", "- 카테고리 불일치:"),
+        ("- Source type mismatch:", "- source_type 불일치:"),
+        ("- Raw field mismatch:", "- raw 필드 불일치:"),
+        ("- Deduplication mismatch:", "- 중복 제거 규칙 불일치:"),
+        ("- Acceptance clarity gap:", "- acceptance 기준 불명확:"),
+        ("- Sync-path ambiguity:", "- sync 경로 모호성:"),
+        ("- Collector contract ambiguity:", "- collector 계약 모호성:"),
+        ("- Missing references:", "- 누락된 참조:"),
+        ("- Missing touched-file list:", "- 누락된 변경 파일 목록:"),
+        ("pass.", "통과."),
+        ("partial pass.", "부분 통과."),
+        ("complete.", "완전합니다."),
+        ("generally accurate", "대체로 정확함"),
+        ("material in the touched area even though commit drift is zero.", "커밋 드리프트는 없지만 실제 변경 범위에서는 중요합니다."),
+        ("Current `HEAD` matches the packet exactly.", "현재 `HEAD`와 packet이 정확히 일치합니다."),
+        ("Required fields", "필수 필드"),
+        ("are present.", "이 모두 존재합니다."),
+        ("exists.", "존재합니다."),
+    ]
+    for source, target in replacements:
+        localized = localized.replace(source, target)
+    return localized
 
 
 def format_slack_dispatch_message(*, task_id: str, stage: str, lines: list[str]) -> str:
@@ -280,6 +321,7 @@ def format_slack_dispatch_message(*, task_id: str, stage: str, lines: list[str])
         "- freshness:",
         "- note:",
         "- next_step:",
+        "- supersedes_previous_review_ready:",
     )
     for line in lines:
         stripped = line.strip()
@@ -323,6 +365,15 @@ def format_slack_dispatch_message(*, task_id: str, stage: str, lines: list[str])
             if next_step == "reviewer reads the review and creates `cowork/approvals/<task-id>.ok` when approved":
                 next_step = "review 내용을 확인한 뒤 승인 가능하면 approval marker를 생성합니다."
             message_lines.extend(["", "*다음 조치*", next_step])
+        elif stripped.startswith("- supersedes_previous_review_ready:"):
+            previous_created_at = stripped.removeprefix("- supersedes_previous_review_ready:").strip()
+            message_lines.extend(
+                [
+                    "",
+                    "*최신본 안내*",
+                    f"이 알림은 이전 검토 준비 메시지를 대체합니다. 기준 시각: {previous_created_at}",
+                ]
+            )
 
     if stage == "review-ready":
         review_snapshot = review_snapshot_for(task_id)

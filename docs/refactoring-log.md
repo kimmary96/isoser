@@ -16,6 +16,36 @@
   - 필요하면 `/slack/commands/cowork-approve`도 동일한 프론트 프록시 route로 맞춰 slash command까지 같은 도메인으로 통일 검토
   - production 환경에서 `BACKEND_URL` 또는 `NEXT_PUBLIC_BACKEND_URL` 값이 실제 backend public URL을 가리키는지 점검
 
+## 2026-04-15 cowork Slack review-ready 최신본/한국어 고정
+
+- 수정 파일:
+  - `cowork_watcher.py`
+  - `tests/test_cowork_watcher.py`
+  - `docs/current-state.md`
+- 변경 내용:
+  - 같은 `task_id`의 `review-ready`가 다시 발행될 때 Slack 메시지에 이전 검토 준비 알림을 대체한다는 `최신본 안내` 문구를 추가
+  - review snapshot에 섞이던 영어 공통 표현을 한국어 위주로 정규화해 Slack에서 바로 읽기 쉽게 조정
+  - review-ready 포맷 변경을 테스트로 고정
+- 유지된 동작:
+  - 실제 리뷰 원문 파일은 그대로 유지하고 Slack 표시 단계에서만 요약 문구를 정규화
+  - approval/reject 버튼과 기존 review-ready dispatch 파일 경로는 그대로 유지
+- 후속 후보:
+  - 오래된 Slack review-ready 메시지를 자동으로 resolve하거나 스레드 reply로 무효화 표식을 남기는 방식 검토
+
+## 2026-04-15 Slack 승인 결과 채널 공용화
+
+- 수정 파일:
+  - `backend/routers/slack.py`
+  - `backend/tests/test_slack_router.py`
+  - `docs/current-state.md`
+- 변경 내용:
+  - Slack interactivity 버튼 클릭 시 즉시 반환하는 처리중 ack는 기존처럼 개인(ephemeral) 응답으로 유지
+  - 실제 승인/거절 결과 후속 메시지는 `response_url`에 `in_channel`로 보내 채널 참여자가 함께 볼 수 있도록 변경
+  - 채널 공용 후속 응답 타입을 테스트로 고정
+- 유지된 동작:
+  - 3초 제한을 피하기 위한 빠른 ack + background 처리 구조는 그대로 유지
+  - approval marker 생성과 stale review 검사 규칙은 그대로 유지
+
 ## 2026-04-15 cowork 재승인 상태 정리
 
 - 수정 파일:
