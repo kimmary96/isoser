@@ -32,7 +32,7 @@ def test_parse_command_text_reads_remote_target() -> None:
     assert target == "remote"
 
 
-def test_slack_cowork_approve_creates_approval_marker(client, tmp_path, monkeypatch) -> None:
+def test_slack_cowork_approve_writes_shared_approval_request(client, tmp_path, monkeypatch) -> None:
     packets_dir = tmp_path / "cowork" / "packets"
     reviews_dir = tmp_path / "cowork" / "reviews"
     approvals_dir = tmp_path / "cowork" / "approvals"
@@ -51,10 +51,19 @@ def test_slack_cowork_approve_creates_approval_marker(client, tmp_path, monkeypa
 
     monkeypatch.setattr(slack, "COWORK_PACKETS_DIR", packets_dir)
     monkeypatch.setattr(slack, "COWORK_REVIEWS_DIR", reviews_dir)
-    monkeypatch.setattr(slack, "COWORK_APPROVALS_DIR", approvals_dir)
-    monkeypatch.setattr(slack, "COWORK_DISPATCH_DIR", dispatch_dir)
     monkeypatch.setenv("SLACK_SIGNING_SECRET", "test-secret")
     monkeypatch.setenv("SLACK_APPROVER_USER_IDS", "U123")
+    created: dict[str, str] = {}
+
+    def fake_write_approval_request(*, task_id: str, target: str, user_id: str, user_name: str, source: str) -> str:
+        created["task_id"] = task_id
+        created["target"] = target
+        created["user_id"] = user_id
+        created["user_name"] = user_name
+        created["source"] = source
+        return "cowork_approvals:TASK-TEST"
+
+    monkeypatch.setattr(slack, "_write_approval_request", fake_write_approval_request)
 
     payload = {
         "user_id": "U123",
@@ -78,60 +87,14 @@ def test_slack_cowork_approve_creates_approval_marker(client, tmp_path, monkeypa
     assert response.status_code == 200
     assert "승인 처리 완료" in response.text
     assert "원격 큐" in response.text
-    approval_path = approvals_dir / "TASK-TEST.ok"
-    assert approval_path.exists()
-    approval_body = approval_path.read_text(encoding="utf-8")
-    assert "approved_by: slack:U123" in approval_body
-    assert "target: remote" in approval_body
-
-
-def test_slack_cowork_approve_rejects_stale_review(client, tmp_path, monkeypatch) -> None:
-    packets_dir = tmp_path / "cowork" / "packets"
-    reviews_dir = tmp_path / "cowork" / "reviews"
-    approvals_dir = tmp_path / "cowork" / "approvals"
-    dispatch_dir = tmp_path / "cowork" / "dispatch"
-
-    for directory in [packets_dir, reviews_dir, approvals_dir, dispatch_dir]:
-        directory.mkdir(parents=True, exist_ok=True)
-
-    packet = packets_dir / "TASK-STALE.md"
-    packet.write_text("---\nid: TASK-STALE\nplanned_at: 2026-04-15T10:00:00+09:00\nplanned_against_commit: abc123\nstatus: draft\ntype: feature\ntitle: stale\n---\n", encoding="utf-8")
-    review = reviews_dir / "TASK-STALE-review.md"
-    review.write_text("# old review\n", encoding="utf-8")
-    stale_timestamp = time.time() - 10
-    review.touch()
-    import os
-    os.utime(review, (stale_timestamp, stale_timestamp))
-    packet.touch()
-
-    monkeypatch.setattr(slack, "COWORK_PACKETS_DIR", packets_dir)
-    monkeypatch.setattr(slack, "COWORK_REVIEWS_DIR", reviews_dir)
-    monkeypatch.setattr(slack, "COWORK_APPROVALS_DIR", approvals_dir)
-    monkeypatch.setattr(slack, "COWORK_DISPATCH_DIR", dispatch_dir)
-    monkeypatch.setenv("SLACK_SIGNING_SECRET", "test-secret")
-    monkeypatch.setenv("SLACK_APPROVER_USER_IDS", "U123")
-
-    payload = {
+    assert "cowork_approvals:TASK-TEST" in response.text
+    assert created == {
+        "task_id": "TASK-TEST",
+        "target": "remote",
         "user_id": "U123",
         "user_name": "tester",
-        "text": "TASK-STALE",
+        "source": "slack-interactivity",
     }
-    body = urlencode(payload).encode("utf-8")
-    timestamp = str(int(time.time()))
-    signature = _build_signature("test-secret", timestamp, body)
-
-    response = client.post(
-        "/slack/commands/cowork-approve",
-        content=body,
-        headers={
-            "Content-Type": "application/x-www-form-urlencoded",
-            "X-Slack-Request-Timestamp": timestamp,
-            "X-Slack-Signature": signature,
-        },
-    )
-
-    assert response.status_code == 200
-    assert "review가 stale 상태" in response.text
 
 
 def test_slack_cowork_approve_shows_user_id_when_not_allowlisted(client, tmp_path, monkeypatch) -> None:
@@ -153,8 +116,6 @@ def test_slack_cowork_approve_shows_user_id_when_not_allowlisted(client, tmp_pat
 
     monkeypatch.setattr(slack, "COWORK_PACKETS_DIR", packets_dir)
     monkeypatch.setattr(slack, "COWORK_REVIEWS_DIR", reviews_dir)
-    monkeypatch.setattr(slack, "COWORK_APPROVALS_DIR", approvals_dir)
-    monkeypatch.setattr(slack, "COWORK_DISPATCH_DIR", dispatch_dir)
     monkeypatch.setenv("SLACK_SIGNING_SECRET", "test-secret")
     monkeypatch.setenv("SLACK_APPROVER_USER_IDS", "U999")
 
@@ -200,10 +161,13 @@ def test_slack_cowork_interactivity_approves_remote(client, tmp_path, monkeypatc
 
     monkeypatch.setattr(slack, "COWORK_PACKETS_DIR", packets_dir)
     monkeypatch.setattr(slack, "COWORK_REVIEWS_DIR", reviews_dir)
-    monkeypatch.setattr(slack, "COWORK_APPROVALS_DIR", approvals_dir)
-    monkeypatch.setattr(slack, "COWORK_DISPATCH_DIR", dispatch_dir)
     monkeypatch.setenv("SLACK_SIGNING_SECRET", "test-secret")
     monkeypatch.setenv("SLACK_APPROVER_USER_IDS", "U123")
+    monkeypatch.setattr(
+        slack,
+        "_write_approval_request",
+        lambda **kwargs: "cowork_approvals:TASK-TEST",
+    )
 
     payload = {
         "user": {"id": "U123", "username": "tester"},
@@ -231,7 +195,7 @@ def test_slack_cowork_interactivity_approves_remote(client, tmp_path, monkeypatc
     assert response.status_code == 200
     assert "승인 처리 완료" in response.text
     assert "원격 큐" in response.text
-    assert (approvals_dir / "TASK-TEST.ok").exists()
+    assert "cowork_approvals:TASK-TEST" in response.text
 
 
 def test_slack_cowork_interactivity_rejects_review(client, tmp_path, monkeypatch) -> None:
@@ -248,7 +212,6 @@ def test_slack_cowork_interactivity_rejects_review(client, tmp_path, monkeypatch
 
     monkeypatch.setattr(slack, "COWORK_PACKETS_DIR", packets_dir)
     monkeypatch.setattr(slack, "COWORK_REVIEWS_DIR", reviews_dir)
-    monkeypatch.setattr(slack, "COWORK_APPROVALS_DIR", approvals_dir)
     monkeypatch.setattr(slack, "COWORK_DISPATCH_DIR", dispatch_dir)
     monkeypatch.setenv("SLACK_SIGNING_SECRET", "test-secret")
     monkeypatch.setenv("SLACK_APPROVER_USER_IDS", "U123")
@@ -305,10 +268,13 @@ def test_slack_cowork_interactivity_acknowledges_fast_when_response_url_present(
 
     monkeypatch.setattr(slack, "COWORK_PACKETS_DIR", packets_dir)
     monkeypatch.setattr(slack, "COWORK_REVIEWS_DIR", reviews_dir)
-    monkeypatch.setattr(slack, "COWORK_APPROVALS_DIR", approvals_dir)
-    monkeypatch.setattr(slack, "COWORK_DISPATCH_DIR", dispatch_dir)
     monkeypatch.setenv("SLACK_SIGNING_SECRET", "test-secret")
     monkeypatch.setenv("SLACK_APPROVER_USER_IDS", "U123")
+    monkeypatch.setattr(
+        slack,
+        "_write_approval_request",
+        lambda **kwargs: "cowork_approvals:TASK-TEST",
+    )
 
     posted: dict[str, str] = {}
 
@@ -354,4 +320,4 @@ def test_slack_cowork_interactivity_acknowledges_fast_when_response_url_present(
     assert posted["response_url"] == "https://example.com/slack-response"
     assert posted["response_type"] == "in_channel"
     assert "승인 처리 완료" in posted["message"]
-    assert (approvals_dir / "TASK-TEST.ok").exists()
+    assert "cowork_approvals:TASK-TEST" in posted["message"]

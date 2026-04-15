@@ -1,5 +1,27 @@
 # 리팩토링 로그
 
+## 2026-04-15 cowork approval shared queue 전환
+
+- 수정 파일:
+  - `supabase/migrations/20260415183000_create_cowork_approvals.sql`
+  - `backend/routers/slack.py`
+  - `backend/tests/test_slack_router.py`
+  - `cowork_watcher.py`
+  - `tests/test_cowork_watcher.py`
+  - `scripts/run_cowork_watcher.ps1`
+  - `docs/current-state.md`
+- 변경 내용:
+  - Slack approval을 로컬 `cowork/approvals/*.ok` 파일 직접 생성 방식에서 Supabase `cowork_approvals` 공유 큐 기록 방식으로 전환
+  - backend Slack route는 로컬 packet/review 파일 검증 대신 shared approval request를 upsert하고, 로컬 승격은 `cowork_watcher.py`가 poll해서 수행하도록 역할을 분리
+  - 로컬 watcher는 requested approval row를 가져와 임시 local approval marker를 만들고 기존 승격 규칙을 적용한 뒤 `consumed`, `failed`, `ignored` 상태를 Supabase에 기록
+  - cowork watcher 실행 스크립트가 `backend/.env`도 로드해서 Supabase service role 설정을 함께 읽도록 보강
+- 유지된 동작:
+  - 실제 packet review 생성과 stale review 차단, inbox/remote 승격 규칙은 기존 로컬 watcher 기준을 그대로 유지
+  - Slack interactivity endpoint와 버튼 UI는 그대로 유지
+- 후속 후보:
+  - reject 흐름도 shared queue/event 저장소로 옮겨 로컬/원격 상태를 한 채널에서 추적할지 검토
+  - shared approval queue에 대한 cleanup 정책과 운영 대시보드 조회 쿼리 추가 검토
+
 ## 2026-04-15 Slack interactivity Vercel 프록시 추가
 
 - 수정 파일:

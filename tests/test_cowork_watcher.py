@@ -113,6 +113,71 @@ def test_handle_approval_moves_packet_to_remote(tmp_path: Path, monkeypatch) -> 
     assert (dispatch_dir / "TASK-TEST-PROMOTE-promoted.md").exists()
 
 
+def test_handle_approval_consumes_remote_shared_request(tmp_path: Path, monkeypatch) -> None:
+    packets_dir = tmp_path / "packets"
+    reviews_dir = tmp_path / "reviews"
+    dispatch_dir = tmp_path / "dispatch"
+    approvals_dir = tmp_path / "approvals"
+    inbox_dir = tmp_path / "inbox"
+    remote_dir = tmp_path / "remote"
+
+    for directory in [packets_dir, reviews_dir, dispatch_dir, approvals_dir, inbox_dir, remote_dir]:
+        directory.mkdir(parents=True, exist_ok=True)
+
+    packet = packets_dir / "TASK-TEST-REMOTE-APPROVAL.md"
+    packet.write_text(
+        "\n".join(
+            [
+                "---",
+                "id: TASK-TEST-REMOTE-APPROVAL",
+                "status: queued",
+                "type: feature",
+                "title: Shared approval queue test",
+                "planned_at: 2026-04-15T00:00:00+09:00",
+                "planned_against_commit: abc123",
+                "---",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    review = reviews_dir / "TASK-TEST-REMOTE-APPROVAL-review.md"
+    review.write_text("# ready review\n", encoding="utf-8")
+
+    consumed: list[tuple[str, str, str]] = []
+
+    monkeypatch.setattr(cowork_watcher, "COWORK_PACKETS_DIR", str(packets_dir))
+    monkeypatch.setattr(cowork_watcher, "COWORK_REVIEWS_DIR", str(reviews_dir))
+    monkeypatch.setattr(cowork_watcher, "COWORK_DISPATCH_DIR", str(dispatch_dir))
+    monkeypatch.setattr(cowork_watcher, "COWORK_APPROVALS_DIR", str(approvals_dir))
+    monkeypatch.setattr(cowork_watcher, "TASKS_INBOX_DIR", str(inbox_dir))
+    monkeypatch.setattr(cowork_watcher, "TASKS_REMOTE_DIR", str(remote_dir))
+    monkeypatch.setattr(
+        cowork_watcher,
+        "fetch_requested_remote_approval",
+        lambda task_id: {
+            "task_id": task_id,
+            "target": "inbox",
+            "approved_by": "slack:U123",
+            "approved_by_name": "tester",
+            "approved_at": "2026-04-15T17:30:00+09:00",
+            "source": "slack-interactivity",
+        },
+    )
+    monkeypatch.setattr(
+        cowork_watcher,
+        "mark_remote_approval_state",
+        lambda task_id, *, state, note: consumed.append((task_id, state, note)),
+    )
+
+    cowork_watcher.handle_approval(str(packet))
+
+    assert (inbox_dir / "TASK-TEST-REMOTE-APPROVAL.md").exists()
+    assert (approvals_dir / "TASK-TEST-REMOTE-APPROVAL.ok").exists()
+    assert consumed == [
+        ("TASK-TEST-REMOTE-APPROVAL", "consumed", "promoted to inbox"),
+    ]
+
+
 def test_stale_review_blocks_promotion(tmp_path: Path, monkeypatch) -> None:
     packets_dir = tmp_path / "packets"
     reviews_dir = tmp_path / "reviews"

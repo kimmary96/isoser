@@ -6,11 +6,14 @@ import json
 import os
 import time
 from pathlib import Path
+from urllib import parse as urllib_parse
 from urllib import error as urllib_error
 from urllib import request as urllib_request
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request
 from fastapi.responses import JSONResponse, PlainTextResponse
+
+from utils.supabase_admin import build_service_headers, get_supabase_admin_settings
 
 
 router = APIRouter(prefix="/slack", tags=["slack"])
@@ -92,10 +95,6 @@ def _review_path_for(task_id: str) -> Path:
     return COWORK_REVIEWS_DIR / f"{task_id}-review.md"
 
 
-def _approval_path_for(task_id: str) -> Path:
-    return COWORK_APPROVALS_DIR / f"{task_id}.ok"
-
-
 def _promoted_dispatch_path_for(task_id: str) -> Path:
     return COWORK_DISPATCH_DIR / f"{task_id}-promoted.md"
 
@@ -110,19 +109,36 @@ def _packet_needs_review(packet_path: Path, review_path: Path) -> bool:
     return packet_path.stat().st_mtime > review_path.stat().st_mtime
 
 
-def _write_approval_marker(*, task_id: str, target: str, user_id: str, user_name: str) -> Path:
-    approval_path = _approval_path_for(task_id)
-    body = "\n".join(
-        [
-            f"approved_by: slack:{user_id}",
-            f"approved_by_name: {user_name or user_id}",
-            f"approved_at: {time.strftime('%Y-%m-%dT%H:%M:%S%z')}",
-            f"target: {target}",
-            "source: slack-slash-command",
-        ]
+def _write_approval_request(*, task_id: str, target: str, user_id: str, user_name: str, source: str) -> str:
+    settings = get_supabase_admin_settings()
+    payload = {
+        "task_id": task_id,
+        "target": target,
+        "approved_by": f"slack:{user_id}",
+        "approved_by_name": user_name or user_id,
+        "approved_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "source": source,
+        "state": "requested",
+        "consumed_at": None,
+        "consumed_by": None,
+        "consume_note": None,
+        "updated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+    }
+    request = urllib_request.Request(
+        f"{settings.url}/rest/v1/cowork_approvals?on_conflict=task_id",
+        data=json.dumps(payload).encode("utf-8"),
+        headers=build_service_headers(settings.service_role_key, prefer="resolution=merge-duplicates,return=representation"),
+        method="POST",
     )
-    approval_path.write_text(body.rstrip() + "\n", encoding="utf-8")
-    return approval_path
+    try:
+        with urllib_request.urlopen(request, timeout=settings.timeout_seconds) as response:
+            response.read()
+    except urllib_error.HTTPError as error:
+        detail = error.read().decode("utf-8", errors="replace")
+        raise HTTPException(status_code=500, detail=f"Failed to write approval request: {detail}") from error
+    except urllib_error.URLError as error:
+        raise HTTPException(status_code=500, detail=f"Failed to reach Supabase: {error}") from error
+    return f"cowork_approvals:{urllib_parse.quote(task_id, safe='')}"
 
 
 def _slack_message(message: str, status_code: int = 200) -> PlainTextResponse:
@@ -176,47 +192,21 @@ def _format_action_result(*, title: str, task_id: str, lines: list[str]) -> str:
 
 
 def _handle_approval_action(*, task_id: str, target: str, user_id: str, user_name: str) -> str:
-    packet_path = _packet_path_for(task_id)
-    review_path = _review_path_for(task_id)
     target_label = "원격 큐" if target == "remote" else "로컬 inbox"
-
-    if not packet_path.exists():
-        return _format_action_result(
-            title="승인 처리 실패",
-            task_id=task_id,
-            lines=["- 사유: packet 파일을 찾지 못했습니다."],
-        )
-    if not review_path.exists():
-        return _format_action_result(
-            title="승인 처리 실패",
-            task_id=task_id,
-            lines=["- 사유: review 파일을 찾지 못했습니다."],
-        )
-    if _packet_needs_review(packet_path, review_path):
-        return _format_action_result(
-            title="승인 처리 실패",
-            task_id=task_id,
-            lines=["- 사유: review가 stale 상태입니다.", "- 조치: review를 다시 생성한 뒤 승인하세요."],
-        )
-    if _promoted_dispatch_path_for(task_id).exists():
-        return _format_action_result(
-            title="승인 생략",
-            task_id=task_id,
-            lines=["- 상태: 이미 승격된 작업입니다."],
-        )
-
-    approval_path = _write_approval_marker(
+    approval_ref = _write_approval_request(
         task_id=task_id,
         target=target,
         user_id=user_id,
         user_name=user_name,
+        source="slack-interactivity",
     )
     return _format_action_result(
         title="승인 처리 완료",
         task_id=task_id,
         lines=[
             f"- 대상 큐: {target_label}",
-            f"- 승인 파일: `{approval_path.relative_to(REPO_ROOT).as_posix()}`",
+            f"- 승인 큐: `{approval_ref}`",
+            "- note: 로컬 cowork watcher가 공유 approval queue를 poll해서 실제 승격을 수행합니다.",
         ],
     )
 

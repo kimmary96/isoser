@@ -16,6 +16,7 @@ from datetime import datetime
 from shutil import which
 from typing import Optional
 from urllib import error as urllib_error
+from urllib import parse as urllib_parse
 from urllib import request as urllib_request
 
 from scripts.watcher_shared import (
@@ -46,6 +47,7 @@ SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL", "").strip()
 POLL_INTERVAL_SECONDS = 10
 MOVE_RETRY_ATTEMPTS = 5
 MOVE_RETRY_DELAY_SECONDS = 0.5
+REMOTE_APPROVALS_TABLE = "cowork_approvals"
 REQUIRED_FIELDS = (
     "id",
     "status",
@@ -120,6 +122,142 @@ def copy_file(src: str, dst: str) -> None:
     if os.path.exists(dst):
         raise FileExistsError(f"Destination already exists: {dst}")
     write_markdown(dst, read_markdown(src))
+
+
+def _env_or_backend_env(name: str) -> str:
+    value = os.getenv(name, "").strip()
+    if value:
+        return value
+    backend_env_path = os.path.join(PROJECT_PATH, "backend", ".env")
+    if not os.path.exists(backend_env_path):
+        return ""
+    for raw_line in read_markdown(backend_env_path).splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        key, separator, raw_value = line.partition("=")
+        if separator != "=" or key.strip() != name:
+            continue
+        value = raw_value.strip()
+        if (
+            (value.startswith('"') and value.endswith('"'))
+            or (value.startswith("'") and value.endswith("'"))
+        ):
+            value = value[1:-1]
+        return value.strip()
+    return ""
+
+
+def get_supabase_admin_settings() -> Optional[dict[str, object]]:
+    supabase_url = (_env_or_backend_env("SUPABASE_URL") or _env_or_backend_env("NEXT_PUBLIC_SUPABASE_URL")).strip()
+    service_role_key = _env_or_backend_env("SUPABASE_SERVICE_ROLE_KEY").strip()
+    timeout_raw = _env_or_backend_env("SUPABASE_TIMEOUT_SECONDS").strip()
+    if not supabase_url or not service_role_key:
+        return None
+    try:
+        timeout_seconds = float(timeout_raw) if timeout_raw else 10.0
+    except ValueError:
+        timeout_seconds = 10.0
+    return {
+        "url": supabase_url.rstrip("/"),
+        "service_role_key": service_role_key,
+        "timeout_seconds": timeout_seconds,
+    }
+
+
+def build_supabase_headers(service_role_key: str, *, prefer: Optional[str] = None) -> dict[str, str]:
+    headers = {
+        "apikey": service_role_key,
+        "Authorization": f"Bearer {service_role_key}",
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+    }
+    if prefer:
+        headers["Prefer"] = prefer
+    return headers
+
+
+def request_supabase_sync(
+    *,
+    method: str,
+    path: str,
+    params: Optional[dict[str, str]] = None,
+    payload: Optional[dict[str, object]] = None,
+    prefer: Optional[str] = None,
+) -> Optional[object]:
+    settings = get_supabase_admin_settings()
+    if settings is None:
+        return None
+    query = f"?{urllib_parse.urlencode(params, doseq=True)}" if params else ""
+    request = urllib_request.Request(
+        f"{settings['url']}{path}{query}",
+        data=(json.dumps(payload).encode("utf-8") if payload is not None else None),
+        headers=build_supabase_headers(str(settings["service_role_key"]), prefer=prefer),
+        method=method,
+    )
+    try:
+        with urllib_request.urlopen(request, timeout=float(settings["timeout_seconds"])) as response:
+            body = response.read()
+    except urllib_error.HTTPError as error:
+        detail = error.read().decode("utf-8", errors="replace")
+        print(f"Supabase approval sync 실패: HTTPError: {detail}")
+        return None
+    except urllib_error.URLError as error:
+        print(f"Supabase approval sync 실패: URLError: {error}")
+        return None
+    if not body:
+        return None
+    return json.loads(body.decode("utf-8"))
+
+
+def fetch_requested_remote_approval(task_id: str) -> Optional[dict[str, object]]:
+    rows = request_supabase_sync(
+        method="GET",
+        path=f"/rest/v1/{REMOTE_APPROVALS_TABLE}",
+        params={
+            "task_id": f"eq.{task_id}",
+            "state": "eq.requested",
+            "select": "*",
+            "limit": "1",
+        },
+    )
+    if not isinstance(rows, list) or not rows:
+        return None
+    row = rows[0]
+    return row if isinstance(row, dict) else None
+
+
+def write_local_approval_from_remote(task_id: str, row: dict[str, object]) -> str:
+    approval_path = approval_path_for(task_id)
+    body = "\n".join(
+        [
+            f"approved_by: {str(row.get('approved_by', 'slack:unknown')).strip()}",
+            f"approved_by_name: {str(row.get('approved_by_name', '')).strip()}",
+            f"approved_at: {str(row.get('approved_at', datetime.now().isoformat(timespec='seconds'))).strip()}",
+            f"target: {str(row.get('target', 'inbox')).strip()}",
+            f"source: {str(row.get('source', 'shared-approval-queue')).strip()}",
+        ]
+    )
+    write_markdown(approval_path, body)
+    return approval_path
+
+
+def mark_remote_approval_state(task_id: str, *, state: str, note: str) -> None:
+    request_supabase_sync(
+        method="PATCH",
+        path=f"/rest/v1/{REMOTE_APPROVALS_TABLE}",
+        params={
+            "task_id": f"eq.{task_id}",
+        },
+        payload={
+            "state": state,
+            "consumed_at": datetime.now().isoformat(timespec="seconds"),
+            "consumed_by": "local:cowork_watcher",
+            "consume_note": note,
+            "updated_at": datetime.now().isoformat(timespec="seconds"),
+        },
+        prefer="return=minimal",
+    )
 
 
 def append_review_metadata(review_path: str, *, exit_code: int, token_count: Optional[int]) -> None:
@@ -362,8 +500,11 @@ def format_slack_dispatch_message(*, task_id: str, stage: str, lines: list[str])
             message_lines.extend(["", "*메모*", note])
         elif stripped.startswith("- next_step:"):
             next_step = stripped.removeprefix("- next_step:").strip()
-            if next_step == "reviewer reads the review and creates `cowork/approvals/<task-id>.ok` when approved":
-                next_step = "review 내용을 확인한 뒤 승인 가능하면 approval marker를 생성합니다."
+            if next_step in {
+                "reviewer reads the review and creates `cowork/approvals/<task-id>.ok` when approved",
+                "reviewer approves in Slack and the shared approval queue is consumed by the local cowork watcher",
+            }:
+                next_step = "review 내용을 확인한 뒤 승인하면 shared approval queue에 기록되고, 로컬 cowork watcher가 실제 승격을 수행합니다."
             message_lines.extend(["", "*다음 조치*", next_step])
         elif stripped.startswith("- supersedes_previous_review_ready:"):
             previous_created_at = stripped.removeprefix("- supersedes_previous_review_ready:").strip()
@@ -600,7 +741,7 @@ def handle_packet_review(packet_path: str) -> None:
                 f"review: `cowork/reviews/{task_id}-review.md`",
                 f"created_at: `{datetime.now().isoformat(timespec='seconds')}`",
                 "- freshness: review is aligned with the current packet contents",
-                "- next_step: reviewer reads the review and creates `cowork/approvals/<task-id>.ok` when approved",
+                "- next_step: reviewer approves in Slack and the shared approval queue is consumed by the local cowork watcher",
             ],
         )
         print(f"review 완료: {filename}")
@@ -629,8 +770,14 @@ def handle_approval(packet_path: str) -> None:
     approval_path = approval_path_for(task_id)
     review_path = review_path_for(task_id)
     promoted_dispatch_path = promoted_dispatch_path_for(task_id)
+    remote_approval = fetch_requested_remote_approval(task_id)
+
+    if remote_approval and not os.path.exists(approval_path):
+        write_local_approval_from_remote(task_id, remote_approval)
 
     if not os.path.exists(approval_path) or os.path.exists(promoted_dispatch_path):
+        if remote_approval and os.path.exists(promoted_dispatch_path):
+            mark_remote_approval_state(task_id, state="ignored", note="already promoted locally")
         return
 
     if packet_needs_review(packet_path, review_path):
@@ -649,6 +796,8 @@ def handle_approval(packet_path: str) -> None:
             ],
         )
         print(f"승격 보류: {filename} (stale review)")
+        if remote_approval:
+            mark_remote_approval_state(task_id, state="failed", note="stale review blocked promotion")
         return
 
     target = approval_target_from_file(approval_path)
@@ -670,6 +819,8 @@ def handle_approval(packet_path: str) -> None:
         ],
     )
     print(f"승격 완료: {filename} -> tasks/{target} (copy)")
+    if remote_approval:
+        mark_remote_approval_state(task_id, state="consumed", note=f"promoted to {target}")
 
 
 def main() -> None:

@@ -1,11 +1,16 @@
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = Split-Path -Parent $scriptDir
 $watcherEnvPath = Join-Path $repoRoot ".watcher.env"
+$backendEnvPath = Join-Path $repoRoot "backend/.env"
 
 $env:PYTHONDONTWRITEBYTECODE = "1"
 
-if (Test-Path $watcherEnvPath) {
-    Get-Content $watcherEnvPath | ForEach-Object {
+foreach ($envPath in @($watcherEnvPath, $backendEnvPath)) {
+    if (-not (Test-Path $envPath)) {
+        continue
+    }
+
+    Get-Content $envPath | ForEach-Object {
         $line = $_.Trim()
         if (-not $line -or $line.StartsWith("#")) {
             return
