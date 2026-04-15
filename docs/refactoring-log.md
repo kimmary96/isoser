@@ -69,6 +69,7 @@
   - approval/reject 버튼과 기존 review-ready dispatch 파일 경로는 그대로 유지
 - 추가 조정:
   - review-ready Slack 메시지에서 패킷/리뷰 경로, 승인 방법, 반복 설명을 제거하고 `판정` + 번호형 `핵심 확인사항` 중심으로 재구성
+  - 승인/거절 버튼 클릭 시 원본 review-ready 메시지를 갱신하고, 이후 `승격 완료`/`승격 보류` 알림은 동일 task 스레드에 답글로 보내도록 Slack thread metadata를 shared approval queue에 저장
 - 후속 후보:
   - 오래된 Slack review-ready 메시지를 자동으로 resolve하거나 스레드 reply로 무효화 표식을 남기는 방식 검토
 

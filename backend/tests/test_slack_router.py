@@ -288,12 +288,14 @@ def test_slack_cowork_interactivity_acknowledges_fast_when_response_url_present(
         posted["response_url"] = response_url
         posted["message"] = message
         posted["response_type"] = response_type
+        posted["replace_original"] = replace_original
 
     monkeypatch.setattr(slack, "_post_to_slack_response_url", fake_post_to_response_url)
 
     payload = {
         "user": {"id": "U123", "username": "tester"},
         "response_url": "https://example.com/slack-response",
+        "container": {"message_ts": "12345.6789", "channel_id": "C123"},
         "actions": [
             {
                 "action_id": "cowork_approve_inbox",
@@ -319,5 +321,6 @@ def test_slack_cowork_interactivity_acknowledges_fast_when_response_url_present(
     assert "처리 중" in response.text
     assert posted["response_url"] == "https://example.com/slack-response"
     assert posted["response_type"] == "in_channel"
-    assert "승인 처리 완료" in posted["message"]
+    assert posted["replace_original"] is True
+    assert "승인 접수됨" in posted["message"]
     assert "cowork_approvals:TASK-TEST" in posted["message"]
