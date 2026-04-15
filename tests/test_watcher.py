@@ -223,11 +223,31 @@ def test_format_slack_alert_message_contains_core_fields() -> None:
         next_action="Regenerate the packet.",
     )
 
-    assert "task: `TASK-TEST`" in message
-    assert "stage: `drift`" in message
-    assert "packet: `tasks/drifted/TASK-TEST.md`" in message
-    assert "report: `reports/TASK-TEST-drift.md`" in message
-    assert "summary: Codex stopped because of repository drift." in message
+    assert "로컬 watcher 알림" in message
+    assert "*작업*: `TASK-TEST`" in message
+    assert "*단계*: 드리프트 감지" in message
+    assert "`tasks/drifted/TASK-TEST.md`" in message
+    assert "`reports/TASK-TEST-drift.md`" in message
+    assert "*요약*" in message
+    assert "Codex stopped because of repository drift." in message
+
+
+def test_build_slack_alert_payload_adds_structured_blocks() -> None:
+    payload = watcher.build_slack_alert_payload(
+        task_id="TASK-TEST",
+        stage="push-failed",
+        status="action-required",
+        packet_path="tasks/done/TASK-TEST.md",
+        report_path="reports/TASK-TEST-result.md",
+        summary="Watcher git sync failed.",
+        next_action="Git Automation 섹션을 확인한 뒤 수동으로 push 하세요.",
+    )
+
+    assert "text" in payload
+    assert "blocks" in payload
+    blocks = payload["blocks"]
+    assert isinstance(blocks, list)
+    assert len(blocks) >= 3
 
 
 def test_startup_warning_messages_warns_when_slack_webhook_missing(monkeypatch) -> None:

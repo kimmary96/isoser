@@ -9,6 +9,7 @@
 - local terminal outcome은 `dispatch/alerts/`에 기록된다.
 - 성공 task는 watcher가 task-scoped git automation을 시도한다.
 - remote fallback은 `tasks/remote/` + GitHub Action 경로를 사용한다.
+- cowork review-ready는 Slack 버튼과 slash command 양쪽으로 approval을 받을 수 있다.
 - `frontend/app/programs/page.tsx`는 URL query 기반 검색, 카테고리/지역 필터, 모집중 토글, 정렬, 페이지네이션을 지원한다.
 - `backend/routers/programs.py`는 `/programs/count`와 확장된 목록 query(`q`, `regions`, `recruiting_only`, `sort`)를 지원한다.
 

@@ -201,20 +201,105 @@ def format_slack_alert_message(
         "blocked": "⛔",
         "push-failed": "🚨",
     }.get(stage, "ℹ️")
+    stage_labels = {
+        "completed": "완료",
+        "drift": "드리프트 감지",
+        "blocked": "차단",
+        "push-failed": "Git 동기화 실패",
+    }
+    status_labels = {
+        "done": "완료",
+        "action-required": "조치 필요",
+    }
     lines = [
-        f"{emoji} watcher alert",
-        f"task: `{task_id}`",
-        f"stage: `{stage}`",
-        f"status: `{status}`",
-        f"packet: `{packet_path}`",
+        f"{emoji} 로컬 watcher 알림",
+        "",
+        f"*작업*: `{task_id}`",
+        f"*단계*: {stage_labels.get(stage, stage)}",
+        f"*상태*: {status_labels.get(status, status)}",
+        "",
+        "*패킷*",
+        f"`{packet_path}`",
     ]
     if report_path:
-        lines.append(f"report: `{report_path}`")
+        lines.extend(["", "*리포트*", f"`{report_path}`"])
     if summary:
-        lines.append(f"summary: {summary}")
+        lines.extend(["", "*요약*", summary])
     if next_action:
-        lines.append(f"next action: {next_action}")
+        lines.extend(["", "*다음 조치*", next_action])
     return "\n".join(lines)
+
+
+def build_slack_alert_payload(
+    *,
+    task_id: str,
+    stage: str,
+    status: str,
+    packet_path: str,
+    report_path: Optional[str] = None,
+    summary: Optional[str] = None,
+    next_action: Optional[str] = None,
+) -> dict[str, object]:
+    text = format_slack_alert_message(
+        task_id=task_id,
+        stage=stage,
+        status=status,
+        packet_path=packet_path,
+        report_path=report_path,
+        summary=summary,
+        next_action=next_action,
+    )
+    emoji = {
+        "completed": "✅",
+        "drift": "⚠️",
+        "blocked": "⛔",
+        "push-failed": "🚨",
+    }.get(stage, "ℹ️")
+    stage_labels = {
+        "completed": "완료",
+        "drift": "드리프트 감지",
+        "blocked": "차단",
+        "push-failed": "Git 동기화 실패",
+    }
+    status_labels = {
+        "done": "완료",
+        "action-required": "조치 필요",
+    }
+
+    overview = [
+        f"*작업*: `{task_id}`",
+        f"*단계*: {stage_labels.get(stage, stage)}",
+        f"*상태*: {status_labels.get(status, status)}",
+        f"*패킷*: `{packet_path}`",
+    ]
+    if report_path:
+        overview.append(f"*리포트*: `{report_path}`")
+
+    blocks: list[dict[str, object]] = [
+        {
+            "type": "header",
+            "text": {"type": "plain_text", "text": f"{emoji} 로컬 watcher 알림"},
+        },
+        {
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": "\n".join(overview)},
+        },
+    ]
+    if summary:
+        blocks.append(
+            {
+                "type": "section",
+                "text": {"type": "mrkdwn", "text": f"*요약*\n{summary}"},
+            }
+        )
+    if next_action:
+        blocks.append(
+            {
+                "type": "section",
+                "text": {"type": "mrkdwn", "text": f"*다음 조치*\n{next_action}"},
+            }
+        )
+    return {"text": text, "blocks": blocks}
 
 
 def notify_slack_for_alert(
@@ -230,17 +315,15 @@ def notify_slack_for_alert(
     if not SLACK_WEBHOOK_URL:
         return
 
-    payload = {
-        "text": format_slack_alert_message(
-            task_id=task_id,
-            stage=stage,
-            status=status,
-            packet_path=packet_path,
-            report_path=report_path,
-            summary=summary,
-            next_action=next_action,
-        )
-    }
+    payload = build_slack_alert_payload(
+        task_id=task_id,
+        stage=stage,
+        status=status,
+        packet_path=packet_path,
+        report_path=report_path,
+        summary=summary,
+        next_action=next_action,
+    )
     request = urllib_request.Request(
         SLACK_WEBHOOK_URL,
         data=json.dumps(payload).encode("utf-8"),

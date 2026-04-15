@@ -14,14 +14,19 @@
 - 없으면 watcher 시작 시 경고를 출력하고 로컬 dispatch 파일에만 기록한다
 
 ## Slack approval command
-- Slack에서 직접 approval marker를 만들려면 backend에 slash command를 연결한다
+- Slack에서 직접 approval marker를 만들려면 backend에 interactivity endpoint와 slash command를 연결한다
+- `review-ready` Slack 메시지는 버튼형 action payload를 보낸다
+- interactivity 엔드포인트: `POST /slack/interactivity/cowork-review`
 - 엔드포인트: `POST /slack/commands/cowork-approve`
 - slash command 예시: `/isoser-approve TASK-2026-04-15-0951-programs-hub-mvp remote`
 - 인자 형식: `<TASK-ID> [inbox|remote]`
+- 버튼 액션:
+  - `승인`: inbox approval marker 생성
+  - `원격`: remote approval marker 생성
+  - `거절`: `cowork/dispatch/<task-id>-review-rejected.md` 기록
 - review가 없거나 stale이면 approval marker를 만들지 않고 거절한다
 - 승인 가능 사용자 목록은 backend env `SLACK_APPROVER_USER_IDS`로 제한한다
 - 서명 검증은 backend env `SLACK_SIGNING_SECRET`로 수행한다
-- 현재 구현은 slash command 기반 승인만 지원한다. 버튼 클릭형 interactivity는 아직 없다
 - 실제 Slack App 설정 절차와 smoke test는 [slack-approval-setup.md](./slack-approval-setup.md)에 정리한다
 
 ## Shared watcher utilities

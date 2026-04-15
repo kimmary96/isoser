@@ -1,17 +1,17 @@
 # Slack Approval Setup
 
-Slack에서 `/isoser-approve`로 cowork approval marker를 만들기 위한 운영 설정 문서입니다.
+Slack에서 `review-ready` 알림을 받고 버튼 또는 `/isoser-approve`로 cowork approval marker를 만들기 위한 운영 설정 문서입니다.
 
 ## 목적
 - `cowork_watcher.py`가 Slack으로 `review-ready`를 알리면
-- 승인자는 Slack slash command로 `cowork/approvals/<task-id>.ok`를 만들고
+- 승인자는 Slack 버튼 또는 slash command로 `cowork/approvals/<task-id>.ok`를 만들고
 - 이후 `cowork_watcher.py`가 packet을 `tasks/inbox` 또는 `tasks/remote`로 승격한다
 
 ## 사전 조건
 - backend가 외부에서 접근 가능한 URL로 실행 중이어야 한다
 - `cowork_watcher.py`가 실행 중이어야 한다
 - Slack App을 만들 권한이 있어야 한다
-- Slack incoming webhook과 slash command를 같은 워크스페이스에서 설정해야 한다
+- Slack incoming webhook, interactivity, slash command를 같은 워크스페이스에서 설정해야 한다
 
 ## 필요한 환경변수
 
@@ -40,7 +40,18 @@ SLACK_APPROVER_USER_IDS=U12345678,U87654321
 
 ## Slack App 설정
 
-### 1. Slash Commands 활성화
+### 1. Incoming Webhooks 활성화
+- Slack App 관리 화면에서 `Incoming Webhooks`를 켠다
+- 알림을 받을 채널에 webhook을 추가한다
+- 생성된 webhook URL을 root `.watcher.env`의 `SLACK_WEBHOOK_URL`에 넣는다
+
+### 2. Interactivity 활성화
+- Slack App 관리 화면에서 `Interactivity & Shortcuts`를 켠다
+- request URL:
+  - `https://<your-backend-host>/slack/interactivity/cowork-review`
+- 이 설정이 있어야 `review-ready` 메시지의 `승인`, `원격`, `거절` 버튼이 동작한다
+
+### 3. Slash Commands 활성화
 - Slack App 관리 화면에서 `Slash Commands`를 켠다
 - command name:
   - `/isoser-approve`
@@ -51,11 +62,11 @@ SLACK_APPROVER_USER_IDS=U12345678,U87654321
 - usage hint 예시:
   - `<TASK-ID> [inbox|remote]`
 
-### 2. Signing secret 복사
+### 4. Signing secret 복사
 - Slack App 관리 화면의 `Basic Information`에서 `Signing Secret`를 확인한다
 - 이 값을 `backend/.env`의 `SLACK_SIGNING_SECRET`에 넣는다
 
-### 3. Approver Slack user ID 수집
+### 5. Approver Slack user ID 수집
 - Slack에서 승인 가능한 사용자들의 user ID를 확인한다
 - `backend/.env`의 `SLACK_APPROVER_USER_IDS`에 쉼표로 구분해 넣는다
 
@@ -70,8 +81,9 @@ SLACK_APPROVER_USER_IDS=U04ABCDEF,U09HIJKLM
 2. `backend/.env`에 `SLACK_SIGNING_SECRET`, `SLACK_APPROVER_USER_IDS`를 넣는다
 3. backend를 재시작한다
 4. `cowork_watcher.py`를 재시작한다
-5. Slack App slash command 설정을 저장한다
-6. Slack 채널에서 승인 명령으로 smoke test를 한다
+5. Slack App의 webhook, interactivity, slash command 설정을 저장한다
+6. 필요하면 `Reinstall to Workspace`를 수행한다
+7. Slack 채널에서 버튼과 slash command를 각각 smoke test 한다
 
 ## 재시작 명령
 
@@ -90,6 +102,16 @@ powershell -ExecutionPolicy Bypass -File scripts\run_cowork_watcher.ps1
 ```
 
 ## 사용 방법
+
+### review-ready 버튼
+- `cowork_watcher.py`가 보내는 `review-ready` Slack 메시지에는 세 버튼이 붙는다
+  - `승인`
+    - `tasks/inbox` 승격용 approval marker 생성
+  - `원격`
+    - `tasks/remote` 승격용 approval marker 생성
+  - `거절`
+    - `cowork/dispatch/<task-id>-review-rejected.md` 기록
+    - promotion은 일어나지 않음
 
 ### 기본 inbox 승격
 
@@ -117,14 +139,15 @@ powershell -ExecutionPolicy Bypass -File scripts\run_cowork_watcher.ps1
 
 ## 스모크 테스트 체크리스트
 1. Slack에서 `review-ready` 알림이 도착하는지 확인한다
-2. Slack에서 `/isoser-approve <TASK-ID>`를 실행한다
-3. backend 응답이 `Approved <TASK-ID> for inbox...` 형태인지 확인한다
+2. 같은 메시지에서 `승인` 또는 `원격` 버튼이 보이는지 확인한다
+3. 버튼 클릭 시 Slack에 approval 결과가 표시되는지 확인한다
 4. `cowork/approvals/<task-id>.ok` 파일이 생성되는지 확인한다
 5. 잠시 후 `cowork/dispatch/<task-id>-promoted.md`가 생성되는지 확인한다
 6. 대상 packet이 `tasks/inbox/` 또는 `tasks/remote/`로 복사되는지 확인한다
+7. 별도로 `/isoser-approve <TASK-ID>` slash command도 동작하는지 확인한다
 
 ## 운영 메모
-- Slack approval은 slash command만 지원한다
-- 버튼 클릭형 interactivity와 modal approval은 아직 구현하지 않았다
+- Slack approval은 `review-ready` 버튼과 `/isoser-approve` slash command를 모두 지원한다
+- button interactivity request URL과 slash command request URL은 다르다
 - stale review 보호는 Slack 승인에서도 그대로 유지된다
 - packet을 review 이후 다시 수정하면 다시 review를 받아야 한다

@@ -216,11 +216,55 @@ def format_slack_dispatch_message(*, task_id: str, stage: str, lines: list[str])
     return "\n".join(message_lines)
 
 
+def build_slack_dispatch_payload(*, task_id: str, stage: str, lines: list[str]) -> dict[str, object]:
+    text = format_slack_dispatch_message(task_id=task_id, stage=stage, lines=lines)
+    payload: dict[str, object] = {"text": text}
+
+    if stage != "review-ready":
+        return payload
+
+    payload["blocks"] = [
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": text,
+            },
+        },
+        {
+            "type": "actions",
+            "elements": [
+                {
+                    "type": "button",
+                    "text": {"type": "plain_text", "text": "승인"},
+                    "style": "primary",
+                    "action_id": "cowork_approve_inbox",
+                    "value": json.dumps({"task_id": task_id, "target": "inbox"}, ensure_ascii=True),
+                },
+                {
+                    "type": "button",
+                    "text": {"type": "plain_text", "text": "원격"},
+                    "action_id": "cowork_approve_remote",
+                    "value": json.dumps({"task_id": task_id, "target": "remote"}, ensure_ascii=True),
+                },
+                {
+                    "type": "button",
+                    "text": {"type": "plain_text", "text": "거절"},
+                    "style": "danger",
+                    "action_id": "cowork_reject",
+                    "value": json.dumps({"task_id": task_id}, ensure_ascii=True),
+                },
+            ],
+        },
+    ]
+    return payload
+
+
 def notify_slack_for_dispatch(*, task_id: str, stage: str, lines: list[str]) -> None:
     if not SLACK_WEBHOOK_URL:
         return
 
-    payload = {"text": format_slack_dispatch_message(task_id=task_id, stage=stage, lines=lines)}
+    payload = build_slack_dispatch_payload(task_id=task_id, stage=stage, lines=lines)
     request = urllib_request.Request(
         SLACK_WEBHOOK_URL,
         data=json.dumps(payload).encode("utf-8"),
