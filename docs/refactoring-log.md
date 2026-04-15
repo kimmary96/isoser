@@ -886,3 +886,7 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - 실제 cowork 승격 동작이 copy 기반이라는 점과 stale review 판정이 mtime 비교라는 점에 맞춰 테스트를 현재 규칙 기준으로 정리함
 - `docs/automation/watcher-shared.md`
   - watcher 공통 유틸의 책임 범위, wrapper 유지 이유, 테스트 전제를 별도 운영 문서로 정리해 이후 구조 변경 시 기준 문서로 삼을 수 있게 함
+- `frontend/app/landing-a/page.tsx`, `frontend/app/landing-a/_*.ts*`
+  - 랜딩 A의 정적 데이터, 테마 스타일, 섹션 렌더링을 페이지 본문에서 분리해 `page.tsx`는 상태와 조립만 담당하도록 정리함
+- `frontend/app/landing-b/page.tsx`, `frontend/app/landing-b/_*.ts*`
+  - 랜딩 B의 퀴즈 상태 계산은 페이지에 두고, 정적 데이터와 퀴즈/결과/보조 섹션 렌더링을 별도 파일로 분리해 이후 실험 랜딩 수정 범위를 줄임
