@@ -1,34 +1,45 @@
 # TASK-2026-04-15-1420-crawling-phase2-api-validation Recovery
 
-## Decision
+## Recovery Decision
 
-Automatic recovery was not safe, so `tasks/blocked/TASK-2026-04-15-1420-crawling-phase2-api-validation.md` was left unchanged.
+Automatic recovery was not safe, so the task packet was left unchanged.
 
-## Why Retry Was Not Safe
+## Why Recovery Was Not Safe
 
-- `backend/.env` still does not contain `HRD_API_KEY`
-- `backend/.env` still does not contain `WORK24_API_KEY`
-- `backend/.env` does contain `KSTARTUP_API_KEY`, but the task packet explicitly requires all three API keys before execution
-- the blocked reason therefore still depends on missing external credentials rather than stale task wording
+- The previous blocked reason was verified against the current repository state.
+- `backend/.env` currently contains `KSTARTUP_API_KEY`.
+- `backend/.env` still does not contain `HRD_API_KEY`.
+- `backend/.env` still does not contain `WORK24_API_KEY`.
+- The task packet explicitly states that execution must not begin before all required API keys are issued and configured in `backend/.env`.
 
-## What Was Inspected
+## Files Inspected
 
 - `AGENTS.md`
 - `tasks/blocked/TASK-2026-04-15-1420-crawling-phase2-api-validation.md`
 - `reports/TASK-2026-04-15-1420-crawling-phase2-api-validation-blocked.md`
-- `backend/.env` key presence only
-- `backend/rag/collector/hrd_collector.py`
-- `backend/rag/collector/work24_collector.py`
-- `backend/rag/collector/kstartup_collector.py`
-- current `HEAD`: `750fba4f766f86739e94368afa8474e2edbdc6b4`
+- `backend/.env`
+- `backend/.env.example`
 
-## Notes
+## Changed Files
 
-- `planned_against_commit` in the task packet is stale relative to current `HEAD`, but updating it alone would falsely imply the task is runnable
-- the next safe watcher run requires a human to provide and configure `HRD_API_KEY` and `WORK24_API_KEY` in `backend/.env`
+- `reports/TASK-2026-04-15-1420-crawling-phase2-api-validation-recovery.md`
+
+## Preserved Behaviors
+
+- The blocked task packet was not modified.
+- No source files were changed.
+- No retry was queued without the required credentials.
+
+## Risks / Possible Regressions
+
+- Re-running the watcher without adding `HRD_API_KEY` and `WORK24_API_KEY` will reproduce the same blocked outcome.
+
+## Follow-up Refactoring Candidates
+
+- None. This is an external prerequisite issue, not a code-structure problem.
 
 ## Run Metadata
 
-- generated_at: `2026-04-15T15:51:08`
+- generated_at: `2026-04-15T17:07:15`
 - watcher_exit_code: `0`
-- codex_tokens_used: `44,685`
+- codex_tokens_used: `43,168`

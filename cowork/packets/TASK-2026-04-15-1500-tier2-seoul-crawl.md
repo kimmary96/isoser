@@ -4,10 +4,10 @@ status: queued
 type: feature
 title: "Tier 2 서울시 광역 크롤링 collector 구현 — Phase 1~2"
 planned_at: "2026-04-15"
-planned_against_commit: "750fba4f766f86739e94368afa8474e2edbdc6b4"
+planned_against_commit: "94b50fda406587a4fd6afa1879f296546f5bed67"
 priority: high
 planned_by: Claude (PM)
-auto_recovery_attempts: 1
+auto_recovery_attempts: 2
 ---
 
 ## Goal
@@ -15,7 +15,7 @@ auto_recovery_attempts: 1
 서울시 광역 단위 프로그램 데이터를 이소서 프로그램 허브에 공급하기 위해,
 `backend/rag/collector/` 구조에 Tier 2 HTML collector를 추가한다.
 
-대상은 로컬 HTTP 요청으로 목록 및 상세 응답이 실제 검증된 소스에 한정한다.
+대상은 사전 검증 이력이 있는 로컬 HTTP 요청 기반 소스에 한정한다.
 청년몽땅정보통(WebGate 차단)과 서울창업허브(연결 불안정)는 이번 범위에서 제외한다.
 
 이번 Task Packet의 범위는 Phase 1(즉시 구현 가능 3개)과 Phase 2(안정 확장 3개)이다.
@@ -37,7 +37,7 @@ Phase 3, Phase 4는 별도 Packet으로 분리한다.
 
 ## 구현 대상 소스
 
-### Phase 1: 즉시 구현 (검증 완료)
+### Phase 1: 즉시 구현 (사전 검증 이력 있음)
 
 **SeoulJobPortalCollector**
 - 사이트: 서울일자리포털
@@ -50,17 +50,17 @@ Phase 3, Phase 4는 별도 Packet으로 분리한다.
 - 사이트: 서울경제진흥원 사업신청
 - 진입 경로: `/Pages/BusinessApply/Posting.aspx`
 - 수집 대상: 전체 사업 또는 접수중인 사업. 창업/교육/세미나행사/일자리 카테고리.
-- 검증 상태: 메인 및 사업 구조 HTML 정상 수신 확인
+- 검증 상태: 과거 기준 메인 및 사업 구조 HTML 정상 수신 이력 있음. 구현 시점에 재확인 필요
 - category_hint: 카테고리 구분 가능하면 소스에서 직접 매핑
 
 **SesacCollector**
 - 사이트: 청년취업사관학교 SeSAC
 - 진입 경로: `/sesac/main/main.do`, `/sesac/course/offline/` 과정 목록
 - 수집 대상: 모집중 오프라인 과정. 모집 기간이 HTML에 직접 노출됨.
-- 검증 상태: 메인 및 상세 페이지 응답 모두 확인
+- 검증 상태: 과거 기준 메인 및 상세 페이지 응답 확인 이력 있음. 구현 시점에 재확인 필요
 - category_hint: `교육`
 
-### Phase 2: 안정 확장 (응답 확인, 필터 기준 필요)
+### Phase 2: 안정 확장 (사전 응답 확인 이력 있음, 필터 기준 필요)
 
 **Seoul50PlusCollector**
 - 사이트: 서울시 50플러스 일자리 정보몽땅
@@ -191,8 +191,8 @@ Phase 3, Phase 4는 별도 Packet으로 분리한다.
 
 ## 참고
 
-- 이번 Packet의 기반 문서: `isoser-tier2-seoul-crawling-validated.md`, `isoser-tier2-seoul-crawling-detailed.md` (2026-04-15 기준 로컬 HTTP 검증 완료)
-- 이 Packet은 stale watcher run 이후 자동 복구를 위해 현재 `HEAD`로 재기준화되었다. 재시도 시에는 실제 구현 전 관련 collector 구조와 drift를 다시 확인할 것.
+- 이번 Packet의 기반 문서: `isoser-tier2-seoul-crawling-validated.md`, `isoser-tier2-seoul-crawling-detailed.md` (2026-04-15 기준 사전 로컬 HTTP 검증 이력)
+- 이 Packet은 stale watcher run 이후 자동 복구를 위해 현재 `HEAD`(94b50fda406587a4fd6afa1879f296546f5bed67) 기준으로 재기준화되었다. 재시도 시에는 실제 구현 전 관련 collector 구조와 소스 응답 상태를 다시 확인할 것.
 - Phase 3(`SmycCollector`) Packet은 서울광역청년센터 게시판 URL 역추적 완료 후 별도 작성.
 - Phase 4 Packet은 WebGate 우회 방안 또는 서울창업허브 도메인 안정화 확인 후 별도 작성.
 
