@@ -13,9 +13,11 @@ import httpx
 try:
     from backend.rag.runtime_config import load_backend_dotenv
     from backend.rag.source_adapters.base import ApiSourceAdapter
+    from backend.rag.collector.normalizer import _classify_category
 except ImportError:
     from rag.runtime_config import load_backend_dotenv
     from rag.source_adapters.base import ApiSourceAdapter
+    from rag.collector.normalizer import _classify_category
 
 SOURCE = ApiSourceAdapter(
     source_name="work24_training",
@@ -34,6 +36,7 @@ REQUEST_TIMEOUT_SECONDS = 30
 REQUEST_RETRY_COUNT = 3
 DEFAULT_PAGE_SIZE = 100
 DEFAULT_SLEEP_SECONDS = 0.5
+DEFAULT_MAX_PAGES: int | None = None
 
 LIST_CONTAINER_KEYS = (
     "response",
@@ -168,6 +171,7 @@ class Work24TrainingAdapter:
         retry_count: int = REQUEST_RETRY_COUNT,
         page_size: int = DEFAULT_PAGE_SIZE,
         sleep_seconds: float = DEFAULT_SLEEP_SECONDS,
+        max_pages: int | None = DEFAULT_MAX_PAGES,
         client: httpx.Client | None = None,
     ) -> None:
         load_backend_dotenv()
@@ -177,6 +181,7 @@ class Work24TrainingAdapter:
         self.retry_count = retry_count
         self.page_size = page_size
         self.sleep_seconds = sleep_seconds
+        self.max_pages = max_pages if max_pages and max_pages > 0 else None
         self.client = client or httpx.Client(timeout=self.timeout_seconds, trust_env=False)
         self.sample_dir.mkdir(parents=True, exist_ok=True)
         self.saved_samples: list[str] = []
@@ -269,17 +274,23 @@ class Work24TrainingAdapter:
 
     @staticmethod
     def _normalize_program(row: dict[str, Any]) -> dict[str, Any]:
+        title = _pick_first(row, ("TITLE", "title"))
+        provider_name = _pick_first(row, ("SUB_TITLE", "subTitle"))
+        target = _pick_first(row, ("TRAIN_TARGET", "trainTarget"))
         return {
             "hrd_id": _pick_first(row, ("TRPR_ID", "trprId")),
-            "title": _pick_first(row, ("TITLE", "title")),
+            "title": title,
             "category": _pick_first(row, ("NCS_CD", "ncsCd")),
+            "category_label": _classify_category(title),
             "location": _pick_first(row, ("ADDRESS", "address")),
             "start_date": _pick_first(row, ("TRA_START_DATE", "traStartDate")),
             "end_date": _pick_first(row, ("TRA_END_DATE", "traEndDate")),
             "cost": _to_int(row.get("COURSE_MAN") if "COURSE_MAN" in row else row.get("courseMan")),
             "subsidy_amount": _to_int(row.get("REAL_MAN") if "REAL_MAN" in row else row.get("realMan")),
-            "target": _pick_first(row, ("TRAIN_TARGET", "trainTarget")),
+            "target": target,
             "provider": _pick_first(row, ("TRAINST_CST_ID", "trainstCstId")),
+            "provider_name": provider_name,
+            "summary": provider_name or target,
             "source_url": _pick_first(row, ("TITLE_LINK", "titleLink")),
             "total_count": _to_int(row.get("scn_cnt")),
             "source": SOURCE.source_name,
@@ -319,6 +330,7 @@ class Work24TrainingAdapter:
         end_dt: str | None = None,
         area_code: str | None = None,
         ncs_code: str | None = None,
+        max_pages: int | None = None,
     ) -> list[dict[str, Any]] | None:
         """Fetch all pages using 100-item pagination with a 0.5s delay."""
 
@@ -341,6 +353,9 @@ class Work24TrainingAdapter:
                 return programs
 
             total_pages = (total_count + self.page_size - 1) // self.page_size
+            resolved_max_pages = max_pages if max_pages and max_pages > 0 else self.max_pages
+            if resolved_max_pages:
+                total_pages = min(total_pages, resolved_max_pages)
             for page_num in range(2, total_pages + 1):
                 time.sleep(self.sleep_seconds)
                 page_rows = self.fetch_list(

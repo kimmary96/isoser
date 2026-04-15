@@ -11,6 +11,7 @@ from fastapi import APIRouter, Header, HTTPException, Query
 from rag.programs_rag import ProgramsRAG
 from rag.source_adapters.work24_training import Work24TrainingAdapter
 from utils.supabase_admin import request_supabase
+from rag.collector.normalizer import _classify_category
 
 try:
     from backend.logging_config import get_logger, log_event
@@ -66,17 +67,29 @@ def _normalize_program_row(row: dict[str, Any]) -> dict[str, Any]:
     if not hrd_id:
         return {}
 
+    title = str(row.get("title") or "").strip() or hrd_id
+    provider_name = str(row.get("provider_name") or "").strip()
+    provider = provider_name or str(row.get("provider") or "").strip() or None
+    end_date = str(row.get("end_date") or "").strip() or None
+    start_date = str(row.get("start_date") or "").strip() or None
+    target_text = str(row.get("target") or "").strip()
+    target = [target_text] if target_text else []
+    category = str(row.get("category_label") or "").strip() or str(row.get("category") or "").strip()
+    description = str(row.get("summary") or "").strip() or None
+
     return {
         "hrd_id": hrd_id,
-        "title": str(row.get("title") or "").strip() or hrd_id,
-        "category": str(row.get("category") or "").strip() or None,
+        "title": title,
+        "category": category or _classify_category(title),
         "location": str(row.get("location") or "").strip() or None,
-        "provider": str(row.get("provider") or "").strip() or None,
-        "start_date": str(row.get("start_date") or "").strip() or None,
-        "end_date": str(row.get("end_date") or "").strip() or None,
+        "provider": provider,
+        "description": description,
+        "start_date": start_date,
+        "end_date": end_date,
+        "deadline": end_date,
         "cost": row.get("cost"),
         "subsidy_amount": row.get("subsidy_amount"),
-        "target": str(row.get("target") or "").strip() or None,
+        "target": target or None,
         "source_url": str(row.get("source_url") or "").strip() or None,
         "source": str(row.get("source") or "").strip() or "work24_training",
         "is_active": True,
@@ -172,6 +185,7 @@ async def sync_programs(
     end_dt: str | None = Query(default=None),
     area_code: str | None = Query(default=None),
     ncs_code: str | None = Query(default=None),
+    max_pages: int | None = Query(default=None, ge=1),
 ) -> dict[str, Any]:
     started_at = perf_counter()
     resolved_start_dt = (start_dt or "").strip() or _default_start_dt()
@@ -187,6 +201,7 @@ async def sync_programs(
             end_dt=resolved_end_dt,
             area_code=area_code,
             ncs_code=ncs_code,
+            max_pages=max_pages,
         )
         fetch_duration = round(perf_counter() - fetch_started_at, 3)
         log_event(
@@ -197,6 +212,7 @@ async def sync_programs(
             end_dt=resolved_end_dt,
             area_code=area_code,
             ncs_code=ncs_code,
+            max_pages=max_pages,
             duration_seconds=fetch_duration,
             fetched_count=len(fetched_rows or []),
         )
@@ -287,6 +303,7 @@ async def sync_programs(
             end_dt=resolved_end_dt,
             area_code=area_code,
             ncs_code=ncs_code,
+            max_pages=max_pages,
             duration_seconds=duration_seconds,
         )
         return {

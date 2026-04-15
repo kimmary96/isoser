@@ -3,6 +3,7 @@ $repoRoot = Split-Path -Parent $scriptDir
 $watcherEnvPath = Join-Path $repoRoot ".watcher.env"
 
 $env:PYTHONDONTWRITEBYTECODE = "1"
+$env:PYTHONIOENCODING = "utf-8"
 
 if (Test-Path $watcherEnvPath) {
     Get-Content $watcherEnvPath | ForEach-Object {

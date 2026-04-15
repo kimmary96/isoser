@@ -75,7 +75,7 @@ def test_slack_cowork_approve_creates_approval_marker(client, tmp_path, monkeypa
     )
 
     assert response.status_code == 200
-    assert "Approved TASK-TEST for remote" in response.text
+    assert "Approved `TASK-TEST` for `remote`" in response.text
     approval_path = approvals_dir / "TASK-TEST.ok"
     assert approval_path.exists()
     approval_body = approval_path.read_text(encoding="utf-8")
@@ -128,5 +128,52 @@ def test_slack_cowork_approve_rejects_stale_review(client, tmp_path, monkeypatch
         },
     )
 
-    assert response.status_code == 409
+    assert response.status_code == 200
     assert "Review is stale" in response.text
+
+
+def test_slack_cowork_approve_shows_user_id_when_not_allowlisted(client, tmp_path, monkeypatch) -> None:
+    packets_dir = tmp_path / "cowork" / "packets"
+    reviews_dir = tmp_path / "cowork" / "reviews"
+    approvals_dir = tmp_path / "cowork" / "approvals"
+    dispatch_dir = tmp_path / "cowork" / "dispatch"
+
+    for directory in [packets_dir, reviews_dir, approvals_dir, dispatch_dir]:
+        directory.mkdir(parents=True, exist_ok=True)
+
+    packet = packets_dir / "TASK-TEST.md"
+    packet.write_text("---\nid: TASK-TEST\nplanned_at: 2026-04-15T10:00:00+09:00\nplanned_against_commit: abc123\nstatus: draft\ntype: feature\ntitle: test\n---\n", encoding="utf-8")
+    review = reviews_dir / "TASK-TEST-review.md"
+    review.write_text("# latest review\n", encoding="utf-8")
+    review.touch()
+    packet.touch()
+    review.touch()
+
+    monkeypatch.setattr(slack, "COWORK_PACKETS_DIR", packets_dir)
+    monkeypatch.setattr(slack, "COWORK_REVIEWS_DIR", reviews_dir)
+    monkeypatch.setattr(slack, "COWORK_APPROVALS_DIR", approvals_dir)
+    monkeypatch.setattr(slack, "COWORK_DISPATCH_DIR", dispatch_dir)
+    monkeypatch.setenv("SLACK_SIGNING_SECRET", "test-secret")
+    monkeypatch.setenv("SLACK_APPROVER_USER_IDS", "U999")
+
+    payload = {
+        "user_id": "U123",
+        "user_name": "tester",
+        "text": "TASK-TEST",
+    }
+    body = urlencode(payload).encode("utf-8")
+    timestamp = str(int(time.time()))
+    signature = _build_signature("test-secret", timestamp, body)
+
+    response = client.post(
+        "/slack/commands/cowork-approve",
+        content=body,
+        headers={
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-Slack-Request-Timestamp": timestamp,
+            "X-Slack-Signature": signature,
+        },
+    )
+
+    assert response.status_code == 200
+    assert "U123" in response.text

@@ -118,14 +118,26 @@ def _write_approval_marker(*, task_id: str, target: str, user_id: str, user_name
     return approval_path
 
 
+def _slack_message(message: str, status_code: int = 200) -> PlainTextResponse:
+    return PlainTextResponse(message, status_code=status_code)
+
+
 @router.post("/commands/cowork-approve", response_class=PlainTextResponse)
 async def slack_cowork_approve(request: Request) -> PlainTextResponse:
     body = await request.body()
-    _verify_slack_signature(
-        body=body,
-        timestamp=request.headers.get("X-Slack-Request-Timestamp"),
-        signature=request.headers.get("X-Slack-Signature"),
-    )
+    try:
+        _verify_slack_signature(
+            body=body,
+            timestamp=request.headers.get("X-Slack-Request-Timestamp"),
+            signature=request.headers.get("X-Slack-Signature"),
+        )
+    except HTTPException as error:
+        if error.status_code == 401:
+            return _slack_message(
+                "Slack signature verification failed. Check `SLACK_SIGNING_SECRET` and the Request URL.",
+                status_code=200,
+            )
+        return _slack_message(str(error.detail), status_code=200)
 
     form = await request.form()
     if str(form.get("ssl_check", "")).strip() == "1":
@@ -133,25 +145,34 @@ async def slack_cowork_approve(request: Request) -> PlainTextResponse:
 
     allowed_user_ids = _get_allowed_user_ids()
     if not allowed_user_ids:
-        raise HTTPException(status_code=503, detail="SLACK_APPROVER_USER_IDS is not configured")
+        return _slack_message(
+            "Approval is not configured. Set `SLACK_APPROVER_USER_IDS` in backend env and restart the backend."
+        )
 
     user_id = str(form.get("user_id", "")).strip()
     user_name = str(form.get("user_name", "")).strip()
     if user_id not in allowed_user_ids:
-        raise HTTPException(status_code=403, detail="Slack user is not allowed to approve")
+        return _slack_message(
+            f"Slack user `{user_id}` is not allowed to approve. Add it to `SLACK_APPROVER_USER_IDS` and retry."
+        )
 
-    task_id, target = _parse_command_text(str(form.get("text", "")))
+    try:
+        task_id, target = _parse_command_text(str(form.get("text", "")))
+    except HTTPException as error:
+        return _slack_message(str(error.detail))
     packet_path = _packet_path_for(task_id)
     review_path = _review_path_for(task_id)
 
     if not packet_path.exists():
-        raise HTTPException(status_code=404, detail=f"Packet not found for {task_id}")
+        return _slack_message(f"Packet not found for `{task_id}`.")
     if not review_path.exists():
-        raise HTTPException(status_code=409, detail=f"Review not found for {task_id}")
+        return _slack_message(f"Review not found for `{task_id}`.")
     if _packet_needs_review(packet_path, review_path):
-        raise HTTPException(status_code=409, detail=f"Review is stale for {task_id}")
+        return _slack_message(
+            f"Review is stale for `{task_id}`. Regenerate the review, then approve again."
+        )
     if _promoted_dispatch_path_for(task_id).exists():
-        return PlainTextResponse(f"{task_id} is already promoted.")
+        return _slack_message(f"`{task_id}` is already promoted.")
 
     approval_path = _write_approval_marker(
         task_id=task_id,
@@ -159,6 +180,6 @@ async def slack_cowork_approve(request: Request) -> PlainTextResponse:
         user_id=user_id,
         user_name=user_name,
     )
-    return PlainTextResponse(
-        f"Approved {task_id} for {target}. Marker created at {approval_path.relative_to(REPO_ROOT).as_posix()}."
+    return _slack_message(
+        f"Approved `{task_id}` for `{target}`. Marker created at `{approval_path.relative_to(REPO_ROOT).as_posix()}`."
     )
