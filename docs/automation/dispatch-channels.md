@@ -16,6 +16,7 @@
 - purpose: local execution terminal outcomes
 - standard stages:
   - `completed`
+  - `needs-review`
   - `drift`
   - `blocked`
   - `push-failed`
@@ -24,7 +25,7 @@
 
 ## Standard alert format
 - `type: watcher-alert`
-- `stage: <completed|drift|blocked|push-failed>`
+- `stage: <completed|needs-review|drift|blocked|push-failed>`
 - `status: <done|action-required>`
 - `severity: <info|warning|error>`
 - `packet: <tasks/... path>`

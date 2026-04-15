@@ -4,6 +4,6 @@ stage: review-ready
 status: pending-approval
 packet: `cowork/packets/TASK-2026-04-15-1100-programs-compare.md`
 review: `cowork/reviews/TASK-2026-04-15-1100-programs-compare-review.md`
-created_at: `2026-04-15T13:36:11`
+created_at: `2026-04-15T14:02:33`
 - freshness: review is aligned with the current packet contents
 - next_step: reviewer reads the review and creates `cowork/approvals/<task-id>.ok` when approved

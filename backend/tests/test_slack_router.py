@@ -76,7 +76,8 @@ def test_slack_cowork_approve_creates_approval_marker(client, tmp_path, monkeypa
     )
 
     assert response.status_code == 200
-    assert "Approved `TASK-TEST` for `remote`" in response.text
+    assert "승인 처리 완료" in response.text
+    assert "원격 큐" in response.text
     approval_path = approvals_dir / "TASK-TEST.ok"
     assert approval_path.exists()
     approval_body = approval_path.read_text(encoding="utf-8")
@@ -130,7 +131,7 @@ def test_slack_cowork_approve_rejects_stale_review(client, tmp_path, monkeypatch
     )
 
     assert response.status_code == 200
-    assert "Review is stale" in response.text
+    assert "review가 stale 상태" in response.text
 
 
 def test_slack_cowork_approve_shows_user_id_when_not_allowlisted(client, tmp_path, monkeypatch) -> None:
@@ -228,7 +229,8 @@ def test_slack_cowork_interactivity_approves_remote(client, tmp_path, monkeypatc
     )
 
     assert response.status_code == 200
-    assert "Approved `TASK-TEST` for `remote`" in response.text
+    assert "승인 처리 완료" in response.text
+    assert "원격 큐" in response.text
     assert (approvals_dir / "TASK-TEST.ok").exists()
 
 
@@ -275,5 +277,5 @@ def test_slack_cowork_interactivity_rejects_review(client, tmp_path, monkeypatch
     )
 
     assert response.status_code == 200
-    assert "Rejected `TASK-TEST`" in response.text
+    assert "거절 처리 완료" in response.text
     assert (dispatch_dir / "TASK-TEST-review-rejected.md").exists()

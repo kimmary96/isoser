@@ -185,6 +185,60 @@ def write_dispatch(task_id: str, stage: str, lines: list[str]) -> str:
     return dispatch_path
 
 
+def packet_title_for(task_id: str) -> Optional[str]:
+    packet_path = os.path.join(COWORK_PACKETS_DIR, f"{task_id}.md")
+    if not os.path.exists(packet_path):
+        return None
+    metadata, _ = read_task_metadata(packet_path)
+    title = metadata.get("title", "").strip()
+    return title or None
+
+
+def review_snapshot_for(task_id: str) -> list[str]:
+    review_path = review_path_for(task_id)
+    if not os.path.exists(review_path):
+        return []
+
+    lines = read_markdown(review_path).splitlines()
+    snapshot: list[str] = []
+    capture_findings = False
+
+    for raw_line in lines:
+        line = raw_line.strip()
+        if not line:
+            continue
+        if line.startswith("## "):
+            heading = line[3:].strip().lower()
+            capture_findings = heading == "findings"
+            continue
+        if line.startswith("# "):
+            continue
+
+        if not snapshot:
+            snapshot.append(line)
+            continue
+
+        if capture_findings and line.startswith("- "):
+            snapshot.append(line)
+            if len(snapshot) >= 5:
+                break
+
+    return snapshot[:5]
+
+
+def localize_review_snapshot_line(line: str) -> str:
+    translations = {
+        "Not ready for promotion yet.": "아직 승격 준비가 되지 않았습니다.",
+        "Ready for promotion.": "승격 가능한 상태입니다.",
+        "- Frontmatter completeness: OK. Required fields `id`, `status`, `type`, `title`, `planned_at`, `planned_against_commit` are all present.": "- 프론트매터 필수 항목이 모두 채워져 있습니다.",
+        "- Planned commit / drift: OK at repo level. Current `HEAD` matches the packet exactly.": "- planned commit 기준 드리프트는 없습니다. 현재 HEAD와 packet이 일치합니다.",
+        "- Direct reference paths: mostly valid, but the packet mixes route paths and repository paths.": "- 참조 경로는 대부분 유효하지만 route 경로와 저장소 경로 표기가 혼용되어 있습니다.",
+        "- `frontend/lib/types/index.ts` exists.": "- `frontend/lib/types/index.ts` 경로가 확인되었습니다.",
+        "- `cowork/drafts/isoser-compare-v3.html` exists.": "- `cowork/drafts/isoser-compare-v3.html` 초안 파일이 존재합니다.",
+    }
+    return translations.get(line, line)
+
+
 def format_slack_dispatch_message(*, task_id: str, stage: str, lines: list[str]) -> str:
     emoji = {
         "review-ready": "📝",
@@ -192,7 +246,26 @@ def format_slack_dispatch_message(*, task_id: str, stage: str, lines: list[str])
         "approval-blocked-stale-review": "⛔",
         "promoted": "✅",
     }.get(stage, "ℹ️")
-    message_lines = [f"{emoji} cowork dispatch", f"task: `{task_id}`", f"stage: `{stage}`"]
+    stage_labels = {
+        "review-ready": "검토 준비",
+        "review-failed": "검토 실패",
+        "approval-blocked-stale-review": "승격 보류",
+        "promoted": "승격 완료",
+    }
+    status_labels = {
+        "pending-approval": "승인 대기",
+        "action-required": "조치 필요",
+        "stale-review": "리뷰 재생성 필요",
+    }
+    message_lines = [
+        f"{emoji} cowork 검토 알림",
+        "",
+        f"*작업*: `{task_id}`",
+        f"*단계*: {stage_labels.get(stage, stage)}",
+    ]
+    title = packet_title_for(task_id)
+    if title:
+        message_lines.append(f"*제목*: {title}")
 
     interesting_prefixes = (
         "status:",
@@ -206,12 +279,61 @@ def format_slack_dispatch_message(*, task_id: str, stage: str, lines: list[str])
     )
     for line in lines:
         stripped = line.strip()
-        if any(stripped.startswith(prefix) for prefix in interesting_prefixes):
-            message_lines.append(stripped)
+        if not any(stripped.startswith(prefix) for prefix in interesting_prefixes):
+            continue
+
+        if stripped.startswith("status:"):
+            status_value = stripped.removeprefix("status:").strip()
+            message_lines.append(f"*상태*: {status_labels.get(status_value, status_value)}")
+        elif stripped.startswith("packet:"):
+            packet_value = stripped.removeprefix("packet:").strip()
+            message_lines.extend(["", "*패킷*", packet_value])
+        elif stripped.startswith("review:"):
+            review_value = stripped.removeprefix("review:").strip()
+            message_lines.extend(["", "*리뷰*", review_value])
+        elif stripped.startswith("target:"):
+            target_value = stripped.removeprefix("target:").strip().strip("`")
+            target_label = "원격 큐" if target_value == "remote" else "로컬 inbox"
+            message_lines.append(f"*대상 큐*: {target_label}")
+        elif stripped.startswith("approved_at:"):
+            approved_at = stripped.removeprefix("approved_at:").strip().strip("`")
+            message_lines.append(f"*승인 시각*: `{approved_at}`")
+        elif stripped.startswith("- freshness:"):
+            freshness = stripped.removeprefix("- freshness:").strip()
+            if freshness == "review is aligned with the current packet contents":
+                freshness = "현재 packet 기준 최신 review 입니다."
+            message_lines.extend(["", "*검토 상태*", freshness])
+        elif stripped.startswith("- note:"):
+            note = stripped.removeprefix("- note:").strip()
+            if note == "packet is newer than the current review, so promotion is blocked until review is regenerated":
+                note = "packet이 현재 review보다 최신이라서, review를 다시 생성하기 전에는 승격할 수 없습니다."
+            elif note == "frontmatter 누락으로 자동 review가 로컬 규칙 점검만 수행함":
+                note = "frontmatter 누락으로 자동 review가 로컬 규칙 점검만 수행했습니다."
+            elif note == "Codex review did not create the expected review file":
+                note = "Codex review가 기대한 review 파일을 만들지 못했습니다."
+            elif note == "packet copied from cowork scratch space into an execution queue":
+                note = "packet을 cowork scratch 공간에서 실행 큐로 복사했습니다."
+            message_lines.extend(["", "*메모*", note])
+        elif stripped.startswith("- next_step:"):
+            next_step = stripped.removeprefix("- next_step:").strip()
+            if next_step == "reviewer reads the review and creates `cowork/approvals/<task-id>.ok` when approved":
+                next_step = "review 내용을 확인한 뒤 승인 가능하면 approval marker를 생성합니다."
+            message_lines.extend(["", "*다음 조치*", next_step])
 
     if stage == "review-ready":
-        message_lines.append("approval: create `cowork/approvals/<task-id>.ok` after checking the latest review")
-        message_lines.append(f"slack approve: `/isoser-approve {task_id} inbox` or `/isoser-approve {task_id} remote`")
+        review_snapshot = review_snapshot_for(task_id)
+        if review_snapshot:
+            message_lines.extend(["", "*리뷰 요약*"])
+            for item in review_snapshot:
+                message_lines.append(localize_review_snapshot_line(item))
+        message_lines.extend(
+            [
+                "",
+                "*승인 방법*",
+                f"`승인` 버튼 또는 `/isoser-approve {task_id} inbox`",
+                f"`원격` 버튼 또는 `/isoser-approve {task_id} remote`",
+            ]
+        )
 
     return "\n".join(message_lines)
 
@@ -219,11 +341,35 @@ def format_slack_dispatch_message(*, task_id: str, stage: str, lines: list[str])
 def build_slack_dispatch_payload(*, task_id: str, stage: str, lines: list[str]) -> dict[str, object]:
     text = format_slack_dispatch_message(task_id=task_id, stage=stage, lines=lines)
     payload: dict[str, object] = {"text": text}
+    stage_labels = {
+        "review-ready": "검토 준비",
+        "review-failed": "검토 실패",
+        "approval-blocked-stale-review": "승격 보류",
+        "promoted": "승격 완료",
+    }
+    header_text = f"{stage_labels.get(stage, stage)} | {task_id}"
 
     if stage != "review-ready":
+        payload["blocks"] = [
+            {
+                "type": "header",
+                "text": {"type": "plain_text", "text": header_text},
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": text,
+                },
+            },
+        ]
         return payload
 
     payload["blocks"] = [
+        {
+            "type": "header",
+            "text": {"type": "plain_text", "text": header_text},
+        },
         {
             "type": "section",
             "text": {

@@ -6,7 +6,7 @@ export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
   const next = requestUrl.searchParams.get("next");
-  const redirectTarget = next && next.startsWith("/") ? next : "/dashboard";
+  const redirectTarget = next && next.startsWith("/") ? next : "/";
 
   if (!code) {
     return NextResponse.redirect(new URL("/login", request.url));

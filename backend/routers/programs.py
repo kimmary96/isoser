@@ -58,6 +58,7 @@ class ProgramListItem(BaseModel):
     final_score: float | None = None
     urgency_score: float | None = None
     days_left: int | None = None
+    compare_meta: dict[str, Any] | None = None
 
 
 class ProgramRecommendRequest(BaseModel):

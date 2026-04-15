@@ -11,6 +11,7 @@
 - `scripts/run_cowork_watcher.ps1`도 저장소 루트 `.watcher.env`를 자동 로드한다
 - `SLACK_WEBHOOK_URL`이 있으면 terminal alert를 Slack에도 전송한다
 - `cowork_watcher.py`도 `review-ready`, `review-failed`, `approval-blocked-stale-review`, `promoted` 상태를 Slack으로 미러링한다
+- local watcher의 `needs-review` alert는 자동 복구가 막힌 task를 `cowork/packets/`으로 에스컬레이션했다는 뜻이며, 이어서 cowork watcher의 `review-ready` 승인 흐름으로 넘긴다
 - 없으면 watcher 시작 시 경고를 출력하고 로컬 dispatch 파일에만 기록한다
 
 ## Slack approval command

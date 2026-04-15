@@ -8,10 +8,17 @@
 - watcher 공통 파일 처리, lock, frontmatter 파싱, CLI 해석은 `scripts/watcher_shared.py`로 분리되어 있다.
 - local terminal outcome은 `dispatch/alerts/`에 기록된다.
 - 성공 task는 watcher가 task-scoped git automation을 시도한다.
+- watcher는 `tasks/drifted/`와 `tasks/blocked/`를 다시 검사해 자동 복구 가능한 packet은 `tasks/inbox/`로 재투입한다.
+- 자동 복구가 막힌 task는 `cowork/packets/`으로 에스컬레이션되어 Slack approval/feedback 흐름으로 넘겨진다.
 - remote fallback은 `tasks/remote/` + GitHub Action 경로를 사용한다.
 - cowork review-ready는 Slack 버튼과 slash command 양쪽으로 approval을 받을 수 있다.
 - `frontend/app/programs/page.tsx`는 URL query 기반 검색, 카테고리/지역 필터, 모집중 토글, 정렬, 페이지네이션을 지원한다.
+- `frontend/app/programs/compare/page.tsx`는 공개 비교 페이지로 동작하며 `?ids=` URL state, 최대 3개 슬롯, 추천 프로그램 추가/제거를 지원한다.
+- `frontend/middleware.ts`는 루트 `/?code=...` OAuth 유입을 `/auth/callback?next=/`로 정규화해서 로그인 후 랜딩페이지 주소를 깨끗하게 유지한다.
+- `frontend/app/auth/callback/route.ts`는 기존 사용자 로그인 완료 후 기본 진입점을 `/dashboard`가 아니라 `/`로 돌려 랜딩에 머문 상태에서 세션만 유지한다.
+- `frontend/app/page.tsx`는 서버에서 로그인 상태와 프로필을 읽어, 랜딩 상단에서 로그인 버튼 대신 프로필 진입 버튼을 노출한다.
 - `backend/routers/programs.py`는 `/programs/count`와 확장된 목록 query(`q`, `regions`, `recruiting_only`, `sort`)를 지원한다.
+- `programs.compare_meta` JSONB 컬럼이 migration으로 추가되어 비교 화면의 대상/허들/커리큘럼 메타데이터를 저장할 수 있다.
 
 ## Key references
 - automation index: [automation/README.md](./automation/README.md)

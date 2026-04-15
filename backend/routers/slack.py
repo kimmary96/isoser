@@ -137,18 +137,40 @@ def _slack_interactive_message(message: str, *, replace_original: bool = False) 
     )
 
 
+def _format_action_result(*, title: str, task_id: str, lines: list[str]) -> str:
+    body = [title, "", f"- 작업: `{task_id}`", *lines]
+    return "\n".join(body)
+
+
 def _handle_approval_action(*, task_id: str, target: str, user_id: str, user_name: str) -> str:
     packet_path = _packet_path_for(task_id)
     review_path = _review_path_for(task_id)
+    target_label = "원격 큐" if target == "remote" else "로컬 inbox"
 
     if not packet_path.exists():
-        return f"Packet not found for `{task_id}`."
+        return _format_action_result(
+            title="승인 처리 실패",
+            task_id=task_id,
+            lines=["- 사유: packet 파일을 찾지 못했습니다."],
+        )
     if not review_path.exists():
-        return f"Review not found for `{task_id}`."
+        return _format_action_result(
+            title="승인 처리 실패",
+            task_id=task_id,
+            lines=["- 사유: review 파일을 찾지 못했습니다."],
+        )
     if _packet_needs_review(packet_path, review_path):
-        return f"Review is stale for `{task_id}`. Regenerate the review, then approve again."
+        return _format_action_result(
+            title="승인 처리 실패",
+            task_id=task_id,
+            lines=["- 사유: review가 stale 상태입니다.", "- 조치: review를 다시 생성한 뒤 승인하세요."],
+        )
     if _promoted_dispatch_path_for(task_id).exists():
-        return f"`{task_id}` is already promoted."
+        return _format_action_result(
+            title="승인 생략",
+            task_id=task_id,
+            lines=["- 상태: 이미 승격된 작업입니다."],
+        )
 
     approval_path = _write_approval_marker(
         task_id=task_id,
@@ -156,9 +178,13 @@ def _handle_approval_action(*, task_id: str, target: str, user_id: str, user_nam
         user_id=user_id,
         user_name=user_name,
     )
-    return (
-        f"Approved `{task_id}` for `{target}`. "
-        f"Marker created at `{approval_path.relative_to(REPO_ROOT).as_posix()}`."
+    return _format_action_result(
+        title="승인 처리 완료",
+        task_id=task_id,
+        lines=[
+            f"- 대상 큐: {target_label}",
+            f"- 승인 파일: `{approval_path.relative_to(REPO_ROOT).as_posix()}`",
+        ],
     )
 
 
@@ -184,9 +210,17 @@ def _write_rejection_dispatch(*, task_id: str, user_id: str, user_name: str) -> 
 def _handle_reject_action(*, task_id: str, user_id: str, user_name: str) -> str:
     packet_path = _packet_path_for(task_id)
     if not packet_path.exists():
-        return f"Packet not found for `{task_id}`."
+        return _format_action_result(
+            title="거절 처리 실패",
+            task_id=task_id,
+            lines=["- 사유: packet 파일을 찾지 못했습니다."],
+        )
     dispatch_path = _write_rejection_dispatch(task_id=task_id, user_id=user_id, user_name=user_name)
-    return f"Rejected `{task_id}`. Dispatch recorded at `{dispatch_path.relative_to(REPO_ROOT).as_posix()}`."
+    return _format_action_result(
+        title="거절 처리 완료",
+        task_id=task_id,
+        lines=[f"- 기록 파일: `{dispatch_path.relative_to(REPO_ROOT).as_posix()}`"],
+    )
 
 
 @router.post("/commands/cowork-approve", response_class=PlainTextResponse)

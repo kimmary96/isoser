@@ -212,6 +212,150 @@ def test_write_alert_creates_dispatch_file(tmp_path, monkeypatch) -> None:
     assert "next_action: Regenerate the task packet against current HEAD." in body
 
 
+def test_handle_recovery_requeues_task_when_packet_is_refreshed(tmp_path, monkeypatch) -> None:
+    inbox_dir = tmp_path / "tasks" / "inbox"
+    drifted_dir = tmp_path / "tasks" / "drifted"
+    reports_dir = tmp_path / "reports"
+    alerts_dir = tmp_path / "dispatch" / "alerts"
+    inbox_dir.mkdir(parents=True)
+    drifted_dir.mkdir(parents=True)
+    reports_dir.mkdir(parents=True)
+    alerts_dir.mkdir(parents=True)
+
+    task_path = drifted_dir / "TASK-TEST-RECOVERY.md"
+    task_path.write_text(
+        "\n".join(
+            [
+                "---",
+                "id: TASK-TEST-RECOVERY",
+                "status: drift",
+                "type: feature",
+                "title: Recovery test",
+                "planned_at: 2026-04-15T10:00:00+09:00",
+                "planned_against_commit: old-head",
+                "---",
+                "",
+                "# Goal",
+                "",
+                "Refresh this task packet.",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (reports_dir / "TASK-TEST-RECOVERY-drift.md").write_text("# Drift\n", encoding="utf-8")
+
+    monkeypatch.setattr(watcher, "INBOX_DIR", str(inbox_dir))
+    monkeypatch.setattr(watcher, "REPORTS_DIR", str(reports_dir))
+    monkeypatch.setattr(watcher, "ALERTS_DIR", str(alerts_dir))
+    monkeypatch.setattr(watcher, "current_head", lambda: "new-head")
+
+    def fake_run_codex_recovery(
+        task_filename: str,
+        task_id: str,
+        *,
+        failure_stage: str,
+        retry_count: int,
+    ) -> tuple[int, int]:
+        task_path.write_text(
+            "\n".join(
+                [
+                    "---",
+                    "id: TASK-TEST-RECOVERY",
+                    "status: queued",
+                    "type: feature",
+                    "title: Recovery test",
+                    "planned_at: 2026-04-15T10:00:00+09:00",
+                    "planned_against_commit: new-head",
+                    "auto_recovery_attempts: 1",
+                    "---",
+                    "",
+                    "# Goal",
+                    "",
+                    "Refresh this task packet.",
+                ]
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        (reports_dir / "TASK-TEST-RECOVERY-recovery.md").write_text(
+            "# Recovery\n\nPacket refreshed.\n",
+            encoding="utf-8",
+        )
+        return (0, 123)
+
+    monkeypatch.setattr(watcher, "run_codex_recovery", fake_run_codex_recovery)
+
+    watcher.handle_recovery(str(task_path), failure_stage="drift")
+
+    assert not task_path.exists()
+    assert (inbox_dir / "TASK-TEST-RECOVERY.md").exists()
+    alert_body = (alerts_dir / "TASK-TEST-RECOVERY-recovered.md").read_text(encoding="utf-8")
+    assert "stage: recovered" in alert_body
+    assert "tasks/inbox/TASK-TEST-RECOVERY.md" in alert_body
+
+
+def test_handle_recovery_leaves_task_when_packet_is_not_retry_safe(tmp_path, monkeypatch) -> None:
+    blocked_dir = tmp_path / "tasks" / "blocked"
+    reports_dir = tmp_path / "reports"
+    alerts_dir = tmp_path / "dispatch" / "alerts"
+    cowork_packets_dir = tmp_path / "cowork" / "packets"
+    blocked_dir.mkdir(parents=True)
+    reports_dir.mkdir(parents=True)
+    alerts_dir.mkdir(parents=True)
+    cowork_packets_dir.mkdir(parents=True)
+
+    task_path = blocked_dir / "TASK-TEST-BLOCKED.md"
+    task_path.write_text(
+        "\n".join(
+            [
+                "---",
+                "id: TASK-TEST-BLOCKED",
+                "status: blocked",
+                "type: feature",
+                "title: Blocked recovery test",
+                "planned_at: 2026-04-15T10:00:00+09:00",
+                "planned_against_commit: same-head",
+                "---",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (reports_dir / "TASK-TEST-BLOCKED-blocked.md").write_text("# Blocked\n", encoding="utf-8")
+
+    monkeypatch.setattr(watcher, "REPORTS_DIR", str(reports_dir))
+    monkeypatch.setattr(watcher, "ALERTS_DIR", str(alerts_dir))
+    monkeypatch.setattr(watcher, "COWORK_PACKETS_DIR", str(cowork_packets_dir))
+    monkeypatch.setattr(watcher, "current_head", lambda: "same-head")
+
+    def fake_run_codex_recovery(
+        task_filename: str,
+        task_id: str,
+        *,
+        failure_stage: str,
+        retry_count: int,
+    ) -> tuple[int, int]:
+        (reports_dir / "TASK-TEST-BLOCKED-recovery.md").write_text(
+            "# Recovery\n\nExternal credentials still missing.\n",
+            encoding="utf-8",
+        )
+        return (0, 123)
+
+    monkeypatch.setattr(watcher, "run_codex_recovery", fake_run_codex_recovery)
+
+    watcher.handle_recovery(str(task_path), failure_stage="blocked")
+
+    assert task_path.exists()
+    assert not (tmp_path / "tasks" / "inbox" / "TASK-TEST-BLOCKED.md").exists()
+    cowork_packet = cowork_packets_dir / "TASK-TEST-BLOCKED.md"
+    assert cowork_packet.exists()
+    assert "## Auto Recovery Context" in cowork_packet.read_text(encoding="utf-8")
+    alert_body = (alerts_dir / "TASK-TEST-BLOCKED-needs-review.md").read_text(encoding="utf-8")
+    assert "stage: needs-review" in alert_body
+    assert "/isoser-approve TASK-TEST-BLOCKED inbox" in alert_body
+
+
 def test_format_slack_alert_message_contains_core_fields() -> None:
     message = watcher.format_slack_alert_message(
         task_id="TASK-TEST",

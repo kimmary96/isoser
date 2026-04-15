@@ -8,6 +8,15 @@ type CookieToSet = {
 };
 
 export async function middleware(request: NextRequest) {
+  if (request.nextUrl.pathname === "/" && request.nextUrl.searchParams.has("code")) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/auth/callback";
+    if (!redirectUrl.searchParams.get("next")) {
+      redirectUrl.searchParams.set("next", "/");
+    }
+    return NextResponse.redirect(redirectUrl);
+  }
+
   let response = NextResponse.next({
     request,
   });
