@@ -1,5 +1,6 @@
 from typing import Any
 
+import httpx
 from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Query
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -10,11 +11,26 @@ except ImportError:
     from backend.rag.collector.scheduler import run_all_collectors
     from backend.rag.programs_rag import ProgramRecommendation, ProgramsRAG
 
-from utils.supabase_admin import get_current_user_from_authorization, request_supabase
+from utils.supabase_admin import (
+    build_service_headers,
+    get_current_user_from_authorization,
+    get_supabase_admin_settings,
+    request_supabase,
+)
 
 programs_router = APIRouter(prefix="/programs", tags=["programs"])
 router = programs_router
 programs_rag = ProgramsRAG()
+
+PROGRAM_SORT_OPTIONS = {"deadline", "latest"}
+REGION_QUERY_ALIASES: dict[str, tuple[str, ...]] = {
+    "서울": ("서울",),
+    "경기": ("경기",),
+    "부산": ("부산",),
+    "대전·충청": ("대전", "충청", "세종"),
+    "대구·경북": ("대구", "경북"),
+    "온라인": ("온라인", "비대면", "원격"),
+}
 
 
 class ProgramListItem(BaseModel):
@@ -60,6 +76,10 @@ class ProgramRecommendResponse(BaseModel):
     items: list[ProgramRecommendItem] = Field(default_factory=list)
 
 
+class ProgramCountResponse(BaseModel):
+    count: int
+
+
 def _serialize_program_recommendation(item: ProgramRecommendation) -> ProgramRecommendItem:
     return ProgramRecommendItem(
         program_id=item.program_id,
@@ -68,6 +88,92 @@ def _serialize_program_recommendation(item: ProgramRecommendation) -> ProgramRec
         fit_keywords=item.fit_keywords,
         program=ProgramListItem.model_validate(item.program),
     )
+
+
+def _normalize_regions_param(regions: list[str] | None) -> list[str]:
+    if not regions:
+        return []
+
+    normalized: list[str] = []
+    for raw in regions:
+        if not raw:
+            continue
+        for token in str(raw).split(","):
+            cleaned = token.strip()
+            if cleaned:
+                normalized.append(cleaned)
+    return normalized
+
+
+def _expand_region_keywords(regions: list[str]) -> list[str]:
+    keywords: list[str] = []
+    seen: set[str] = set()
+    for region in regions:
+        for keyword in REGION_QUERY_ALIASES.get(region, (region,)):
+            if keyword not in seen:
+                seen.add(keyword)
+                keywords.append(keyword)
+    return keywords
+
+
+def _program_order_clause(sort: str) -> str:
+    if sort == "latest":
+        return "created_at.desc.nullslast"
+    return "deadline.asc.nullslast"
+
+
+def _build_program_query_params(
+    *,
+    select: str,
+    category: str | None = None,
+    scope: str | None = None,
+    region_detail: str | None = None,
+    q: str | None = None,
+    regions: list[str] | None = None,
+    recruiting_only: bool = False,
+    sort: str = "deadline",
+    limit: int | None = None,
+    offset: int | None = None,
+) -> dict[str, Any]:
+    params: dict[str, Any] = {
+        "select": select,
+        "order": _program_order_clause(sort if sort in PROGRAM_SORT_OPTIONS else "deadline"),
+    }
+
+    if limit is not None:
+        params["limit"] = str(limit)
+    if offset is not None:
+        params["offset"] = str(offset)
+    if category:
+        params["category"] = f"eq.{category}"
+    if scope:
+        params["scope"] = f"eq.{scope}"
+    if region_detail:
+        params["region_detail"] = f"eq.{region_detail}"
+    if q:
+        params["title"] = f"ilike.*{q.strip()}*"
+    if recruiting_only:
+        params["is_active"] = "eq.true"
+
+    normalized_regions = _expand_region_keywords(_normalize_regions_param(regions))
+    if normalized_regions:
+        params["or"] = "(" + ",".join(f"location.ilike.*{keyword}*" for keyword in normalized_regions) + ")"
+
+    return params
+
+
+def _parse_content_range_total(value: str | None) -> int:
+    if not value or "/" not in value:
+        return 0
+
+    total_raw = value.rsplit("/", maxsplit=1)[-1].strip()
+    if not total_raw or total_raw == "*":
+        return 0
+
+    try:
+        return int(total_raw)
+    except ValueError:
+        return 0
 
 
 async def _fetch_program_rows(limit: int = 200) -> list[dict[str, Any]]:
@@ -82,6 +188,48 @@ async def _fetch_program_rows(limit: int = 200) -> list[dict[str, Any]]:
         },
     )
     return rows if isinstance(rows, list) else []
+
+
+async def _count_program_rows(
+    *,
+    category: str | None = None,
+    scope: str | None = None,
+    region_detail: str | None = None,
+    q: str | None = None,
+    regions: list[str] | None = None,
+    recruiting_only: bool = False,
+) -> int:
+    settings = get_supabase_admin_settings()
+    params = _build_program_query_params(
+        select="id",
+        category=category,
+        scope=scope,
+        region_detail=region_detail,
+        q=q,
+        regions=regions,
+        recruiting_only=recruiting_only,
+        limit=1,
+        offset=0,
+    )
+
+    async with httpx.AsyncClient(timeout=settings.timeout_seconds, trust_env=False) as client:
+        response = await client.get(
+            f"{settings.url}/rest/v1/programs",
+            params=params,
+            headers=build_service_headers(settings.service_role_key, prefer="count=exact"),
+        )
+
+    if not response.is_success:
+        detail = response.text
+        try:
+            body = response.json()
+        except ValueError:
+            body = None
+        if isinstance(body, dict):
+            detail = str(body.get("message") or body.get("hint") or body.get("details") or detail)
+        raise HTTPException(status_code=500, detail=f"Supabase request failed: {detail}")
+
+    return _parse_content_range_total(response.headers.get("content-range"))
 
 
 async def _fetch_profile_row(user_id: str) -> dict[str, Any]:
@@ -119,23 +267,47 @@ async def list_programs(
     category: str | None = None,
     scope: str | None = None,
     region_detail: str | None = None,
+    q: str | None = None,
+    regions: list[str] | None = Query(default=None),
+    recruiting_only: bool = False,
+    sort: str = Query(default="deadline"),
     limit: int = Query(default=20, ge=1),
     offset: int = Query(default=0, ge=0),
 ) -> Any:
-    params: dict[str, Any] = {
-        "select": "*",
-        "limit": limit,
-        "offset": offset,
-        "order": "deadline.asc.nullslast",
-    }
-    if category:
-        params["category"] = f"eq.{category}"
-    if scope:
-        params["scope"] = f"eq.{scope}"
-    if region_detail:
-        params["region_detail"] = f"eq.{region_detail}"
+    params = _build_program_query_params(
+        select="*",
+        category=category,
+        scope=scope,
+        region_detail=region_detail,
+        q=q,
+        regions=regions,
+        recruiting_only=recruiting_only,
+        sort=sort,
+        limit=limit,
+        offset=offset,
+    )
 
     return await request_supabase(method="GET", path="/rest/v1/programs", params=params)
+
+
+@programs_router.get("/count", response_model=ProgramCountResponse)
+async def count_programs(
+    category: str | None = None,
+    scope: str | None = None,
+    region_detail: str | None = None,
+    q: str | None = None,
+    regions: list[str] | None = Query(default=None),
+    recruiting_only: bool = False,
+) -> ProgramCountResponse:
+    count = await _count_program_rows(
+        category=category,
+        scope=scope,
+        region_detail=region_detail,
+        q=q,
+        regions=regions,
+        recruiting_only=recruiting_only,
+    )
+    return ProgramCountResponse(count=count)
 
 
 @programs_router.get("/popular")

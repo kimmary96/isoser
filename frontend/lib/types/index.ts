@@ -243,6 +243,24 @@ export interface Program {
   days_left?: number | null;
 }
 
+export type ProgramSort = "deadline" | "latest";
+
+export interface ProgramListParams {
+  q?: string;
+  category?: string;
+  scope?: string;
+  region_detail?: string;
+  regions?: string[];
+  recruiting_only?: boolean;
+  sort?: ProgramSort;
+  limit?: number;
+  offset?: number;
+}
+
+export interface ProgramCountResponse {
+  count: number;
+}
+
 export interface ProgramRecommendItem {
   program_id: string;
   score: number | null;

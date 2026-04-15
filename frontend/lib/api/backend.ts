@@ -14,6 +14,8 @@ import type {
   MatchResult,
   ParsePdfResponse,
   Program,
+  ProgramCountResponse,
+  ProgramListParams,
   ProgramRecommendResponse,
   SkillSuggestResponse,
 } from "@/lib/types";
@@ -224,17 +226,17 @@ export async function convertActivity(
   );
 }
 
-export async function listPrograms(params?: {
-  category?: string;
-  scope?: string;
-  region_detail?: string;
-  limit?: number;
-  offset?: number;
-}): Promise<Program[]> {
+export async function listPrograms(params?: ProgramListParams): Promise<Program[]> {
   const searchParams = new URLSearchParams();
+  if (params?.q) searchParams.set("q", params.q);
   if (params?.category) searchParams.set("category", params.category);
   if (params?.scope) searchParams.set("scope", params.scope);
   if (params?.region_detail) searchParams.set("region_detail", params.region_detail);
+  if (params?.regions?.length) {
+    params.regions.forEach((region) => searchParams.append("regions", region));
+  }
+  if (params?.recruiting_only) searchParams.set("recruiting_only", "true");
+  if (params?.sort) searchParams.set("sort", params.sort);
   if (typeof params?.limit === "number") searchParams.set("limit", String(params.limit));
   if (typeof params?.offset === "number") searchParams.set("offset", String(params.offset));
 
@@ -246,6 +248,28 @@ export async function listPrograms(params?: {
     },
     "Failed to load programs."
   );
+}
+
+export async function getProgramCount(params?: ProgramListParams): Promise<number> {
+  const searchParams = new URLSearchParams();
+  if (params?.q) searchParams.set("q", params.q);
+  if (params?.category) searchParams.set("category", params.category);
+  if (params?.scope) searchParams.set("scope", params.scope);
+  if (params?.region_detail) searchParams.set("region_detail", params.region_detail);
+  if (params?.regions?.length) {
+    params.regions.forEach((region) => searchParams.append("regions", region));
+  }
+  if (params?.recruiting_only) searchParams.set("recruiting_only", "true");
+
+  const query = searchParams.toString();
+  const result = await requestJson<ProgramCountResponse>(
+    `/programs/count${query ? `?${query}` : ""}`,
+    {
+      method: "GET",
+    },
+    "Failed to load the program count."
+  );
+  return result.count;
 }
 
 export async function getProgram(programId: string): Promise<Program> {
