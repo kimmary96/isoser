@@ -158,3 +158,11 @@ planned_against_commit: 78e4bf6f260ed0ada3481d4d921e6ee5f4c643f3
 - 선행 Task: `TASK-2026-04-15-1400-crawling-phase1-hrdclub-sba` 완료 후 진행
 - 실행 전 현재 HEAD가 `78e4bf6f260ed0ada3481d4d921e6ee5f4c643f3`인지 확인한다. 다른 commit이라면 drift 검토 후 `planned_against_commit`을 실제 HEAD로 교체하고 영향받는 섹션을 재검토한다
 - 참조 문서: `cowork/reviews/isoser-crawling-plan-reviewed.md` (섹션 2-3, 4-4, 4-5, 4-6, 5, 6-1, 8-1)
+
+## Auto Recovery Context
+
+- source_task: `tasks/blocked/TASK-2026-04-15-1420-crawling-phase2-api-validation.md`
+- failure_stage: `blocked`
+- failure_report: `reports/TASK-2026-04-15-1420-crawling-phase2-api-validation-blocked.md`
+- recovery_report: `reports/TASK-2026-04-15-1420-crawling-phase2-api-validation-recovery.md`
+- reviewer_action: update the packet or provide approval/feedback before requeueing

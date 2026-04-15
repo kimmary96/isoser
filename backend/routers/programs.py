@@ -23,6 +23,7 @@ router = programs_router
 programs_rag = ProgramsRAG()
 
 PROGRAM_SORT_OPTIONS = {"deadline", "latest"}
+PROGRAM_TEACHING_METHODS = {"온라인", "오프라인", "혼합"}
 REGION_QUERY_ALIASES: dict[str, tuple[str, ...]] = {
     "서울": ("서울",),
     "경기": ("경기",),
@@ -53,6 +54,9 @@ class ProgramListItem(BaseModel):
     deadline: str | None = None
     start_date: str | None = None
     end_date: str | None = None
+    support_type: str | None = None
+    teaching_method: str | None = None
+    is_certified: bool | None = None
     is_active: bool | None = None
     is_ad: bool | None = None
     final_score: float | None = None
@@ -106,6 +110,21 @@ def _normalize_regions_param(regions: list[str] | None) -> list[str]:
     return normalized
 
 
+def _normalize_teaching_methods_param(teaching_methods: list[str] | None) -> list[str]:
+    if not teaching_methods:
+        return []
+
+    normalized: list[str] = []
+    for raw in teaching_methods:
+        if not raw:
+            continue
+        for token in str(raw).split(","):
+            cleaned = token.strip()
+            if cleaned and cleaned in PROGRAM_TEACHING_METHODS and cleaned not in normalized:
+                normalized.append(cleaned)
+    return normalized
+
+
 def _expand_region_keywords(regions: list[str]) -> list[str]:
     keywords: list[str] = []
     seen: set[str] = set()
@@ -131,6 +150,7 @@ def _build_program_query_params(
     region_detail: str | None = None,
     q: str | None = None,
     regions: list[str] | None = None,
+    teaching_methods: list[str] | None = None,
     recruiting_only: bool = False,
     sort: str = "deadline",
     limit: int | None = None,
@@ -155,6 +175,10 @@ def _build_program_query_params(
         params["title"] = f"ilike.*{q.strip()}*"
     if recruiting_only:
         params["is_active"] = "eq.true"
+    normalized_teaching_methods = _normalize_teaching_methods_param(teaching_methods)
+    if normalized_teaching_methods:
+        quoted_values = ",".join(f'"{value}"' for value in normalized_teaching_methods)
+        params["teaching_method"] = f"in.({quoted_values})"
 
     normalized_regions = _expand_region_keywords(_normalize_regions_param(regions))
     if normalized_regions:
@@ -198,6 +222,7 @@ async def _count_program_rows(
     region_detail: str | None = None,
     q: str | None = None,
     regions: list[str] | None = None,
+    teaching_methods: list[str] | None = None,
     recruiting_only: bool = False,
 ) -> int:
     settings = get_supabase_admin_settings()
@@ -208,6 +233,7 @@ async def _count_program_rows(
         region_detail=region_detail,
         q=q,
         regions=regions,
+        teaching_methods=teaching_methods,
         recruiting_only=recruiting_only,
         limit=1,
         offset=0,
@@ -270,6 +296,7 @@ async def list_programs(
     region_detail: str | None = None,
     q: str | None = None,
     regions: list[str] | None = Query(default=None),
+    teaching_methods: list[str] | None = Query(default=None),
     recruiting_only: bool = False,
     sort: str = Query(default="deadline"),
     limit: int = Query(default=20, ge=1),
@@ -282,6 +309,7 @@ async def list_programs(
         region_detail=region_detail,
         q=q,
         regions=regions,
+        teaching_methods=teaching_methods,
         recruiting_only=recruiting_only,
         sort=sort,
         limit=limit,
@@ -298,6 +326,7 @@ async def count_programs(
     region_detail: str | None = None,
     q: str | None = None,
     regions: list[str] | None = Query(default=None),
+    teaching_methods: list[str] | None = Query(default=None),
     recruiting_only: bool = False,
 ) -> ProgramCountResponse:
     count = await _count_program_rows(
@@ -306,6 +335,7 @@ async def count_programs(
         region_detail=region_detail,
         q=q,
         regions=regions,
+        teaching_methods=teaching_methods,
         recruiting_only=recruiting_only,
     )
     return ProgramCountResponse(count=count)

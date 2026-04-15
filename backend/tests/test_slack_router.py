@@ -279,3 +279,71 @@ def test_slack_cowork_interactivity_rejects_review(client, tmp_path, monkeypatch
     assert response.status_code == 200
     assert "거절 처리 완료" in response.text
     assert (dispatch_dir / "TASK-TEST-review-rejected.md").exists()
+
+
+def test_slack_cowork_interactivity_acknowledges_fast_when_response_url_present(
+    client, tmp_path, monkeypatch
+) -> None:
+    packets_dir = tmp_path / "cowork" / "packets"
+    reviews_dir = tmp_path / "cowork" / "reviews"
+    approvals_dir = tmp_path / "cowork" / "approvals"
+    dispatch_dir = tmp_path / "cowork" / "dispatch"
+
+    for directory in [packets_dir, reviews_dir, approvals_dir, dispatch_dir]:
+        directory.mkdir(parents=True, exist_ok=True)
+
+    packet = packets_dir / "TASK-TEST.md"
+    packet.write_text(
+        "---\nid: TASK-TEST\nplanned_at: 2026-04-15T10:00:00+09:00\nplanned_against_commit: abc123\nstatus: draft\ntype: feature\ntitle: test\n---\n",
+        encoding="utf-8",
+    )
+    review = reviews_dir / "TASK-TEST-review.md"
+    review.write_text("# latest review\n", encoding="utf-8")
+    review.touch()
+    packet.touch()
+    review.touch()
+
+    monkeypatch.setattr(slack, "COWORK_PACKETS_DIR", packets_dir)
+    monkeypatch.setattr(slack, "COWORK_REVIEWS_DIR", reviews_dir)
+    monkeypatch.setattr(slack, "COWORK_APPROVALS_DIR", approvals_dir)
+    monkeypatch.setattr(slack, "COWORK_DISPATCH_DIR", dispatch_dir)
+    monkeypatch.setenv("SLACK_SIGNING_SECRET", "test-secret")
+    monkeypatch.setenv("SLACK_APPROVER_USER_IDS", "U123")
+
+    posted: dict[str, str] = {}
+
+    def fake_post_to_response_url(response_url: str, *, message: str, replace_original: bool = False) -> None:
+        posted["response_url"] = response_url
+        posted["message"] = message
+
+    monkeypatch.setattr(slack, "_post_to_slack_response_url", fake_post_to_response_url)
+
+    payload = {
+        "user": {"id": "U123", "username": "tester"},
+        "response_url": "https://example.com/slack-response",
+        "actions": [
+            {
+                "action_id": "cowork_approve_inbox",
+                "value": json.dumps({"task_id": "TASK-TEST", "target": "inbox"}),
+            }
+        ],
+    }
+    body = urlencode({"payload": json.dumps(payload)}).encode("utf-8")
+    timestamp = str(int(time.time()))
+    signature = _build_signature("test-secret", timestamp, body)
+
+    response = client.post(
+        "/slack/interactivity/cowork-review",
+        content=body,
+        headers={
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-Slack-Request-Timestamp": timestamp,
+            "X-Slack-Signature": signature,
+        },
+    )
+
+    assert response.status_code == 200
+    assert "처리 중" in response.text
+    assert posted["response_url"] == "https://example.com/slack-response"
+    assert "승인 처리 완료" in posted["message"]
+    assert (approvals_dir / "TASK-TEST.ok").exists()

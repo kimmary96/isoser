@@ -255,6 +255,9 @@ export interface Program {
   deadline?: string | null;
   start_date?: string | null;
   end_date?: string | null;
+  support_type?: string | null;
+  teaching_method?: string | null;
+  is_certified?: boolean | null;
   is_active?: boolean | null;
   is_ad?: boolean | null;
   final_score?: number | null;
@@ -271,6 +274,7 @@ export interface ProgramListParams {
   scope?: string;
   region_detail?: string;
   regions?: string[];
+  teaching_methods?: string[];
   recruiting_only?: boolean;
   sort?: ProgramSort;
   limit?: number;
