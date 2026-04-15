@@ -35,8 +35,9 @@ def doctor() -> int:
     load_backend_dotenv()
     persist_dir = resolve_chroma_persist_dir()
     required_seed_files = [
-        SEED_DIR / "job_keywords.json",
+        SEED_DIR / "job_keyword_patterns.json",
         SEED_DIR / "star_examples.json",
+        SEED_DIR / "job_posting_snippets.json",
         SEED_DIR / "job_taxonomy.json",
     ]
 
@@ -58,9 +59,15 @@ def doctor() -> int:
         metadata={"hnsw:space": "cosine"},
         embedding_function=embedding_fn,
     )
+    posting_collection = client.get_or_create_collection(
+        name="job_posting_snippets",
+        metadata={"hnsw:space": "cosine"},
+        embedding_function=embedding_fn,
+    )
     print("[doctor] collections:")
     print(f"  - job_keyword_patterns: {job_collection.count()}")
     print(f"  - star_examples: {star_collection.count()}")
+    print(f"  - job_posting_snippets: {posting_collection.count()}")
     return 0
 
 
@@ -149,7 +156,10 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("sources", help="show Work24/NCS source readiness from env")
 
     dump_parser = subparsers.add_parser("dump", help="peek a collection")
-    dump_parser.add_argument("collection", choices=["job_keyword_patterns", "star_examples"])
+    dump_parser.add_argument(
+        "collection",
+        choices=["job_keyword_patterns", "star_examples", "job_posting_snippets"],
+    )
     dump_parser.add_argument("--limit", type=int, default=3)
 
     request_parser = subparsers.add_parser(

@@ -1,0 +1,6466 @@
+{
+  "total": "923",
+  "majorList": [
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "언어학과",
+      "knowSchDptNm": "언어학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "국제어문학부",
+      "knowSchDptNm": "언어학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "스토리텔링융복합전공",
+      "knowSchDptNm": "언어학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "언어인지과학과",
+      "knowSchDptNm": "언어학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "한국어교육학과",
+      "knowSchDptNm": "언어학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "국어국문학과",
+      "knowSchDptNm": "국어·국문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "한국어문학과",
+      "knowSchDptNm": "국어·국문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "한국어학과",
+      "knowSchDptNm": "국어·국문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "한문학과",
+      "knowSchDptNm": "국어·국문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "미디어콘텐츠전공",
+      "knowSchDptNm": "국어·국문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "스토리텔링학과",
+      "knowSchDptNm": "국어·국문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "통상언어전공",
+      "knowSchDptNm": "국어·국문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "한국어교원학과",
+      "knowSchDptNm": "국어·국문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "한국어통번역전공",
+      "knowSchDptNm": "국어·국문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "문예창작학과",
+      "knowSchDptNm": "문예창작과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "문예창작과",
+      "knowSchDptNm": "문예창작과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "미디어문예창작학과",
+      "knowSchDptNm": "문예창작과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "일어일문학과",
+      "knowSchDptNm": "일본어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "일본학과",
+      "knowSchDptNm": "일본어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "일본어과",
+      "knowSchDptNm": "일본어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "관광일어과",
+      "knowSchDptNm": "일본어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "일본비즈니스학과",
+      "knowSchDptNm": "일본어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "중어중문학과",
+      "knowSchDptNm": "중국어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "중국학과",
+      "knowSchDptNm": "중국어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "중국어학과",
+      "knowSchDptNm": "중국어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "중국언어문화전공",
+      "knowSchDptNm": "중국어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "관광중국어과",
+      "knowSchDptNm": "중국어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "중국비즈니스전공",
+      "knowSchDptNm": "중국어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "중국어서비스전공",
+      "knowSchDptNm": "중국어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "한중통번역전공",
+      "knowSchDptNm": "중국어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "영어영문학과",
+      "knowSchDptNm": "영미어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "영어학과",
+      "knowSchDptNm": "영미어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "영어과",
+      "knowSchDptNm": "영미어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "관광영어과",
+      "knowSchDptNm": "영미어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "실용영어학과",
+      "knowSchDptNm": "영미어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "영어통번역전공",
+      "knowSchDptNm": "영미어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "독어독문학과",
+      "knowSchDptNm": "독일어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "독일언어문화학과",
+      "knowSchDptNm": "독일어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "독일어과",
+      "knowSchDptNm": "독일어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "독일어통번역과",
+      "knowSchDptNm": "독일어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "노어노문학과",
+      "knowSchDptNm": "러시아어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "러시아어과",
+      "knowSchDptNm": "러시아어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "러시아어문학과",
+      "knowSchDptNm": "러시아어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "러시아언어문화전공",
+      "knowSchDptNm": "러시아어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "러시아학과",
+      "knowSchDptNm": "러시아어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "스페인어과",
+      "knowSchDptNm": "스페인어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "스페인∙중남미학과",
+      "knowSchDptNm": "스페인어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "서어서문학과",
+      "knowSchDptNm": "스페인어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "불어불문학과",
+      "knowSchDptNm": "프랑스어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "프랑스어과",
+      "knowSchDptNm": "프랑스어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "프랑스어문학과",
+      "knowSchDptNm": "프랑스어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "프랑스언어문화학과",
+      "knowSchDptNm": "프랑스어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "프랑스학과",
+      "knowSchDptNm": "프랑스어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "태국어과",
+      "knowSchDptNm": "기타 아시아어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "터어키어과",
+      "knowSchDptNm": "기타 아시아어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "몽골어과",
+      "knowSchDptNm": "기타 아시아어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "인도어(학)과",
+      "knowSchDptNm": "기타 아시아어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "동양어문학과",
+      "knowSchDptNm": "기타 아시아어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "베트남어과",
+      "knowSchDptNm": "기타 아시아어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "아랍어과",
+      "knowSchDptNm": "기타 아시아어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "말레이·인도네시어과",
+      "knowSchDptNm": "기타 아시아어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "미얀마어과",
+      "knowSchDptNm": "기타 아시아어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "이란어과",
+      "knowSchDptNm": "기타 아시아어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "네덜란드어과",
+      "knowSchDptNm": "기타 유럽어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "우크라이나어과",
+      "knowSchDptNm": "기타 유럽어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "터키∙아제르바이잔어과",
+      "knowSchDptNm": "기타 유럽어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "아프리카어(학)과",
+      "knowSchDptNm": "기타 유럽어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "체코슬로바키아어과",
+      "knowSchDptNm": "기타 유럽어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "루마니아어과",
+      "knowSchDptNm": "기타 유럽어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "스칸디나비아어과",
+      "knowSchDptNm": "기타 유럽어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "그리스∙불가리아학과",
+      "knowSchDptNm": "기타 유럽어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "이탈리아어과",
+      "knowSchDptNm": "기타 유럽어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "포르투갈어과",
+      "knowSchDptNm": "기타 유럽어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "폴란드어과",
+      "knowSchDptNm": "기타 유럽어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "헝가리어과",
+      "knowSchDptNm": "기타 유럽어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "세르비아∙크로아티아어과",
+      "knowSchDptNm": "기타 유럽어·문학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "문헌정보학과",
+      "knowSchDptNm": "문헌정보학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "아동문헌정보학과",
+      "knowSchDptNm": "문헌정보학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "심리학과",
+      "knowSchDptNm": "심리학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "상담심리학과",
+      "knowSchDptNm": "심리학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "심리치료학과",
+      "knowSchDptNm": "심리학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "뇌인지과학전공",
+      "knowSchDptNm": "심리학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "문화인류학과",
+      "knowSchDptNm": "문화·민속·미술사학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "조형문화과",
+      "knowSchDptNm": "문화·민속·미술사학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "한국문화전공",
+      "knowSchDptNm": "문화·민속·미술사학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "미술사학과",
+      "knowSchDptNm": "문화·민속·미술사학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "문화재보존학과",
+      "knowSchDptNm": "문화·민속·미술사학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "고고미술사학과",
+      "knowSchDptNm": "문화·민속·미술사학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "문화콘텐츠학과",
+      "knowSchDptNm": "문화·민속·미술사학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "문화(학)과",
+      "knowSchDptNm": "문화·민속·미술사학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "문화유적학과",
+      "knowSchDptNm": "문화·민속·미술사학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "민속학과",
+      "knowSchDptNm": "문화·민속·미술사학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "인류학과",
+      "knowSchDptNm": "문화·민속·미술사학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "사학과",
+      "knowSchDptNm": "역사·고고학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "국사학과",
+      "knowSchDptNm": "역사·고고학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "역사문화학과",
+      "knowSchDptNm": "역사·고고학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "역사학과",
+      "knowSchDptNm": "역사·고고학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "한국사학과",
+      "knowSchDptNm": "역사·고고학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "사학전공",
+      "knowSchDptNm": "역사·고고학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "고고학과",
+      "knowSchDptNm": "역사·고고학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "신학과",
+      "knowSchDptNm": "종교학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "기독교학과",
+      "knowSchDptNm": "종교학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "불교학과",
+      "knowSchDptNm": "종교학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "종교문화학과",
+      "knowSchDptNm": "종교학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "종교학과",
+      "knowSchDptNm": "종교학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "원불교학과",
+      "knowSchDptNm": "종교학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "중국학과",
+      "knowSchDptNm": "국제지역학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "독일학과",
+      "knowSchDptNm": "국제지역학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "북한학과",
+      "knowSchDptNm": "국제지역학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "아랍지역학과",
+      "knowSchDptNm": "국제지역학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "아세안지역전공",
+      "knowSchDptNm": "국제지역학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "영미지역학",
+      "knowSchDptNm": "국제지역학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "유라시아학과",
+      "knowSchDptNm": "국제지역학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "유럽학과",
+      "knowSchDptNm": "국제지역학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "중동학과",
+      "knowSchDptNm": "국제지역학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "프랑스학과",
+      "knowSchDptNm": "국제지역학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "일본학과",
+      "knowSchDptNm": "국제지역학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "러시아학과",
+      "knowSchDptNm": "국제지역학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "미국학과",
+      "knowSchDptNm": "국제지역학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "국제지역학과",
+      "knowSchDptNm": "국제지역학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "글로벌학부",
+      "knowSchDptNm": "국제지역학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "동아시아학과",
+      "knowSchDptNm": "국제지역학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "아시아학부",
+      "knowSchDptNm": "국제지역학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "국제학",
+      "knowSchDptNm": "국제지역학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "철학과",
+      "knowSchDptNm": "철학·윤리학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "19"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "철학전공",
+      "knowSchDptNm": "철학·윤리학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "19"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "역사철학부",
+      "knowSchDptNm": "철학·윤리학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "19"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "윤리문화학전공",
+      "knowSchDptNm": "철학·윤리학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "19"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "철학윤리학과",
+      "knowSchDptNm": "철학·윤리학과",
+      "empCurtState1Id": "1",
+      "empCurtState2Id": "19"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "경영학과",
+      "knowSchDptNm": "경영학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "빅데이터경영학과",
+      "knowSchDptNm": "경영학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "서비스경영과",
+      "knowSchDptNm": "경영학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "경영정보학과",
+      "knowSchDptNm": "경영학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "경영과",
+      "knowSchDptNm": "경영학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "글로벌경영학과",
+      "knowSchDptNm": "경영학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "국제경영학과",
+      "knowSchDptNm": "경영학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "융합경영학과",
+      "knowSchDptNm": "경영학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "글로벌비즈니스학과",
+      "knowSchDptNm": "경영학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "국제산업정보학과",
+      "knowSchDptNm": "경영학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "디지털경영전공",
+      "knowSchDptNm": "경영학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "경제학과",
+      "knowSchDptNm": "경제학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "농업경제학과",
+      "knowSchDptNm": "경제학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "글로벌경제학과",
+      "knowSchDptNm": "경제학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "경제통상학부",
+      "knowSchDptNm": "경제학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "경제금융학과",
+      "knowSchDptNm": "경제학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "산업경제학과",
+      "knowSchDptNm": "경제학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "자원경제학과",
+      "knowSchDptNm": "경제학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "행정경제학과",
+      "knowSchDptNm": "경제학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "관광경영학과",
+      "knowSchDptNm": "호텔·관광경영학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "호텔관광과",
+      "knowSchDptNm": "호텔·관광경영학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "호텔경영학과",
+      "knowSchDptNm": "호텔·관광경영학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "관광학부",
+      "knowSchDptNm": "호텔·관광경영학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "항공관광과",
+      "knowSchDptNm": "호텔·관광경영학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "외식산업과",
+      "knowSchDptNm": "호텔·관광경영학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "의료관광과",
+      "knowSchDptNm": "호텔·관광경영학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "의료관광서비스전공",
+      "knowSchDptNm": "호텔·관광경영학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "항공서비스학과",
+      "knowSchDptNm": "항공서비스과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "항공운항학과",
+      "knowSchDptNm": "항공서비스과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "항공서비스경영학과",
+      "knowSchDptNm": "항공서비스과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "항공경영과",
+      "knowSchDptNm": "항공서비스과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "항공비서과",
+      "knowSchDptNm": "항공서비스과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "항공운항서비스과",
+      "knowSchDptNm": "항공서비스과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "광고홍보학과",
+      "knowSchDptNm": "광고·홍보학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "광고홍보학전공",
+      "knowSchDptNm": "광고·홍보학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "언론광고학부",
+      "knowSchDptNm": "광고·홍보학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "언론홍보학과",
+      "knowSchDptNm": "광고·홍보학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "금융보험학과",
+      "knowSchDptNm": "금융·보험학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "자산관리(운용)학과",
+      "knowSchDptNm": "금융·보험학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "금융자산관리학과",
+      "knowSchDptNm": "금융·보험학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "국제금융학과",
+      "knowSchDptNm": "금융·보험학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "금융경영학과",
+      "knowSchDptNm": "금융·보험학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "금융재무학과",
+      "knowSchDptNm": "금융·보험학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "세무회계학과",
+      "knowSchDptNm": "세무·회계학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "회계학과",
+      "knowSchDptNm": "세무·회계학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "세무회계정보과",
+      "knowSchDptNm": "세무·회계학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "경영회계학과",
+      "knowSchDptNm": "세무·회계학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "세무학과",
+      "knowSchDptNm": "세무·회계학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "무역학과",
+      "knowSchDptNm": "무역·유통학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "국제통상학과",
+      "knowSchDptNm": "무역·유통학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "유통물류학과",
+      "knowSchDptNm": "무역·유통학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "국제무역학과",
+      "knowSchDptNm": "무역·유통학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "국제물류학과",
+      "knowSchDptNm": "무역·유통학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "항공항만무역과",
+      "knowSchDptNm": "무역·유통학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "법학과",
+      "knowSchDptNm": "법학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "경찰법학전공",
+      "knowSchDptNm": "법학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "공법학전공",
+      "knowSchDptNm": "법학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "법률실무과",
+      "knowSchDptNm": "법학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "사법학전공",
+      "knowSchDptNm": "법학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "지식재산학과",
+      "knowSchDptNm": "법학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "공공인재법학과",
+      "knowSchDptNm": "법학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "국제법무학과",
+      "knowSchDptNm": "법학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "법률행정학과",
+      "knowSchDptNm": "법학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "사회복지학과",
+      "knowSchDptNm": "사회복지학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "장애상담학과",
+      "knowSchDptNm": "사회복지학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "재활상담학과",
+      "knowSchDptNm": "사회복지학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "평생교육(복지)전공",
+      "knowSchDptNm": "사회복지학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "사회복지상담학과",
+      "knowSchDptNm": "사회복지학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "사회복지행정학과",
+      "knowSchDptNm": "사회복지학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "보건복지과",
+      "knowSchDptNm": "사회복지학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "복지경영학과",
+      "knowSchDptNm": "사회복지학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "가족복지과",
+      "knowSchDptNm": "사회복지학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "실용사회복지학과",
+      "knowSchDptNm": "사회복지학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "의료복지학과",
+      "knowSchDptNm": "사회복지학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "임상사회복지전공",
+      "knowSchDptNm": "사회복지학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "아동학과",
+      "knowSchDptNm": "아동·청소년복지학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "특수아동과",
+      "knowSchDptNm": "아동·청소년복지학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "아동복지학과",
+      "knowSchDptNm": "아동·청소년복지학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "아동가족학과",
+      "knowSchDptNm": "아동·청소년복지학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "영유아보육학과",
+      "knowSchDptNm": "아동·청소년복지학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "보육과",
+      "knowSchDptNm": "아동·청소년복지학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "아동교육학과",
+      "knowSchDptNm": "아동·청소년복지학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "아동심리학과",
+      "knowSchDptNm": "아동·청소년복지학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "아동청소년복지과",
+      "knowSchDptNm": "아동·청소년복지학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "청소년학과",
+      "knowSchDptNm": "아동·청소년복지학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "노인복지학과",
+      "knowSchDptNm": "노인복지학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "고령친화융복합학과",
+      "knowSchDptNm": "노인복지학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "실버케어복지학과",
+      "knowSchDptNm": "노인복지학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "고령친화서비스전공",
+      "knowSchDptNm": "노인복지학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "노인재활복지학과",
+      "knowSchDptNm": "노인복지학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "실버산업연계전공",
+      "knowSchDptNm": "노인복지학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "실버컨설팅학과",
+      "knowSchDptNm": "노인복지학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "국제학부",
+      "knowSchDptNm": "국제학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "국제관계학과",
+      "knowSchDptNm": "국제학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "국제개발협력전공",
+      "knowSchDptNm": "국제학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "아시아국제관계학과",
+      "knowSchDptNm": "국제학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "부동산학과",
+      "knowSchDptNm": "도시·지역학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "도시계획부동산학과",
+      "knowSchDptNm": "도시·지역학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "도시계획학과",
+      "knowSchDptNm": "도시·지역학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "부동산지적학과",
+      "knowSchDptNm": "도시·지역학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "지적학과",
+      "knowSchDptNm": "도시·지역학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "도시지적행정학과",
+      "knowSchDptNm": "도시·지역학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "지역개발학전공",
+      "knowSchDptNm": "도시·지역학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "지역정보전공",
+      "knowSchDptNm": "도시·지역학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "지리학과",
+      "knowSchDptNm": "도시·지역학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "사회학과",
+      "knowSchDptNm": "사회학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "정보사회학과",
+      "knowSchDptNm": "사회학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "도시사회학과",
+      "knowSchDptNm": "사회학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "신문방송학과",
+      "knowSchDptNm": "신문방송학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "언론정보학과",
+      "knowSchDptNm": "신문방송학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "저널리즘전공",
+      "knowSchDptNm": "신문방송학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "커뮤니케이션학과",
+      "knowSchDptNm": "신문방송학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "언론영상학과",
+      "knowSchDptNm": "신문방송학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "방송정보학과",
+      "knowSchDptNm": "신문방송학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "언론심리학부",
+      "knowSchDptNm": "신문방송학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "언론학과",
+      "knowSchDptNm": "신문방송학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "정보문화학과",
+      "knowSchDptNm": "신문방송학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "미디어커뮤니케이션학과",
+      "knowSchDptNm": "정보미디어학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "방송제작과",
+      "knowSchDptNm": "정보미디어학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "정보미디어학과",
+      "knowSchDptNm": "정보미디어학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "디지털미디어학과",
+      "knowSchDptNm": "정보미디어학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "방송영상과",
+      "knowSchDptNm": "정보미디어학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "미디어콘텐츠학과",
+      "knowSchDptNm": "정보미디어학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "방송영상미디어학과",
+      "knowSchDptNm": "정보미디어학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "미디어영상학과",
+      "knowSchDptNm": "정보미디어학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "광고영상미디어학과",
+      "knowSchDptNm": "정보미디어학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "미디어문학과",
+      "knowSchDptNm": "정보미디어학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "방송미디어학과",
+      "knowSchDptNm": "정보미디어학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "정치외교학과",
+      "knowSchDptNm": "정치외교학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "통일학부",
+      "knowSchDptNm": "정치외교학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "안보학과",
+      "knowSchDptNm": "정치외교학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "외교학과",
+      "knowSchDptNm": "정치외교학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "정치학과",
+      "knowSchDptNm": "정치외교학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "정치행정학과",
+      "knowSchDptNm": "정치외교학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "행정학과",
+      "knowSchDptNm": "행정학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "19"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "행정정보과",
+      "knowSchDptNm": "행정학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "19"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "행정정책학과",
+      "knowSchDptNm": "행정학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "19"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "공공인재학부",
+      "knowSchDptNm": "행정학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "19"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "공공행정학과",
+      "knowSchDptNm": "행정학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "19"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "자치행정학과",
+      "knowSchDptNm": "행정학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "19"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "도시행정학과",
+      "knowSchDptNm": "행정학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "19"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "행정부동산학부",
+      "knowSchDptNm": "행정학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "19"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "공공정책전공",
+      "knowSchDptNm": "행정학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "19"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "소방행정과",
+      "knowSchDptNm": "행정학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "19"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "토지행정학과",
+      "knowSchDptNm": "행정학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "19"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "경찰(경호)행정학과",
+      "knowSchDptNm": "경찰행정학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "20"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "경찰학과",
+      "knowSchDptNm": "경찰행정학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "20"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "경찰경호과",
+      "knowSchDptNm": "경찰행정학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "20"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "해양경찰학과",
+      "knowSchDptNm": "경찰행정학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "20"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "사이버경찰과",
+      "knowSchDptNm": "경찰행정학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "20"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "범죄수사학과",
+      "knowSchDptNm": "경찰행정학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "20"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "보건행정학과",
+      "knowSchDptNm": "보건행정학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "21"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "의료경영과",
+      "knowSchDptNm": "보건행정학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "21"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "의무행정과",
+      "knowSchDptNm": "보건행정학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "21"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "의료정보시스템전공",
+      "knowSchDptNm": "보건행정학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "21"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "보건의료정보과",
+      "knowSchDptNm": "보건행정학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "21"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "의료정보관리과",
+      "knowSchDptNm": "보건행정학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "21"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "의료정보행정학과",
+      "knowSchDptNm": "보건행정학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "21"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "의료코디네이터과",
+      "knowSchDptNm": "보건행정학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "21"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "비서행정과",
+      "knowSchDptNm": "비서학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "22"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "비서경영과",
+      "knowSchDptNm": "비서학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "22"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "국제비서과",
+      "knowSchDptNm": "비서학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "22"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "비서과",
+      "knowSchDptNm": "비서학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "22"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "비서사무행정학과",
+      "knowSchDptNm": "비서학과",
+      "empCurtState1Id": "2",
+      "empCurtState2Id": "22"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "교육학과",
+      "knowSchDptNm": "교육학과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "교육공학과",
+      "knowSchDptNm": "교육학과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "교육심리학과",
+      "knowSchDptNm": "교육학과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "평생교육학과",
+      "knowSchDptNm": "교육학과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "유아교육학과",
+      "knowSchDptNm": "유아교육학과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "보육학과",
+      "knowSchDptNm": "유아교육학과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "아동보육과",
+      "knowSchDptNm": "유아교육학과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "영유아보육과",
+      "knowSchDptNm": "유아교육학과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "유아보육과",
+      "knowSchDptNm": "유아교육학과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "아동미술보육과",
+      "knowSchDptNm": "유아교육학과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "특수교육과",
+      "knowSchDptNm": "특수교육학과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "초등특수교육과",
+      "knowSchDptNm": "특수교육학과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "중등특수교육과",
+      "knowSchDptNm": "특수교육학과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "유아특수교육과",
+      "knowSchDptNm": "특수교육학과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "특수체육교육과",
+      "knowSchDptNm": "특수교육학과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "초등교육과",
+      "knowSchDptNm": "초등교육학과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "윤리교육과",
+      "knowSchDptNm": "인문교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "기독교교육과",
+      "knowSchDptNm": "인문교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "문헌정보교육과",
+      "knowSchDptNm": "인문교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "국어교육과",
+      "knowSchDptNm": "언어교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "영어교육과",
+      "knowSchDptNm": "언어교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "일어교육과",
+      "knowSchDptNm": "언어교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "독어교육과",
+      "knowSchDptNm": "언어교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "불어교육과",
+      "knowSchDptNm": "언어교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "한문교육과",
+      "knowSchDptNm": "언어교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "한국어교육과",
+      "knowSchDptNm": "언어교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "중국어교육과",
+      "knowSchDptNm": "언어교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "사회교육과",
+      "knowSchDptNm": "사회교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "일반사회교육과",
+      "knowSchDptNm": "사회교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "역사교육과",
+      "knowSchDptNm": "사회교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "지리교육과",
+      "knowSchDptNm": "사회교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "상업정보교육과",
+      "knowSchDptNm": "사회교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "컴퓨터교육과",
+      "knowSchDptNm": "공학교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "건설공학교육과",
+      "knowSchDptNm": "공학교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "기계교육과",
+      "knowSchDptNm": "공학교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "전기・전자・통신공학교육과",
+      "knowSchDptNm": "공학교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "전자공학교육과",
+      "knowSchDptNm": "공학교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "화학공학교육과",
+      "knowSchDptNm": "공학교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "기계・금속공학교육전공",
+      "knowSchDptNm": "공학교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "기계・재료공학교육과",
+      "knowSchDptNm": "공학교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "정보전자공학교육과",
+      "knowSchDptNm": "공학교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "수학교육과",
+      "knowSchDptNm": "자연계교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "농업교육과",
+      "knowSchDptNm": "자연계교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "수해양산업교육과",
+      "knowSchDptNm": "자연계교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "공업교육학부",
+      "knowSchDptNm": "자연계교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "기술교육과",
+      "knowSchDptNm": "자연계교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "정보과학교육과",
+      "knowSchDptNm": "자연계교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "가정교육과",
+      "knowSchDptNm": "자연계교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "과학교육과",
+      "knowSchDptNm": "자연계교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "물리교육과",
+      "knowSchDptNm": "자연계교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "생물교육과",
+      "knowSchDptNm": "자연계교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "지구과학교육과",
+      "knowSchDptNm": "자연계교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "화학교육과",
+      "knowSchDptNm": "자연계교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "환경교육과",
+      "knowSchDptNm": "자연계교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "기술・가정교육과",
+      "knowSchDptNm": "자연계교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "미술교육과",
+      "knowSchDptNm": "예체능교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "음악교육과",
+      "knowSchDptNm": "예체능교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "체육교육과",
+      "knowSchDptNm": "예체능교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "보건교육과",
+      "knowSchDptNm": "예체능교육과",
+      "empCurtState1Id": "3",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "식물생명과학과",
+      "knowSchDptNm": "농업학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "스마트팜도시농업과",
+      "knowSchDptNm": "농업학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "친환경바이오융합학과",
+      "knowSchDptNm": "농업학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "축산학과",
+      "knowSchDptNm": "농업학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "바이오시스템공학과",
+      "knowSchDptNm": "농업학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "가금학과",
+      "knowSchDptNm": "농업학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "곤충산업과",
+      "knowSchDptNm": "농업학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "낙농학과",
+      "knowSchDptNm": "농업학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "농생명학과",
+      "knowSchDptNm": "농업학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "농학과",
+      "knowSchDptNm": "농업학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "사료생산공학과",
+      "knowSchDptNm": "농업학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "산림과학과",
+      "knowSchDptNm": "산림·원예학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "원예학과",
+      "knowSchDptNm": "산림·원예학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "임학과",
+      "knowSchDptNm": "산림·원예학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "화훼학과",
+      "knowSchDptNm": "산림·원예학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "목재응용과학과",
+      "knowSchDptNm": "산림·원예학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "임산공학과",
+      "knowSchDptNm": "산림·원예학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "환경원예학과",
+      "knowSchDptNm": "산림·원예학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "원예디자인과",
+      "knowSchDptNm": "산림·원예학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "화훼원예과",
+      "knowSchDptNm": "산림·원예학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "생명산업학전공",
+      "knowSchDptNm": "산림·원예학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "시설농업학전공",
+      "knowSchDptNm": "산림·원예학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "원예조경과",
+      "knowSchDptNm": "산림·원예학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "수산양식학과",
+      "knowSchDptNm": "수산학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "해양바이오산업학과",
+      "knowSchDptNm": "수산학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "해양생명의학전공",
+      "knowSchDptNm": "수산학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "해양생산학전공",
+      "knowSchDptNm": "수산학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "생명과학과",
+      "knowSchDptNm": "생명과학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "바이오공학전공",
+      "knowSchDptNm": "생명과학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "바이오의약전공",
+      "knowSchDptNm": "생명과학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "생명화학공학과",
+      "knowSchDptNm": "생명과학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "제약공학전공",
+      "knowSchDptNm": "생명과학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "생명공학과",
+      "knowSchDptNm": "생명과학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "의생명과학과",
+      "knowSchDptNm": "생명과학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "의생명공학과",
+      "knowSchDptNm": "생명과학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "분자생명공학(과학)과",
+      "knowSchDptNm": "생명과학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "유전공학과",
+      "knowSchDptNm": "생명과학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "생명시스템학과",
+      "knowSchDptNm": "생명과학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "바이오산업공학과",
+      "knowSchDptNm": "생명과학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "나노바이오학과",
+      "knowSchDptNm": "생명과학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "수의학과",
+      "knowSchDptNm": "수의학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "수의예과",
+      "knowSchDptNm": "수의학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "애완동물학과",
+      "knowSchDptNm": "(애완)동물학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "애완동물관리과",
+      "knowSchDptNm": "(애완)동물학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "특수동물학과",
+      "knowSchDptNm": "(애완)동물학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "마사과",
+      "knowSchDptNm": "(애완)동물학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "동물조련과",
+      "knowSchDptNm": "(애완)동물학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "말산업학과",
+      "knowSchDptNm": "(애완)동물학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "반려동물산업학과",
+      "knowSchDptNm": "(애완)동물학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "화학과",
+      "knowSchDptNm": "화학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "응용화학과",
+      "knowSchDptNm": "화학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "정밀화학과",
+      "knowSchDptNm": "화학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "화장품과학과",
+      "knowSchDptNm": "화학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "생명화학과",
+      "knowSchDptNm": "화학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "의화학전공",
+      "knowSchDptNm": "화학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "가정관리학과",
+      "knowSchDptNm": "가정관리학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "아동가족학과",
+      "knowSchDptNm": "가정관리학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "소비자아동학과",
+      "knowSchDptNm": "가정관리학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "주거환경학과",
+      "knowSchDptNm": "가정관리학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "소비자학과",
+      "knowSchDptNm": "가정관리학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "생활복지주거학과",
+      "knowSchDptNm": "가정관리학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "소비자가족학과",
+      "knowSchDptNm": "가정관리학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "소비자정보학과",
+      "knowSchDptNm": "가정관리학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "소비자주거학과",
+      "knowSchDptNm": "가정관리학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "식품영양학과",
+      "knowSchDptNm": "식품영양학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "한방식품과학부",
+      "knowSchDptNm": "식품영양학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "식품공학(과학)과",
+      "knowSchDptNm": "식품영양학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "식품생명공학과",
+      "knowSchDptNm": "식품영양학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "식품생명과학과",
+      "knowSchDptNm": "식품영양학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "바이오식품과학(공학)과",
+      "knowSchDptNm": "식품영양학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "식품(영양)조리학과",
+      "knowSchDptNm": "식품영양학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "식품개발학과",
+      "knowSchDptNm": "식품영양학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "식품생명학부",
+      "knowSchDptNm": "식품영양학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "식품생물공학과",
+      "knowSchDptNm": "식품영양학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "호텔외식조리과",
+      "knowSchDptNm": "식품조리학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "한식조리과",
+      "knowSchDptNm": "식품조리학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "호텔조리과",
+      "knowSchDptNm": "식품조리학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "호텔조리제과제빵과",
+      "knowSchDptNm": "식품조리학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "식품조리학과",
+      "knowSchDptNm": "식품조리학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "제과제빵과",
+      "knowSchDptNm": "식품조리학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "외식조리과",
+      "knowSchDptNm": "식품조리학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "커피바리스타과",
+      "knowSchDptNm": "식품조리학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "푸드스타일링전공",
+      "knowSchDptNm": "식품조리학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "외식조리산업과",
+      "knowSchDptNm": "식품조리학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "의류학과",
+      "knowSchDptNm": "의류·의상학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "의류산업학과",
+      "knowSchDptNm": "의류·의상학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "의류패션학과",
+      "knowSchDptNm": "의류·의상학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "패션산업학과",
+      "knowSchDptNm": "의류·의상학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "의상학과",
+      "knowSchDptNm": "의류·의상학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "패션마케팅과",
+      "knowSchDptNm": "의류·의상학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "수학과",
+      "knowSchDptNm": "수학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "응용수학과",
+      "knowSchDptNm": "수학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "수리학과",
+      "knowSchDptNm": "수학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "금융수학과",
+      "knowSchDptNm": "수학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "정보수학과",
+      "knowSchDptNm": "수학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "통계학과",
+      "knowSchDptNm": "통계학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "의료통계전공",
+      "knowSchDptNm": "통계학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "수학통계학과",
+      "knowSchDptNm": "통계학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "응용통계학과",
+      "knowSchDptNm": "통계학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "정보통계학과",
+      "knowSchDptNm": "통계학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "데이터과학과",
+      "knowSchDptNm": "통계학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "전산통계학과",
+      "knowSchDptNm": "통계학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "데이터사이언스학과",
+      "knowSchDptNm": "통계학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "빅데이터공학과",
+      "knowSchDptNm": "통계학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "금융통계학과",
+      "knowSchDptNm": "통계학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "수학통계학부",
+      "knowSchDptNm": "통계학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "물리학과",
+      "knowSchDptNm": "물리·과학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "응용물리학과",
+      "knowSchDptNm": "물리·과학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "전자물리학과",
+      "knowSchDptNm": "물리·과학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "나노물리학과",
+      "knowSchDptNm": "물리·과학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "나노과학(공학)전공",
+      "knowSchDptNm": "물리·과학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "물리천문학과",
+      "knowSchDptNm": "물리·과학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "반도체물리학과",
+      "knowSchDptNm": "물리·과학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "지구물리학과",
+      "knowSchDptNm": "물리·과학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "대기환경과학전공",
+      "knowSchDptNm": "천문·기상학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "천문우주학과",
+      "knowSchDptNm": "천문·기상학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "천문대기과학전공",
+      "knowSchDptNm": "천문·기상학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "지질학과",
+      "knowSchDptNm": "지구과학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "지적학과",
+      "knowSchDptNm": "지구과학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "지질환경과학과",
+      "knowSchDptNm": "지구과학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "지구시스템공학과",
+      "knowSchDptNm": "지구과학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "GIS과",
+      "knowSchDptNm": "지구과학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "공간(지구)정보전공",
+      "knowSchDptNm": "지구과학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "지구물리학전공",
+      "knowSchDptNm": "지구과학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "생물학과",
+      "knowSchDptNm": "생물학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "해양생물학과",
+      "knowSchDptNm": "생물학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "바이오동물전공",
+      "knowSchDptNm": "생물학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "바이오의약학과",
+      "knowSchDptNm": "생물학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "생물환경학과",
+      "knowSchDptNm": "생물학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "생화학과",
+      "knowSchDptNm": "생물학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "미생물학과",
+      "knowSchDptNm": "생물학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "분자생물학과",
+      "knowSchDptNm": "생물학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "생물과학과",
+      "knowSchDptNm": "생물학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "응용(미)생물학과",
+      "knowSchDptNm": "생물학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "응용생물화학과",
+      "knowSchDptNm": "생물학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "해양생명학과",
+      "knowSchDptNm": "생물학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "식량자원학과",
+      "knowSchDptNm": "자원학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "생명자원공학부",
+      "knowSchDptNm": "자원학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "임산자원전공",
+      "knowSchDptNm": "자원학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "동물자원과학과",
+      "knowSchDptNm": "자원학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "산림자원학과",
+      "knowSchDptNm": "자원학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "식물자원학과",
+      "knowSchDptNm": "자원학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "생물자원과학과",
+      "knowSchDptNm": "자원학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "자원공학과",
+      "knowSchDptNm": "자원학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "해양자원학과",
+      "knowSchDptNm": "자원학과",
+      "empCurtState1Id": "4",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "건축학과",
+      "knowSchDptNm": "건축학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "건축과",
+      "knowSchDptNm": "건축학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "실내건축학과",
+      "knowSchDptNm": "건축학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "친환경건축학과",
+      "knowSchDptNm": "건축학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "건축디자인전공",
+      "knowSchDptNm": "건축학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "건축리모델링과",
+      "knowSchDptNm": "건축학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "건축설계전공",
+      "knowSchDptNm": "건축학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "도시건축학과",
+      "knowSchDptNm": "건축학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "전통건축학과",
+      "knowSchDptNm": "건축학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "건축공학과",
+      "knowSchDptNm": "건축·설비공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "건축기계설비과",
+      "knowSchDptNm": "건축·설비공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "건축시스템공학과",
+      "knowSchDptNm": "건축·설비공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "건설환경계열",
+      "knowSchDptNm": "건축·설비공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "건축설비과",
+      "knowSchDptNm": "건축·설비공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "건축설비소방과",
+      "knowSchDptNm": "건축·설비공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "조경학과",
+      "knowSchDptNm": "조경학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "녹지조경학과",
+      "knowSchDptNm": "조경학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "환경조경과",
+      "knowSchDptNm": "조경학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "도시조경과",
+      "knowSchDptNm": "조경학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "산림조경학과",
+      "knowSchDptNm": "조경학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "토목공학과",
+      "knowSchDptNm": "토목공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "건설시스템공학과",
+      "knowSchDptNm": "토목공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "건설환경공학과",
+      "knowSchDptNm": "토목공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "철도건설과",
+      "knowSchDptNm": "토목공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "토목과",
+      "knowSchDptNm": "토목공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "건설환경공학전공",
+      "knowSchDptNm": "토목공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "토목조경과",
+      "knowSchDptNm": "토목공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "토목환경과",
+      "knowSchDptNm": "토목공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "도시공학과",
+      "knowSchDptNm": "도시공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "도시건설과",
+      "knowSchDptNm": "도시공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "도시정보공학전공",
+      "knowSchDptNm": "도시공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "도시계획공학과",
+      "knowSchDptNm": "도시공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "교통공학과",
+      "knowSchDptNm": "지상교통공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "철도운전시스템과",
+      "knowSchDptNm": "지상교통공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "교통시스템공학과",
+      "knowSchDptNm": "지상교통공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "물류시스템공학전공",
+      "knowSchDptNm": "지상교통공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "철도시설과",
+      "knowSchDptNm": "지상교통공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "항공우주공학과",
+      "knowSchDptNm": "항공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "항공시스템공학과",
+      "knowSchDptNm": "항공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "항공정비학과",
+      "knowSchDptNm": "항공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "무인항공(드론)학과",
+      "knowSchDptNm": "항공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "항공교통학과",
+      "knowSchDptNm": "항공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "항공보안과",
+      "knowSchDptNm": "항공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "해양공학과",
+      "knowSchDptNm": "해양공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "선박해양공학과",
+      "knowSchDptNm": "해양공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "조선해양공학과",
+      "knowSchDptNm": "해양공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "조선해양플랜트과",
+      "knowSchDptNm": "해양공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "조선기계과",
+      "knowSchDptNm": "해양공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "해양학과",
+      "knowSchDptNm": "해양공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "해양시스템공학과",
+      "knowSchDptNm": "해양공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "기계공학과",
+      "knowSchDptNm": "기계공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "냉동공조공학과",
+      "knowSchDptNm": "기계공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "기계자동차과",
+      "knowSchDptNm": "기계공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "정밀기계공학과",
+      "knowSchDptNm": "기계공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "기계설계공학과",
+      "knowSchDptNm": "기계공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "기계융합공학과",
+      "knowSchDptNm": "기계공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "자동화시스템과",
+      "knowSchDptNm": "기계공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "지능로봇과",
+      "knowSchDptNm": "기계공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "컴퓨터응용기계과",
+      "knowSchDptNm": "기계공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "기계과",
+      "knowSchDptNm": "기계공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "금형(설계)과",
+      "knowSchDptNm": "기계공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "기계자동화과",
+      "knowSchDptNm": "기계공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "금속재료과",
+      "knowSchDptNm": "재료·금속공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "재료공학과",
+      "knowSchDptNm": "재료·금속공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "제철산업과",
+      "knowSchDptNm": "재료·금속공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "나노재료공학전공",
+      "knowSchDptNm": "재료·금속공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "금속재료공학과",
+      "knowSchDptNm": "재료·금속공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "전자재료공학과",
+      "knowSchDptNm": "재료·금속공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "자동차공학과",
+      "knowSchDptNm": "자동차공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "미래자동차공학과",
+      "knowSchDptNm": "자동차공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "스마트자동차공학과",
+      "knowSchDptNm": "자동차공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "자동차튜닝과",
+      "knowSchDptNm": "자동차공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "자동차과",
+      "knowSchDptNm": "자동차공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "전기자동차과",
+      "knowSchDptNm": "자동차공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "자동차설계학과",
+      "knowSchDptNm": "자동차공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "지능형자동차전공",
+      "knowSchDptNm": "자동차공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "전기공학과",
+      "knowSchDptNm": "전기공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "전기전자과",
+      "knowSchDptNm": "전기공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "철도전기과",
+      "knowSchDptNm": "전기공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "스마트전기전자과",
+      "knowSchDptNm": "전기공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "전기과",
+      "knowSchDptNm": "전기공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "전기시스템과",
+      "knowSchDptNm": "전기공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "전기에너지과",
+      "knowSchDptNm": "전기공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "전자공학과",
+      "knowSchDptNm": "전자공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "전자전기공학과",
+      "knowSchDptNm": "전자공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "디지털전자과",
+      "knowSchDptNm": "전자공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "스마트전자과",
+      "knowSchDptNm": "전자공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "디스플레이공학과",
+      "knowSchDptNm": "전자공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "반도체전자과",
+      "knowSchDptNm": "전자공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "융합전자과",
+      "knowSchDptNm": "전자공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "정보전자전공",
+      "knowSchDptNm": "전자공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "컴퓨터전자공학과",
+      "knowSchDptNm": "전자공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "제어계측공학과",
+      "knowSchDptNm": "제어계측공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "전기전자제어과",
+      "knowSchDptNm": "제어계측공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "전기제어과",
+      "knowSchDptNm": "제어계측공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "시스템제어공학과",
+      "knowSchDptNm": "제어계측공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "전자제어공학과",
+      "knowSchDptNm": "제어계측공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "메카트로닉스공학과",
+      "knowSchDptNm": "메카트로닉스(기전)공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "로봇공학과",
+      "knowSchDptNm": "메카트로닉스(기전)공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "스마트팩토리과",
+      "knowSchDptNm": "메카트로닉스(기전)공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "기계메카트로닉스공학과",
+      "knowSchDptNm": "메카트로닉스(기전)공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "로봇자동화과",
+      "knowSchDptNm": "메카트로닉스(기전)공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "자동화기계과",
+      "knowSchDptNm": "메카트로닉스(기전)공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "안경광학과",
+      "knowSchDptNm": "(안경)광학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "광공학과",
+      "knowSchDptNm": "(안경)광학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "나노광전자학과",
+      "knowSchDptNm": "(안경)광학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "에너지자원공학과",
+      "knowSchDptNm": "에너지공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "원자력공학과",
+      "knowSchDptNm": "에너지공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "미래에너지공학과",
+      "knowSchDptNm": "에너지공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "바이오에너지공학과",
+      "knowSchDptNm": "에너지공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "환경에너지공학과",
+      "knowSchDptNm": "에너지공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "신재생에너지과",
+      "knowSchDptNm": "에너지공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "에너지시스템학과",
+      "knowSchDptNm": "에너지공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "에너지화학공학과",
+      "knowSchDptNm": "에너지공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "전기에너지공학과",
+      "knowSchDptNm": "에너지공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "환경공학과",
+      "knowSchDptNm": "환경공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "지구환경과학과",
+      "knowSchDptNm": "환경공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "환경보건학과",
+      "knowSchDptNm": "환경공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "환경생명공학과",
+      "knowSchDptNm": "환경공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "환경시스템공학과",
+      "knowSchDptNm": "환경공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "환경학과",
+      "knowSchDptNm": "환경공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "생태환경관광학부",
+      "knowSchDptNm": "환경공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "해양환경학과",
+      "knowSchDptNm": "환경공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "반도체공학과",
+      "knowSchDptNm": "반도체·세라믹공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "19"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "반도체디스플레이학과",
+      "knowSchDptNm": "반도체·세라믹공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "19"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "반도체장비공학과",
+      "knowSchDptNm": "반도체·세라믹공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "19"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "반도체과학전공",
+      "knowSchDptNm": "반도체·세라믹공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "19"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "반도체시스템공학과",
+      "knowSchDptNm": "반도체·세라믹공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "19"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "세라믹공학과",
+      "knowSchDptNm": "반도체·세라믹공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "19"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "섬유소재공학과",
+      "knowSchDptNm": "섬유공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "20"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "섬유시스템공학과",
+      "knowSchDptNm": "섬유공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "20"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "섬유비즈니스과",
+      "knowSchDptNm": "섬유공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "20"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "신소재공학과",
+      "knowSchDptNm": "신소재공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "21"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "나노신소재공학과",
+      "knowSchDptNm": "신소재공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "21"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "신소재응용과",
+      "knowSchDptNm": "신소재공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "21"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "융합소재공학과",
+      "knowSchDptNm": "신소재공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "21"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "화학신소재학과",
+      "knowSchDptNm": "신소재공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "21"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "나노소재전공",
+      "knowSchDptNm": "신소재공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "21"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "바이오소재공학과",
+      "knowSchDptNm": "신소재공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "21"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "항공신소재전공",
+      "knowSchDptNm": "신소재공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "21"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "컴퓨터공학과",
+      "knowSchDptNm": "컴퓨터공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "22"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "멀티미디어공학과",
+      "knowSchDptNm": "컴퓨터공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "22"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "컴퓨터시스템공학과",
+      "knowSchDptNm": "컴퓨터공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "22"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "응용시스템학과",
+      "knowSchDptNm": "컴퓨터공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "22"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "컴퓨터과학전공",
+      "knowSchDptNm": "컴퓨터공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "22"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "전산학과",
+      "knowSchDptNm": "컴퓨터공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "22"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "전자계산학과",
+      "knowSchDptNm": "컴퓨터공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "22"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "디지털콘텐츠과",
+      "knowSchDptNm": "응용소프트웨어공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "23"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "소프트웨어공학과",
+      "knowSchDptNm": "응용소프트웨어공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "23"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "스마트소프트웨어과",
+      "knowSchDptNm": "응용소프트웨어공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "23"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "융합소프트웨어학과",
+      "knowSchDptNm": "응용소프트웨어공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "23"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "스마트미디어학과",
+      "knowSchDptNm": "응용소프트웨어공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "23"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "인공지능융합학과",
+      "knowSchDptNm": "응용소프트웨어공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "23"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "AI소프트웨어전공",
+      "knowSchDptNm": "응용소프트웨어공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "23"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "게임공학과",
+      "knowSchDptNm": "게임공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "24"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "게임컨텐츠과",
+      "knowSchDptNm": "게임공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "24"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "게임학과",
+      "knowSchDptNm": "게임공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "24"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "게임소프트웨어전공",
+      "knowSchDptNm": "게임공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "24"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "게임애니메이션과",
+      "knowSchDptNm": "게임공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "24"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "게임제작과",
+      "knowSchDptNm": "게임공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "24"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "게임컨설팅과",
+      "knowSchDptNm": "게임공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "24"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "정보통신공학과",
+      "knowSchDptNm": "정보·통신공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "25"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "전자정보통신공학과",
+      "knowSchDptNm": "정보·통신공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "25"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "ICT융합학과",
+      "knowSchDptNm": "정보·통신공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "25"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "스마트IT학과",
+      "knowSchDptNm": "정보·통신공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "25"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "IT 융합학과",
+      "knowSchDptNm": "정보·통신공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "25"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "IT정보제어공학부",
+      "knowSchDptNm": "정보·통신공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "25"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "전자정보공학과",
+      "knowSchDptNm": "정보·통신공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "25"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "정보시스템학과",
+      "knowSchDptNm": "정보·통신공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "25"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "정보보안학과",
+      "knowSchDptNm": "정보보안·보호학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "26"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "정보보호학과",
+      "knowSchDptNm": "정보보안·보호학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "26"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "사이버보안과",
+      "knowSchDptNm": "정보보안·보호학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "26"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "IT 보안과",
+      "knowSchDptNm": "정보보안·보호학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "26"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "산업공학과",
+      "knowSchDptNm": "산업공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "27"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "산업경영공학과",
+      "knowSchDptNm": "산업공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "27"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "산업시스템공학과",
+      "knowSchDptNm": "산업공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "27"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "산업정보공학과",
+      "knowSchDptNm": "산업공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "27"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "시스템경영공학과",
+      "knowSchDptNm": "산업공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "27"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "화학공학과",
+      "knowSchDptNm": "화학공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "28"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "고분자공학과",
+      "knowSchDptNm": "화학공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "28"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "생명화학공학과",
+      "knowSchDptNm": "화학공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "28"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "화공생명학과",
+      "knowSchDptNm": "화학공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "28"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "나노화학공학과",
+      "knowSchDptNm": "화학공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "28"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "신소재학과",
+      "knowSchDptNm": "화학공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "28"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "응용화학공학과",
+      "knowSchDptNm": "화학공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "28"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "화장품학전공",
+      "knowSchDptNm": "화학공학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "28"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "소방방재학과",
+      "knowSchDptNm": "소방방재학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "29"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "소방안전관리학과",
+      "knowSchDptNm": "소방방재학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "29"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "안전공학과",
+      "knowSchDptNm": "소방방재학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "29"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "소방안전공학과",
+      "knowSchDptNm": "소방방재학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "29"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "건설방재공학과",
+      "knowSchDptNm": "소방방재학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "29"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "소방안전학과",
+      "knowSchDptNm": "소방방재학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "29"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "환경방재공학과",
+      "knowSchDptNm": "소방방재학과",
+      "empCurtState1Id": "5",
+      "empCurtState2Id": "29"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "의예과",
+      "knowSchDptNm": "의학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "의학과",
+      "knowSchDptNm": "의학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "의학부",
+      "knowSchDptNm": "의학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "대체의학과",
+      "knowSchDptNm": "의학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "치의학과",
+      "knowSchDptNm": "치의학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "치의예과",
+      "knowSchDptNm": "치의학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "한의학과",
+      "knowSchDptNm": "한의학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "한의예과",
+      "knowSchDptNm": "한의학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "간호학과",
+      "knowSchDptNm": "간호학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "간호과",
+      "knowSchDptNm": "간호학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "임상간호학과",
+      "knowSchDptNm": "간호학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "약학과",
+      "knowSchDptNm": "약학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "약학부",
+      "knowSchDptNm": "약학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "약학전공",
+      "knowSchDptNm": "약학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "제약학과",
+      "knowSchDptNm": "약학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "한약학과",
+      "knowSchDptNm": "약학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "임상의약학과",
+      "knowSchDptNm": "약학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "치위생학과",
+      "knowSchDptNm": "치위생학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "치위생과",
+      "knowSchDptNm": "치위생학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "보건관리학과",
+      "knowSchDptNm": "보건관리학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "보건학과",
+      "knowSchDptNm": "보건관리학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "산업보건학과",
+      "knowSchDptNm": "보건관리학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "보건환경과",
+      "knowSchDptNm": "보건관리학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "보건의료과",
+      "knowSchDptNm": "보건관리학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "임상병리학과",
+      "knowSchDptNm": "임상병리학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "임상병리과",
+      "knowSchDptNm": "임상병리학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "방사선학과",
+      "knowSchDptNm": "방사선학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "방사선과",
+      "knowSchDptNm": "방사선학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "응급구조학과",
+      "knowSchDptNm": "응급구조학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "응급구조과",
+      "knowSchDptNm": "응급구조학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "소방안전구급과",
+      "knowSchDptNm": "응급구조학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "재활공학과",
+      "knowSchDptNm": "재활학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "언어재활과",
+      "knowSchDptNm": "재활학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "직업재활학과",
+      "knowSchDptNm": "재활학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "언어치료학과",
+      "knowSchDptNm": "재활학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "보건건강운동관리과",
+      "knowSchDptNm": "재활학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "심리상담치료학과",
+      "knowSchDptNm": "재활학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "재활보건관리과",
+      "knowSchDptNm": "재활학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "미술치료과",
+      "knowSchDptNm": "재활학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "물리치료학과",
+      "knowSchDptNm": "물리치료학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "물리치료과",
+      "knowSchDptNm": "물리치료학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "작업치료학과",
+      "knowSchDptNm": "작업치료학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "작업치료과",
+      "knowSchDptNm": "작업치료학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "의용공학과",
+      "knowSchDptNm": "의료공학(의료장비)과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "의공학과",
+      "knowSchDptNm": "의료공학(의료장비)과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "의료공학과",
+      "knowSchDptNm": "의료공학(의료장비)과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "의료시스템전공",
+      "knowSchDptNm": "의료공학(의료장비)과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "한방의료공학과",
+      "knowSchDptNm": "의료공학(의료장비)과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "치기공학과",
+      "knowSchDptNm": "치기공학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "치기공과",
+      "knowSchDptNm": "치기공학과",
+      "empCurtState1Id": "6",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "산업디자인학과",
+      "knowSchDptNm": "산업디자인학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "제품디자인공학전공",
+      "knowSchDptNm": "산업디자인학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "색채디자인과",
+      "knowSchDptNm": "산업디자인학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "제품디자인과",
+      "knowSchDptNm": "산업디자인학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "1"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "시각디자인학과",
+      "knowSchDptNm": "시각디자인학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "디지털디자인학과",
+      "knowSchDptNm": "시각디자인학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "멀티미디어디자인학과",
+      "knowSchDptNm": "시각디자인학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "커뮤니케이션디자인학과",
+      "knowSchDptNm": "시각디자인학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "광고디자인과",
+      "knowSchDptNm": "시각디자인학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "시각영상디자인과",
+      "knowSchDptNm": "시각디자인학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "시각정보디자인전공",
+      "knowSchDptNm": "시각디자인학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "출판디자인과",
+      "knowSchDptNm": "시각디자인학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "그래픽디자인학과",
+      "knowSchDptNm": "시각디자인학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "2"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "의상디자인학과",
+      "knowSchDptNm": "패션디자인학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "패션디자인학과",
+      "knowSchDptNm": "패션디자인학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "섬유패션디자인전공",
+      "knowSchDptNm": "패션디자인학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "텍스타일디자인학과",
+      "knowSchDptNm": "패션디자인학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "섬유디자인전공",
+      "knowSchDptNm": "패션디자인학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "패션디자인산업학과",
+      "knowSchDptNm": "패션디자인학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "3"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "실내디자인학과",
+      "knowSchDptNm": "실내디자인학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "공간디자인학과",
+      "knowSchDptNm": "실내디자인학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "실내건축디자인학과",
+      "knowSchDptNm": "실내디자인학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "4"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "공예과",
+      "knowSchDptNm": "공예학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "공예디자인학과",
+      "knowSchDptNm": "공예학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "귀금속보석공예학과",
+      "knowSchDptNm": "공예학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "도예학과",
+      "knowSchDptNm": "공예학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "금속공예학과",
+      "knowSchDptNm": "공예학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "세라믹디자인학과",
+      "knowSchDptNm": "공예학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "5"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "사진학과",
+      "knowSchDptNm": "사진·영상예술학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "사진영상학과",
+      "knowSchDptNm": "사진·영상예술학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "공연영상학과",
+      "knowSchDptNm": "사진·영상예술학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "미디어디자인과",
+      "knowSchDptNm": "사진·영상예술학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "방송영상과",
+      "knowSchDptNm": "사진·영상예술학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "영상디자인과",
+      "knowSchDptNm": "사진·영상예술학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "디지털콘텐츠과",
+      "knowSchDptNm": "사진·영상예술학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "6"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "만화애니메이션학과",
+      "knowSchDptNm": "만화·애니메이션학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "웹툰창작과",
+      "knowSchDptNm": "만화·애니메이션학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "만화콘텐츠과",
+      "knowSchDptNm": "만화·애니메이션학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "만화애니게임학과",
+      "knowSchDptNm": "만화·애니메이션학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "영상애니메이션과",
+      "knowSchDptNm": "만화·애니메이션학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "게임영상(콘텐츠)과",
+      "knowSchDptNm": "만화·애니메이션학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "7"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "미용과",
+      "knowSchDptNm": "뷰티아트과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "코디네이션과",
+      "knowSchDptNm": "뷰티아트과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "헤어전공",
+      "knowSchDptNm": "뷰티아트과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "미용예술과",
+      "knowSchDptNm": "뷰티아트과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "뷰티디자인과",
+      "knowSchDptNm": "뷰티아트과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "뷰티아트과",
+      "knowSchDptNm": "뷰티아트과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "피부미용학과",
+      "knowSchDptNm": "뷰티아트과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "뷰티케어과",
+      "knowSchDptNm": "뷰티아트과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "메이크업전공",
+      "knowSchDptNm": "뷰티아트과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "뷰티매니저학과",
+      "knowSchDptNm": "뷰티아트과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "스타일리스트과",
+      "knowSchDptNm": "뷰티아트과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "8"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "무용학과",
+      "knowSchDptNm": "무용학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "무용예술학과",
+      "knowSchDptNm": "무용학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "발레전공",
+      "knowSchDptNm": "무용학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "한국무용전공",
+      "knowSchDptNm": "무용학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "현대무용전공",
+      "knowSchDptNm": "무용학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "생활무용학과",
+      "knowSchDptNm": "무용학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "실용무용전공",
+      "knowSchDptNm": "무용학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "9"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "체육학과",
+      "knowSchDptNm": "체육학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "스포츠(경기)지도학과",
+      "knowSchDptNm": "체육학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "스포츠산업학과",
+      "knowSchDptNm": "체육학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "스포츠재활학과",
+      "knowSchDptNm": "체육학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "사회체육학과",
+      "knowSchDptNm": "체육학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "생활체육학과",
+      "knowSchDptNm": "체육학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "운동처방학과",
+      "knowSchDptNm": "체육학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "스포츠과학과",
+      "knowSchDptNm": "체육학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "스포츠레저학과",
+      "knowSchDptNm": "체육학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "골프산업학과",
+      "knowSchDptNm": "체육학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "태권도과",
+      "knowSchDptNm": "체육학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "골프과",
+      "knowSchDptNm": "체육학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "10"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "경호학과",
+      "knowSchDptNm": "경호학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "경호스포츠과",
+      "knowSchDptNm": "경호학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "경호보안학과",
+      "knowSchDptNm": "경호학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "경찰무도학과",
+      "knowSchDptNm": "경호학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "경호비서학과",
+      "knowSchDptNm": "경호학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "11"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "조형학과",
+      "knowSchDptNm": "조형학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "생활조형디자인학과",
+      "knowSchDptNm": "조형학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "조소과",
+      "knowSchDptNm": "조형학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "판화과",
+      "knowSchDptNm": "조형학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "조각학과",
+      "knowSchDptNm": "조형학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "12"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "미술학과",
+      "knowSchDptNm": "미술학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "큐레이터전공",
+      "knowSchDptNm": "미술학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "현대미술전공",
+      "knowSchDptNm": "미술학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "회화과",
+      "knowSchDptNm": "미술학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "동양화과",
+      "knowSchDptNm": "미술학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "서양화과",
+      "knowSchDptNm": "미술학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "한국화과",
+      "knowSchDptNm": "미술학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "순수미술과",
+      "knowSchDptNm": "미술학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "실용미술과",
+      "knowSchDptNm": "미술학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "아동미술지도학과",
+      "knowSchDptNm": "미술학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "응용미술학과",
+      "knowSchDptNm": "미술학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "13"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "무대디자인과",
+      "knowSchDptNm": "연극·영화학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "연극영화학과",
+      "knowSchDptNm": "연극·영화학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "연극전공",
+      "knowSchDptNm": "연극·영화학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "영화전공",
+      "knowSchDptNm": "연극·영화학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "연기예술학과",
+      "knowSchDptNm": "연극·영화학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "연극영상학과",
+      "knowSchDptNm": "연극·영화학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "방송영화제작과",
+      "knowSchDptNm": "연극·영화학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "뮤지컬과",
+      "knowSchDptNm": "연극·영화학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "14"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "방송연예학과",
+      "knowSchDptNm": "방송·연예과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "공연예술과",
+      "knowSchDptNm": "방송·연예과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "모델과",
+      "knowSchDptNm": "방송·연예과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "엔터테인먼트과",
+      "knowSchDptNm": "방송·연예과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "방송기술학과",
+      "knowSchDptNm": "방송·연예과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "방송연기전공",
+      "knowSchDptNm": "방송·연예과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "15"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "음악학과",
+      "knowSchDptNm": "음악학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "국악과",
+      "knowSchDptNm": "음악학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "기악과",
+      "knowSchDptNm": "음악학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "관현악과",
+      "knowSchDptNm": "음악학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "피아노과",
+      "knowSchDptNm": "음악학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "성악과",
+      "knowSchDptNm": "음악학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "작곡과",
+      "knowSchDptNm": "음악학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "공연음악학과",
+      "knowSchDptNm": "음악학과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "16"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "실용음악과",
+      "knowSchDptNm": "실용음악과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "생활음악과",
+      "knowSchDptNm": "실용음악과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "뮤직테크놀로지과",
+      "knowSchDptNm": "실용음악과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "뮤직프로덕션과",
+      "knowSchDptNm": "실용음악과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "대중음악과",
+      "knowSchDptNm": "실용음악과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "보컬과",
+      "knowSchDptNm": "실용음악과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "음악콘텐츠학과",
+      "knowSchDptNm": "실용음악과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "17"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "음향제작과",
+      "knowSchDptNm": "음향과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "1",
+      "knowDtlSchDptNm": "음향과",
+      "knowSchDptNm": "음향과",
+      "empCurtState1Id": "7",
+      "empCurtState2Id": "18"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "푸드코디네이션과",
+      "knowSchDptNm": "식품/웰빙/여가",
+      "empCurtState1Id": "A001",
+      "empCurtState2Id": "10001"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "커피바리스타전공",
+      "knowSchDptNm": "식품/웰빙/여가",
+      "empCurtState1Id": "A001",
+      "empCurtState2Id": "10002"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "리조트개발학과",
+      "knowSchDptNm": "식품/웰빙/여가",
+      "empCurtState1Id": "A001",
+      "empCurtState2Id": "10003"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "국제소믈리에과",
+      "knowSchDptNm": "식품/웰빙/여가",
+      "empCurtState1Id": "A001",
+      "empCurtState2Id": "10004"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "화장품·향수전공",
+      "knowSchDptNm": "식품/웰빙/여가",
+      "empCurtState1Id": "A001",
+      "empCurtState2Id": "10005"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "축산계열(축산전공, 낙농한우전공, 양돈양계전공)",
+      "knowSchDptNm": "식품/웰빙/여가",
+      "empCurtState1Id": "A001",
+      "empCurtState2Id": "10006"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "호텔조리김치발효과",
+      "knowSchDptNm": "식품/웰빙/여가",
+      "empCurtState1Id": "A001",
+      "empCurtState2Id": "10007"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "관광크루즈승무원과",
+      "knowSchDptNm": "식품/웰빙/여가",
+      "empCurtState1Id": "A001",
+      "empCurtState2Id": "10008"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "웰빙테라피과",
+      "knowSchDptNm": "식품/웰빙/여가",
+      "empCurtState1Id": "A001",
+      "empCurtState2Id": "10009"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "하이브리드전기자동차과",
+      "knowSchDptNm": "과학/정보통신",
+      "empCurtState1Id": "A002",
+      "empCurtState2Id": "10001"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "모바일게임과",
+      "knowSchDptNm": "과학/정보통신",
+      "empCurtState1Id": "A002",
+      "empCurtState2Id": "10002"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "신재생에너지과",
+      "knowSchDptNm": "과학/정보통신",
+      "empCurtState1Id": "A002",
+      "empCurtState2Id": "10003"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "국방과학기술학과",
+      "knowSchDptNm": "과학/정보통신",
+      "empCurtState1Id": "A002",
+      "empCurtState2Id": "10004"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "쇼핑몰디자인창업과",
+      "knowSchDptNm": "과학/정보통신",
+      "empCurtState1Id": "A002",
+      "empCurtState2Id": "10005"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "발명특허학과",
+      "knowSchDptNm": "과학/정보통신",
+      "empCurtState1Id": "A002",
+      "empCurtState2Id": "10006"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "스마트폰컨텐츠과",
+      "knowSchDptNm": "과학/정보통신",
+      "empCurtState1Id": "A002",
+      "empCurtState2Id": "10007"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "시계주얼리과",
+      "knowSchDptNm": "과학/정보통신",
+      "empCurtState1Id": "A002",
+      "empCurtState2Id": "10008"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "유비쿼터스정보응용전공",
+      "knowSchDptNm": "과학/정보통신",
+      "empCurtState1Id": "A002",
+      "empCurtState2Id": "10009"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "풍수명리과",
+      "knowSchDptNm": "보건의료/교육",
+      "empCurtState1Id": "A003",
+      "empCurtState2Id": "10001"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "다문화복지과",
+      "knowSchDptNm": "보건의료/교육",
+      "empCurtState1Id": "A003",
+      "empCurtState2Id": "10002"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "미술치료과",
+      "knowSchDptNm": "보건의료/교육",
+      "empCurtState1Id": "A003",
+      "empCurtState2Id": "10003"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "보건허브과",
+      "knowSchDptNm": "보건의료/교육",
+      "empCurtState1Id": "A003",
+      "empCurtState2Id": "10004"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "게임제작과",
+      "knowSchDptNm": "문화/예술/스포츠",
+      "empCurtState1Id": "A004",
+      "empCurtState2Id": "10001"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "이종격투기전공",
+      "knowSchDptNm": "문화/예술/스포츠",
+      "empCurtState1Id": "A004",
+      "empCurtState2Id": "10002"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "스키스노우보드전공(스포츠레저학과)",
+      "knowSchDptNm": "문화/예술/스포츠",
+      "empCurtState1Id": "A004",
+      "empCurtState2Id": "10003"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "플로리스트과",
+      "knowSchDptNm": "문화/예술/스포츠",
+      "empCurtState1Id": "A004",
+      "empCurtState2Id": "10004"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "토이캐릭터디자인전공",
+      "knowSchDptNm": "문화/예술/스포츠",
+      "empCurtState1Id": "A004",
+      "empCurtState2Id": "10005"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "컬러리스트전공",
+      "knowSchDptNm": "문화/예술/스포츠",
+      "empCurtState1Id": "A004",
+      "empCurtState2Id": "10006"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "요가치유학과",
+      "knowSchDptNm": "문화/예술/스포츠",
+      "empCurtState1Id": "A004",
+      "empCurtState2Id": "10007"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "토이캐릭터창작과",
+      "knowSchDptNm": "문화/예술/스포츠",
+      "empCurtState1Id": "A004",
+      "empCurtState2Id": "10008"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "카이로스포츠과",
+      "knowSchDptNm": "문화/예술/스포츠",
+      "empCurtState1Id": "A004",
+      "empCurtState2Id": "10009"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "서비스유통과",
+      "knowSchDptNm": "문화/예술/스포츠",
+      "empCurtState1Id": "A004",
+      "empCurtState2Id": "10010"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "박물관큐레이터과",
+      "knowSchDptNm": "문화/예술/스포츠",
+      "empCurtState1Id": "A004",
+      "empCurtState2Id": "10011"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "골프학과",
+      "knowSchDptNm": "문화/예술/스포츠",
+      "empCurtState1Id": "A004",
+      "empCurtState2Id": "10012"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "격기지도학과",
+      "knowSchDptNm": "문화/예술/스포츠",
+      "empCurtState1Id": "A004",
+      "empCurtState2Id": "10013"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "문화재과",
+      "knowSchDptNm": "문화/예술/스포츠",
+      "empCurtState1Id": "A004",
+      "empCurtState2Id": "10014"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "한옥문화산업과",
+      "knowSchDptNm": "문화/예술/스포츠",
+      "empCurtState1Id": "A004",
+      "empCurtState2Id": "10015"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "카지노과",
+      "knowSchDptNm": "문화/예술/스포츠",
+      "empCurtState1Id": "A004",
+      "empCurtState2Id": "10016"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "승마조련전공",
+      "knowSchDptNm": "문화/예술/스포츠",
+      "empCurtState1Id": "A004",
+      "empCurtState2Id": "10017"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "자동차모터스포츠과",
+      "knowSchDptNm": "문화/예술/스포츠",
+      "empCurtState1Id": "A004",
+      "empCurtState2Id": "10018"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "국방탄약과.방공유도무기과",
+      "knowSchDptNm": "경영/금융/보안",
+      "empCurtState1Id": "A005",
+      "empCurtState2Id": "10001"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "부사관과",
+      "knowSchDptNm": "경영/금융/보안",
+      "empCurtState1Id": "A005",
+      "empCurtState2Id": "10002"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "VMD과",
+      "knowSchDptNm": "경영/금융/보안",
+      "empCurtState1Id": "A005",
+      "empCurtState2Id": "10003"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "콜마케팅과",
+      "knowSchDptNm": "경영/금융/보안",
+      "empCurtState1Id": "A005",
+      "empCurtState2Id": "10004"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "유통프랜차이즈전공",
+      "knowSchDptNm": "경영/금융/보안",
+      "empCurtState1Id": "A005",
+      "empCurtState2Id": "10005"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "교정보호학과",
+      "knowSchDptNm": "경영/금융/보안",
+      "empCurtState1Id": "A005",
+      "empCurtState2Id": "10006"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "자산운용학과",
+      "knowSchDptNm": "경영/금융/보안",
+      "empCurtState1Id": "A005",
+      "empCurtState2Id": "10007"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "자동차손해보상과",
+      "knowSchDptNm": "경영/금융/보안",
+      "empCurtState1Id": "A005",
+      "empCurtState2Id": "10008"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "신발패션산업과",
+      "knowSchDptNm": "방송/이벤트",
+      "empCurtState1Id": "A006",
+      "empCurtState2Id": "10001"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "보석감정딜러&디자인과",
+      "knowSchDptNm": "방송/이벤트",
+      "empCurtState1Id": "A006",
+      "empCurtState2Id": "10002"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "스타일리스트과",
+      "knowSchDptNm": "방송/이벤트",
+      "empCurtState1Id": "A006",
+      "empCurtState2Id": "10003"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "마술학과",
+      "knowSchDptNm": "방송/이벤트",
+      "empCurtState1Id": "A006",
+      "empCurtState2Id": "10004"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "쇼핑호스트과",
+      "knowSchDptNm": "방송/이벤트",
+      "empCurtState1Id": "A006",
+      "empCurtState2Id": "10005"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "분장예술과",
+      "knowSchDptNm": "방송/이벤트",
+      "empCurtState1Id": "A006",
+      "empCurtState2Id": "10006"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "웨딩이벤트과",
+      "knowSchDptNm": "방송/이벤트",
+      "empCurtState1Id": "A006",
+      "empCurtState2Id": "10007"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "안경디자인과",
+      "knowSchDptNm": "방송/이벤트",
+      "empCurtState1Id": "A006",
+      "empCurtState2Id": "10008"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "동물조련이벤트과",
+      "knowSchDptNm": "방송/이벤트",
+      "empCurtState1Id": "A006",
+      "empCurtState2Id": "10009"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "제철산업과",
+      "knowSchDptNm": "기타",
+      "empCurtState1Id": "A007",
+      "empCurtState2Id": "10001"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "장례복지과",
+      "knowSchDptNm": "기타",
+      "empCurtState1Id": "A007",
+      "empCurtState2Id": "10002"
+    },
+    {
+      "majorGb": "2",
+      "knowDtlSchDptNm": "자동차딜러과",
+      "knowSchDptNm": "기타",
+      "empCurtState1Id": "A007",
+      "empCurtState2Id": "10003"
+    }
+  ]
+}

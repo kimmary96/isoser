@@ -1180,7 +1180,6 @@ Result(결과): ${starResult}`;
                     <label className="text-xs font-semibold text-gray-500">
                       어떤 활동이었는지 간단한 소개를 적어주세요. <span className="text-red-400">*</span>
                     </label>
-                    {isNewActivity && (
                       <button
                         type="button"
                         onClick={() => void handleGenerateIntroCandidates()}
@@ -1197,7 +1196,6 @@ Result(결과): ${starResult}`;
                           {introGenerateLoading ? "소개글 생성 중..." : "소개글 생성"}
                         </span>
                       </button>
-                    )}
                   </div>
                   <textarea
                     value={descriptionDraft}
@@ -1207,8 +1205,6 @@ Result(결과): ${starResult}`;
                     rows={5}
                   />
 
-                  {isNewActivity && (
-                    <>
                       <p className="mt-2 text-[11px] text-gray-400">
                         기여 내용을 먼저 작성한 뒤 소개글 생성 버튼을 누르면 AI가 후보 1~3개를 제안합니다.
                       </p>
@@ -1260,8 +1256,6 @@ Result(결과): ${starResult}`;
                           })}
                         </div>
                       )}
-                    </>
-                  )}
                 </div>
 
                 <div>

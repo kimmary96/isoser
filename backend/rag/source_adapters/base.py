@@ -75,6 +75,7 @@ class ApiSourceAdapter:
         display_name: str,
         purpose: str,
         key_env_name: str,
+        key_env_aliases: tuple[str, ...] | None = None,
         auth_param_name: str,
         guide_url_env_name: str | None = None,
         guide_url_default: str | None = None,
@@ -84,6 +85,7 @@ class ApiSourceAdapter:
         self.display_name = display_name
         self.purpose = purpose
         self.key_env_name = key_env_name
+        self.key_env_aliases = tuple(key_env_aliases or ())
         self.auth_param_name = auth_param_name
         self.guide_url_env_name = guide_url_env_name
         self.guide_url_default = guide_url_default
@@ -92,11 +94,19 @@ class ApiSourceAdapter:
     def _ensure_env_loaded(self) -> None:
         load_backend_dotenv()
 
-    def get_api_key(self) -> str:
+    def _resolve_api_key_value(self) -> tuple[str | None, str]:
         self._ensure_env_loaded()
-        value = os.getenv(self.key_env_name, "").strip()
+        for env_name in (self.key_env_name, *self.key_env_aliases):
+            value = os.getenv(env_name, "").strip()
+            if value:
+                return env_name, value
+        return None, ""
+
+    def get_api_key(self) -> str:
+        _, value = self._resolve_api_key_value()
         if not value:
-            raise ValueError(f"{self.key_env_name} is not configured.")
+            supported_names = ", ".join((self.key_env_name, *self.key_env_aliases))
+            raise ValueError(f"API key is not configured. Checked: {supported_names}")
         return value
 
     def get_guide_url(self) -> str | None:
@@ -108,8 +118,8 @@ class ApiSourceAdapter:
         return self.guide_url_default
 
     def describe_status(self) -> SourceStatus:
-        self._ensure_env_loaded()
-        key_present = bool(os.getenv(self.key_env_name, "").strip())
+        _, api_key = self._resolve_api_key_value()
+        key_present = bool(api_key)
         auth_scheme = f"query:{self.auth_param_name}"
         if self.supports_infuser_header:
             auth_scheme += " | header:Authorization=Infuser {API_KEY}"

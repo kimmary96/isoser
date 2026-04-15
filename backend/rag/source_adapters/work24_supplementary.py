@@ -25,6 +25,7 @@ JOB_INFO_SOURCE = ApiSourceAdapter(
     display_name="Work24 Job Info OpenAPI",
     purpose="Collect job names and descriptions from Work24.",
     key_env_name="WORK24_JOB_INFO_AUTH_KEY",
+    key_env_aliases=("직업정보",),
     auth_param_name="authKey",
     guide_url_env_name="WORK24_OPEN_API_GUIDE_URL",
 )
@@ -34,6 +35,7 @@ COMMON_CODES_SOURCE = ApiSourceAdapter(
     display_name="Work24 Common Codes OpenAPI",
     purpose="Collect Work24 common code mappings.",
     key_env_name="WORK24_COMMON_CODES_AUTH_KEY",
+    key_env_aliases=("공통코드",),
     auth_param_name="authKey",
     guide_url_env_name="WORK24_OPEN_API_GUIDE_URL",
 )
@@ -43,6 +45,7 @@ MAJOR_INFO_SOURCE = ApiSourceAdapter(
     display_name="Work24 Major Info OpenAPI",
     purpose="Collect major-to-job relationship data from Work24.",
     key_env_name="WORK24_MAJOR_INFO_AUTH_KEY",
+    key_env_aliases=("학과정보",),
     auth_param_name="authKey",
     guide_url_env_name="WORK24_OPEN_API_GUIDE_URL",
 )

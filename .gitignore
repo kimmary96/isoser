@@ -31,6 +31,8 @@ backend/chroma_store/*.sqlite3-journal
 backend/chroma_store/*/
 backend/chroma_store_v2/
 backend/.chroma_tmp/
+backend/chroma_store_backup_*/
+backend/chroma_store_failed_*/
 
 # Generated frontend build metadata
 frontend/tsconfig.tsbuildinfo

@@ -22,6 +22,7 @@ SOURCE = ApiSourceAdapter(
     display_name="Work24 Job Duty OpenAPI",
     purpose="Build a job profile corpus from Work24 job duty data.",
     key_env_name="WORK24_JOB_DUTY_AUTH_KEY",
+    key_env_aliases=("직무정보",),
     auth_param_name="authKey",
     guide_url_env_name="WORK24_OPEN_API_GUIDE_URL",
 )
@@ -34,6 +35,9 @@ LIST_ENDPOINT_ENV = "WORK24_JOB_DUTY_LIST_ENDPOINT"
 DETAIL_ENDPOINT_ENV = "WORK24_JOB_DUTY_DETAIL_ENDPOINT"
 FALLBACK_AUTH_KEY_ENV = "WORK24_OPEN_API_AUTH_KEY"
 LIST_WORD_ENV = "WORK24_JOB_DUTY_LIST_WORD"
+DEFAULT_LIST_ENDPOINT = "https://www.work24.go.kr/cm/openApi/call/wk/callOpenApiSvcInfo215L01.do"
+LEGACY_LIST_ENDPOINT_SUFFIXES = ("215L11.do",)
+LEGACY_DETAIL_ENDPOINT_SUFFIXES = ("215L12.do",)
 
 DEFAULT_PAGE_SIZE = 100
 DEFAULT_SLEEP_SECONDS = 0.5
@@ -295,6 +299,24 @@ def _extract_total_count(payload: Any) -> int:
     return 0
 
 
+def _normalize_list_endpoint(endpoint_url: str) -> str:
+    normalized = endpoint_url.strip()
+    if not normalized:
+        return DEFAULT_LIST_ENDPOINT
+    if any(normalized.endswith(suffix) for suffix in LEGACY_LIST_ENDPOINT_SUFFIXES):
+        return DEFAULT_LIST_ENDPOINT
+    return normalized
+
+
+def _normalize_detail_endpoint(endpoint_url: str) -> str:
+    normalized = endpoint_url.strip()
+    if not normalized:
+        return ""
+    if any(normalized.endswith(suffix) for suffix in LEGACY_DETAIL_ENDPOINT_SUFFIXES):
+        return ""
+    return normalized
+
+
 class Work24JobDutyAdapter:
     """Collect Work24 job duty records and export a profile corpus."""
 
@@ -328,7 +350,10 @@ class Work24JobDutyAdapter:
         self.saved_samples: list[str] = []
 
     def _resolve_auth_key(self) -> str:
-        specific_key = os.getenv(SOURCE.key_env_name, "").strip()
+        try:
+            specific_key = SOURCE.get_api_key()
+        except ValueError:
+            specific_key = ""
         fallback_key = os.getenv(FALLBACK_AUTH_KEY_ENV, "").strip()
         api_key = specific_key or fallback_key
         if not api_key:

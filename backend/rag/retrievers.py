@@ -387,7 +387,9 @@ class CoachRetriever:
 
         for index, document in enumerate(docs_raw):
             text = str(document or "")
-            score = _lexical_similarity(query_text, text)
+            lexical_score = _lexical_similarity(query_text, text)
+            # Keep fallback records usable even when lexical overlap is sparse.
+            score = 0.20 + (0.80 * lexical_score)
             metadata = metas_raw[index] if index < len(metas_raw) else {}
             item: dict[str, Any] = {
                 "id": ids_raw[index] if index < len(ids_raw) else None,

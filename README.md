@@ -24,7 +24,7 @@ AI 코치 기반 이력서/경력기술서 편집 서비스입니다.
 | 영역 | 기술 |
 |------|------|
 | Frontend | Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS, `@react-pdf/renderer` |
-| Backend | Python 3.11, FastAPI, LangChain, LangGraph, PyMuPDF |
+| Backend | Python 3.10, FastAPI, LangChain, LangGraph, PyMuPDF |
 | AI | Gemini 2.5 Flash (`gemini-2.5-flash`) |
 | Vector DB | ChromaDB |
 | Auth/DB | Supabase (Auth + PostgreSQL + Storage) |
@@ -66,13 +66,13 @@ cp backend/.env.example backend/.env
 
 ```bash
 cd backend
-python -m venv venv
+python3.10 -m venv .venv310
 
 # macOS/Linux
-source venv/bin/activate
+source .venv310/bin/activate
 
 # Windows
-venv\Scripts\activate
+.venv310\Scripts\activate
 
 pip install -r requirements.txt
 python rag/seed.py

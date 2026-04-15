@@ -1,0 +1,362 @@
+{
+  "knowDptNm": "인문계열",
+  "knowSchDptNm": "언어학과",
+  "knowDptId": "1",
+  "knowSchDptId": "1",
+  "schDptIntroSum": "언어학과에서는 언어의 속성에 대해 집중적으로 연구하는 이론언어학 및 언어학적 지식을 여러 관련 학문분야에 적용하는 응용언어학에 대해서 배웁니다. 언어학과는 주로 4년제 대학교의 인문 혹은 어문계열(학부)에 개설되어 있으며, 학교에 따라 1학년부터 전공으로 선택하기도 합니다. 1학년에는 인문 및 어문에 대한 공통교과목을 이수한 후 2학년부터 음운론, 형태론 등 언어학의 이론교과목과 다양한 분야의 응용언어학을 공부하게 됩니다. 최근에는 언어학과 컴퓨터과학이 밀접한 관련을 맺으면서 전산언어학 교과목(컴퓨터언어학, 자연언어처리, 언어자료처리, 기계번역, 인공지능 등)의 비중을 확대하여 코딩 및 프로그래밍 관련 수업을 실시하고 있습니다.",
+  "aptdIntrstCont": "다양한 언어에 대해 공부해야 하므로 언어나 어학에 소질과 흥미가 있는 것이 좋습니다. 언어학은 유럽에서 발달한 학문이므로 전공서적이 외국어로 된 경우가 많습니다. 영어를 비롯해 외국어로 공부하는 것을 재미있어 하고 새로운 것에 대한 호기심과 분석력이 있으면 언어학 공부에 쉽게 흥미를 느낄 수 있습니다.",
+  "relSchDptList": [
+    {
+      "knowDtlSchDptNm": "언어학과"
+    },
+    {
+      "knowDtlSchDptNm": "국제어문학부"
+    },
+    {
+      "knowDtlSchDptNm": "스토리텔링융복합전공"
+    },
+    {
+      "knowDtlSchDptNm": "언어인지과학과"
+    },
+    {
+      "knowDtlSchDptNm": "한국어교육학과"
+    }
+  ],
+  "mainSubjectList": {
+    "mainEdusbjCont": "‡ 이론과목 : 음운론, 음성론, 형태론, 통사론, 의미론, 화용론, 문법론, 문체론, 방언학, 언어와 논리, 언어분석, 운율분석 등\n‡ 응용과목 : 컴퓨터언어학, 전산언어학, 자연언어처리, 사회언어학, 응용음성학, 심리언어학, 언어병리학, 언어공학, 광고언어학, (시각, 응용)기호학, 문자학, 언어유형론, 언어학사, 실험 언어학, 언어데이터과학, 인지언어학, 수리언어학 등"
+  },
+  "licList": {
+    "adoptCertCont": "민간자격 : 논술지도사, 독서지도사, 언어지도사, 언어상담심리지도사, 언어발달지도사, 언어재활지도사, 언어상호작용지도사 등"
+  },
+  "schDptList": [
+    {
+      "schDptNm": "스토리텔링융복합전공",
+      "univGbnNm": "대학교",
+      "univNm": "가톨릭대학교",
+      "univUrl": "www.catholic.ac.kr"
+    },
+    {
+      "schDptNm": "외국어학부",
+      "univGbnNm": "대학교",
+      "univNm": "수원대학교",
+      "univUrl": "suwon.ac.kr"
+    },
+    {
+      "schDptNm": "국제어학과",
+      "univGbnNm": "대학교",
+      "univNm": "신한대학교",
+      "univUrl": "http://www.shinhan.ac.kr"
+    },
+    {
+      "schDptNm": "국제언어학부",
+      "univGbnNm": "대학교",
+      "univNm": "한세대학교",
+      "univUrl": "www.hansei.ac.kr"
+    },
+    {
+      "schDptNm": "외국어학부",
+      "univGbnNm": "대학교",
+      "univNm": "영산대학교",
+      "univUrl": "www.ysu.ac.kr"
+    },
+    {
+      "schDptNm": "외국어학부",
+      "univGbnNm": "대학교",
+      "univNm": "창신대학교",
+      "univUrl": "www.cs.ac.kr"
+    },
+    {
+      "schDptNm": "외국어학부",
+      "univGbnNm": "대학교",
+      "univNm": "경일대학교",
+      "univUrl": "www.kiu.ac.kr"
+    },
+    {
+      "schDptNm": "외국어학부",
+      "univGbnNm": "대학교",
+      "univNm": "대구한의대학교",
+      "univUrl": "www.dhu.ac.kr"
+    },
+    {
+      "schDptNm": "외국어학부",
+      "univGbnNm": "대학교",
+      "univNm": "광주대학교",
+      "univUrl": "www.gwangju.ac.kr"
+    },
+    {
+      "schDptNm": "국제언어학과",
+      "univGbnNm": "대학교",
+      "univNm": "대전대학교",
+      "univUrl": "www.dju.ac.kr"
+    },
+    {
+      "schDptNm": "언어학과",
+      "univGbnNm": "대학교",
+      "univNm": "충남대학교",
+      "univUrl": "www.cnu.ac.kr"
+    },
+    {
+      "schDptNm": "외국어학부",
+      "univGbnNm": "대학교",
+      "univNm": "한밭대학교",
+      "univUrl": "www.hanbat.ac.kr"
+    },
+    {
+      "schDptNm": "국어국문・문예창작학과",
+      "univGbnNm": "대학교",
+      "univNm": "동의대학교",
+      "univUrl": "www.deu.ac.kr"
+    },
+    {
+      "schDptNm": "언어정보학과",
+      "univGbnNm": "대학교",
+      "univNm": "부산대학교",
+      "univUrl": "www.pusan.ac.kr"
+    },
+    {
+      "schDptNm": "언어과학과",
+      "univGbnNm": "대학교",
+      "univNm": "고려대학교",
+      "univUrl": "www.korea.ac.kr"
+    },
+    {
+      "schDptNm": "언어학과",
+      "univGbnNm": "대학교",
+      "univNm": "고려대학교",
+      "univUrl": "www.korea.ac.kr"
+    },
+    {
+      "schDptNm": "아시아언어문명학부(동남아시아언어문명)",
+      "univGbnNm": "대학교",
+      "univNm": "서울대학교",
+      "univUrl": "www.snu.ac.kr"
+    },
+    {
+      "schDptNm": "아시아언어문명학부(서아시아언어문명)",
+      "univGbnNm": "대학교",
+      "univNm": "서울대학교",
+      "univUrl": "www.snu.ac.kr"
+    },
+    {
+      "schDptNm": "아시아언어문명학부(인도언어문명)",
+      "univGbnNm": "대학교",
+      "univNm": "서울대학교",
+      "univUrl": "www.snu.ac.kr"
+    },
+    {
+      "schDptNm": "아시아언어문명학부(일본언어문명)",
+      "univGbnNm": "대학교",
+      "univNm": "서울대학교",
+      "univUrl": "www.snu.ac.kr"
+    },
+    {
+      "schDptNm": "언어학과",
+      "univGbnNm": "대학교",
+      "univNm": "서울대학교",
+      "univUrl": "www.snu.ac.kr"
+    },
+    {
+      "schDptNm": "외국어학부",
+      "univGbnNm": "대학교",
+      "univNm": "케이씨대학교",
+      "univUrl": "kcu.ac.kr"
+    },
+    {
+      "schDptNm": "ELLT학과",
+      "univGbnNm": "대학교",
+      "univNm": "한국외국어대학교",
+      "univUrl": "www.hufs.ac.kr"
+    },
+    {
+      "schDptNm": "언어인지과학과",
+      "univGbnNm": "대학교",
+      "univNm": "한국외국어대학교",
+      "univUrl": "www.hufs.ac.kr"
+    },
+    {
+      "schDptNm": "국제한국어교육학과",
+      "univGbnNm": "대학교",
+      "univNm": "세한대학교",
+      "univUrl": "www.sehan.ac.kr"
+    },
+    {
+      "schDptNm": "국제언어문화학과",
+      "univGbnNm": "대학교",
+      "univNm": "우석대학교",
+      "univUrl": "www.woosuk.ac.kr"
+    },
+    {
+      "schDptNm": "관광통역학과",
+      "univGbnNm": "대학교",
+      "univNm": "호원대학교",
+      "univUrl": "www.howon.ac.kr"
+    }
+  ],
+  "relAdvanJobsList": [
+    {
+      "knowJobNm": "교재 및 교구개발자"
+    },
+    {
+      "knowJobNm": "국어학원강사"
+    },
+    {
+      "knowJobNm": "네이미스트"
+    },
+    {
+      "knowJobNm": "논술지도사"
+    },
+    {
+      "knowJobNm": "다문화언어지도사"
+    },
+    {
+      "knowJobNm": "리포터"
+    },
+    {
+      "knowJobNm": "문서감정사"
+    },
+    {
+      "knowJobNm": "문화예술평론가"
+    },
+    {
+      "knowJobNm": "방송기자"
+    },
+    {
+      "knowJobNm": "방송작가"
+    },
+    {
+      "knowJobNm": "번역가"
+    },
+    {
+      "knowJobNm": "사회조사분석가"
+    },
+    {
+      "knowJobNm": "소설가"
+    },
+    {
+      "knowJobNm": "스포츠캐스터"
+    },
+    {
+      "knowJobNm": "스피치강사"
+    },
+    {
+      "knowJobNm": "시나리오작가"
+    },
+    {
+      "knowJobNm": "시인"
+    },
+    {
+      "knowJobNm": "신문기자"
+    },
+    {
+      "knowJobNm": "아나운서"
+    },
+    {
+      "knowJobNm": "언어처리전문가"
+    },
+    {
+      "knowJobNm": "언어학연구원"
+    },
+    {
+      "knowJobNm": "음성인식(ux)디자이너"
+    },
+    {
+      "knowJobNm": "인문계열교수"
+    },
+    {
+      "knowJobNm": "작사가"
+    },
+    {
+      "knowJobNm": "카피라이터"
+    },
+    {
+      "knowJobNm": "키워드에디터"
+    },
+    {
+      "knowJobNm": "통역가"
+    },
+    {
+      "knowJobNm": "편집기자"
+    },
+    {
+      "knowJobNm": "프레젠테이션컨설턴트"
+    },
+    {
+      "knowJobNm": "학예사(큐레이터)"
+    },
+    {
+      "knowJobNm": "한국어강사"
+    }
+  ],
+  "recrStateList": [
+    {
+      "enscMxnp": "90",
+      "enscSpnb": "1010",
+      "grdnNmpr": "149",
+      "univGbnNm": "대학교",
+      "year": "2011"
+    },
+    {
+      "enscMxnp": "90",
+      "enscSpnb": "907",
+      "grdnNmpr": "196",
+      "univGbnNm": "대학교",
+      "year": "2012"
+    },
+    {
+      "enscMxnp": "195",
+      "enscSpnb": "1003",
+      "grdnNmpr": "169",
+      "univGbnNm": "대학교",
+      "year": "2013"
+    },
+    {
+      "enscMxnp": "335",
+      "enscSpnb": "2012",
+      "grdnNmpr": "165",
+      "univGbnNm": "대학교",
+      "year": "2014"
+    },
+    {
+      "enscMxnp": "440",
+      "enscSpnb": "3097",
+      "grdnNmpr": "186",
+      "univGbnNm": "대학교",
+      "year": "2015"
+    },
+    {
+      "enscMxnp": "426",
+      "enscSpnb": "2687",
+      "grdnNmpr": "168",
+      "univGbnNm": "대학교",
+      "year": "2016"
+    },
+    {
+      "enscMxnp": "330",
+      "enscSpnb": "2830",
+      "grdnNmpr": "226",
+      "univGbnNm": "대학교",
+      "year": "2017"
+    },
+    {
+      "enscMxnp": "398",
+      "enscSpnb": "3800",
+      "grdnNmpr": "184",
+      "univGbnNm": "대학교",
+      "year": "2018"
+    },
+    {
+      "enscMxnp": "421",
+      "enscSpnb": "4323",
+      "grdnNmpr": "272",
+      "univGbnNm": "대학교",
+      "year": "2019"
+    },
+    {
+      "enscMxnp": "421",
+      "enscSpnb": "3576",
+      "grdnNmpr": "262",
+      "univGbnNm": "대학교",
+      "year": "2020"
+    }
+  ]
+}

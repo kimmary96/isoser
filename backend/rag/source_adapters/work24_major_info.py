@@ -7,6 +7,7 @@ SOURCE = ApiSourceAdapter(
     display_name="고용24 학과정보 OpenAPI",
     purpose="학과명/학과 상세와 직무 연계 보강",
     key_env_name="WORK24_MAJOR_INFO_AUTH_KEY",
+    key_env_aliases=("학과정보",),
     auth_param_name="authKey",
     guide_url_env_name="WORK24_OPEN_API_GUIDE_URL",
 )
