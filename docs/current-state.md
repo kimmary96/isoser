@@ -8,13 +8,16 @@
 - watcher 공통 파일 처리, lock, frontmatter 파싱, CLI 해석은 `scripts/watcher_shared.py`로 분리되어 있다.
 - local terminal outcome은 `dispatch/alerts/`에 기록된다.
 - 성공 task는 watcher가 task-scoped git automation을 시도한다.
+- `tasks/done`으로 완료된 task는 watcher가 task-scoped commit/push를 수행하고, fast-forward 가능하면 같은 commit을 `origin/main`에도 자동 반영한다.
+- `origin/main` 자동 반영까지 성공한 완료 task는 watcher completed Slack 알림 요약에 main push 결과가 함께 기록된다.
 - watcher는 `tasks/drifted/`와 `tasks/blocked/`를 다시 검사해 자동 복구 가능한 packet은 `tasks/inbox/`로 재투입한다.
 - 자동 복구가 막힌 task는 `cowork/packets/`으로 에스컬레이션되어 Slack approval/feedback 흐름으로 넘겨진다.
 - remote fallback은 `tasks/remote/` + GitHub Action 경로를 사용한다.
 - cowork review-ready는 Slack 버튼과 slash command 양쪽으로 approval을 받을 수 있다.
 - Slack 버튼 승인/거절의 최종 결과 메시지는 채널 공용(`in_channel`)으로 반환되고, 초기 처리중 ack만 클릭 사용자에게 보인다.
 - cowork packet이 같은 `task_id`로 다시 review-ready가 되면 예전 approval marker와 promoted dispatch를 정리한 뒤 재승인 흐름을 연다.
-- cowork Slack review-ready 알림은 같은 `task_id` 재발행 시 이전 알림을 대체한다는 표식을 포함하고, review snapshot 문구는 한국어 위주로 정규화한다.
+- cowork Slack review-ready 알림은 같은 `task_id` 재발행 시 이전 알림을 대체한다는 표식을 포함하고, review snapshot 문구는 한국어 중심의 번호형 `판정`/`핵심 확인사항` 포맷으로 정규화한다.
+- review-ready Slack 메시지는 패킷/리뷰 경로와 승인 방법 안내를 숨기고, `판정`과 번호형 `핵심 확인사항` 중심으로 압축해서 보여준다.
 - Slack approval은 로컬 파일 marker 대신 Supabase `cowork_approvals` 공유 큐에 기록되고, 로컬 `cowork_watcher.py`가 이를 poll해서 `tasks/inbox|remote` 승격과 consumed 처리를 수행한다.
 - `frontend/app/slack/interactivity/cowork-review/route.ts`는 Vercel 프론트 도메인으로 들어온 Slack 버튼 요청을 FastAPI backend의 `/slack/interactivity/cowork-review`로 프록시한다.
 - `frontend/app/(landing)/programs/page.tsx`는 URL query 기반 검색, 카테고리/지역 필터, 모집중 토글, 정렬, 페이지네이션을 지원한다.

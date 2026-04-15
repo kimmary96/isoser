@@ -585,6 +585,52 @@ def sync_completed_task_to_git(
         )
         return ("push-failed", push_output.strip() or "git push failed", branch, commit_sha)
 
+    if branch != "main":
+        fetch_main_result = run_git(["fetch", "origin", "main"], check=False)
+        fetch_main_output = (fetch_main_result.stdout or "") + (fetch_main_result.stderr or "")
+        if fetch_main_result.returncode != 0:
+            append_git_metadata(
+                result_report,
+                status="main-fetch-failed",
+                branch=branch,
+                commit_sha=commit_sha,
+                message=fetch_main_output.strip() or "git fetch origin main failed",
+            )
+            return ("main-fetch-failed", fetch_main_output.strip() or "git fetch origin main failed", branch, commit_sha)
+
+        ancestry_check = run_git(["merge-base", "--is-ancestor", "origin/main", commit_sha], check=False)
+        if ancestry_check.returncode != 0:
+            message = "origin/main is not an ancestor of the task commit, so watcher skipped automatic main promotion."
+            append_git_metadata(
+                result_report,
+                status="main-promotion-skipped",
+                branch=branch,
+                commit_sha=commit_sha,
+                message=message,
+            )
+            return ("main-promotion-skipped", message, branch, commit_sha)
+
+        main_push_result = run_git(["push", "origin", f"{commit_sha}:refs/heads/main"], check=False)
+        main_push_output = (main_push_result.stdout or "") + (main_push_result.stderr or "")
+        if main_push_result.returncode != 0:
+            append_git_metadata(
+                result_report,
+                status="main-push-failed",
+                branch=branch,
+                commit_sha=commit_sha,
+                message=main_push_output.strip() or "git push to origin/main failed",
+            )
+            return ("main-push-failed", main_push_output.strip() or "git push to origin/main failed", branch, commit_sha)
+
+        append_git_metadata(
+            result_report,
+            status="merged-main",
+            branch=branch,
+            commit_sha=commit_sha,
+            message=f"{commit_message} Auto-promoted to origin/main.",
+        )
+        return ("merged-main", f"{commit_message} Auto-promoted to origin/main.", branch, commit_sha)
+
     append_git_metadata(
         result_report,
         status="pushed",
@@ -1011,7 +1057,14 @@ def handle_task(task_path: str) -> None:
                     next_action="Review the result report Git Automation section and push manually if needed.",
                 )
         else:
-            if git_status in {"push-failed", "commit-failed", "watcher-sync-failed"}:
+            if git_status in {
+                "push-failed",
+                "commit-failed",
+                "watcher-sync-failed",
+                "main-fetch-failed",
+                "main-push-failed",
+                "main-promotion-skipped",
+            }:
                 summary = git_message
                 if git_branch:
                     summary = f"{summary} (branch={git_branch})"
@@ -1028,7 +1081,9 @@ def handle_task(task_path: str) -> None:
                 )
             else:
                 summary = "Task completed successfully."
-                if git_status == "pushed" and git_branch and git_commit_sha:
+                if git_status == "merged-main" and git_commit_sha:
+                    summary = f"Task completed and auto-promoted to origin/main at {git_commit_sha}."
+                elif git_status == "pushed" and git_branch and git_commit_sha:
                     summary = f"Task completed and pushed to origin/{git_branch} at {git_commit_sha}."
                 elif git_status == "skipped":
                     summary = "Task completed but watcher found no task-scoped staged changes to commit."

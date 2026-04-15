@@ -11,19 +11,19 @@ def normalize(raw_item: Dict) -> Optional[Dict]:
     category_hint = raw_item.get("category_hint")
 
     return {
-        "source": meta.get("source_name", ""),
+        "source": meta.get("source_key") or meta.get("source_name", ""),
         "source_type": meta.get("source_type", "national_api"),
         "collection_method": meta.get("collection_method", "public_api"),
         "scope": meta.get("scope", "national"),
         "title": title,
         "category": category_hint if category_hint else _classify_category(title),
-        "target": _extract_targets(title),
+        "target": raw_item.get("target") or _extract_targets(title),
         "region": meta.get("region", "전국"),
         "region_detail": meta.get("region_detail", ""),
         "deadline": _parse_deadline(raw_item.get("raw_deadline", "")),
         "link": raw_item.get("link", ""),
         "is_ad": False,
-        "sponsor_name": None,
+        "sponsor_name": raw_item.get("sponsor_name"),
     }
 
 
