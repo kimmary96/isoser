@@ -163,6 +163,12 @@ def test_sync_completed_task_to_git_stages_task_paths_and_appends_git_metadata(t
             return FakeResult(stdout="[develop abc123] [codex] TASK-TEST 구현 완료.\n")
         if args[:3] == ["push", "origin", "develop"]:
             return FakeResult(stdout="pushed\n")
+        if args[:3] == ["fetch", "origin", "main"]:
+            return FakeResult(stdout="fetched\n")
+        if args[:3] == ["merge-base", "--is-ancestor", "origin/main"]:
+            return FakeResult(returncode=0)
+        if args[:3] == ["push", "origin", "abc123:refs/heads/main"]:
+            return FakeResult(stdout="main pushed\n")
         return FakeResult()
 
     monkeypatch.setattr(watcher, "run_git", fake_run_git)
@@ -182,7 +188,8 @@ def test_sync_completed_task_to_git_stages_task_paths_and_appends_git_metadata(t
     assert "frontend/app/example/page.tsx" in calls[0]
     updated_report = result_report.read_text(encoding="utf-8")
     assert "## Git Automation" in updated_report
-    assert "- status: `pushed`" in updated_report
+    assert "- status: `merged-main`" in updated_report
+    assert "Auto-promoted to origin/main." in updated_report
 
 
 def test_write_alert_creates_dispatch_file(tmp_path, monkeypatch) -> None:
@@ -374,6 +381,23 @@ def test_format_slack_alert_message_contains_core_fields() -> None:
     assert "`reports/TASK-TEST-drift.md`" in message
     assert "*요약*" in message
     assert "Codex stopped because of repository drift." in message
+
+
+def test_format_slack_alert_message_surfaces_main_promotion_summary() -> None:
+    message = watcher.format_slack_alert_message(
+        task_id="TASK-TEST",
+        stage="completed",
+        status="done",
+        packet_path="tasks/done/TASK-TEST.md",
+        report_path="reports/TASK-TEST-result.md",
+        summary="Task completed and auto-promoted to origin/main at abc123.",
+        next_action=None,
+    )
+
+    assert "*단계*: 완료" in message
+    assert "*상태*: 완료" in message
+    assert "origin/main" in message
+    assert "abc123" in message
 
 
 def test_build_slack_alert_payload_adds_structured_blocks() -> None:

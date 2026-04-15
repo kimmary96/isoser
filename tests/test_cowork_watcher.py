@@ -313,16 +313,14 @@ def test_format_slack_dispatch_message_contains_core_fields(monkeypatch) -> None
     assert "*단계*: 검토 준비" in message
     assert "*제목*: 테스트 비교 페이지" in message
     assert "*상태*: 승인 대기" in message
-    assert "*패킷*" in message
-    assert "`cowork/packets/TASK-TEST.md`" in message
-    assert "*리뷰*" in message
-    assert "`cowork/reviews/TASK-TEST-review.md`" in message
-    assert "*리뷰 요약*" in message
+    assert "*판정*" in message
     assert "아직 승격 준비가 되지 않았습니다." in message
-    assert "- 프론트매터 완성도:" in message
-    assert "- 드리프트 위험:" in message
-    assert "*승인 방법*" in message
-    assert "/isoser-approve TASK-TEST inbox" in message
+    assert "*핵심 확인사항*" in message
+    assert "1. 프론트매터 완성도:" in message
+    assert "2. 드리프트 위험:" in message
+    assert "*패킷*" not in message
+    assert "*리뷰*" not in message
+    assert "승인 방법" not in message
     assert "*최신본 안내*" in message
     assert "이 알림은 이전 검토 준비 메시지를 대체합니다." in message
 
@@ -348,6 +346,22 @@ def test_build_slack_dispatch_payload_adds_buttons_for_review_ready() -> None:
     actions = blocks[2]["elements"]
     action_ids = [element["action_id"] for element in actions]
     assert action_ids == ["cowork_approve_inbox", "cowork_approve_remote", "cowork_reject"]
+
+
+def test_localize_review_snapshot_line_reduces_english_mixture() -> None:
+    line = (
+        "Not ready for promotion. Frontmatter is complete and `planned_against_commit` "
+        "matches current `HEAD`, so this is not blocked by packet metadata or general repo drift. "
+        "The packet is still execution-risky because its data-shape, category, deduplication, "
+        "and sync-path assumptions do not match the current repository closely enough."
+    )
+
+    localized = cowork_watcher.localize_review_snapshot_line(line)
+
+    assert "아직 승격 준비가 되지 않았습니다." in localized
+    assert "프론트매터는 완전합니다" in localized
+    assert "데이터 형태, 카테고리, 중복 제거, 동기화 경로 가정이" in localized
+    assert "The packet is still execution-risky" not in localized
 
 
 def test_startup_warning_messages_warns_when_slack_webhook_missing(monkeypatch) -> None:

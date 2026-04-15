@@ -383,15 +383,19 @@ def review_snapshot_for(task_id: str) -> list[str]:
 
 def localize_review_snapshot_line(line: str) -> str:
     localized = line
+    localized = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"`\1`", localized)
     replacements = [
         ("Not ready for promotion yet.", "아직 승격 준비가 되지 않았습니다."),
         ("Not ready for promotion.", "아직 승격 준비가 되지 않았습니다."),
         ("Ready for promotion.", "승격 가능한 상태입니다."),
         ("Frontmatter is complete", "프론트매터는 완전합니다"),
+        ("and the referenced repository paths generally exist,", "참조한 저장소 경로도 대체로 유효합니다."),
+        ("and `planned_against_commit`", "그리고 `planned_against_commit`"),
         ("planned_against_commit", "`planned_against_commit`"),
         ("matches current `HEAD`", "현재 `HEAD`와 일치합니다"),
         ("so this is not blocked by packet metadata or general repo drift.", "따라서 packet 메타데이터나 일반적인 저장소 드리프트 때문에 막힌 상태는 아닙니다."),
         ("The packet is still execution-risky because", "다만 이 packet은 실행 관점에서 아직 위험합니다. 이유는"),
+        ("its data-shape, category, deduplication, and sync-path assumptions", "데이터 형태, 카테고리, 중복 제거, 동기화 경로 가정이"),
         ("do not match the current repository closely enough.", "현재 저장소와 충분히 맞지 않기 때문입니다."),
         ("- Frontmatter completeness:", "- 프론트매터 완성도:"),
         ("- Planned commit / drift:", "- planned commit / 드리프트:"),
@@ -410,16 +414,59 @@ def localize_review_snapshot_line(line: str) -> str:
         ("pass.", "통과."),
         ("partial pass.", "부분 통과."),
         ("complete.", "완전합니다."),
-        ("generally accurate", "대체로 정확함"),
+        ("generally accurate", "대체로 정확합니다"),
+        ("for `backend/rag/collector/`,", "`backend/rag/collector/` 기준으로,"),
+        ("mostly pass.", "대체로 통과."),
+        ("material.", "중요합니다."),
         ("material in the touched area even though commit drift is zero.", "커밋 드리프트는 없지만 실제 변경 범위에서는 중요합니다."),
         ("Current `HEAD` matches the packet exactly.", "현재 `HEAD`와 packet이 정확히 일치합니다."),
         ("Required fields", "필수 필드"),
         ("are present.", "이 모두 존재합니다."),
         ("exists.", "존재합니다."),
+        ("but the packet understates the actual integration surface.", "다만 packet이 실제 연동 범위를 충분히 설명하지 못합니다."),
+        ("but the packet has material drift against the current codebase and would drive out-of-band schema changes that are no longer aligned with the repo-managed migrations.", "다만 현재 코드베이스와 중요한 드리프트가 있고, 저장소 migration 흐름과 맞지 않는 수동 schema 변경을 유도합니다."),
+        ("As written,", "현재 packet 그대로면 "),
+        ("Current execution also depends on", "현재 실행은 추가로 "),
+        ("The packet says", "packet에는 "),
+        ("current code likely requires", "현재 코드 기준으로는 "),
+        ("updates to register six new collectors", "새 collector 6개를 등록하는 변경이 필요하고"),
+        ("may also require", "추가로"),
+        ("or schema work because current category and source type constraints do not fit the packet.", "현재 카테고리와 source type 제약이 packet과 맞지 않아서 normalizer 또는 schema 변경도 필요할 수 있습니다."),
+        ("but current DB constraint only allows", "하지만 현재 DB 제약은 "),
+        ("packet requires direct use of", "packet은 "),
+        ("rows would fail unless packet scope explicitly includes schema and consumer updates.", "값은 schema와 consumer 변경이 범위에 명시되지 않으면 저장에 실패합니다."),
+        ("packet requires `source_type = 'regional_crawl'`,", "packet은 `source_type = regional_crawl`를 요구하지만,"),
+        ("This is a hard blocker unless the packet changes the required value or explicitly includes a migration.", "필수 값 자체를 바꾸거나 migration을 범위에 포함하지 않으면 바로 막히는 조건입니다."),
+        ("packet says `raw` is a required collected field,", "packet은 `raw`를 필수 수집 필드로 보지만,"),
+        ("the schema currently exposes `raw_data jsonb`", "현재 schema는 `raw_data jsonb`를 사용합니다"),
+        ("The packet does not say whether collector `raw` should stay transient, map to `raw_data`, or require schema change.", "collector의 `raw`를 메모리 전용으로 둘지, `raw_data`로 저장할지, schema를 바꿀지 packet에 명확하지 않습니다."),
+        ("packet defines `source + title + deadline` as primary and `source + link` as secondary,", "packet은 1차 중복 키를 `source + title + deadline`, 2차 중복 키를 `source + link`로 정의하지만,"),
+        ("The packet’s acceptance criteria therefore cannot be met as written.", "그래서 현재 packet 기준 acceptance는 그대로는 만족시킬 수 없습니다."),
+        ("depends on live remote site availability and local environment secrets,", "외부 사이트 가용성과 로컬 환경변수에 의존하지만,"),
+        ("The packet does not specify which operational path is authoritative after implementation.", "구현 후 어떤 실행 경로를 기준으로 삼을지 packet에 명시되어 있지 않습니다."),
+        ("The packet does not state whether those fields are intentionally out of current DB scope.", "이 필드들이 현재 DB 범위 밖의 참고 값인지, 실제 저장 대상인지 packet에서 정하지 않았습니다."),
+        ("Execution readiness is weaker because the implementer cannot verify those documents are present or authoritative from the packet alone.", "packet만으로는 해당 문서의 존재 여부와 기준 문서 여부를 확인할 수 없어 실행 준비도가 떨어집니다."),
+        ("For this repo, that omission matters because", "이 저장소에서는 이 누락이 중요한데, 이유는 "),
     ]
     for source, target in replacements:
         localized = localized.replace(source, target)
+    localized = re.sub(r"\s+", " ", localized).strip()
     return localized
+
+
+def summarize_review_snapshot(task_id: str) -> tuple[str, list[str]]:
+    review_snapshot = review_snapshot_for(task_id)
+    if not review_snapshot:
+        return ("리뷰 요약이 아직 없습니다.", [])
+
+    overall = localize_review_snapshot_line(review_snapshot[0]).lstrip("- ").strip()
+    findings: list[str] = []
+    for raw_item in review_snapshot[1:]:
+        item = localize_review_snapshot_line(raw_item).lstrip("- ").strip()
+        if not item:
+            continue
+        findings.append(item)
+    return (overall, findings[:4])
 
 
 def format_slack_dispatch_message(*, task_id: str, stage: str, lines: list[str]) -> str:
@@ -452,13 +499,10 @@ def format_slack_dispatch_message(*, task_id: str, stage: str, lines: list[str])
 
     interesting_prefixes = (
         "status:",
-        "packet:",
-        "review:",
         "target:",
         "approved_at:",
         "- freshness:",
         "- note:",
-        "- next_step:",
         "- supersedes_previous_review_ready:",
     )
     for line in lines:
@@ -469,12 +513,6 @@ def format_slack_dispatch_message(*, task_id: str, stage: str, lines: list[str])
         if stripped.startswith("status:"):
             status_value = stripped.removeprefix("status:").strip()
             message_lines.append(f"*상태*: {status_labels.get(status_value, status_value)}")
-        elif stripped.startswith("packet:"):
-            packet_value = stripped.removeprefix("packet:").strip()
-            message_lines.extend(["", "*패킷*", packet_value])
-        elif stripped.startswith("review:"):
-            review_value = stripped.removeprefix("review:").strip()
-            message_lines.extend(["", "*리뷰*", review_value])
         elif stripped.startswith("target:"):
             target_value = stripped.removeprefix("target:").strip().strip("`")
             target_label = "원격 큐" if target_value == "remote" else "로컬 inbox"
@@ -498,14 +536,6 @@ def format_slack_dispatch_message(*, task_id: str, stage: str, lines: list[str])
             elif note == "packet copied from cowork scratch space into an execution queue":
                 note = "packet을 cowork scratch 공간에서 실행 큐로 복사했습니다."
             message_lines.extend(["", "*메모*", note])
-        elif stripped.startswith("- next_step:"):
-            next_step = stripped.removeprefix("- next_step:").strip()
-            if next_step in {
-                "reviewer reads the review and creates `cowork/approvals/<task-id>.ok` when approved",
-                "reviewer approves in Slack and the shared approval queue is consumed by the local cowork watcher",
-            }:
-                next_step = "review 내용을 확인한 뒤 승인하면 shared approval queue에 기록되고, 로컬 cowork watcher가 실제 승격을 수행합니다."
-            message_lines.extend(["", "*다음 조치*", next_step])
         elif stripped.startswith("- supersedes_previous_review_ready:"):
             previous_created_at = stripped.removeprefix("- supersedes_previous_review_ready:").strip()
             message_lines.extend(
@@ -517,19 +547,12 @@ def format_slack_dispatch_message(*, task_id: str, stage: str, lines: list[str])
             )
 
     if stage == "review-ready":
-        review_snapshot = review_snapshot_for(task_id)
-        if review_snapshot:
-            message_lines.extend(["", "*리뷰 요약*"])
-            for item in review_snapshot:
-                message_lines.append(localize_review_snapshot_line(item))
-        message_lines.extend(
-            [
-                "",
-                "*승인 방법*",
-                f"`승인` 버튼 또는 `/isoser-approve {task_id} inbox`",
-                f"`원격` 버튼 또는 `/isoser-approve {task_id} remote`",
-            ]
-        )
+        overall, findings = summarize_review_snapshot(task_id)
+        message_lines.extend(["", "*판정*", overall])
+        if findings:
+            message_lines.extend(["", "*핵심 확인사항*"])
+            for index, item in enumerate(findings, start=1):
+                message_lines.append(f"{index}. {item}")
 
     return "\n".join(message_lines)
 

@@ -1,5 +1,20 @@
 # 리팩토링 로그
 
+## 2026-04-15 watcher done 후 main 자동 반영 추가
+
+- 수정 파일:
+  - `watcher.py`
+  - `tests/test_watcher.py`
+  - `docs/current-state.md`
+- 변경 내용:
+  - `tasks/done` 완료 후 watcher git automation이 현재 브랜치 push 뒤 `origin/main` fast-forward 가능 여부를 확인하고 자동 반영하도록 확장
+  - `origin/main`이 현재 task commit의 조상일 때만 `git push origin <commit>:refs/heads/main`을 수행해 안전한 fast-forward만 허용
+  - fetch/main push 실패 또는 main 조상 관계 불일치는 result report Git Automation 섹션과 watcher alert에 action-required로 남기도록 정리
+- 유지된 동작:
+  - task-scoped staging/commit 원칙은 그대로 유지
+  - 현재 브랜치가 이미 `main`인 경우 기존 push 동작만 수행
+  - main 자동 반영 성공 시 completed Slack 알림 요약에 `origin/main` 반영 결과가 함께 노출됨
+
 ## 2026-04-15 cowork approval shared queue 전환
 
 - 수정 파일:
@@ -48,9 +63,12 @@
   - 같은 `task_id`의 `review-ready`가 다시 발행될 때 Slack 메시지에 이전 검토 준비 알림을 대체한다는 `최신본 안내` 문구를 추가
   - review snapshot에 섞이던 영어 공통 표현을 한국어 위주로 정규화해 Slack에서 바로 읽기 쉽게 조정
   - review-ready 포맷 변경을 테스트로 고정
+  - 추가 영어 표현 치환을 보강해 전체 판정과 핵심 확인사항에 영어/한국어가 섞이는 현상을 더 줄임
 - 유지된 동작:
   - 실제 리뷰 원문 파일은 그대로 유지하고 Slack 표시 단계에서만 요약 문구를 정규화
   - approval/reject 버튼과 기존 review-ready dispatch 파일 경로는 그대로 유지
+- 추가 조정:
+  - review-ready Slack 메시지에서 패킷/리뷰 경로, 승인 방법, 반복 설명을 제거하고 `판정` + 번호형 `핵심 확인사항` 중심으로 재구성
 - 후속 후보:
   - 오래된 Slack review-ready 메시지를 자동으로 resolve하거나 스레드 reply로 무효화 표식을 남기는 방식 검토
 

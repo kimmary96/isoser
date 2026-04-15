@@ -7,11 +7,27 @@ try:
     from rag.collector.hrd_collector import HrdCollector
     from rag.collector.kstartup_collector import KstartupApiCollector
     from rag.collector.normalizer import normalize
+    from rag.collector.regional_html_collectors import (
+        CampusTownCollector,
+        SbaPostingCollector,
+        SesacCollector,
+        Seoul50PlusCollector,
+        SeoulJobPortalCollector,
+        SeoulWomanUpCollector,
+    )
     from rag.collector.work24_collector import Work24Collector
 except ImportError:
     from backend.rag.collector.hrd_collector import HrdCollector
     from backend.rag.collector.kstartup_collector import KstartupApiCollector
     from backend.rag.collector.normalizer import normalize
+    from backend.rag.collector.regional_html_collectors import (
+        CampusTownCollector,
+        SbaPostingCollector,
+        SesacCollector,
+        Seoul50PlusCollector,
+        SeoulJobPortalCollector,
+        SeoulWomanUpCollector,
+    )
     from backend.rag.collector.work24_collector import Work24Collector
 
 
@@ -54,6 +70,12 @@ COLLECTORS = [
     HrdCollector(),
     Work24Collector(),
     KstartupApiCollector(),
+    SeoulJobPortalCollector(),
+    SbaPostingCollector(),
+    SesacCollector(),
+    Seoul50PlusCollector(),
+    CampusTownCollector(),
+    SeoulWomanUpCollector(),
 ]
 
 
@@ -133,3 +155,9 @@ def run_all_collectors() -> Dict:
         )
 
     return {"saved_count": saved_count, "failed_count": failed_count, "sources": source_results}
+
+
+if __name__ == "__main__":
+    import json
+
+    print(json.dumps(run_all_collectors(), ensure_ascii=False, indent=2))
