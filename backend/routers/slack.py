@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import json
 import os
 import time
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Request
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 
 
 router = APIRouter(prefix="/slack", tags=["slack"])
@@ -97,6 +98,10 @@ def _promoted_dispatch_path_for(task_id: str) -> Path:
     return COWORK_DISPATCH_DIR / f"{task_id}-promoted.md"
 
 
+def _rejected_dispatch_path_for(task_id: str) -> Path:
+    return COWORK_DISPATCH_DIR / f"{task_id}-review-rejected.md"
+
+
 def _packet_needs_review(packet_path: Path, review_path: Path) -> bool:
     if not review_path.exists():
         return True
@@ -120,6 +125,68 @@ def _write_approval_marker(*, task_id: str, target: str, user_id: str, user_name
 
 def _slack_message(message: str, status_code: int = 200) -> PlainTextResponse:
     return PlainTextResponse(message, status_code=status_code)
+
+
+def _slack_interactive_message(message: str, *, replace_original: bool = False) -> JSONResponse:
+    return JSONResponse(
+        {
+            "response_type": "ephemeral",
+            "replace_original": replace_original,
+            "text": message,
+        }
+    )
+
+
+def _handle_approval_action(*, task_id: str, target: str, user_id: str, user_name: str) -> str:
+    packet_path = _packet_path_for(task_id)
+    review_path = _review_path_for(task_id)
+
+    if not packet_path.exists():
+        return f"Packet not found for `{task_id}`."
+    if not review_path.exists():
+        return f"Review not found for `{task_id}`."
+    if _packet_needs_review(packet_path, review_path):
+        return f"Review is stale for `{task_id}`. Regenerate the review, then approve again."
+    if _promoted_dispatch_path_for(task_id).exists():
+        return f"`{task_id}` is already promoted."
+
+    approval_path = _write_approval_marker(
+        task_id=task_id,
+        target=target,
+        user_id=user_id,
+        user_name=user_name,
+    )
+    return (
+        f"Approved `{task_id}` for `{target}`. "
+        f"Marker created at `{approval_path.relative_to(REPO_ROOT).as_posix()}`."
+    )
+
+
+def _write_rejection_dispatch(*, task_id: str, user_id: str, user_name: str) -> Path:
+    dispatch_path = _rejected_dispatch_path_for(task_id)
+    body = "\n".join(
+        [
+            f"# Dispatch: {task_id}",
+            "",
+            "stage: review-rejected",
+            "status: rejected",
+            f"packet: `cowork/packets/{task_id}.md`",
+            f"review: `cowork/reviews/{task_id}-review.md`",
+            f"created_at: `{time.strftime('%Y-%m-%dT%H:%M:%S%z')}`",
+            f"- rejected_by: `slack:{user_name or user_id}`",
+            "- note: reviewer rejected promotion from Slack action buttons",
+        ]
+    )
+    dispatch_path.write_text(body.rstrip() + "\n", encoding="utf-8")
+    return dispatch_path
+
+
+def _handle_reject_action(*, task_id: str, user_id: str, user_name: str) -> str:
+    packet_path = _packet_path_for(task_id)
+    if not packet_path.exists():
+        return f"Packet not found for `{task_id}`."
+    dispatch_path = _write_rejection_dispatch(task_id=task_id, user_id=user_id, user_name=user_name)
+    return f"Rejected `{task_id}`. Dispatch recorded at `{dispatch_path.relative_to(REPO_ROOT).as_posix()}`."
 
 
 @router.post("/commands/cowork-approve", response_class=PlainTextResponse)
@@ -160,26 +227,78 @@ async def slack_cowork_approve(request: Request) -> PlainTextResponse:
         task_id, target = _parse_command_text(str(form.get("text", "")))
     except HTTPException as error:
         return _slack_message(str(error.detail))
-    packet_path = _packet_path_for(task_id)
-    review_path = _review_path_for(task_id)
-
-    if not packet_path.exists():
-        return _slack_message(f"Packet not found for `{task_id}`.")
-    if not review_path.exists():
-        return _slack_message(f"Review not found for `{task_id}`.")
-    if _packet_needs_review(packet_path, review_path):
-        return _slack_message(
-            f"Review is stale for `{task_id}`. Regenerate the review, then approve again."
-        )
-    if _promoted_dispatch_path_for(task_id).exists():
-        return _slack_message(f"`{task_id}` is already promoted.")
-
-    approval_path = _write_approval_marker(
-        task_id=task_id,
-        target=target,
-        user_id=user_id,
-        user_name=user_name,
-    )
     return _slack_message(
-        f"Approved `{task_id}` for `{target}`. Marker created at `{approval_path.relative_to(REPO_ROOT).as_posix()}`."
+        _handle_approval_action(task_id=task_id, target=target, user_id=user_id, user_name=user_name)
     )
+
+
+@router.post("/interactivity/cowork-review")
+async def slack_cowork_interactivity(request: Request) -> JSONResponse:
+    body = await request.body()
+    try:
+        _verify_slack_signature(
+            body=body,
+            timestamp=request.headers.get("X-Slack-Request-Timestamp"),
+            signature=request.headers.get("X-Slack-Signature"),
+        )
+    except HTTPException as error:
+        if error.status_code == 401:
+            return _slack_interactive_message(
+                "Slack signature verification failed. Check `SLACK_SIGNING_SECRET` and the Interactivity Request URL."
+            )
+        return _slack_interactive_message(str(error.detail))
+
+    form = await request.form()
+    payload_raw = str(form.get("payload", "")).strip()
+    if not payload_raw:
+        return _slack_interactive_message("Missing interactive payload.")
+
+    try:
+        payload = json.loads(payload_raw)
+    except json.JSONDecodeError:
+        return _slack_interactive_message("Invalid interactive payload.")
+
+    allowed_user_ids = _get_allowed_user_ids()
+    if not allowed_user_ids:
+        return _slack_interactive_message(
+            "Approval is not configured. Set `SLACK_APPROVER_USER_IDS` in backend env and restart the backend."
+        )
+
+    user = payload.get("user") or {}
+    user_id = str(user.get("id", "")).strip()
+    user_name = str(user.get("username", "") or user.get("name", "")).strip()
+    if user_id not in allowed_user_ids:
+        return _slack_interactive_message(
+            f"Slack user `{user_id}` is not allowed to approve. Add it to `SLACK_APPROVER_USER_IDS` and retry."
+        )
+
+    actions = payload.get("actions") or []
+    if not actions:
+        return _slack_interactive_message("No Slack action was provided.")
+
+    action = actions[0]
+    action_id = str(action.get("action_id", "")).strip()
+    value_raw = str(action.get("value", "")).strip()
+    try:
+        value = json.loads(value_raw) if value_raw else {}
+    except json.JSONDecodeError:
+        return _slack_interactive_message("Invalid action value.")
+
+    task_id = str(value.get("task_id", "")).strip()
+    target = str(value.get("target", "inbox")).strip()
+    if not task_id:
+        return _slack_interactive_message("Task ID is missing from the Slack action.")
+
+    if action_id == "cowork_reject":
+        return _slack_interactive_message(
+            _handle_reject_action(task_id=task_id, user_id=user_id, user_name=user_name)
+        )
+
+    if action_id in {"cowork_approve_inbox", "cowork_approve_remote"}:
+        if target not in {"inbox", "remote"}:
+            return _slack_interactive_message("Target must be inbox or remote.")
+        return _slack_interactive_message(
+            _handle_approval_action(task_id=task_id, target=target, user_id=user_id, user_name=user_name)
+        )
+
+    return _slack_interactive_message(f"Unsupported Slack action `{action_id}`.")

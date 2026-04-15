@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import json
 import time
 from urllib.parse import urlencode
 
@@ -177,3 +178,102 @@ def test_slack_cowork_approve_shows_user_id_when_not_allowlisted(client, tmp_pat
 
     assert response.status_code == 200
     assert "U123" in response.text
+
+
+def test_slack_cowork_interactivity_approves_remote(client, tmp_path, monkeypatch) -> None:
+    packets_dir = tmp_path / "cowork" / "packets"
+    reviews_dir = tmp_path / "cowork" / "reviews"
+    approvals_dir = tmp_path / "cowork" / "approvals"
+    dispatch_dir = tmp_path / "cowork" / "dispatch"
+
+    for directory in [packets_dir, reviews_dir, approvals_dir, dispatch_dir]:
+        directory.mkdir(parents=True, exist_ok=True)
+
+    packet = packets_dir / "TASK-TEST.md"
+    packet.write_text("---\nid: TASK-TEST\nplanned_at: 2026-04-15T10:00:00+09:00\nplanned_against_commit: abc123\nstatus: draft\ntype: feature\ntitle: test\n---\n", encoding="utf-8")
+    review = reviews_dir / "TASK-TEST-review.md"
+    review.write_text("# latest review\n", encoding="utf-8")
+    review.touch()
+    packet.touch()
+    review.touch()
+
+    monkeypatch.setattr(slack, "COWORK_PACKETS_DIR", packets_dir)
+    monkeypatch.setattr(slack, "COWORK_REVIEWS_DIR", reviews_dir)
+    monkeypatch.setattr(slack, "COWORK_APPROVALS_DIR", approvals_dir)
+    monkeypatch.setattr(slack, "COWORK_DISPATCH_DIR", dispatch_dir)
+    monkeypatch.setenv("SLACK_SIGNING_SECRET", "test-secret")
+    monkeypatch.setenv("SLACK_APPROVER_USER_IDS", "U123")
+
+    payload = {
+        "user": {"id": "U123", "username": "tester"},
+        "actions": [
+            {
+                "action_id": "cowork_approve_remote",
+                "value": json.dumps({"task_id": "TASK-TEST", "target": "remote"}),
+            }
+        ],
+    }
+    body = urlencode({"payload": json.dumps(payload)}).encode("utf-8")
+    timestamp = str(int(time.time()))
+    signature = _build_signature("test-secret", timestamp, body)
+
+    response = client.post(
+        "/slack/interactivity/cowork-review",
+        content=body,
+        headers={
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-Slack-Request-Timestamp": timestamp,
+            "X-Slack-Signature": signature,
+        },
+    )
+
+    assert response.status_code == 200
+    assert "Approved `TASK-TEST` for `remote`" in response.text
+    assert (approvals_dir / "TASK-TEST.ok").exists()
+
+
+def test_slack_cowork_interactivity_rejects_review(client, tmp_path, monkeypatch) -> None:
+    packets_dir = tmp_path / "cowork" / "packets"
+    reviews_dir = tmp_path / "cowork" / "reviews"
+    approvals_dir = tmp_path / "cowork" / "approvals"
+    dispatch_dir = tmp_path / "cowork" / "dispatch"
+
+    for directory in [packets_dir, reviews_dir, approvals_dir, dispatch_dir]:
+        directory.mkdir(parents=True, exist_ok=True)
+
+    packet = packets_dir / "TASK-TEST.md"
+    packet.write_text("---\nid: TASK-TEST\nplanned_at: 2026-04-15T10:00:00+09:00\nplanned_against_commit: abc123\nstatus: draft\ntype: feature\ntitle: test\n---\n", encoding="utf-8")
+
+    monkeypatch.setattr(slack, "COWORK_PACKETS_DIR", packets_dir)
+    monkeypatch.setattr(slack, "COWORK_REVIEWS_DIR", reviews_dir)
+    monkeypatch.setattr(slack, "COWORK_APPROVALS_DIR", approvals_dir)
+    monkeypatch.setattr(slack, "COWORK_DISPATCH_DIR", dispatch_dir)
+    monkeypatch.setenv("SLACK_SIGNING_SECRET", "test-secret")
+    monkeypatch.setenv("SLACK_APPROVER_USER_IDS", "U123")
+
+    payload = {
+        "user": {"id": "U123", "username": "tester"},
+        "actions": [
+            {
+                "action_id": "cowork_reject",
+                "value": json.dumps({"task_id": "TASK-TEST"}),
+            }
+        ],
+    }
+    body = urlencode({"payload": json.dumps(payload)}).encode("utf-8")
+    timestamp = str(int(time.time()))
+    signature = _build_signature("test-secret", timestamp, body)
+
+    response = client.post(
+        "/slack/interactivity/cowork-review",
+        content=body,
+        headers={
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-Slack-Request-Timestamp": timestamp,
+            "X-Slack-Signature": signature,
+        },
+    )
+
+    assert response.status_code == 200
+    assert "Rejected `TASK-TEST`" in response.text
+    assert (dispatch_dir / "TASK-TEST-review-rejected.md").exists()
