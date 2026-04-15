@@ -1,6 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+
+import { getDashboardMe } from "@/lib/api/app";
 
 import {
   chipOptions,
@@ -11,6 +15,16 @@ import {
   tickerLoop,
   toneClassMap,
 } from "./_content";
+
+type HeaderUser = {
+  displayName: string;
+  avatarUrl: string | null;
+} | null;
+
+function getHeaderInitial(name: string | null | undefined) {
+  const initial = name?.trim()?.slice(0, 1);
+  return initial ? initial.toUpperCase() : "U";
+}
 
 export function LandingATickerBar() {
   return (
@@ -29,29 +43,98 @@ export function LandingATickerBar() {
 }
 
 export function LandingANavBar() {
+  const pathname = usePathname();
+  const [user, setUser] = useState<HeaderUser>(null);
+  const [authChecked, setAuthChecked] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadUser = async () => {
+      try {
+        const result = await getDashboardMe();
+        if (!mounted) return;
+        setUser(
+          result.user
+            ? {
+                displayName: result.user.displayName,
+                avatarUrl: result.user.avatarUrl,
+              }
+            : null
+        );
+      } catch {
+        if (!mounted) return;
+        setUser(null);
+      } finally {
+        if (mounted) {
+          setAuthChecked(true);
+        }
+      }
+    };
+
+    void loadUser();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const isCompareActive = pathname.startsWith("/compare");
+  const isProgramsActive = pathname.startsWith("/programs") && !isCompareActive;
+  const isDashboardActive = pathname.startsWith("/dashboard");
+
   return (
     <nav className="sticky top-9 z-[210] border-b border-white/10 bg-[rgba(10,15,30,0.96)] px-5 py-4 backdrop-blur-xl sm:px-8 lg:px-12">
       <div className="mx-auto flex max-w-6xl items-center gap-4">
-        <div className="text-xl font-extrabold tracking-[-0.04em] text-white">
+        <Link href="/landing-a" className="text-xl font-extrabold tracking-[-0.04em] text-white">
           이소<span className="text-[var(--sky)]">서</span>
-        </div>
+        </Link>
         <div className="ml-auto hidden items-center gap-7 text-sm text-white/60 md:flex">
-          <Link href="/programs" className="transition hover:text-white">
+          <Link
+            href="/programs"
+            className={`transition hover:text-white ${isProgramsActive ? "text-white" : ""}`}
+          >
             프로그램
           </Link>
-          <a href="#compare" className="transition hover:text-white">
+          <Link
+            href="/compare"
+            className={`transition hover:text-white ${isCompareActive ? "text-white" : ""}`}
+          >
             부트캠프 비교
-          </a>
-          <a href="#flow" className="transition hover:text-white">
-            이용 흐름
-          </a>
+          </Link>
+          <Link
+            href="/dashboard"
+            className={`transition hover:text-white ${isDashboardActive ? "text-white" : ""}`}
+          >
+            내 프로필
+          </Link>
         </div>
-        <Link
-          href="/login"
-          className="rounded-lg bg-[var(--fire)] px-4 py-2 text-sm font-bold text-white shadow-[0_6px_24px_rgba(249,115,22,0.28)] transition hover:-translate-y-0.5 hover:bg-[var(--fire-lo)]"
-        >
-          무료로 시작하기
-        </Link>
+        {authChecked && user ? (
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+          >
+            {user.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt={`${user.displayName} 프로필 이미지`}
+                className="h-8 w-8 rounded-full object-cover"
+              />
+            ) : (
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15 text-xs font-bold text-white">
+                {getHeaderInitial(user.displayName)}
+              </div>
+            )}
+            <span>{user.displayName}</span>
+          </Link>
+        ) : (
+          <Link
+            href="/login"
+            className="rounded-lg bg-[var(--fire)] px-4 py-2 text-sm font-bold text-white shadow-[0_6px_24px_rgba(249,115,22,0.28)] transition hover:-translate-y-0.5 hover:bg-[var(--fire-lo)]"
+          >
+            무료로 시작하기
+          </Link>
+        )}
       </div>
     </nav>
   );

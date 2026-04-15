@@ -3,21 +3,31 @@
 ## 2026-04-15 랜딩 로그인 복귀 흐름 정리
 
 - 수정 파일:
+  - `frontend/app/(landing)/landing-a/_components.tsx`
+  - `frontend/app/(landing)/landing-b/page.tsx`
+  - `frontend/app/(landing)/programs/page.tsx`
+  - `frontend/app/(landing)/programs/[id]/page.tsx`
+  - `frontend/app/(landing)/compare/page.tsx`
+  - `frontend/app/dashboard/layout.tsx`
   - `frontend/middleware.ts`
   - `frontend/app/auth/callback/route.ts`
   - `frontend/app/page.tsx`
   - `docs/current-state.md`
 - 변경 내용:
-  - 루트 `/?code=...` OAuth 유입을 `/auth/callback?next=/`로 정규화해서 콜백 파라미터가 랜딩 주소에 남지 않도록 조정
-  - OAuth 완료 후 기존 사용자의 기본 이동 경로를 `/dashboard`에서 `/`로 변경
-  - 랜딩을 서버 렌더링으로 바꿔 로그인 상태를 직접 읽고, 로그인 시 프로필 버튼으로 `/dashboard` 진입 가능하도록 수정
+  - 루트 접근을 `/landing-a`로 리다이렉트해서 landing-a를 메인 랜딩 허브로 고정
+  - 루트 `/?code=...` OAuth 유입을 `/auth/callback?next=/landing-a`로 정규화해서 콜백 파라미터가 랜딩 주소에 남지 않도록 조정
+  - OAuth 완료 후 기존 사용자의 기본 이동 경로를 `/landing-a`로 변경
+  - `frontend/app` 구조를 `(landing)` 그룹과 `dashboard` 축 기준으로 재배치하고, `landing-a`, `landing-b`, `programs`, `compare`를 랜딩 그룹 아래로 정리
+  - 비교 페이지를 `/programs/compare` 대신 `/compare`로 올리고, 레거시 접근은 미들웨어에서 `/compare`로 리다이렉트하도록 정리
+  - landing-a 상단 헤더를 로그인 상태 인식형 공통 네비게이션으로 바꿔 `Programs`, `Compare`, `내 프로필` 이동과 프로필 표시를 통합
+  - 대시보드, landing-b, programs 목록/상세, compare 모두 같은 landing-a 헤더를 유지해서 랜딩 축과 대시보드 사이 이동을 일관되게 맞춤
 - 유지된 동작:
   - 프로필이 없는 신규 사용자는 계속 `/onboarding`으로 보냄
   - `/dashboard*`와 `/onboarding` 인증 보호 정책은 그대로 유지
   - 구글 OAuth 시작 경로 `/api/auth/google`는 그대로 유지
 - 후속 후보:
-  - `/login`에서도 이미 로그인된 사용자를 `/` 또는 `/dashboard`로 정리하는 UX 처리 검토
-  - 랜딩 상단 프로필 버튼을 공용 헤더 컴포넌트로 추출할지 판단
+  - `/login`에서도 이미 로그인된 사용자를 `/landing-a` 또는 `/dashboard`로 정리하는 UX 처리 검토
+  - `landing-a`, `programs`, `compare`, `dashboard`의 본문 컨테이너 폭과 헤더 active state를 더 세밀하게 통일할지 검토
 
 ## 작업 목적
 

@@ -1,3 +1,4 @@
+import { LandingANavBar, LandingATickerBar } from "@/app/(landing)/landing-a/_components";
 import { getProgram, listPrograms } from "@/lib/api/backend";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Program } from "@/lib/types";
@@ -108,13 +109,17 @@ export default async function ProgramsComparePage({ searchParams }: ProgramsComp
   }
 
   return (
-    <ProgramsCompareClient
-      initialSlots={slotPrograms}
-      canonicalIds={canonicalIds}
-      needsNormalization={needsNormalization}
-      suggestions={suggestions}
-      suggestionsError={suggestionsError}
-      isLoggedIn={isLoggedIn}
-    />
+    <>
+      <LandingATickerBar />
+      <LandingANavBar />
+      <ProgramsCompareClient
+        initialSlots={slotPrograms}
+        canonicalIds={canonicalIds}
+        needsNormalization={needsNormalization}
+        suggestions={suggestions}
+        suggestionsError={suggestionsError}
+        isLoggedIn={isLoggedIn}
+      />
+    </>
   );
 }
