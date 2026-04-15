@@ -7,6 +7,8 @@ priority: medium
 planned_by: claude
 planned_at: 2026-04-14T18:30:00+09:00
 planned_against_commit: <git-sha>
+planned_files: path/to/touched-area-a, path/to/touched-area-b
+planned_worktree_fingerprint: <optional-sha256>
 ---
 # Goal
 
@@ -61,3 +63,8 @@ Describe the user-visible outcome.
 - Keep the same packet format for both paths.
 - Prefer task ids and filenames that include local time for same-day sorting.
 - Recommended pattern: `TASK-YYYY-MM-DD-HHMM-short-slug`
+- `planned_files` / `planned_worktree_fingerprint` are optional but recommended when the task depends on a narrow touched area or verification against a nontrivial dirty worktree.
+- Helper command:
+  - `python scripts/compute_task_fingerprint.py --frontmatter backend/routers/programs.py backend/rag/programs_rag.py`
+- Full packet scaffold helper:
+  - `python scripts/create_task_packet.py --task-id TASK-YYYY-MM-DD-HHMM-slug --title "Short title" --output tasks/inbox/TASK-YYYY-MM-DD-HHMM-slug.md --files backend/routers/programs.py`

@@ -12,6 +12,7 @@ import os
 import re
 import subprocess
 import time
+import traceback
 from datetime import datetime
 from shutil import which
 from typing import Optional
@@ -21,6 +22,7 @@ from urllib import request as urllib_request
 
 from scripts.watcher_shared import (
     acquire_lock_file,
+    append_jsonl_record,
     current_head as shared_current_head,
     ensure_directories_exist,
     extract_frontmatter,
@@ -31,6 +33,7 @@ from scripts.watcher_shared import (
     release_lock_file,
     resolve_cli_command,
     sanitize_task_id,
+    worktree_fingerprint_details,
     write_lock_file,
     write_markdown,
 )
@@ -39,6 +42,7 @@ COWORK_PACKETS_DIR = "./cowork/packets"
 COWORK_REVIEWS_DIR = "./cowork/reviews"
 COWORK_APPROVALS_DIR = "./cowork/approvals"
 COWORK_DISPATCH_DIR = "./cowork/dispatch"
+RUN_LEDGER_PATH = "./cowork/dispatch/run-ledger.jsonl"
 TASKS_INBOX_DIR = "./tasks/inbox"
 TASKS_REMOTE_DIR = "./tasks/remote"
 COWORK_WATCHER_LOCK_PATH = "./.cowork_watcher.lock"
@@ -84,6 +88,88 @@ def startup_warning_messages() -> list[str]:
             "경고: SLACK_WEBHOOK_URL 이 설정되지 않아 cowork dispatch는 Slack 전송 없이 로컬 파일에만 기록됩니다."
         )
     return warnings
+
+
+def append_run_ledger(
+    task_id: str,
+    stage: str,
+    *,
+    status: str,
+    packet_path: str,
+    review_path: Optional[str] = None,
+    details: Optional[dict[str, object]] = None,
+) -> None:
+    payload: dict[str, object] = {
+        "recorded_at": datetime.now().isoformat(timespec="seconds"),
+        "task_id": task_id,
+        "watcher": "cowork",
+        "stage": stage,
+        "status": status,
+        "packet_path": packet_path,
+    }
+    if review_path:
+        payload["review_path"] = review_path
+    if details:
+        payload.update(details)
+    append_jsonl_record(RUN_LEDGER_PATH, payload)
+
+
+def write_runtime_error_dispatch(
+    *,
+    task_id: str,
+    packet_path: str,
+    context: str,
+    error: Exception,
+    traceback_text: str,
+) -> None:
+    dispatch_path = os.path.join(COWORK_DISPATCH_DIR, f"{task_id}-runtime-error.md")
+    lines = [
+        f"# Dispatch: {task_id}",
+        "",
+        "stage: runtime-error",
+        "status: action-required",
+        f"packet: `{packet_path}`",
+        f"created_at: `{datetime.now().isoformat(timespec='seconds')}`",
+        f"summary: {context}: {type(error).__name__}: {error}",
+        "next_action: Inspect cowork watcher console output or traceback for the exception details. The watcher kept running.",
+    ]
+    write_markdown(dispatch_path, "\n".join(lines))
+    append_run_ledger(
+        task_id,
+        "runtime-error",
+        status="action-required",
+        packet_path=packet_path,
+        details={
+            "context": context,
+            "error_type": type(error).__name__,
+            "error_message": str(error),
+            "traceback": traceback_text,
+        },
+    )
+
+
+def safe_run_packet_handler(
+    handler,
+    packet_path: str,
+    *,
+    context: str,
+    task_id: Optional[str] = None,
+) -> None:
+    filename = os.path.basename(packet_path)
+    derived_task_id = task_id or sanitize_task_id(filename.removesuffix(".md")) or "COWORK-WATCHER-RUNTIME"
+    try:
+        handler(packet_path)
+    except Exception as error:
+        traceback_text = traceback.format_exc()
+        print(f"cowork watcher 런타임 예외: {context} ({filename})")
+        print(traceback_text, end="" if traceback_text.endswith("\n") else "\n")
+        write_runtime_error_dispatch(
+            task_id=derived_task_id,
+            packet_path=packet_path.replace("\\", "/"),
+            context=context,
+            error=error,
+            traceback_text=traceback_text,
+        )
 
 
 def acquire_watcher_lock() -> Optional[int]:
@@ -218,6 +304,7 @@ def fetch_requested_remote_approval(task_id: str) -> Optional[dict[str, object]]
             "task_id": f"eq.{task_id}",
             "state": "eq.requested",
             "select": "*",
+            "order": "created_at.asc,id.asc",
             "limit": "1",
         },
     )
@@ -225,6 +312,37 @@ def fetch_requested_remote_approval(task_id: str) -> Optional[dict[str, object]]
         return None
     row = rows[0]
     return row if isinstance(row, dict) else None
+
+
+def claim_requested_remote_approval(task_id: str) -> Optional[dict[str, object]]:
+    row = fetch_requested_remote_approval(task_id)
+    if not row:
+        return None
+
+    row_id = row.get("id")
+    if row_id is None:
+        return row
+
+    claimed_rows = request_supabase_sync(
+        method="PATCH",
+        path=f"/rest/v1/{REMOTE_APPROVALS_TABLE}",
+        params={
+            "id": f"eq.{row_id}",
+            "state": "eq.requested",
+            "select": "*",
+        },
+        payload={
+            "state": "claimed",
+            "claimed_at": datetime.now().isoformat(timespec="seconds"),
+            "claimed_by": "local:cowork_watcher",
+            "updated_at": datetime.now().isoformat(timespec="seconds"),
+        },
+        prefer="return=representation",
+    )
+    if not isinstance(claimed_rows, list) or not claimed_rows:
+        return None
+    claimed_row = claimed_rows[0]
+    return claimed_row if isinstance(claimed_row, dict) else None
 
 
 def write_local_approval_from_remote(task_id: str, row: dict[str, object]) -> str:
@@ -236,6 +354,7 @@ def write_local_approval_from_remote(task_id: str, row: dict[str, object]) -> st
             f"approved_at: {str(row.get('approved_at', datetime.now().isoformat(timespec='seconds'))).strip()}",
             f"target: {str(row.get('target', 'inbox')).strip()}",
             f"source: {str(row.get('source', 'shared-approval-queue')).strip()}",
+            f"approval_request_id: {str(row.get('id', '')).strip()}",
             f"slack_message_ts: {str(row.get('slack_message_ts', '')).strip()}",
             f"slack_channel_id: {str(row.get('slack_channel_id', '')).strip()}",
         ]
@@ -244,13 +363,14 @@ def write_local_approval_from_remote(task_id: str, row: dict[str, object]) -> st
     return approval_path
 
 
-def mark_remote_approval_state(task_id: str, *, state: str, note: str) -> None:
+def mark_remote_approval_state(task_id: str, *, state: str, note: str, request_id: Optional[str] = None) -> None:
+    params = {"task_id": f"eq.{task_id}"}
+    if request_id:
+        params = {"id": f"eq.{request_id}"}
     request_supabase_sync(
         method="PATCH",
         path=f"/rest/v1/{REMOTE_APPROVALS_TABLE}",
-        params={
-            "task_id": f"eq.{task_id}",
-        },
+        params=params,
         payload={
             "state": state,
             "consumed_at": datetime.now().isoformat(timespec="seconds"),
@@ -287,6 +407,7 @@ def build_review_prompt(packet_filename: str, task_id: str) -> str:
         f"Do not implement code. Do not edit source files. "
         f"Review only the task packet for execution readiness against the current repository. "
         f"Check frontmatter completeness, repository path accuracy, drift risk, ambiguity, acceptance clarity, and missing references. "
+        f"If the packet contains optional planned_files or planned_worktree_fingerprint metadata, verify that those fields still match the current worktree. "
         f"If needed, inspect only directly relevant local files. "
         f"Write the review to cowork/reviews/{task_id}-review.md. "
         f"Use short sections: Overall assessment, Findings, Recommendation. "
@@ -338,6 +459,13 @@ def write_dispatch(task_id: str, stage: str, lines: list[str]) -> str:
                 f"- supersedes_previous_review_ready: {previous_created_at}",
             ]
     write_markdown(dispatch_path, "\n".join(lines))
+    append_run_ledger(
+        task_id,
+        stage,
+        status="recorded",
+        packet_path=f"cowork/packets/{task_id}.md",
+        review_path=f"cowork/reviews/{task_id}-review.md" if stage.startswith("review") or stage == "approval-blocked-stale-review" else None,
+    )
     notify_slack_for_dispatch(task_id=task_id, stage=stage, lines=lines)
     return dispatch_path
 
@@ -773,6 +901,50 @@ def handle_packet_review(packet_path: str) -> None:
             f"(planned={planned_commit}, head={head_commit})"
         )
 
+    fingerprint_details = worktree_fingerprint_details(PROJECT_PATH, metadata)
+    if fingerprint_details and not bool(fingerprint_details["matches"]):
+        reset_stale_promotion_state(task_id)
+        write_markdown(
+            review_path,
+            "\n".join(
+                [
+                    f"# Review: {task_id}",
+                    "",
+                    "## Overall assessment",
+                    "",
+                    "아직 승격 준비가 되지 않았습니다.",
+                    "",
+                    "## Findings",
+                    "",
+                    "- Worktree fingerprint mismatch: packet의 optional fingerprint가 현재 planned files 상태와 다릅니다.",
+                    f"- planned_files: {', '.join(f'`{path}`' for path in fingerprint_details['planned_files'])}",
+                    f"- planned_worktree_fingerprint: `{fingerprint_details['planned_fingerprint']}`",
+                    f"- actual_worktree_fingerprint: `{fingerprint_details['actual_fingerprint']}`",
+                    "",
+                    "## Recommendation",
+                    "",
+                    "planned files 기준으로 packet fingerprint를 다시 고정한 뒤 review를 재생성하세요.",
+                ]
+            ),
+        )
+        write_dispatch(
+            task_id,
+            "review-ready",
+            [
+                f"# Dispatch: {task_id}",
+                "",
+                "stage: review-ready",
+                "status: action-required",
+                f"packet: `cowork/packets/{filename}`",
+                f"review: `cowork/reviews/{task_id}-review.md`",
+                f"created_at: `{datetime.now().isoformat(timespec='seconds')}`",
+                "- freshness: review is aligned with the current packet contents",
+                "- note: optional planned worktree fingerprint is stale and must be refreshed before promotion",
+            ],
+        )
+        print(f"review 생성: {filename} (worktree fingerprint mismatch)")
+        return
+
     exit_code, token_count = run_codex_review(filename, task_id)
     if os.path.exists(review_path):
         append_review_metadata(review_path, exit_code=exit_code, token_count=token_count)
@@ -818,14 +990,20 @@ def handle_approval(packet_path: str) -> None:
     approval_path = approval_path_for(task_id)
     review_path = review_path_for(task_id)
     promoted_dispatch_path = promoted_dispatch_path_for(task_id)
-    remote_approval = fetch_requested_remote_approval(task_id)
+    remote_approval = claim_requested_remote_approval(task_id)
+    remote_request_id = str(remote_approval.get("id", "")).strip() if remote_approval else ""
 
     if remote_approval and not os.path.exists(approval_path):
         write_local_approval_from_remote(task_id, remote_approval)
 
     if not os.path.exists(approval_path) or os.path.exists(promoted_dispatch_path):
         if remote_approval and os.path.exists(promoted_dispatch_path):
-            mark_remote_approval_state(task_id, state="ignored", note="already promoted locally")
+            mark_remote_approval_state(
+                task_id,
+                state="ignored",
+                note="already promoted locally",
+                request_id=remote_request_id or None,
+            )
         return
 
     if packet_needs_review(packet_path, review_path):
@@ -848,11 +1026,17 @@ def handle_approval(packet_path: str) -> None:
         )
         print(f"승격 보류: {filename} (stale review)")
         if remote_approval:
-            mark_remote_approval_state(task_id, state="failed", note="stale review blocked promotion")
+            mark_remote_approval_state(
+                task_id,
+                state="failed",
+                note="stale review blocked promotion",
+                request_id=remote_request_id or None,
+            )
         return
 
     target = approval_target_from_file(approval_path)
     approval_metadata = approval_metadata_from_file(approval_path)
+    request_id = approval_metadata.get("approval_request_id", "").strip() or remote_request_id
     slack_thread_ts = approval_metadata.get("slack_message_ts", "")
     destination_dir = TASKS_REMOTE_DIR if target == "remote" else TASKS_INBOX_DIR
     destination_path = os.path.join(destination_dir, filename)
@@ -874,7 +1058,12 @@ def handle_approval(packet_path: str) -> None:
     )
     print(f"승격 완료: {filename} -> tasks/{target} (copy)")
     if remote_approval:
-        mark_remote_approval_state(task_id, state="consumed", note=f"promoted to {target}")
+        mark_remote_approval_state(
+            task_id,
+            state="consumed",
+            note=f"promoted to {target}",
+            request_id=request_id or None,
+        )
 
 
 def main() -> None:
@@ -891,10 +1080,18 @@ def main() -> None:
     try:
         while True:
             for packet_path in sorted(glob.glob(f"{COWORK_PACKETS_DIR}/*.md")):
-                handle_packet_review(packet_path)
+                safe_run_packet_handler(
+                    handle_packet_review,
+                    packet_path,
+                    context="handle packet review",
+                )
 
             for packet_path in sorted(glob.glob(f"{COWORK_PACKETS_DIR}/*.md")):
-                handle_approval(packet_path)
+                safe_run_packet_handler(
+                    handle_approval,
+                    packet_path,
+                    context="handle approval",
+                )
 
             time.sleep(POLL_INTERVAL_SECONDS)
     finally:

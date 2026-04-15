@@ -9,8 +9,10 @@ if hasattr(sys.stderr, "reconfigure"):
 import glob
 import json
 import os
+import re
 import subprocess
 import time
+import traceback
 from shutil import which
 from datetime import datetime
 from typing import Optional
@@ -20,6 +22,7 @@ from urllib import request as urllib_request
 
 from scripts.watcher_shared import (
     acquire_lock_file,
+    append_jsonl_record,
     current_head as shared_current_head,
     ensure_directories_exist,
     extract_frontmatter,
@@ -29,6 +32,7 @@ from scripts.watcher_shared import (
     release_lock_file,
     resolve_cli_command,
     sanitize_task_id,
+    worktree_fingerprint_details,
     write_lock_file,
 )
 
@@ -40,12 +44,14 @@ BLOCKED_DIR = "./tasks/blocked"
 DRIFTED_DIR = "./tasks/drifted"
 REPORTS_DIR = "./reports"
 ALERTS_DIR = "./dispatch/alerts"
+LEDGER_PATH = "./dispatch/run-ledger.jsonl"
 COWORK_PACKETS_DIR = "./cowork/packets"
 WATCHER_LOCK_PATH = "./.watcher.lock"
 PROJECT_PATH = r"D:\02_2025_AI_Lab\isoser"
 SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL", "").strip()
 STALE_RUNNING_MINUTES = 20
 MAX_AUTO_RECOVERY_ATTEMPTS = 2
+REPLAN_REQUIRED_ATTEMPTS = 2
 MOVE_RETRY_ATTEMPTS = 5
 MOVE_RETRY_DELAY_SECONDS = 0.5
 REQUIRED_FIELDS = (
@@ -101,6 +107,85 @@ def startup_warning_messages() -> list[str]:
     return warnings
 
 
+def append_run_ledger(
+    task_id: str,
+    stage: str,
+    *,
+    status: str,
+    packet_path: str,
+    report_path: Optional[str] = None,
+    details: Optional[dict[str, object]] = None,
+) -> None:
+    payload: dict[str, object] = {
+        "recorded_at": datetime.now().isoformat(timespec="seconds"),
+        "task_id": task_id,
+        "watcher": "local",
+        "stage": stage,
+        "status": status,
+        "packet_path": packet_path,
+    }
+    if report_path:
+        payload["report_path"] = report_path
+    if details:
+        payload.update(details)
+    append_jsonl_record(LEDGER_PATH, payload)
+
+
+def write_runtime_error_alert(
+    *,
+    task_id: str,
+    packet_path: str,
+    context: str,
+    error: Exception,
+    traceback_text: str,
+) -> None:
+    summary = f"{context}: {type(error).__name__}: {error}"
+    write_alert(
+        task_id,
+        "runtime-error",
+        status="action-required",
+        packet_path=packet_path,
+        summary=summary,
+        next_action="Inspect watcher console output or traceback for the exception details. The watcher kept running.",
+    )
+    append_run_ledger(
+        task_id,
+        "runtime-error",
+        status="action-required",
+        packet_path=packet_path,
+        details={
+            "context": context,
+            "error_type": type(error).__name__,
+            "error_message": str(error),
+            "traceback": traceback_text,
+        },
+    )
+
+
+def safe_run_task_handler(
+    handler,
+    task_path: str,
+    *,
+    context: str,
+    task_id: Optional[str] = None,
+) -> None:
+    filename = os.path.basename(task_path)
+    derived_task_id = task_id or sanitize_task_id(filename.removesuffix(".md")) or "WATCHER-RUNTIME"
+    try:
+        handler(task_path)
+    except Exception as error:
+        traceback_text = traceback.format_exc()
+        print(f"watcher 런타임 예외: {context} ({filename})")
+        print(traceback_text, end="" if traceback_text.endswith("\n") else "\n")
+        write_runtime_error_alert(
+            task_id=derived_task_id,
+            packet_path=task_path.replace("\\", "/"),
+            context=context,
+            error=error,
+            traceback_text=traceback_text,
+        )
+
+
 def acquire_watcher_lock() -> Optional[int]:
     return acquire_lock_file(WATCHER_LOCK_PATH)
 
@@ -119,6 +204,21 @@ def read_task_metadata(task_path: str) -> tuple[dict[str, str], list[str]]:
 
 def current_head() -> str:
     return shared_current_head(PROJECT_PATH)
+
+
+TASK_FILENAME_ORDER_RE = re.compile(
+    r"^TASK-(\d{4})-(\d{2})-(\d{2})-(\d{4})(?:-.+)?\.md$",
+    flags=re.IGNORECASE,
+)
+
+
+def task_queue_sort_key(task_path: str) -> tuple[int, int, int, int, str]:
+    filename = os.path.basename(task_path)
+    match = TASK_FILENAME_ORDER_RE.match(filename)
+    if not match:
+        return (9999, 99, 99, 9999, filename.lower())
+    year, month, day, slot = match.groups()
+    return (int(year), int(month), int(day), int(slot), filename.lower())
 
 
 def current_branch() -> str:
@@ -164,9 +264,11 @@ def write_alert(
         "completed": "info",
         "recovered": "info",
         "needs-review": "warning",
+        "replan-required": "warning",
         "drift": "warning",
         "blocked": "error",
         "push-failed": "error",
+        "runtime-error": "error",
     }.get(stage, "info")
     lines = [
         f"# Alert: {task_id}",
@@ -188,6 +290,14 @@ def write_alert(
     with open(alert_path, "w", encoding="utf-8") as file:
         file.write("\n".join(lines).rstrip() + "\n")
 
+    append_run_ledger(
+        task_id,
+        stage,
+        status=status,
+        packet_path=packet_path,
+        report_path=report_path,
+        details={"summary": summary} if summary else None,
+    )
     notify_slack_for_alert(
         task_id=task_id,
         stage=stage,
@@ -214,6 +324,7 @@ def format_slack_alert_message(
         "completed": "✅",
         "recovered": "🔁",
         "needs-review": "📝",
+        "replan-required": "🧭",
         "drift": "⚠️",
         "blocked": "⛔",
         "push-failed": "🚨",
@@ -222,6 +333,7 @@ def format_slack_alert_message(
         "completed": "완료",
         "recovered": "자동 복구",
         "needs-review": "검토 필요",
+        "replan-required": "재설계 필요",
         "drift": "드리프트 감지",
         "blocked": "차단",
         "push-failed": "Git 동기화 실패",
@@ -272,6 +384,7 @@ def build_slack_alert_payload(
         "completed": "✅",
         "recovered": "🔁",
         "needs-review": "📝",
+        "replan-required": "🧭",
         "drift": "⚠️",
         "blocked": "⛔",
         "push-failed": "🚨",
@@ -280,6 +393,7 @@ def build_slack_alert_payload(
         "completed": "완료",
         "recovered": "자동 복구",
         "needs-review": "검토 필요",
+        "replan-required": "재설계 필요",
         "drift": "드리프트 감지",
         "blocked": "차단",
         "push-failed": "Git 동기화 실패",
@@ -411,11 +525,18 @@ def cowork_packet_path(task_id: str) -> str:
     return os.path.join(COWORK_PACKETS_DIR, f"{task_id}.md")
 
 
-def manual_review_dispatch_path(task_id: str) -> str:
-    return os.path.join(ALERTS_DIR, f"{task_id}-needs-review.md")
+def manual_review_dispatch_path(task_id: str, *, stage: str = "needs-review") -> str:
+    return os.path.join(ALERTS_DIR, f"{task_id}-{stage}.md")
 
 
-def build_manual_review_packet(task_path: str, *, failure_stage: str, task_id: str) -> str:
+def build_manual_review_packet(
+    task_path: str,
+    *,
+    failure_stage: str,
+    task_id: str,
+    reviewer_action: str = "update the packet or provide approval/feedback before requeueing",
+    replan_required: bool = False,
+) -> str:
     task_body = Path(task_path).read_text(encoding="utf-8").rstrip()
     report_lines = [
         "",
@@ -425,18 +546,43 @@ def build_manual_review_packet(task_path: str, *, failure_stage: str, task_id: s
         f"- failure_stage: `{failure_stage}`",
         f"- failure_report: `reports/{task_id}-{failure_stage}.md`",
         f"- recovery_report: `reports/{task_id}-recovery.md`",
-        "- reviewer_action: update the packet or provide approval/feedback before requeueing",
+        f"- reviewer_action: {reviewer_action}",
     ]
+    if replan_required:
+        report_lines.extend(
+            [
+                "",
+                "## Replan Checklist",
+                "",
+                "- clarify external/runtime prerequisites before requeueing",
+                "- narrow scope to repository-executable work only",
+                "- refresh acceptance criteria so they match the current code paths",
+                "- split follow-up work if one packet still mixes infrastructure, runtime ops, and product changes",
+            ]
+        )
     return task_body + "\n" + "\n".join(report_lines) + "\n"
 
 
-def escalate_task_for_manual_review(task_path: str, *, failure_stage: str, reason: str) -> None:
+def escalate_task_for_manual_review(
+    task_path: str,
+    *,
+    failure_stage: str,
+    reason: str,
+    stage: str = "needs-review",
+    reviewer_action: str = "update the packet or provide approval/feedback before requeueing",
+) -> None:
     filename = os.path.basename(task_path)
     task_id = sanitize_task_id(filename.removesuffix(".md"))
     cowork_packet = cowork_packet_path(task_id)
-    dispatch_path = manual_review_dispatch_path(task_id)
+    dispatch_path = manual_review_dispatch_path(task_id, stage=stage)
     recovery_report = recovery_report_path(task_id)
-    desired_packet_body = build_manual_review_packet(task_path, failure_stage=failure_stage, task_id=task_id)
+    desired_packet_body = build_manual_review_packet(
+        task_path,
+        failure_stage=failure_stage,
+        task_id=task_id,
+        reviewer_action=reviewer_action,
+        replan_required=stage == "replan-required",
+    )
 
     existing_body = None
     if os.path.exists(cowork_packet):
@@ -461,7 +607,7 @@ def escalate_task_for_manual_review(task_path: str, *, failure_stage: str, reaso
 
     write_alert(
         task_id,
-        "needs-review",
+        stage,
         status="action-required",
         packet_path=f"tasks/{'drifted' if failure_stage == 'drift' else 'blocked'}/{filename}",
         report_path=f"reports/{task_id}-recovery.md",
@@ -528,6 +674,14 @@ def parse_changed_files_from_result_report(report_path: str) -> list[str]:
     return changed_files
 
 
+def path_is_stageable(path_rel: str) -> bool:
+    path_abs = os.path.join(PROJECT_PATH, path_rel.replace("/", os.sep))
+    if os.path.exists(path_abs):
+        return True
+    tracked = run_git(["ls-files", "--error-unmatch", "--", path_rel], check=False)
+    return tracked.returncode == 0
+
+
 def sync_completed_task_to_git(
     *,
     task_id: str,
@@ -548,7 +702,15 @@ def sync_completed_task_to_git(
     ]
 
     # Stage only task-specific paths so unrelated worktree changes are not swept in.
-    unique_targets = list(dict.fromkeys(stage_targets))
+    unique_targets = [target for target in dict.fromkeys(stage_targets) if path_is_stageable(target)]
+    if not unique_targets:
+        append_git_metadata(
+            result_report,
+            status="skipped",
+            branch=branch,
+            message="No stageable task-specific paths were detected after watcher finalization.",
+        )
+        return ("skipped", "No stageable task-specific paths were detected after watcher finalization.", branch, None)
     run_git(["add", "-A", "--", *unique_targets])
 
     staged = run_git(["diff", "--cached", "--name-only"], check=False)
@@ -662,6 +824,23 @@ def move_stale_running_tasks() -> None:
         if filename == ".gitkeep":
             continue
 
+        duplicate_destinations = [
+            ("blocked", os.path.join(BLOCKED_DIR, filename)),
+            ("drifted", os.path.join(DRIFTED_DIR, filename)),
+            ("done", os.path.join(DONE_DIR, filename)),
+        ]
+        duplicate_stage = next(
+            (stage for stage, destination in duplicate_destinations if os.path.exists(destination)),
+            None,
+        )
+        if duplicate_stage is not None:
+            try:
+                os.remove(running_path)
+                print(f"running 정리됨: {filename} (현재 상태: {duplicate_stage})")
+            except OSError as error:
+                print(f"running 정리 실패: {filename} ({type(error).__name__}: {error})")
+            continue
+
         modified_at = os.path.getmtime(running_path)
         if now - modified_at < stale_seconds:
             continue
@@ -747,6 +926,7 @@ def build_codex_prompt(task_filename: str, task_id: str, task_type: str) -> str:
         f"Read AGENTS.md and tasks/running/{task_filename}. "
         f"Quick rules: {CODE_QUICK_RULES} "
         f"Check planned_against_commit against the current codebase. "
+        f"If the packet contains optional planned_files or planned_worktree_fingerprint metadata, verify that those fields still match the current worktree. "
         f"If drift is significant, write reports/{task_id}-drift.md and stop. "
         f"If blocked, write reports/{task_id}-blocked.md and stop. "
         f"Otherwise make minimal safe changes and run only relevant checks, "
@@ -801,6 +981,7 @@ def build_recovery_prompt(
         f"If the task can be retried safely without new human input, update {task_path} in place so it is ready for another watcher run: "
         "keep the original intent, narrow stale assumptions, preserve required frontmatter, set status to queued, "
         "set planned_against_commit to the current HEAD, add or update auto_recovery_attempts, "
+        "If the packet already uses optional `planned_files` / `planned_worktree_fingerprint` fields, refresh them so they match the current worktree snapshot you validated. "
         f"and set auto_recovery_attempts to {next_attempt}. "
         f"Then write reports/{task_id}-recovery.md summarizing what changed in the packet and why retry is now safe. "
         "If the failure depends on missing credentials, missing approvals, ambiguous product decisions, or any other external prerequisite, "
@@ -855,6 +1036,21 @@ def handle_recovery(task_path: str, *, failure_stage: str) -> None:
         return
 
     retry_count = auto_recovery_attempts(task_path)
+    if retry_count >= REPLAN_REQUIRED_ATTEMPTS:
+        if os.path.exists(task_recovery_report_path):
+            escalate_task_for_manual_review(
+                task_path,
+                failure_stage=failure_stage,
+                stage="replan-required",
+                reason=(
+                    "This task has stopped repeatedly in drift/blocked recovery and now requires a stronger replan pass "
+                    "before it can be retried safely."
+                ),
+                reviewer_action="replan the packet, tighten scope/acceptance, and only then approve requeueing",
+            )
+        print(f"재설계 필요: {filename} (auto_recovery_attempts={retry_count})")
+        return
+
     if retry_count >= MAX_AUTO_RECOVERY_ATTEMPTS:
         if os.path.exists(task_recovery_report_path):
             escalate_task_for_manual_review(
@@ -891,6 +1087,16 @@ def handle_recovery(task_path: str, *, failure_stage: str) -> None:
             reason="Automatic recovery determined that this task still needs human approval or feedback before it can be retried.",
         )
         print(f"복구 보류: {filename} (packet not ready for retry)")
+        return
+
+    fingerprint_details = worktree_fingerprint_details(PROJECT_PATH, metadata)
+    if fingerprint_details and not bool(fingerprint_details["matches"]):
+        escalate_task_for_manual_review(
+            task_path,
+            failure_stage=failure_stage,
+            reason="Automatic recovery refreshed the packet, but its optional planned worktree fingerprint still does not match the current files.",
+        )
+        print(f"복구 보류: {filename} (worktree fingerprint mismatch)")
         return
 
     destination_path = os.path.join(INBOX_DIR, filename)
@@ -954,6 +1160,12 @@ def handle_task(task_path: str) -> None:
 
     metadata, missing_fields = read_task_metadata(running_path)
     task_id = sanitize_task_id(metadata.get("id", filename.removesuffix(".md")))
+    append_run_ledger(
+        task_id,
+        "running",
+        status="started",
+        packet_path=f"tasks/running/{filename}",
+    )
     planned_commit = metadata.get("planned_against_commit", "")
     task_type = metadata.get("type", "").strip().lower()
 
@@ -993,6 +1205,39 @@ def handle_task(task_path: str) -> None:
             f"(planned={planned_commit}, head={head_commit}). "
             "최종 drift 판단은 Codex가 수행합니다."
         )
+
+    fingerprint_details = worktree_fingerprint_details(PROJECT_PATH, metadata)
+    if fingerprint_details and not bool(fingerprint_details["matches"]):
+        write_report(
+            task_id,
+            "drift",
+            "\n".join(
+                [
+                    f"# Drift: {task_id}",
+                    "",
+                    "Task packet fingerprint does not match the current worktree for its planned files.",
+                    "",
+                    f"- file: `tasks/running/{filename}`",
+                    f"- planned_files: {', '.join(f'`{path}`' for path in fingerprint_details['planned_files'])}",
+                    f"- planned_worktree_fingerprint: `{fingerprint_details['planned_fingerprint']}`",
+                    f"- actual_worktree_fingerprint: `{fingerprint_details['actual_fingerprint']}`",
+                    "- action: refresh the packet against the current worktree or remove the stale fingerprint metadata before retrying",
+                ]
+            ),
+        )
+        drifted_path = os.path.join(DRIFTED_DIR, filename)
+        move_task_file(running_path, drifted_path)
+        write_alert(
+            task_id,
+            "drift",
+            status="action-required",
+            packet_path=f"tasks/drifted/{filename}",
+            report_path=f"reports/{task_id}-drift.md",
+            summary="Task packet fingerprint no longer matches the current worktree.",
+            next_action="Refresh planned_files/planned_worktree_fingerprint against the current worktree, then requeue the task.",
+        )
+        print(f"드리프트 중단: {filename} (worktree fingerprint mismatch)")
+        return
 
     try:
         exit_code, token_count = run_codex(filename, task_id, task_type)
@@ -1155,13 +1400,30 @@ def main() -> None:
     print("watcher 시작됨. tasks/inbox 감시 중...")
     try:
         while True:
-            move_stale_running_tasks()
-            for task_file in sorted(glob.glob(f"{DRIFTED_DIR}/*.md")):
-                handle_recovery(task_file, failure_stage="drift")
-            for task_file in sorted(glob.glob(f"{BLOCKED_DIR}/*.md")):
-                handle_recovery(task_file, failure_stage="blocked")
-            for task_file in sorted(glob.glob(f"{INBOX_DIR}/*.md")):
-                handle_task(task_file)
+            safe_run_task_handler(
+                lambda _path: move_stale_running_tasks(),
+                "__watcher_loop__",
+                context="move stale running tasks",
+                task_id="WATCHER-RUNTIME",
+            )
+            for task_file in sorted(glob.glob(f"{DRIFTED_DIR}/*.md"), key=task_queue_sort_key):
+                safe_run_task_handler(
+                    lambda path, stage="drift": handle_recovery(path, failure_stage=stage),
+                    task_file,
+                    context="handle drift recovery",
+                )
+            for task_file in sorted(glob.glob(f"{BLOCKED_DIR}/*.md"), key=task_queue_sort_key):
+                safe_run_task_handler(
+                    lambda path, stage="blocked": handle_recovery(path, failure_stage=stage),
+                    task_file,
+                    context="handle blocked recovery",
+                )
+            for task_file in sorted(glob.glob(f"{INBOX_DIR}/*.md"), key=task_queue_sort_key):
+                safe_run_task_handler(
+                    handle_task,
+                    task_file,
+                    context="handle inbox task",
+                )
             time.sleep(10)
     finally:
         release_watcher_lock(lock_handle)

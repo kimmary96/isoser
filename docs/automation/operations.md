@@ -1,10 +1,18 @@
 # Operations
 
 ## Recommended commands
+- actionable watcher triage:
+  - `python scripts/summarize_actionable_ledgers.py`
+- packet scaffold with current HEAD/fingerprint:
+  - `python scripts/create_task_packet.py --task-id TASK-YYYY-MM-DD-HHMM-slug --title "Short title" --output tasks/inbox/TASK-YYYY-MM-DD-HHMM-slug.md --files path/to/touched/file`
 - local watcher start:
   - `powershell -ExecutionPolicy Bypass -File scripts/run_watcher.ps1`
 - cowork watcher start:
   - `powershell -ExecutionPolicy Bypass -File scripts/run_cowork_watcher.ps1`
+- watcher ledger summary:
+  - `python scripts/summarize_run_ledgers.py`
+- watcher ledger prune/archive:
+  - `python scripts/prune_run_ledgers.py --days 14`
 
 ## Local watcher env
 - `scripts/run_watcher.ps1`는 저장소 루트 `.watcher.env`를 자동 로드한다
@@ -43,6 +51,10 @@
 - 폴더가 너무 시끄러워지면 삭제보다 archive 이동을 우선한다
   - `tasks/archive/<YYYY-MM>/`
   - `reports/archive/<YYYY-MM>/`
+- watcher ledger는 JSONL이 계속 커질 수 있으므로 주기적으로 archive rotation을 돌린다
+  - local archive: `dispatch/archive/run-ledger-YYYY-MM.jsonl`
+  - cowork archive: `cowork/dispatch/archive/run-ledger-YYYY-MM.jsonl`
+  - 권장 명령: `python scripts/prune_run_ledgers.py --days 14`
 
 ## Current limitations
 - remote fallback은 아직 Claude Code 기반이다

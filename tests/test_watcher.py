@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import os
+import time
 from pathlib import Path
 
 import watcher
+from scripts import watcher_shared
 
 
 def test_move_task_file_retries_then_succeeds(tmp_path, monkeypatch) -> None:
@@ -110,6 +113,22 @@ def test_parse_changed_files_from_result_report_reads_bullets(tmp_path) -> None:
     ]
 
 
+def test_task_queue_sort_key_orders_by_task_number_slot() -> None:
+    paths = [
+        r"D:\repo\tasks\inbox\TASK-2026-04-15-1710-recommend-api-enhance.md",
+        r"D:\repo\tasks\inbox\TASK-2026-04-15-1500-tier2-seoul-crawl.md",
+        r"D:\repo\tasks\inbox\TASK-2026-04-15-1700-recommend-data-pipeline.md",
+    ]
+
+    ordered = sorted(paths, key=watcher.task_queue_sort_key)
+
+    assert ordered == [
+        r"D:\repo\tasks\inbox\TASK-2026-04-15-1500-tier2-seoul-crawl.md",
+        r"D:\repo\tasks\inbox\TASK-2026-04-15-1700-recommend-data-pipeline.md",
+        r"D:\repo\tasks\inbox\TASK-2026-04-15-1710-recommend-api-enhance.md",
+    ]
+
+
 def test_sync_completed_task_to_git_stages_task_paths_and_appends_git_metadata(tmp_path, monkeypatch) -> None:
     project_path = tmp_path
     running_path = project_path / "tasks" / "running" / "TASK-TEST.md"
@@ -192,11 +211,82 @@ def test_sync_completed_task_to_git_stages_task_paths_and_appends_git_metadata(t
     assert "Auto-promoted to origin/main." in updated_report
 
 
+def test_sync_completed_task_to_git_skips_missing_untracked_running_path(tmp_path, monkeypatch) -> None:
+    project_path = tmp_path
+    done_path = project_path / "tasks" / "done" / "TASK-TEST.md"
+    result_report = project_path / "reports" / "TASK-TEST-result.md"
+
+    done_path.parent.mkdir(parents=True)
+    result_report.parent.mkdir(parents=True)
+    done_path.write_text("done", encoding="utf-8")
+    result_report.write_text(
+        "\n".join(
+            [
+                "# Result: TASK-TEST",
+                "",
+                "## Changed files",
+                "",
+                "- `backend/routers/programs.py`",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(watcher, "PROJECT_PATH", str(project_path))
+    monkeypatch.setattr(watcher, "current_branch", lambda: "develop")
+    monkeypatch.setattr(watcher, "current_head", lambda: "abc123")
+
+    calls: list[list[str]] = []
+
+    class FakeResult:
+        def __init__(self, stdout: str = "", stderr: str = "", returncode: int = 0) -> None:
+            self.stdout = stdout
+            self.stderr = stderr
+            self.returncode = returncode
+
+    def fake_run_git(args: list[str], *, check: bool = True) -> FakeResult:
+        calls.append(args)
+        if args[:2] == ["ls-files", "--error-unmatch"]:
+            return FakeResult(returncode=1)
+        if args[:3] == ["diff", "--cached", "--name-only"]:
+            return FakeResult(stdout="tasks/done/TASK-TEST.md\n")
+        if args[:2] == ["commit", "-m"]:
+            return FakeResult(stdout="[develop abc123] [codex] TASK-TEST 구현 완료.\n")
+        if args[:3] == ["push", "origin", "develop"]:
+            return FakeResult(stdout="pushed\n")
+        if args[:3] == ["fetch", "origin", "main"]:
+            return FakeResult(stdout="fetched\n")
+        if args[:3] == ["merge-base", "--is-ancestor", "origin/main"]:
+            return FakeResult(returncode=0)
+        if args[:3] == ["push", "origin", "abc123:refs/heads/main"]:
+            return FakeResult(stdout="main pushed\n")
+        return FakeResult()
+
+    monkeypatch.setattr(watcher, "run_git", fake_run_git)
+
+    watcher.sync_completed_task_to_git(
+        task_id="TASK-TEST",
+        task_filename="TASK-TEST.md",
+        running_path=str(project_path / "tasks" / "running" / "TASK-TEST.md"),
+        done_path=str(done_path),
+        result_report=str(result_report),
+    )
+
+    add_call = calls[2]
+    assert add_call[:3] == ["add", "-A", "--"]
+    assert "tasks/running/TASK-TEST.md" not in add_call
+    assert "tasks/done/TASK-TEST.md" in add_call
+    assert "reports/TASK-TEST-result.md" in add_call
+
+
 def test_write_alert_creates_dispatch_file(tmp_path, monkeypatch) -> None:
     alerts_dir = tmp_path / "dispatch" / "alerts"
     alerts_dir.mkdir(parents=True)
+    ledger_path = tmp_path / "dispatch" / "run-ledger.jsonl"
 
     monkeypatch.setattr(watcher, "ALERTS_DIR", str(alerts_dir))
+    monkeypatch.setattr(watcher, "LEDGER_PATH", str(ledger_path))
 
     alert_path = watcher.write_alert(
         "TASK-TEST-DRIFT",
@@ -217,6 +307,64 @@ def test_write_alert_creates_dispatch_file(tmp_path, monkeypatch) -> None:
     assert "reports/TASK-TEST-DRIFT-drift.md" in body
     assert "summary: Codex stopped because of repository drift." in body
     assert "next_action: Regenerate the task packet against current HEAD." in body
+    ledger_body = ledger_path.read_text(encoding="utf-8")
+    assert '"task_id": "TASK-TEST-DRIFT"' in ledger_body
+    assert '"stage": "drift"' in ledger_body
+
+
+def test_handle_task_stops_early_when_optional_worktree_fingerprint_mismatches(tmp_path, monkeypatch) -> None:
+    inbox_dir = tmp_path / "tasks" / "inbox"
+    running_dir = tmp_path / "tasks" / "running"
+    drifted_dir = tmp_path / "tasks" / "drifted"
+    reports_dir = tmp_path / "reports"
+    alerts_dir = tmp_path / "dispatch" / "alerts"
+    inbox_dir.mkdir(parents=True)
+    running_dir.mkdir(parents=True)
+    drifted_dir.mkdir(parents=True)
+    reports_dir.mkdir(parents=True)
+    alerts_dir.mkdir(parents=True)
+
+    tracked = tmp_path / "backend" / "routers" / "programs.py"
+    tracked.parent.mkdir(parents=True, exist_ok=True)
+    tracked.write_text("print('v1')\n", encoding="utf-8")
+    fingerprint = watcher_shared.compute_worktree_fingerprint(str(tmp_path), ["backend/routers/programs.py"])
+    tracked.write_text("print('v2')\n", encoding="utf-8")
+
+    task_path = inbox_dir / "TASK-TEST-FP.md"
+    task_path.write_text(
+        "\n".join(
+            [
+                "---",
+                "id: TASK-TEST-FP",
+                "status: queued",
+                "type: feature",
+                "title: Fingerprint drift test",
+                "planned_at: 2026-04-15T23:00:00+09:00",
+                "planned_against_commit: abc123",
+                "planned_files: backend/routers/programs.py",
+                f"planned_worktree_fingerprint: {fingerprint}",
+                "---",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(watcher, "PROJECT_PATH", str(tmp_path))
+    monkeypatch.setattr(watcher, "RUNNING_DIR", str(running_dir))
+    monkeypatch.setattr(watcher, "DRIFTED_DIR", str(drifted_dir))
+    monkeypatch.setattr(watcher, "REPORTS_DIR", str(reports_dir))
+    monkeypatch.setattr(watcher, "ALERTS_DIR", str(alerts_dir))
+    monkeypatch.setattr(watcher, "current_head", lambda: "abc123")
+    monkeypatch.setattr(watcher, "run_codex", lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("run_codex should not run")))
+
+    watcher.handle_task(str(task_path))
+
+    assert not task_path.exists()
+    assert (drifted_dir / "TASK-TEST-FP.md").exists()
+    drift_report = (reports_dir / "TASK-TEST-FP-drift.md").read_text(encoding="utf-8")
+    assert "planned_worktree_fingerprint" in drift_report
+    assert "actual_worktree_fingerprint" in drift_report
 
 
 def test_handle_recovery_requeues_task_when_packet_is_refreshed(tmp_path, monkeypatch) -> None:
@@ -363,6 +511,54 @@ def test_handle_recovery_leaves_task_when_packet_is_not_retry_safe(tmp_path, mon
     assert "/isoser-approve TASK-TEST-BLOCKED inbox" in alert_body
 
 
+def test_handle_recovery_escalates_to_replan_required_after_repeat_failures(tmp_path, monkeypatch) -> None:
+    drifted_dir = tmp_path / "tasks" / "drifted"
+    reports_dir = tmp_path / "reports"
+    alerts_dir = tmp_path / "dispatch" / "alerts"
+    cowork_packets_dir = tmp_path / "cowork" / "packets"
+    drifted_dir.mkdir(parents=True)
+    reports_dir.mkdir(parents=True)
+    alerts_dir.mkdir(parents=True)
+    cowork_packets_dir.mkdir(parents=True)
+
+    task_path = drifted_dir / "TASK-TEST-REPLAN.md"
+    task_path.write_text(
+        "\n".join(
+            [
+                "---",
+                "id: TASK-TEST-REPLAN",
+                "status: queued",
+                "type: feature",
+                "title: Replan recovery test",
+                "planned_at: 2026-04-15T10:00:00+09:00",
+                "planned_against_commit: same-head",
+                "auto_recovery_attempts: 2",
+                "---",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (reports_dir / "TASK-TEST-REPLAN-drift.md").write_text("# Drift\n", encoding="utf-8")
+    recovery_report = reports_dir / "TASK-TEST-REPLAN-recovery.md"
+    recovery_report.write_text("# Recovery\n\nretry failed again.\n", encoding="utf-8")
+    stale_timestamp = time.time() - 10
+    os.utime(recovery_report, (stale_timestamp, stale_timestamp))
+
+    monkeypatch.setattr(watcher, "REPORTS_DIR", str(reports_dir))
+    monkeypatch.setattr(watcher, "ALERTS_DIR", str(alerts_dir))
+    monkeypatch.setattr(watcher, "COWORK_PACKETS_DIR", str(cowork_packets_dir))
+
+    watcher.handle_recovery(str(task_path), failure_stage="drift")
+
+    alert_body = (alerts_dir / "TASK-TEST-REPLAN-replan-required.md").read_text(encoding="utf-8")
+    assert "stage: replan-required" in alert_body
+    assert "stronger replan pass" in alert_body
+    packet_body = (cowork_packets_dir / "TASK-TEST-REPLAN.md").read_text(encoding="utf-8")
+    assert "## Replan Checklist" in packet_body
+    assert "tighten scope/acceptance" in packet_body
+
+
 def test_format_slack_alert_message_contains_core_fields() -> None:
     message = watcher.format_slack_alert_message(
         task_id="TASK-TEST",
@@ -400,6 +596,21 @@ def test_format_slack_alert_message_surfaces_main_promotion_summary() -> None:
     assert "abc123" in message
 
 
+def test_format_slack_alert_message_for_replan_required() -> None:
+    message = watcher.format_slack_alert_message(
+        task_id="TASK-TEST",
+        stage="replan-required",
+        status="action-required",
+        packet_path="tasks/drifted/TASK-TEST.md",
+        report_path="reports/TASK-TEST-recovery.md",
+        summary="This task has stopped repeatedly and now needs a stronger replan.",
+        next_action="Replan the packet before requeueing.",
+    )
+
+    assert "*단계*: 재설계 필요" in message
+    assert "stronger replan" in message
+
+
 def test_build_slack_alert_payload_adds_structured_blocks() -> None:
     payload = watcher.build_slack_alert_payload(
         task_id="TASK-TEST",
@@ -425,3 +636,50 @@ def test_startup_warning_messages_warns_when_slack_webhook_missing(monkeypatch) 
 
     assert len(warnings) == 1
     assert "SLACK_WEBHOOK_URL" in warnings[0]
+
+
+def test_move_stale_running_tasks_removes_duplicate_running_marker(tmp_path, monkeypatch) -> None:
+    running_dir = tmp_path / "tasks" / "running"
+    blocked_dir = tmp_path / "tasks" / "blocked"
+    drifted_dir = tmp_path / "tasks" / "drifted"
+    done_dir = tmp_path / "tasks" / "done"
+    for directory in [running_dir, blocked_dir, drifted_dir, done_dir]:
+        directory.mkdir(parents=True)
+
+    running_task = running_dir / "TASK-DUPLICATE.md"
+    blocked_task = blocked_dir / "TASK-DUPLICATE.md"
+    running_task.write_text("running", encoding="utf-8")
+    blocked_task.write_text("blocked", encoding="utf-8")
+
+    monkeypatch.setattr(watcher, "RUNNING_DIR", str(running_dir))
+    monkeypatch.setattr(watcher, "BLOCKED_DIR", str(blocked_dir))
+    monkeypatch.setattr(watcher, "DRIFTED_DIR", str(drifted_dir))
+    monkeypatch.setattr(watcher, "DONE_DIR", str(done_dir))
+
+    watcher.move_stale_running_tasks()
+
+    assert not running_task.exists()
+    assert blocked_task.exists()
+
+
+def test_safe_run_task_handler_keeps_watcher_alive_after_runtime_exception(tmp_path, monkeypatch) -> None:
+    alerts_dir = tmp_path / "dispatch" / "alerts"
+    alerts_dir.mkdir(parents=True)
+    ledger_path = tmp_path / "dispatch" / "run-ledger.jsonl"
+    task_path = tmp_path / "tasks" / "inbox" / "TASK-RUNTIME.md"
+    task_path.parent.mkdir(parents=True)
+    task_path.write_text("test\n", encoding="utf-8")
+
+    monkeypatch.setattr(watcher, "ALERTS_DIR", str(alerts_dir))
+    monkeypatch.setattr(watcher, "LEDGER_PATH", str(ledger_path))
+
+    def boom(_path: str) -> None:
+        raise RuntimeError("loop crash")
+
+    watcher.safe_run_task_handler(boom, str(task_path), context="handle inbox task")
+
+    alert_body = (alerts_dir / "TASK-RUNTIME-runtime-error.md").read_text(encoding="utf-8")
+    assert "stage: runtime-error" in alert_body
+    assert "loop crash" in alert_body
+    ledger_body = ledger_path.read_text(encoding="utf-8")
+    assert '"stage": "runtime-error"' in ledger_body

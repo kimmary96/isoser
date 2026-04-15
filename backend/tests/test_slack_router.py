@@ -55,7 +55,16 @@ def test_slack_cowork_approve_writes_shared_approval_request(client, tmp_path, m
     monkeypatch.setenv("SLACK_APPROVER_USER_IDS", "U123")
     created: dict[str, str] = {}
 
-    def fake_write_approval_request(*, task_id: str, target: str, user_id: str, user_name: str, source: str) -> str:
+    def fake_write_approval_request(
+        *,
+        task_id: str,
+        target: str,
+        user_id: str,
+        user_name: str,
+        source: str,
+        slack_message_ts: str = "",
+        slack_channel_id: str = "",
+    ) -> str:
         created["task_id"] = task_id
         created["target"] = target
         created["user_id"] = user_id
@@ -85,7 +94,7 @@ def test_slack_cowork_approve_writes_shared_approval_request(client, tmp_path, m
     )
 
     assert response.status_code == 200
-    assert "승인 처리 완료" in response.text
+    assert "승인 접수됨" in response.text
     assert "원격 큐" in response.text
     assert "cowork_approvals:TASK-TEST" in response.text
     assert created == {
@@ -193,7 +202,7 @@ def test_slack_cowork_interactivity_approves_remote(client, tmp_path, monkeypatc
     )
 
     assert response.status_code == 200
-    assert "승인 처리 완료" in response.text
+    assert "승인 접수됨" in response.text
     assert "원격 큐" in response.text
     assert "cowork_approvals:TASK-TEST" in response.text
 

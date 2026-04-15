@@ -1,41 +1,49 @@
-# Recovery Report
+# TASK-2026-04-15-1700-recommend-data-pipeline Recovery Report
 
 - task id: `TASK-2026-04-15-1700-recommend-data-pipeline`
-- current head: `c4a279ed70e2622f0c62377f9ed40fba6b62f0af`
-- recovery decision: automatic recovery not safe
+- recovery action: `automatic packet refresh not applied`
+- current HEAD: `33e49ae3d87fe9d20f60c1aee08a5389c67a0ba5`
 
-## Why the task packet was not updated
+## Why automatic recovery was not safe
 
-The original drift was real: the packet still assumes missing repository-side prerequisites that now already exist in code and local env configuration.
+The prior drift failure is still caused by material, uncommitted changes inside the exact runtime path this task must validate:
 
-Confirmed from the current repository:
+- `backend/routers/programs.py`
+- `backend/rag/programs_rag.py`
+- `backend/rag/chroma_client.py`
+- `backend/rag/collector/scheduler.py`
 
-- `backend/utils/supabase_admin.py` already requires `SUPABASE_SERVICE_ROLE_KEY`
-- `backend/routers/admin.py` already validates `ADMIN_SECRET_KEY`, checks `WORK24_TRAINING_AUTH_KEY`, and exposes the admin sync path
-- `supabase/migrations/20260415_create_recommendations.sql` already exists
-- `supabase/migrations/20260410133000_add_work24_sync_columns_to_programs.sql` already adds the core Work24 sync columns
-- local `backend/.env` already contains the admin/Supabase keys referenced by the packet
+Those changes alter the recommendation verification target in meaningful ways:
 
-However, the remaining acceptance criteria are not repository-only and cannot be refreshed safely from local code inspection alone:
+- request shape now includes `category`, `region`, `job_title`, and `force_refresh`
+- recommendation reads can now use the `recommendations` cache table
+- Chroma search behavior now includes metadata filtering and fallback behavior
+- scheduler import fallback behavior changed
 
-- whether the live Supabase project has already applied the required migrations
-- whether the remote `programs` table schema matches the expected production state
-- whether `POST /admin/sync/programs` succeeds against current external services
-- whether Work24 and embedding-related external dependencies return usable data
-- whether the dashboard shows recommendation cards after a real sync
+Refreshing the packet in place would still leave `planned_against_commit` pointing at the same `HEAD`, while the touched implementation remains materially different in the working tree. That means a watcher rerun could hit the same drift condition again without any real recovery.
 
-Those are external-runtime prerequisites, not just stale packet wording. Re-queuing the packet without verifying live Supabase and external API state would risk another watcher run making incorrect assumptions about what still needs to be done.
+## Why the task file was left unchanged
 
-## Packet status
-
-- `tasks/drifted/TASK-2026-04-15-1700-recommend-data-pipeline.md` was left unchanged
+Updating `tasks/drifted/TASK-2026-04-15-1700-recommend-data-pipeline.md` would imply the packet is safely anchored to the current implementation state. It is not: the relevant implementation is currently represented by uncommitted local edits, not by a commit the packet can reliably target.
 
 ## Safe next step
 
-Re-plan this task only after a human or an explicitly authorized operator verifies the live Supabase schema state and whether the admin sync can be executed successfully against the current environment.
+Commit or intentionally revert the recommendation-path working tree changes first, then re-plan this task against that resulting repository state. After that, setting `status: queued` and updating `planned_against_commit` will be meaningful and a watcher retry can proceed without repeating the same drift failure.
+
+## Changed files
+
+- `reports/TASK-2026-04-15-1700-recommend-data-pipeline-recovery.md`
+
+## Risks / possible regressions
+
+- If the task is retried before the touched recommendation-path edits are committed or reverted, it may stop for drift again.
+
+## Follow-up refactoring candidates
+
+- Consider teaching the watcher/task format to distinguish committed baseline drift from intentional dirty-worktree re-plans, if dirty-worktree execution is expected in this repo workflow.
 
 ## Run Metadata
 
-- generated_at: `2026-04-15T18:08:12`
+- generated_at: `2026-04-15T20:20:14`
 - watcher_exit_code: `0`
-- codex_tokens_used: `45,215`
+- codex_tokens_used: `92,987`

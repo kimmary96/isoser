@@ -7,3 +7,5 @@
 - [watcher-restart-checklist.md](./watcher-restart-checklist.md)
 - [claude-project-instructions.md](./claude-project-instructions.md)
 - [claude-oauth-smoke-test.md](./claude-oauth-smoke-test.md)
+- fingerprint helper: `python scripts/compute_task_fingerprint.py --frontmatter <repo-path> [<repo-path> ...]`
+- packet scaffold helper: `python scripts/create_task_packet.py --task-id TASK-... --title "..." --output tasks/inbox/TASK-....md --files <repo-path> [<repo-path> ...]`

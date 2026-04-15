@@ -3,6 +3,7 @@ import time
 from pathlib import Path
 
 import cowork_watcher
+from scripts import watcher_shared
 
 
 def test_approval_target_defaults_to_inbox(tmp_path: Path) -> None:
@@ -153,8 +154,9 @@ def test_handle_approval_consumes_remote_shared_request(tmp_path: Path, monkeypa
     monkeypatch.setattr(cowork_watcher, "TASKS_REMOTE_DIR", str(remote_dir))
     monkeypatch.setattr(
         cowork_watcher,
-        "fetch_requested_remote_approval",
+        "claim_requested_remote_approval",
         lambda task_id: {
+            "id": "42",
             "task_id": task_id,
             "target": "inbox",
             "approved_by": "slack:U123",
@@ -166,7 +168,7 @@ def test_handle_approval_consumes_remote_shared_request(tmp_path: Path, monkeypa
     monkeypatch.setattr(
         cowork_watcher,
         "mark_remote_approval_state",
-        lambda task_id, *, state, note: consumed.append((task_id, state, note)),
+        lambda task_id, *, state, note, request_id=None: consumed.append((task_id, state, note, request_id)),
     )
 
     cowork_watcher.handle_approval(str(packet))
@@ -174,7 +176,7 @@ def test_handle_approval_consumes_remote_shared_request(tmp_path: Path, monkeypa
     assert (inbox_dir / "TASK-TEST-REMOTE-APPROVAL.md").exists()
     assert (approvals_dir / "TASK-TEST-REMOTE-APPROVAL.ok").exists()
     assert consumed == [
-        ("TASK-TEST-REMOTE-APPROVAL", "consumed", "promoted to inbox"),
+        ("TASK-TEST-REMOTE-APPROVAL", "consumed", "promoted to inbox", "42"),
     ]
 
 
@@ -401,8 +403,63 @@ def test_write_local_approval_from_remote_preserves_slack_thread_metadata(tmp_pa
     )
 
     text = Path(approval_path).read_text(encoding="utf-8")
+    assert "approval_request_id:" in text
     assert "slack_message_ts: 12345.6789" in text
     assert "slack_channel_id: C123" in text
+
+
+def test_handle_packet_review_blocks_stale_optional_worktree_fingerprint(tmp_path: Path, monkeypatch) -> None:
+    packets_dir = tmp_path / "packets"
+    reviews_dir = tmp_path / "reviews"
+    dispatch_dir = tmp_path / "dispatch"
+    approvals_dir = tmp_path / "approvals"
+    inbox_dir = tmp_path / "inbox"
+    remote_dir = tmp_path / "remote"
+
+    for directory in [packets_dir, reviews_dir, dispatch_dir, approvals_dir, inbox_dir, remote_dir]:
+        directory.mkdir(parents=True, exist_ok=True)
+
+    tracked = tmp_path / "backend" / "routers" / "programs.py"
+    tracked.parent.mkdir(parents=True, exist_ok=True)
+    tracked.write_text("print('v1')\n", encoding="utf-8")
+    fingerprint = watcher_shared.compute_worktree_fingerprint(str(tmp_path), ["backend/routers/programs.py"])
+    tracked.write_text("print('v2')\n", encoding="utf-8")
+
+    packet = packets_dir / "TASK-TEST-FP-REVIEW.md"
+    packet.write_text(
+        "\n".join(
+            [
+                "---",
+                "id: TASK-TEST-FP-REVIEW",
+                "status: queued",
+                "type: feature",
+                "title: Fingerprint review test",
+                "planned_at: 2026-04-15T00:00:00+09:00",
+                "planned_against_commit: abc123",
+                "planned_files: backend/routers/programs.py",
+                f"planned_worktree_fingerprint: {fingerprint}",
+                "---",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(cowork_watcher, "PROJECT_PATH", str(tmp_path))
+    monkeypatch.setattr(cowork_watcher, "COWORK_PACKETS_DIR", str(packets_dir))
+    monkeypatch.setattr(cowork_watcher, "COWORK_REVIEWS_DIR", str(reviews_dir))
+    monkeypatch.setattr(cowork_watcher, "COWORK_DISPATCH_DIR", str(dispatch_dir))
+    monkeypatch.setattr(cowork_watcher, "COWORK_APPROVALS_DIR", str(approvals_dir))
+    monkeypatch.setattr(cowork_watcher, "TASKS_INBOX_DIR", str(inbox_dir))
+    monkeypatch.setattr(cowork_watcher, "TASKS_REMOTE_DIR", str(remote_dir))
+    monkeypatch.setattr(cowork_watcher, "current_head", lambda: "abc123")
+
+    cowork_watcher.handle_packet_review(str(packet))
+
+    review_text = (reviews_dir / "TASK-TEST-FP-REVIEW-review.md").read_text(encoding="utf-8")
+    assert "Worktree fingerprint mismatch" in review_text
+    dispatch_text = (dispatch_dir / "TASK-TEST-FP-REVIEW-review-ready.md").read_text(encoding="utf-8")
+    assert "optional planned worktree fingerprint is stale" in dispatch_text
 
 
 def test_startup_warning_messages_warns_when_slack_webhook_missing(monkeypatch) -> None:
@@ -412,3 +469,28 @@ def test_startup_warning_messages_warns_when_slack_webhook_missing(monkeypatch) 
 
     assert len(warnings) == 1
     assert "SLACK_WEBHOOK_URL" in warnings[0]
+
+
+def test_safe_run_packet_handler_keeps_cowork_watcher_alive_after_runtime_exception(
+    tmp_path: Path, monkeypatch
+) -> None:
+    dispatch_dir = tmp_path / "dispatch"
+    dispatch_dir.mkdir(parents=True, exist_ok=True)
+    ledger_path = dispatch_dir / "run-ledger.jsonl"
+    packet_path = tmp_path / "packets" / "TASK-COWORK-RUNTIME.md"
+    packet_path.parent.mkdir(parents=True, exist_ok=True)
+    packet_path.write_text("test\n", encoding="utf-8")
+
+    monkeypatch.setattr(cowork_watcher, "COWORK_DISPATCH_DIR", str(dispatch_dir))
+    monkeypatch.setattr(cowork_watcher, "RUN_LEDGER_PATH", str(ledger_path))
+
+    def boom(_path: str) -> None:
+        raise RuntimeError("cowork loop crash")
+
+    cowork_watcher.safe_run_packet_handler(boom, str(packet_path), context="handle packet review")
+
+    dispatch_body = (dispatch_dir / "TASK-COWORK-RUNTIME-runtime-error.md").read_text(encoding="utf-8")
+    assert "stage: runtime-error" in dispatch_body
+    assert "cowork loop crash" in dispatch_body
+    ledger_body = ledger_path.read_text(encoding="utf-8")
+    assert '"stage": "runtime-error"' in ledger_body

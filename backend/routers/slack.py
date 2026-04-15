@@ -130,6 +130,8 @@ def _write_approval_request(
         "slack_message_ts": slack_message_ts or None,
         "slack_channel_id": slack_channel_id or None,
         "state": "requested",
+        "claimed_at": None,
+        "claimed_by": None,
         "consumed_at": None,
         "consumed_by": None,
         "consume_note": None,

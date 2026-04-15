@@ -8,10 +8,19 @@
 - watcher 공통 파일 처리, lock, frontmatter 파싱, CLI 해석은 `scripts/watcher_shared.py`로 분리되어 있다.
 - local terminal outcome은 `dispatch/alerts/`에 기록된다.
 - 성공 task는 watcher가 task-scoped git automation을 시도한다.
+- watcher는 `TASK-YYYY-MM-DD-####-...` 번호를 파싱해 inbox / blocked / drifted 큐를 낮은 번호부터 순차 처리한다.
 - `tasks/done`으로 완료된 task는 watcher가 task-scoped commit/push를 수행하고, fast-forward 가능하면 같은 commit을 `origin/main`에도 자동 반영한다.
 - `origin/main` 자동 반영까지 성공한 완료 task는 watcher completed Slack 알림 요약에 main push 결과가 함께 기록된다.
 - watcher는 `tasks/drifted/`와 `tasks/blocked/`를 다시 검사해 자동 복구 가능한 packet은 `tasks/inbox/`로 재투입한다.
+- task packet은 선택적으로 `planned_files`와 `planned_worktree_fingerprint`를 담아, 같은 `HEAD` 안에서도 계획 당시 worktree 상태가 달라졌는지 더 엄격하게 검증할 수 있다.
+- `scripts/compute_task_fingerprint.py`는 planner가 `planned_files` 기준 fingerprint frontmatter 줄을 바로 생성할 수 있게 돕는다.
+- `scripts/summarize_run_ledgers.py`는 local/cowork watcher ledger를 읽어 최근 상태와 stage 집계를 빠르게 확인하게 해준다.
+- `scripts/summarize_actionable_ledgers.py`는 `blocked`, `drift`, `needs-review`, `replan-required` 같은 즉시 대응이 필요한 상태만 따로 좁혀 보여준다.
+- `scripts/prune_run_ledgers.py`는 active JSONL ledger에서 오래된 이벤트를 archive로 옮겨 장기 운영 시 파일이 과도하게 커지는 문제를 완화한다.
+- `scripts/create_task_packet.py`는 current HEAD와 optional fingerprint field까지 채운 packet 초안을 바로 생성해 planner 쪽 기본값을 강화한다.
+- watcher와 cowork watcher는 개별 packet 처리 중 예외가 나도 전체 프로세스를 종료하지 않고 `runtime-error` 기록을 남긴 뒤 다음 루프를 계속 돈다.
 - 자동 복구가 막힌 task는 `cowork/packets/`으로 에스컬레이션되어 Slack approval/feedback 흐름으로 넘겨진다.
+- 같은 task가 drift/blocked 복구에서 반복 중단되면 watcher는 일반 `needs-review` 대신 `replan-required` 알림으로 승격하고, Slack에 재설계 필요 사유와 다음 조치를 함께 공유한다.
 - remote fallback은 `tasks/remote/` + GitHub Action 경로를 사용한다.
 - cowork review-ready는 Slack 버튼과 slash command 양쪽으로 approval을 받을 수 있다.
 - Slack 버튼 승인/거절의 최종 결과 메시지는 채널 공용(`in_channel`)으로 반환되고, 초기 처리중 ack만 클릭 사용자에게 보인다.
@@ -20,6 +29,8 @@
 - Slack에서 cowork 승인/거절 버튼을 누르면 기존 review-ready 메시지를 새 top-level 메시지로 늘리지 않고 갱신하며, 이후 `승격 완료`/`승격 보류` 후속 알림은 같은 작업 스레드로 이어진다.
 - review-ready Slack 메시지는 패킷/리뷰 경로와 승인 방법 안내를 숨기고, `판정`과 번호형 `핵심 확인사항` 중심으로 압축해서 보여준다.
 - Slack approval은 로컬 파일 marker 대신 Supabase `cowork_approvals` 공유 큐에 기록되고, 로컬 `cowork_watcher.py`가 이를 poll해서 `tasks/inbox|remote` 승격과 consumed 처리를 수행한다.
+- shared approval queue row는 가능하면 `id` 기준으로 claim 후 consumed/failed/ignored 상태를 갱신해 중복 poll 상황에서도 같은 승인 요청을 다시 소비하지 않도록 보강됐다.
+- `watcher.py`와 `cowork_watcher.py`는 각각 JSONL run ledger를 남겨 주요 상태 전이를 파일 기반 alert/dispatch 외에도 추적할 수 있다.
 - `frontend/app/slack/interactivity/cowork-review/route.ts`는 Vercel 프론트 도메인으로 들어온 Slack 버튼 요청을 FastAPI backend의 `/slack/interactivity/cowork-review`로 프록시한다.
 - `frontend/app/(landing)/programs/page.tsx`는 URL query 기반 검색, 카테고리/지역 필터, 모집중 토글, 정렬, 페이지네이션을 지원한다.
 - `frontend/app/(landing)/compare/page.tsx`는 공개 비교 페이지로 동작하며 `?ids=` URL state, 최대 3개 슬롯, 추천 프로그램 추가/제거를 지원한다.

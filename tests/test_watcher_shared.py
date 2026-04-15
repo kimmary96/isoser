@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from scripts import watcher_shared
@@ -29,3 +30,42 @@ def test_acquire_lock_file_keeps_live_lock(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setattr(watcher_shared, "_is_pid_running", lambda pid: True)
 
     assert watcher_shared.acquire_lock_file(str(lock_path)) is None
+
+
+def test_compute_worktree_fingerprint_changes_when_file_changes(tmp_path: Path) -> None:
+    tracked = tmp_path / "backend" / "routers" / "programs.py"
+    tracked.parent.mkdir(parents=True, exist_ok=True)
+    tracked.write_text("print('v1')\n", encoding="utf-8")
+
+    first = watcher_shared.compute_worktree_fingerprint(str(tmp_path), ["backend/routers/programs.py"])
+    tracked.write_text("print('v2')\n", encoding="utf-8")
+    second = watcher_shared.compute_worktree_fingerprint(str(tmp_path), ["backend/routers/programs.py"])
+
+    assert first != second
+
+
+def test_worktree_fingerprint_details_returns_match_status(tmp_path: Path) -> None:
+    tracked = tmp_path / "backend" / "routers" / "programs.py"
+    tracked.parent.mkdir(parents=True, exist_ok=True)
+    tracked.write_text("print('ok')\n", encoding="utf-8")
+    fingerprint = watcher_shared.compute_worktree_fingerprint(str(tmp_path), ["backend/routers/programs.py"])
+
+    details = watcher_shared.worktree_fingerprint_details(
+        str(tmp_path),
+        {
+            "planned_files": "backend/routers/programs.py",
+            "planned_worktree_fingerprint": fingerprint,
+        },
+    )
+
+    assert details is not None
+    assert details["matches"] is True
+
+
+def test_append_jsonl_record_writes_one_json_object_per_line(tmp_path: Path) -> None:
+    ledger_path = tmp_path / "dispatch" / "run-ledger.jsonl"
+
+    watcher_shared.append_jsonl_record(str(ledger_path), {"task_id": "TASK-1", "stage": "running"})
+
+    rows = [json.loads(line) for line in ledger_path.read_text(encoding="utf-8").splitlines()]
+    assert rows == [{"stage": "running", "task_id": "TASK-1"}]

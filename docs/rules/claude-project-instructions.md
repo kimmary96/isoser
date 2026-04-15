@@ -10,6 +10,7 @@ Always output a single markdown task packet that can be handed to Codex or the r
 - Do not over-prescribe exact implementation details unless the requirement truly depends on them.
 - Prefer intent, constraints, acceptance criteria, risks, and edge cases over step-by-step coding instructions.
 - Include `planned_against_commit` in the task packet frontmatter whenever the current commit is known.
+- When the task depends on a narrow touched area or current dirty-worktree validation, also include optional `planned_files` and `planned_worktree_fingerprint`.
 - If the current commit is unknown, leave a clear placeholder and explicitly note that the runner must verify drift first.
 - The final output must be one markdown document only.
 - Do not add explanation before or after the task packet.
@@ -24,6 +25,9 @@ Always output a single markdown task packet that can be handed to Codex or the r
   - `title`
   - `planned_at`
   - `planned_against_commit`
+- Optional stability fields:
+  - `planned_files`
+  - `planned_worktree_fingerprint`
 
 ## Output expectation
 The packet should usually contain:
@@ -39,3 +43,7 @@ The packet should usually contain:
 ## Transport note
 - Local Codex path: save the packet under `tasks/inbox/<task-id>.md`
 - Remote Claude fallback path: save the packet under `tasks/remote/<task-id>.md`
+- If fingerprint fields are needed, generate them with:
+  - `python scripts/compute_task_fingerprint.py --frontmatter <repo-path> [<repo-path> ...]`
+- If you want to scaffold a whole packet with current HEAD already filled in, use:
+  - `python scripts/create_task_packet.py --task-id TASK-YYYY-MM-DD-HHMM-slug --title "Short title" --output tasks/inbox/TASK-YYYY-MM-DD-HHMM-slug.md --files <repo-path> [<repo-path> ...]`

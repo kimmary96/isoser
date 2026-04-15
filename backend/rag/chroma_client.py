@@ -320,6 +320,7 @@ class ChromaManager:
         collection_name: str,
         query_text: str,
         n_results: int = 4,
+        where: dict[str, Any] | None = None,
     ) -> list[SearchResult]:
         """Search a collection and normalize results into SearchResult objects."""
 
@@ -335,11 +336,21 @@ class ChromaManager:
             if count == 0:
                 return []
 
-            raw_results = collection.query(
-                query_texts=[query_text],
-                n_results=min(n_results, count),
-                include=["documents", "metadatas", "distances"],
-            )
+            try:
+                raw_results = collection.query(
+                    query_texts=[query_text],
+                    n_results=min(n_results, count),
+                    where=where,
+                    include=["documents", "metadatas", "distances"],
+                )
+            except Exception:
+                if where is None:
+                    raise
+                raw_results = collection.query(
+                    query_texts=[query_text],
+                    n_results=min(n_results, count),
+                    include=["documents", "metadatas", "distances"],
+                )
         except Exception:
             return []
 

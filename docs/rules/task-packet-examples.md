@@ -12,6 +12,8 @@ priority: low
 planned_by: claude
 planned_at: 2026-04-14T22:45:00+09:00
 planned_against_commit: <git-sha>
+planned_files: README.md
+planned_worktree_fingerprint: <optional-sha256>
 ---
 
 # Goal
@@ -56,6 +58,8 @@ priority: medium
 planned_by: claude
 planned_at: 2026-04-14T22:50:00+09:00
 planned_against_commit: <git-sha>
+planned_files: frontend/app/dashboard/activities/[id]/page.tsx, frontend/app/dashboard/activities/_hooks/use-activity-detail.ts
+planned_worktree_fingerprint: <optional-sha256>
 ---
 
 # Goal
@@ -99,3 +103,10 @@ Make activity detail save feedback clearer for the user without redesigning the 
   - `TASK-YYYY-MM-DD-HHMM-short-slug.md`
 - Example:
   - `TASK-2026-04-14-2250-activity-save-feedback.md`
+
+## Optional stability fields
+
+- `planned_files`는 packet이 실제로 기준 삼는 touched area를 좁게 적는다.
+- `planned_worktree_fingerprint`는 `planned_files` 기준 현재 worktree snapshot hash다.
+- 생성 예시:
+  - `python scripts/compute_task_fingerprint.py --frontmatter README.md`

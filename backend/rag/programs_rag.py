@@ -92,6 +92,7 @@ def _profile_document(profile: Mapping[str, Any]) -> str:
         "name",
         "bio",
         "education",
+        "job_title",
         "self_intro",
         "portfolio_url",
     ):
@@ -313,6 +314,7 @@ class ProgramsRAG:
             urgency_score = self._urgency_score(program_record)
             final_score = round(relevance_score * 0.8 + urgency_score * 0.2, 4)
             program_record["days_left"] = days_left
+            program_record["similarity_score"] = relevance_score
             program_record["urgency_score"] = urgency_score
             program_record["final_score"] = final_score
             if final_score <= 0:
@@ -368,6 +370,8 @@ class ProgramsRAG:
         activities: Sequence[Mapping[str, Any]],
         programs: Sequence[Mapping[str, Any]],
         top_k: int = 5,
+        category: str | None = None,
+        region: str | None = None,
     ) -> list[ProgramRecommendation]:
         if not programs or top_k <= 0:
             return []
@@ -384,7 +388,25 @@ class ProgramsRAG:
         if not query:
             return []
 
-        search_results = self._manager.search(self.collection_name, query, n_results=top_k)
+        chroma_where: dict[str, Any] | None = None
+        where_conditions: list[dict[str, Any]] = []
+        if category:
+            where_conditions.append({"category": {"$contains": category}})
+        if region:
+            where_conditions.append({"location": {"$contains": region}})
+        if len(where_conditions) == 1:
+            chroma_where = where_conditions[0]
+        elif len(where_conditions) > 1:
+            chroma_where = {"$and": where_conditions}
+
+        search_results = self._manager.search(
+            self.collection_name,
+            query,
+            n_results=top_k,
+            where=chroma_where,
+        )
+        if chroma_where and not search_results:
+            search_results = self._manager.search(self.collection_name, query, n_results=top_k)
         if not search_results:
             return self._fallback_recommend(
                 profile=profile,
@@ -413,6 +435,7 @@ class ProgramsRAG:
             semantic_score = self._semantic_score(result.score)
             final_score = round(semantic_score * 0.8 + urgency_score * 0.2, 4)
             program_record["days_left"] = days_left
+            program_record["similarity_score"] = semantic_score
             program_record["urgency_score"] = urgency_score
             program_record["final_score"] = final_score
             reason_payload = reasons.get(program_id, {})

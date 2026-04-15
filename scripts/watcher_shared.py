@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import hashlib
+import json
 import os
 import re
 import subprocess
 from datetime import datetime
-from typing import Callable, Optional
+from pathlib import Path
+from typing import Any, Callable, Optional
 
 
 def ensure_directories_exist(directories: list[str]) -> None:
@@ -118,6 +121,64 @@ def read_task_metadata(task_path: str, required_fields: tuple[str, ...]) -> tupl
 def sanitize_task_id(raw_value: str) -> str:
     cleaned = re.sub(r"[^A-Za-z0-9._-]+", "-", raw_value).strip("-")
     return cleaned or "unknown-task"
+
+
+def parse_frontmatter_path_list(raw_value: str) -> list[str]:
+    return [item.strip().replace("\\", "/") for item in raw_value.split(",") if item.strip()]
+
+
+def append_jsonl_record(path: str, record: dict[str, Any]) -> None:
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "a", encoding="utf-8") as file:
+        file.write(json.dumps(record, ensure_ascii=True, sort_keys=True) + "\n")
+
+
+def _iter_fingerprint_entries(project_path: str, repo_paths: list[str]) -> list[str]:
+    entries: list[str] = []
+    root = Path(project_path)
+    seen: set[str] = set()
+
+    for repo_path in repo_paths:
+        normalized = repo_path.strip().replace("\\", "/").lstrip("./")
+        if not normalized or normalized in seen:
+            continue
+        seen.add(normalized)
+        absolute_path = root / normalized
+        if absolute_path.is_file():
+            digest = hashlib.sha256(absolute_path.read_bytes()).hexdigest()
+            entries.append(f"FILE {normalized} {digest}")
+            continue
+        if absolute_path.is_dir():
+            entries.append(f"DIR {normalized}")
+            for child in sorted(path for path in absolute_path.rglob("*") if path.is_file()):
+                child_relative = child.relative_to(root).as_posix()
+                digest = hashlib.sha256(child.read_bytes()).hexdigest()
+                entries.append(f"FILE {child_relative} {digest}")
+            continue
+        entries.append(f"MISSING {normalized}")
+
+    return entries
+
+
+def compute_worktree_fingerprint(project_path: str, repo_paths: list[str]) -> str:
+    entries = _iter_fingerprint_entries(project_path, repo_paths)
+    payload = "\n".join(entries)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def worktree_fingerprint_details(project_path: str, metadata: dict[str, str]) -> Optional[dict[str, Any]]:
+    planned_fingerprint = metadata.get("planned_worktree_fingerprint", "").strip()
+    planned_files = parse_frontmatter_path_list(metadata.get("planned_files", ""))
+    if not planned_fingerprint or not planned_files:
+        return None
+
+    actual_fingerprint = compute_worktree_fingerprint(project_path, planned_files)
+    return {
+        "matches": actual_fingerprint == planned_fingerprint,
+        "planned_fingerprint": planned_fingerprint,
+        "actual_fingerprint": actual_fingerprint,
+        "planned_files": planned_files,
+    }
 
 
 def current_head(project_path: str) -> str:

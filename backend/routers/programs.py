@@ -1,13 +1,29 @@
+from datetime import datetime, timedelta, timezone
+import logging
 from typing import Any
 
 import httpx
 from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Query
 from pydantic import BaseModel, ConfigDict, Field
 
+
+def _should_fallback_to_backend(error: ModuleNotFoundError) -> bool:
+    return error.name is not None and (
+        error.name == "rag" or error.name.startswith("rag.")
+    )
+
+
+try:
+    from backend.logging_config import get_logger, log_event
+except ImportError:
+    from logging_config import get_logger, log_event
+
 try:
     from rag.collector.scheduler import run_all_collectors
     from rag.programs_rag import ProgramRecommendation, ProgramsRAG
-except ImportError:
+except ModuleNotFoundError as error:
+    if not _should_fallback_to_backend(error):
+        raise
     from backend.rag.collector.scheduler import run_all_collectors
     from backend.rag.programs_rag import ProgramRecommendation, ProgramsRAG
 
@@ -18,12 +34,14 @@ from utils.supabase_admin import (
     request_supabase,
 )
 
+logger = get_logger(__name__)
 programs_router = APIRouter(prefix="/programs", tags=["programs"])
 router = programs_router
 programs_rag = ProgramsRAG()
 
 PROGRAM_SORT_OPTIONS = {"deadline", "latest"}
 PROGRAM_TEACHING_METHODS = {"온라인", "오프라인", "혼합"}
+RECOMMEND_CACHE_TTL_HOURS = 24
 REGION_QUERY_ALIASES: dict[str, tuple[str, ...]] = {
     "서울": ("서울",),
     "경기": ("경기",),
@@ -67,6 +85,10 @@ class ProgramListItem(BaseModel):
 
 class ProgramRecommendRequest(BaseModel):
     top_k: int = Field(default=9, ge=1, le=20)
+    category: str | None = Field(default=None, description="카테고리 필터")
+    region: str | None = Field(default=None, description="지역 필터")
+    job_title: str | None = Field(default=None, description="직무명")
+    force_refresh: bool = Field(default=False, description="캐시 무시 여부")
 
 
 class ProgramRecommendItem(BaseModel):
@@ -201,18 +223,182 @@ def _parse_content_range_total(value: str | None) -> int:
         return 0
 
 
-async def _fetch_program_rows(limit: int = 200) -> list[dict[str, Any]]:
+async def _fetch_program_rows(
+    limit: int = 200,
+    category: str | None = None,
+    region: str | None = None,
+) -> list[dict[str, Any]]:
+    params: dict[str, str] = {
+        "select": "*",
+        "is_active": "eq.true",
+        "order": "deadline.asc.nullslast",
+        "limit": str(limit),
+    }
+    if category:
+        params["category"] = f"ilike.*{category}*"
+    if region:
+        params["location"] = f"ilike.*{region}*"
+
+    rows = await request_supabase(
+        method="GET",
+        path="/rest/v1/programs",
+        params=params,
+    )
+    return rows if isinstance(rows, list) else []
+
+
+async def _fetch_programs_by_ids(program_ids: list[str]) -> dict[str, dict[str, Any]]:
+    if not program_ids:
+        return {}
+
+    quoted_ids = ",".join(f'"{program_id}"' for program_id in program_ids if program_id)
+    if not quoted_ids:
+        return {}
+
     rows = await request_supabase(
         method="GET",
         path="/rest/v1/programs",
         params={
             "select": "*",
-            "is_active": "eq.true",
-            "order": "deadline.asc.nullslast",
-            "limit": str(limit),
+            "id": f"in.({quoted_ids})",
         },
     )
-    return rows if isinstance(rows, list) else []
+    if not isinstance(rows, list):
+        return {}
+
+    return {
+        str(row.get("id")): row
+        for row in rows
+        if str(row.get("id") or "").strip()
+    }
+
+
+async def _load_cached_recommendations(user_id: str) -> list[dict[str, Any]] | None:
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=RECOMMEND_CACHE_TTL_HOURS)).isoformat()
+    try:
+        rows = await request_supabase(
+            method="GET",
+            path="/rest/v1/recommendations",
+            params={
+                "select": "program_id,similarity_score,urgency_score,final_score,generated_at",
+                "user_id": f"eq.{user_id}",
+                "generated_at": f"gte.{cutoff}",
+                "order": "final_score.desc",
+                "limit": "20",
+            },
+        )
+    except Exception as exc:
+        log_event(logger, logging.WARNING, "recommend_cache_load_failed", error=str(exc))
+        return None
+    return rows if isinstance(rows, list) and rows else None
+
+
+async def _save_recommendations(
+    user_id: str,
+    recommendations: list[ProgramRecommendation],
+) -> None:
+    if not recommendations:
+        return
+
+    now = datetime.now(timezone.utc).isoformat()
+    payload = []
+    for item in recommendations:
+        if not item.program_id:
+            continue
+        payload.append(
+            {
+                "user_id": user_id,
+                "program_id": item.program_id,
+                "similarity_score": float(item.program.get("similarity_score") or 0),
+                "urgency_score": float(item.program.get("urgency_score") or 0),
+                "final_score": float(item.score or 0),
+                "generated_at": now,
+            }
+        )
+
+    if not payload:
+        return
+
+    try:
+        await request_supabase(
+            method="POST",
+            path="/rest/v1/recommendations",
+            params={"on_conflict": "user_id,program_id"},
+            payload=payload,
+            prefer="resolution=merge-duplicates,return=minimal",
+        )
+    except Exception as exc:
+        log_event(logger, logging.WARNING, "recommend_cache_save_failed", error=str(exc))
+
+
+async def _delete_user_recommendations(user_id: str) -> None:
+    try:
+        await request_supabase(
+            method="DELETE",
+            path="/rest/v1/recommendations",
+            params={"user_id": f"eq.{user_id}"},
+        )
+    except Exception as exc:
+        log_event(logger, logging.WARNING, "recommend_cache_delete_failed", error=str(exc))
+
+
+def _build_default_recommendation_items(
+    programs: list[dict[str, Any]],
+    *,
+    top_k: int,
+    reason: str,
+) -> list[ProgramRecommendItem]:
+    return [
+        ProgramRecommendItem(
+            program_id=str(program.get("id") or ""),
+            score=program.get("final_score"),
+            reason=reason,
+            fit_keywords=[],
+            program=ProgramListItem.model_validate(program),
+        )
+        for program in programs[:top_k]
+        if str(program.get("id") or "").strip()
+    ]
+
+
+async def _build_cached_recommendation_items(
+    cached_rows: list[dict[str, Any]],
+    *,
+    top_k: int,
+) -> list[ProgramRecommendItem]:
+    program_ids = [
+        str(row.get("program_id") or "").strip()
+        for row in cached_rows
+        if str(row.get("program_id") or "").strip()
+    ]
+    programs_by_id = await _fetch_programs_by_ids(program_ids)
+
+    items: list[ProgramRecommendItem] = []
+    for row in cached_rows:
+        program_id = str(row.get("program_id") or "").strip()
+        if not program_id:
+            continue
+        program = programs_by_id.get(program_id)
+        if not program:
+            continue
+
+        program_record = dict(program)
+        program_record["similarity_score"] = row.get("similarity_score")
+        program_record["urgency_score"] = row.get("urgency_score")
+        program_record["final_score"] = row.get("final_score")
+        items.append(
+            ProgramRecommendItem(
+                program_id=program_id,
+                score=float(row.get("final_score") or 0),
+                reason="최근 생성된 추천 결과를 캐시에서 불러왔습니다.",
+                fit_keywords=[],
+                program=ProgramListItem.model_validate(program_record),
+            )
+        )
+        if len(items) >= top_k:
+            break
+
+    return items
 
 
 async def _count_program_rows(
@@ -376,49 +562,65 @@ async def recommend_programs(
     payload: ProgramRecommendRequest,
     authorization: str | None = Header(default=None),
 ) -> ProgramRecommendResponse:
-    programs = await _fetch_program_rows(limit=max(payload.top_k * 10, 50))
+    programs = await _fetch_program_rows(
+        limit=max(payload.top_k * 10, 50),
+        category=payload.category,
+        region=payload.region,
+    )
     if not programs:
         return ProgramRecommendResponse(items=[])
 
     if not authorization:
-        return ProgramRecommendResponse(
-            items=[
-                ProgramRecommendItem(
-                    program_id=str(program.get("id") or ""),
-                    score=program.get("final_score"),
-                    reason="최근 마감 일정과 공개 정보 기준으로 우선 노출한 프로그램입니다.",
-                    fit_keywords=[],
-                    program=ProgramListItem.model_validate(program),
-                )
-                for program in programs[: payload.top_k]
-                if str(program.get("id") or "").strip()
-            ]
-        )
+        return ProgramRecommendResponse(items=_build_default_recommendation_items(
+            programs,
+            top_k=payload.top_k,
+            reason="최근 마감 일정과 공개 정보 기준으로 우선 노출한 프로그램입니다.",
+        ))
 
     current_user = await get_current_user_from_authorization(authorization)
+    use_cache = (
+        not payload.force_refresh
+        and not payload.category
+        and not payload.region
+        and not payload.job_title
+    )
+
+    if use_cache:
+        cached_rows = await _load_cached_recommendations(current_user.id)
+        if cached_rows:
+            cached_items = await _build_cached_recommendation_items(
+                cached_rows,
+                top_k=payload.top_k,
+            )
+            if cached_items:
+                return ProgramRecommendResponse(items=cached_items)
+
+    if payload.force_refresh and not payload.category and not payload.region and not payload.job_title:
+        await _delete_user_recommendations(current_user.id)
+
     profile = await _fetch_profile_row(current_user.id)
+    if payload.job_title:
+        profile = dict(profile)
+        profile["job_title"] = payload.job_title
     activities = await _fetch_activity_rows(current_user.id)
     recommendations = await programs_rag.recommend(
         profile=profile,
         activities=activities,
         programs=programs,
         top_k=payload.top_k,
+        category=payload.category,
+        region=payload.region,
     )
 
     if not recommendations:
-        return ProgramRecommendResponse(
-            items=[
-                ProgramRecommendItem(
-                    program_id=str(program.get("id") or ""),
-                    score=program.get("final_score"),
-                    reason="프로필 기반 추천 데이터가 충분하지 않아 기본 프로그램 목록을 보여줍니다.",
-                    fit_keywords=[],
-                    program=ProgramListItem.model_validate(program),
-                )
-                for program in programs[: payload.top_k]
-                if str(program.get("id") or "").strip()
-            ]
-        )
+        return ProgramRecommendResponse(items=_build_default_recommendation_items(
+            programs,
+            top_k=payload.top_k,
+            reason="프로필 기반 추천 데이터가 충분하지 않아 기본 프로그램 목록을 보여줍니다.",
+        ))
+
+    if not payload.category and not payload.region and not payload.job_title:
+        await _save_recommendations(current_user.id, recommendations)
 
     return ProgramRecommendResponse(
         items=[_serialize_program_recommendation(item) for item in recommendations]

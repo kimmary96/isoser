@@ -6,6 +6,8 @@ from typing import Dict, Iterable, List, Optional
 from urllib.parse import urljoin
 from urllib.request import Request, urlopen
 
+from bs4 import BeautifulSoup
+
 from .base_collector import BaseCollector
 
 
@@ -42,6 +44,9 @@ class BaseHtmlCollector(BaseCollector):
 
     def absolute_url(self, base_url: str, maybe_relative: str) -> str:
         return urljoin(base_url, maybe_relative.strip())
+
+    def soup_from_html(self, html: str) -> BeautifulSoup:
+        return BeautifulSoup(html, "html.parser")
 
     def extract_date(self, text: str) -> Optional[str]:
         match = DATE_PATTERN.search(self._clean_text(text))

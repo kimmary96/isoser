@@ -3,6 +3,13 @@ from typing import Dict, List
 
 import requests
 
+
+def _should_fallback_to_backend(error: ModuleNotFoundError) -> bool:
+    return error.name is not None and (
+        error.name == "rag" or error.name.startswith("rag.")
+    )
+
+
 try:
     from rag.collector.hrd_collector import HrdCollector
     from rag.collector.kstartup_collector import KstartupApiCollector
@@ -16,7 +23,9 @@ try:
         SeoulWomanUpCollector,
     )
     from rag.collector.work24_collector import Work24Collector
-except ImportError:
+except ModuleNotFoundError as error:
+    if not _should_fallback_to_backend(error):
+        raise
     from backend.rag.collector.hrd_collector import HrdCollector
     from backend.rag.collector.kstartup_collector import KstartupApiCollector
     from backend.rag.collector.normalizer import normalize

@@ -1,49 +1,41 @@
-# Drift Report
+# TASK-2026-04-15-1700-recommend-data-pipeline Drift Report
 
 - task id: `TASK-2026-04-15-1700-recommend-data-pipeline`
-- planned against: `750fba4f766f86739e94368afa8474e2edbdc6b4`
-- current head: `81a5b37d3bb31937166247e4dc086fec2e786d4c`
-- status: stopped due to material drift in the touched area
+- planned_against_commit: `33e49ae3d87fe9d20f60c1aee08a5389c67a0ba5`
+- current HEAD: `33e49ae3d87fe9d20f60c1aee08a5389c67a0ba5`
+- conclusion: stop due to material drift in the touched implementation area
 
 ## Why this is drift
 
-The packet assumes the recommendation data-pipeline prerequisites are still missing in the repository, but the current codebase already contains multiple changes in that exact area:
+The task packet requires validating the current recommendation data pipeline against the codebase state planned for this task. Although `HEAD` matches `planned_against_commit`, the current working tree contains uncommitted changes in the exact runtime path this task must verify:
 
-- `backend/utils/supabase_admin.py` already requires `SUPABASE_SERVICE_ROLE_KEY` and is wired into the admin sync path.
-- `backend/routers/admin.py` already exposes `POST /sync/programs`, validates `ADMIN_SECRET_KEY`, and upserts by `hrd_id`.
-- `backend/routers/programs.py` already contains recommendation fallback behavior and newer program-field handling that depends on the current sync payload shape.
-- `supabase/migrations/20260415_create_recommendations.sql` already exists.
-- `supabase/migrations/20260410133000_add_work24_sync_columns_to_programs.sql` already adds the core Work24 sync columns.
-- `supabase/migrations/20260415170000_add_programs_hub_fields.sql` already adds newer program fields beyond the original packet.
-
-The packet also claims `backend/.env` is missing the required admin/Supabase values, but the local repository state already has those keys present. That makes the packet's primary implementation assumption stale.
-
-There is also contract drift inside the packet itself versus current code:
-
-- the packet references `WORK24_OPEN_API_AUTH_KEY`, while current code checks `WORK24_TRAINING_AUTH_KEY`
-- the packet describes several manual Supabase SQL Editor and live sync verification steps that cannot be safely re-derived from repository code alone
-
-Because the repository already moved ahead in the targeted implementation area, continuing from this packet would risk redundant edits or incorrect manual-state assumptions.
-
-## Evidence checked
-
-- `tasks/running/TASK-2026-04-15-1700-recommend-data-pipeline.md`
-- `backend/routers/admin.py`
 - `backend/routers/programs.py`
-- `backend/utils/supabase_admin.py`
-- `supabase/migrations/20260415_create_recommendations.sql`
-- `supabase/migrations/20260410133000_add_work24_sync_columns_to_programs.sql`
-- `supabase/migrations/20260415170000_add_programs_hub_fields.sql`
-- `backend/.env`
+- `backend/rag/programs_rag.py`
+- `backend/rag/chroma_client.py`
+- `backend/rag/collector/scheduler.py`
 
-## Decision
+These changes materially affect the target flow:
 
-No implementation edits were made. No migration files were changed. No commit or push was performed.
+- recommendation request shape now includes `category`, `region`, `job_title`, and `force_refresh`
+- recommendation results can now be served from the `recommendations` cache table
+- recommendation persistence and cache invalidation behavior was added
+- Chroma query behavior now includes metadata filtering and fallback logic
+- scheduler import behavior changed for backend fallback resolution
 
-Re-plan this task against the current repository and split repo changes from external/manual validation work if the remaining goal is still needed.
+Because this task is an operational verification of `POST /admin/sync/programs` and `/programs/recommend`, validating against the current working tree would no longer be validating the code state the task was planned against.
+
+## Required next step
+
+Re-plan this task against the current working tree after the recommendation-path changes are either committed intentionally or reverted, then rerun the verification task.
 
 ## Run Metadata
 
-- generated_at: `2026-04-15T18:14:00`
+- generated_at: `2026-04-15T20:18:13`
 - watcher_exit_code: `0`
-- codex_tokens_used: `current-session`
+- codex_tokens_used: `54,948`
+
+## Run Metadata
+
+- generated_at: `2026-04-15T20:22:37`
+- watcher_exit_code: `0`
+- codex_tokens_used: `61,087`

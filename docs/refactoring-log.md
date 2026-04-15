@@ -14,6 +14,53 @@
   - task-scoped staging/commit 원칙은 그대로 유지
   - 현재 브랜치가 이미 `main`인 경우 기존 push 동작만 수행
   - main 자동 반영 성공 시 completed Slack 알림 요약에 `origin/main` 반영 결과가 함께 노출됨
+- 추가 조정:
+  - watcher가 inbox / blocked / drifted 큐를 파일명 문자열 정렬이 아니라 `TASK-YYYY-MM-DD-####` 번호 기준으로 처리하도록 명시적 정렬 키를 추가
+  - drift/blocked 복구가 반복 중단된 task는 `replan-required` 경고로 승격하고, cowork packet에 재설계 체크리스트를 붙여 Slack에 더 강한 기획 보강 신호를 보내도록 확장
+
+## 2026-04-15 watcher pipeline hardening
+
+- 변경 파일
+  - `scripts/watcher_shared.py`
+  - `scripts/compute_task_fingerprint.py`
+  - `scripts/create_task_packet.py`
+  - `scripts/summarize_run_ledgers.py`
+  - `scripts/summarize_actionable_ledgers.py`
+  - `scripts/prune_run_ledgers.py`
+  - `watcher.py`
+  - `cowork_watcher.py`
+  - `backend/routers/slack.py`
+  - `tests/test_compute_task_fingerprint.py`
+  - `tests/test_create_task_packet.py`
+  - `tests/test_prune_run_ledgers.py`
+  - `tests/test_summarize_run_ledgers.py`
+  - `tests/test_summarize_actionable_ledgers.py`
+  - `tests/test_watcher_shared.py`
+  - `tests/test_watcher.py`
+  - `tests/test_cowork_watcher.py`
+  - `docs/current-state.md`
+  - `docs/automation/task-packets.md`
+  - `docs/automation/README.md`
+  - `docs/automation/operations.md`
+  - `docs/rules/task-packet-template.md`
+  - `docs/rules/task-packet-examples.md`
+  - `docs/rules/claude-project-instructions.md`
+  - `docs/rules/README.md`
+  - `supabase/migrations/20260415213000_harden_cowork_approvals.sql`
+- 핵심 변경
+  - task packet이 optional `planned_files` / `planned_worktree_fingerprint`를 가지면 watcher와 cowork review가 현재 worktree와 직접 대조해 stale packet을 더 이르게 걸러내도록 보강함
+  - planner가 optional fingerprint field를 실제로 채울 수 있게 `scripts/compute_task_fingerprint.py --frontmatter ...` helper와 관련 템플릿/규칙 문서를 추가함
+  - `scripts/create_task_packet.py`를 추가해 current HEAD와 optional fingerprint field가 포함된 packet 초안을 기본값으로 생성할 수 있게 함
+  - shared approval queue는 `task_id` 단위 갱신 대신 approval row `id`를 우선 claim/consume 하도록 바꿔 중복 poll 시 같은 요청을 다시 소비할 가능성을 줄임
+  - Supabase migration으로 `cowork_approvals`에 `claimed_at` / `claimed_by` / unique `id` / 추가 index를 보강하고, backend approval request write도 claim 메타데이터를 명시적으로 초기화하도록 맞춤
+  - local watcher와 cowork watcher 모두 JSONL run ledger를 남겨 alert/dispatch markdown 밖에서도 상태 전이를 추적할 수 있게 함
+  - `scripts/summarize_run_ledgers.py`를 추가해 local/cowork watcher ledger의 stage 집계, task별 최신 상태, 최근 이벤트를 한 번에 확인할 수 있게 함
+  - `scripts/summarize_actionable_ledgers.py`를 추가해 운영자가 실제 대응이 필요한 stage만 빠르게 triage 할 수 있게 함
+  - `scripts/prune_run_ledgers.py`를 추가해 active ledger는 최근 N일만 유지하고 오래된 JSONL 이벤트는 월별 archive로 옮기도록 함
+  - watcher와 cowork watcher loop에서 개별 packet 처리 예외를 격리해 `runtime-error` 기록만 남기고 프로세스는 계속 돌도록 보강함
+- 후속 후보
+  - packet 생성기/리뷰 프롬프트도 `planned_files`를 더 일관되게 채우도록 표준화 검토
+  - run ledger를 읽는 간단한 운영 요약 스크립트나 대시보드 추가 검토
 
 ## 2026-04-15 cowork approval shared queue 전환
 
@@ -1061,3 +1108,9 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - 자동 복구가 안전하지 않거나 재시도 한도에 걸린 task는 `cowork/packets/<task-id>.md`로 자동 에스컬레이션하고, `dispatch/alerts/<task-id>-needs-review.md` alert에서 Slack approval 또는 피드백 흐름으로 연결되도록 확장함
 - `docs/automation/local-flow.md`, `docs/automation/overview.md`, `docs/current-state.md`
   - local watcher 운영 문서에 `drifted/blocked -> recovery -> inbox` 재개발 흐름과 `recovered` alert를 반영함
+- `backend/routers/programs.py`, `backend/rag/programs_rag.py`, `backend/rag/chroma_client.py`
+  - `/programs/recommend`에 category/region/job_title/force_refresh를 추가하고 기본 추천 결과를 `recommendations` 테이블에 24시간 캐시하도록 확장함
+  - Chroma metadata `where` 필터와 filter miss/failure 시 전체 검색 폴백을 추가해 필터 기반 추천과 캐시 없는 복구 경로를 함께 보강함
+- `backend/rag/collector/base_html_collector.py`, `backend/rag/collector/scheduler.py`
+  - Tier 2 서울시 HTML collector 공통 베이스에 `BeautifulSoup` 파싱 유틸을 복구해 parser 테스트 6건이 실제 실행되도록 고정함
+  - scheduler import fallback은 `ModuleNotFoundError` 중 `rag` 경로 불일치에만 반응하도록 좁혀 실행 환경 차이만 흡수하고 실제 collector import 오류는 숨기지 않게 유지함
