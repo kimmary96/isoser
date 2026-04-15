@@ -6,8 +6,10 @@ import json
 import os
 import time
 from pathlib import Path
+from urllib import error as urllib_error
+from urllib import request as urllib_request
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Request
 from fastapi.responses import JSONResponse, PlainTextResponse
 
 
@@ -137,18 +139,65 @@ def _slack_interactive_message(message: str, *, replace_original: bool = False) 
     )
 
 
+def _post_to_slack_response_url(
+    response_url: str,
+    *,
+    message: str,
+    replace_original: bool = False,
+) -> None:
+    payload = {
+        "response_type": "ephemeral",
+        "replace_original": replace_original,
+        "text": message,
+    }
+    request = urllib_request.Request(
+        response_url,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib_request.urlopen(request, timeout=10) as response:
+            response.read()
+    except (urllib_error.URLError, TimeoutError):
+        # Slack follow-up failure should not break the original approval flow.
+        return
+
+
+def _format_action_result(*, title: str, task_id: str, lines: list[str]) -> str:
+    body = [title, "", f"- 작업: `{task_id}`", *lines]
+    return "\n".join(body)
+
+
 def _handle_approval_action(*, task_id: str, target: str, user_id: str, user_name: str) -> str:
     packet_path = _packet_path_for(task_id)
     review_path = _review_path_for(task_id)
+    target_label = "원격 큐" if target == "remote" else "로컬 inbox"
 
     if not packet_path.exists():
-        return f"Packet not found for `{task_id}`."
+        return _format_action_result(
+            title="승인 처리 실패",
+            task_id=task_id,
+            lines=["- 사유: packet 파일을 찾지 못했습니다."],
+        )
     if not review_path.exists():
-        return f"Review not found for `{task_id}`."
+        return _format_action_result(
+            title="승인 처리 실패",
+            task_id=task_id,
+            lines=["- 사유: review 파일을 찾지 못했습니다."],
+        )
     if _packet_needs_review(packet_path, review_path):
-        return f"Review is stale for `{task_id}`. Regenerate the review, then approve again."
+        return _format_action_result(
+            title="승인 처리 실패",
+            task_id=task_id,
+            lines=["- 사유: review가 stale 상태입니다.", "- 조치: review를 다시 생성한 뒤 승인하세요."],
+        )
     if _promoted_dispatch_path_for(task_id).exists():
-        return f"`{task_id}` is already promoted."
+        return _format_action_result(
+            title="승인 생략",
+            task_id=task_id,
+            lines=["- 상태: 이미 승격된 작업입니다."],
+        )
 
     approval_path = _write_approval_marker(
         task_id=task_id,
@@ -156,9 +205,13 @@ def _handle_approval_action(*, task_id: str, target: str, user_id: str, user_nam
         user_id=user_id,
         user_name=user_name,
     )
-    return (
-        f"Approved `{task_id}` for `{target}`. "
-        f"Marker created at `{approval_path.relative_to(REPO_ROOT).as_posix()}`."
+    return _format_action_result(
+        title="승인 처리 완료",
+        task_id=task_id,
+        lines=[
+            f"- 대상 큐: {target_label}",
+            f"- 승인 파일: `{approval_path.relative_to(REPO_ROOT).as_posix()}`",
+        ],
     )
 
 
@@ -184,9 +237,40 @@ def _write_rejection_dispatch(*, task_id: str, user_id: str, user_name: str) -> 
 def _handle_reject_action(*, task_id: str, user_id: str, user_name: str) -> str:
     packet_path = _packet_path_for(task_id)
     if not packet_path.exists():
-        return f"Packet not found for `{task_id}`."
+        return _format_action_result(
+            title="거절 처리 실패",
+            task_id=task_id,
+            lines=["- 사유: packet 파일을 찾지 못했습니다."],
+        )
     dispatch_path = _write_rejection_dispatch(task_id=task_id, user_id=user_id, user_name=user_name)
-    return f"Rejected `{task_id}`. Dispatch recorded at `{dispatch_path.relative_to(REPO_ROOT).as_posix()}`."
+    return _format_action_result(
+        title="거절 처리 완료",
+        task_id=task_id,
+        lines=[f"- 기록 파일: `{dispatch_path.relative_to(REPO_ROOT).as_posix()}`"],
+    )
+
+
+def _resolve_slack_interactive_action(
+    *,
+    action_id: str,
+    value: dict[str, object],
+    user_id: str,
+    user_name: str,
+) -> str:
+    task_id = str(value.get("task_id", "")).strip()
+    target = str(value.get("target", "inbox")).strip()
+    if not task_id:
+        return "Task ID is missing from the Slack action."
+
+    if action_id == "cowork_reject":
+        return _handle_reject_action(task_id=task_id, user_id=user_id, user_name=user_name)
+
+    if action_id in {"cowork_approve_inbox", "cowork_approve_remote"}:
+        if target not in {"inbox", "remote"}:
+            return "Target must be inbox or remote."
+        return _handle_approval_action(task_id=task_id, target=target, user_id=user_id, user_name=user_name)
+
+    return f"Unsupported Slack action `{action_id}`."
 
 
 @router.post("/commands/cowork-approve", response_class=PlainTextResponse)
@@ -233,7 +317,7 @@ async def slack_cowork_approve(request: Request) -> PlainTextResponse:
 
 
 @router.post("/interactivity/cowork-review")
-async def slack_cowork_interactivity(request: Request) -> JSONResponse:
+async def slack_cowork_interactivity(request: Request, background_tasks: BackgroundTasks) -> JSONResponse:
     body = await request.body()
     try:
         _verify_slack_signature(
@@ -284,21 +368,25 @@ async def slack_cowork_interactivity(request: Request) -> JSONResponse:
     except json.JSONDecodeError:
         return _slack_interactive_message("Invalid action value.")
 
-    task_id = str(value.get("task_id", "")).strip()
-    target = str(value.get("target", "inbox")).strip()
-    if not task_id:
-        return _slack_interactive_message("Task ID is missing from the Slack action.")
-
-    if action_id == "cowork_reject":
-        return _slack_interactive_message(
-            _handle_reject_action(task_id=task_id, user_id=user_id, user_name=user_name)
+    response_url = str(payload.get("response_url", "")).strip()
+    if response_url:
+        background_tasks.add_task(
+            _post_to_slack_response_url,
+            response_url,
+            message=_resolve_slack_interactive_action(
+                action_id=action_id,
+                value=value,
+                user_id=user_id,
+                user_name=user_name,
+            ),
         )
+        return _slack_interactive_message("승인 요청을 처리 중입니다. 잠시 후 결과를 다시 보냅니다.")
 
-    if action_id in {"cowork_approve_inbox", "cowork_approve_remote"}:
-        if target not in {"inbox", "remote"}:
-            return _slack_interactive_message("Target must be inbox or remote.")
-        return _slack_interactive_message(
-            _handle_approval_action(task_id=task_id, target=target, user_id=user_id, user_name=user_name)
+    return _slack_interactive_message(
+        _resolve_slack_interactive_action(
+            action_id=action_id,
+            value=value,
+            user_id=user_id,
+            user_name=user_name,
         )
-
-    return _slack_interactive_message(f"Unsupported Slack action `{action_id}`.")
+    )

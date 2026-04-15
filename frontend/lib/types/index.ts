@@ -218,6 +218,25 @@ export interface MatchAnalyzeRequest {
   };
 }
 
+export type CompareStatus = "pass" | "warn" | "block";
+
+export interface CompareMeta {
+  subsidy_rate?: string | null;
+  teaching_method?: string | null;
+  employment_connection?: string | null;
+  target_group?: string | null;
+  age_restriction?: string | null;
+  education_requirement?: string | null;
+  employment_restriction?: string | null;
+  experience_requirement?: string | null;
+  coding_skill_required?: string | CompareStatus | null;
+  naeilbaeumcard_required?: boolean | CompareStatus | null;
+  employment_insurance?: string | boolean | CompareStatus | null;
+  portfolio_required?: boolean | CompareStatus | null;
+  interview_required?: boolean | CompareStatus | null;
+  target_job?: string | null;
+}
+
 export interface Program {
   id: string | number | null;
   title: string | null;
@@ -236,11 +255,15 @@ export interface Program {
   deadline?: string | null;
   start_date?: string | null;
   end_date?: string | null;
+  support_type?: string | null;
+  teaching_method?: string | null;
+  is_certified?: boolean | null;
   is_active?: boolean | null;
   is_ad?: boolean | null;
   final_score?: number | null;
   urgency_score?: number | null;
   days_left?: number | null;
+  compare_meta?: CompareMeta | null;
 }
 
 export type ProgramSort = "deadline" | "latest";
@@ -251,6 +274,7 @@ export interface ProgramListParams {
   scope?: string;
   region_detail?: string;
   regions?: string[];
+  teaching_methods?: string[];
   recruiting_only?: boolean;
   sort?: ProgramSort;
   limit?: number;

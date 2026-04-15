@@ -85,6 +85,97 @@ def _pick_first(mapping: dict[str, Any], keys: tuple[str, ...]) -> str:
     return ""
 
 
+def _contains_any(text: str, keywords: tuple[str, ...]) -> bool:
+    return any(keyword in text for keyword in keywords)
+
+
+def _normalize_teaching_method(row: dict[str, Any]) -> str | None:
+    explicit_value = _pick_first(
+        row,
+        (
+            "TRNG_TMTH_CD_NM",
+            "TRNG_TMTH_NM",
+            "TRAINING_METHOD",
+            "trainingMethod",
+            "trainMethod",
+            "trainMthdNm",
+        ),
+    )
+    if explicit_value:
+        combined = explicit_value.replace(" ", "")
+    else:
+        combined = " ".join(
+            filter(
+                None,
+                (
+                    _pick_first(row, ("ADDRESS", "address")),
+                    _pick_first(row, ("TITLE", "title")),
+                    _pick_first(row, ("SUB_TITLE", "subTitle")),
+                ),
+            )
+        ).replace(" ", "")
+
+    has_online = _contains_any(combined, ("온라인", "원격", "비대면"))
+    has_offline = _contains_any(combined, ("오프라인", "대면", "집체", "방문"))
+    if has_online and has_offline:
+        return "혼합"
+    if has_online:
+        return "온라인"
+    if has_offline:
+        return "오프라인"
+    return None
+
+
+def _normalize_support_type(row: dict[str, Any]) -> str | None:
+    subsidy_amount = _to_int(row.get("REAL_MAN") if "REAL_MAN" in row else row.get("realMan"))
+    cost = _to_int(row.get("COURSE_MAN") if "COURSE_MAN" in row else row.get("courseMan"))
+    support_text = " ".join(
+        filter(
+            None,
+            (
+                _pick_first(row, ("TITLE", "title")),
+                _pick_first(row, ("SUB_TITLE", "subTitle")),
+                _pick_first(row, ("TRAIN_TARGET", "trainTarget")),
+            ),
+        )
+    )
+
+    if subsidy_amount == 0:
+        return "무료"
+    if cost is not None and subsidy_amount is not None and subsidy_amount < cost:
+        return "일부 지원"
+    if _contains_any(support_text, ("무료", "전액", "100%")):
+        return "무료"
+    if _contains_any(support_text, ("지원", "국비", "내일배움")):
+        return "일부 지원"
+    return None
+
+
+def _normalize_is_certified(row: dict[str, Any]) -> bool:
+    explicit_value = _pick_first(
+        row,
+        (
+            "CERTIFIED_YN",
+            "certifiedYn",
+            "TRNG_INSTT_CERT_YN",
+            "trainInsttCertYn",
+        ),
+    ).upper()
+    if explicit_value in {"Y", "YES", "TRUE", "1"}:
+        return True
+
+    combined = " ".join(
+        filter(
+            None,
+            (
+                _pick_first(row, ("TITLE", "title")),
+                _pick_first(row, ("SUB_TITLE", "subTitle")),
+            ),
+        )
+    )
+    return _contains_any(combined, ("우수훈련기관", "5년인증", "인증 우수"))
+
+
 def _xml_to_dict(element: ElementTree.Element) -> Any:
     children = list(element)
     if not children:
@@ -293,7 +384,10 @@ class Work24TrainingAdapter:
             "summary": provider_name or target,
             "source_url": _pick_first(row, ("TITLE_LINK", "titleLink")),
             "total_count": _to_int(row.get("scn_cnt")),
-            "source": SOURCE.source_name,
+            "source": "고용24",
+            "support_type": _normalize_support_type(row),
+            "teaching_method": _normalize_teaching_method(row),
+            "is_certified": _normalize_is_certified(row),
             "raw": row,
         }
 

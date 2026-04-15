@@ -76,6 +76,9 @@ def _normalize_program_row(row: dict[str, Any]) -> dict[str, Any]:
     target = [target_text] if target_text else []
     category = str(row.get("category_label") or "").strip() or str(row.get("category") or "").strip()
     description = str(row.get("summary") or "").strip() or None
+    support_type = str(row.get("support_type") or "").strip() or None
+    teaching_method = str(row.get("teaching_method") or "").strip() or None
+    raw_data = row.get("raw")
 
     return {
         "hrd_id": hrd_id,
@@ -91,7 +94,11 @@ def _normalize_program_row(row: dict[str, Any]) -> dict[str, Any]:
         "subsidy_amount": row.get("subsidy_amount"),
         "target": target or None,
         "source_url": str(row.get("source_url") or "").strip() or None,
-        "source": str(row.get("source") or "").strip() or "work24_training",
+        "source": str(row.get("source") or "").strip() or "고용24",
+        "support_type": support_type,
+        "teaching_method": teaching_method,
+        "is_certified": bool(row.get("is_certified")),
+        "raw_data": raw_data if isinstance(raw_data, dict) else None,
         "is_active": True,
     }
 
@@ -193,6 +200,11 @@ async def sync_programs(
 
     try:
         _require_admin_secret(authorization)
+        if not os.getenv("WORK24_TRAINING_AUTH_KEY", "").strip():
+            raise HTTPException(
+                status_code=503,
+                detail="WORK24_TRAINING_AUTH_KEY is not configured",
+            )
 
         fetch_started_at = perf_counter()
         adapter = Work24TrainingAdapter()

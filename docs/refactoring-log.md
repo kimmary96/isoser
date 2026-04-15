@@ -1,5 +1,51 @@
 # 리팩토링 로그
 
+## 2026-04-15 cowork 재승인 상태 정리
+
+- 수정 파일:
+  - `cowork_watcher.py`
+  - `tests/test_cowork_watcher.py`
+  - `docs/current-state.md`
+- 변경 내용:
+  - 같은 `task_id`의 cowork packet이 다시 review-ready로 올라올 때 예전 `cowork/approvals/<task-id>.ok`와 `cowork/dispatch/<task-id>-promoted.md`를 자동 정리하도록 보강
+  - 이미 한 번 promoted 된 task가 blocked/drifted 후 다시 review-ready가 되었을 때 Slack 승인 버튼이 실질적으로 무시되던 상태 충돌을 제거
+  - stale approval/promoted state reset 경로를 테스트로 고정
+- 유지된 동작:
+  - review stale 판정과 approval marker 기반 승격 규칙은 그대로 유지
+  - 이미 실제 승격이 끝난 packet은 promoted dispatch가 다시 생기기 전까지 중복 승격되지 않음
+- 후속 후보:
+  - Slack interactivity 후속 메시지에 `이미 승격됨`과 `재검토 후 재승인 가능`을 더 명확히 구분해서 표기할지 검토
+  - watcher 쪽 recovery escalation에서도 재에스컬레이션 시 stale cowork state를 한 번에 정리하도록 공통화 검토
+
+## 2026-04-15 랜딩 로그인 복귀 흐름 정리
+
+- 수정 파일:
+  - `frontend/app/(landing)/landing-a/_components.tsx`
+  - `frontend/app/(landing)/landing-b/page.tsx`
+  - `frontend/app/(landing)/programs/page.tsx`
+  - `frontend/app/(landing)/programs/[id]/page.tsx`
+  - `frontend/app/(landing)/compare/page.tsx`
+  - `frontend/app/dashboard/layout.tsx`
+  - `frontend/middleware.ts`
+  - `frontend/app/auth/callback/route.ts`
+  - `frontend/app/page.tsx`
+  - `docs/current-state.md`
+- 변경 내용:
+  - 루트 접근을 `/landing-a`로 리다이렉트해서 landing-a를 메인 랜딩 허브로 고정
+  - 루트 `/?code=...` OAuth 유입을 `/auth/callback?next=/landing-a`로 정규화해서 콜백 파라미터가 랜딩 주소에 남지 않도록 조정
+  - OAuth 완료 후 기존 사용자의 기본 이동 경로를 `/landing-a`로 변경
+  - `frontend/app` 구조를 `(landing)` 그룹과 `dashboard` 축 기준으로 재배치하고, `landing-a`, `landing-b`, `programs`, `compare`를 랜딩 그룹 아래로 정리
+  - 비교 페이지를 `/programs/compare` 대신 `/compare`로 올리고, 레거시 접근은 미들웨어에서 `/compare`로 리다이렉트하도록 정리
+  - landing-a 상단 헤더를 로그인 상태 인식형 공통 네비게이션으로 바꿔 `Programs`, `Compare`, `내 프로필` 이동과 프로필 표시를 통합
+  - 대시보드, landing-b, programs 목록/상세, compare 모두 같은 landing-a 헤더를 유지해서 랜딩 축과 대시보드 사이 이동을 일관되게 맞춤
+- 유지된 동작:
+  - 프로필이 없는 신규 사용자는 계속 `/onboarding`으로 보냄
+  - `/dashboard*`와 `/onboarding` 인증 보호 정책은 그대로 유지
+  - 구글 OAuth 시작 경로 `/api/auth/google`는 그대로 유지
+- 후속 후보:
+  - `/login`에서도 이미 로그인된 사용자를 `/landing-a` 또는 `/dashboard`로 정리하는 UX 처리 검토
+  - `landing-a`, `programs`, `compare`, `dashboard`의 본문 컨테이너 폭과 헤더 active state를 더 세밀하게 통일할지 검토
+
 ## 작업 목적
 
 랜딩페이지 개편 전에 기존 대시보드/도메인 구조를 먼저 정리해서 아래 문제를 해결하는 것이 목적이었다.
@@ -907,13 +953,24 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - review-ready 버튼 payload 생성과 Slack interactivity 승인/거절 흐름을 테스트로 고정함
 - `watcher.py`, `tests/test_watcher.py`
   - local watcher Slack alert를 영문 key-value 나열에서 한국어 섹션형 blocks 메시지로 바꿔 `작업`, `단계`, `상태`, `요약`, `다음 조치`가 바로 보이도록 정리함
+- `cowork_watcher.py`, `tests/test_cowork_watcher.py`
+  - cowork review/promotion Slack 메시지도 한국어 섹션형 blocks 메시지로 정리하고, review-ready는 버튼을 유지한 채 `검토 상태`, `패킷`, `리뷰`, `승인 방법`이 바로 보이도록 개선함
 - `backend/routers/programs.py`
   - 기존 `/programs` 응답 shape는 유지한 채 `q`, `regions`, `recruiting_only`, `sort` query를 추가하고 `/programs/count`를 분리해 목록 화면의 총건수 요구를 non-breaking하게 맞춤
 - `frontend/app/programs/page.tsx`, `frontend/lib/api/backend.ts`, `frontend/lib/types/index.ts`
   - `/programs`를 URL query 기반 서버 렌더링 허브 페이지로 확장하고 검색, 카테고리/지역 필터, 모집중 토글, 정렬, 20건 페이지네이션을 추가함
+- `frontend/app/programs/compare/page.tsx`, `frontend/app/programs/compare/programs-compare-client.tsx`, `frontend/lib/types/index.ts`, `supabase/migrations/20260415113000_add_compare_meta_to_programs.sql`
+  - `/programs/compare` 공개 비교 화면을 추가하고 `?ids=` URL state, 3슬롯 비교 그리드, 추천 프로그램 추가/제거, `compare_meta` 기반 허들/대상 표시를 최소 범위로 구현함
 - `frontend/lib/program-categories.ts`
   - 프론트 카테고리 상수를 현재 backend/programs category 체계에 맞는 `AI`, `IT`, `디자인`, `경영`, `창업`, `기타` 중심으로 정렬함
 - `backend/tests/test_programs_router.py`
   - programs query param helper와 count parsing 규칙을 테스트로 고정함
 - `docs/specs/api-contract.md`, `docs/current-state.md`
   - 확장된 programs 목록 query와 `/programs/count` endpoint를 현재 코드 기준으로 문서화함
+- `watcher.py`, `tests/test_watcher.py`
+  - `tasks/drifted/`와 `tasks/blocked/`를 주기적으로 스캔해 recovery report를 기반으로 packet을 자동 보정하고 `tasks/inbox/`로 재큐잉하는 auto recovery 루프를 추가함
+  - 무한 재시도를 막기 위해 packet의 `auto_recovery_attempts`를 읽어 최대 자동 복구 횟수를 제한하고, packet이 실제로 `queued + current HEAD` 상태로 갱신된 경우에만 재투입하도록 제한함
+- `watcher.py`, `tests/test_watcher.py`
+  - 자동 복구가 안전하지 않거나 재시도 한도에 걸린 task는 `cowork/packets/<task-id>.md`로 자동 에스컬레이션하고, `dispatch/alerts/<task-id>-needs-review.md` alert에서 Slack approval 또는 피드백 흐름으로 연결되도록 확장함
+- `docs/automation/local-flow.md`, `docs/automation/overview.md`, `docs/current-state.md`
+  - local watcher 운영 문서에 `drifted/blocked -> recovery -> inbox` 재개발 흐름과 `recovered` alert를 반영함

@@ -40,10 +40,12 @@ BLOCKED_DIR = "./tasks/blocked"
 DRIFTED_DIR = "./tasks/drifted"
 REPORTS_DIR = "./reports"
 ALERTS_DIR = "./dispatch/alerts"
+COWORK_PACKETS_DIR = "./cowork/packets"
 WATCHER_LOCK_PATH = "./.watcher.lock"
 PROJECT_PATH = r"D:\02_2025_AI_Lab\isoser"
 SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL", "").strip()
 STALE_RUNNING_MINUTES = 20
+MAX_AUTO_RECOVERY_ATTEMPTS = 2
 MOVE_RETRY_ATTEMPTS = 5
 MOVE_RETRY_DELAY_SECONDS = 0.5
 REQUIRED_FIELDS = (
@@ -76,7 +78,18 @@ CODE_QUICK_RULES = (
 
 
 def ensure_directories() -> None:
-    ensure_directories_exist([INBOX_DIR, REMOTE_DIR, RUNNING_DIR, DONE_DIR, BLOCKED_DIR, DRIFTED_DIR, REPORTS_DIR, ALERTS_DIR])
+    ensure_directories_exist(
+        [
+            INBOX_DIR,
+            REMOTE_DIR,
+            RUNNING_DIR,
+            DONE_DIR,
+            BLOCKED_DIR,
+            DRIFTED_DIR,
+            REPORTS_DIR,
+            ALERTS_DIR,
+        ]
+    )
 
 
 def startup_warning_messages() -> list[str]:
@@ -149,6 +162,8 @@ def write_alert(
     alert_path = os.path.join(ALERTS_DIR, f"{task_id}-{stage}.md")
     severity = {
         "completed": "info",
+        "recovered": "info",
+        "needs-review": "warning",
         "drift": "warning",
         "blocked": "error",
         "push-failed": "error",
@@ -197,12 +212,16 @@ def format_slack_alert_message(
 ) -> str:
     emoji = {
         "completed": "✅",
+        "recovered": "🔁",
+        "needs-review": "📝",
         "drift": "⚠️",
         "blocked": "⛔",
         "push-failed": "🚨",
     }.get(stage, "ℹ️")
     stage_labels = {
         "completed": "완료",
+        "recovered": "자동 복구",
+        "needs-review": "검토 필요",
         "drift": "드리프트 감지",
         "blocked": "차단",
         "push-failed": "Git 동기화 실패",
@@ -251,12 +270,16 @@ def build_slack_alert_payload(
     )
     emoji = {
         "completed": "✅",
+        "recovered": "🔁",
+        "needs-review": "📝",
         "drift": "⚠️",
         "blocked": "⛔",
         "push-failed": "🚨",
     }.get(stage, "ℹ️")
     stage_labels = {
         "completed": "완료",
+        "recovered": "자동 복구",
+        "needs-review": "검토 필요",
         "drift": "드리프트 감지",
         "blocked": "차단",
         "push-failed": "Git 동기화 실패",
@@ -358,6 +381,96 @@ def append_run_metadata(
 
     with open(report_path, "a", encoding="utf-8") as file:
         file.write("\n".join(lines) + "\n")
+
+
+def recovery_report_path(task_id: str) -> str:
+    return os.path.join(REPORTS_DIR, f"{task_id}-recovery.md")
+
+
+def packet_needs_recovery(task_path: str, failure_report_path: str, task_recovery_report_path: str) -> bool:
+    if not os.path.exists(failure_report_path):
+        return False
+    if not os.path.exists(task_recovery_report_path):
+        return True
+    recovery_mtime = os.path.getmtime(task_recovery_report_path)
+    return recovery_mtime < max(os.path.getmtime(task_path), os.path.getmtime(failure_report_path))
+
+
+def auto_recovery_attempts(task_path: str) -> int:
+    metadata, _ = read_task_metadata(task_path)
+    raw_value = metadata.get("auto_recovery_attempts", "").strip()
+    if not raw_value:
+        return 0
+    try:
+        return max(0, int(raw_value))
+    except ValueError:
+        return 0
+
+
+def cowork_packet_path(task_id: str) -> str:
+    return os.path.join(COWORK_PACKETS_DIR, f"{task_id}.md")
+
+
+def manual_review_dispatch_path(task_id: str) -> str:
+    return os.path.join(ALERTS_DIR, f"{task_id}-needs-review.md")
+
+
+def build_manual_review_packet(task_path: str, *, failure_stage: str, task_id: str) -> str:
+    task_body = Path(task_path).read_text(encoding="utf-8").rstrip()
+    report_lines = [
+        "",
+        "## Auto Recovery Context",
+        "",
+        f"- source_task: `tasks/{'drifted' if failure_stage == 'drift' else 'blocked'}/{os.path.basename(task_path)}`",
+        f"- failure_stage: `{failure_stage}`",
+        f"- failure_report: `reports/{task_id}-{failure_stage}.md`",
+        f"- recovery_report: `reports/{task_id}-recovery.md`",
+        "- reviewer_action: update the packet or provide approval/feedback before requeueing",
+    ]
+    return task_body + "\n" + "\n".join(report_lines) + "\n"
+
+
+def escalate_task_for_manual_review(task_path: str, *, failure_stage: str, reason: str) -> None:
+    filename = os.path.basename(task_path)
+    task_id = sanitize_task_id(filename.removesuffix(".md"))
+    cowork_packet = cowork_packet_path(task_id)
+    dispatch_path = manual_review_dispatch_path(task_id)
+    recovery_report = recovery_report_path(task_id)
+    desired_packet_body = build_manual_review_packet(task_path, failure_stage=failure_stage, task_id=task_id)
+
+    existing_body = None
+    if os.path.exists(cowork_packet):
+        existing_body = Path(cowork_packet).read_text(encoding="utf-8")
+    if existing_body != desired_packet_body:
+        write_report_path = cowork_packet
+        Path(os.path.dirname(write_report_path)).mkdir(parents=True, exist_ok=True)
+        Path(write_report_path).write_text(desired_packet_body, encoding="utf-8")
+
+    should_write_alert = True
+    if os.path.exists(dispatch_path):
+        alert_mtime = os.path.getmtime(dispatch_path)
+        refresh_sources = [os.path.getmtime(task_path)]
+        if os.path.exists(recovery_report):
+            refresh_sources.append(os.path.getmtime(recovery_report))
+        if os.path.exists(cowork_packet):
+            refresh_sources.append(os.path.getmtime(cowork_packet))
+        should_write_alert = alert_mtime < max(refresh_sources)
+
+    if not should_write_alert:
+        return
+
+    write_alert(
+        task_id,
+        "needs-review",
+        status="action-required",
+        packet_path=f"tasks/{'drifted' if failure_stage == 'drift' else 'blocked'}/{filename}",
+        report_path=f"reports/{task_id}-recovery.md",
+        summary=reason,
+        next_action=(
+            f"Review `cowork/packets/{task_id}.md`, wait for the cowork review-ready alert, then approve or reject it in Slack "
+            f"or with `/isoser-approve {task_id} inbox`."
+        ),
+    )
 
 
 def append_git_metadata(
@@ -625,6 +738,129 @@ def run_codex(task_filename: str, task_id: str, task_type: str) -> tuple[int, Op
     return exit_code, token_count
 
 
+def build_recovery_prompt(
+    task_filename: str,
+    task_id: str,
+    *,
+    failure_stage: str,
+    retry_count: int,
+) -> str:
+    failure_report = f"reports/{task_id}-{failure_stage}.md"
+    task_path = f"tasks/{'drifted' if failure_stage == 'drift' else 'blocked'}/{task_filename}"
+    next_attempt = retry_count + 1
+    return (
+        f"Read AGENTS.md, {task_path}, and {failure_report}. "
+        "Do not touch unrelated source files. "
+        "Inspect only the files directly needed to understand the failure reason and refresh the packet safely. "
+        f"If the task can be retried safely without new human input, update {task_path} in place so it is ready for another watcher run: "
+        "keep the original intent, narrow stale assumptions, preserve required frontmatter, set status to queued, "
+        "set planned_against_commit to the current HEAD, add or update auto_recovery_attempts, "
+        f"and set auto_recovery_attempts to {next_attempt}. "
+        f"Then write reports/{task_id}-recovery.md summarizing what changed in the packet and why retry is now safe. "
+        "If the failure depends on missing credentials, missing approvals, ambiguous product decisions, or any other external prerequisite, "
+        f"do not modify {task_path}; instead write reports/{task_id}-recovery.md explaining why automatic recovery was not safe."
+    )
+
+
+def run_codex_recovery(
+    task_filename: str,
+    task_id: str,
+    *,
+    failure_stage: str,
+    retry_count: int,
+) -> tuple[int, Optional[int]]:
+    prompt = build_recovery_prompt(
+        task_filename,
+        task_id,
+        failure_stage=failure_stage,
+        retry_count=retry_count,
+    )
+    codex_command = resolve_codex_command()
+    print(f"Codex 복구 실행: {task_filename} ({failure_stage})")
+    process = subprocess.Popen(
+        [codex_command, "exec", "--full-auto", prompt],
+        cwd=PROJECT_PATH,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        bufsize=1,
+    )
+    collected_output: list[str] = []
+
+    assert process.stdout is not None
+    for line in process.stdout:
+        print(line, end="")
+        collected_output.append(line)
+
+    exit_code = process.wait()
+    token_count = parse_token_count("".join(collected_output))
+    return exit_code, token_count
+
+
+def handle_recovery(task_path: str, *, failure_stage: str) -> None:
+    filename = os.path.basename(task_path)
+    task_id = sanitize_task_id(filename.removesuffix(".md"))
+    failure_report_path = os.path.join(REPORTS_DIR, f"{task_id}-{failure_stage}.md")
+    task_recovery_report_path = recovery_report_path(task_id)
+
+    if not packet_needs_recovery(task_path, failure_report_path, task_recovery_report_path):
+        return
+
+    retry_count = auto_recovery_attempts(task_path)
+    if retry_count >= MAX_AUTO_RECOVERY_ATTEMPTS:
+        if os.path.exists(task_recovery_report_path):
+            escalate_task_for_manual_review(
+                task_path,
+                failure_stage=failure_stage,
+                reason="Automatic recovery reached the retry limit and now needs human approval or packet feedback.",
+            )
+        print(f"복구 중단: {filename} (auto_recovery_attempts={retry_count})")
+        return
+
+    exit_code, token_count = run_codex_recovery(
+        filename,
+        task_id,
+        failure_stage=failure_stage,
+        retry_count=retry_count,
+    )
+    if os.path.exists(task_recovery_report_path):
+        append_run_metadata(task_recovery_report_path, exit_code=exit_code, token_count=token_count)
+
+    if exit_code != 0 or not os.path.exists(task_recovery_report_path):
+        print(f"복구 실패: {filename} (exit_code={exit_code})")
+        return
+
+    metadata, missing_fields = read_task_metadata(task_path)
+    planned_commit = metadata.get("planned_against_commit", "")
+    status = metadata.get("status", "").strip().lower()
+    updated_retry_count = auto_recovery_attempts(task_path)
+    head_commit = current_head()
+
+    if missing_fields or planned_commit != head_commit or status != "queued" or updated_retry_count <= retry_count:
+        escalate_task_for_manual_review(
+            task_path,
+            failure_stage=failure_stage,
+            reason="Automatic recovery determined that this task still needs human approval or feedback before it can be retried.",
+        )
+        print(f"복구 보류: {filename} (packet not ready for retry)")
+        return
+
+    destination_path = os.path.join(INBOX_DIR, filename)
+    move_task_file(task_path, destination_path)
+    write_alert(
+        task_id,
+        "recovered",
+        status="done",
+        packet_path=f"tasks/inbox/{filename}",
+        report_path=f"reports/{task_id}-recovery.md",
+        summary=f"Watcher refreshed the {failure_stage} task packet and requeued it for another implementation run.",
+        next_action="No manual action required unless the retried task fails again.",
+    )
+    print(f"복구 완료: {filename} -> tasks/inbox")
+
+
 def handle_task(task_path: str) -> None:
     filename = os.path.basename(task_path)
     running_path = os.path.join(RUNNING_DIR, filename)
@@ -865,6 +1101,10 @@ def main() -> None:
     try:
         while True:
             move_stale_running_tasks()
+            for task_file in sorted(glob.glob(f"{DRIFTED_DIR}/*.md")):
+                handle_recovery(task_file, failure_stage="drift")
+            for task_file in sorted(glob.glob(f"{BLOCKED_DIR}/*.md")):
+                handle_recovery(task_file, failure_stage="blocked")
             for task_file in sorted(glob.glob(f"{INBOX_DIR}/*.md")):
                 handle_task(task_file)
             time.sleep(10)

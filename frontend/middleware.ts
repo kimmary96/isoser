@@ -8,6 +8,21 @@ type CookieToSet = {
 };
 
 export async function middleware(request: NextRequest) {
+  if (request.nextUrl.pathname === "/programs/compare") {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/compare";
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  if (request.nextUrl.pathname === "/" && request.nextUrl.searchParams.has("code")) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/auth/callback";
+    if (!redirectUrl.searchParams.get("next")) {
+      redirectUrl.searchParams.set("next", "/landing-a");
+    }
+    return NextResponse.redirect(redirectUrl);
+  }
+
   let response = NextResponse.next({
     request,
   });

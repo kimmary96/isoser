@@ -235,6 +235,9 @@ export async function listPrograms(params?: ProgramListParams): Promise<Program[
   if (params?.regions?.length) {
     params.regions.forEach((region) => searchParams.append("regions", region));
   }
+  if (params?.teaching_methods?.length) {
+    params.teaching_methods.forEach((method) => searchParams.append("teaching_methods", method));
+  }
   if (params?.recruiting_only) searchParams.set("recruiting_only", "true");
   if (params?.sort) searchParams.set("sort", params.sort);
   if (typeof params?.limit === "number") searchParams.set("limit", String(params.limit));
@@ -258,6 +261,9 @@ export async function getProgramCount(params?: ProgramListParams): Promise<numbe
   if (params?.region_detail) searchParams.set("region_detail", params.region_detail);
   if (params?.regions?.length) {
     params.regions.forEach((region) => searchParams.append("regions", region));
+  }
+  if (params?.teaching_methods?.length) {
+    params.teaching_methods.forEach((method) => searchParams.append("teaching_methods", method));
   }
   if (params?.recruiting_only) searchParams.set("recruiting_only", "true");
 

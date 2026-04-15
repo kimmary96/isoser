@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { LandingANavBar, LandingATickerBar } from "../landing-a/_components";
 import {
   buildFallbackPrograms,
   initialAnswers,
@@ -82,6 +83,8 @@ export default function LandingBPage() {
 
   return (
     <main className="min-h-screen bg-[var(--surface)] text-[var(--ink)]" style={landingBThemeVars}>
+      <LandingATickerBar />
+      <LandingANavBar />
       {showResult ? (
         <LandingBResultSection programs={programs} resultTag={resultTag} totalCount={totalCount} />
       ) : (

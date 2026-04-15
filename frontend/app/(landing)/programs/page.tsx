@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { LandingANavBar, LandingATickerBar } from "@/app/(landing)/landing-a/_components";
 import { getProgramCount, listPrograms } from "@/lib/api/backend";
 import { PROGRAM_CATEGORIES } from "@/lib/program-categories";
 import type { Program, ProgramSort } from "@/lib/types";
@@ -252,148 +253,151 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
   const hasAnyFilter = Boolean(q || selectedCategory !== "전체" || selectedRegions.length || recruitingOnly);
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-950">
-      <div className="mx-auto flex max-w-7xl flex-col gap-8 px-6 py-10">
-        <section className="rounded-3xl bg-slate-950 px-8 py-10 text-white shadow-xl">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-2xl">
-              <p className="text-sm font-medium uppercase tracking-[0.24em] text-sky-200">Programs Hub</p>
-              <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-                국가 취업 지원 프로그램 허브
-              </h1>
-              <p className="mt-3 text-sm leading-6 text-slate-300 sm:text-base">
-                훈련 과정과 지원 프로그램을 한곳에서 찾고, 검색과 필터로 현재 열려 있는 기회를 빠르게
-                좁혀보세요.
-              </p>
-            </div>
-            <div className="grid gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200 sm:min-w-64">
-              <div>
-                <p className="text-slate-400">현재 결과</p>
-                <p className="mt-1 text-2xl font-semibold text-white">{error ? "-" : `${totalCount}개`}</p>
-              </div>
-              <div>
-                <p className="text-slate-400">정렬</p>
-                <p className="mt-1 font-medium text-white">
-                  {SORT_OPTIONS.find((option) => option.value === sort)?.label ?? "마감 임박순"}
+    <>
+      <LandingATickerBar />
+      <LandingANavBar />
+      <main className="min-h-screen bg-slate-50 text-slate-950">
+        <div className="mx-auto flex max-w-7xl flex-col gap-8 px-6 py-10">
+          <section className="rounded-3xl bg-slate-950 px-8 py-10 text-white shadow-xl">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+              <div className="max-w-2xl">
+                <p className="text-sm font-medium uppercase tracking-[0.24em] text-sky-200">Programs Hub</p>
+                <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
+                  국가 취업 지원 프로그램 허브
+                </h1>
+                <p className="mt-3 text-sm leading-6 text-slate-300 sm:text-base">
+                  훈련 과정과 지원 프로그램을 한곳에서 찾고, 검색과 필터로 현재 열려 있는 기회를 빠르게
+                  좁혀보세요.
                 </p>
               </div>
+              <div className="grid gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200 sm:min-w-64">
+                <div>
+                  <p className="text-slate-400">현재 결과</p>
+                  <p className="mt-1 text-2xl font-semibold text-white">{error ? "-" : `${totalCount}개`}</p>
+                </div>
+                <div>
+                  <p className="text-slate-400">정렬</p>
+                  <p className="mt-1 font-medium text-white">
+                    {SORT_OPTIONS.find((option) => option.value === sort)?.label ?? "마감 임박순"}
+                  </p>
+                </div>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        <section className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
-          <aside className="lg:sticky lg:top-20 lg:self-start">
-            <form
-              method="GET"
-              action="/programs"
-              className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
-            >
-              <div>
-                <label htmlFor="q" className="text-sm font-semibold text-slate-900">
-                  검색
-                </label>
-                <input
-                  id="q"
-                  name="q"
-                  type="search"
-                  defaultValue={q}
-                  placeholder="프로그램명으로 검색"
-                  className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-slate-900"
-                />
-              </div>
-
-              <div className="mt-6">
-                <label htmlFor="sort" className="text-sm font-semibold text-slate-900">
-                  정렬
-                </label>
-                <select
-                  id="sort"
-                  name="sort"
-                  defaultValue={sort}
-                  className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-slate-900"
-                >
-                  {SORT_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="mt-6 rounded-2xl bg-slate-50 p-4">
-                <label className="flex items-center gap-3 text-sm font-medium text-slate-800">
+          <section className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
+            <aside className="lg:sticky lg:top-20 lg:self-start">
+              <form
+                method="GET"
+                action="/programs"
+                className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
+              >
+                <div>
+                  <label htmlFor="q" className="text-sm font-semibold text-slate-900">
+                    검색
+                  </label>
                   <input
-                    type="checkbox"
-                    name="recruiting"
-                    value="true"
-                    defaultChecked={recruitingOnly}
-                    className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900"
+                    id="q"
+                    name="q"
+                    type="search"
+                    defaultValue={q}
+                    placeholder="프로그램명으로 검색"
+                    className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-slate-900"
                   />
-                  모집중만 보기
-                </label>
-              </div>
-
-              <fieldset className="mt-6">
-                <legend className="text-sm font-semibold text-slate-900">카테고리</legend>
-                <div className="mt-3 grid gap-2">
-                  {PROGRAM_CATEGORIES.map((category) => (
-                    <label
-                      key={category}
-                      className="flex items-center gap-3 rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700"
-                    >
-                      <input
-                        type="radio"
-                        name="category"
-                        value={category}
-                        defaultChecked={selectedCategory === category}
-                        className="h-4 w-4 border-slate-300 text-slate-900 focus:ring-slate-900"
-                      />
-                      {category}
-                    </label>
-                  ))}
                 </div>
-              </fieldset>
 
-              <fieldset className="mt-6">
-                <legend className="text-sm font-semibold text-slate-900">지역</legend>
-                <div className="mt-3 grid gap-2">
-                  {REGION_OPTIONS.map((region) => (
-                    <label
-                      key={region}
-                      className="flex items-center gap-3 rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700"
-                    >
-                      <input
-                        type="checkbox"
-                        name="regions"
-                        value={region}
-                        defaultChecked={selectedRegions.includes(region)}
-                        className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900"
-                      />
-                      {region}
-                    </label>
-                  ))}
+                <div className="mt-6">
+                  <label htmlFor="sort" className="text-sm font-semibold text-slate-900">
+                    정렬
+                  </label>
+                  <select
+                    id="sort"
+                    name="sort"
+                    defaultValue={sort}
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-slate-900"
+                  >
+                    {SORT_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-              </fieldset>
 
-              <div className="mt-6 flex gap-3">
-                <button
-                  type="submit"
-                  className="inline-flex flex-1 items-center justify-center rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
-                >
-                  필터 적용
-                </button>
-                <Link
-                  href="/programs"
-                  className="inline-flex items-center justify-center rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
-                >
-                  초기화
-                </Link>
-              </div>
-            </form>
-          </aside>
+                <div className="mt-6 rounded-2xl bg-slate-50 p-4">
+                  <label className="flex items-center gap-3 text-sm font-medium text-slate-800">
+                    <input
+                      type="checkbox"
+                      name="recruiting"
+                      value="true"
+                      defaultChecked={recruitingOnly}
+                      className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900"
+                    />
+                    모집중만 보기
+                  </label>
+                </div>
 
-          <section className="min-w-0">
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <fieldset className="mt-6">
+                  <legend className="text-sm font-semibold text-slate-900">카테고리</legend>
+                  <div className="mt-3 grid gap-2">
+                    {PROGRAM_CATEGORIES.map((category) => (
+                      <label
+                        key={category}
+                        className="flex items-center gap-3 rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700"
+                      >
+                        <input
+                          type="radio"
+                          name="category"
+                          value={category}
+                          defaultChecked={selectedCategory === category}
+                          className="h-4 w-4 border-slate-300 text-slate-900 focus:ring-slate-900"
+                        />
+                        {category}
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+
+                <fieldset className="mt-6">
+                  <legend className="text-sm font-semibold text-slate-900">지역</legend>
+                  <div className="mt-3 grid gap-2">
+                    {REGION_OPTIONS.map((region) => (
+                      <label
+                        key={region}
+                        className="flex items-center gap-3 rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700"
+                      >
+                        <input
+                          type="checkbox"
+                          name="regions"
+                          value={region}
+                          defaultChecked={selectedRegions.includes(region)}
+                          className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900"
+                        />
+                        {region}
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+
+                <div className="mt-6 flex gap-3">
+                  <button
+                    type="submit"
+                    className="inline-flex flex-1 items-center justify-center rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+                  >
+                    필터 적용
+                  </button>
+                  <Link
+                    href="/programs"
+                    className="inline-flex items-center justify-center rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+                  >
+                    초기화
+                  </Link>
+                </div>
+              </form>
+            </aside>
+
+            <section className="min-w-0">
+              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
               <div className="flex flex-col gap-4 border-b border-slate-100 pb-5 md:flex-row md:items-center md:justify-between">
                 <div>
                   <p className="text-sm font-semibold text-slate-900">
@@ -594,10 +598,11 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                   ) : null}
                 </>
               )}
-            </div>
+              </div>
+            </section>
           </section>
-        </section>
-      </div>
-    </main>
+        </div>
+      </main>
+    </>
   );
 }

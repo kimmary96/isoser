@@ -19,6 +19,7 @@
   - promoted target: `tasks/inbox/` or `tasks/remote/`
 - Local execution path
   - `tasks/inbox/*.md` -> `tasks/running/` -> `tasks/done/|tasks/drifted/|tasks/blocked/`
+  - `tasks/drifted/*.md|tasks/blocked/*.md` -> auto recovery -> `tasks/inbox/` (가능할 때만)
   - reports: `reports/*.md`
   - terminal alerts: `dispatch/alerts/*.md`
 - Remote fallback path
@@ -28,4 +29,6 @@
 - task execution 규칙의 source of truth는 `AGENTS.md`
 - 성공 task는 watcher가 task-scoped git automation을 시도한다
 - drift와 blocked는 terminal alert와 report를 둘 다 남긴다
+- drifted와 blocked task는 watcher가 recovery report를 바탕으로 자동 재큐잉을 한 번 더 시도할 수 있다
+- 자동 재큐잉이 불가능한 drifted/blocked task는 `cowork/packets/`으로 에스컬레이션되어 기존 Slack approval 흐름에서 사람 피드백을 받을 수 있다
 - Slack은 `SLACK_WEBHOOK_URL`이 있을 때만 mirror channel로 동작한다
