@@ -1,5 +1,21 @@
 # 리팩토링 로그
 
+## 2026-04-15 Slack interactivity Vercel 프록시 추가
+
+- 수정 파일:
+  - `frontend/app/slack/interactivity/cowork-review/route.ts`
+  - `docs/current-state.md`
+- 변경 내용:
+  - Slack Interactivity Request URL을 `https://isoser.vercel.app/slack/interactivity/cowork-review`로 유지할 수 있도록 Next.js route handler를 추가
+  - 프론트 route가 raw form body와 Slack signature/timestamp 헤더를 그대로 FastAPI backend의 `/slack/interactivity/cowork-review`로 전달하도록 구성
+  - 프론트 도메인에 해당 경로가 없어 발생하던 Slack 설정 단계의 `404 Not Found`를 제거하는 배포 경로를 마련
+- 유지된 동작:
+  - 실제 approval/reject 처리 로직은 계속 FastAPI backend가 담당
+  - Slack signature 검증과 allowlist 체크는 backend 쪽 규칙을 그대로 사용
+- 후속 후보:
+  - 필요하면 `/slack/commands/cowork-approve`도 동일한 프론트 프록시 route로 맞춰 slash command까지 같은 도메인으로 통일 검토
+  - production 환경에서 `BACKEND_URL` 또는 `NEXT_PUBLIC_BACKEND_URL` 값이 실제 backend public URL을 가리키는지 점검
+
 ## 2026-04-15 cowork 재승인 상태 정리
 
 - 수정 파일:

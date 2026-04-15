@@ -13,6 +13,7 @@
 - remote fallback은 `tasks/remote/` + GitHub Action 경로를 사용한다.
 - cowork review-ready는 Slack 버튼과 slash command 양쪽으로 approval을 받을 수 있다.
 - cowork packet이 같은 `task_id`로 다시 review-ready가 되면 예전 approval marker와 promoted dispatch를 정리한 뒤 재승인 흐름을 연다.
+- `frontend/app/slack/interactivity/cowork-review/route.ts`는 Vercel 프론트 도메인으로 들어온 Slack 버튼 요청을 FastAPI backend의 `/slack/interactivity/cowork-review`로 프록시한다.
 - `frontend/app/(landing)/programs/page.tsx`는 URL query 기반 검색, 카테고리/지역 필터, 모집중 토글, 정렬, 페이지네이션을 지원한다.
 - `frontend/app/(landing)/compare/page.tsx`는 공개 비교 페이지로 동작하며 `?ids=` URL state, 최대 3개 슬롯, 추천 프로그램 추가/제거를 지원한다.
 - `frontend/app/page.tsx`는 루트 접근을 `/landing-a`로 리다이렉트해서 landing-a를 메인 랜딩 허브로 고정한다.
