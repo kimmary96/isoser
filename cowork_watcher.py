@@ -236,6 +236,8 @@ def write_local_approval_from_remote(task_id: str, row: dict[str, object]) -> st
             f"approved_at: {str(row.get('approved_at', datetime.now().isoformat(timespec='seconds'))).strip()}",
             f"target: {str(row.get('target', 'inbox')).strip()}",
             f"source: {str(row.get('source', 'shared-approval-queue')).strip()}",
+            f"slack_message_ts: {str(row.get('slack_message_ts', '')).strip()}",
+            f"slack_channel_id: {str(row.get('slack_channel_id', '')).strip()}",
         ]
     )
     write_markdown(approval_path, body)
@@ -560,6 +562,12 @@ def format_slack_dispatch_message(*, task_id: str, stage: str, lines: list[str])
 def build_slack_dispatch_payload(*, task_id: str, stage: str, lines: list[str]) -> dict[str, object]:
     text = format_slack_dispatch_message(task_id=task_id, stage=stage, lines=lines)
     payload: dict[str, object] = {"text": text}
+    thread_ts = ""
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("- slack_thread_ts:"):
+            thread_ts = stripped.removeprefix("- slack_thread_ts:").strip().strip("`")
+            break
     stage_labels = {
         "review-ready": "검토 준비",
         "review-failed": "검토 실패",
@@ -569,6 +577,9 @@ def build_slack_dispatch_payload(*, task_id: str, stage: str, lines: list[str]) 
     header_text = f"{stage_labels.get(stage, stage)} | {task_id}"
 
     if stage != "review-ready":
+        if thread_ts:
+            payload["thread_ts"] = thread_ts
+            payload["reply_broadcast"] = False
         payload["blocks"] = [
             {
                 "type": "header",
@@ -653,6 +664,20 @@ def approval_target_from_file(approval_path: str) -> str:
     if not target_match:
         return "inbox"
     return target_match.group(1).lower()
+
+
+def approval_metadata_from_file(approval_path: str) -> dict[str, str]:
+    try:
+        text = read_markdown(approval_path)
+    except OSError:
+        return {}
+
+    metadata: dict[str, str] = {}
+    for key in ("slack_message_ts", "slack_channel_id"):
+        match = re.search(rf"^\s*{key}\s*:\s*(.+?)\s*$", text, flags=re.IGNORECASE | re.MULTILINE)
+        if match:
+            metadata[key] = match.group(1).strip()
+    return metadata
 
 
 def review_path_for(task_id: str) -> str:
@@ -804,6 +829,8 @@ def handle_approval(packet_path: str) -> None:
         return
 
     if packet_needs_review(packet_path, review_path):
+        approval_metadata = approval_metadata_from_file(approval_path)
+        slack_thread_ts = approval_metadata.get("slack_message_ts", "")
         write_dispatch(
             task_id,
             "approval-blocked-stale-review",
@@ -815,6 +842,7 @@ def handle_approval(packet_path: str) -> None:
                 f"packet: `cowork/packets/{filename}`",
                 f"review: `cowork/reviews/{task_id}-review.md`",
                 f"created_at: `{datetime.now().isoformat(timespec='seconds')}`",
+                *([f"- slack_thread_ts: `{slack_thread_ts}`"] if slack_thread_ts else []),
                 "- note: packet is newer than the current review, so promotion is blocked until review is regenerated",
             ],
         )
@@ -824,6 +852,8 @@ def handle_approval(packet_path: str) -> None:
         return
 
     target = approval_target_from_file(approval_path)
+    approval_metadata = approval_metadata_from_file(approval_path)
+    slack_thread_ts = approval_metadata.get("slack_message_ts", "")
     destination_dir = TASKS_REMOTE_DIR if target == "remote" else TASKS_INBOX_DIR
     destination_path = os.path.join(destination_dir, filename)
 
@@ -838,6 +868,7 @@ def handle_approval(packet_path: str) -> None:
             f"target: `{target}`",
             f"packet: `tasks/{target}/{filename}`",
             f"approved_at: `{datetime.now().isoformat(timespec='seconds')}`",
+            *([f"- slack_thread_ts: `{slack_thread_ts}`"] if slack_thread_ts else []),
             "- note: packet copied from cowork scratch space into an execution queue",
         ],
     )

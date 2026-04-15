@@ -348,6 +348,24 @@ def test_build_slack_dispatch_payload_adds_buttons_for_review_ready() -> None:
     assert action_ids == ["cowork_approve_inbox", "cowork_approve_remote", "cowork_reject"]
 
 
+def test_build_slack_dispatch_payload_threads_followup_stage() -> None:
+    payload = cowork_watcher.build_slack_dispatch_payload(
+        task_id="TASK-TEST",
+        stage="promoted",
+        lines=[
+            "# Dispatch: TASK-TEST",
+            "",
+            "stage: promoted",
+            "target: `inbox`",
+            "- slack_thread_ts: `12345.6789`",
+            "- note: packet copied from cowork scratch space into an execution queue",
+        ],
+    )
+
+    assert payload["thread_ts"] == "12345.6789"
+    assert payload["reply_broadcast"] is False
+
+
 def test_localize_review_snapshot_line_reduces_english_mixture() -> None:
     line = (
         "Not ready for promotion. Frontmatter is complete and `planned_against_commit` "
@@ -362,6 +380,29 @@ def test_localize_review_snapshot_line_reduces_english_mixture() -> None:
     assert "프론트매터는 완전합니다" in localized
     assert "데이터 형태, 카테고리, 중복 제거, 동기화 경로 가정이" in localized
     assert "The packet is still execution-risky" not in localized
+
+
+def test_write_local_approval_from_remote_preserves_slack_thread_metadata(tmp_path: Path, monkeypatch) -> None:
+    approvals_dir = tmp_path / "approvals"
+    approvals_dir.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(cowork_watcher, "COWORK_APPROVALS_DIR", str(approvals_dir))
+
+    approval_path = cowork_watcher.write_local_approval_from_remote(
+        "TASK-TEST",
+        {
+            "approved_by": "slack:U123",
+            "approved_by_name": "tester",
+            "approved_at": "2026-04-15T18:00:00+09:00",
+            "target": "inbox",
+            "source": "slack-interactivity",
+            "slack_message_ts": "12345.6789",
+            "slack_channel_id": "C123",
+        },
+    )
+
+    text = Path(approval_path).read_text(encoding="utf-8")
+    assert "slack_message_ts: 12345.6789" in text
+    assert "slack_channel_id: C123" in text
 
 
 def test_startup_warning_messages_warns_when_slack_webhook_missing(monkeypatch) -> None:

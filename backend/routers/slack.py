@@ -109,7 +109,16 @@ def _packet_needs_review(packet_path: Path, review_path: Path) -> bool:
     return packet_path.stat().st_mtime > review_path.stat().st_mtime
 
 
-def _write_approval_request(*, task_id: str, target: str, user_id: str, user_name: str, source: str) -> str:
+def _write_approval_request(
+    *,
+    task_id: str,
+    target: str,
+    user_id: str,
+    user_name: str,
+    source: str,
+    slack_message_ts: str = "",
+    slack_channel_id: str = "",
+) -> str:
     settings = get_supabase_admin_settings()
     payload = {
         "task_id": task_id,
@@ -118,6 +127,8 @@ def _write_approval_request(*, task_id: str, target: str, user_id: str, user_nam
         "approved_by_name": user_name or user_id,
         "approved_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         "source": source,
+        "slack_message_ts": slack_message_ts or None,
+        "slack_channel_id": slack_channel_id or None,
         "state": "requested",
         "consumed_at": None,
         "consumed_by": None,
@@ -191,7 +202,15 @@ def _format_action_result(*, title: str, task_id: str, lines: list[str]) -> str:
     return "\n".join(body)
 
 
-def _handle_approval_action(*, task_id: str, target: str, user_id: str, user_name: str) -> str:
+def _handle_approval_action(
+    *,
+    task_id: str,
+    target: str,
+    user_id: str,
+    user_name: str,
+    slack_message_ts: str = "",
+    slack_channel_id: str = "",
+) -> str:
     target_label = "원격 큐" if target == "remote" else "로컬 inbox"
     approval_ref = _write_approval_request(
         task_id=task_id,
@@ -199,14 +218,16 @@ def _handle_approval_action(*, task_id: str, target: str, user_id: str, user_nam
         user_id=user_id,
         user_name=user_name,
         source="slack-interactivity",
+        slack_message_ts=slack_message_ts,
+        slack_channel_id=slack_channel_id,
     )
     return _format_action_result(
-        title="승인 처리 완료",
+        title="승인 접수됨",
         task_id=task_id,
         lines=[
             f"- 대상 큐: {target_label}",
             f"- 승인 큐: `{approval_ref}`",
-            "- note: 로컬 cowork watcher가 공유 approval queue를 poll해서 실제 승격을 수행합니다.",
+            "- note: 이 메시지는 승인 대기 알림을 갱신한 것입니다. 실제 승격 결과는 같은 작업 스레드에 이어서 기록됩니다.",
         ],
     )
 
@@ -252,6 +273,8 @@ def _resolve_slack_interactive_action(
     value: dict[str, object],
     user_id: str,
     user_name: str,
+    slack_message_ts: str = "",
+    slack_channel_id: str = "",
 ) -> str:
     task_id = str(value.get("task_id", "")).strip()
     target = str(value.get("target", "inbox")).strip()
@@ -264,7 +287,14 @@ def _resolve_slack_interactive_action(
     if action_id in {"cowork_approve_inbox", "cowork_approve_remote"}:
         if target not in {"inbox", "remote"}:
             return "Target must be inbox or remote."
-        return _handle_approval_action(task_id=task_id, target=target, user_id=user_id, user_name=user_name)
+        return _handle_approval_action(
+            task_id=task_id,
+            target=target,
+            user_id=user_id,
+            user_name=user_name,
+            slack_message_ts=slack_message_ts,
+            slack_channel_id=slack_channel_id,
+        )
 
     return f"Unsupported Slack action `{action_id}`."
 
@@ -364,6 +394,10 @@ async def slack_cowork_interactivity(request: Request, background_tasks: Backgro
     except json.JSONDecodeError:
         return _slack_interactive_message("Invalid action value.")
 
+    container = payload.get("container") or {}
+    slack_message_ts = str(container.get("message_ts", "")).strip()
+    slack_channel_id = str(container.get("channel_id", "")).strip()
+
     response_url = str(payload.get("response_url", "")).strip()
     if response_url:
         background_tasks.add_task(
@@ -374,7 +408,10 @@ async def slack_cowork_interactivity(request: Request, background_tasks: Backgro
                 value=value,
                 user_id=user_id,
                 user_name=user_name,
+                slack_message_ts=slack_message_ts,
+                slack_channel_id=slack_channel_id,
             ),
+            replace_original=True,
             response_type="in_channel",
         )
         return _slack_interactive_message("승인 요청을 처리 중입니다. 잠시 후 결과를 다시 보냅니다.")
@@ -385,5 +422,7 @@ async def slack_cowork_interactivity(request: Request, background_tasks: Backgro
             value=value,
             user_id=user_id,
             user_name=user_name,
+            slack_message_ts=slack_message_ts,
+            slack_channel_id=slack_channel_id,
         )
     )
