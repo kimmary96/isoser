@@ -456,6 +456,19 @@ def promoted_dispatch_path_for(task_id: str) -> str:
     return os.path.join(COWORK_DISPATCH_DIR, f"{task_id}-promoted.md")
 
 
+def reset_stale_promotion_state(task_id: str) -> None:
+    stale_paths = [
+        approval_path_for(task_id),
+        promoted_dispatch_path_for(task_id),
+    ]
+    for stale_path in stale_paths:
+        try:
+            if os.path.exists(stale_path):
+                os.remove(stale_path)
+        except OSError:
+            continue
+
+
 def packet_needs_review(packet_path: str, review_path: str) -> bool:
     if not os.path.exists(review_path):
         return True
@@ -472,6 +485,7 @@ def handle_packet_review(packet_path: str) -> None:
         return
 
     if missing_fields:
+        reset_stale_promotion_state(task_id)
         write_markdown(
             review_path,
             "\n".join(
@@ -522,6 +536,7 @@ def handle_packet_review(packet_path: str) -> None:
     exit_code, token_count = run_codex_review(filename, task_id)
     if os.path.exists(review_path):
         append_review_metadata(review_path, exit_code=exit_code, token_count=token_count)
+        reset_stale_promotion_state(task_id)
         write_dispatch(
             task_id,
             "review-ready",

@@ -1,5 +1,22 @@
 # 리팩토링 로그
 
+## 2026-04-15 cowork 재승인 상태 정리
+
+- 수정 파일:
+  - `cowork_watcher.py`
+  - `tests/test_cowork_watcher.py`
+  - `docs/current-state.md`
+- 변경 내용:
+  - 같은 `task_id`의 cowork packet이 다시 review-ready로 올라올 때 예전 `cowork/approvals/<task-id>.ok`와 `cowork/dispatch/<task-id>-promoted.md`를 자동 정리하도록 보강
+  - 이미 한 번 promoted 된 task가 blocked/drifted 후 다시 review-ready가 되었을 때 Slack 승인 버튼이 실질적으로 무시되던 상태 충돌을 제거
+  - stale approval/promoted state reset 경로를 테스트로 고정
+- 유지된 동작:
+  - review stale 판정과 approval marker 기반 승격 규칙은 그대로 유지
+  - 이미 실제 승격이 끝난 packet은 promoted dispatch가 다시 생기기 전까지 중복 승격되지 않음
+- 후속 후보:
+  - Slack interactivity 후속 메시지에 `이미 승격됨`과 `재검토 후 재승인 가능`을 더 명확히 구분해서 표기할지 검토
+  - watcher 쪽 recovery escalation에서도 재에스컬레이션 시 stale cowork state를 한 번에 정리하도록 공통화 검토
+
 ## 2026-04-15 랜딩 로그인 복귀 흐름 정리
 
 - 수정 파일:
