@@ -5,7 +5,7 @@
 ## 현재 개발 상태 (2026-04-10 기준)
 
 ### 구현 완료
-- Google OAuth 로그인, Supabase 세션 기반 인증, 게스트 모드
+- Google OAuth 로그인, Supabase 세션 기반 인증
 - 이력서 PDF 업로드 후 프로필/활동 자동 추출 (`POST /parse/pdf`)
 - 대시보드 프로필 편집
   - 이름, 희망 직무(`profiles.bio`), 이메일, 전화번호
@@ -35,7 +35,7 @@
 - 포트폴리오 전용 페이지(`/dashboard/portfolio`)는 아직 준비 중이며, 현재는 프로필의 링크 저장/열기만 지원합니다.
 - 이력서 템플릿 선택 UI는 있으나 실제 PDF 출력 포맷은 기본형 중심입니다.
 - 이력서 편집 화면의 우측 AI 어시스턴트와 활동 상세 요약은 프론트 내부 Gemini 호출에 의존합니다.
-- 게스트 모드는 LocalStorage 기반이며 Supabase 영속 저장을 사용하지 않습니다.
+- 게스트 모드는 제거되었으며 현재는 로그인 사용자 기준으로만 동작합니다.
 - 백엔드는 Python 3.10.x만 허용합니다. (`backend/check_python_version.py`)
 
 ## 주요 화면
@@ -65,6 +65,16 @@
 
 ```text
 isoser/
+├── tasks/
+│   ├── inbox/
+│   ├── running/
+│   ├── done/
+│   ├── blocked/
+│   ├── drifted/
+│   └── remote/
+├── dispatch/
+│   └── alerts/
+├── reports/
 ├── frontend/
 │   ├── app/
 │   └── lib/
@@ -76,9 +86,89 @@ isoser/
 ├── supabase/
 │   ├── migrations/
 │   └── README.md
+├── AGENTS.md
+├── watcher.py
 └── docs/
-    └── prd.md
+    ├── README.md
+    ├── current-state.md
+    ├── codex-workflow.md
+    ├── refactoring-log.md
+    ├── automation/
+    ├── rules/
+    ├── specs/
+    ├── data/
+    ├── research/
+    └── worklogs/
 ```
+
+## 자동화 흐름
+
+이 저장소는 Claude와 Codex의 역할을 분리해서 운용합니다.
+
+- Claude: 기획/명세 작성
+- Codex: 로컬 구현 자동화
+- Claude Code GitHub Action: 원격 fallback
+
+### 로컬 기본 경로
+
+```text
+Claude에서 Task Packet 작성
+-> tasks/inbox/<task-id>.md 저장
+-> watcher.py 감지
+-> tasks/running 이동
+-> Codex가 AGENTS.md 기준으로 구현/검사/보고서 작성
+-> drift/blocked/completed 상태를 dispatch/alerts/<task-id>-*.md로 기록
+-> watcher가 성공 report 기준으로 task 관련 파일만 stage해서 [codex] 커밋 후 push 시도
+-> tasks/done 이동
+
+채널 구분:
+- `cowork/dispatch/`: cowork packet review, stale-review, promoted 같은 scratch workflow 상태
+- `dispatch/alerts/`: local watcher의 최종 실행 결과 (`completed`, `drift`, `blocked`, `push-failed`)
+```
+
+### 원격 fallback 경로
+
+```text
+PC가 꺼져 있거나 로컬 watcher를 못 쓰는 경우
+-> tasks/remote/<task-id>.md push
+-> .github/workflows/claude-dev.yml 실행
+-> Claude Code가 원격 구현 진행
+```
+
+### 관련 문서
+
+- `AGENTS.md`: Codex 작업 규칙
+- `docs/README.md`: docs 구조 인덱스
+- `docs/current-state.md`: 현재 자동화/구조 상태
+- `docs/codex-workflow.md`: Codex/Claude 운용 문서
+- `docs/automation/README.md`: 자동화 운영 문서 인덱스
+- `docs/rules/claude-project-instructions.md`: Claude 프로젝트 instructions 원본
+- `docs/rules/task-packet-template.md`: 표준 Task Packet 템플릿
+
+참고:
+- `cowork/`는 기본 워크플로 디렉터리가 아닙니다.
+- 필요 시에만 사람이 직접 만들거나 임시로 사용합니다.
+- 자동화나 에이전트가 VS Code 시작 시 `cowork/`를 만들도록 가정하지 않습니다.
+
+### 로컬 watcher 실행
+
+Windows PowerShell 기준:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/run_watcher.ps1
+```
+
+재시작이 필요할 때는 `docs/rules/watcher-restart-checklist.md`를 참고합니다.
+
+Slack으로 watcher alert를 받고 싶으면 루트에 `.watcher.env`를 만들고 webhook 값을 넣습니다.
+
+```powershell
+Copy-Item .watcher.env.example .watcher.env
+# Then edit .watcher.env and set the real webhook URL.
+powershell -ExecutionPolicy Bypass -File scripts/run_watcher.ps1
+```
+
+`.watcher.env`는 git ignore 대상이라 로컬 값이 커밋되지 않습니다.
 
 ## 로컬 실행
 

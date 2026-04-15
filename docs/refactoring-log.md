@@ -120,9 +120,9 @@
 
 생성/수정 파일:
 
-- `docs/prd.md`
-- `docs/prd.html`
-- `docs/prd.pdf`
+- `docs/specs/prd.md`
+- `docs/specs/prd.html`
+- `docs/specs/prd.pdf`
 - `scripts/generate_prd_pdf.py`
 
 내용:
@@ -394,7 +394,7 @@
 
 생성 파일:
 
-- `docs/api-contract.md`
+- `docs/specs/api-contract.md`
 
 포함 내용:
 
@@ -645,7 +645,7 @@
 - `backend/repositories/coach_session_repo.py`
 - `backend/chains/job_posting_rewrite_chain.py`
 - `backend/utils/supabase_admin.py`
-- `docs/api-contract.md`
+- `docs/specs/api-contract.md`
 - `docs/prd.*`
 
 ### 간접 영향
@@ -835,8 +835,58 @@ backend/rag/source_adapters/work24_job_support.py를 포함해서
 ### 5. 리팩토링 후 문서 보강
 
 ```md
-docs/api-contract.md와 이번 리팩토링 로그를 기준으로
+docs/specs/api-contract.md와 이번 리팩토링 로그를 기준으로
 docs/architecture-overview.md 문서를 새로 만들어줘.
 프론트 계층, Next API 계층, FastAPI 계층, Supabase 계층을
 현재 코드 기준으로 실제 흐름 위주로 정리해줘.
 ```
+
+---
+
+## 2026-04-14 추가 메모
+
+- `frontend/app/dashboard/resume/_hooks/use-resume-builder.ts`
+  - resume preview의 `bio` 저장에 마지막 saved trimmed 값 비교와 저장 중 가드를 추가해서 `Enter` 후 `blur`로 같은 값이 중복 저장되는 요청을 막음
+- workspace 정리
+  - VS Code 재시작 시 불필요한 `cowork/` 스캐폴딩과 루트 `__pycache__/` 노출을 줄이기 위해 워크스페이스 설정과 automation 문구를 정리함
+- `watcher.py`
+  - 로컬 task queue smoke test 중 드러난 Windows 이동/출력 이슈를 줄이기 위해 task 파일 이동에 재시도 가드를 추가하고 `codex exec` 출력은 UTF-8로 읽도록 보강함
+- 로컬 automation 검증
+  - `tasks/inbox -> tasks/running -> reports/*-drift.md -> tasks/blocked` 경로를 문서 smoke task로 실제 검증했고, 현재 문구가 이미 반영된 경우 drift로 안전 중단되는 것을 확인함
+- cowork automation 추가
+  - `cowork_watcher.py`를 추가해서 `cowork/packets -> cowork/reviews -> cowork/approvals -> tasks/inbox|tasks/remote` 승격 경로를 자동화하고, 상태 알림은 `cowork/dispatch/`에 남기도록 정리함
+- `frontend/app/landing-b/page.tsx`
+  - 기존 메인 랜딩을 건드리지 않고 `/landing-b`에 퀴즈 기반 온보딩 랜딩을 별도 route로 추가함
+  - 상태, 정적 결과 데이터, 시각 효과를 페이지 내부에만 두어 전역 스타일 충돌 없이 실험성 랜딩을 격리함
+
+## 2026-04-15 추가 메모
+
+- `watcher.py`
+  - 성공 task에서 `reports/<task-id>-result.md`의 `Changed files` 목록과 task/report 파일만 stage해서 `[codex] <task-id> 구현 완료` 자동 commit/push를 시도하도록 보강함
+  - git 자동화 결과는 result report의 `## Git Automation` 섹션에 남기도록 정리함
+  - `drift`, `blocked`, `completed`, `push-failed` 상태를 `dispatch/alerts/<task-id>-*.md`로 별도 기록하고, drift task는 `tasks/drifted/`로 분리해 사람이 폴더만 봐도 중단 상태를 바로 알 수 있게 함
+  - `SLACK_WEBHOOK_URL` 환경변수가 있으면 같은 terminal-state alert를 Slack incoming webhook으로도 전송하도록 보강함
+  - alert 본문 포맷을 `type`, `stage`, `status`, `severity`, `packet`, `created_at`, `report`, `summary`, `next_action` 기준으로 표준화함
+- `scripts/run_watcher.ps1`, `.watcher.env.example`
+  - watcher 실행 스크립트가 저장소 루트 `.watcher.env`를 자동 로드하도록 하고, Slack webhook 로컬 설정 템플릿을 추가함
+- `docs/`
+  - 루트에 평평하게 쌓여 있던 문서를 `automation`, `rules`, `specs`, `data`, `research`, `worklogs`로 재분류함
+  - `docs/current-state.md`와 `docs/codex-workflow.md`는 루트 인덱스 성격을 유지하고, 세부 문서는 하위 폴더로 이동해 탐색성을 높임
+- `dispatch/alerts/README.md`, `dispatch/alerts/DISPATCH_ALERT_PROMPT.md`
+  - root `dispatch/alerts`를 local watcher terminal outcome 채널로 문서화하고, Dispatch가 alert를 읽고 대응하는 표준 프롬프트를 추가함
+- `cowork/FOLDER_INSTRUCTIONS.md`, `cowork/README.md`
+  - `cowork/dispatch`는 cowork packet workflow 전용, `dispatch/alerts`는 local watcher outcome 전용으로 역할을 문서상 분리함
+- `frontend/app/landing-a/page.tsx`
+  - 기존 `/`를 유지한 채 `/landing-a`에 정보 허브 중심 랜딩 A를 별도 route로 추가함
+  - ticker, sticky nav/search, 프로그램 카드, 비교 섹션, 이용 흐름, CTA를 페이지 내부 정적 데이터와 로컬 스타일로만 구성해 전역 수정 범위를 피함
+- `scripts/watcher_shared.py`, `watcher.py`, `cowork_watcher.py`
+  - watcher 두 종류에 중복되던 lock 처리, frontmatter 파싱, markdown IO, Codex CLI 해석, retry 기반 파일 이동 로직을 공통 모듈로 추출함
+  - `watcher.py`와 `cowork_watcher.py`는 각자 흐름 제어만 남기고, 공통 유틸은 wrapper를 통해 재사용하도록 정리해 이후 alert/queue 변경 시 수정 지점을 줄임
+- `tests/test_cowork_watcher.py`
+  - 실제 cowork 승격 동작이 copy 기반이라는 점과 stale review 판정이 mtime 비교라는 점에 맞춰 테스트를 현재 규칙 기준으로 정리함
+- `docs/automation/watcher-shared.md`
+  - watcher 공통 유틸의 책임 범위, wrapper 유지 이유, 테스트 전제를 별도 운영 문서로 정리해 이후 구조 변경 시 기준 문서로 삼을 수 있게 함
+- `frontend/app/landing-a/page.tsx`, `frontend/app/landing-a/_*.ts*`
+  - 랜딩 A의 정적 데이터, 테마 스타일, 섹션 렌더링을 페이지 본문에서 분리해 `page.tsx`는 상태와 조립만 담당하도록 정리함
+- `frontend/app/landing-b/page.tsx`, `frontend/app/landing-b/_*.ts*`
+  - 랜딩 B의 퀴즈 상태 계산은 페이지에 두고, 정적 데이터와 퀴즈/결과/보조 섹션 렌더링을 별도 파일로 분리해 이후 실험 랜딩 수정 범위를 줄임

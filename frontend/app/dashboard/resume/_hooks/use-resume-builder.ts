@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import {
@@ -12,6 +12,8 @@ import type { Activity } from "@/lib/types";
 
 export function useResumeBuilder() {
   const router = useRouter();
+  const lastSavedBioRef = useRef("");
+  const bioSavingRef = useRef(false);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [targetJob, setTargetJob] = useState("");
@@ -50,6 +52,7 @@ export function useResumeBuilder() {
         setActivities(data.activities || []);
         setProfile(data.profile);
         setBioInput(data.profile?.bio ?? "");
+        lastSavedBioRef.current = (data.profile?.bio ?? "").trim();
       } catch (e) {
         setError(e instanceof Error ? e.message : "활동을 불러오지 못했습니다.");
       } finally {
@@ -70,13 +73,19 @@ export function useResumeBuilder() {
   };
 
   const saveBio = async () => {
+    const nextBio = bioInput.trim();
+    if (bioSavingRef.current || nextBio === lastSavedBioRef.current) return;
+
     try {
+      bioSavingRef.current = true;
       setBioSaving(true);
-      await updateDashboardProfileSection({ bio: bioInput.trim() });
-      setProfile((prev) => (prev ? { ...prev, bio: bioInput.trim() } : prev));
+      await updateDashboardProfileSection({ bio: nextBio });
+      lastSavedBioRef.current = nextBio;
+      setProfile((prev) => (prev ? { ...prev, bio: nextBio } : prev));
     } catch (e) {
       setError(e instanceof Error ? e.message : "bio 저장에 실패했습니다.");
     } finally {
+      bioSavingRef.current = false;
       setBioSaving(false);
     }
   };

@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>이소서 — 국가 취업 지원 정보 허브</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --ink:     #0A0F1E;
+  --ink-mid: #151E38;
+  --ink-soft:#1F2E52;
+  --blue:    #2563EB;
+  --blue-lo: #1D4ED8;
+  --sky:     #60A5FA;
+  --fire:    #F97316;
+  --fire-lo: #EA580C;
+  --red:     #EF4444;
+  --amber:   #F59E0B;
+  --green:   #22C55E;
+  --surface: #F1F5F9;
+  --white:   #FFFFFF;
+  --border:  #E2E8F0;
+  --muted:   #94A3B8;
+  --sub:     #64748B;
+}
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--surface);
+  color: var(--ink);
+  overflow-x: hidden;
+}
+
+/* ── LIVE TICKER ─────────────────── */
+.ticker {
+  background: var(--red);
+  overflow: hidden; height: 36px;
+  display: flex; align-items: center;
+}
+.ticker-track {
+  display: flex; gap: 0;
+  animation: tick 28s linear infinite;
+  white-space: nowrap;
+}
+@keyframes tick { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+.ticker-item {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 0 32px;
+  font-size: 12px; font-weight: 700; color: white;
+  letter-spacing: 0.3px;
+}
+.ticker-sep { opacity: 0.5; }
+
+/* ── NAV ────────────────────────── */
+nav {
+  position: sticky; top: 0; z-index: 200;
+  height: 64px;
+  background: rgba(10,15,30,0.96);
+  backdrop-filter: blur(16px);
+  display: flex; align-items: center;
+  padding: 0 48px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.nav-logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800; font-size: 22px;
+  color: white; letter-spacing: -0.5px;
+  margin-right: auto;
+}
+.nav-logo em { font-style:normal; color: var(--sky); }
+.nav-links {
+  display: flex; align-items: center; gap: 32px;
+}
+.nav-links a {
+  font-size: 13px; color: rgba(255,255,255,0.6);
+  text-decoration: none; font-weight: 500;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: white; }
+.nav-cta {
+  margin-left: 24px;
+  background: var(--fire);
+  color: white; padding: 9px 22px;
+  border-radius: 8px; font-size: 13px;
+  font-weight: 700; text-decoration: none;
+  transition: background 0.2s, transform 0.15s;
+  display: inline-block;
+}
+.nav-cta:hover { background: var(--fire-lo); transform: translateY(-1px); }
+
+/* ── HERO ───────────────────────── */
+.hero {
+  background: var(--ink);
+  min-height: 540px;
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  text-align: center;
+  padding: 80px 48px 60px;
+  position: relative; overflow: hidden;
+}
+.hero-glow {
+  position: absolute; inset: 0; pointer-events: none;
+}
+.hero-glow::before {
+  content:'';
+  position:absolute; top:-100px; left:50%;
+  transform:translateX(-50%);
+  width:700px; height:400px;
+  background: radial-gradient(ellipse, rgba(37,99,235,0.22) 0%, transparent 65%);
+}
+.hero-glow::after {
+  content:'';
+  position:absolute; bottom:-60px; right:15%;
+  width:300px; height:300px;
+  background: radial-gradient(circle, rgba(249,115,22,0.12) 0%, transparent 60%);
+}
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  border: 1px solid rgba(249,115,22,0.4);
+  background: rgba(249,115,22,0.08);
+  color: #FB923C;
+  font-size: 12px; font-weight: 700;
+  padding: 6px 16px; border-radius: 100px;
+  margin-bottom: 28px;
+  position: relative; z-index: 1;
+  letter-spacing: 0.5px; text-transform: uppercase;
+}
+.eyebrow-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #FB923C;
+  animation: blink 1.4s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+.hero h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: 58px; font-weight: 800;
+  color: white; line-height: 1.1;
+  letter-spacing: -2px;
+  margin-bottom: 20px;
+  position: relative; z-index: 1;
+}
+.hero h1 .hl {
+  background: linear-gradient(90deg, #60A5FA, #818CF8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero h1 .hl2 {
+  background: linear-gradient(90deg, #FB923C, #FBBF24);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero-sub {
+  font-size: 16px; color: rgba(255,255,255,0.5);
+  line-height: 1.8; margin-bottom: 36px;
+  position: relative; z-index: 1;
+  max-width: 540px;
+}
+
+/* D-DAY COUNTER STRIP */
+.dday-strip {
+  display: flex; gap: 16px; justify-content: center;
+  position: relative; z-index: 1;
+  margin-bottom: 36px;
+}
+.dday-big {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px; padding: 18px 24px;
+  text-align: left; min-width: 180px;
+  transition: border-color 0.2s, background 0.2s;
+  cursor: pointer;
+}
+.dday-big:hover {
+  border-color: rgba(249,115,22,0.5);
+  background: rgba(249,115,22,0.06);
+}
+.dday-big.hot { border-color: rgba(239,68,68,0.5); background: rgba(239,68,68,0.07); }
+.dday-num {
+  font-family: 'Syne', sans-serif;
+  font-size: 36px; font-weight: 800;
+  line-height: 1;
+}
+.dday-num.red   { color: #F87171; }
+.dday-num.orange{ color: #FB923C; }
+.dday-num.amber { color: #FCD34D; }
+.dday-name {
+  font-size: 13px; color: rgba(255,255,255,0.7);
+  font-weight: 500; margin-top: 6px;
+  line-height: 1.4;
+}
+.dday-src { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+.hero-actions {
+  display: flex; gap: 12px; justify-content: center;
+  position: relative; z-index: 1;
+}
+.btn-fire {
+  background: var(--fire);
+  color: white; padding: 14px 32px;
+  border-radius: 10px; font-size: 15px;
+  font-weight: 700; border: none; cursor: pointer;
+  font-family: inherit; text-decoration: none;
+  display: inline-block;
+  transition: all 0.2s;
+  box-shadow: 0 4px 20px rgba(249,115,22,0.35);
+}
+.btn-fire:hover { background: var(--fire-lo); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(249,115,22,0.4); }
+.btn-ghost {
+  background: rgba(255,255,255,0.08);
+  color: white; padding: 14px 28px;
+  border-radius: 10px; font-size: 14px;
+  font-weight: 600; border: 1px solid rgba(255,255,255,0.15);
+  cursor: pointer; font-family: inherit;
+  text-decoration: none; display: inline-block;
+  transition: all 0.2s;
+}
+.btn-ghost:hover { background: rgba(255,255,255,0.14); }
+
+/* ── SEARCH BAR ─────────────────── */
+.search-bar {
+  background: white;
+  border-bottom: 1px solid var(--border);
+  padding: 16px 48px;
+  position: sticky; top: 64px; z-index: 150;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.search-inner {
+  max-width: 1200px; margin: 0 auto;
+  display: flex; align-items: center; gap: 12px;
+}
+.search-input {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 10px 16px;
+  flex: 0 0 300px;
+  transition: border-color 0.2s;
+}
+.search-input:focus-within { border-color: var(--blue); }
+.search-input input {
+  border: none; background: none; outline: none;
+  font-size: 14px; font-family: inherit;
+  color: var(--ink); width: 100%;
+}
+.search-input input::placeholder { color: var(--muted); }
+.si { color: var(--muted); font-size: 15px; }
+.divider-v { width: 1px; height: 24px; background: var(--border); margin: 0 4px; }
+.chips { display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; }
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  padding: 7px 14px; border-radius: 20px;
+  font-size: 12px; font-weight: 600;
+  border: 1.5px solid var(--border);
+  background: white; color: var(--sub);
+  cursor: pointer; white-space: nowrap;
+  transition: all 0.15s; font-family: inherit;
+}
+.chip.on { background: var(--ink); color: white; border-color: var(--ink); }
+.chip:hover:not(.on) { border-color: var(--blue); color: var(--blue); }
+.chip.fire { border-color: rgba(249,115,22,0.4); color: var(--fire); background: rgba(249,115,22,0.05); }
+.chip.fire.on { background: var(--fire); color: white; border-color: var(--fire); }
+
+/* ── MAIN LAYOUT ────────────────── */
+.wrap { max-width: 1200px; margin: 0 auto; padding: 44px 48px; }
+
+/* ── SECTION HEADER ─────────────── */
+.sec-hd {
+  display: flex; align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.sec-title {
+  font-size: 22px; font-weight: 700;
+  letter-spacing: -0.5px;
+}
+.sec-badge {
+  display: inline-block;
+  background: var(--red); color: white;
+  font-size: 10px; font-weight: 800;
+  padding: 2px 8px; border-radius: 4px;
+  margin-left: 8px; vertical-align: middle;
+  letter-spacing: 0.5px;
+}
+.sec-link {
+  font-size: 13px; color: var(--blue);
+  font-weight: 600; text-decoration: none;
+}
+
+/* ── PROGRAM CARDS ──────────────── */
+.cards3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 56px; }
+.card {
+  background: white; border-radius: 16px;
+  border: 1.5px solid var(--border);
+  padding: 22px; position: relative;
+  transition: all 0.2s; cursor: pointer; overflow: hidden;
+}
+.card::before {
+  content: ''; position: absolute;
+  inset: 0; border-radius: 16px;
+  opacity: 0; transition: opacity 0.2s;
+}
+.card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(0,0,0,0.1); border-color: transparent; }
+.card:hover::before { opacity: 1; }
+
+.card.urgent { border-color: rgba(239,68,68,0.3); }
+.card.urgent::before { box-shadow: inset 0 0 0 1.5px #EF4444; }
+.card.warm { border-color: rgba(249,115,22,0.25); }
+.card.warm::before { box-shadow: inset 0 0 0 1.5px var(--fire); }
+.card.ad-card { border-color: rgba(37,99,235,0.25); background: #FAFCFF; }
+.card.ad-card::before { box-shadow: inset 0 0 0 1.5px var(--blue); }
+
+.card-head {
+  display: flex; justify-content: space-between;
+  align-items: center; margin-bottom: 14px;
+}
+.card-src { font-size: 11px; color: var(--muted); font-weight: 500; }
+.card-dday {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px; font-weight: 800;
+  line-height: 1;
+}
+.card-dday.r { color: var(--red); }
+.card-dday.o { color: var(--fire); }
+.card-dday.a { color: var(--amber); }
+.card-dday.g { color: var(--green); }
+
+.card-title {
+  font-size: 15px; font-weight: 700;
+  line-height: 1.45; margin-bottom: 12px;
+  letter-spacing: -0.2px;
+}
+.tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.tag {
+  font-size: 11px; color: var(--sub);
+  background: var(--surface); padding: 3px 9px;
+  border-radius: 4px; border: 1px solid var(--border);
+  font-weight: 500;
+}
+.tag.cat { color: var(--blue); background: #EFF6FF; border-color: #BFDBFE; }
+.tag.free { color: var(--green); background: #F0FDF4; border-color: #BBF7D0; }
+
+/* MATCH BAR */
+.match-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.match-track { flex:1; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.match-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--blue), #818CF8); }
+.match-pct { font-size: 12px; font-weight: 700; color: var(--blue); white-space:nowrap; }
+
+.card-btns { display: flex; gap: 8px; }
+.cbtn {
+  flex: 1; padding: 10px 0;
+  border-radius: 8px; font-size: 12px; font-weight: 700;
+  border: none; cursor: pointer; font-family: inherit;
+  transition: all 0.15s;
+}
+.cbtn.prim { background: var(--blue); color: white; }
+.cbtn.prim:hover { background: var(--blue-lo); }
+.cbtn.sec { background: var(--surface); color: var(--sub); border: 1.5px solid var(--border); }
+.cbtn.sec:hover { border-color: var(--blue); color: var(--blue); }
+.cbtn.cmp { background: rgba(249,115,22,0.08); color: var(--fire); border: 1.5px solid rgba(249,115,22,0.3); }
+.cbtn.cmp:hover { background: var(--fire); color: white; border-color: var(--fire); }
+
+.ad-badge {
+  position: absolute; top: 14px; right: 14px;
+  font-size: 10px; color: var(--blue);
+  border: 1px solid rgba(37,99,235,0.3);
+  padding: 2px 7px; border-radius: 4px; font-weight: 700;
+}
+
+/* ── COMPARE FEATURE ─────────────── */
+.compare-wrap {
+  background: var(--ink); border-radius: 24px;
+  padding: 40px 44px; margin-bottom: 56px;
+  position: relative; overflow: hidden;
+}
+.compare-wrap::after {
+  content:''; position: absolute;
+  top: -80px; right: -80px;
+  width: 320px; height: 320px;
+  background: radial-gradient(circle, rgba(37,99,235,0.2) 0%, transparent 65%);
+  pointer-events: none;
+}
+.compare-top {
+  display: flex; justify-content: space-between;
+  align-items: flex-start; margin-bottom: 28px;
+  position: relative; z-index: 1;
+}
+.compare-top-left .ct { font-family:'Syne',sans-serif; font-size: 24px; font-weight: 800; color: white; }
+.compare-top-left .cs { font-size: 13px; color: var(--muted); margin-top: 6px; }
+.btn-add {
+  background: var(--fire); color: white;
+  padding: 10px 22px; border-radius: 9px;
+  font-size: 13px; font-weight: 700;
+  border: none; cursor: pointer; font-family: inherit;
+  transition: background 0.15s;
+}
+.btn-add:hover { background: var(--fire-lo); }
+
+/* COMPARE CARDS */
+.compare-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; position: relative; z-index: 1; }
+.cc {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px; padding: 20px;
+  position: relative;
+}
+.cc.winner {
+  border-color: rgba(249,115,22,0.5);
+  background: rgba(249,115,22,0.07);
+}
+.cc-badge {
+  position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+  background: var(--fire); color: white;
+  font-size: 10px; font-weight: 800;
+  padding: 3px 12px; border-radius: 20px;
+  white-space: nowrap; letter-spacing: 0.5px;
+}
+.cc-title { font-size: 14px; font-weight: 700; color: white; margin-bottom: 16px; line-height: 1.4; }
+.cc-rows { display: flex; flex-direction: column; gap: 10px; }
+.cc-row { display: flex; justify-content: space-between; align-items: center; }
+.cc-label { font-size: 11px; color: var(--muted); }
+.cc-val { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.85); }
+.cc-val.best { color: var(--fire); font-weight: 800; }
+.cc-val.dday-r { color: #F87171; font-weight: 800; }
+.cc-val.dday-a { color: #FCD34D; font-weight: 700; }
+.cc-sep { height: 1px; background: rgba(255,255,255,0.07); }
+.pct-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+.pct-track { flex: 1; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; }
+.pct-fill { height: 100%; border-radius: 2px; }
+.pct-fill.hi { background: linear-gradient(90deg, var(--fire), #FBBF24); }
+.pct-fill.md { background: linear-gradient(90deg, #60A5FA, #818CF8); }
+.pct-num { font-size: 12px; font-weight: 800; white-space: nowrap; }
+.pct-num.hi { color: var(--fire); }
+.pct-num.md { color: var(--sky); }
+.cc-cta {
+  margin-top: 16px; width: 100%; padding: 10px;
+  border-radius: 8px; font-size: 12px; font-weight: 700;
+  border: none; cursor: pointer; font-family: inherit;
+  transition: all 0.15s;
+}
+.cc-cta.fire { background: var(--fire); color: white; }
+.cc-cta.fire:hover { background: var(--fire-lo); }
+.cc-cta.outline { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.12); }
+.cc-cta.outline:hover { background: rgba(255,255,255,0.12); }
+
+/* ── HOW IT WORKS ───────────────── */
+.how-wrap {
+  background: white; border-radius: 24px;
+  padding: 44px; margin-bottom: 56px;
+  border: 1.5px solid var(--border);
+}
+.how-title { font-size: 22px; font-weight: 700; margin-bottom: 32px; letter-spacing: -0.4px; }
+.how-steps { display: grid; grid-template-columns: repeat(4,1fr); gap: 0; }
+.how-step { padding: 0 24px; position: relative; }
+.how-step:not(:last-child)::after {
+  content:'→';
+  position: absolute; right: -8px; top: 20px;
+  color: var(--muted); font-size: 18px;
+}
+.step-num {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne',sans-serif; font-size: 16px; font-weight: 800;
+  margin-bottom: 14px;
+}
+.step-num.s1 { background: #EFF6FF; color: var(--blue); }
+.step-num.s2 { background: #FEF3C7; color: var(--amber); }
+.step-num.s3 { background: #FFF7ED; color: var(--fire); }
+.step-num.s4 { background: #F0FDF4; color: var(--green); }
+.step-name { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+.step-desc { font-size: 12px; color: var(--sub); line-height: 1.6; }
+
+/* ── CTA ────────────────────────── */
+.cta-strip {
+  background: linear-gradient(135deg, var(--ink) 0%, var(--ink-soft) 100%);
+  border-radius: 24px; padding: 52px 60px;
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 56px; position: relative; overflow: hidden;
+}
+.cta-strip::before {
+  content:''; position:absolute; inset:0;
+  background: radial-gradient(ellipse at 80% 50%, rgba(249,115,22,0.15) 0%, transparent 55%);
+}
+.cta-left { position: relative; z-index: 1; }
+.cta-left h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 30px; font-weight: 800;
+  color: white; letter-spacing: -0.8px; margin-bottom: 10px;
+}
+.cta-left p { font-size: 14px; color: rgba(255,255,255,0.55); line-height: 1.7; }
+.cta-right { position: relative; z-index: 1; }
+.cta-right .btn-fire { font-size: 15px; padding: 16px 36px; }
+
+/* ── FOOTER ─────────────────────── */
+footer {
+  background: var(--ink);
+  padding: 36px 48px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.f-logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px; font-weight: 800; color: white;
+}
+.f-logo em { font-style: normal; color: var(--sky); }
+footer p { font-size: 12px; color: #475569; }
+</style>
+</head>
+<body>
+
+<!-- LIVE TICKER -->
+<div class="ticker">
+  <div class="ticker-track">
+    <span class="ticker-item">🔴 D-1 · K-디지털 풀스택 개발자 과정 · HRD넷</span>
+    <span class="ticker-item ticker-sep">|</span>
+    <span class="ticker-item">🟠 D-3 · 청년 AI 데이터 인턴십 · 고용24</span>
+    <span class="ticker-item ticker-sep">|</span>
+    <span class="ticker-item">🟡 D-5 · 내일배움카드 AI 과정 · HRD넷</span>
+    <span class="ticker-item ticker-sep">|</span>
+    <span class="ticker-item">🟡 D-7 · UX/UI 디자이너 양성 · 서울시</span>
+    <span class="ticker-item ticker-sep">|</span>
+    <span class="ticker-item">🟢 D-12 · 경영·스타트업 실무 과정 · K-Startup</span>
+    <span class="ticker-item ticker-sep">|</span>
+    <!-- 반복 -->
+    <span class="ticker-item">🔴 D-1 · K-디지털 풀스택 개발자 과정 · HRD넷</span>
+    <span class="ticker-item ticker-sep">|</span>
+    <span class="ticker-item">🟠 D-3 · 청년 AI 데이터 인턴십 · 고용24</span>
+    <span class="ticker-item ticker-sep">|</span>
+    <span class="ticker-item">🟡 D-5 · 내일배움카드 AI 과정 · HRD넷</span>
+    <span class="ticker-item ticker-sep">|</span>
+    <span class="ticker-item">🟡 D-7 · UX/UI 디자이너 양성 · 서울시</span>
+    <span class="ticker-item ticker-sep">|</span>
+    <span class="ticker-item">🟢 D-12 · 경영·스타트업 실무 과정 · K-Startup</span>
+    <span class="ticker-item ticker-sep">|</span>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">이소<em>서</em></div>
+  <div class="nav-links">
+    <a href="#">프로그램</a>
+    <a href="#">부트캠프 비교</a>
+    <a href="#">AI 추천</a>
+    <a href="#">이력서 만들기</a>
+    <a href="#" class="nav-cta">무료로 시작하기</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+
+  <div class="hero-eyebrow">
+    <span class="eyebrow-dot"></span>
+    지금 23개 프로그램 마감 임박
+  </div>
+
+  <h1>
+    취업 지원 정보,<br>
+    <span class="hl">흩어진 채로</span> 두면<br>
+    <span class="hl2">기회를 놓칩니다</span>
+  </h1>
+
+  <p class="hero-sub">
+    고용24, HRD넷, K-디지털, 서울시 일자리까지<br>
+    AI가 내 상황에 맞는 순서로 정리해드립니다
+  </p>
+
+  <!-- D-DAY NUMBERS -->
+  <div class="dday-strip">
+    <div class="dday-big hot">
+      <div class="dday-num red">D-1</div>
+      <div class="dday-name">K-디지털 풀스택<br>개발자 과정</div>
+      <div class="dday-src">HRD넷 · 서울</div>
+    </div>
+    <div class="dday-big">
+      <div class="dday-num orange">D-3</div>
+      <div class="dday-name">청년 AI 데이터<br>인턴십</div>
+      <div class="dday-src">고용24 · 서울</div>
+    </div>
+    <div class="dday-big">
+      <div class="dday-num amber">D-7</div>
+      <div class="dday-name">UX/UI 디자이너<br>양성과정</div>
+      <div class="dday-src">서울시 · 마포구</div>
+    </div>
+    <div class="dday-big" style="border-style:dashed;display:flex;align-items:center;justify-content:center;min-height:96px">
+      <span style="color:var(--muted);font-size:13px">+ 20개 더 보기</span>
+    </div>
+  </div>
+
+  <div class="hero-actions">
+    <a href="#" class="btn-fire">AI 맞춤 추천 받기</a>
+    <a href="#" class="btn-ghost">전체 프로그램 보기</a>
+  </div>
+</section>
+
+<!-- SEARCH BAR -->
+<div class="search-bar">
+  <div class="search-inner">
+    <div class="search-input">
+      <span class="si">&#128269;</span>
+      <input type="text" placeholder="과정명, 기관명, 기술 검색">
+    </div>
+    <div class="divider-v"></div>
+    <div class="chips">
+      <button class="chip on">전체</button>
+      <button class="chip fire on">🔥 마감임박</button>
+      <button class="chip">AI · 데이터</button>
+      <button class="chip">IT · 개발</button>
+      <button class="chip">디자인</button>
+      <button class="chip">경영</button>
+      <button class="chip">창업</button>
+      <button class="chip">서울</button>
+      <button class="chip">경기</button>
+      <button class="chip">온라인</button>
+      <button class="chip">국비 100%</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="wrap">
+
+  <!-- 마감 임박 프로그램 -->
+  <div class="sec-hd">
+    <h2 class="sec-title">마감 임박 프로그램 <span class="sec-badge">D-7 이내</span></h2>
+    <a href="#" class="sec-link">전체보기 →</a>
+  </div>
+  <div class="cards3">
+
+    <div class="card urgent">
+      <div class="card-head">
+        <span class="card-src">HRD넷 · 서울 · 강남</span>
+        <span class="card-dday r">D-1</span>
+      </div>
+      <div class="card-title">K-디지털 풀스택 개발자 과정 6기</div>
+      <div class="tags">
+        <span class="tag cat">IT · 개발</span>
+        <span class="tag free">국비 100%</span>
+        <span class="tag">6개월</span>
+        <span class="tag">취업연계</span>
+      </div>
+      <div class="match-row">
+        <div class="match-track"><div class="match-fill" style="width:87%"></div></div>
+        <span class="match-pct">관련도 87%</span>
+      </div>
+      <div class="card-btns">
+        <button class="cbtn prim">지원하기</button>
+        <button class="cbtn cmp">비교추가</button>
+      </div>
+    </div>
+
+    <div class="card warm">
+      <div class="card-head">
+        <span class="card-src">고용24 · 서울</span>
+        <span class="card-dday o">D-3</span>
+      </div>
+      <div class="card-title">청년 AI 데이터 분석 인턴십 2기</div>
+      <div class="tags">
+        <span class="tag cat">AI · 데이터</span>
+        <span class="tag free">월 200만원 지원</span>
+        <span class="tag">3개월</span>
+      </div>
+      <div class="match-row">
+        <div class="match-track"><div class="match-fill" style="width:72%"></div></div>
+        <span class="match-pct">관련도 72%</span>
+      </div>
+      <div class="card-btns">
+        <button class="cbtn prim">지원하기</button>
+        <button class="cbtn cmp">비교추가</button>
+      </div>
+    </div>
+
+    <div class="card ad-card">
+      <span class="ad-badge">광고</span>
+      <div class="card-head">
+        <span class="card-src">코드잇 스프린트 · 서울</span>
+        <span class="card-dday g">상시</span>
+      </div>
+      <div class="card-title">코드잇 스프린트 프론트엔드 6기</div>
+      <div class="tags">
+        <span class="tag cat">IT · 개발</span>
+        <span class="tag">국비 80%</span>
+        <span class="tag">5개월</span>
+        <span class="tag">멘토링 포함</span>
+      </div>
+      <div class="match-row">
+        <div class="match-track"><div class="match-fill" style="width:65%"></div></div>
+        <span class="match-pct">관련도 65%</span>
+      </div>
+      <div class="card-btns">
+        <button class="cbtn prim">자세히 보기</button>
+        <button class="cbtn cmp">비교추가</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 부트캠프 비교 -->
+  <div class="compare-wrap">
+    <div class="compare-top">
+      <div class="compare-top-left">
+        <div class="ct">부트캠프 비교 분석</div>
+        <div class="cs">최대 3개를 나란히 놓고 조건·관련도를 직접 비교하세요</div>
+      </div>
+      <button class="btn-add">+ 비교 추가</button>
+    </div>
+
+    <div class="compare-cards">
+      <!-- 카드 1 - 위너 -->
+      <div class="cc winner">
+        <span class="cc-badge">나에게 가장 적합</span>
+        <div class="cc-title">K-디지털 풀스택 개발자 과정</div>
+        <div class="cc-rows">
+          <div class="cc-row">
+            <span class="cc-label">마감</span>
+            <span class="cc-val dday-r">D-1 · 내일 마감</span>
+          </div>
+          <div class="cc-row">
+            <span class="cc-label">국비 지원</span>
+            <span class="cc-val best">100% 전액</span>
+          </div>
+          <div class="cc-row">
+            <span class="cc-label">기간</span>
+            <span class="cc-val">6개월</span>
+          </div>
+          <div class="cc-row">
+            <span class="cc-label">취업연계</span>
+            <span class="cc-val best">있음</span>
+          </div>
+          <div class="cc-sep"></div>
+        </div>
+        <div class="pct-row">
+          <div class="pct-track"><div class="pct-fill hi" style="width:87%"></div></div>
+          <span class="pct-num hi">87%</span>
+        </div>
+        <button class="cc-cta fire">지금 지원하기</button>
+      </div>
+
+      <!-- 카드 2 -->
+      <div class="cc">
+        <div class="cc-title">코드잇 스프린트 프론트엔드</div>
+        <div class="cc-rows">
+          <div class="cc-row">
+            <span class="cc-label">마감</span>
+            <span class="cc-val">상시 모집</span>
+          </div>
+          <div class="cc-row">
+            <span class="cc-label">국비 지원</span>
+            <span class="cc-val">80%</span>
+          </div>
+          <div class="cc-row">
+            <span class="cc-label">기간</span>
+            <span class="cc-val">5개월</span>
+          </div>
+          <div class="cc-row">
+            <span class="cc-label">취업연계</span>
+            <span class="cc-val">있음</span>
+          </div>
+          <div class="cc-sep"></div>
+        </div>
+        <div class="pct-row">
+          <div class="pct-track"><div class="pct-fill md" style="width:65%"></div></div>
+          <span class="pct-num md">65%</span>
+        </div>
+        <button class="cc-cta outline">자세히 보기</button>
+      </div>
+
+      <!-- 카드 3 -->
+      <div class="cc">
+        <div class="cc-title">패스트캠퍼스 데이터 부트캠프</div>
+        <div class="cc-rows">
+          <div class="cc-row">
+            <span class="cc-label">마감</span>
+            <span class="cc-val dday-a">D-12</span>
+          </div>
+          <div class="cc-row">
+            <span class="cc-label">국비 지원</span>
+            <span class="cc-val">70%</span>
+          </div>
+          <div class="cc-row">
+            <span class="cc-label">기간</span>
+            <span class="cc-val">4개월</span>
+          </div>
+          <div class="cc-row">
+            <span class="cc-label">취업연계</span>
+            <span class="cc-val">있음</span>
+          </div>
+          <div class="cc-sep"></div>
+        </div>
+        <div class="pct-row">
+          <div class="pct-track"><div class="pct-fill md" style="width:71%"></div></div>
+          <span class="pct-num md">71%</span>
+        </div>
+        <button class="cc-cta outline">자세히 보기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 이용 흐름 -->
+  <div class="how-wrap">
+    <div class="how-title">이소서로 취업 지원하는 방법</div>
+    <div class="how-steps">
+      <div class="how-step">
+        <div class="step-num s1">01</div>
+        <div class="step-name">정보 탐색</div>
+        <div class="step-desc">국비 교육, 청년 인턴십, 취창업 지원 사업을 한 화면에서 탐색합니다</div>
+      </div>
+      <div class="how-step">
+        <div class="step-num s2">02</div>
+        <div class="step-name">AI 맞춤 추천</div>
+        <div class="step-desc">내 프로필과 성과저장소 데이터를 기반으로 관련도 높은 순서로 정렬합니다</div>
+      </div>
+      <div class="how-step">
+        <div class="step-num s3">03</div>
+        <div class="step-name">서류 즉시 생성</div>
+        <div class="step-desc">관심 프로그램 클릭 한 번으로 이력서·포트폴리오를 자동으로 만들어드립니다</div>
+      </div>
+      <div class="how-step">
+        <div class="step-num s4">04</div>
+        <div class="step-name">바로 지원</div>
+        <div class="step-desc">PDF 내보내기 후 지원 완료. 다음 마감 일정은 캘린더에서 확인하세요</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-strip">
+    <div class="cta-left">
+      <h2>프로필 등록하면<br>AI가 딱 맞는 것만 골라드립니다</h2>
+      <p>성과저장소 데이터 기반 개인화 추천 · 이력서·포폴·자소서 즉시 생성<br>전체 기능 무료 · 가입 2분 소요</p>
+    </div>
+    <div class="cta-right">
+      <a href="#" class="btn-fire">Google로 시작하기 →</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="f-logo">이소<em>서</em></div>
+  <p>국가 취업 지원 정보 허브 · 이력서·포트폴리오·자소서 AI 생성 · 전체 무료</p>
+  <p style="color:#334155">© 2026 Isoser</p>
+</footer>
+
+</body>
+</html>

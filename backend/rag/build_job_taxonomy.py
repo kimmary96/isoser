@@ -26,11 +26,11 @@ def main() -> None:
     """job taxonomy JSON을 생성한다."""
     mid_category_path = _resolve_backend_relative_path(
         "KNOW_MID_CATEGORY_CSV_PATH",
-        "../docs/직업중분류.CSV",
+        "../docs/data/직업중분류.CSV",
     )
     detail_category_path = _resolve_backend_relative_path(
         "KNOW_DETAIL_CATEGORY_CSV_PATH",
-        "../docs/직업세세분류.CSV",
+        "../docs/data/직업세세분류.CSV",
     )
 
     print(f"[taxonomy] mid category source: {mid_category_path}")

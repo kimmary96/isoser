@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>부트캠프 비교 — 이소서</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --ink:    #0A0F1E;
+  --blue:   #2563EB;
+  --blue-lo:#1D4ED8;
+  --sky:    #60A5FA;
+  --fire:   #F97316;
+  --fire-lo:#EA580C;
+  --red:    #EF4444;
+  --amber:  #F59E0B;
+  --green:  #22C55E;
+  --violet: #7C3AED;
+  --surface:#F1F5F9;
+  --border: #E2E8F0;
+  --muted:  #94A3B8;
+  --sub:    #64748B;
+}
+body { font-family:'Noto Sans KR',sans-serif; background:var(--surface); color:var(--ink); }
+
+/* ── NAV ─────────────────────────────── */
+nav {
+  position:sticky; top:0; z-index:200;
+  height:60px; background:rgba(10,15,30,0.97);
+  backdrop-filter:blur(16px);
+  display:flex; align-items:center;
+  padding:0 40px; gap:28px;
+  border-bottom:1px solid rgba(255,255,255,0.07);
+}
+.logo { font-family:'Syne',sans-serif; font-weight:800; font-size:20px; color:white; margin-right:8px; }
+.logo em { font-style:normal; color:var(--sky); }
+a.tab {
+  font-size:13px; color:rgba(255,255,255,0.5);
+  text-decoration:none; font-weight:500;
+  padding-bottom:2px; border-bottom:2px solid transparent;
+  transition:all 0.2s;
+}
+a.tab:hover { color:white; }
+a.tab.on { color:white; border-color:var(--fire); }
+a.cta {
+  margin-left:auto; background:var(--fire); color:white;
+  padding:8px 20px; border-radius:8px;
+  font-size:13px; font-weight:700; text-decoration:none;
+}
+
+/* ── PAGE HEADER ─────────────────────── */
+.phd {
+  background:var(--ink); padding:36px 40px 28px;
+  border-bottom:1px solid rgba(255,255,255,0.07);
+}
+.phd-in { max-width:1160px; margin:0 auto; }
+.phd h1 {
+  font-family:'Syne',sans-serif; font-size:28px;
+  font-weight:800; color:white; letter-spacing:-0.5px; margin-bottom:6px;
+}
+.phd p { font-size:14px; color:var(--muted); line-height:1.6; }
+.phd-pills { display:flex; gap:8px; margin-top:14px; }
+.pill {
+  font-size:11px; font-weight:700; padding:4px 12px;
+  border-radius:20px; border:1px solid;
+}
+.pill.b { color:var(--sky);   border-color:rgba(96,165,250,.3); background:rgba(96,165,250,.08); }
+.pill.v { color:#C084FC; border-color:rgba(192,132,252,.3); background:rgba(192,132,252,.08); }
+.pill.g { color:#4ADE80; border-color:rgba(74,222,128,.3);  background:rgba(74,222,128,.08); }
+
+/* ── WRAP ────────────────────────────── */
+.wrap { max-width:1160px; margin:0 auto; padding:28px 40px 60px; }
+
+/* ── LEGEND ──────────────────────────── */
+.legend {
+  display:flex; align-items:stretch;
+  background:white; border:1.5px solid var(--border);
+  border-radius:10px; overflow:hidden; margin-bottom:20px;
+}
+.lg-hd {
+  background:var(--ink); color:white;
+  font-size:11px; font-weight:700;
+  padding:11px 16px; white-space:nowrap;
+  display:flex; align-items:center;
+}
+.lg-item {
+  display:flex; align-items:center; gap:6px;
+  font-size:12px; color:var(--sub);
+  padding:11px 18px; border-left:1px solid var(--border);
+}
+.ld { width:9px; height:9px; border-radius:2px; flex-shrink:0; }
+.ld.g { background:var(--green); }
+.ld.a { background:var(--amber); }
+.ld.r { background:var(--red); }
+.lg-note {
+  margin-left:auto; font-size:11px; color:var(--muted);
+  padding:11px 16px; border-left:1px solid var(--border);
+  display:flex; align-items:center; white-space:nowrap;
+}
+
+/* ══════════════════════════════════════
+   COMPARE CARD
+   .compare-card 자체가 그리드 컨테이너.
+   모든 직계 자식이 그리드 아이템.
+   행 래퍼(.row)는 display:contents로
+   DOM에서만 묶고 레이아웃에서 투명.
+   ══════════════════════════════════════ */
+.compare-card {
+  display:grid;
+  grid-template-columns: 170px repeat(3, 1fr);
+  background:white;
+  border:1.5px solid var(--border);
+  border-radius:16px;
+  overflow:hidden;
+  margin-bottom:24px;
+  box-shadow:0 2px 16px rgba(0,0,0,0.06);
+}
+
+/* 행 래퍼 — 레이아웃에서 투명, DOM 그룹만 */
+.row { display:contents; }
+
+/* ── 공통 셀 기본 스타일 ── */
+/* 모든 직계 그리드 아이템(셀)에 하단·우측 테두리 */
+.compare-card > *,
+.row > * {
+  border-bottom:1px solid var(--border);
+  border-right:1px solid var(--border);
+  min-width:0; /* 그리드 오버플로 방지 */
+}
+/* 마지막 열 우측 테두리 제거 */
+.compare-card > *:nth-child(4n),
+.row > *:nth-child(4n),
+.row > *:last-child { border-right:none; }
+
+/* ── 섹션 헤더 (전체 열 스팬) ── */
+.sec-hd {
+  grid-column: 1 / -1;
+  display:flex; align-items:center; gap:8px;
+  padding:9px 18px;
+  font-size:11px; font-weight:700; letter-spacing:0.3px;
+  border-right:none !important; /* 전체 스팬이므로 우측 없음 */
+}
+.sec-hd.basic  { background:#F8FAFC; color:var(--sub); }
+.sec-hd.target { background:#F5F3FF; color:#6D28D9; }
+.sec-hd.hurdle { background:#FEF9EC; color:#92400E; }
+.sec-hd.curri  { background:#EFF6FF; color:var(--blue); }
+.sec-hd.ai     { background:var(--ink); color:white; border-bottom-color:rgba(255,255,255,.1) !important; }
+.sec-hd.ai .star { color:var(--fire); }
+.sec-hd.ai .note { margin-left:auto; font-size:10px; color:var(--muted); font-weight:400; }
+.hurdle-warn { color:var(--red); font-weight:800; }
+
+/* ── 슬롯 헤더 행 ── */
+/* 슬롯 헤더 행 구분선 */
+.slot-corner,
+.slot-cell { border-bottom:2px solid var(--border) !important; }
+
+.slot-corner {
+  padding:18px 16px 14px;
+  display:flex; flex-direction:column; justify-content:flex-end;
+  background:var(--surface);
+}
+.slot-corner .cnt-label { font-size:10px; color:var(--muted); font-weight:600; }
+.slot-corner .cnt-num   { font-size:20px; font-weight:900; color:var(--ink); line-height:1; margin-top:4px; }
+.slot-corner .cnt-num span { font-size:12px; color:var(--muted); font-weight:500; }
+
+.slot-cell {
+  padding:18px 16px 14px;
+  position:relative;
+  display:flex; flex-direction:column;
+}
+.slot-cell.winner {
+  background:linear-gradient(170deg,#FFF7ED 0%,#FFFDF9 70%);
+  border-top:3px solid var(--fire);
+}
+.slot-cell.empty {
+  align-items:center; justify-content:center;
+  gap:6px; cursor:pointer;
+  background:var(--surface); min-height:150px;
+  transition:background 0.2s;
+}
+.slot-cell.empty:hover { background:#EFF6FF; }
+
+.win-badge {
+  display:inline-block;
+  background:var(--fire); color:white;
+  font-size:9px; font-weight:800;
+  padding:2px 9px; border-radius:4px;
+  letter-spacing:0.5px; margin-bottom:8px;
+  width:fit-content;
+}
+.slot-src  { font-size:10px; color:var(--muted); margin-bottom:3px; }
+.slot-name { font-size:13px; font-weight:700; line-height:1.45; margin-bottom:8px; }
+.slot-tags { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:12px; }
+.st {
+  font-size:10px; font-weight:700;
+  padding:3px 8px; border-radius:4px; border:1px solid;
+}
+.st.dev  { color:var(--blue);   background:#EFF6FF; border-color:#BFDBFE; }
+.st.both { color:var(--green);  background:#F0FDF4; border-color:#BBF7D0; }
+.st.dr   { color:var(--red);    background:#FEF2F2; border-color:#FECACA; }
+.st.da   { color:var(--amber);  background:#FFFBEB; border-color:#FDE68A; }
+.st.free { color:var(--green);  background:#F0FDF4; border-color:#BBF7D0; }
+
+.slot-match { margin-top:auto; }
+.sm-lbl  { font-size:10px; color:var(--muted); margin-bottom:4px; }
+.sm-row  { display:flex; align-items:center; gap:8px; }
+.sm-bar  {
+  flex:1; height:5px;
+  background:#F1F5F9;
+  border-radius:3px; overflow:hidden;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,0.09);
+}
+.sm-fill { height:100%; border-radius:3px; }
+.sm-fill.hi { background:linear-gradient(90deg,#F97316,#FBBF24); }
+.sm-fill.md { background:linear-gradient(90deg,#2563EB,#818CF8); }
+.sm-pct  { font-size:13px; font-weight:800; }
+.sm-pct.hi { color:var(--fire); }
+.sm-pct.md { color:var(--blue); }
+
+.slot-del {
+  position:absolute; top:10px; right:10px;
+  width:20px; height:20px; border-radius:50%;
+  background:var(--surface); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; color:var(--muted); cursor:pointer;
+  transition:all 0.15s; line-height:1;
+}
+.slot-del:hover { background:#FEF2F2; border-color:#FECACA; color:var(--red); }
+.empty-plus  { font-size:22px; color:var(--border); }
+.empty-t { font-size:12px; color:var(--muted); font-weight:600; }
+.empty-s { font-size:10px; color:var(--muted); }
+
+/* ── 데이터 셀 공통 ── */
+.lbl {
+  padding:12px 16px;
+  font-size:12px; color:var(--sub); font-weight:600;
+  background:var(--surface);
+  display:flex; flex-direction:column; justify-content:center;
+}
+.lbl .sub { font-size:10px; color:var(--muted); font-weight:400; margin-top:2px; line-height:1.4; }
+
+.val {
+  padding:12px 16px;
+  font-size:13px; color:var(--ink); font-weight:500;
+  display:flex; align-items:center; flex-wrap:wrap; gap:4px;
+}
+.val.w  { background:#FFFDF9; } /* winner col */
+.val.ac { background:#FFFDF9; } /* ai col */
+.val.em { color:var(--muted); } /* empty */
+
+/* 값 강조 */
+.vb { color:var(--fire); font-weight:800; }
+.vg { color:#15803D; font-weight:700; }
+.vw { color:#92400E; font-weight:700; }
+.vr { color:#991B1B; font-weight:800; }
+.vm { color:var(--muted); }
+
+/* 허들 배지 */
+.hc {
+  display:inline-flex; align-items:center;
+  font-size:11px; font-weight:700;
+  padding:4px 10px; border-radius:5px; border:1px solid;
+}
+.hc.pass  { color:#15803D; background:#F0FDF4; border-color:#86EFAC; }
+.hc.warn  { color:#92400E; background:#FFFBEB; border-color:#FDE68A; }
+.hc.block { color:#991B1B; background:#FEF2F2; border-color:#FCA5A5; }
+.val-col { flex-direction:column !important; align-items:flex-start !important; }
+.hc-note  { font-size:11px; color:var(--muted); margin-top:3px; line-height:1.5; }
+
+/* 기술 스택 태그 (허들 배지와 완전 분리) */
+.sk {
+  display:inline-block; font-size:11px; font-weight:600;
+  padding:3px 9px; border-radius:5px;
+  background:#EFF6FF; color:var(--blue); border:1px solid #BFDBFE;
+}
+
+/* 관련도 바 */
+.pbar { width:100%; }
+.pbar-cell { display:block !important; padding:14px 16px !important; }
+.pbar-top { display:flex; justify-content:space-between; margin-bottom:5px; }
+.pbar-top .pl { font-size:10px; color:var(--sub); }
+.pbar-top .pn { font-size:14px; font-weight:800; }
+.pbar-top .pn.hi { color:var(--fire); }
+.pbar-top .pn.md { color:var(--blue); }
+.pbar-track {
+  height:6px;
+  background:#F1F5F9;
+  border-radius:3px; overflow:hidden;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,0.09);
+}
+.pbar-fill  { height:100%; border-radius:3px; }
+.pbar-fill.hi { background:linear-gradient(90deg,#F97316,#FBBF24); }
+.pbar-fill.md { background:linear-gradient(90deg,#2563EB,#818CF8); }
+
+/* ── CTA 행 ── */
+.cta-lbl {
+  padding:14px 16px;
+  background:var(--surface);
+  font-size:11px; color:var(--muted);
+  display:flex; align-items:center;
+  border-top:2px solid var(--border) !important;
+}
+.cta-cell {
+  padding:14px 16px;
+  display:flex; flex-direction:column; gap:8px;
+  background:var(--surface);
+  border-top:2px solid var(--border) !important;
+  border-bottom:none !important;
+}
+.cta-cell:last-child { border-right:none; }
+
+.btn {
+  display:block; width:100%;
+  padding:10px; border-radius:8px;
+  font-size:13px; font-weight:700;
+  border:none; cursor:pointer; font-family:inherit;
+  text-align:center; text-decoration:none;
+  transition:all 0.15s;
+}
+.btn.fire   { background:var(--fire); color:white; }
+.btn.fire:hover { background:var(--fire-lo); }
+.btn.blue   { background:var(--blue); color:white; }
+.btn.blue:hover { background:var(--blue-lo); }
+.btn.ghost  { background:white; color:var(--sub); border:1.5px solid var(--border); }
+.btn.ghost:hover { border-color:var(--blue); color:var(--blue); }
+.btn.res    { background:#FFF7ED; color:var(--fire); border:1.5px solid rgba(249,115,22,.3); }
+.btn.res:hover { background:var(--fire); color:white; border-color:var(--fire); }
+
+/* ── AI 배너 ─────────────────────────── */
+.ai-banner {
+  background:var(--ink); border-radius:14px;
+  padding:24px 28px; margin-bottom:28px;
+  display:flex; align-items:center; gap:18px;
+  border:1px solid rgba(255,255,255,.07);
+}
+.ai-banner .ico  { font-size:30px; flex-shrink:0; }
+.ai-banner h3    { font-size:14px; font-weight:700; color:white; margin-bottom:4px; }
+.ai-banner p     { font-size:12px; color:var(--muted); line-height:1.6; }
+.ai-dots { display:flex; gap:8px; margin-top:8px; }
+.ai-dot {
+  font-size:11px; font-weight:700;
+  padding:3px 10px; border-radius:4px;
+}
+.ai-dot.g { background:#F0FDF4; color:#15803D; }
+.ai-dot.a { background:#FFFBEB; color:#92400E; }
+.ai-dot.r { background:#FEF2F2; color:#991B1B; }
+.ai-banner .cta {
+  flex-shrink:0; margin-left:auto;
+  background:var(--fire); color:white;
+  padding:11px 22px; border-radius:9px;
+  font-size:13px; font-weight:700;
+  border:none; cursor:pointer; font-family:inherit;
+}
+.ai-banner .cta:hover { background:var(--fire-lo); }
+
+/* ── 추천 프로그램 ───────────────────── */
+.suggest-title { font-size:18px; font-weight:700; letter-spacing:-.3px; margin-bottom:14px; }
+.suggest-grid  { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.pc {
+  background:white; border-radius:14px;
+  border:1.5px solid var(--border); padding:16px;
+  cursor:pointer; transition:all 0.18s;
+  display:flex; flex-direction:column;
+}
+.pc:hover { border-color:var(--blue); transform:translateY(-2px); box-shadow:0 6px 16px rgba(37,99,235,.1); }
+.pc-top  { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.pc-src  { font-size:10px; color:var(--muted); }
+.pc-dday { font-family:'Syne',sans-serif; font-size:14px; font-weight:800; }
+.pc-dday.r { color:var(--red); }
+.pc-dday.o { color:var(--fire); }
+.pc-dday.a { color:var(--amber); }
+.pc-name { font-size:13px; font-weight:700; line-height:1.45; margin-bottom:10px; }
+.pc-tags { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:12px; }
+.pt {
+  font-size:10px; padding:2px 7px; border-radius:4px;
+  border:1px solid var(--border); color:var(--sub);
+  background:var(--surface); font-weight:500;
+}
+.pt.cat { color:var(--blue); background:#EFF6FF; border-color:#BFDBFE; }
+.pt.nd  { color:var(--violet); background:#F5F3FF; border-color:#DDD6FE; }
+.pt.all { color:var(--green); background:#F0FDF4; border-color:#BBF7D0; }
+.pc-add {
+  margin-top:auto; width:100%; padding:9px;
+  border-radius:7px; font-size:11px; font-weight:700;
+  border:1.5px solid rgba(249,115,22,.35);
+  background:rgba(249,115,22,.05); color:var(--fire);
+  cursor:pointer; font-family:inherit; transition:all 0.15s;
+}
+.pc-add:hover { background:var(--fire); color:white; border-color:var(--fire); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">이소<em>서</em></div>
+  <a href="#" class="tab">프로그램</a>
+  <a href="#" class="tab on">부트캠프 비교</a>
+  <a href="#" class="tab">AI 추천</a>
+  <a href="#" class="tab">이력서 만들기</a>
+  <a href="#" class="cta">무료로 시작하기</a>
+</nav>
+
+<!-- PAGE HEADER -->
+<div class="phd">
+  <div class="phd-in">
+    <h1>부트캠프 비교 분석</h1>
+    <p>최대 3개 프로그램을 나란히 놓고 대상·자격요건·허들을 한눈에 확인하세요.</p>
+    <div class="phd-pills">
+      <span class="pill b">개발자 대상 포함</span>
+      <span class="pill v">비개발자 대상 포함</span>
+      <span class="pill g">로그인 시 AI 자동 판단</span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- 범례 -->
+  <div class="legend">
+    <div class="lg-hd">허들 표시</div>
+    <div class="lg-item"><span class="ld g"></span>조건 충족 가능</div>
+    <div class="lg-item"><span class="ld a"></span>확인 필요</div>
+    <div class="lg-item"><span class="ld r"></span>지원 불가 — 사전 해결 필수</div>
+    <div class="lg-note">로그인 시 내 프로필 기준 자동 판단</div>
+  </div>
+
+  <!--
+    ════════════════════════════════
+    COMPARE CARD
+    compare-card = CSS Grid 컨테이너
+    columns: 170px 1fr 1fr 1fr
+
+    직계 자식만 그리드 아이템.
+    .row { display:contents } 로
+    논리적 묶음만 하고 레이아웃에서 투명.
+    ════════════════════════════════
+  -->
+  <div class="compare-card">
+
+    <!-- ── 슬롯 헤더 (직계 자식 4개) ── -->
+    <div class="slot-corner">
+      <div class="cnt-label">비교 중</div>
+      <div class="cnt-num">2 <span>/ 3개</span></div>
+    </div>
+
+    <div class="slot-cell winner">
+      <button class="slot-del">×</button>
+      <span class="win-badge">나에게 가장 적합</span>
+      <div class="slot-src">HRD넷 · 서울 강남 · 멀티캠퍼스</div>
+      <div class="slot-name">K-디지털 풀스택 개발자 과정 6기</div>
+      <div class="slot-tags">
+        <span class="st dr">D-1 마감</span>
+        <span class="st dev">개발자 대상</span>
+        <span class="st free">국비 100%</span>
+      </div>
+      <div class="slot-match">
+        <div class="sm-lbl">AI 종합 관련도</div>
+        <div class="sm-row">
+          <div class="sm-bar"><div class="sm-fill hi" style="width:87%"></div></div>
+          <span class="sm-pct hi">87%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="slot-cell">
+      <button class="slot-del">×</button>
+      <div class="slot-src">고용24 · 서울 · 한국고용정보원</div>
+      <div class="slot-name">청년 AI 데이터 분석 인턴십 2기</div>
+      <div class="slot-tags">
+        <span class="st da">D-12 마감</span>
+        <span class="st both">누구나</span>
+      </div>
+      <div class="slot-match">
+        <div class="sm-lbl">AI 종합 관련도</div>
+        <div class="sm-row">
+          <div class="sm-bar"><div class="sm-fill md" style="width:72%"></div></div>
+          <span class="sm-pct md">72%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="slot-cell empty">
+      <div class="empty-plus">＋</div>
+      <div class="empty-t">프로그램 추가</div>
+      <div class="empty-s">아래 목록에서 선택</div>
+    </div>
+
+    <!-- ── 기본 정보 ── -->
+    <div class="sec-hd basic"><span>📋</span> 기본 정보</div>
+
+    <div class="row">
+      <div class="lbl">마감일</div>
+      <div class="val w"><span class="vr">D-1 · 내일까지</span></div>
+      <div class="val"><span class="vw">D-12 · 4월 26일</span></div>
+      <div class="val em">—</div>
+    </div>
+
+    <div class="row">
+      <div class="lbl">과정 기간</div>
+      <div class="val w">6개월</div>
+      <div class="val">3개월</div>
+      <div class="val em">—</div>
+    </div>
+
+    <div class="row">
+      <div class="lbl">국비 지원율</div>
+      <div class="val w"><span class="vb">100% 전액 지원</span></div>
+      <div class="val">월 200만원 지원</div>
+      <div class="val em">—</div>
+    </div>
+
+    <div class="row">
+      <div class="lbl">수업 방식</div>
+      <div class="val w">오프라인 (강남구)</div>
+      <div class="val">현장실습 + 재택 혼합</div>
+      <div class="val em">—</div>
+    </div>
+
+    <div class="row">
+      <div class="lbl">취업 연계</div>
+      <div class="val w"><span class="vg">파트너사 30개 연계</span></div>
+      <div class="val"><span class="vg">인턴 후 정규직 전환</span></div>
+      <div class="val em">—</div>
+    </div>
+
+    <!-- ── 모집 대상 ── -->
+    <div class="sec-hd target"><span>🎯</span> 모집 대상</div>
+
+    <div class="row">
+      <div class="lbl">주요 대상<span class="sub">누가 지원할 수 있나요</span></div>
+      <div class="val w">개발자 대상</div>
+      <div class="val">누구나</div>
+      <div class="val em">—</div>
+    </div>
+
+    <div class="row">
+      <div class="lbl">연령 제한</div>
+      <div class="val w"><span class="vg">제한 없음</span></div>
+      <div class="val"><span class="vw">만 15~34세</span></div>
+      <div class="val em">—</div>
+    </div>
+
+    <div class="row">
+      <div class="lbl">학력 요건</div>
+      <div class="val w">고졸 이상</div>
+      <div class="val"><span class="vg">제한 없음</span></div>
+      <div class="val em">—</div>
+    </div>
+
+    <div class="row">
+      <div class="lbl">재직자 지원<span class="sub">현재 직장 있으면?</span></div>
+      <div class="val w"><span class="vr">불가 — 구직자 전용</span></div>
+      <div class="val"><span class="vg">가능</span></div>
+      <div class="val em">—</div>
+    </div>
+
+    <div class="row">
+      <div class="lbl">경력 조건</div>
+      <div class="val w"><span class="vg">무관</span></div>
+      <div class="val"><span class="vg">무관</span></div>
+      <div class="val em">—</div>
+    </div>
+
+    <!-- ── 지원 허들 ── -->
+    <div class="sec-hd hurdle">
+      <span>⚠️</span> 지원 허들 &nbsp;—&nbsp;
+      <span class="hurdle-warn">빨간 항목은 지원 전 반드시 해결 필요</span>
+    </div>
+
+    <div class="row">
+      <div class="lbl">사전 코딩 실력<span class="sub">없으면 입과 불가?</span></div>
+      <div class="val w val-col">
+        <span class="vw">기초 필요</span>
+        <span class="hc-note">HTML / CSS / JS 기초 수준 권장</span>
+      </div>
+      <div class="val"><span class="vg">불필요</span></div>
+      <div class="val em">—</div>
+    </div>
+
+    <div class="row">
+      <div class="lbl">국민내일배움카드<span class="sub">미발급이면?</span></div>
+      <div class="val w val-col">
+        <span class="vw">필수</span>
+        <span class="hc-note">미발급 시 신청 선행 — 발급까지 1~2주 소요</span>
+      </div>
+      <div class="val"><span class="vg">불필요</span></div>
+      <div class="val em">—</div>
+    </div>
+
+    <div class="row">
+      <div class="lbl">고용보험 이력</div>
+      <div class="val w"><span class="vg">무관</span></div>
+      <div class="val"><span class="vg">무관</span></div>
+      <div class="val em">—</div>
+    </div>
+
+    <div class="row">
+      <div class="lbl">포트폴리오 제출<span class="sub">없으면 서류 탈락?</span></div>
+      <div class="val w val-col">
+        <span class="vw">서류 전형 있음</span>
+        <span class="hc-note">이소서에서 바로 만들 수 있습니다</span>
+      </div>
+      <div class="val"><span class="vg">불필요</span></div>
+      <div class="val em">—</div>
+    </div>
+
+    <div class="row">
+      <div class="lbl">면접 / 코딩테스트</div>
+      <div class="val w"><span class="vw">있음 (코딩테스트 포함)</span></div>
+      <div class="val"><span class="vg">없음</span></div>
+      <div class="val em">—</div>
+    </div>
+
+    <!-- ── 커리큘럼 ── -->
+    <div class="sec-hd curri"><span>📚</span> 커리큘럼</div>
+
+    <div class="row">
+      <div class="lbl">주요 기술 스택</div>
+      <div class="val w" style="flex-wrap:wrap;align-items:flex-start;gap:4px">
+        <span class="sk">React</span>
+        <span class="sk">Node.js</span>
+        <span class="sk">Python</span>
+        <span class="sk">AWS</span>
+        <span class="sk">Docker</span>
+      </div>
+      <div class="val" style="flex-wrap:wrap;align-items:flex-start;gap:4px">
+        <span class="sk">Python</span>
+        <span class="sk">SQL</span>
+        <span class="sk">Tableau</span>
+        <span class="sk">통계분석</span>
+      </div>
+      <div class="val em">—</div>
+    </div>
+
+    <div class="row">
+      <div class="lbl">수료 후 목표 직무</div>
+      <div class="val w">풀스택 개발자</div>
+      <div class="val">데이터 분석가</div>
+      <div class="val em">—</div>
+    </div>
+
+    <!-- ── AI 관련도 ── -->
+    <div class="sec-hd ai">
+      <span class="star">★</span> 나와의 관련도 — AI 분석
+      <span class="note">로그인 시 내 프로필 기준 자동 계산</span>
+    </div>
+
+    <div class="row">
+      <div class="lbl">종합 관련도<span class="sub">AI 종합 점수</span></div>
+      <div class="val w pbar-cell">
+        <div class="pbar">
+          <div class="pbar-top"><span class="pl">AI 종합</span><span class="pn hi">87%</span></div>
+          <div class="pbar-track"><div class="pbar-fill hi" style="width:87%"></div></div>
+        </div>
+      </div>
+      <div class="val pbar-cell">
+        <div class="pbar">
+          <div class="pbar-top"><span class="pl">AI 종합</span><span class="pn md">72%</span></div>
+          <div class="pbar-track"><div class="pbar-fill md" style="width:72%"></div></div>
+        </div>
+      </div>
+      <div class="val em" style="font-size:12px">로그인 후 확인</div>
+    </div>
+
+    <div class="row">
+      <div class="lbl">기술 스택 일치도<span class="sub">내 보유 기술 기준</span></div>
+      <div class="val w pbar-cell">
+        <div class="pbar">
+          <div class="pbar-top"><span class="pl">스택 일치</span><span class="pn hi">91%</span></div>
+          <div class="pbar-track"><div class="pbar-fill hi" style="width:91%"></div></div>
+        </div>
+      </div>
+      <div class="val pbar-cell">
+        <div class="pbar">
+          <div class="pbar-top"><span class="pl">스택 일치</span><span class="pn md">60%</span></div>
+          <div class="pbar-track"><div class="pbar-fill md" style="width:60%"></div></div>
+        </div>
+      </div>
+      <div class="val em" style="font-size:12px">로그인 후 확인</div>
+    </div>
+
+    <!-- ── CTA 행 (직계 자식 4개) ── -->
+    <div class="cta-lbl">결정하셨나요?</div>
+
+    <div class="cta-cell">
+      <a href="#" class="btn fire">지금 지원하기 →</a>
+      <a href="#" class="btn res">이력서 즉시 만들기</a>
+    </div>
+
+    <div class="cta-cell">
+      <a href="#" class="btn blue">자세히 보기</a>
+      <a href="#" class="btn res">이력서 즉시 만들기</a>
+    </div>
+
+    <div class="cta-cell">
+      <button class="btn ghost">+ 프로그램 추가</button>
+    </div>
+
+  </div><!-- /compare-card -->
+
+  <!-- AI 배너 -->
+  <div class="ai-banner">
+    <span class="ico">🤖</span>
+    <div style="flex:1">
+      <h3>로그인하면 "나 이거 지원 가능한가요?"를 AI가 자동 판단해드립니다</h3>
+      <p>성과저장소에 등록된 기술 스택·경력·학력 데이터 기반으로 허들 항목을 즉시 분석합니다.</p>
+      <div class="ai-dots">
+        <span class="ai-dot g">충족</span>
+        <span class="ai-dot a">확인 필요</span>
+        <span class="ai-dot r">지원 불가</span>
+        <span style="font-size:11px;color:var(--muted);margin-left:4px;align-self:center">— 색상으로 즉시 표시</span>
+      </div>
+    </div>
+    <button class="cta">Google로 무료 시작</button>
+  </div>
+
+  <!-- 추천 프로그램 -->
+  <div class="suggest-title">비교에 추가해볼 만한 프로그램</div>
+  <div class="suggest-grid">
+    <div class="pc">
+      <div class="pc-top"><span class="pc-src">서울시 · 마포구</span><span class="pc-dday a">D-7</span></div>
+      <div class="pc-name">UX/UI 디자이너 양성과정 4기</div>
+      <div class="pc-tags"><span class="pt cat">디자인</span><span class="pt nd">비개발자</span><span class="pt">국비 90%</span></div>
+      <button class="pc-add">+ 비교에 추가</button>
+    </div>
+    <div class="pc">
+      <div class="pc-top"><span class="pc-src">K-Startup · 온라인</span><span class="pc-dday o">D-4</span></div>
+      <div class="pc-name">예비창업 패키지 2026 상반기</div>
+      <div class="pc-tags"><span class="pt cat">창업</span><span class="pt all">누구나</span><span class="pt">최대 1억 지원</span></div>
+      <button class="pc-add">+ 비교에 추가</button>
+    </div>
+    <div class="pc">
+      <div class="pc-top"><span class="pc-src">고용24 · 전국</span><span class="pc-dday r">D-2</span></div>
+      <div class="pc-name">청년 디지털 일자리 사업 5기</div>
+      <div class="pc-tags"><span class="pt cat">경영</span><span class="pt all">누구나</span><span class="pt">월 180만원</span></div>
+      <button class="pc-add">+ 비교에 추가</button>
+    </div>
+    <div class="pc">
+      <div class="pc-top"><span class="pc-src">HRD넷 · 부산</span><span class="pc-dday a">D-15</span></div>
+      <div class="pc-name">내일배움카드 AI 활용 실무 과정</div>
+      <div class="pc-tags"><span class="pt cat">AI · 데이터</span><span class="pt nd">비개발자</span><span class="pt">국비 80%</span></div>
+      <button class="pc-add">+ 비교에 추가</button>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,6 +1,7 @@
 # 환경변수 (절대 커밋하지 않음)
 .env
 .env.local
+.watcher.env
 frontend/.env.local
 backend/.env
 
@@ -14,6 +15,9 @@ frontend/out/
 __pycache__/
 *.py[cod]
 *.pyo
+.pytest_tmp/
+.watcher.lock
+.cowork_watcher.lock
 venv/
 backend/venv/
 .venv/
@@ -48,6 +52,9 @@ Thumbs.db
 /docs/2019년_한국직업정보(KNOW)_재직자조사_성격·지식_원자료.csv
 /docs/2019년_한국직업정보(KNOW)_재직자조사_성격·지식_코드북.xlsx
 /tmp/
+/.tmp_*/
 /output/
 /backend/*.log
 /frontend/*.log
+
+# Local AI scratch space may be kept in the repo when explicitly used

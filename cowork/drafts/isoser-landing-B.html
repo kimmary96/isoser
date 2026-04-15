@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>이소서 — 내 맞춤 프로그램 찾기</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --ink:     #0F172A;
+  --blue:    #2563EB;
+  --blue-lo: #1D4ED8;
+  --blue-bg: #EFF6FF;
+  --sky:     #60A5FA;
+  --fire:    #F97316;
+  --fire-lo: #EA580C;
+  --fire-bg: #FFF7ED;
+  --green:   #16A34A;
+  --red:     #DC2626;
+  --amber:   #D97706;
+  --surface: #F8FAFC;
+  --border:  #E2E8F0;
+  --muted:   #94A3B8;
+  --sub:     #64748B;
+}
+body { font-family:'Pretendard',sans-serif; background:var(--surface); color:var(--ink); }
+
+/* NAV */
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:300;
+  height:60px; background:rgba(255,255,255,0.96);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; padding:0 48px; gap:24px;
+}
+.logo { font-family:'Pretendard',sans-serif; font-weight:800; font-size:20px; color:var(--ink); margin-right:auto; }
+.logo em { font-style:normal; color:var(--blue); }
+nav a { font-size:13px; color:var(--sub); text-decoration:none; font-weight:500; }
+.nav-login { padding:7px 18px; border-radius:8px; border:1.5px solid var(--border); color:var(--ink) !important; font-weight:600 !important; }
+
+/* ═══════════ HERO ═══════════ */
+.hero {
+  min-height:100vh;
+  display:flex; align-items:center; justify-content:center;
+  padding:80px 48px 60px;
+  background:white;
+  border-bottom:1px solid var(--border);
+  position:relative; overflow:hidden;
+}
+/* 도트 패턴 배경 */
+.hero::before {
+  content:'';
+  position:absolute; inset:0; pointer-events:none;
+  background-image:radial-gradient(circle, #CBD5E1 1px, transparent 1px);
+  background-size:28px 28px;
+  opacity:0.5;
+  mask-image:radial-gradient(ellipse 90% 90% at 50% 50%, black 30%, transparent 80%);
+}
+/* 상단 컬러 블롭 */
+.blob {
+  position:absolute; pointer-events:none;
+  border-radius:50%; filter:blur(80px); opacity:0.12;
+}
+.blob.b1 { width:500px; height:400px; background:var(--blue); top:-100px; left:50%; transform:translateX(-50%); }
+.blob.b2 { width:300px; height:300px; background:var(--fire); bottom:-60px; right:5%; }
+
+.hero-wrap {
+  position:relative; z-index:1;
+  display:flex; flex-direction:column;
+  align-items:center; text-align:center;
+  max-width:600px; width:100%; gap:32px;
+}
+
+.hero-copy { width:100%; }
+.hero-badge {
+  display:inline-flex; align-items:center; gap:7px;
+  background:var(--blue-bg); color:var(--blue);
+  border:1px solid rgba(37,99,235,0.2);
+  font-size:12px; font-weight:700;
+  padding:5px 13px; border-radius:20px; margin-bottom:20px;
+}
+.bdot { width:6px; height:6px; border-radius:50%; background:var(--blue); animation:blink 1.4s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
+.hero-copy { width:100%; }
+.hero-copy h1 {
+  font-family:'Pretendard',sans-serif;
+  font-size:40px; font-weight:800;
+  line-height:1.2; letter-spacing:-1px;
+  color:var(--ink); margin-bottom:14px;
+}
+.hero-copy h1 .q { color:var(--sub); font-size:32px; display:block; margin-bottom:6px; }
+.hero-copy h1 .hl { color:var(--blue); }
+
+.hero-copy p {
+  font-size:15px; color:var(--sub);
+  line-height:1.75; margin-bottom:28px;
+}
+.hero-copy p strong { color:var(--ink); font-weight:700; }
+
+/* 소셜 프루프 */
+.sp {
+  display:flex; gap:0; width:100%;
+  background:var(--surface); border:1.5px solid var(--border);
+  border-radius:12px; overflow:hidden;
+}
+.sp-it {
+  flex:1; text-align:center; padding:12px 8px;
+  border-right:1px solid var(--border);
+}
+.sp-it:last-child { border-right:none; }
+.sp-n { font-family:'Pretendard',sans-serif; font-size:18px; font-weight:800; color:var(--ink); }
+.sp-l { font-size:10px; color:var(--muted); margin-top:2px; }
+
+/* ═══════════ 퀴즈 카드 ═══════════ */
+.quiz-card {
+  background:white;
+  border:1.5px solid var(--border);
+  border-radius:20px; padding:28px 24px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.08);
+  width:100%; text-align:left;
+}
+
+/* 진행바 */
+.prog { margin-bottom:20px; }
+.prog-top { display:flex; justify-content:space-between; margin-bottom:6px; }
+.prog-top span { font-size:11px; font-weight:700; color:var(--muted); }
+.prog-top .pn { color:var(--blue); }
+.prog-track { height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
+.prog-fill { height:100%; border-radius:2px; background:linear-gradient(90deg,var(--blue),var(--sky)); transition:width 0.35s ease; }
+
+/* 질문 */
+.qst { font-size:16px; font-weight:700; color:var(--ink); margin-bottom:3px; letter-spacing:-0.2px; }
+.qhi { font-size:11px; color:var(--muted); margin-bottom:14px; }
+
+/* 선택지 */
+.opts { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.opts.c3 { grid-template-columns:repeat(3,1fr); }
+.opt {
+  padding:13px 10px; border-radius:11px;
+  border:1.5px solid var(--border);
+  background:var(--surface);
+  cursor:pointer; transition:all 0.15s; text-align:center;
+}
+.opt:hover { border-color:var(--blue); background:var(--blue-bg); }
+.opt.on   { border-color:var(--blue); background:var(--blue-bg); box-shadow:0 0 0 3px rgba(37,99,235,0.08); }
+.oi { font-size:20px; margin-bottom:5px; }
+.ol { font-size:12px; font-weight:700; color:var(--ink); line-height:1.3; }
+.os { font-size:10px; color:var(--muted); margin-top:2px; }
+
+/* 직접입력 행 */
+.direct-row {
+  grid-column: 1 / -1;
+  display:flex; align-items:center; gap:10px;
+  padding:11px 14px; border-radius:11px;
+  border:1.5px solid var(--border); background:var(--surface);
+  cursor:text; transition:border-color 0.15s;
+}
+.direct-row:focus-within,
+.direct-row.on { border-color:var(--blue); background:var(--blue-bg); }
+.direct-row .di { font-size:16px; flex-shrink:0; }
+.direct-row input {
+  flex:1; border:none; background:transparent;
+  font-size:13px; font-weight:600; color:var(--ink);
+  font-family:inherit; outline:none;
+}
+.direct-row input::placeholder { color:var(--muted); font-weight:400; }
+
+/* 다음 버튼 */
+.qbtn {
+  margin-top:14px; width:100%; padding:13px;
+  border-radius:11px; background:var(--blue);
+  color:white; font-size:14px; font-weight:700;
+  border:none; cursor:pointer; font-family:inherit;
+  opacity:0.3; pointer-events:none; transition:all 0.15s;
+}
+.qbtn.on { opacity:1; pointer-events:auto; }
+.qbtn.on:hover { background:var(--blue-lo); transform:translateY(-1px); box-shadow:0 4px 14px rgba(37,99,235,0.3); }
+
+/* ═══════════ 결과 화면 ═══════════ */
+#screen-result {
+  display:none; flex-direction:column; align-items:center;
+  padding:90px 48px 60px; background:white;
+  border-bottom:1px solid var(--border);
+  position:relative; overflow:hidden;
+}
+#screen-result::before {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background-image:radial-gradient(circle, #CBD5E1 1px, transparent 1px);
+  background-size:28px 28px; opacity:0.4;
+  mask-image:radial-gradient(ellipse 90% 90% at 50% 50%, black 30%, transparent 80%);
+}
+
+.result-in { position:relative; z-index:1; max-width:560px; width:100%; }
+
+/* 앵커링 */
+.r-anchor { text-align:center; margin-bottom:28px; }
+.r-big {
+  font-family:'Pretendard',sans-serif;
+  font-size:72px; font-weight:800; color:var(--blue);
+  letter-spacing:-3px; line-height:1;
+}
+.r-big .unit { font-size:36px; color:var(--ink); }
+.r-of { font-size:14px; color:var(--sub); margin-top:6px; }
+.r-tag {
+  display:inline-flex; align-items:center; gap:6px;
+  margin-top:10px;
+  background:var(--fire-bg); border:1px solid rgba(249,115,22,0.25);
+  color:var(--fire); font-size:12px; font-weight:700;
+  padding:5px 14px; border-radius:20px;
+}
+
+/* 프리뷰 */
+.r-card {
+  background:white; border:1.5px solid var(--border);
+  border-radius:16px; overflow:hidden;
+  box-shadow:0 4px 20px rgba(0,0,0,0.07);
+  margin-bottom:14px;
+}
+.r-card-hd {
+  padding:10px 16px; font-size:11px; font-weight:700;
+  color:var(--sub); background:var(--surface);
+  border-bottom:1px solid var(--border); letter-spacing:0.3px;
+}
+.r-list { position:relative; }
+.rrow {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:13px 16px; border-bottom:1px solid var(--border);
+}
+.rrow:last-child { border-bottom:none; }
+.rrow.blur { filter:blur(5px); user-select:none; pointer-events:none; }
+.rrow-l { display:flex; flex-direction:column; gap:3px; }
+.rtit { font-size:13px; font-weight:700; color:var(--ink); }
+.rmet { font-size:11px; color:var(--muted); }
+.rdday { font-family:'Pretendard',sans-serif; font-size:14px; font-weight:800; }
+.rdday.r { color:var(--red); }
+.rdday.o { color:var(--fire); }
+.rdday.a { color:var(--amber); }
+.blur-ov {
+  position:absolute; bottom:0; left:0; right:0; height:100px;
+  background:linear-gradient(to bottom, transparent, rgba(255,255,255,0.97));
+  display:flex; align-items:flex-end; justify-content:center; padding-bottom:12px;
+}
+.blur-ov span { font-size:12px; color:var(--sub); font-weight:500; }
+
+/* CTA 박스 */
+.cta-box {
+  background:white; border:1.5px solid var(--border);
+  border-radius:16px; padding:22px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.07);
+}
+.cta-fire {
+  width:100%; padding:15px;
+  border-radius:11px; background:var(--fire);
+  color:white; font-size:15px; font-weight:800;
+  border:none; cursor:pointer; font-family:inherit;
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  transition:all 0.15s; box-shadow:0 4px 14px rgba(249,115,22,0.3);
+}
+.cta-fire:hover { background:var(--fire-lo); transform:translateY(-1px); box-shadow:0 6px 20px rgba(249,115,22,0.4); }
+.gc { width:20px; height:20px; border-radius:50%; background:white; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:900; color:var(--fire); flex-shrink:0; }
+.cta-note { text-align:center; margin-top:9px; font-size:11px; color:var(--muted); }
+
+/* ═══════════ 하단 ═══════════ */
+.bottom { background:var(--surface); border-top:1px solid var(--border); padding:52px 48px; }
+.bottom-in { max-width:1100px; margin:0 auto; }
+
+.urg-row {
+  background:white; border:1.5px solid #FECACA;
+  border-radius:12px; padding:14px 20px;
+  display:flex; align-items:center; gap:14px; margin-bottom:44px;
+}
+.urg-lbl { font-size:11px; font-weight:800; color:var(--red); white-space:nowrap; flex-shrink:0; }
+.urg-chips { display:flex; gap:7px; flex-wrap:wrap; flex:1; }
+.uc { background:#FEF2F2; border:1px solid #FECACA; color:var(--red); font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; white-space:nowrap; }
+.urg-more { font-size:12px; color:var(--muted); white-space:nowrap; flex-shrink:0; }
+
+.feat-sec-lbl { font-size:11px; font-weight:700; color:var(--muted); letter-spacing:0.4px; text-align:center; margin-bottom:18px; }
+.feat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:44px; }
+.feat { background:white; border:1.5px solid var(--border); border-radius:14px; padding:20px 16px; transition:all 0.15s; }
+.feat:hover { border-color:var(--blue); transform:translateY(-2px); box-shadow:0 4px 14px rgba(37,99,235,0.08); }
+.f-ico { font-size:22px; margin-bottom:10px; }
+.f-nm  { font-size:13px; font-weight:700; color:var(--ink); margin-bottom:4px; }
+.f-ds  { font-size:11px; color:var(--sub); line-height:1.6; }
+
+.retry-sec { text-align:center; }
+.retry-sec h2 { font-family:'Pretendard',sans-serif; font-size:22px; font-weight:800; color:var(--ink); letter-spacing:-0.4px; margin-bottom:5px; }
+.retry-sec p  { font-size:13px; color:var(--sub); margin-bottom:16px; }
+.retry-btn { padding:10px 26px; border-radius:10px; background:white; border:1.5px solid var(--border); color:var(--sub); font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; transition:all 0.15s; }
+.retry-btn:hover { border-color:var(--blue); color:var(--blue); }
+
+footer { padding:22px 48px; border-top:1px solid var(--border); background:white; display:flex; align-items:center; justify-content:space-between; }
+.f-logo { font-family:'Pretendard',sans-serif; font-weight:800; font-size:16px; color:var(--ink); }
+.f-logo em { font-style:normal; color:var(--blue); }
+footer p { font-size:11px; color:var(--muted); }
+
+/* 애니메이션 */
+@keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+.hero-badge { animation:fadeUp 0.5s ease both; }
+.hero-copy h1 { animation:fadeUp 0.5s 0.08s ease both; }
+.hero-copy p  { animation:fadeUp 0.5s 0.14s ease both; }
+.sp { animation:fadeUp 0.5s 0.2s ease both; }
+.quiz-card { animation:fadeUp 0.5s 0.1s ease both; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">이소<em>서</em></div>
+  <a href="#">프로그램</a>
+  <a href="#">부트캠프 비교</a>
+  <a href="#" class="nav-login">로그인</a>
+</nav>
+
+<!-- ══════ SCREEN 1: 퀴즈 ══════ -->
+<section class="hero" id="screen-quiz">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+
+  <div class="hero-wrap">
+
+    <!-- 좌측 카피 -->
+    <div class="hero-copy">
+      <div class="hero-badge">
+        <span class="bdot"></span>
+        847개 프로그램 · 매일 업데이트
+      </div>
+      <h1>
+        <span class="q">흩어진 국비 지원 정보,</span>
+        내 상황에 맞는 것만 <span class="hl">골라드립니다</span>
+      </h1>
+      <p>
+        고용24, HRD넷, K-디지털, 서울시 일자리까지 한곳에 모았습니다.<br>
+        3가지 조건만 알려주시면 <strong>마감 임박순으로 정렬해드립니다</strong>
+      </p>
+      <div class="sp">
+        <div class="sp-it">
+          <div class="sp-n">847개</div>
+          <div class="sp-l">수집된 프로그램</div>
+        </div>
+        <div class="sp-it">
+          <div class="sp-n">134곳</div>
+          <div class="sp-l">우수훈련기관</div>
+        </div>
+        <div class="sp-it">
+          <div class="sp-n">매일</div>
+          <div class="sp-l">실시간 업데이트</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 우측 퀴즈 카드 -->
+    <div class="quiz-card">
+
+      <div class="prog">
+        <div class="prog-top">
+          <span><span class="pn" id="sn">1</span> / 3가지 조건</span>
+          <span id="slbl">상황 확인</span>
+        </div>
+        <div class="prog-track">
+          <div class="prog-fill" id="pf" style="width:33%"></div>
+        </div>
+      </div>
+
+      <!-- Q1 -->
+      <div id="q1">
+        <div class="qst">지금 상황이 어떠세요?</div>
+        <div class="qhi">가장 가까운 것을 선택하세요 — 이 정보로 마감·지역·지원율을 필터링합니다</div>
+        <div class="opts">
+          <div class="opt" onclick="pick(this,'q1')"><div class="oi">📋</div><div class="ol">취업 준비 중</div><div class="os">처음 취업 도전</div></div>
+          <div class="opt" onclick="pick(this,'q1')"><div class="oi">🔄</div><div class="ol">이직 준비 중</div><div class="os">현재 재직 중</div></div>
+          <div class="opt" onclick="pick(this,'q1')"><div class="oi">🌱</div><div class="ol">재취업 준비 중</div><div class="os">경력 공백 있음</div></div>
+          <div class="opt" onclick="pick(this,'q1')"><div class="oi">🚀</div><div class="ol">창업 준비 중</div><div class="os">내 사업 시작</div></div>
+        </div>
+        <button class="qbtn" id="b1" onclick="goNext(2)">다음 →</button>
+      </div>
+
+      <!-- Q2 -->
+      <div id="q2" style="display:none">
+        <div class="qst">선호하는 수업 방식은?</div>
+        <div class="qhi">온라인·오프라인 여부로 지역과 기관을 좁혀드립니다</div>
+        <div class="opts c3">
+          <div class="opt" onclick="pick(this,'q2')"><div class="oi">💻</div><div class="ol">온라인</div><div class="os">장소 자유</div></div>
+          <div class="opt" onclick="pick(this,'q2')"><div class="oi">🏫</div><div class="ol">오프라인</div><div class="os">집중 환경</div></div>
+          <div class="opt" onclick="pick(this,'q2')"><div class="oi">🔀</div><div class="ol">상관없음</div><div class="os">좋은 거면 OK</div></div>
+        </div>
+        <button class="qbtn" id="b2" onclick="goNext(3)">다음 →</button>
+      </div>
+
+      <!-- Q3 — 직접입력 포함 -->
+      <div id="q3" style="display:none">
+        <div class="qst">관심 분야가 어디인가요?</div>
+        <div class="qhi">카테고리별 과정을 필터링합니다 — 없는 분야는 직접 입력하세요</div>
+        <div class="opts" id="q3opts">
+          <div class="opt" onclick="pick(this,'q3')"><div class="oi">🤖</div><div class="ol">AI · 데이터</div><div class="os">분석, 개발, ML</div></div>
+          <div class="opt" onclick="pick(this,'q3')"><div class="oi">💻</div><div class="ol">IT · 개발</div><div class="os">웹, 앱, 백엔드</div></div>
+          <div class="opt" onclick="pick(this,'q3')"><div class="oi">🎨</div><div class="ol">디자인</div><div class="os">UX/UI, 그래픽</div></div>
+          <div class="opt" onclick="pick(this,'q3')"><div class="oi">📈</div><div class="ol">경영 · 마케팅</div><div class="os">기획, 마케팅</div></div>
+          <!-- 직접 입력 -->
+          <div class="direct-row" id="drow" onclick="document.getElementById('di').focus()">
+            <span class="di">✏️</span>
+            <input id="di" type="text" placeholder="원하는 분야 직접 입력 (예: 회계, 물류, 의료)" oninput="onDI()" onfocus="onDF()">
+          </div>
+        </div>
+        <button class="qbtn" id="b3" onclick="showResult()">내 맞춤 프로그램 찾기 →</button>
+      </div>
+
+    </div><!-- /quiz-card -->
+
+  </div>
+</section>
+
+<!-- ══════ SCREEN 2: 결과 ══════ -->
+<section id="screen-result">
+  <div class="result-in">
+
+    <div class="r-anchor">
+      <div class="r-big"><span id="rcnt">23</span><span class="unit">개</span></div>
+      <div class="r-of">847개 중 선택하신 조건으로 필터링한 결과입니다</div>
+      <div class="r-tag"><span>⚡</span><span id="rtag">재취업 · AI·데이터 · 온라인 · 마감 임박순</span></div>
+    </div>
+
+    <div class="r-card">
+      <div class="r-card-hd">미리보기 — 전체 결과는 가입 후 확인 가능합니다</div>
+      <div class="r-list">
+        <div class="rrow">
+          <div class="rrow-l"><div class="rtit">K-디지털 풀스택 개발자 과정 6기</div><div class="rmet">HRD넷 · 강남구 · 국비 100% · 6개월</div></div>
+          <div class="rdday r">D-1</div>
+        </div>
+        <div class="rrow">
+          <div class="rrow-l"><div class="rtit">청년 AI 데이터 분석 인턴십 2기</div><div class="rmet">고용24 · 온라인 · 월 200만원 · 3개월</div></div>
+          <div class="rdday o">D-3</div>
+        </div>
+        <div class="rrow blur">
+          <div class="rrow-l"><div class="rtit">내일배움카드 AI 활용 실무 과정</div><div class="rmet">HRD넷 · 온라인 · 국비 80% · 2개월</div></div>
+          <div class="rdday a">D-7</div>
+        </div>
+        <div class="rrow blur">
+          <div class="rrow-l"><div class="rtit">2026 AI 기반 업무자동화 부트캠프</div><div class="rmet">서울시 · 온라인 · 국비 100% · 4개월</div></div>
+          <div class="rdday a">D-12</div>
+        </div>
+        <div class="blur-ov">
+          <span>+ <span id="rmore">19</span>개 더 있습니다 — 가입하면 전체 확인 가능</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta-box">
+      <button class="cta-fire">
+        <span class="gc">G</span>
+        내 맞춤 프로그램 전체 보기 — 무료 가입
+      </button>
+      <div class="cta-note">가입 후 즉시 확인 · 신용카드 불필요 · 언제든 탈퇴 가능</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════ 하단 ══════ -->
+<div class="bottom">
+  <div class="bottom-in">
+    <div class="urg-row">
+      <div class="urg-lbl">D-7 이내 마감</div>
+      <div class="urg-chips">
+        <span class="uc">D-1 · K-디지털 풀스택</span>
+        <span class="uc">D-3 · 청년 AI 인턴십</span>
+        <span class="uc">D-5 · 내일배움카드 AI</span>
+        <span class="uc">D-7 · UX/UI 양성과정</span>
+      </div>
+      <div class="urg-more">+19개 →</div>
+    </div>
+
+    <div class="feat-sec-lbl">이소서에서 할 수 있는 것</div>
+    <div class="feat-grid">
+      <div class="feat"><div class="f-ico">🔍</div><div class="f-nm">프로그램 탐색</div><div class="f-ds">847개 국가 지원 프로그램. 마감·지역·대상 필터</div></div>
+      <div class="feat"><div class="f-ico">⚖️</div><div class="f-nm">부트캠프 비교</div><div class="f-ds">최대 3개 나란히. 허들·커리큘럼 한눈에 비교</div></div>
+      <div class="feat"><div class="f-ico">📄</div><div class="f-nm">이력서 즉시 생성</div><div class="f-ds">관심 프로그램 선택 → AI가 맞춤 이력서 자동 생성</div></div>
+      <div class="feat"><div class="f-ico">📅</div><div class="f-nm">AI 취업 캘린더</div><div class="f-ds">마감일·서류 준비 일정 자동 정리</div></div>
+    </div>
+
+    <div class="retry-sec">
+      <h2>다시 찾아볼까요?</h2>
+      <p>조건을 바꿔서 다른 프로그램을 탐색해보세요</p>
+      <button class="retry-btn" onclick="reset()">처음부터 다시 하기</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="f-logo">이소<em>서</em></div>
+  <p>국가 취업 지원 정보 허브 · 전체 무료 · © 2026 Isoser</p>
+</footer>
+
+<script>
+const ans = { q1:'', q2:'', q3:'' };
+
+function pick(el, qId) {
+  if (qId === 'q3') {
+    document.getElementById('drow').classList.remove('on');
+    document.getElementById('di').value = '';
+    ans.q3 = '';
+  }
+  el.closest('.opts').querySelectorAll('.opt').forEach(o => o.classList.remove('on'));
+  el.classList.add('on');
+  ans[qId] = el.querySelector('.ol').textContent.trim();
+  document.getElementById('b' + qId.slice(1)).classList.add('on');
+}
+
+function onDF() {
+  document.getElementById('q3opts').querySelectorAll('.opt').forEach(o => o.classList.remove('on'));
+  document.getElementById('drow').classList.add('on');
+  const v = document.getElementById('di').value.trim();
+  ans.q3 = v;
+  document.getElementById('b3').classList.toggle('on', v.length > 0);
+}
+
+function onDI() {
+  const v = document.getElementById('di').value.trim();
+  ans.q3 = v;
+  document.getElementById('b3').classList.toggle('on', v.length > 0);
+}
+
+function goNext(step) {
+  ['q1','q2','q3'].forEach(q => document.getElementById(q).style.display = 'none');
+  document.getElementById('q' + step).style.display = 'block';
+  const pct = step === 2 ? 66 : 100;
+  document.getElementById('pf').style.width = pct + '%';
+  document.getElementById('sn').textContent = step;
+  document.getElementById('slbl').textContent = step === 2 ? '방식 확인' : '분야 확인';
+}
+function showResult() {
+  const counts = { 'AI · 데이터':23, 'IT · 개발':31, '디자인':18, '경영 · 마케팅':27 };
+  const cnt = counts[ans.q3] || (Math.floor(Math.random() * 8) + 10);
+  document.getElementById('rcnt').textContent = cnt;
+  document.getElementById('rmore').textContent = Math.max(cnt - 4, 1);
+  const parts = [ans.q1, ans.q3, ans.q2 === '상관없음' ? '' : ans.q2, '마감 임박순'].filter(Boolean).join(' · ');
+  document.getElementById('rtag').textContent = parts;
+
+  document.getElementById('screen-quiz').style.display = 'none';
+  const r = document.getElementById('screen-result');
+  r.style.display = 'flex';
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+function reset() {
+  ans.q1 = ''; ans.q2 = ''; ans.q3 = '';
+  document.querySelectorAll('.opt').forEach(o => o.classList.remove('on'));
+  document.querySelectorAll('.qbtn').forEach(b => b.classList.remove('on'));
+  document.getElementById('drow').classList.remove('on');
+  document.getElementById('di').value = '';
+  ['q2','q3'].forEach(q => document.getElementById(q).style.display = 'none');
+  document.getElementById('q1').style.display = 'block';
+  document.getElementById('pf').style.width = '33%';
+  document.getElementById('sn').textContent = '1';
+  document.getElementById('slbl').textContent = '상황 확인';
+  document.getElementById('screen-result').style.display = 'none';
+  document.getElementById('screen-quiz').style.display = 'flex';
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+</script>
+</body>
+</html>

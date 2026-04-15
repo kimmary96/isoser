@@ -5,8 +5,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent.parent
-MARKDOWN_PATH = ROOT / "docs" / "prd.md"
-HTML_PATH = ROOT / "docs" / "prd.html"
+MARKDOWN_PATH = ROOT / "docs" / "specs" / "prd.md"
+HTML_PATH = ROOT / "docs" / "specs" / "prd.html"
 
 
 def flush_paragraph(lines: list[str], out: list[str]) -> None:

@@ -15,8 +15,19 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Verify Anthropic API key is configured
+        shell: bash
+        run: |
+          if [[ -z "${ANTHROPIC_API_KEY}" ]]; then
+            echo "Missing secret: ANTHROPIC_API_KEY"
+            exit 1
+          fi
+          echo "ANTHROPIC_API_KEY is present."
 
       - name: Resolve task source
         shell: bash

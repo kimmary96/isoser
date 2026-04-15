@@ -1,52 +1,16 @@
 # Codex Workflow
 
-## Purpose
-- Keep local Codex automation and remote Claude fallback clearly separated.
-- Standardize how task packets move through the repository.
+이 문서는 workflow 인덱스 역할만 유지합니다. 세부 운영 규칙은 `docs/automation/` 아래로 분리했습니다.
 
-## Roles
-- Claude: planning, specification, task packet generation
-- Codex: local repository inspection, implementation, checks, reporting
-- Claude Code GitHub Action: remote fallback when the local machine is unavailable
+## Read in this order
+1. [automation/overview.md](./automation/overview.md)
+2. [automation/local-flow.md](./automation/local-flow.md)
+3. [automation/task-packets.md](./automation/task-packets.md)
+4. [automation/dispatch-channels.md](./automation/dispatch-channels.md)
+5. [automation/operations.md](./automation/operations.md)
 
-## Local flow
-1. Claude produces a task packet.
-2. Save it to `tasks/inbox/<task-id>.md`.
-3. Start the watcher with:
-   - `powershell -ExecutionPolicy Bypass -File scripts/run_watcher.ps1`
-4. The watcher moves the packet to `tasks/running/`.
-5. Codex reads `AGENTS.md`, inspects the repository, evaluates drift, and implements if safe.
-6. Codex writes reports to `reports/`.
-7. On success, Codex is expected to commit and push with:
-   - `[codex] <task-id> 구현 완료`
-8. The watcher moves the packet to `tasks/done/`.
-9. If the task is invalid, blocked, or fails, the watcher moves it to `tasks/blocked/`.
-
-## Remote fallback flow
-1. Save a task packet to `tasks/remote/<task-id>.md`.
-2. Push the branch.
-3. `.github/workflows/claude-dev.yml` runs on pushes affecting `tasks/remote/*.md`.
-4. The workflow uses Claude Code as the remote fallback executor.
-
-## Task packet requirements
-- Use YAML-style frontmatter.
-- Required fields:
-  - `id`
-  - `status`
-  - `type`
-  - `title`
-  - `planned_at`
-  - `planned_against_commit`
-- Use `docs/task-packet-template.md` as the base template.
-- Use `tasks/remote/manual-task.md` as the manual remote fallback template when needed.
-
-## Guardrails
-- `AGENTS.md` is the source of truth for Codex behavior.
-- The watcher blocks tasks with missing required frontmatter.
-- Commit mismatch does not automatically block local execution, but Codex must evaluate drift before risky edits.
-- `[codex]` commit messages are reserved for local Codex automation and should not retrigger the remote fallback workflow.
-
-## Current limitations
-- The remote fallback path currently uses Claude Code, not Codex GitHub Action.
-- There is no automatic bridge from external planning tools directly into `tasks/inbox/` or `tasks/remote/`.
-- Manual `workflow_dispatch` fallback assumes `tasks/remote/manual-task.md` or another remote task file has been prepared intentionally.
+## Related docs
+- current state: [current-state.md](./current-state.md)
+- watcher restart: [rules/watcher-restart-checklist.md](./rules/watcher-restart-checklist.md)
+- task packet template: [rules/task-packet-template.md](./rules/task-packet-template.md)
+- task packet examples: [rules/task-packet-examples.md](./rules/task-packet-examples.md)
