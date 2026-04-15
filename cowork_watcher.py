@@ -3,6 +3,7 @@ import sys
 sys.dont_write_bytecode = True
 
 import glob
+import json
 import os
 import re
 import subprocess
@@ -10,6 +11,8 @@ import time
 from datetime import datetime
 from shutil import which
 from typing import Optional
+from urllib import error as urllib_error
+from urllib import request as urllib_request
 
 from scripts.watcher_shared import (
     acquire_lock_file,
@@ -35,6 +38,7 @@ TASKS_INBOX_DIR = "./tasks/inbox"
 TASKS_REMOTE_DIR = "./tasks/remote"
 COWORK_WATCHER_LOCK_PATH = "./.cowork_watcher.lock"
 PROJECT_PATH = r"D:\02_2025_AI_Lab\isoser"
+SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL", "").strip()
 POLL_INTERVAL_SECONDS = 10
 MOVE_RETRY_ATTEMPTS = 5
 MOVE_RETRY_DELAY_SECONDS = 0.5
@@ -65,6 +69,15 @@ def ensure_directories() -> None:
             TASKS_REMOTE_DIR,
         ]
     )
+
+
+def startup_warning_messages() -> list[str]:
+    warnings: list[str] = []
+    if not SLACK_WEBHOOK_URL:
+        warnings.append(
+            "경고: SLACK_WEBHOOK_URL 이 설정되지 않아 cowork dispatch는 Slack 전송 없이 로컬 파일에만 기록됩니다."
+        )
+    return warnings
 
 
 def acquire_watcher_lock() -> Optional[int]:
@@ -168,7 +181,57 @@ def run_codex_review(packet_filename: str, task_id: str) -> tuple[int, Optional[
 def write_dispatch(task_id: str, stage: str, lines: list[str]) -> str:
     dispatch_path = os.path.join(COWORK_DISPATCH_DIR, f"{task_id}-{stage}.md")
     write_markdown(dispatch_path, "\n".join(lines))
+    notify_slack_for_dispatch(task_id=task_id, stage=stage, lines=lines)
     return dispatch_path
+
+
+def format_slack_dispatch_message(*, task_id: str, stage: str, lines: list[str]) -> str:
+    emoji = {
+        "review-ready": "📝",
+        "review-failed": "🚨",
+        "approval-blocked-stale-review": "⛔",
+        "promoted": "✅",
+    }.get(stage, "ℹ️")
+    message_lines = [f"{emoji} cowork dispatch", f"task: `{task_id}`", f"stage: `{stage}`"]
+
+    interesting_prefixes = (
+        "status:",
+        "packet:",
+        "review:",
+        "target:",
+        "approved_at:",
+        "- freshness:",
+        "- note:",
+        "- next_step:",
+    )
+    for line in lines:
+        stripped = line.strip()
+        if any(stripped.startswith(prefix) for prefix in interesting_prefixes):
+            message_lines.append(stripped)
+
+    if stage == "review-ready":
+        message_lines.append("approval: create `cowork/approvals/<task-id>.ok` after checking the latest review")
+        message_lines.append(f"slack approve: `/isoser-approve {task_id} inbox` or `/isoser-approve {task_id} remote`")
+
+    return "\n".join(message_lines)
+
+
+def notify_slack_for_dispatch(*, task_id: str, stage: str, lines: list[str]) -> None:
+    if not SLACK_WEBHOOK_URL:
+        return
+
+    payload = {"text": format_slack_dispatch_message(task_id=task_id, stage=stage, lines=lines)}
+    request = urllib_request.Request(
+        SLACK_WEBHOOK_URL,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib_request.urlopen(request, timeout=10) as response:
+            response.read()
+    except (urllib_error.URLError, TimeoutError) as error:
+        print(f"Slack dispatch 전송 실패: {type(error).__name__}: {error}")
 
 
 def approval_target_from_file(approval_path: str) -> str:
@@ -351,6 +414,8 @@ def handle_approval(packet_path: str) -> None:
 
 def main() -> None:
     ensure_directories()
+    for warning in startup_warning_messages():
+        print(warning)
     lock_handle = acquire_watcher_lock()
     if lock_handle is None:
         print("cowork watcher 중복 실행 감지됨. 기존 cowork watcher를 종료한 뒤 다시 실행하세요.")

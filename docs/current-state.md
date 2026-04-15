@@ -17,6 +17,7 @@
 - task packet contract: [automation/task-packets.md](./automation/task-packets.md)
 - dispatch split: [automation/dispatch-channels.md](./automation/dispatch-channels.md)
 - operations: [automation/operations.md](./automation/operations.md)
+- Slack approval setup: [automation/slack-approval-setup.md](./automation/slack-approval-setup.md)
 
 ## Project structure highlights
 - `frontend/`: Next.js application
