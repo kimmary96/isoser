@@ -12,10 +12,51 @@ def ensure_directories_exist(directories: list[str]) -> None:
         os.makedirs(directory, exist_ok=True)
 
 
+def _read_lock_pid(lock_path: str) -> Optional[int]:
+    if not os.path.exists(lock_path):
+        return None
+
+    try:
+        with open(lock_path, "r", encoding="utf-8") as file:
+            for raw_line in file:
+                line = raw_line.strip()
+                if not line.startswith("pid="):
+                    continue
+                try:
+                    return int(line.split("=", 1)[1].strip())
+                except ValueError:
+                    return None
+    except OSError:
+        return None
+
+    return None
+
+
+def _is_pid_running(pid: int) -> bool:
+    if pid <= 0:
+        return False
+
+    try:
+        os.kill(pid, 0)
+    except OSError:
+        return False
+    return True
+
+
 def acquire_lock_file(lock_path: str) -> Optional[int]:
     try:
         return os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
     except FileExistsError:
+        stale_pid = _read_lock_pid(lock_path)
+        if stale_pid is not None and not _is_pid_running(stale_pid):
+            try:
+                os.remove(lock_path)
+            except OSError:
+                return None
+            try:
+                return os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            except FileExistsError:
+                return None
         return None
 
 

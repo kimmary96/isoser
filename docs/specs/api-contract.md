@@ -576,7 +576,11 @@ Base URL 예시: `http://localhost:8000`
 ### `GET /programs/`
 
 - Query:
+  - `q`
   - `category`
+  - `regions` (repeatable)
+  - `recruiting_only`
+  - `sort` (`deadline | latest`)
   - `scope`
   - `region_detail`
   - `limit`
@@ -584,6 +588,22 @@ Base URL 예시: `http://localhost:8000`
 
 - 응답:
   - `programs` 테이블 row array
+
+### `GET /programs/count`
+
+- 목적: `/programs` 목록 화면의 총 결과 수 조회
+- Query:
+  - `q`
+  - `category`
+  - `regions` (repeatable)
+  - `recruiting_only`
+  - `scope`
+  - `region_detail`
+
+- 응답:
+```json
+{ "count": 57 }
+```
 
 ### `GET /programs/popular`
 

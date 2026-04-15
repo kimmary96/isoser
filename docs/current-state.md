@@ -9,6 +9,8 @@
 - local terminal outcome은 `dispatch/alerts/`에 기록된다.
 - 성공 task는 watcher가 task-scoped git automation을 시도한다.
 - remote fallback은 `tasks/remote/` + GitHub Action 경로를 사용한다.
+- `frontend/app/programs/page.tsx`는 URL query 기반 검색, 카테고리/지역 필터, 모집중 토글, 정렬, 페이지네이션을 지원한다.
+- `backend/routers/programs.py`는 `/programs/count`와 확장된 목록 query(`q`, `regions`, `recruiting_only`, `sort`)를 지원한다.
 
 ## Key references
 - automation index: [automation/README.md](./automation/README.md)
@@ -17,6 +19,7 @@
 - task packet contract: [automation/task-packets.md](./automation/task-packets.md)
 - dispatch split: [automation/dispatch-channels.md](./automation/dispatch-channels.md)
 - operations: [automation/operations.md](./automation/operations.md)
+- Slack approval setup: [automation/slack-approval-setup.md](./automation/slack-approval-setup.md)
 
 ## Project structure highlights
 - `frontend/`: Next.js application

@@ -161,3 +161,36 @@ def test_stale_review_blocks_promotion(tmp_path: Path, monkeypatch) -> None:
 
     assert not (inbox_dir / "TASK-TEST-STALE.md").exists()
     assert (dispatch_dir / "TASK-TEST-STALE-approval-blocked-stale-review.md").exists()
+
+
+def test_format_slack_dispatch_message_contains_core_fields() -> None:
+    message = cowork_watcher.format_slack_dispatch_message(
+        task_id="TASK-TEST",
+        stage="review-ready",
+        lines=[
+            "# Dispatch: TASK-TEST",
+            "",
+            "stage: review-ready",
+            "status: pending-approval",
+            "packet: `cowork/packets/TASK-TEST.md`",
+            "review: `cowork/reviews/TASK-TEST-review.md`",
+            "- next_step: reviewer reads the review and creates `cowork/approvals/<task-id>.ok` when approved",
+        ],
+    )
+
+    assert "task: `TASK-TEST`" in message
+    assert "stage: `review-ready`" in message
+    assert "status: pending-approval" in message
+    assert "packet: `cowork/packets/TASK-TEST.md`" in message
+    assert "review: `cowork/reviews/TASK-TEST-review.md`" in message
+    assert "approval: create `cowork/approvals/<task-id>.ok`" in message
+    assert "slack approve: `/isoser-approve TASK-TEST inbox`" in message
+
+
+def test_startup_warning_messages_warns_when_slack_webhook_missing(monkeypatch) -> None:
+    monkeypatch.setattr(cowork_watcher, "SLACK_WEBHOOK_URL", "")
+
+    warnings = cowork_watcher.startup_warning_messages()
+
+    assert len(warnings) == 1
+    assert "SLACK_WEBHOOK_URL" in warnings[0]
