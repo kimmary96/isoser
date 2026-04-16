@@ -1,6 +1,8 @@
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = Split-Path -Parent $scriptDir
 $watcherEnvPath = Join-Path $repoRoot ".watcher.env"
+$backendPythonPath = Join-Path $repoRoot "backend\venv\Scripts\python.exe"
+$pythonExe = if (Test-Path $backendPythonPath) { $backendPythonPath } else { "python" }
 
 $env:PYTHONDONTWRITEBYTECODE = "1"
 $env:PYTHONIOENCODING = "utf-8"
@@ -33,4 +35,4 @@ if (Test-Path $watcherEnvPath) {
     }
 }
 
-python -B watcher.py
+& $pythonExe -B watcher.py

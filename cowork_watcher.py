@@ -599,6 +599,38 @@ def summarize_review_snapshot(task_id: str) -> tuple[str, list[str]]:
     return (overall, findings[:4])
 
 
+def localize_cowork_dispatch_text(text: str) -> str:
+    localized = text
+    replacements = [
+        ("review is aligned with the current packet contents", "현재 packet 기준 최신 review 입니다."),
+        (
+            "packet is newer than the current review, so promotion is blocked until review is regenerated",
+            "packet이 현재 review보다 최신이라서, review를 다시 생성하기 전에는 승격할 수 없습니다.",
+        ),
+        ("frontmatter 누락으로 자동 review가 로컬 규칙 점검만 수행함", "frontmatter 누락으로 자동 review가 로컬 규칙 점검만 수행했습니다."),
+        ("Codex review did not create the expected review file", "Codex review가 기대한 review 파일을 만들지 못했습니다."),
+        (
+            "Codex review process failed before the expected review file was created",
+            "Codex review 프로세스가 기대한 review 파일을 만들기 전에 실패했습니다.",
+        ),
+        (
+            "optional planned worktree fingerprint is stale and must be refreshed before promotion",
+            "optional planned worktree fingerprint가 오래되어 승격 전에 갱신해야 합니다.",
+        ),
+        (
+            "reviewer approves in Slack and the shared approval queue is consumed by the local cowork watcher",
+            "리뷰어가 Slack에서 승인하면 로컬 cowork watcher가 shared approval queue를 소비합니다.",
+        ),
+        (
+            "packet copied from cowork scratch space into an execution queue",
+            "packet을 cowork scratch 공간에서 실행 큐로 복사했습니다.",
+        ),
+    ]
+    for source, target in replacements:
+        localized = localized.replace(source, target)
+    return localized
+
+
 def format_slack_dispatch_message(*, task_id: str, stage: str, lines: list[str]) -> str:
     emoji = {
         "review-ready": "📝",
@@ -651,20 +683,10 @@ def format_slack_dispatch_message(*, task_id: str, stage: str, lines: list[str])
             approved_at = stripped.removeprefix("approved_at:").strip().strip("`")
             message_lines.append(f"*승인 시각*: `{approved_at}`")
         elif stripped.startswith("- freshness:"):
-            freshness = stripped.removeprefix("- freshness:").strip()
-            if freshness == "review is aligned with the current packet contents":
-                freshness = "현재 packet 기준 최신 review 입니다."
+            freshness = localize_cowork_dispatch_text(stripped.removeprefix("- freshness:").strip())
             message_lines.extend(["", "*검토 상태*", freshness])
         elif stripped.startswith("- note:"):
-            note = stripped.removeprefix("- note:").strip()
-            if note == "packet is newer than the current review, so promotion is blocked until review is regenerated":
-                note = "packet이 현재 review보다 최신이라서, review를 다시 생성하기 전에는 승격할 수 없습니다."
-            elif note == "frontmatter 누락으로 자동 review가 로컬 규칙 점검만 수행함":
-                note = "frontmatter 누락으로 자동 review가 로컬 규칙 점검만 수행했습니다."
-            elif note == "Codex review did not create the expected review file":
-                note = "Codex review가 기대한 review 파일을 만들지 못했습니다."
-            elif note == "packet copied from cowork scratch space into an execution queue":
-                note = "packet을 cowork scratch 공간에서 실행 큐로 복사했습니다."
+            note = localize_cowork_dispatch_text(stripped.removeprefix("- note:").strip())
             message_lines.extend(["", "*메모*", note])
         elif stripped.startswith("- supersedes_previous_review_ready:"):
             previous_created_at = stripped.removeprefix("- supersedes_previous_review_ready:").strip()
@@ -945,7 +967,26 @@ def handle_packet_review(packet_path: str) -> None:
         print(f"review 생성: {filename} (worktree fingerprint mismatch)")
         return
 
-    exit_code, token_count = run_codex_review(filename, task_id)
+    try:
+        exit_code, token_count = run_codex_review(filename, task_id)
+    except Exception as error:
+        write_dispatch(
+            task_id,
+            "review-failed",
+            [
+                f"# Dispatch: {task_id}",
+                "",
+                "stage: review-failed",
+                "status: action-required",
+                f"packet: `cowork/packets/{filename}`",
+                f"created_at: `{datetime.now().isoformat(timespec='seconds')}`",
+                f"- error: `{type(error).__name__}: {error}`",
+                "- note: Codex review process failed before the expected review file was created",
+            ],
+        )
+        print(f"review 실패: {filename} (watcher 예외 발생)")
+        return
+
     if os.path.exists(review_path):
         append_review_metadata(review_path, exit_code=exit_code, token_count=token_count)
         reset_stale_promotion_state(task_id)
@@ -974,6 +1015,7 @@ def handle_packet_review(packet_path: str) -> None:
             f"# Dispatch: {task_id}",
             "",
             "stage: review-failed",
+            "status: action-required",
             f"packet: `cowork/packets/{filename}`",
             f"created_at: `{datetime.now().isoformat(timespec='seconds')}`",
             f"- exit_code: `{exit_code}`",

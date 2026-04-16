@@ -20,10 +20,14 @@
 ### 3. Task Packet draft rules
 - Files in `cowork/packets/` are drafts only.
 - Do not treat `cowork/packets/` as an execution queue.
+- `cowork/packets/` holds the editable source packet, not the review output.
+- Review output goes to `cowork/reviews/`.
+- If review requests changes, update the packet in `cowork/packets/` and let review be regenerated against that latest packet.
 - After human review, promote an approved packet to `tasks/inbox/` for local watcher execution.
 - For remote fallback, promote an approved packet to `tasks/remote/` before push.
 - Approval markers use `cowork/approvals/<task-id>.ok`.
 - Default promotion target is `tasks/inbox/`; set `target: remote` in the approval file for remote fallback.
+- Promotion copies the latest packet into an execution queue; it does not move the review markdown there.
 
 ### 4. Creation and automation rules
 - `cowork/` should exist only because a user explicitly wanted a scratch workspace.

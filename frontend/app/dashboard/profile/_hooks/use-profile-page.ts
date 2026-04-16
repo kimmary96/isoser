@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import {
   getDashboardProfile,
+  invalidateRecommendCache,
   saveDashboardProfile,
   updateDashboardProfileSection,
 } from "@/lib/api/app";
@@ -88,6 +89,7 @@ export function useProfilePage() {
     try {
       const data = await updateDashboardProfileSection(patch);
       setProfile(data.profile);
+      void invalidateRecommendCache();
     } catch (e) {
       setError(e instanceof Error ? e.message : "저장 중 오류가 발생했습니다.");
       throw e;
@@ -135,6 +137,7 @@ export function useProfilePage() {
 
       const data = await saveDashboardProfile(payload);
       setProfile(data.profile);
+      void invalidateRecommendCache();
       setIsProfileModalOpen(false);
     } catch (e) {
       setError(e instanceof Error ? e.message : "프로필 저장에 실패했습니다.");

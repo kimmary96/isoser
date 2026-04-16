@@ -287,6 +287,112 @@ def test_review_ready_resets_old_approval_and_promoted_state(tmp_path: Path, mon
     assert (dispatch_dir / "TASK-TEST-RESET-review-ready.md").exists()
 
 
+def test_handle_packet_review_writes_review_failed_when_codex_raises(tmp_path: Path, monkeypatch) -> None:
+    packets_dir = tmp_path / "packets"
+    reviews_dir = tmp_path / "reviews"
+    dispatch_dir = tmp_path / "dispatch"
+    approvals_dir = tmp_path / "approvals"
+    inbox_dir = tmp_path / "inbox"
+    remote_dir = tmp_path / "remote"
+
+    for directory in [packets_dir, reviews_dir, dispatch_dir, approvals_dir, inbox_dir, remote_dir]:
+        directory.mkdir(parents=True, exist_ok=True)
+
+    packet = packets_dir / "TASK-TEST-REVIEW-FAIL.md"
+    packet.write_text(
+        "\n".join(
+            [
+                "---",
+                "id: TASK-TEST-REVIEW-FAIL",
+                "status: queued",
+                "type: feature",
+                "title: Review failure handling",
+                "planned_at: 2026-04-15T00:00:00+09:00",
+                "planned_against_commit: abc123",
+                "---",
+                "",
+                "# Goal",
+                "",
+                "Review failure handling test.",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(cowork_watcher, "COWORK_PACKETS_DIR", str(packets_dir))
+    monkeypatch.setattr(cowork_watcher, "COWORK_REVIEWS_DIR", str(reviews_dir))
+    monkeypatch.setattr(cowork_watcher, "COWORK_DISPATCH_DIR", str(dispatch_dir))
+    monkeypatch.setattr(cowork_watcher, "COWORK_APPROVALS_DIR", str(approvals_dir))
+    monkeypatch.setattr(cowork_watcher, "TASKS_INBOX_DIR", str(inbox_dir))
+    monkeypatch.setattr(cowork_watcher, "TASKS_REMOTE_DIR", str(remote_dir))
+    monkeypatch.setattr(cowork_watcher, "current_head", lambda: "abc123")
+    monkeypatch.setattr(
+        cowork_watcher,
+        "run_codex_review",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(RuntimeError("codex crashed")),
+    )
+    monkeypatch.setattr(cowork_watcher, "notify_slack_for_dispatch", lambda **kwargs: None)
+
+    cowork_watcher.handle_packet_review(str(packet))
+
+    dispatch_path = dispatch_dir / "TASK-TEST-REVIEW-FAIL-review-failed.md"
+    assert dispatch_path.exists()
+    body = dispatch_path.read_text(encoding="utf-8")
+    assert "status: action-required" in body
+    assert "RuntimeError: codex crashed" in body
+
+
+def test_handle_packet_review_writes_review_failed_when_review_file_missing(tmp_path: Path, monkeypatch) -> None:
+    packets_dir = tmp_path / "packets"
+    reviews_dir = tmp_path / "reviews"
+    dispatch_dir = tmp_path / "dispatch"
+    approvals_dir = tmp_path / "approvals"
+    inbox_dir = tmp_path / "inbox"
+    remote_dir = tmp_path / "remote"
+
+    for directory in [packets_dir, reviews_dir, dispatch_dir, approvals_dir, inbox_dir, remote_dir]:
+        directory.mkdir(parents=True, exist_ok=True)
+
+    packet = packets_dir / "TASK-TEST-REVIEW-NOFILE.md"
+    packet.write_text(
+        "\n".join(
+            [
+                "---",
+                "id: TASK-TEST-REVIEW-NOFILE",
+                "status: queued",
+                "type: feature",
+                "title: Missing review file handling",
+                "planned_at: 2026-04-15T00:00:00+09:00",
+                "planned_against_commit: abc123",
+                "---",
+                "",
+                "# Goal",
+                "",
+                "Missing review file handling test.",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(cowork_watcher, "COWORK_PACKETS_DIR", str(packets_dir))
+    monkeypatch.setattr(cowork_watcher, "COWORK_REVIEWS_DIR", str(reviews_dir))
+    monkeypatch.setattr(cowork_watcher, "COWORK_DISPATCH_DIR", str(dispatch_dir))
+    monkeypatch.setattr(cowork_watcher, "COWORK_APPROVALS_DIR", str(approvals_dir))
+    monkeypatch.setattr(cowork_watcher, "TASKS_INBOX_DIR", str(inbox_dir))
+    monkeypatch.setattr(cowork_watcher, "TASKS_REMOTE_DIR", str(remote_dir))
+    monkeypatch.setattr(cowork_watcher, "current_head", lambda: "abc123")
+    monkeypatch.setattr(cowork_watcher, "run_codex_review", lambda *_args, **_kwargs: (17, None))
+    monkeypatch.setattr(cowork_watcher, "notify_slack_for_dispatch", lambda **kwargs: None)
+
+    cowork_watcher.handle_packet_review(str(packet))
+
+    dispatch_path = dispatch_dir / "TASK-TEST-REVIEW-NOFILE-review-failed.md"
+    assert dispatch_path.exists()
+    body = dispatch_path.read_text(encoding="utf-8")
+    assert "status: action-required" in body
+    assert "- exit_code: `17`" in body
+
+
 def test_format_slack_dispatch_message_contains_core_fields(monkeypatch) -> None:
     monkeypatch.setattr(cowork_watcher, "packet_title_for", lambda task_id: "테스트 비교 페이지")
     monkeypatch.setattr(cowork_watcher, "review_snapshot_for", lambda task_id: [
@@ -325,6 +431,24 @@ def test_format_slack_dispatch_message_contains_core_fields(monkeypatch) -> None
     assert "승인 방법" not in message
     assert "*최신본 안내*" in message
     assert "이 알림은 이전 검토 준비 메시지를 대체합니다." in message
+
+
+def test_format_slack_dispatch_message_localizes_review_failed_note() -> None:
+    message = cowork_watcher.format_slack_dispatch_message(
+        task_id="TASK-TEST",
+        stage="review-failed",
+        lines=[
+            "# Dispatch: TASK-TEST",
+            "",
+            "stage: review-failed",
+            "status: action-required",
+            "packet: `cowork/packets/TASK-TEST.md`",
+            "- note: Codex review process failed before the expected review file was created",
+        ],
+    )
+
+    assert "*메모*" in message
+    assert "Codex review 프로세스가 기대한 review 파일을 만들기 전에 실패했습니다." in message
 
 
 def test_build_slack_dispatch_payload_adds_buttons_for_review_ready() -> None:

@@ -129,22 +129,32 @@ uvicorn main:app --reload                         # http://localhost:8000/docs
 - 로컬 구현 자동화는 Codex가 담당
 - 원격 fallback 자동화는 현재 Claude Code GitHub Action 사용
 
-### 로컬 우선 경로
+### 운영 폴더 의미
+- `cowork/packets`: 사람이 작성하고 계속 수정하는 원본 task packet
+- `cowork/reviews`: 원본 packet에 대한 review 결과 문서
+- `tasks/inbox`: 승인된 최신 packet 사본이 들어가는 로컬 실행 큐
+- `tasks/remote`: 승인된 최신 packet 사본이 들어가는 원격 fallback 큐
+- `tasks/done|blocked|drifted`: 실행 결과 상태 큐
+
+### cowork review -> local execution 경로
 ```text
 Claude에서 기획
--> Task Packet 출력
--> tasks/inbox/<task-id>.md 저장
+-> cowork/packets/<task-id>.md 저장
+-> cowork_watcher.py가 review 생성
+-> cowork/reviews/<task-id>-review.md 확인
+-> 필요 시 cowork/packets 원본 수정
+-> review와 packet이 맞으면 승인
+-> 최신 packet을 tasks/inbox/<task-id>.md로 복사
 -> watcher.py 감지
 -> tasks/running 이동
 -> Codex가 AGENTS.md를 읽고 구현/검사/보고서 작성
--> 성공 시 [codex] 커밋으로 push
--> tasks/done 이동
+-> 결과에 따라 tasks/done | tasks/blocked | tasks/drifted 이동
 ```
 
 ### 원격 fallback 경로
 ```text
 PC가 꺼져 있을 때
--> tasks/remote/<task-id>.md push
+-> cowork review/approval 이후 tasks/remote/<task-id>.md push
 -> .github/workflows/claude-dev.yml 실행
 -> Claude Code가 repo 확인 후 원격 구현 진행
 ```
@@ -153,9 +163,10 @@ PC가 꺼져 있을 때
 - OAuth smoke test workflow는 보관 중이지만 운영 경로는 아님
 
 ### 주의
-- 로컬 주 경로는 `tasks/inbox`
+- 로컬 실행 큐는 `tasks/inbox`
 - 원격 보조 경로는 `tasks/remote`
-- 코워크용 임시 폴더는 기본 구조가 아니며, 필요 시에만 사람이 명시적으로 생성함
+- `cowork/`는 scratch/review workspace이며 execution queue가 아님
+- review markdown은 `cowork/reviews`에 남고, 실행 큐에는 review 문서가 아니라 승인된 최신 packet 사본이 들어감
 - `[codex]` 커밋 메시지는 로컬 Codex 자동화 전용
 - 원격 워크플로는 `[codex]` 커밋으로 재트리거되지 않게 설정됨
 - 상세 규칙은 `AGENTS.md`, `docs/current-state.md`, `docs/codex-workflow.md` 참고

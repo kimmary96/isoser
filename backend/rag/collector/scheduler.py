@@ -22,6 +22,7 @@ try:
         SeoulJobPortalCollector,
         SeoulWomanUpCollector,
     )
+    from rag.collector.tier3_collectors import KisedCollector, KobiaCollector
     from rag.collector.work24_collector import Work24Collector
 except ModuleNotFoundError as error:
     if not _should_fallback_to_backend(error):
@@ -37,6 +38,7 @@ except ModuleNotFoundError as error:
         SeoulJobPortalCollector,
         SeoulWomanUpCollector,
     )
+    from backend.rag.collector.tier3_collectors import KisedCollector, KobiaCollector
     from backend.rag.collector.work24_collector import Work24Collector
 
 
@@ -88,7 +90,28 @@ COLLECTORS = [
     Seoul50PlusCollector(),
     CampusTownCollector(),
     SeoulWomanUpCollector(),
+    KobiaCollector(),
+    KisedCollector(),
 ]
+
+
+def _env_flag(name: str, *, default: bool) -> bool:
+    value = os.getenv(name, "").strip().lower()
+    if not value:
+        return default
+    return value in {"1", "true", "yes", "on"}
+
+
+def _maybe_skip_collector(collector) -> tuple[str, str] | None:
+    if collector.__class__.__name__ == "HrdCollector" or getattr(collector, "source_name", "") == "HRD넷":
+        if not _env_flag("ENABLE_HRD_COLLECTOR", default=False):
+            return ("skipped_disabled", "ENABLE_HRD_COLLECTOR=false")
+
+        key_env_names = getattr(collector, "_api_key_env_names", lambda: ())()
+        if not any(os.getenv(env_name, "").strip() for env_name in key_env_names):
+            return ("skipped_missing_config", f"API key is not configured: {', '.join(key_env_names)}")
+
+    return None
 
 
 def _deduplicate_rows(rows: List[Dict]) -> List[Dict]:
@@ -102,24 +125,43 @@ def _deduplicate_rows(rows: List[Dict]) -> List[Dict]:
     return list(deduped.values())
 
 
-def run_all_collectors() -> Dict:
+def run_all_collectors(*, upsert: bool = True) -> Dict:
     saved_count = 0
     failed_count = 0
 
-    try:
-        supabase = _create_supabase_client()
-    except Exception as exc:
-        print(f"[scheduler] failed to create Supabase client: {exc}")
-        return {"saved_count": 0, "failed_count": len(COLLECTORS), "sources": []}
+    supabase = None
+    if upsert:
+        try:
+            supabase = _create_supabase_client()
+        except Exception as exc:
+            print(f"[scheduler] failed to create Supabase client: {exc}")
+            return {"saved_count": 0, "failed_count": len(COLLECTORS), "sources": []}
 
-    ordered_collectors = sorted(COLLECTORS, key=lambda collector: (collector.tier, collector.source_name))
+    ordered_collectors = sorted(
+        enumerate(COLLECTORS),
+        key=lambda entry: (entry[1].tier, entry[0]),
+    )
     source_results: List[Dict] = []
 
-    for collector in ordered_collectors:
+    for _, collector in ordered_collectors:
         source_saved = 0
         source_failed = 0
         source_status = "idle"
         source_message = ""
+        skip_state = _maybe_skip_collector(collector)
+        if skip_state is not None:
+            source_status, source_message = skip_state
+            source_results.append(
+                {
+                    "tier": collector.tier,
+                    "source": collector.source_name,
+                    "saved": source_saved,
+                    "failed": source_failed,
+                    "status": source_status,
+                    "message": source_message,
+                }
+            )
+            continue
         try:
             raw_items = collector.collect()
         except Exception as exc:
@@ -173,6 +215,10 @@ def run_all_collectors() -> Dict:
 
         normalized_rows = _deduplicate_rows(normalized_rows)
         if not normalized_rows:
+            print(
+                f"[scheduler] source={collector.source_name} tier={collector.tier} "
+                f"collected=0 failed={source_failed} status={'empty' if source_failed == 0 else 'normalize_failed'}"
+            )
             source_results.append(
                 {
                     "tier": collector.tier,
@@ -181,6 +227,23 @@ def run_all_collectors() -> Dict:
                     "failed": source_failed,
                     "status": "empty" if source_failed == 0 else "normalize_failed",
                     "message": source_message or "No rows to save after normalization",
+                }
+            )
+            continue
+
+        if not upsert:
+            print(
+                f"[scheduler] source={collector.source_name} tier={collector.tier} "
+                f"collected={len(normalized_rows)} failed={source_failed} status=dry_run"
+            )
+            source_results.append(
+                {
+                    "tier": collector.tier,
+                    "source": collector.source_name,
+                    "saved": 0,
+                    "failed": source_failed,
+                    "status": "dry_run",
+                    "message": f"Collected {len(normalized_rows)} rows; upsert skipped",
                 }
             )
             continue
@@ -198,6 +261,10 @@ def run_all_collectors() -> Dict:
             source_status = "upsert_failed"
             source_message = str(exc)
 
+        print(
+            f"[scheduler] source={collector.source_name} tier={collector.tier} "
+            f"collected={len(normalized_rows)} failed={source_failed} status={source_status}"
+        )
         source_results.append(
             {
                 "tier": collector.tier,

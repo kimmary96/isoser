@@ -645,7 +645,7 @@ def test_format_slack_alert_message_contains_core_fields() -> None:
     assert "`tasks/drifted/TASK-TEST.md`" in message
     assert "`reports/TASK-TEST-drift.md`" in message
     assert "*요약*" in message
-    assert "Codex stopped because of repository drift." in message
+    assert "Codex가 저장소 드리프트 때문에 중단되었습니다." in message
 
 
 def test_format_slack_alert_message_surfaces_main_promotion_summary() -> None:
@@ -663,6 +663,7 @@ def test_format_slack_alert_message_surfaces_main_promotion_summary() -> None:
     assert "*상태*: 완료" in message
     assert "origin/main" in message
     assert "abc123" in message
+    assert "자동 반영" in message
 
 
 def test_format_slack_alert_message_for_replan_required() -> None:
@@ -677,7 +678,7 @@ def test_format_slack_alert_message_for_replan_required() -> None:
     )
 
     assert "*단계*: 재설계 필요" in message
-    assert "stronger replan" in message
+    assert "더 강한 재설계가 필요합니다." in message
 
 
 def test_build_slack_alert_payload_adds_structured_blocks() -> None:
@@ -696,6 +697,8 @@ def test_build_slack_alert_payload_adds_structured_blocks() -> None:
     blocks = payload["blocks"]
     assert isinstance(blocks, list)
     assert len(blocks) >= 3
+    summary_block = blocks[2]["text"]["text"]
+    assert "watcher의 Git 동기화에 실패했습니다." in summary_block
 
 
 def test_startup_warning_messages_warns_when_slack_webhook_missing(monkeypatch) -> None:

@@ -39,9 +39,31 @@ def _is_pid_running(pid: int) -> bool:
     if pid <= 0:
         return False
 
+    if os.name == "nt":
+        try:
+            result = subprocess.run(
+                ["tasklist", "/FI", f"PID eq {pid}", "/FO", "CSV", "/NH"],
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=False,
+            )
+        except OSError:
+            return False
+
+        if result.returncode != 0:
+            return False
+
+        first_line = next(
+            (line.strip() for line in result.stdout.splitlines() if line.strip()),
+            "",
+        )
+        return bool(first_line) and "No tasks are running" not in first_line
+
     try:
         os.kill(pid, 0)
-    except OSError:
+    except (OSError, SystemError):
         return False
     return True
 

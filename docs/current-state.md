@@ -5,6 +5,9 @@
 ## Summary
 - 로컬 구현 자동화는 `watcher.py`가 담당한다.
 - cowork scratch review와 promotion은 `cowork_watcher.py`가 담당한다.
+- `cowork/packets`는 execution queue가 아니라 review 대상 원본 packet 저장소다.
+- `cowork/reviews`는 packet review 산출물 저장소다.
+- `tasks/inbox`에는 review 문서가 아니라 승인된 최신 packet 사본이 들어간다.
 - watcher 공통 파일 처리, lock, frontmatter 파싱, CLI 해석은 `scripts/watcher_shared.py`로 분리되어 있다.
 - local terminal outcome은 `dispatch/alerts/`에 기록된다.
 - 성공 task는 watcher가 task-scoped git automation을 시도한다.
@@ -20,6 +23,8 @@
 - `scripts/prune_run_ledgers.py`는 active JSONL ledger에서 오래된 이벤트를 archive로 옮겨 장기 운영 시 파일이 과도하게 커지는 문제를 완화한다.
 - `scripts/create_task_packet.py`는 current HEAD와 optional fingerprint field까지 채운 packet 초안을 바로 생성해 planner 쪽 기본값을 강화한다.
 - watcher와 cowork watcher는 개별 packet 처리 중 예외가 나도 전체 프로세스를 종료하지 않고 `runtime-error` 기록을 남긴 뒤 다음 루프를 계속 돈다.
+- `scripts/watcher_shared.py`의 lock PID 확인은 Windows에서 `os.kill(pid, 0)` 대신 `tasklist` 기반으로 동작해, stale `.watcher.lock` / `.cowork_watcher.lock` 때문에 supervisor가 재시작 루프에 빠지는 문제를 줄였다.
+- `cowork_watcher.py`는 Codex review subprocess가 예외로 끝나거나 review 파일을 만들지 못해도 전체 워처를 죽이지 않고 해당 packet만 `review-failed` dispatch로 격리한다.
 - 자동 복구가 막힌 task는 `cowork/packets/`으로 에스컬레이션되어 Slack approval/feedback 흐름으로 넘겨진다.
 - 같은 task가 drift/blocked 복구에서 반복 중단되면 watcher는 일반 `needs-review` 대신 `replan-required` 알림으로 승격하고, Slack에 재설계 필요 사유와 다음 조치를 함께 공유한다.
 - remote fallback은 `tasks/remote/` + GitHub Action 경로를 사용한다.
@@ -32,6 +37,13 @@
 - Slack approval은 로컬 파일 marker 대신 Supabase `cowork_approvals` 공유 큐에 기록되고, 로컬 `cowork_watcher.py`가 이를 poll해서 `tasks/inbox|remote` 승격과 consumed 처리를 수행한다.
 - shared approval queue row는 가능하면 `id` 기준으로 claim 후 consumed/failed/ignored 상태를 갱신해 중복 poll 상황에서도 같은 승인 요청을 다시 소비하지 않도록 보강됐다.
 - `watcher.py`와 `cowork_watcher.py`는 각각 JSONL run ledger를 남겨 주요 상태 전이를 파일 기반 alert/dispatch 외에도 추적할 수 있다.
+- `scripts/supervise_watcher.ps1`와 `scripts/start_watchers.ps1`는 local watcher와 cowork watcher를 별도 supervisor 프로세스로 감싸 실행하며, 프로세스 종료 시 combined log를 남기고 자동 재시작한다.
+- watcher supervisor 로그는 `dispatch/logs/watcher-supervisor.log`, cowork watcher supervisor 로그는 `cowork/dispatch/logs/cowork-watcher-supervisor.log`에 쌓인다.
+- supervisor combined log는 PowerShell UTF-8 출력 설정과 `Out-File -Encoding utf8` 경로를 사용해 한글 로그가 깨지지 않도록 맞춘다.
+- `.vscode/tasks.json`은 워크스페이스 폴더가 열릴 때 `scripts/start_watchers.ps1`를 자동 실행해, 이미 살아 있는 watcher는 재사용하고 죽어 있으면 supervisor를 다시 띄운다.
+- `scripts/install_start_watchers_task.ps1`는 Windows 작업 스케줄러에 `Isoser Start Watchers` on-logon task를 등록해, VS Code를 열지 않아도 로그인 시 watcher supervisor가 자동으로 시작되게 한다.
+- `scripts/show_start_watchers_task.ps1`, `scripts/remove_start_watchers_task.ps1`로 등록 상태 조회와 제거를 같은 규칙으로 처리한다.
+- Slack alert/dispatch는 영어 운영 문구를 그대로 노출하지 않고, 주요 `summary`, `next_action`, `note`, `freshness` 문장을 한국어 중심으로 정규화해 보낸다.
 - `frontend/app/slack/interactivity/cowork-review/route.ts`는 Vercel 프론트 도메인으로 들어온 Slack 버튼 요청을 FastAPI backend의 `/slack/interactivity/cowork-review`로 프록시한다.
 - `frontend/app/(landing)/programs/page.tsx`는 URL query 기반 검색, 카테고리/지역 필터, 모집중 토글, 정렬, 페이지네이션을 지원한다.
 - `frontend/app/(landing)/compare/page.tsx`는 공개 비교 페이지로 동작하며 `?ids=` URL state, 최대 3개 슬롯, 추천 프로그램 추가/제거를 지원한다.
@@ -43,12 +55,36 @@
 - `frontend/app/(landing)` 아래에는 `landing-a`, `landing-b`, `programs`, `compare`가 함께 정리되어 랜딩 축 라우트를 한 그룹으로 관리한다.
 - `frontend/app/dashboard/layout.tsx`는 landing-a 헤더를 유지한 채 대시보드 사이드바와 본문을 렌더링한다.
 - `backend/routers/programs.py`는 `/programs/count`와 확장된 목록 query(`q`, `regions`, `recruiting_only`, `sort`)를 지원한다.
+- `backend/routers/admin.py`의 `POST /admin/sync/programs`는 운영 Supabase `programs` 스키마가 일부 뒤처진 경우에도 누락 컬럼을 제외하고, hybrid unique constraint 충돌 시 row-by-row fallback으로 upsert를 이어가도록 보강됐다.
+- `backend/rag/chroma_client.py`는 Gemini embedding quota 초과(429) 시 재시도 후 local deterministic embedding fallback으로 전환해, Chroma sync/search가 완전히 멈추지 않도록 보강됐다.
 - `programs.compare_meta` JSONB 컬럼이 migration으로 추가되어 비교 화면의 대상/허들/커리큘럼 메타데이터를 저장할 수 있다.
 - `backend/rag/collector/scheduler.py`는 source별 `status`/`message`를 함께 반환해 `0건 수집(empty)`과 `설정/요청/저장 실패`를 구분해 기록한다.
 - Tier 1 collector 중 `고용24`는 현재 유효한 국민내일배움카드 훈련과정 OpenAPI(`callOpenApiSvcInfo310L01.do`)를 사용하고, `K-Startup`은 현재 운영 중인 `nidapi.k-startup.go.kr` 조회서비스로 수집한다.
 - scheduler의 Supabase upsert는 `(title, source)` 기준으로 source별 중복을 먼저 제거하고 100건 배치로 나눠 저장해, 대량 payload에서 PostgREST conflict 오류가 전체 source를 실패시키는 문제를 줄였다.
-- 현재 full scheduler smoke 기준 Tier 1 실패는 `HRD_API_KEY` 미설정만 남아 있고, `고용24`와 `K-Startup`은 서울 대상 데이터가 정상 저장된다.
+- `HRDCollector`는 optional source로 전환되어 기본값 `ENABLE_HRD_COLLECTOR=false` 상태에서는 scheduler가 `skipped_disabled`로 기록하고 실행하지 않는다.
+- `ENABLE_HRD_COLLECTOR=true`여도 `HRD_API_KEY` 또는 `HRDNET_API_KEY`가 없으면 scheduler는 실패 대신 `skipped_missing_config`로 기록한다.
+- 현재 full scheduler smoke 기준 `고용24`와 `K-Startup`은 서울 대상 데이터가 정상 저장되고, HRD는 기본 비활성 상태다.
 - Tier 2 HTML collector는 `SeSAC` 제목에서 상태 chip/D-day/모집 메타를 제거하고, `서울시 50플러스`는 `일자리 참여 신청` 같은 메뉴성 항목을 제외하도록 정제 규칙을 강화했다.
+
+## End-to-end packet flow
+1. planner가 `cowork/packets/<task-id>.md`에 task packet 원본을 만든다.
+2. `cowork_watcher.py`가 현재 저장소와 packet frontmatter를 검사해 `cowork/reviews/<task-id>-review.md`를 만든다.
+3. reviewer는 review 문서를 보고 `cowork/packets/<task-id>.md` 원본을 수정하거나 보강한다.
+4. packet이 바뀌면 cowork watcher는 최신 packet 기준으로 review를 다시 생성하거나 stale review를 막는다.
+5. 승인되면 cowork watcher는 `cowork/packets/<task-id>.md` 최신본을 `tasks/inbox/` 또는 `tasks/remote/`로 복사한다.
+6. local path라면 `watcher.py`가 `tasks/inbox/`에서 packet을 집어 `tasks/running/`으로 옮기고 Codex를 실행한다.
+7. Codex는 `AGENTS.md` 규칙에 따라 저장소를 점검하고 구현, 검사, `reports/*.md`, 필요한 `docs/*.md` 갱신을 수행한다.
+8. watcher는 실행 결과에 따라 packet을 `tasks/done/`, `tasks/drifted/`, `tasks/blocked/`로 이동한다.
+9. `tasks/drifted/`와 `tasks/blocked/`는 자동 복구가 가능하면 `tasks/inbox/`로 재큐잉되고, 아니면 다시 `cowork/packets/` review 흐름으로 에스컬레이션된다.
+
+## Folder semantics
+- `cowork/packets/`: 사람이 계속 수정하는 원본 packet
+- `cowork/reviews/`: 원본 packet에 대한 review 이력
+- `tasks/inbox/`: 승인된 최신 packet 사본의 실행 대기열
+- `tasks/running/`: 현재 실행 중인 packet
+- `tasks/done/`: 성공적으로 끝난 execution packet
+- `tasks/blocked/`: 메타데이터 누락, 실패, 외부 의존성 등으로 멈춘 execution packet
+- `tasks/drifted/`: 계획 기준과 현재 코드가 어긋나 재검토가 필요한 execution packet
 
 ## Key references
 - automation index: [automation/README.md](./automation/README.md)

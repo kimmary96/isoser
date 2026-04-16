@@ -2,8 +2,11 @@ $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = Split-Path -Parent $scriptDir
 $watcherEnvPath = Join-Path $repoRoot ".watcher.env"
 $backendEnvPath = Join-Path $repoRoot "backend/.env"
+$backendPythonPath = Join-Path $repoRoot "backend\venv\Scripts\python.exe"
+$pythonExe = if (Test-Path $backendPythonPath) { $backendPythonPath } else { "python" }
 
 $env:PYTHONDONTWRITEBYTECODE = "1"
+$env:PYTHONIOENCODING = "utf-8"
 
 foreach ($envPath in @($watcherEnvPath, $backendEnvPath)) {
     if (-not (Test-Path $envPath)) {
@@ -37,4 +40,4 @@ foreach ($envPath in @($watcherEnvPath, $backendEnvPath)) {
     }
 }
 
-python -B cowork_watcher.py
+& $pythonExe -B cowork_watcher.py

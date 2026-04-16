@@ -109,11 +109,23 @@ isoser/
 - Codex: 로컬 구현 자동화
 - Claude Code GitHub Action: 원격 fallback
 
+### 큐와 문서의 역할
+
+- `cowork/packets/`: 사람이 작성하고 수정하는 원본 task packet
+- `cowork/reviews/`: 원본 packet review 결과 문서
+- `tasks/inbox/`: 승인된 최신 packet 사본의 로컬 실행 큐
+- `tasks/remote/`: 승인된 최신 packet 사본의 원격 fallback 큐
+- `tasks/done/`, `tasks/blocked/`, `tasks/drifted/`: 실행 결과 상태 큐
+
 ### 로컬 기본 경로
 
 ```text
 Claude에서 Task Packet 작성
--> tasks/inbox/<task-id>.md 저장
+-> cowork/packets/<task-id>.md 저장
+-> cowork_watcher.py가 review 생성
+-> cowork/reviews/<task-id>-review.md 확인
+-> 필요 시 cowork/packets 원본 수정
+-> 승인 후 최신 packet을 tasks/inbox/<task-id>.md로 복사
 -> watcher.py 감지
 -> tasks/running 이동
 -> Codex가 AGENTS.md 기준으로 구현/검사/보고서 작성
@@ -130,7 +142,7 @@ Claude에서 Task Packet 작성
 
 ```text
 PC가 꺼져 있거나 로컬 watcher를 못 쓰는 경우
--> tasks/remote/<task-id>.md push
+-> cowork review/approval 이후 tasks/remote/<task-id>.md push
 -> .github/workflows/claude-dev.yml 실행
 -> Claude Code가 원격 구현 진행
 ```
@@ -146,9 +158,9 @@ PC가 꺼져 있거나 로컬 watcher를 못 쓰는 경우
 - `docs/rules/task-packet-template.md`: 표준 Task Packet 템플릿
 
 참고:
-- `cowork/`는 기본 워크플로 디렉터리가 아닙니다.
-- 필요 시에만 사람이 직접 만들거나 임시로 사용합니다.
-- 자동화나 에이전트가 VS Code 시작 시 `cowork/`를 만들도록 가정하지 않습니다.
+- `cowork/`는 현재 review와 promotion을 위한 scratch workspace로 사용합니다.
+- `tasks/`만 execution queue입니다.
+- `tasks/inbox/`로 들어가는 것은 review 문서가 아니라 승인된 최신 packet 사본입니다.
 
 ### 로컬 watcher 실행
 

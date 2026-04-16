@@ -8,6 +8,7 @@ import {
   createActivity,
   deleteActivity,
   getActivityDetail,
+  invalidateRecommendCache,
   saveCoachSession,
   updateActivity,
   uploadActivityImages,
@@ -220,6 +221,7 @@ export function useActivityDetail(activityId: string, isNewActivity: boolean, in
           image_urls: imageUrls,
           is_visible: true,
         });
+        void invalidateRecommendCache();
         setPostSaveActivity(data.activity);
         setShowPostSaveModal(true);
         return;
@@ -237,6 +239,7 @@ export function useActivityDetail(activityId: string, isNewActivity: boolean, in
         period: periodValue,
         skills: skillsDraft,
       });
+      void invalidateRecommendCache();
       setActivity(data.activity);
     } catch (e) {
       setError(e instanceof Error ? e.message : "활동 저장에 실패했습니다.");
@@ -444,6 +447,7 @@ export function useActivityDetail(activityId: string, isNewActivity: boolean, in
         star_action: starAction,
         star_result: starResult,
       });
+      void invalidateRecommendCache();
       setActivity(data.activity);
       setStarSaveToast({ tone: "success", message: "STAR 기록이 저장되었습니다." });
     } catch (e) {

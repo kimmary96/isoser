@@ -6,6 +6,7 @@ import pytest
 
 from backend.rag.chroma_client import (
     COLLECTION_ORDER,
+    GeminiEmbeddingFunction,
     SearchResult,
     get_chroma_manager,
     get_collection,
@@ -18,6 +19,7 @@ class FakeCollection:
         self.documents: list[str] = []
         self.ids: list[str] = []
         self.metadatas: list[dict[str, Any]] = []
+        self.upsert_calls: list[dict[str, Any]] = []
 
     def count(self) -> int:
         return len(self.documents)
@@ -29,6 +31,13 @@ class FakeCollection:
         documents: list[str],
         metadatas: list[dict[str, Any]] | None = None,
     ) -> None:
+        self.upsert_calls.append(
+            {
+                "ids": list(ids),
+                "documents": list(documents),
+                "metadatas": [dict(metadata) for metadata in (metadatas or [])],
+            }
+        )
         normalized_metadatas = metadatas or [{} for _ in documents]
 
         for item_id, document, metadata in zip(ids, documents, normalized_metadatas, strict=True):
@@ -42,8 +51,8 @@ class FakeCollection:
             self.documents.append(document)
             self.metadatas.append(dict(metadata))
 
-    def query(self, *, query_texts, n_results: int, include) -> dict[str, list[list[Any]]]:  # noqa: ANN001
-        del query_texts, include
+    def query(self, *, query_texts, n_results: int, include, where=None) -> dict[str, list[list[Any]]]:  # noqa: ANN001
+        del query_texts, include, where
         documents = self.documents[:n_results]
         ids = self.ids[:n_results]
         metadatas = self.metadatas[:n_results]
@@ -157,3 +166,44 @@ def test_upsert_documents_and_collection_stats() -> None:
         "qualification": 1,
         "responsibility": 1,
     }
+
+
+def test_upsert_documents_chunks_large_batches() -> None:
+    fake_client = _attach_fake_client()
+    manager = get_chroma_manager()
+
+    inserted = manager.upsert_documents(
+        "programs",
+        ids=[f"program-{index}" for index in range(7)],
+        documents=[f"document-{index}" for index in range(7)],
+        metadatas=[{"category": "IT"} for _ in range(7)],
+    )
+
+    calls = fake_client.collections["programs"].upsert_calls
+    assert inserted == 7
+    assert len(calls) == 2
+    assert len(calls[0]["ids"]) == 5
+    assert len(calls[1]["ids"]) == 2
+
+
+def test_gemini_embedding_function_uses_local_fallback_after_rate_limit(monkeypatch: pytest.MonkeyPatch) -> None:
+    del monkeypatch
+    embedding_fn = object.__new__(GeminiEmbeddingFunction)
+    embedding_fn._force_local_fallback = False
+    embedding_fn.client = None
+
+    class _RateLimitedModels:
+        def embed_content(self, *args, **kwargs):  # noqa: ANN002, ANN003
+            raise RuntimeError("429 RESOURCE_EXHAUSTED")
+
+    class _RateLimitedClient:
+        models = _RateLimitedModels()
+
+    embedding_fn.client = _RateLimitedClient()
+
+    vectors = embedding_fn(["alpha beta", "gamma delta"])
+
+    assert embedding_fn._force_local_fallback is True
+    assert len(vectors) == 2
+    assert len(vectors[0]) == 3072
+    assert any(value != 0 for value in vectors[0])

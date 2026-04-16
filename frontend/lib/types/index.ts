@@ -264,6 +264,9 @@ export interface Program {
   urgency_score?: number | null;
   days_left?: number | null;
   compare_meta?: CompareMeta | null;
+  _reason?: string | null;
+  _fit_keywords?: string[] | null;
+  _score?: number | null;
 }
 
 export type ProgramSort = "deadline" | "latest";

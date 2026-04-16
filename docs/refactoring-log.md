@@ -1,5 +1,30 @@
 # 리팩토링 로그
 
+## 2026-04-16 watcher stale lock Windows 복구
+
+- 수정 파일:
+  - `scripts/watcher_shared.py`
+  - `cowork_watcher.py`
+  - `watcher.py`
+  - `scripts/supervise_watcher.ps1`
+  - `tests/test_cowork_watcher.py`
+  - `tests/test_watcher.py`
+  - `tests/test_watcher_shared.py`
+  - `docs/current-state.md`
+- 변경 내용:
+  - Windows에서 stale watcher lock PID 확인 시 `os.kill(pid, 0)` 대신 `tasklist` 조회를 사용하도록 바꿔 `.watcher.lock` / `.cowork_watcher.lock` 회수 경로를 안정화함
+  - `SystemError: <built-in function kill> returned a result with an exception set` 때문에 cowork watcher가 시작 직후 죽고 Slack `review-ready` 알림이 누락되던 재시작 루프를 차단함
+  - Windows PID probe와 no-match 케이스를 `tests/test_watcher_shared.py`에 추가해 회귀를 고정함
+  - `cowork_watcher.py`는 Codex review subprocess가 예외로 끝나거나 review 파일을 만들지 못해도 전체 프로세스를 죽이지 않고 해당 packet만 `review-failed` dispatch로 격리하도록 보강함
+  - `tests/test_cowork_watcher.py`에 review subprocess 예외와 missing review file 경로를 추가해 회귀를 고정함
+  - `scripts/supervise_watcher.ps1`는 UTF-8 콘솔/파일 출력을 강제하고 child script 출력을 `Out-File -Encoding utf8` 경로로 합쳐 supervisor combined log의 한글 깨짐을 줄이도록 조정함
+  - `watcher.py`, `cowork_watcher.py`는 Slack alert/dispatch에 남아 있던 영어 `summary`/`next_action`/`note` 문구를 한국어 중심으로 정규화해 보고 가독성을 맞춤
+- 유지된 동작:
+  - POSIX 계열에서는 기존처럼 `os.kill(pid, 0)` probe를 유지
+  - live lock이 잡힌 정상 watcher 중복 실행은 계속 차단
+- 후속 메모:
+  - supervisor combined log의 한글 인코딩 출력은 별도 정리 후보로 남음
+
 ## 2026-04-15 watcher done 후 main 자동 반영 추가
 
 - 수정 파일:
@@ -1122,6 +1147,18 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 
 ## 2026-04-16 추가 메모
 
+- `backend/routers/admin.py`, `backend/tests/test_admin_router.py`
+  - 추천 데이터 파이프라인 검증 중 드러난 Supabase `programs` 스키마 hybrid 상태를 흡수하도록 admin sync upsert에 후방 호환 fallback을 추가함
+  - `is_certified`, `raw_data`, `support_type`, `teaching_method` 같은 누락 컬럼은 자동으로 제외하고 재시도하며, `programs_unique`/`programs_hrd_id_key` 충돌 시에는 row-by-row merge fallback으로 기존 row를 찾아 upsert하도록 보강함
+  - 테스트로 missing-column fallback과 unique-constraint fallback을 고정함
+- `backend/rag/chroma_client.py`, `backend/tests/test_chroma_client.py`
+  - Gemini embedding 429가 `google-genai` 내부 `APIError` 생성 문제로 번지던 경로를 정리하고, 재시도 후에도 quota 초과가 지속되면 local deterministic embedding fallback으로 자동 전환하도록 보강함
+  - Chroma upsert는 embedding batch를 잘게 나누고, 테스트로 chunked upsert와 local fallback 전환 경로를 고정함
+- `docs/automation/overview.md`, `docs/automation/local-flow.md`, `docs/automation/task-packets.md`, `docs/current-state.md`, `cowork/FOLDER_INSTRUCTIONS.md`, `cowork/README.md`
+  - cowork review 흐름과 local execution 흐름을 end-to-end로 다시 정리해 `cowork/packets`는 원본 packet, `cowork/reviews`는 review 산출물, `tasks/inbox`는 승인된 최신 packet 사본의 실행 큐라는 역할 구분을 문서 전반에 명시함
+  - "review 문서가 inbox로 간다"는 오해를 막기 위해 packet 수정, review 재생성, approval, promotion, execution, recovery/escalation까지의 상태 전이를 같은 용어로 맞춤
+- `CLAUDE.md`, `README.md`
+  - 상위 운영 문서에도 같은 의미 체계를 반영해 cowork review workspace와 `tasks/` execution queue의 차이, 그리고 `cowork/packets -> cowork/reviews -> approval -> tasks/inbox|remote -> watcher` 흐름을 짧게 요약함
 - `backend/rag/collector/regional_html_collectors.py`, `backend/tests/test_tier2_collectors.py`
   - `SeSAC` 제목 정제 규칙을 상태 chip, D-day, 모집기간 꼬리 메타 제거 중심으로 고정하고 테스트를 추가함
   - `서울시 50플러스`에서 `일자리 참여 신청` 같은 메뉴성 anchor를 별도로 걸러 live 수집 품질을 높임
@@ -1136,3 +1173,17 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - `HRDNET_API_KEY` alias를 허용해 운영 환경 이름 차이 때문에 collector가 불필요하게 비활성화되는 경우를 줄임
 - `backend/rag/collector/normalizer.py`
   - compact date(`YYYYMMDD`)도 `deadline`으로 파싱되도록 보강해 K-Startup 응답의 접수마감일이 누락되지 않게 함
+- `backend/rag/collector/scheduler.py`, `backend/tests/test_scheduler_collectors.py`, `backend/.env.example`
+  - `HRDCollector`를 optional source로 전환하고 기본 플래그를 `ENABLE_HRD_COLLECTOR=false`로 명시함
+  - scheduler는 HRD 플래그 off일 때 `skipped_disabled`, 키가 없을 때 `skipped_missing_config`로 기록하고 `failed_count`에는 포함하지 않도록 조정함
+  - 실제 사용자용 HRD course-list API가 확인되기 전까지는 HRD를 운영 기본 경로에서 제외하는 현재 정책을 문서와 테스트에 반영함
+- `scripts/run_watcher.ps1`, `scripts/run_cowork_watcher.ps1`, `scripts/supervise_watcher.ps1`, `scripts/start_watchers.ps1`, `.vscode/tasks.json`
+  - watcher 실행 스크립트가 `backend/venv/Scripts/python.exe`를 우선 사용하도록 정리해 실행 환경 차이로 인한 모듈 누락을 줄임
+  - local watcher와 cowork watcher를 supervisor PowerShell 프로세스가 감시하면서, 종료 시 combined log에 종료 시각과 재시작 정보를 남기고 자동 재기동하도록 보강함
+  - VS Code workspace folder open 시 watcher supervisor를 자동 기동해 프로젝트를 열 때마다 수동으로 watcher를 다시 띄우지 않아도 되도록 함
+- `scripts/install_start_watchers_task.ps1`, `scripts/show_start_watchers_task.ps1`, `scripts/remove_start_watchers_task.ps1`
+  - Windows 작업 스케줄러에 `Isoser Start Watchers` on-logon task를 등록/조회/삭제하는 스크립트를 추가해, VS Code 없이도 로그인 시 watcher supervisor가 자동 실행되도록 운영 경로를 확장함
+- `scripts/watcher_shared.py`, `tests/test_watcher_shared.py`
+  - Windows에서 stale PID probe 중 `os.kill(pid, 0)`가 `SystemError`를 내는 경우도 죽은 프로세스로 간주하도록 보강해, stale lock 때문에 cowork watcher supervisor가 재시작 루프에 빠지는 문제를 줄임
+- `frontend/app/dashboard/page.tsx`, `frontend/app/api/dashboard/recommended-programs/route.ts`, `frontend/lib/api/app.ts`
+  - 추천 대시보드 필터를 단일 카테고리/지역 칩으로 분리하고, BFF가 추천 이유·키워드·점수를 병합해 카드 UI가 기존 D-day/마감/관련도 구조를 유지한 채 설명 정보를 확장하도록 정리함

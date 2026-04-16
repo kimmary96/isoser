@@ -4,25 +4,35 @@ import type { ProgramRecommendResponse } from "@/lib/types";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const category = searchParams.get("category")?.trim() || undefined;
+    const region = searchParams.get("region")?.trim() || undefined;
+    const forceRefresh = searchParams.get("force_refresh") === "true";
+
     const supabase = await createServerSupabaseClient();
     const {
       data: { session },
       error,
     } = await supabase.auth.getSession();
-
-    if (error || !session?.access_token) {
-      throw new Error("로그인이 필요합니다.");
+    const accessToken = !error && session?.access_token ? session.access_token : null;
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+    };
+    if (accessToken) {
+      headers.Authorization = `Bearer ${accessToken}`;
     }
 
     const response = await fetch(`${BACKEND_URL}/programs/recommend`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${session.access_token}`,
-      },
-      body: JSON.stringify({ top_k: 9 }),
+      headers,
+      body: JSON.stringify({
+        top_k: 9,
+        category,
+        region,
+        force_refresh: forceRefresh,
+      }),
     });
 
     if (!response.ok) {
@@ -32,7 +42,16 @@ export async function GET() {
 
     const data = (await response.json()) as ProgramRecommendResponse;
     const programs = (data.items ?? [])
-      .map((item) => item.program)
+      .map((item) => {
+        if (!item.program) return null;
+
+        return {
+          ...item.program,
+          _reason: item.reason ?? null,
+          _fit_keywords: item.fit_keywords ?? null,
+          _score: item.score ?? null,
+        };
+      })
       .filter((program): program is NonNullable<typeof program> => Boolean(program))
       .slice(0, 9);
 

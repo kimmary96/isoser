@@ -312,6 +312,74 @@ def write_alert(
     return alert_path
 
 
+def localize_slack_operator_text(text: Optional[str]) -> Optional[str]:
+    if text is None:
+        return None
+
+    localized = text
+    replacements = [
+        ("Codex stopped because of repository drift.", "Codex가 저장소 드리프트 때문에 중단되었습니다."),
+        (
+            "Codex stopped because the task packet no longer matched the current repository state.",
+            "Codex가 task packet과 현재 저장소 상태가 더 이상 맞지 않아 중단되었습니다.",
+        ),
+        ("Regenerate the packet.", "packet을 다시 생성하세요."),
+        ("Regenerate the task packet against current HEAD.", "현재 HEAD 기준으로 task packet을 다시 생성하세요."),
+        ("This task has stopped repeatedly and now needs a stronger replan.", "이 task는 반복 중단되어 더 강한 재설계가 필요합니다."),
+        ("Replan the packet before requeueing.", "재큐잉 전에 packet을 다시 설계하세요."),
+        ("Watcher git sync failed.", "watcher의 Git 동기화에 실패했습니다."),
+        ("Task completed successfully.", "작업이 정상 완료되었습니다."),
+        ("No action required unless you want to inspect the result report.", "결과 리포트를 추가로 확인할 계획이 아니라면 별도 조치는 필요하지 않습니다."),
+        ("No manual action required unless the retried task fails again.", "재시도한 task가 다시 실패하지 않는 한 수동 조치는 필요하지 않습니다."),
+        ("Watcher refreshed the drift task packet and requeued it for another implementation run.", "watcher가 drift task packet을 갱신해 다시 구현 큐에 넣었습니다."),
+        ("Watcher refreshed the blocked task packet and requeued it for another implementation run.", "watcher가 blocked task packet을 갱신해 다시 구현 큐에 넣었습니다."),
+        ("Watcher could not move the task packet into running.", "watcher가 task packet을 running으로 옮기지 못했습니다."),
+        ("Clear any editor or sync lock on the task file, then requeue it.", "task 파일의 에디터 또는 동기화 잠금을 해제한 뒤 다시 큐에 넣으세요."),
+        ("Task packet is missing required frontmatter fields.", "task packet에 필수 frontmatter 필드가 빠져 있습니다."),
+        ("Fill the missing frontmatter fields and resubmit the task packet.", "누락된 frontmatter 필드를 채운 뒤 task packet을 다시 제출하세요."),
+        ("Task packet fingerprint no longer matches the current worktree.", "task packet fingerprint가 현재 worktree와 더 이상 일치하지 않습니다."),
+        (
+            "Refresh planned_files/planned_worktree_fingerprint against the current worktree, then requeue the task.",
+            "현재 worktree 기준으로 planned_files/planned_worktree_fingerprint를 갱신한 뒤 task를 다시 큐에 넣으세요.",
+        ),
+        ("Watcher failed before Codex completed.", "Codex가 끝나기 전에 watcher 단계에서 실패했습니다."),
+        ("Inspect the blocked report and watcher exception before retrying the task.", "task를 다시 시도하기 전에 blocked report와 watcher 예외를 확인하세요."),
+        ("Review the result report Git Automation section and push manually if needed.", "결과 리포트의 Git Automation 섹션을 확인하고 필요하면 수동으로 push 하세요."),
+        ("Codex stopped with a blocked report.", "Codex가 blocked report를 남기고 중단되었습니다."),
+        ("Read the blocked report, fix the issue, and requeue the task when ready.", "blocked report를 읽고 문제를 해결한 뒤 준비되면 task를 다시 큐에 넣으세요."),
+        ("Inspect the watcher output and recreate the task or report before retrying.", "watcher 출력을 확인하고 task 또는 report를 정비한 뒤 다시 시도하세요."),
+        ("Stale running task was auto-blocked by the watcher.", "오래된 running task가 watcher에 의해 자동 차단되었습니다."),
+        ("Review the blocked report and requeue the task only after confirming the previous run is no longer active.", "이전 실행이 끝난 것을 확인한 뒤에만 blocked report를 검토하고 task를 다시 큐에 넣으세요."),
+        ("Stale running task could not be moved because the file is locked.", "파일 잠금 때문에 오래된 running task를 옮기지 못했습니다."),
+        ("Clear the file lock, inspect the blocked report, and retry the task.", "파일 잠금을 해제하고 blocked report를 확인한 뒤 task를 다시 시도하세요."),
+        ("Inspect watcher console output or traceback for the exception details. The watcher kept running.", "예외 상세는 watcher 콘솔 출력 또는 traceback을 확인하세요. 워처 자체는 계속 실행 중입니다."),
+    ]
+    for source, target in replacements:
+        localized = localized.replace(source, target)
+
+    localized = re.sub(
+        r"Task completed and auto-promoted to origin/main at ([A-Za-z0-9]+)\.",
+        r"작업이 완료되었고 \1 커밋으로 origin/main까지 자동 반영되었습니다.",
+        localized,
+    )
+    localized = re.sub(
+        r"Task completed and pushed to origin/([^ ]+) at ([A-Za-z0-9]+)\.",
+        r"작업이 완료되었고 \2 커밋이 origin/\1 브랜치로 push 되었습니다.",
+        localized,
+    )
+    localized = re.sub(
+        r"Task failed without an explicit drift or blocked report \(exit_code=(\d+)\)\.",
+        r"명시적인 drift 또는 blocked report 없이 task가 실패했습니다. (exit_code=\1)",
+        localized,
+    )
+    localized = re.sub(
+        r"Watcher git sync failed: ([A-Za-z0-9_]+): (.+)",
+        r"watcher Git 동기화가 실패했습니다. (\1: \2)",
+        localized,
+    )
+    return localized
+
+
 def format_slack_alert_message(
     *,
     task_id: str,
@@ -357,9 +425,9 @@ def format_slack_alert_message(
     if report_path:
         lines.extend(["", "*리포트*", f"`{report_path}`"])
     if summary:
-        lines.extend(["", "*요약*", summary])
+        lines.extend(["", "*요약*", localize_slack_operator_text(summary) or summary])
     if next_action:
-        lines.extend(["", "*다음 조치*", next_action])
+        lines.extend(["", "*다음 조치*", localize_slack_operator_text(next_action) or next_action])
     return "\n".join(lines)
 
 
@@ -428,14 +496,14 @@ def build_slack_alert_payload(
         blocks.append(
             {
                 "type": "section",
-                "text": {"type": "mrkdwn", "text": f"*요약*\n{summary}"},
+                "text": {"type": "mrkdwn", "text": f"*요약*\n{localize_slack_operator_text(summary) or summary}"},
             }
         )
     if next_action:
         blocks.append(
             {
                 "type": "section",
-                "text": {"type": "mrkdwn", "text": f"*다음 조치*\n{next_action}"},
+                "text": {"type": "mrkdwn", "text": f"*다음 조치*\n{localize_slack_operator_text(next_action) or next_action}"},
             }
         )
     return {"text": text, "blocks": blocks}

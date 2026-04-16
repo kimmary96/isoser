@@ -4,8 +4,10 @@ from __future__ import annotations
 
 from collections import Counter
 from dataclasses import dataclass, field
+import hashlib
 import logging
 import os
+import time
 from typing import Any, ClassVar, Mapping, Sequence
 
 import chromadb
@@ -56,6 +58,10 @@ SEEDED_COLLECTION_ORDER = (
     "job_posting_snippets",
 )
 COLLECTION_ORDER = SEEDED_COLLECTION_ORDER + ("programs",)
+EMBED_BATCH_SIZE = 5
+EMBED_MAX_RETRIES = 4
+EMBED_RETRY_DELAY_SECONDS = 2.0
+EMBED_FALLBACK_DIMENSION = 3072
 
 
 def _gemini_http_options() -> genai_types.HttpOptions:
@@ -75,18 +81,89 @@ class GeminiEmbeddingFunction(EmbeddingFunction):
             api_key=api_key,
             http_options=_gemini_http_options(),
         )
+        self._force_local_fallback = False
 
     def __call__(self, input: list[str]) -> Embeddings:
         if not input:
             return []
-        result = self.client.models.embed_content(
-            model="models/gemini-embedding-001",
-            contents=input,
-            config=genai_types.EmbedContentConfig(task_type="RETRIEVAL_DOCUMENT"),
-        )
-        if not result.embeddings:
+        if self._force_local_fallback:
+            return [self._local_fallback_embedding(text) for text in input]
+        embeddings: list[list[float]] = []
+
+        for batch_start in range(0, len(input), EMBED_BATCH_SIZE):
+            batch = input[batch_start : batch_start + EMBED_BATCH_SIZE]
+            embeddings.extend(self._embed_batch(batch))
+
+        return embeddings
+
+    def _embed_batch(self, batch: list[str]) -> list[list[float]]:
+        if not batch:
             return []
-        return [embedding.values for embedding in result.embeddings]
+
+        attempt = 0
+        while True:
+            try:
+                result = self.client.models.embed_content(
+                    model="models/gemini-embedding-001",
+                    contents=batch,
+                    config=genai_types.EmbedContentConfig(task_type="RETRIEVAL_DOCUMENT"),
+                )
+                if not result.embeddings:
+                    return []
+                return [embedding.values for embedding in result.embeddings]
+            except Exception as exc:
+                attempt += 1
+                error_text = str(exc)
+                is_rate_limited = getattr(exc, "code", None) == 429 or "429" in error_text or "Too Many Requests" in error_text
+                sdk_apierror_bug = (
+                    isinstance(exc, TypeError)
+                    and "APIError.__init__()" in error_text
+                    and "response_json" in error_text
+                )
+                if (is_rate_limited or sdk_apierror_bug) and attempt < EMBED_MAX_RETRIES:
+                    delay = EMBED_RETRY_DELAY_SECONDS * attempt
+                    log_event(
+                        logger,
+                        logging.WARNING,
+                        "gemini_embedding_retry",
+                        attempt=attempt,
+                        delay_seconds=delay,
+                        batch_size=len(batch),
+                        rate_limited=is_rate_limited or sdk_apierror_bug,
+                        error=error_text,
+                    )
+                    time.sleep(delay)
+                    continue
+                if is_rate_limited or sdk_apierror_bug:
+                    self._force_local_fallback = True
+                    log_event(
+                        logger,
+                        logging.WARNING,
+                        "gemini_embedding_local_fallback_enabled",
+                        attempts=attempt,
+                        batch_size=len(batch),
+                        error=error_text,
+                    )
+                    return [self._local_fallback_embedding(text) for text in batch]
+                raise
+
+    def _local_fallback_embedding(self, text: str) -> list[float]:
+        vector = [0.0] * EMBED_FALLBACK_DIMENSION
+        tokens = [token for token in str(text).lower().split() if token]
+        if not tokens:
+            return vector
+
+        for token in tokens:
+            digest = hashlib.sha256(token.encode("utf-8")).digest()
+            bucket = int.from_bytes(digest[:4], "big") % EMBED_FALLBACK_DIMENSION
+            sign = 1.0 if digest[4] % 2 == 0 else -1.0
+            magnitude = 1.0 + (digest[5] / 255.0)
+            vector[bucket] += sign * magnitude
+
+        norm = sum(value * value for value in vector) ** 0.5
+        if norm <= 0:
+            return vector
+        return [value / norm for value in vector]
 
 
 def build_embedding_function() -> GeminiEmbeddingFunction:
@@ -393,14 +470,16 @@ class ChromaManager:
         if collection is None:
             return 0
 
-        payload: dict[str, Any] = {
-            "ids": list(ids),
-            "documents": list(documents),
-        }
-        if metadatas is not None:
-            payload["metadatas"] = [dict(metadata) for metadata in metadatas]
+        metadata_rows = [dict(metadata) for metadata in metadatas] if metadatas is not None else None
 
-        collection.upsert(**payload)
+        for batch_start in range(0, len(documents), EMBED_BATCH_SIZE):
+            payload: dict[str, Any] = {
+                "ids": list(ids[batch_start : batch_start + EMBED_BATCH_SIZE]),
+                "documents": list(documents[batch_start : batch_start + EMBED_BATCH_SIZE]),
+            }
+            if metadata_rows is not None:
+                payload["metadatas"] = metadata_rows[batch_start : batch_start + EMBED_BATCH_SIZE]
+            collection.upsert(**payload)
         return len(documents)
 
     def get_collection_stats(

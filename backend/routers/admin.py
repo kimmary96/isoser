@@ -4,6 +4,7 @@ import asyncio
 import logging
 import os
 from datetime import date
+import re
 from time import perf_counter
 from typing import Any
 from fastapi import APIRouter, Header, HTTPException, Query
@@ -111,6 +112,170 @@ def _deduplicate_program_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]
             continue
         deduped_by_hrd_id[hrd_id] = row
     return list(deduped_by_hrd_id.values())
+
+
+_MISSING_COLUMN_PATTERN = re.compile(r"Could not find the '([^']+)' column", flags=re.IGNORECASE)
+_UNIQUE_CONSTRAINT_PATTERN = re.compile(r'unique constraint "([^"]+)"', flags=re.IGNORECASE)
+
+
+def _missing_program_column_name(exc: HTTPException) -> str | None:
+    detail = str(exc.detail or "")
+    match = _MISSING_COLUMN_PATTERN.search(detail)
+    if not match:
+        return None
+    return match.group(1).strip() or None
+
+
+def _unique_constraint_name(exc: HTTPException) -> str | None:
+    detail = str(exc.detail or "")
+    match = _UNIQUE_CONSTRAINT_PATTERN.search(detail)
+    if not match:
+        return None
+    return match.group(1).strip() or None
+
+
+async def _find_existing_program_id(row: dict[str, Any]) -> str | None:
+    hrd_id = str(row.get("hrd_id") or "").strip()
+    title = str(row.get("title") or "").strip()
+    source = str(row.get("source") or "").strip()
+
+    if hrd_id:
+        rows = await request_supabase(
+            method="GET",
+            path="/rest/v1/programs",
+            params={
+                "select": "id",
+                "hrd_id": f"eq.{hrd_id}",
+                "limit": "1",
+            },
+        )
+        if isinstance(rows, list) and rows:
+            existing_id = str(rows[0].get("id") or "").strip()
+            if existing_id:
+                return existing_id
+
+    if title and source:
+        rows = await request_supabase(
+            method="GET",
+            path="/rest/v1/programs",
+            params={
+                "select": "id",
+                "title": f"eq.{title}",
+                "source": f"eq.{source}",
+                "limit": "1",
+            },
+        )
+        if isinstance(rows, list) and rows:
+            existing_id = str(rows[0].get("id") or "").strip()
+            if existing_id:
+                return existing_id
+
+    return None
+
+
+async def _upsert_single_program_row(row: dict[str, Any]) -> list[dict[str, Any]]:
+    candidate = dict(row)
+    conflict_target = "hrd_id"
+    existing_id = await _find_existing_program_id(candidate)
+    if existing_id:
+        candidate["id"] = existing_id
+        conflict_target = "id"
+
+    try:
+        rows = await request_supabase(
+            method="POST",
+            path="/rest/v1/programs",
+            params={"on_conflict": conflict_target},
+            payload=[candidate],
+            prefer=_build_prefer_header("resolution=merge-duplicates", "return=representation"),
+        )
+        return rows if isinstance(rows, list) else []
+    except HTTPException as exc:
+        unique_constraint = _unique_constraint_name(exc)
+        if unique_constraint != "programs_unique" or conflict_target == "title,source":
+            raise
+
+        rows = await request_supabase(
+            method="POST",
+            path="/rest/v1/programs",
+            params={"on_conflict": "title,source"},
+            payload=[candidate],
+            prefer=_build_prefer_header("resolution=merge-duplicates", "return=representation"),
+        )
+        return rows if isinstance(rows, list) else []
+
+
+async def _upsert_program_payload_row_by_row(payload: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    upserted_rows: list[dict[str, Any]] = []
+
+    for row in payload:
+        upserted_rows.extend(await _upsert_single_program_row(row))
+
+    log_event(
+        logger,
+        logging.WARNING,
+        "admin_programs_upsert_row_by_row_fallback",
+        payload_count=len(payload),
+        upserted_count=len(upserted_rows),
+    )
+    return upserted_rows
+
+
+async def _upsert_program_payload(payload: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    working_payload = [dict(row) for row in payload]
+    skipped_columns: list[str] = []
+    conflict_target = "hrd_id"
+
+    while True:
+        try:
+            rows = await request_supabase(
+                method="POST",
+                path="/rest/v1/programs",
+                params={"on_conflict": conflict_target},
+                payload=working_payload,
+                prefer=_build_prefer_header("resolution=merge-duplicates", "return=representation"),
+            )
+            if skipped_columns:
+                log_event(
+                    logger,
+                    logging.WARNING,
+                    "admin_programs_upsert_schema_fallback",
+                    skipped_columns=skipped_columns,
+                    payload_count=len(working_payload),
+                    conflict_target=conflict_target,
+                )
+            return rows if isinstance(rows, list) else []
+        except HTTPException as exc:
+            missing_column = _missing_program_column_name(exc)
+            if exc.status_code != 500 or not missing_column:
+                unique_constraint = _unique_constraint_name(exc)
+                if unique_constraint in {"programs_unique", "programs_hrd_id_key", "idx_programs_hrd_id_unique"}:
+                    log_event(
+                        logger,
+                        logging.WARNING,
+                        "admin_programs_upsert_retry_row_by_row",
+                        previous_conflict_target=conflict_target,
+                        constraint_name=unique_constraint,
+                    )
+                    return await _upsert_program_payload_row_by_row(working_payload)
+                raise
+            if not any(missing_column in row for row in working_payload):
+                raise
+
+            skipped_columns.append(missing_column)
+            working_payload = [
+                {key: value for key, value in row.items() if key != missing_column}
+                for row in working_payload
+            ]
+
+            log_event(
+                logger,
+                logging.WARNING,
+                "admin_programs_upsert_retry_without_missing_column",
+                missing_column=missing_column,
+                remaining_keys=sorted(working_payload[0].keys()) if working_payload else [],
+                conflict_target=conflict_target,
+            )
 
 
 async def _fetch_chroma_sync_candidates() -> list[dict[str, Any]]:
@@ -252,13 +417,7 @@ async def sync_programs(
             }
 
         upsert_started_at = perf_counter()
-        rows = await request_supabase(
-            method="POST",
-            path="/rest/v1/programs",
-            params={"on_conflict": "hrd_id"},
-            payload=payload,
-            prefer=_build_prefer_header("resolution=merge-duplicates", "return=representation"),
-        )
+        rows = await _upsert_program_payload(payload)
         upsert_duration = round(perf_counter() - upsert_started_at, 3)
         synced_rows = rows if isinstance(rows, list) else []
         log_event(

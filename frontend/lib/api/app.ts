@@ -106,12 +106,36 @@ export async function saveOnboardingData(payload: OnboardingPayload): Promise<{ 
   );
 }
 
-export async function getRecommendedPrograms(): Promise<{ programs: Program[] }> {
+export interface RecommendProgramsParams {
+  category?: string;
+  region?: string;
+  forceRefresh?: boolean;
+}
+
+export async function getRecommendedPrograms(
+  params?: RecommendProgramsParams
+): Promise<{ programs: Program[] }> {
+  const searchParams = new URLSearchParams();
+  if (params?.category) searchParams.set("category", params.category);
+  if (params?.region) searchParams.set("region", params.region);
+  if (params?.forceRefresh) searchParams.set("force_refresh", "true");
+
+  const query = searchParams.toString();
+  const url = `/api/dashboard/recommended-programs${query ? `?${query}` : ""}`;
+
   return requestAppJson<ProgramListResponse>(
-    "/api/dashboard/recommended-programs",
+    url,
     { method: "GET" },
     "추천 프로그램을 불러오지 못했습니다."
   );
+}
+
+export async function invalidateRecommendCache(): Promise<void> {
+  try {
+    await getRecommendedPrograms({ forceRefresh: true });
+  } catch {
+    // Ignore cache refresh failures so the dashboard can recover on next entry.
+  }
 }
 
 export async function updateDashboardProfileSection(

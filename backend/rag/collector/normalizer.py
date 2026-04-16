@@ -2,7 +2,25 @@ from datetime import datetime
 from typing import Dict, Optional
 import re
 
-ALLOWED_CATEGORIES = {"AI", "IT", "디자인", "경영", "창업", "기타"}
+ALLOWED_CATEGORIES = {
+    "AI",
+    "IT",
+    "디자인",
+    "경영",
+    "교육",
+    "취업",
+    "창업",
+    "훈련",
+    "네트워킹",
+    "행사/네트워킹",
+    "보육",
+    "오픈이노베이션",
+    "초격차",
+    "예비창업",
+    "글로벌",
+    "공간",
+    "기타",
+}
 
 
 def normalize(raw_item: Dict) -> Optional[Dict]:
@@ -30,6 +48,17 @@ def normalize(raw_item: Dict) -> Optional[Dict]:
 
 
 def _classify_category(title: str) -> str:
+    if any(kw in title for kw in ["교육", "과정", "세미나", "아카데미"]):
+        return "교육"
+    if any(kw in title for kw in ["채용", "취업", "일자리", "인턴"]):
+        return "취업"
+    if any(kw in title for kw in ["훈련", "자격", "시험", "매니저"]):
+        return "훈련"
+    if any(kw in title for kw in ["네트워킹", "설명회", "경진대회", "데모데이", "행사"]):
+        return "행사/네트워킹"
+    for keyword in ("오픈이노베이션", "초격차", "예비창업", "글로벌", "공간", "보육"):
+        if keyword in title:
+            return keyword
     if any(kw in title for kw in ["창업", "스타트업", "보육", "예비창업"]):
         return "창업"
     if any(kw in title for kw in ["AI", "인공지능", "LLM", "ChatGPT", "생성형", "머신러닝", "딥러닝"]):

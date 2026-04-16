@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 
 from scripts import watcher_shared
@@ -30,6 +31,50 @@ def test_acquire_lock_file_keeps_live_lock(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setattr(watcher_shared, "_is_pid_running", lambda pid: True)
 
     assert watcher_shared.acquire_lock_file(str(lock_path)) is None
+
+
+def test_is_pid_running_returns_false_on_system_error(monkeypatch) -> None:
+    def fake_kill(_pid: int, _signal: int) -> None:
+        raise SystemError("windows pid probe failed")
+
+    monkeypatch.setattr(watcher_shared.os, "kill", fake_kill)
+    monkeypatch.setattr(watcher_shared.os, "name", "posix")
+
+    assert watcher_shared._is_pid_running(12345) is False
+
+
+def test_is_pid_running_uses_tasklist_on_windows(monkeypatch) -> None:
+    class DummyCompletedProcess:
+        def __init__(self, stdout: str, returncode: int = 0) -> None:
+            self.stdout = stdout
+            self.returncode = returncode
+
+    captured: dict[str, object] = {}
+
+    def fake_run(command, **kwargs):
+        captured["command"] = command
+        captured["kwargs"] = kwargs
+        return DummyCompletedProcess('"python.exe","12345","Console","1","12,000 K"\n')
+
+    monkeypatch.setattr(watcher_shared.os, "name", "nt")
+    monkeypatch.setattr(watcher_shared.subprocess, "run", fake_run)
+
+    assert watcher_shared._is_pid_running(12345) is True
+    assert captured["command"] == ["tasklist", "/FI", "PID eq 12345", "/FO", "CSV", "/NH"]
+
+
+def test_is_pid_running_returns_false_when_tasklist_has_no_match(monkeypatch) -> None:
+    def fake_run(*_args, **_kwargs):
+        return subprocess.CompletedProcess(
+            args=["tasklist"],
+            returncode=0,
+            stdout="INFO: No tasks are running which match the specified criteria.\n",
+        )
+
+    monkeypatch.setattr(watcher_shared.os, "name", "nt")
+    monkeypatch.setattr(watcher_shared.subprocess, "run", fake_run)
+
+    assert watcher_shared._is_pid_running(999999) is False
 
 
 def test_compute_worktree_fingerprint_changes_when_file_changes(tmp_path: Path) -> None:
