@@ -260,6 +260,7 @@ export interface Program {
   is_certified?: boolean | null;
   is_active?: boolean | null;
   is_ad?: boolean | null;
+  relevance_score?: number | null;
   final_score?: number | null;
   urgency_score?: number | null;
   days_left?: number | null;
@@ -267,6 +268,7 @@ export interface Program {
   _reason?: string | null;
   _fit_keywords?: string[] | null;
   _score?: number | null;
+  _relevance_score?: number | null;
 }
 
 export type ProgramSort = "deadline" | "latest";
@@ -291,6 +293,7 @@ export interface ProgramCountResponse {
 export interface ProgramRecommendItem {
   program_id: string;
   score: number | null;
+  relevance_score: number | null;
   reason: string;
   fit_keywords: string[];
   program: Program;
@@ -298,6 +301,17 @@ export interface ProgramRecommendItem {
 
 export interface ProgramRecommendResponse {
   items: ProgramRecommendItem[];
+}
+
+export interface ProgramRelevanceItem {
+  program_id: string;
+  relevance_score: number;
+  skill_match_score: number;
+  matched_skills: string[];
+}
+
+export interface ProgramCompareRelevanceResponse {
+  items: ProgramRelevanceItem[];
 }
 
 export interface SkillSuggestResponse {

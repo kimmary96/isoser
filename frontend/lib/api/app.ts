@@ -5,6 +5,7 @@ import type {
   CoverLetter,
   Profile,
   Program,
+  ProgramCompareRelevanceResponse,
   Resume,
   ActivityDetailResponse,
   ActivityListResponse,
@@ -136,6 +137,20 @@ export async function invalidateRecommendCache(): Promise<void> {
   } catch {
     // Ignore cache refresh failures so the dashboard can recover on next entry.
   }
+}
+
+export async function getProgramCompareRelevance(
+  programIds: string[]
+): Promise<ProgramCompareRelevanceResponse> {
+  return requestAppJson<ProgramCompareRelevanceResponse>(
+    "/api/programs/compare-relevance",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ programIds }),
+    },
+    "관련도 비교 데이터를 불러오지 못했습니다."
+  );
 }
 
 export async function updateDashboardProfileSection(

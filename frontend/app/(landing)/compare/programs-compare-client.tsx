@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import { getProgramCompareRelevance } from "@/lib/api/app";
 import type { CompareMeta, CompareStatus, Program } from "@/lib/types";
+import type { ProgramRelevanceItem } from "@/lib/types";
 
 type ProgramsCompareClientProps = {
   initialSlots: Array<Program | null>;
@@ -180,6 +182,26 @@ function getWinnerIndex(slots: Array<Program | null>): number {
   return winnerIndex;
 }
 
+function getRelevanceWinnerIndex(
+  slots: Array<Program | null>,
+  relevanceItems: Record<string, ProgramRelevanceItem>
+): number {
+  let winnerIndex = -1;
+  let winnerScore = -1;
+
+  slots.forEach((program, index) => {
+    const programId = typeof program?.id === "string" ? program.id : "";
+    const score = programId ? relevanceItems[programId]?.relevance_score : undefined;
+    if (typeof score !== "number" || Number.isNaN(score)) return;
+    if (score > winnerScore) {
+      winnerIndex = index;
+      winnerScore = score;
+    }
+  });
+
+  return winnerIndex;
+}
+
 function ValueCell({
   children,
   winner,
@@ -202,6 +224,26 @@ function ValueCell({
   );
 }
 
+function formatPercent(score: number | null | undefined): string {
+  if (typeof score !== "number" || Number.isNaN(score)) return "0%";
+  return `${Math.round(score * 100)}%`;
+}
+
+function ScoreBar({ score }: { score: number | null | undefined }) {
+  const width = typeof score === "number" && !Number.isNaN(score) ? Math.max(0, Math.min(100, Math.round(score * 100))) : 0;
+
+  return (
+    <div className="w-full">
+      <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
+        <span>{formatPercent(score)}</span>
+      </div>
+      <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
+        <div className="h-full rounded-full bg-[#F97316]" style={{ width: `${width}%` }} />
+      </div>
+    </div>
+  );
+}
+
 export default function ProgramsCompareClient({
   initialSlots,
   canonicalIds,
@@ -215,11 +257,16 @@ export default function ProgramsCompareClient({
   const searchParams = useSearchParams();
   const slots = initialSlots.slice(0, 3);
   while (slots.length < 3) slots.push(null);
-
-  const winnerIndex = getWinnerIndex(slots);
   const activeCount = slots.filter(Boolean).length;
   const canonicalIdsParam = canonicalIds.join(",");
   const resumeHref = isLoggedIn ? "/dashboard/resume" : "/login";
+  const [relevanceItems, setRelevanceItems] = useState<Record<string, ProgramRelevanceItem>>({});
+  const [relevanceLoading, setRelevanceLoading] = useState(false);
+  const [relevanceError, setRelevanceError] = useState<string | null>(null);
+
+  const activeProgramIds = useMemo(() => canonicalIds, [canonicalIds]);
+  const relevanceWinnerIndex = getRelevanceWinnerIndex(slots, relevanceItems);
+  const winnerIndex = relevanceWinnerIndex >= 0 ? relevanceWinnerIndex : getWinnerIndex(slots);
 
   useEffect(() => {
     if (!needsNormalization) return;
@@ -233,6 +280,45 @@ export default function ProgramsCompareClient({
     const next = params.toString();
     router.replace(next ? `${pathname}?${next}` : pathname);
   }, [canonicalIdsParam, needsNormalization, pathname, router, searchParams]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadRelevance() {
+      if (!isLoggedIn || activeProgramIds.length === 0) {
+        if (!cancelled) {
+          setRelevanceItems({});
+          setRelevanceError(null);
+          setRelevanceLoading(false);
+        }
+        return;
+      }
+
+      setRelevanceLoading(true);
+      setRelevanceError(null);
+      try {
+        const response = await getProgramCompareRelevance(activeProgramIds);
+        if (cancelled) return;
+        setRelevanceItems(
+          Object.fromEntries(response.items.map((item) => [item.program_id, item]))
+        );
+      } catch (error) {
+        if (cancelled) return;
+        setRelevanceItems({});
+        setRelevanceError(error instanceof Error ? error.message : "관련도 데이터를 불러오지 못했습니다.");
+      } finally {
+        if (!cancelled) {
+          setRelevanceLoading(false);
+        }
+      }
+    }
+
+    void loadRelevance();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeProgramIds, isLoggedIn]);
 
   function replaceIds(nextIds: string[]) {
     const params = new URLSearchParams(searchParams.toString());
@@ -269,7 +355,7 @@ export default function ProgramsCompareClient({
           <div className="mt-5 flex flex-wrap gap-2 text-xs font-semibold">
             <span className="rounded-full border border-blue-300/30 bg-blue-400/10 px-3 py-1 text-blue-200">개발자 대상 포함</span>
             <span className="rounded-full border border-violet-300/30 bg-violet-400/10 px-3 py-1 text-violet-200">비개발자 대상 포함</span>
-            <span className="rounded-full border border-emerald-300/30 bg-emerald-400/10 px-3 py-1 text-emerald-200">로그인 시 AI 자동 판단 (준비 중)</span>
+            <span className="rounded-full border border-emerald-300/30 bg-emerald-400/10 px-3 py-1 text-emerald-200">로그인 시 관련도 분석 제공</span>
           </div>
         </div>
       </div>
@@ -280,7 +366,7 @@ export default function ProgramsCompareClient({
           <div className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-sm bg-green-500" />조건 충족 가능</div>
           <div className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-sm bg-amber-500" />확인 필요</div>
           <div className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-sm bg-rose-500" />지원 불가</div>
-          <div className="text-xs text-slate-400 lg:ml-auto">로그인 시 내 프로필 기준 자동 판단 (준비 중)</div>
+          <div className="text-xs text-slate-400 lg:ml-auto">관련도는 로그인 후 내 프로필 기준으로 계산됩니다</div>
         </section>
 
         <section className="overflow-x-auto rounded-3xl border border-slate-200 bg-white shadow-sm">
@@ -480,17 +566,59 @@ export default function ProgramsCompareClient({
               ))}
             </div>
 
-            {sectionHeader("★ 나와의 관련도 — AI 분석 (준비 중)", "bg-[#0A0F1E] text-white")}
+            {sectionHeader("★ 나와의 관련도", "bg-[#0A0F1E] text-white")}
+            <div className="row contents">
+              <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">상태</div>
+              {slots.map((program, index) => (
+                <ValueCell key={`relevance-state-${program?.id ?? index}`} winner={winnerIndex === index} empty={!program}>
+                  {!program ? "정보 없음" : !isLoggedIn ? (
+                    <span className="inline-flex rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600">
+                      로그인 후 확인
+                    </span>
+                  ) : relevanceLoading ? "분석 중" : relevanceError ? "불러오기 실패" : "분석 완료"}
+                </ValueCell>
+              ))}
+            </div>
             {["종합 관련도", "기술 스택 일치도"].map((label) => (
               <div key={label} className="row contents">
                 <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">{label}</div>
-                {slots.map((program, index) => (
-                  <ValueCell key={`${label}-${program?.id ?? index}`} winner={winnerIndex === index}>
-                    준비 중
-                  </ValueCell>
-                ))}
+                {slots.map((program, index) => {
+                  const programId = typeof program?.id === "string" ? program.id : "";
+                  const item = programId ? relevanceItems[programId] : null;
+                  const score = label === "종합 관련도" ? item?.relevance_score : item?.skill_match_score;
+                  return (
+                    <ValueCell key={`${label}-${program?.id ?? index}`} winner={winnerIndex === index} empty={!program}>
+                      {!program ? "정보 없음" : !isLoggedIn ? "로그인 후 확인" : relevanceLoading ? "분석 중" : item ? <ScoreBar score={score} /> : "정보 없음"}
+                    </ValueCell>
+                  );
+                })}
               </div>
             ))}
+            <div className="row contents">
+              <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">매칭된 스킬</div>
+              {slots.map((program, index) => {
+                const programId = typeof program?.id === "string" ? program.id : "";
+                const item = programId ? relevanceItems[programId] : null;
+                const matchedSkills = item?.matched_skills ?? [];
+                return (
+                  <ValueCell
+                    key={`matched-skills-${program?.id ?? index}`}
+                    winner={winnerIndex === index}
+                    empty={!program || (!isLoggedIn && matchedSkills.length === 0)}
+                    extraClassName="flex flex-wrap gap-2"
+                  >
+                    {!program ? "정보 없음" : !isLoggedIn ? "로그인 후 확인" : matchedSkills.length > 0 ? matchedSkills.map((skill) => (
+                      <span
+                        key={`${programId}-${skill}`}
+                        className="rounded-md border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-medium text-orange-700"
+                      >
+                        {skill}
+                      </span>
+                    )) : "매칭된 스킬 없음"}
+                  </ValueCell>
+                );
+              })}
+            </div>
 
             <div className="border-r border-slate-200 bg-slate-100 px-4 py-4 text-sm font-medium text-slate-600">결정하셨나요?</div>
             {slots.map((program, index) => (
@@ -542,7 +670,7 @@ export default function ProgramsCompareClient({
         <section className="mt-7 flex flex-col gap-4 rounded-3xl border border-white/10 bg-[#0A0F1E] px-6 py-6 text-white lg:flex-row lg:items-center">
           <div className="flex-1">
             <h2 className="text-lg font-semibold">로그인하면 나의 허들 항목을 AI가 자동 판단해드립니다</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-300">이번 범위에서는 배너 UI만 제공합니다. 자동 판단 기능은 준비 중입니다.</p>
+            <p className="mt-2 text-sm leading-6 text-slate-300">관련도 분석은 로그인 시 바로 계산되며, 지원 허들 자동 판단은 후속 범위로 남겨둡니다.</p>
           </div>
           <Link href="/login" className="inline-flex items-center justify-center rounded-xl bg-[#F97316] px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange-600">
             Google로 무료 시작

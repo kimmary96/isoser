@@ -121,24 +121,21 @@ function getDdayBadge(daysLeft: number | null | undefined) {
     return null;
   }
 
-  if (daysLeft <= 7) {
+  if (daysLeft === 0) {
     return {
-      label: `D-${daysLeft}`,
+      label: "마감 D-Day",
       className: "bg-red-100 text-red-700",
     };
   }
 
-  if (daysLeft <= 14) {
+  if (daysLeft <= 7) {
     return {
-      label: `D-${daysLeft}`,
-      className: "bg-yellow-100 text-yellow-700",
+      label: `마감 D-${daysLeft}`,
+      className: "bg-orange-100 text-orange-700",
     };
   }
 
-  return {
-    label: `D-${daysLeft}`,
-    className: "bg-green-100 text-green-700",
-  };
+  return null;
 }
 
 function SkeletonCard() {
@@ -202,7 +199,7 @@ function ProgramCard({
       <div className="mb-3 text-sm text-slate-600">신청 마감: {deadlineLabel}</div>
 
       <div className="mb-3 text-sm font-medium text-slate-800">
-        {formatRelevance(program._score ?? program.final_score)}
+        {formatRelevance(program._relevance_score ?? program.relevance_score ?? program._score ?? program.final_score)}
       </div>
 
       {fitKeywords.length > 0 ? (

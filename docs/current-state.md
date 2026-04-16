@@ -54,7 +54,7 @@
 - `frontend/app/(landing)/landing-a/_components.tsx`의 상단 헤더는 `Programs`, `Compare`, `내 프로필` 링크와 로그인 사용자 표시를 공통 네비게이션으로 사용한다.
 - `frontend/app/(landing)` 아래에는 `landing-a`, `landing-b`, `programs`, `compare`가 함께 정리되어 랜딩 축 라우트를 한 그룹으로 관리한다.
 - `frontend/app/dashboard/layout.tsx`는 landing-a 헤더를 유지한 채 대시보드 사이드바와 본문을 렌더링한다.
-- `backend/routers/programs.py`는 `/programs/count`와 확장된 목록 query(`q`, `regions`, `recruiting_only`, `sort`)를 지원한다.
+- `backend/routers/programs.py`는 `/programs/count`와 확장된 목록 query(`q`, `regions`, `recruiting_only`, `sort`)를 지원하고, `마감 임박순(deadline)` 정렬에서는 이미 모집이 끝난 `is_active=false` 프로그램을 제외한다.
 - `backend/routers/admin.py`의 `POST /admin/sync/programs`는 운영 Supabase `programs` 스키마가 일부 뒤처진 경우에도 누락 컬럼을 제외하고, hybrid unique constraint 충돌 시 row-by-row fallback으로 upsert를 이어가도록 보강됐다.
 - `backend/rag/chroma_client.py`는 Gemini embedding quota 초과(429) 시 재시도 후 local deterministic embedding fallback으로 전환해, Chroma sync/search가 완전히 멈추지 않도록 보강됐다.
 - `programs.compare_meta` JSONB 컬럼이 migration으로 추가되어 비교 화면의 대상/허들/커리큘럼 메타데이터를 저장할 수 있다.
@@ -109,3 +109,7 @@
   - `docs/data/`: CSV, SQL, http 샘플
   - `docs/research/`: 조사와 매핑 문서
   - `docs/worklogs/`: 날짜별 작업 기록
+
+## Current behavior notes
+- 추천 프로그램 API는 `relevance_score`와 `urgency_score`를 분리해서 반환하며, 카드 UI는 관련도 배지에 `relevance_score`를 사용하고 마감 7일 이내만 별도 마감 칩으로 표시한다.
+- 비교 페이지는 로그인 사용자에 한해 `POST /programs/compare-relevance`로 종합 관련도, 기술 스택 일치도, 매칭 스킬 태그를 계산해 표시한다.

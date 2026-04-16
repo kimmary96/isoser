@@ -50,6 +50,7 @@ export async function GET(request: Request) {
           _reason: item.reason ?? null,
           _fit_keywords: item.fit_keywords ?? null,
           _score: item.score ?? null,
+          _relevance_score: item.relevance_score ?? item.program.relevance_score ?? null,
         };
       })
       .filter((program): program is NonNullable<typeof program> => Boolean(program))

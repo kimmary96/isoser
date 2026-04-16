@@ -42,6 +42,7 @@ PROGRAM_RECOMMEND_PROMPT = """
 class ProgramRecommendation:
     program_id: str
     score: float | None
+    relevance_score: float | None
     reason: str
     fit_keywords: list[str]
     program: dict[str, Any]
@@ -88,30 +89,38 @@ def _program_metadata(program: Mapping[str, Any]) -> dict[str, Any]:
 
 def _profile_document(profile: Mapping[str, Any]) -> str:
     parts: list[str] = []
-    for key in (
-        "name",
-        "bio",
-        "education",
-        "job_title",
-        "self_intro",
-        "portfolio_url",
-    ):
+
+    def append_text(key: str, repeat: int = 1) -> None:
         text = _safe_text(profile.get(key))
         if text:
-            parts.append(f"{key}: {text}")
+            for _ in range(repeat):
+                parts.append(f"{key}: {text}")
 
-    for key in ("career", "education_history", "awards", "certifications", "languages", "skills"):
+    append_text("bio", repeat=2)
+    append_text("education")
+    append_text("job_title")
+    append_text("self_intro", repeat=2)
+
+    for key in ("career", "education_history", "awards", "certifications", "languages"):
         value = profile.get(key)
         if isinstance(value, list):
             normalized = [str(item).strip() for item in value if str(item).strip()]
             if normalized:
                 parts.append(f"{key}: {', '.join(normalized)}")
+
+    skills = profile.get("skills")
+    if isinstance(skills, list):
+        normalized = [str(item).strip() for item in skills if str(item).strip()]
+        if normalized:
+            skill_text = ", ".join(normalized)
+            parts.append(f"skills: {skill_text}")
+            parts.append(f"skills: {skill_text}")
     return "\n".join(parts)
 
 
 def _activities_document(activities: Sequence[Mapping[str, Any]]) -> str:
     lines: list[str] = []
-    for activity in activities[:10]:
+    for activity in activities[:20]:
         title = _safe_text(activity.get("title"))
         role = _safe_text(activity.get("role"))
         description = _safe_text(activity.get("description"))
@@ -177,49 +186,63 @@ class ProgramsRAG:
         text = str(value).strip().lower()
         if not text:
             return []
-        return [token for token in TOKEN_PATTERN.findall(text) if len(token) >= 2]
+        tokens: list[str] = []
+        for token in TOKEN_PATTERN.findall(text):
+            if len(token) < 2:
+                continue
+            if re.fullmatch(r"[가-힣]+", token) and len(token) <= 2:
+                continue
+            tokens.append(token)
+        return tokens
 
     def _profile_keywords(
         self,
         profile: Mapping[str, Any],
         activities: Sequence[Mapping[str, Any]],
-    ) -> list[str]:
-        keywords: list[str] = []
-        seen: set[str] = set()
+    ) -> dict[str, float]:
+        keywords: dict[str, float] = {}
 
-        def add_tokens(tokens: Sequence[str]) -> None:
+        def add_tokens(tokens: Sequence[str], weight: float = 1.0) -> None:
             for token in tokens:
                 normalized = token.strip().lower()
-                if not normalized or normalized in seen:
+                if not normalized:
                     continue
-                seen.add(normalized)
-                keywords.append(normalized)
+                keywords[normalized] = max(keywords.get(normalized, 0.0), weight)
 
-        for key in ("skills", "career", "education_history", "certifications", "bio", "self_intro"):
+        for key, weight in (
+            ("skills", 1.5),
+            ("career", 1.0),
+            ("education_history", 1.0),
+            ("certifications", 1.0),
+            ("bio", 1.0),
+            ("self_intro", 1.2),
+        ):
             value = profile.get(key)
             if isinstance(value, list):
                 for item in value:
-                    add_tokens(self._tokenize_text(item))
+                    add_tokens(self._tokenize_text(item), weight)
             else:
-                add_tokens(self._tokenize_text(value))
+                add_tokens(self._tokenize_text(value), weight)
 
-        for activity in activities[:20]:
+        for activity in activities[:30]:
             for key in ("skills", "title", "role", "description"):
                 value = activity.get(key)
                 if isinstance(value, list):
                     for item in value:
-                        add_tokens(self._tokenize_text(item))
+                        add_tokens(self._tokenize_text(item), 1.0)
                 else:
-                    add_tokens(self._tokenize_text(value))
+                    add_tokens(self._tokenize_text(value), 1.0)
 
-        return keywords[:40]
+        ranked_keywords = sorted(keywords.items(), key=lambda item: (-item[1], item[0]))
+        return dict(ranked_keywords[:40])
 
     def _program_match_context(
         self,
         program: Mapping[str, Any],
-        keywords: Sequence[str],
+        keywords: Mapping[str, float],
     ) -> tuple[list[str], float]:
         title_text = " ".join(self._tokenize_text(program.get("title") or program.get("name")))
+        skills_text = " ".join(self._tokenize_text(program.get("skills")))
         category_text = " ".join(self._tokenize_text(program.get("category")))
         location_text = " ".join(self._tokenize_text(program.get("location")))
         body_text = " ".join(
@@ -239,39 +262,31 @@ class ProgramsRAG:
             )
         )
         matched_keywords: list[str] = []
-        title_hits = 0
-        category_hits = 0
-        location_hits = 0
-        body_hits = 0
+        weighted_hits = 0.0
 
-        for keyword in keywords:
+        for keyword, keyword_weight in keywords.items():
             if keyword in title_text:
                 matched_keywords.append(keyword)
-                title_hits += 1
+                weighted_hits += keyword_weight * 1.5
+                continue
+            if keyword in skills_text:
+                matched_keywords.append(keyword)
+                weighted_hits += keyword_weight * 1.5
                 continue
             if keyword in category_text:
                 matched_keywords.append(keyword)
-                category_hits += 1
+                weighted_hits += keyword_weight * 1.1
                 continue
             if keyword in location_text:
                 matched_keywords.append(keyword)
-                location_hits += 1
+                weighted_hits += keyword_weight * 0.8
                 continue
             if keyword in body_text:
                 matched_keywords.append(keyword)
-                body_hits += 1
+                weighted_hits += keyword_weight * 0.6
 
-        keyword_budget = max(1, min(len(keywords), 8))
-        relevance_score = min(
-            1.0,
-            (
-                title_hits * 1.4
-                + category_hits * 1.1
-                + location_hits * 0.8
-                + body_hits * 0.6
-            )
-            / keyword_budget,
-        )
+        keyword_budget = max(1.0, sum(sorted(keywords.values(), reverse=True)[:8]))
+        relevance_score = min(1.0, weighted_hits / keyword_budget)
         return matched_keywords[:5], relevance_score
 
     def _build_fallback_reason(
@@ -315,14 +330,16 @@ class ProgramsRAG:
             final_score = round(relevance_score * 0.8 + urgency_score * 0.2, 4)
             program_record["days_left"] = days_left
             program_record["similarity_score"] = relevance_score
+            program_record["relevance_score"] = relevance_score
             program_record["urgency_score"] = urgency_score
             program_record["final_score"] = final_score
-            if final_score <= 0:
+            if relevance_score <= 0:
                 continue
             recommendations.append(
                 ProgramRecommendation(
                     program_id=program_id,
                     score=final_score,
+                    relevance_score=relevance_score,
                     reason=self._build_fallback_reason(program_record, matched_keywords),
                     fit_keywords=list(matched_keywords[:3]),
                     program=program_record,
@@ -331,8 +348,9 @@ class ProgramsRAG:
 
         recommendations.sort(
             key=lambda item: (
-                item.program.get("final_score", 0.0),
+                item.program.get("relevance_score", 0.0),
                 item.program.get("urgency_score", 0.0),
+                item.program.get("final_score", 0.0),
             ),
             reverse=True,
         )
@@ -436,6 +454,7 @@ class ProgramsRAG:
             final_score = round(semantic_score * 0.8 + urgency_score * 0.2, 4)
             program_record["days_left"] = days_left
             program_record["similarity_score"] = semantic_score
+            program_record["relevance_score"] = semantic_score
             program_record["urgency_score"] = urgency_score
             program_record["final_score"] = final_score
             reason_payload = reasons.get(program_id, {})
@@ -443,6 +462,7 @@ class ProgramsRAG:
                 ProgramRecommendation(
                     program_id=program_id,
                     score=final_score,
+                    relevance_score=semantic_score,
                     reason=_safe_text(reason_payload.get("reason")) or "프로필과 연관성이 높아 추천합니다.",
                     fit_keywords=[
                         str(item).strip()
@@ -455,8 +475,9 @@ class ProgramsRAG:
 
         recommendations.sort(
             key=lambda item: (
-                item.program.get("final_score", 0.0),
+                item.program.get("relevance_score", 0.0),
                 item.program.get("urgency_score", 0.0),
+                item.program.get("final_score", 0.0),
             ),
             reverse=True,
         )

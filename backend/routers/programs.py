@@ -77,6 +77,7 @@ class ProgramListItem(BaseModel):
     is_certified: bool | None = None
     is_active: bool | None = None
     is_ad: bool | None = None
+    relevance_score: float | None = None
     final_score: float | None = None
     urgency_score: float | None = None
     days_left: int | None = None
@@ -94,6 +95,7 @@ class ProgramRecommendRequest(BaseModel):
 class ProgramRecommendItem(BaseModel):
     program_id: str
     score: float | None = None
+    relevance_score: float | None = None
     reason: str
     fit_keywords: list[str] = Field(default_factory=list)
     program: ProgramListItem
@@ -101,6 +103,21 @@ class ProgramRecommendItem(BaseModel):
 
 class ProgramRecommendResponse(BaseModel):
     items: list[ProgramRecommendItem] = Field(default_factory=list)
+
+
+class ProgramCompareRelevanceRequest(BaseModel):
+    program_ids: list[str] = Field(default_factory=list)
+
+
+class ProgramRelevanceItem(BaseModel):
+    program_id: str
+    relevance_score: float
+    skill_match_score: float
+    matched_skills: list[str] = Field(default_factory=list)
+
+
+class ProgramCompareRelevanceResponse(BaseModel):
+    items: list[ProgramRelevanceItem] = Field(default_factory=list)
 
 
 class ProgramCountResponse(BaseModel):
@@ -111,6 +128,7 @@ def _serialize_program_recommendation(item: ProgramRecommendation) -> ProgramRec
     return ProgramRecommendItem(
         program_id=item.program_id,
         score=item.score,
+        relevance_score=item.relevance_score,
         reason=item.reason,
         fit_keywords=item.fit_keywords,
         program=ProgramListItem.model_validate(item.program),
@@ -178,9 +196,10 @@ def _build_program_query_params(
     limit: int | None = None,
     offset: int | None = None,
 ) -> dict[str, Any]:
+    effective_sort = sort if sort in PROGRAM_SORT_OPTIONS else "deadline"
     params: dict[str, Any] = {
         "select": select,
-        "order": _program_order_clause(sort if sort in PROGRAM_SORT_OPTIONS else "deadline"),
+        "order": _program_order_clause(effective_sort),
     }
 
     if limit is not None:
@@ -195,7 +214,7 @@ def _build_program_query_params(
         params["region_detail"] = f"eq.{region_detail}"
     if q:
         params["title"] = f"ilike.*{q.strip()}*"
-    if recruiting_only:
+    if recruiting_only or effective_sort == "deadline":
         params["is_active"] = "eq.true"
     normalized_teaching_methods = _normalize_teaching_methods_param(teaching_methods)
     if normalized_teaching_methods:
@@ -280,7 +299,7 @@ async def _load_cached_recommendations(user_id: str) -> list[dict[str, Any]] | N
             method="GET",
             path="/rest/v1/recommendations",
             params={
-                "select": "program_id,similarity_score,urgency_score,final_score,generated_at",
+                "select": "program_id,similarity_score,relevance_score,urgency_score,final_score,generated_at",
                 "user_id": f"eq.{user_id}",
                 "generated_at": f"gte.{cutoff}",
                 "order": "final_score.desc",
@@ -310,6 +329,7 @@ async def _save_recommendations(
                 "user_id": user_id,
                 "program_id": item.program_id,
                 "similarity_score": float(item.program.get("similarity_score") or 0),
+                "relevance_score": float(item.program.get("relevance_score") or item.relevance_score or 0),
                 "urgency_score": float(item.program.get("urgency_score") or 0),
                 "final_score": float(item.score or 0),
                 "generated_at": now,
@@ -352,6 +372,7 @@ def _build_default_recommendation_items(
         ProgramRecommendItem(
             program_id=str(program.get("id") or ""),
             score=program.get("final_score"),
+            relevance_score=program.get("relevance_score"),
             reason=reason,
             fit_keywords=[],
             program=ProgramListItem.model_validate(program),
@@ -383,13 +404,18 @@ async def _build_cached_recommendation_items(
             continue
 
         program_record = dict(program)
+        cached_relevance_score = row.get("relevance_score")
+        if cached_relevance_score is None:
+            cached_relevance_score = row.get("final_score")
         program_record["similarity_score"] = row.get("similarity_score")
+        program_record["relevance_score"] = cached_relevance_score
         program_record["urgency_score"] = row.get("urgency_score")
         program_record["final_score"] = row.get("final_score")
         items.append(
             ProgramRecommendItem(
                 program_id=program_id,
                 score=float(row.get("final_score") or 0),
+                relevance_score=float(cached_relevance_score or 0),
                 reason="최근 생성된 추천 결과를 캐시에서 불러왔습니다.",
                 fit_keywords=[],
                 program=ProgramListItem.model_validate(program_record),
@@ -473,6 +499,80 @@ async def _fetch_activity_rows(user_id: str, limit: int = 50) -> list[dict[str, 
         },
     )
     return rows if isinstance(rows, list) else []
+
+
+def _normalize_text_tokens(value: Any) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        source = " ".join(str(item).strip() for item in value if str(item).strip())
+    else:
+        source = str(value).strip()
+    return programs_rag._tokenize_text(source)
+
+
+def _normalize_text_list(value: Any) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return [str(item).strip() for item in value if str(item).strip()]
+    text = str(value).strip()
+    if not text:
+        return []
+    return [item.strip() for item in text.split(",") if item.strip()]
+
+
+def _compute_program_relevance_items(
+    *,
+    profile: dict[str, Any],
+    activities: list[dict[str, Any]],
+    programs_by_id: dict[str, dict[str, Any]],
+    program_ids: list[str],
+) -> list[ProgramRelevanceItem]:
+    profile_keywords = programs_rag._profile_keywords(profile, activities)
+    raw_profile_skills = _normalize_text_list(profile.get("skills"))
+    skill_tokens = {
+        skill: set(programs_rag._tokenize_text(skill))
+        for skill in raw_profile_skills
+        if programs_rag._tokenize_text(skill)
+    }
+
+    items: list[ProgramRelevanceItem] = []
+    for program_id in program_ids:
+        program = programs_by_id.get(program_id)
+        if not program:
+            continue
+
+        matched_keywords, relevance_score = programs_rag._program_match_context(program, profile_keywords)
+        program_token_set = set(
+            _normalize_text_tokens(program.get("title"))
+            + _normalize_text_tokens(program.get("name"))
+            + _normalize_text_tokens(program.get("skills"))
+            + _normalize_text_tokens(program.get("summary"))
+            + _normalize_text_tokens(program.get("description"))
+        )
+        matched_skills = [
+            skill
+            for skill, tokens in skill_tokens.items()
+            if tokens and program_token_set.intersection(tokens)
+        ][:5]
+        skill_match_score = (
+            min(1.0, len(matched_skills) / max(1, min(len(skill_tokens), 5)))
+            if skill_tokens
+            else 0.0
+        )
+        # Prefer explicit skill matches for compare UI, then fall back to weighted keyword matches.
+        normalized_matched_skills = matched_skills or matched_keywords[:5]
+        items.append(
+            ProgramRelevanceItem(
+                program_id=program_id,
+                relevance_score=round(relevance_score, 4),
+                skill_match_score=round(skill_match_score, 4),
+                matched_skills=normalized_matched_skills,
+            )
+        )
+
+    return items
 
 
 @programs_router.get("/")
@@ -624,6 +724,41 @@ async def recommend_programs(
 
     return ProgramRecommendResponse(
         items=[_serialize_program_recommendation(item) for item in recommendations]
+    )
+
+
+@programs_router.post("/compare-relevance", response_model=ProgramCompareRelevanceResponse)
+async def compare_program_relevance(
+    payload: ProgramCompareRelevanceRequest,
+    authorization: str | None = Header(default=None),
+) -> ProgramCompareRelevanceResponse:
+    if not authorization:
+        raise HTTPException(status_code=401, detail="로그인 후 관련도를 확인할 수 있습니다.")
+
+    deduped_program_ids: list[str] = []
+    seen_program_ids: set[str] = set()
+    for program_id in payload.program_ids:
+        normalized = str(program_id or "").strip()
+        if not normalized or normalized in seen_program_ids:
+            continue
+        seen_program_ids.add(normalized)
+        deduped_program_ids.append(normalized)
+
+    if not deduped_program_ids:
+        return ProgramCompareRelevanceResponse(items=[])
+
+    current_user = await get_current_user_from_authorization(authorization)
+    profile = await _fetch_profile_row(current_user.id)
+    activities = await _fetch_activity_rows(current_user.id)
+    programs_by_id = await _fetch_programs_by_ids(deduped_program_ids)
+
+    return ProgramCompareRelevanceResponse(
+        items=_compute_program_relevance_items(
+            profile=profile,
+            activities=activities,
+            programs_by_id=programs_by_id,
+            program_ids=deduped_program_ids,
+        )
     )
 
 

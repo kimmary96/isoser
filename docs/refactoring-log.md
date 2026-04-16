@@ -1,5 +1,21 @@
 # 리팩토링 로그
 
+## 2026-04-16 프로그램 페이지 마감 임박 정렬 보정
+
+- 수정 파일:
+  - `backend/routers/programs.py`
+  - `backend/tests/test_programs_router.py`
+  - `docs/current-state.md`
+- 변경 내용:
+  - 프로그램 목록 query helper가 `sort=deadline`일 때 `is_active=true`를 함께 적용하도록 조정함
+  - `마감 임박순` 정렬에서 이미 모집완료된 프로그램이 과거 마감일 기준으로 상단에 노출되던 문제를 제거함
+  - backend test에 deadline 정렬 시 active 프로그램만 조회하는 규칙을 추가해 회귀를 고정함
+- 유지된 동작:
+  - `최신순(latest)` 정렬과 명시적 `모집중만` 필터 동작은 그대로 유지
+  - 카테고리, 검색어, 지역 필터 조합 방식은 변경하지 않음
+- 후속 메모:
+  - 모집완료 아카이브를 별도로 보여줄 필요가 있으면 정렬 옵션과 별개로 상태 필터를 분리하는 것이 더 명확함
+
 ## 2026-04-16 watcher stale lock Windows 복구
 
 - 수정 파일:
@@ -1187,3 +1203,6 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - Windows에서 stale PID probe 중 `os.kill(pid, 0)`가 `SystemError`를 내는 경우도 죽은 프로세스로 간주하도록 보강해, stale lock 때문에 cowork watcher supervisor가 재시작 루프에 빠지는 문제를 줄임
 - `frontend/app/dashboard/page.tsx`, `frontend/app/api/dashboard/recommended-programs/route.ts`, `frontend/lib/api/app.ts`
   - 추천 대시보드 필터를 단일 카테고리/지역 칩으로 분리하고, BFF가 추천 이유·키워드·점수를 병합해 카드 UI가 기존 D-day/마감/관련도 구조를 유지한 채 설명 정보를 확장하도록 정리함
+- `backend/rag/programs_rag.py`, `backend/routers/programs.py`, `frontend/app/dashboard/page.tsx`, `frontend/app/(landing)/compare/programs-compare-client.tsx`
+  - 추천 점수에서 순수 관련도(`relevance_score`)와 마감 임박도(`urgency_score`)를 분리하고, 프로필 쿼리에서 이름/포트폴리오 URL 노이즈를 제거해 시맨틱 검색 품질을 높임
+  - 비교 페이지는 별도 `/programs/compare-relevance` 계산 경로를 추가해 관련도 바, 기술 스택 일치도, 매칭 스킬 태그를 로그인 사용자 기준으로 표시하도록 정리함
