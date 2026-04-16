@@ -123,6 +123,8 @@ def build_condition_keys(program: dict[str, Any]) -> list[str]:
         combinations.append((category, "온라인"))
     if category and support:
         combinations.append((category, support))
+    if category:
+        combinations.append((category,))
 
     unique_keys: list[str] = []
     seen: set[str] = set()

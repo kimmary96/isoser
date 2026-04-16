@@ -1,6 +1,10 @@
+from __future__ import annotations
+
 from datetime import date, datetime, timedelta, timezone
+import hashlib
+import json
 import logging
-from typing import Any, Literal
+from typing import Any, Literal, Mapping, Sequence
 
 from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Query
 from pydantic import BaseModel, ConfigDict, Field
@@ -151,6 +155,10 @@ def _serialize_program_recommendation(item: ProgramRecommendation) -> ProgramRec
     )
 
 
+def _clean_text(value: Any) -> str:
+    return str(value).strip() if value is not None else ""
+
+
 def _coerce_score(value: Any) -> float | None:
     if value is None:
         return None
@@ -158,6 +166,129 @@ def _coerce_score(value: Any) -> float | None:
         return float(value)
     except (TypeError, ValueError):
         return None
+
+
+def _normalize_hash_value(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        normalized: dict[str, Any] = {}
+        for key in sorted(value):
+            normalized_value = _normalize_hash_value(value[key])
+            if normalized_value in (None, "", [], {}):
+                continue
+            normalized[str(key)] = normalized_value
+        return normalized
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+        normalized_items: list[Any] = []
+        for item in value:
+            normalized_item = _normalize_hash_value(item)
+            if normalized_item in (None, "", [], {}):
+                continue
+            normalized_items.append(normalized_item)
+        return normalized_items
+    if isinstance(value, str):
+        return value.strip()
+    return value
+
+
+def _stable_hash(value: Any) -> str:
+    payload = json.dumps(
+        _normalize_hash_value(value),
+        ensure_ascii=True,
+        separators=(",", ":"),
+        sort_keys=True,
+    )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _build_condition_key_candidates(payload: ProgramRecommendRequest) -> list[str]:
+    category = _clean_text(payload.category)
+    region = _clean_text(payload.region)
+
+    candidates: list[str] = []
+    if category and region:
+        candidates.append(f"{category}+{region}")
+    if category:
+        candidates.append(category)
+
+    unique_candidates: list[str] = []
+    seen: set[str] = set()
+    for candidate in candidates:
+        if candidate and candidate not in seen:
+            seen.add(candidate)
+            unique_candidates.append(candidate)
+    return unique_candidates
+
+
+def _build_query_hash(payload: ProgramRecommendRequest) -> str:
+    return _stable_hash(
+        {
+            "category": _clean_text(payload.category) or None,
+            "region": _clean_text(payload.region) or None,
+            "job_title": _clean_text(payload.job_title) or None,
+        }
+    )
+
+
+def _build_profile_hash(
+    profile: Mapping[str, Any],
+    activities: Sequence[Mapping[str, Any]],
+) -> str:
+    profile_snapshot = {
+        key: profile.get(key)
+        for key in (
+            "name",
+            "bio",
+            "education",
+            "job_title",
+            "self_intro",
+            "portfolio_url",
+            "career",
+            "education_history",
+            "awards",
+            "certifications",
+            "languages",
+            "skills",
+        )
+    }
+    activity_snapshot = [
+        {
+            key: activity.get(key)
+            for key in ("id", "title", "role", "description", "skills", "period", "type")
+        }
+        for activity in activities[:20]
+    ]
+    return _stable_hash({"profile": profile_snapshot, "activities": activity_snapshot})
+
+
+def _has_personalization_input(
+    profile: Mapping[str, Any],
+    activities: Sequence[Mapping[str, Any]],
+) -> bool:
+    if activities:
+        return True
+
+    for key in (
+        "name",
+        "bio",
+        "education",
+        "job_title",
+        "self_intro",
+        "portfolio_url",
+        "career",
+        "education_history",
+        "awards",
+        "certifications",
+        "languages",
+        "skills",
+    ):
+        value = profile.get(key)
+        if isinstance(value, list):
+            if any(_clean_text(item) for item in value):
+                return True
+            continue
+        if _clean_text(value):
+            return True
+    return False
 
 
 def _resolve_program_deadline(program: dict[str, Any]) -> str | None:
@@ -219,6 +350,31 @@ def _build_recommendation_program_record(
 def _is_expired_program(program: dict[str, Any]) -> bool:
     days_left = _calculate_days_left(_resolve_program_deadline(program))
     return days_left is not None and days_left < 0
+
+
+def _compute_cache_expiry(recommendations: Sequence[ProgramRecommendation]) -> str:
+    now = datetime.now(timezone.utc)
+    default_expiry = now + timedelta(hours=RECOMMEND_CACHE_TTL_HOURS)
+    future_deadlines = [
+        parsed_deadline
+        for item in recommendations
+        if (parsed_deadline := _parse_program_deadline(_resolve_program_deadline(item.program)))
+        and parsed_deadline >= now.date()
+    ]
+    if not future_deadlines:
+        return default_expiry.isoformat()
+
+    earliest_deadline = min(future_deadlines)
+    earliest_expiry = datetime(
+        earliest_deadline.year,
+        earliest_deadline.month,
+        earliest_deadline.day,
+        23,
+        59,
+        59,
+        tzinfo=timezone.utc,
+    )
+    return min(default_expiry, earliest_expiry).isoformat()
 
 
 def _calendar_sort_key(item: CalendarRecommendItem) -> tuple[float, date]:
@@ -515,19 +671,59 @@ async def _fetch_programs_by_ids(program_ids: list[str]) -> dict[str, dict[str, 
     }
 
 
-async def _load_cached_recommendations(user_id: str) -> list[dict[str, Any]] | None:
-    cutoff = (datetime.now(timezone.utc) - timedelta(hours=RECOMMEND_CACHE_TTL_HOURS)).isoformat()
+async def _load_recommendation_rule(condition_keys: Sequence[str]) -> dict[str, Any] | None:
+    for condition_key in condition_keys:
+        try:
+            rows = await request_supabase(
+                method="GET",
+                path="/rest/v1/recommendation_rules",
+                params={
+                    "select": "condition_key,program_ids,reason_template,fit_keywords,priority",
+                    "condition_key": f"eq.{condition_key}",
+                    "limit": "1",
+                },
+            )
+        except Exception as exc:
+            log_event(logger, logging.WARNING, "recommend_rule_load_failed", error=str(exc))
+            return None
+        if isinstance(rows, list) and rows:
+            return dict(rows[0])
+    return None
+
+
+async def _load_cached_recommendations(
+    user_id: str,
+    *,
+    profile_hash: str | None = None,
+    query_hash: str | None = None,
+    limit: int = 20,
+) -> list[dict[str, Any]] | None:
+    params: dict[str, str] = {"user_id": f"eq.{user_id}", "limit": str(limit)}
+    if profile_hash and query_hash:
+        params.update(
+            {
+                "select": "program_id,similarity_score,relevance_score,urgency_score,final_score,generated_at,reason,fit_keywords,query_hash,profile_hash,expires_at",
+                "profile_hash": f"eq.{profile_hash}",
+                "query_hash": f"eq.{query_hash}",
+                "expires_at": f"gte.{datetime.now(timezone.utc).isoformat()}",
+                "order": "final_score.desc",
+            }
+        )
+    else:
+        cutoff = (datetime.now(timezone.utc) - timedelta(hours=RECOMMEND_CACHE_TTL_HOURS)).isoformat()
+        params.update(
+            {
+                "select": "program_id,similarity_score,relevance_score,urgency_score,final_score,generated_at,reason,fit_keywords,query_hash,profile_hash,expires_at",
+                "generated_at": f"gte.{cutoff}",
+                "order": "final_score.desc",
+            }
+        )
+
     try:
         rows = await request_supabase(
             method="GET",
             path="/rest/v1/recommendations",
-            params={
-                "select": "program_id,similarity_score,relevance_score,urgency_score,final_score,generated_at",
-                "user_id": f"eq.{user_id}",
-                "generated_at": f"gte.{cutoff}",
-                "order": "final_score.desc",
-                "limit": "20",
-            },
+            params=params,
         )
     except Exception as exc:
         log_event(logger, logging.WARNING, "recommend_cache_load_failed", error=str(exc))
@@ -535,15 +731,40 @@ async def _load_cached_recommendations(user_id: str) -> list[dict[str, Any]] | N
     return rows if isinstance(rows, list) and rows else None
 
 
+async def _delete_cached_recommendations(
+    user_id: str,
+    *,
+    query_hash: str | None = None,
+    profile_hash: str | None = None,
+) -> None:
+    params: dict[str, str] = {"user_id": f"eq.{user_id}"}
+    if query_hash:
+        params["query_hash"] = f"eq.{query_hash}"
+    if profile_hash:
+        params["profile_hash"] = f"eq.{profile_hash}"
+    try:
+        await request_supabase(
+            method="DELETE",
+            path="/rest/v1/recommendations",
+            params=params,
+        )
+    except Exception as exc:
+        log_event(logger, logging.WARNING, "recommend_cache_delete_failed", error=str(exc))
+
+
 async def _save_recommendations(
     user_id: str,
     recommendations: list[ProgramRecommendation],
+    *,
+    profile_hash: str | None = None,
+    query_hash: str | None = None,
 ) -> None:
     if not recommendations:
         return
 
     now = datetime.now(timezone.utc).isoformat()
-    payload = []
+    expires_at = _compute_cache_expiry(recommendations)
+    payload: list[dict[str, Any]] = []
     for item in recommendations:
         if not item.program_id:
             continue
@@ -551,11 +772,16 @@ async def _save_recommendations(
             {
                 "user_id": user_id,
                 "program_id": item.program_id,
-                "similarity_score": float(item.program.get("similarity_score") or 0),
+                "similarity_score": float(item.program.get("similarity_score") or item.relevance_score or 0),
                 "relevance_score": float(item.program.get("relevance_score") or item.relevance_score or 0),
                 "urgency_score": float(item.program.get("urgency_score") or 0),
-                "final_score": float(item.score or 0),
+                "final_score": float(item.score or item.program.get("final_score") or 0),
+                "reason": item.reason,
+                "fit_keywords": item.fit_keywords,
+                "query_hash": query_hash,
+                "profile_hash": profile_hash,
                 "generated_at": now,
+                "expires_at": expires_at,
             }
         )
 
@@ -566,7 +792,7 @@ async def _save_recommendations(
         await request_supabase(
             method="POST",
             path="/rest/v1/recommendations",
-            params={"on_conflict": "user_id,program_id"},
+            params={"on_conflict": "user_id,query_hash,program_id"},
             payload=payload,
             prefer="resolution=merge-duplicates,return=minimal",
         )
@@ -575,14 +801,7 @@ async def _save_recommendations(
 
 
 async def _delete_user_recommendations(user_id: str) -> None:
-    try:
-        await request_supabase(
-            method="DELETE",
-            path="/rest/v1/recommendations",
-            params={"user_id": f"eq.{user_id}"},
-        )
-    except Exception as exc:
-        log_event(logger, logging.WARNING, "recommend_cache_delete_failed", error=str(exc))
+    await _delete_cached_recommendations(user_id)
 
 
 def _build_default_recommendation_items(
@@ -591,6 +810,27 @@ def _build_default_recommendation_items(
     top_k: int,
     reason: str,
 ) -> list[ProgramRecommendItem]:
+    scored_programs: list[dict[str, Any]] = []
+    for program in programs:
+        if _is_expired_program(program):
+            continue
+        urgency_score = programs_rag._urgency_score(program)
+        scored_programs.append(
+            _build_recommendation_program_record(
+                program,
+                relevance_score=0.0,
+                urgency_score=urgency_score,
+                final_score=_recalculate_final_score(0.0, urgency_score),
+            )
+        )
+
+    scored_programs.sort(
+        key=lambda program: (
+            -float(program.get("final_score") or 0.0),
+            _parse_program_deadline(program.get("deadline")) or date.max,
+        )
+    )
+
     return [
         ProgramRecommendItem(
             program_id=str(program.get("id") or ""),
@@ -600,7 +840,7 @@ def _build_default_recommendation_items(
             fit_keywords=[],
             program=ProgramListItem.model_validate(program),
         )
-        for program in programs[:top_k]
+        for program in scored_programs[:top_k]
         if str(program.get("id") or "").strip()
     ]
 
@@ -639,13 +879,20 @@ async def _build_cached_recommendation_items(
             urgency_score=cached_urgency_score,
             final_score=cached_final_score,
         )
+        if _is_expired_program(program_record):
+            continue
+        fit_keywords = [
+            _clean_text(item)
+            for item in (row.get("fit_keywords") or [])
+            if _clean_text(item)
+        ][:3]
         items.append(
             ProgramRecommendItem(
                 program_id=program_id,
                 score=cached_final_score,
                 relevance_score=cached_relevance_score,
-                reason="최근 생성된 추천 결과를 캐시에서 불러왔습니다.",
-                fit_keywords=[],
+                reason=_clean_text(row.get("reason")) or "최근 생성된 추천 결과를 캐시에서 불러왔습니다.",
+                fit_keywords=fit_keywords,
                 program=ProgramListItem.model_validate(program_record),
             )
         )
@@ -653,6 +900,62 @@ async def _build_cached_recommendation_items(
             break
 
     return items
+
+
+async def _build_rule_recommendation_items(
+    rule: Mapping[str, Any],
+    *,
+    top_k: int,
+) -> list[ProgramRecommendItem]:
+    program_ids = [
+        _clean_text(program_id)
+        for program_id in (rule.get("program_ids") or [])
+        if _clean_text(program_id)
+    ]
+    programs_by_id = await _fetch_programs_by_ids(program_ids)
+    fit_keywords = [
+        _clean_text(item)
+        for item in (rule.get("fit_keywords") or [])
+        if _clean_text(item)
+    ][:3]
+    reason = _clean_text(rule.get("reason_template")) or "미리 정의된 추천 규칙에 맞는 프로그램입니다."
+
+    items: list[ProgramRecommendItem] = []
+    for index, program_id in enumerate(program_ids):
+        program = programs_by_id.get(program_id)
+        if not program:
+            continue
+
+        relevance_score = round(max(0.4, 1.0 - index * 0.05), 4)
+        urgency_score = programs_rag._urgency_score(program)
+        final_score = _recalculate_final_score(relevance_score, urgency_score)
+        program_record = _build_recommendation_program_record(
+            program,
+            similarity_score=relevance_score,
+            relevance_score=relevance_score,
+            urgency_score=urgency_score,
+            final_score=final_score,
+        )
+        if _is_expired_program(program_record):
+            continue
+        items.append(
+            ProgramRecommendItem(
+                program_id=program_id,
+                score=final_score,
+                relevance_score=relevance_score,
+                reason=reason,
+                fit_keywords=fit_keywords,
+                program=ProgramListItem.model_validate(program_record),
+            )
+        )
+
+    items.sort(
+        key=lambda item: (
+            -float(item.score or 0.0),
+            _parse_program_deadline(item.program.deadline) or date.max,
+        )
+    )
+    return items[:top_k]
 
 
 def _build_default_calendar_items(
@@ -879,7 +1182,6 @@ def _compute_program_relevance_items(
             if skill_tokens
             else 0.0
         )
-        # Prefer explicit skill matches for compare UI, then fall back to weighted keyword matches.
         normalized_matched_skills = matched_skills or matched_keywords[:5]
         rounded_relevance_score = round(relevance_score, 4)
         rounded_skill_match_score = round(skill_match_score, 4)
@@ -1018,22 +1320,46 @@ async def recommend_programs(
         return ProgramRecommendResponse(items=[])
 
     if not authorization:
-        return ProgramRecommendResponse(items=_build_default_recommendation_items(
-            programs,
-            top_k=payload.top_k,
-            reason="최근 마감 일정과 공개 정보 기준으로 우선 노출한 프로그램입니다.",
-        ))
+        return ProgramRecommendResponse(
+            items=_build_default_recommendation_items(
+                programs,
+                top_k=payload.top_k,
+                reason="최근 마감 일정과 공개 정보 기준으로 우선 노출한 프로그램입니다.",
+            )
+        )
 
     current_user = await get_current_user_from_authorization(authorization)
-    use_cache = (
-        not payload.force_refresh
-        and not payload.category
-        and not payload.region
-        and not payload.job_title
-    )
+    profile = await _fetch_profile_row(current_user.id)
+    if payload.job_title:
+        profile = dict(profile)
+        profile["job_title"] = payload.job_title
+    activities = await _fetch_activity_rows(current_user.id)
+    profile_hash = _build_profile_hash(profile, activities)
+    query_hash = _build_query_hash(payload)
 
-    if use_cache:
-        cached_rows = await _load_cached_recommendations(current_user.id)
+    if payload.force_refresh:
+        await _delete_cached_recommendations(current_user.id, query_hash=query_hash)
+    else:
+        rule = await _load_recommendation_rule(_build_condition_key_candidates(payload))
+        if rule:
+            rule_items = await _build_rule_recommendation_items(rule, top_k=payload.top_k)
+            if rule_items:
+                log_event(
+                    logger,
+                    logging.INFO,
+                    "recommend_rule_hit",
+                    user_id=current_user.id,
+                    condition_key=_clean_text(rule.get("condition_key")),
+                    item_count=len(rule_items),
+                )
+                return ProgramRecommendResponse(items=rule_items)
+
+        cached_rows = await _load_cached_recommendations(
+            current_user.id,
+            profile_hash=profile_hash,
+            query_hash=query_hash,
+            limit=max(payload.top_k * 2, 20),
+        )
         if cached_rows:
             normalized_cached_rows = _normalize_cached_recommendation_rows(cached_rows)
             if normalized_cached_rows:
@@ -1042,18 +1368,41 @@ async def recommend_programs(
                     top_k=payload.top_k,
                 )
                 if cached_items:
+                    log_event(
+                        logger,
+                        logging.INFO,
+                        "recommend_cache_hit",
+                        user_id=current_user.id,
+                        query_hash=query_hash[:12],
+                        profile_hash=profile_hash[:12],
+                        item_count=len(cached_items),
+                    )
                     return ProgramRecommendResponse(items=cached_items)
             else:
-                log_event(logger, logging.INFO, "recommend_cache_stale_recompute", user_id=current_user.id)
+                log_event(
+                    logger,
+                    logging.INFO,
+                    "recommend_cache_stale_recompute",
+                    user_id=current_user.id,
+                    query_hash=query_hash[:12],
+                )
 
-    if payload.force_refresh and not payload.category and not payload.region and not payload.job_title:
-        await _delete_user_recommendations(current_user.id)
+    if not _has_personalization_input(profile, activities):
+        log_event(
+            logger,
+            logging.INFO,
+            "recommend_profile_fallback",
+            user_id=current_user.id,
+            query_hash=query_hash[:12],
+        )
+        return ProgramRecommendResponse(
+            items=_build_default_recommendation_items(
+                programs,
+                top_k=payload.top_k,
+                reason="프로필 기반 추천 데이터가 충분하지 않아 기본 프로그램 목록을 보여줍니다.",
+            )
+        )
 
-    profile = await _fetch_profile_row(current_user.id)
-    if payload.job_title:
-        profile = dict(profile)
-        profile["job_title"] = payload.job_title
-    activities = await _fetch_activity_rows(current_user.id)
     recommendations = await programs_rag.recommend(
         profile=profile,
         activities=activities,
@@ -1064,14 +1413,20 @@ async def recommend_programs(
     )
 
     if not recommendations:
-        return ProgramRecommendResponse(items=_build_default_recommendation_items(
-            programs,
-            top_k=payload.top_k,
-            reason="프로필 기반 추천 데이터가 충분하지 않아 기본 프로그램 목록을 보여줍니다.",
-        ))
+        return ProgramRecommendResponse(
+            items=_build_default_recommendation_items(
+                programs,
+                top_k=payload.top_k,
+                reason="프로필 기반 추천 데이터가 충분하지 않아 기본 프로그램 목록을 보여줍니다.",
+            )
+        )
 
-    if not payload.category and not payload.region and not payload.job_title:
-        await _save_recommendations(current_user.id, recommendations)
+    await _save_recommendations(
+        current_user.id,
+        recommendations,
+        profile_hash=profile_hash,
+        query_hash=query_hash,
+    )
 
     return ProgramRecommendResponse(
         items=[_serialize_program_recommendation(item) for item in recommendations]
@@ -1104,10 +1459,26 @@ async def recommend_programs_calendar(
         )
 
     current_user = await get_current_user_from_authorization(authorization)
-    use_cache = not force_refresh and not category and not region
+    profile = await _fetch_profile_row(current_user.id)
+    activities = await _fetch_activity_rows(current_user.id)
+    request_payload = ProgramRecommendRequest(
+        top_k=top_k,
+        category=category,
+        region=region,
+        force_refresh=force_refresh,
+    )
+    profile_hash = _build_profile_hash(profile, activities)
+    query_hash = _build_query_hash(request_payload)
 
-    if use_cache:
-        cached_rows = await _load_cached_recommendations(current_user.id)
+    if force_refresh:
+        await _delete_cached_recommendations(current_user.id, query_hash=query_hash)
+    else:
+        cached_rows = await _load_cached_recommendations(
+            current_user.id,
+            profile_hash=profile_hash,
+            query_hash=query_hash,
+            limit=max(top_k * 2, 20),
+        )
         if cached_rows:
             normalized_cached_rows = _normalize_cached_recommendation_rows(cached_rows)
             if normalized_cached_rows:
@@ -1120,13 +1491,23 @@ async def recommend_programs_calendar(
                         items=_build_calendar_items_from_recommendations(cached_items, top_k=top_k)
                     )
             else:
-                log_event(logger, logging.INFO, "recommend_calendar_cache_stale_recompute", user_id=current_user.id)
+                log_event(
+                    logger,
+                    logging.INFO,
+                    "recommend_calendar_cache_stale_recompute",
+                    user_id=current_user.id,
+                    query_hash=query_hash[:12],
+                )
 
-    if force_refresh and not category and not region:
-        await _delete_user_recommendations(current_user.id)
+    if not _has_personalization_input(profile, activities):
+        return CalendarRecommendResponse(
+            items=_build_default_calendar_items(
+                programs,
+                top_k=top_k,
+                reason="프로필 기반 추천 데이터가 충분하지 않아 기본 프로그램 목록을 보여줍니다.",
+            )
+        )
 
-    profile = await _fetch_profile_row(current_user.id)
-    activities = await _fetch_activity_rows(current_user.id)
     recommendations = await programs_rag.recommend(
         profile=profile,
         activities=activities,
@@ -1145,8 +1526,12 @@ async def recommend_programs_calendar(
             )
         )
 
-    if not category and not region:
-        await _save_recommendations(current_user.id, recommendations)
+    await _save_recommendations(
+        current_user.id,
+        recommendations,
+        profile_hash=profile_hash,
+        query_hash=query_hash,
+    )
 
     return CalendarRecommendResponse(
         items=_build_calendar_items_from_recommendations(

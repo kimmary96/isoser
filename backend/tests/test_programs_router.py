@@ -9,6 +9,17 @@ from fastapi.testclient import TestClient
 from routers import programs
 
 
+def _sample_program(program_id: str = "program-1", *, deadline: str | None = None) -> dict[str, object]:
+    return {
+        "id": program_id,
+        "title": "AI 부트캠프",
+        "category": "IT",
+        "location": "서울",
+        "is_active": True,
+        "deadline": deadline or (date.today() + timedelta(days=7)).isoformat(),
+    }
+
+
 def test_build_program_query_params_for_filtered_list() -> None:
     params = programs._build_program_query_params(
         select="*",
@@ -53,7 +64,6 @@ def test_build_program_query_params_include_closed_recent_uses_90_day_cutoff() -
 
 def test_normalize_regions_param_splits_csv_values() -> None:
     normalized = programs._normalize_regions_param(["서울,경기", "온라인"])
-
     assert normalized == ["서울", "경기", "온라인"]
 
 
@@ -61,6 +71,23 @@ def test_parse_content_range_total_reads_exact_count() -> None:
     assert programs._parse_content_range_total("0-0/57") == 57
     assert programs._parse_content_range_total("*/0") == 0
     assert programs._parse_content_range_total(None) == 0
+
+
+def test_query_hash_ignores_top_k_and_force_refresh() -> None:
+    base = programs.ProgramRecommendRequest(top_k=5, category="IT", region="서울")
+    variant = programs.ProgramRecommendRequest(
+        top_k=20,
+        category="IT",
+        region="서울",
+        force_refresh=True,
+    )
+
+    assert programs._build_query_hash(base) == programs._build_query_hash(variant)
+
+
+def test_build_condition_key_candidates_prefers_specific_then_broad() -> None:
+    payload = programs.ProgramRecommendRequest(category="IT", region="서울")
+    assert programs._build_condition_key_candidates(payload) == ["IT+서울", "IT"]
 
 
 def test_recalculate_final_score_uses_recovered_weights() -> None:
@@ -203,7 +230,7 @@ def test_compute_program_relevance_items_handles_sparse_profile_without_failure(
 
 
 @pytest.mark.asyncio
-async def test_build_cached_recommendation_items_recalculates_final_score(
+async def test_build_cached_recommendation_items_recalculates_final_score_and_preserves_metadata(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     async def fake_fetch_programs_by_ids(program_ids: list[str]) -> dict[str, dict[str, object]]:
@@ -226,6 +253,8 @@ async def test_build_cached_recommendation_items_recalculates_final_score(
                 "relevance_score": 0.4,
                 "urgency_score": 0.5,
                 "final_score": 0.99,
+                "reason": "캐시된 추천입니다.",
+                "fit_keywords": ["AI", "서울"],
             }
         ],
         top_k=5,
@@ -233,9 +262,236 @@ async def test_build_cached_recommendation_items_recalculates_final_score(
 
     assert len(items) == 1
     assert items[0].score == 0.44
+    assert items[0].reason == "캐시된 추천입니다."
+    assert items[0].fit_keywords == ["AI", "서울"]
     assert items[0].program.final_score == 0.44
     assert items[0].program.relevance_score == 0.4
     assert items[0].program.urgency_score == 0.5
+
+
+@pytest.mark.asyncio
+async def test_recommend_programs_uses_rule_before_cache(monkeypatch: pytest.MonkeyPatch) -> None:
+    async def fake_fetch_program_rows(**_: object) -> list[dict[str, object]]:
+        return [_sample_program("program-1"), _sample_program("program-2")]
+
+    async def fake_get_current_user(_: str) -> object:
+        return type("User", (), {"id": "user-1"})()
+
+    async def fake_fetch_profile_row(_: str) -> dict[str, object]:
+        return {"job_title": "백엔드 개발자"}
+
+    async def fake_fetch_activity_rows(_: str, limit: int = 50) -> list[dict[str, object]]:
+        return [{"id": "activity-1", "title": "포트폴리오", "role": "개발"}]
+
+    async def fake_load_rule(_: list[str]) -> dict[str, object]:
+        return {
+            "condition_key": "IT+서울",
+            "program_ids": ["program-2", "program-1"],
+            "reason_template": "서울 지역 IT 프로그램 추천입니다.",
+            "fit_keywords": ["IT", "서울"],
+            "priority": 200,
+        }
+
+    async def fail_cache_load(*args: object, **kwargs: object) -> None:
+        raise AssertionError("cache should not be loaded when a rule hit exists")
+
+    async def fake_fetch_programs_by_ids(_: list[str]) -> dict[str, dict[str, object]]:
+        return {
+            "program-1": _sample_program("program-1"),
+            "program-2": _sample_program("program-2"),
+        }
+
+    monkeypatch.setattr(programs, "_fetch_program_rows", fake_fetch_program_rows)
+    monkeypatch.setattr(programs, "get_current_user_from_authorization", fake_get_current_user)
+    monkeypatch.setattr(programs, "_fetch_profile_row", fake_fetch_profile_row)
+    monkeypatch.setattr(programs, "_fetch_activity_rows", fake_fetch_activity_rows)
+    monkeypatch.setattr(programs, "_load_recommendation_rule", fake_load_rule)
+    monkeypatch.setattr(programs, "_load_cached_recommendations", fail_cache_load)
+    monkeypatch.setattr(programs, "_fetch_programs_by_ids", fake_fetch_programs_by_ids)
+
+    response = await programs.recommend_programs(
+        programs.ProgramRecommendRequest(top_k=1, category="IT", region="서울"),
+        authorization="Bearer token",
+    )
+
+    assert len(response.items) == 1
+    assert response.items[0].program_id == "program-2"
+    assert response.items[0].reason == "서울 지역 IT 프로그램 추천입니다."
+    assert response.items[0].fit_keywords == ["IT", "서울"]
+
+
+@pytest.mark.asyncio
+async def test_recommend_programs_uses_hash_cache(monkeypatch: pytest.MonkeyPatch) -> None:
+    async def fake_fetch_program_rows(**_: object) -> list[dict[str, object]]:
+        return [_sample_program("program-1")]
+
+    async def fake_get_current_user(_: str) -> object:
+        return type("User", (), {"id": "user-1"})()
+
+    async def fake_fetch_profile_row(_: str) -> dict[str, object]:
+        return {"job_title": "데이터 분석가"}
+
+    async def fake_fetch_activity_rows(_: str, limit: int = 50) -> list[dict[str, object]]:
+        return [{"id": "activity-1", "title": "데이터 프로젝트"}]
+
+    async def fake_load_rule(_: list[str]) -> None:
+        return None
+
+    async def fake_load_cache(*args: object, **kwargs: object) -> list[dict[str, object]]:
+        return [
+            {
+                "program_id": "program-1",
+                "similarity_score": 0.7,
+                "relevance_score": 0.6,
+                "urgency_score": 0.2,
+                "final_score": 0.9,
+                "reason": "캐시된 추천입니다.",
+                "fit_keywords": ["데이터", "서울"],
+            }
+        ]
+
+    async def fake_fetch_programs_by_ids(_: list[str]) -> dict[str, dict[str, object]]:
+        return {"program-1": _sample_program("program-1")}
+
+    monkeypatch.setattr(programs, "_fetch_program_rows", fake_fetch_program_rows)
+    monkeypatch.setattr(programs, "get_current_user_from_authorization", fake_get_current_user)
+    monkeypatch.setattr(programs, "_fetch_profile_row", fake_fetch_profile_row)
+    monkeypatch.setattr(programs, "_fetch_activity_rows", fake_fetch_activity_rows)
+    monkeypatch.setattr(programs, "_load_recommendation_rule", fake_load_rule)
+    monkeypatch.setattr(programs, "_load_cached_recommendations", fake_load_cache)
+    monkeypatch.setattr(programs, "_fetch_programs_by_ids", fake_fetch_programs_by_ids)
+
+    response = await programs.recommend_programs(
+        programs.ProgramRecommendRequest(top_k=3),
+        authorization="Bearer token",
+    )
+
+    assert len(response.items) == 1
+    assert response.items[0].program_id == "program-1"
+    assert response.items[0].reason == "캐시된 추천입니다."
+    assert response.items[0].fit_keywords == ["데이터", "서울"]
+
+
+@pytest.mark.asyncio
+async def test_recommend_programs_force_refresh_skips_rule_and_cache(monkeypatch: pytest.MonkeyPatch) -> None:
+    deleted: list[str] = []
+    saved: list[tuple[str, str]] = []
+
+    async def fake_fetch_program_rows(**_: object) -> list[dict[str, object]]:
+        return [_sample_program("program-1")]
+
+    async def fake_get_current_user(_: str) -> object:
+        return type("User", (), {"id": "user-1"})()
+
+    async def fake_fetch_profile_row(_: str) -> dict[str, object]:
+        return {"job_title": "개발자"}
+
+    async def fake_fetch_activity_rows(_: str, limit: int = 50) -> list[dict[str, object]]:
+        return [{"id": "activity-1", "title": "개발", "role": "백엔드"}]
+
+    async def fail_rule(*args: object, **kwargs: object) -> None:
+        raise AssertionError("force_refresh should bypass rule lookup")
+
+    async def fail_cache(*args: object, **kwargs: object) -> None:
+        raise AssertionError("force_refresh should bypass cache lookup")
+
+    async def fake_delete_cache(
+        user_id: str,
+        *,
+        query_hash: str | None = None,
+        profile_hash: str | None = None,
+    ) -> None:
+        deleted.append(f"{user_id}:{query_hash}:{profile_hash}")
+
+    async def fake_rag_recommend(**_: object) -> list[programs.ProgramRecommendation]:
+        return [
+            programs.ProgramRecommendation(
+                program_id="program-1",
+                score=0.82,
+                relevance_score=0.8,
+                reason="실시간으로 다시 계산한 추천입니다.",
+                fit_keywords=["IT"],
+                program={
+                    **_sample_program("program-1"),
+                    "similarity_score": 0.8,
+                    "relevance_score": 0.8,
+                    "urgency_score": 0.2,
+                    "final_score": 0.82,
+                },
+            )
+        ]
+
+    async def fake_save(
+        user_id: str,
+        recommendations: list[programs.ProgramRecommendation],
+        *,
+        profile_hash: str | None = None,
+        query_hash: str | None = None,
+    ) -> None:
+        assert user_id == "user-1"
+        assert recommendations
+        assert profile_hash is not None
+        assert query_hash is not None
+        saved.append((profile_hash, query_hash))
+
+    monkeypatch.setattr(programs, "_fetch_program_rows", fake_fetch_program_rows)
+    monkeypatch.setattr(programs, "get_current_user_from_authorization", fake_get_current_user)
+    monkeypatch.setattr(programs, "_fetch_profile_row", fake_fetch_profile_row)
+    monkeypatch.setattr(programs, "_fetch_activity_rows", fake_fetch_activity_rows)
+    monkeypatch.setattr(programs, "_load_recommendation_rule", fail_rule)
+    monkeypatch.setattr(programs, "_load_cached_recommendations", fail_cache)
+    monkeypatch.setattr(programs, "_delete_cached_recommendations", fake_delete_cache)
+    monkeypatch.setattr(programs.programs_rag, "recommend", fake_rag_recommend)
+    monkeypatch.setattr(programs, "_save_recommendations", fake_save)
+
+    response = await programs.recommend_programs(
+        programs.ProgramRecommendRequest(top_k=3, force_refresh=True),
+        authorization="Bearer token",
+    )
+
+    assert len(response.items) == 1
+    assert deleted
+    assert saved
+
+
+@pytest.mark.asyncio
+async def test_recommend_programs_returns_default_for_empty_profile(monkeypatch: pytest.MonkeyPatch) -> None:
+    async def fake_fetch_program_rows(**_: object) -> list[dict[str, object]]:
+        return [_sample_program("program-1")]
+
+    async def fake_get_current_user(_: str) -> object:
+        return type("User", (), {"id": "user-1"})()
+
+    async def fake_fetch_profile_row(_: str) -> dict[str, object]:
+        return {}
+
+    async def fake_fetch_activity_rows(_: str, limit: int = 50) -> list[dict[str, object]]:
+        return []
+
+    async def fake_load_rule(_: list[str]) -> None:
+        return None
+
+    async def fake_load_cache(*args: object, **kwargs: object) -> None:
+        return None
+
+    async def fail_rag(**_: object) -> None:
+        raise AssertionError("rag recommend should not run without profile/activity input")
+
+    monkeypatch.setattr(programs, "_fetch_program_rows", fake_fetch_program_rows)
+    monkeypatch.setattr(programs, "get_current_user_from_authorization", fake_get_current_user)
+    monkeypatch.setattr(programs, "_fetch_profile_row", fake_fetch_profile_row)
+    monkeypatch.setattr(programs, "_fetch_activity_rows", fake_fetch_activity_rows)
+    monkeypatch.setattr(programs, "_load_recommendation_rule", fake_load_rule)
+    monkeypatch.setattr(programs, "_load_cached_recommendations", fake_load_cache)
+    monkeypatch.setattr(programs.programs_rag, "recommend", fail_rag)
+
+    response = await programs.recommend_programs(
+        programs.ProgramRecommendRequest(top_k=3),
+        authorization="Bearer token",
+    )
+
+    assert len(response.items) == 1
+    assert "프로필 기반 추천 데이터가 충분하지 않아" in response.items[0].reason
 
 
 def test_recommend_calendar_anonymous_returns_contract_shape(
@@ -304,7 +560,7 @@ def test_recommend_calendar_uses_fresh_path_when_cache_rows_are_stale(
     async def fake_get_current_user_from_authorization(_: str) -> SimpleNamespace:
         return SimpleNamespace(id="user-1")
 
-    async def fake_load_cached_recommendations(_: str) -> list[dict[str, object]]:
+    async def fake_load_cached_recommendations(*args: object, **kwargs: object) -> list[dict[str, object]]:
         return [
             {
                 "program_id": "program-1",
@@ -341,7 +597,13 @@ def test_recommend_calendar_uses_fresh_path_when_cache_rows_are_stale(
             )
         ]
 
-    async def fake_save_recommendations(_: str, __: list[programs.ProgramRecommendation]) -> None:
+    async def fake_save_recommendations(
+        _: str,
+        __: list[programs.ProgramRecommendation],
+        *,
+        profile_hash: str | None = None,
+        query_hash: str | None = None,
+    ) -> None:
         return None
 
     monkeypatch.setattr(programs, "_fetch_program_rows", fake_fetch_program_rows)
@@ -386,7 +648,7 @@ def test_recommend_calendar_sorts_by_final_score_then_deadline_and_excludes_expi
     async def fake_get_current_user_from_authorization(_: str) -> SimpleNamespace:
         return SimpleNamespace(id="user-1")
 
-    async def fake_load_cached_recommendations(_: str) -> list[dict[str, object]]:
+    async def fake_load_cached_recommendations(*args: object, **kwargs: object) -> list[dict[str, object]]:
         return [
             {
                 "program_id": "program-2",

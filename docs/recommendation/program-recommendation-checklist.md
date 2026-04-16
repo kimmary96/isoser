@@ -517,3 +517,27 @@
 - [ ] 추천 이유와 키워드가 카드에 보인다.
 - [ ] 프로필/활동 변경 후 추천이 갱신된다.
 - [ ] 테스트/수동 검증 결과가 기록된다.
+## 2026-04-16 stage3 local update
+
+- [x] `backend/routers/programs.py`
+  - Level 1: `recommendation_rules` 조회를 먼저 수행하도록 변경
+  - Level 2: `profile_hash + query_hash` 기준으로 `recommendations` 캐시 조회/저장
+  - Level 3: rule/cache miss 시 기존 `ProgramsRAG` 호출 유지
+  - `force_refresh=true`면 rule/cache를 건너뛰고 해당 query cache를 먼저 비운 뒤 재계산
+  - 로그인은 했지만 프로필/활동이 비어 있으면 기본 추천으로 fallback
+  - 추천 후보에서 `deadline` / `end_date`가 지난 프로그램은 제외
+- [x] `supabase/migrations/20260416132000_fix_recommendations_cache_contract.sql`
+  - `recommendations.reason`, `recommendations.fit_keywords` 컬럼 추가
+  - 유니크 기준을 `user_id + query_hash + program_id`로 교정
+- [x] `backend/rag/recommendation_rules_seed.py`
+  - category only rule key도 생성하도록 보강
+- [x] `backend/.env.example`
+  - 실제 백엔드 런타임 기준 env 키 이름으로 정리
+  - `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_SECRET_KEY`, `WORK24_TRAINING_AUTH_KEY`, `WORK24_OPEN_API_AUTH_KEY`, `GOOGLE_API_KEY` 발급/확인 URL 주석 추가
+- [x] 로컬 검증
+  - `backend\\.venv310\\Scripts\\python.exe -m compileall backend/routers/programs.py backend/rag/recommendation_rules_seed.py`
+  - `backend\\.venv310\\Scripts\\python.exe -m pytest backend/tests/test_programs_router.py backend/tests/test_recommendation_rules_seed.py`
+- [ ] live 검증 보류
+  - Supabase migration 실제 적용
+  - `POST /admin/sync/programs` 실실행
+  - Work24 / Gemini / Supabase 실환경 연결 확인
