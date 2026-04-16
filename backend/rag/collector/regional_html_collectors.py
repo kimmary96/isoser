@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from typing import Dict, Iterable, List, Optional
+from urllib.request import Request, urlopen
 
 from bs4 import BeautifulSoup, Tag
 
@@ -25,8 +26,9 @@ class SeoulJobPortalCollector(BaseHtmlCollector):
     source_key = "seoul_job_portal"
     source_name = "서울일자리포털"
     list_urls = [
-        "https://job.seoul.go.kr/www/job_support_service/openChasm/selectOpenChasmList.do",
-        "https://job.seoul.go.kr/www/add_service/openJobCafe/selectOpenJobCafeList.do",
+        "https://job.seoul.go.kr/hmpg/chjb/prmg/prmgListPgng.do",
+        "https://job.seoul.go.kr/hmpg/chjb/pvmg/pcmgListPgng.do",
+        "https://job.seoul.go.kr/hmpg/chjb/prnt/prntListPgng.do",
     ]
     title_keywords = ("매력일자리", "직무캠프", "취업", "일자리카페", "인턴", "청년")
 
@@ -34,33 +36,86 @@ class SeoulJobPortalCollector(BaseHtmlCollector):
         items: List[Dict] = []
         for url in self.list_urls:
             try:
-                html = self.fetch_html(url)
+                html = self._fetch_fragment(url)
             except Exception as exc:
                 print(f"[{self.__class__.__name__}] request failed: {url}: {exc}")
                 continue
             items.extend(self.parse_html(html, base_url=url))
         return items
 
+    def _fetch_fragment(self, url: str) -> str:
+        request = Request(
+            url,
+            data=b"",
+            headers={
+                "User-Agent": self.user_agent,
+                "X-Requested-With": "XMLHttpRequest",
+            },
+        )
+        with urlopen(request, timeout=self.timeout_seconds) as response:
+            charset = response.headers.get_content_charset() or "utf-8"
+            return response.read().decode(charset, errors="ignore")
+
     def parse_html(self, html: str, *, base_url: str) -> List[Dict]:
         soup = self.soup_from_html(html)
         items: List[Dict] = []
-        for anchor in soup.select("a[href]"):
-            title = self._clean_text(anchor.get_text(" ", strip=True))
-            if not title or not any(keyword in title for keyword in self.title_keywords):
-                continue
+        for anchor in soup.select("a[href], a[onclick]"):
+            title = self._clean_title(anchor.get_text(" ", strip=True))
             container = anchor.find_parent(["li", "tr", "div", "article", "dl"]) or anchor
             raw_text = _text(container)
-            link = self.absolute_url(base_url, anchor.get("href", ""))
+            if not title:
+                continue
+            if title.lower().endswith((".xlsx", ".xls", ".pdf", ".hwp")):
+                continue
+            link = self._resolve_link(base_url, anchor)
+            if not link or "fileDownLoad.do" in link:
+                continue
+            if self._should_skip_listing(title=title, raw_text=raw_text, link=link):
+                continue
             item = self.make_item(
                 title=title,
                 link=link,
                 raw=raw_text,
                 raw_deadline=self.extract_date(raw_text),
-                category_hint="취업",
+                category_hint="교육" if "교육" in raw_text or "과정" in raw_text else "취업",
             )
             if item is not None:
                 items.append(item)
         return items
+
+    def _clean_title(self, title: str) -> str:
+        cleaned = self._clean_text(title)
+        cleaned = re.sub(r"\s*\([^)]*첨부[^)]*\)\s*", " ", cleaned)
+        return self._clean_text(cleaned)
+
+    def _should_skip_listing(self, *, title: str, raw_text: str, link: str) -> bool:
+        searchable = f"{title} {raw_text}"
+        if not any(keyword in searchable for keyword in self.title_keywords) and "모집" not in raw_text:
+            return True
+        if "bordContDetail.do" in link:
+            return not any(token in searchable for token in ("모집", "공고", "특강", "직무캠프", "인턴"))
+        if "job.seoul.go.kr" not in link:
+            return not any(token in searchable for token in ("과정", "교육", "취업", "인턴", "직무캠프"))
+        return False
+
+    def _resolve_link(self, base_url: str, anchor: Tag) -> str:
+        href = anchor.get("href", "").strip()
+        onclick = anchor.get("onclick", "")
+        if href and href != "javascript:;" and not href.startswith("javascript:"):
+            return self.absolute_url(base_url, href)
+        detail_match = re.search(r"prmgDetail\('([^']+)'\)", href)
+        if detail_match:
+            return self.absolute_url(
+                base_url,
+                f"/hmpg/chjb/prmg/prmgDetail.do?recmnt_pbanc_no={detail_match.group(1)}",
+            )
+        notice_match = re.search(r"bordContDetail\.do[^\"'\s]*", href)
+        if notice_match:
+            return self.absolute_url(base_url, notice_match.group(0))
+        notice_match = re.search(r"bordContDetail\.do[^\"'\s]*", onclick)
+        if notice_match:
+            return self.absolute_url(base_url, notice_match.group(0))
+        return ""
 
 
 class SbaPostingCollector(BaseHtmlCollector):
@@ -91,20 +146,18 @@ class SbaPostingCollector(BaseHtmlCollector):
     def parse_html(self, html: str, *, base_url: str) -> List[Dict]:
         soup = self.soup_from_html(html)
         items: List[Dict] = []
-        for container in soup.select("tr, li, .board-list-item, .list-item, .card"):
-            anchor = container.select_one("a[href]")
-            if anchor is None:
-                continue
-            title = self._clean_text(anchor.get_text(" ", strip=True))
-            if not title:
-                continue
+        for container in soup.select("tr, .board-list-item, .list-item, .card"):
             raw_text = _text(container)
-            if "접수" not in raw_text and "사업" not in raw_text and "모집" not in raw_text:
+            if "접수일정" not in raw_text and "접수" not in raw_text and "사업" not in raw_text and "모집" not in raw_text:
+                continue
+            title = self._extract_title(raw_text, container)
+            link = self._extract_link(base_url, container)
+            if not title or not link:
                 continue
             category_hint = self._resolve_category(raw_text)
             item = self.make_item(
                 title=title,
-                link=self.absolute_url(base_url, anchor.get("href", "")),
+                link=link,
                 raw=raw_text,
                 raw_deadline=self.extract_date(raw_text),
                 category_hint=category_hint,
@@ -119,12 +172,44 @@ class SbaPostingCollector(BaseHtmlCollector):
                 return category
         return "창업" if "사업" in text else "교육"
 
+    def _extract_title(self, raw_text: str, container: Tag) -> str:
+        anchor = container.select_one("a[href]")
+        if anchor is not None:
+            title = self._clean_text(anchor.get_text(" ", strip=True))
+            if title and title not in {"전체 사업", "접수중인 사업", "접수마감 사업"}:
+                return title
+
+        title_match = re.search(r"유형\s*:\s*.+?\s(.+?)\s담당부서", raw_text)
+        if title_match:
+            return self._clean_text(title_match.group(1))
+
+        for line in (self._clean_text(value) for value in raw_text.splitlines()):
+            if line and any(token in line for token in ("모집", "지원", "공모")):
+                return line
+        return ""
+
+    def _extract_link(self, base_url: str, container: Tag) -> str:
+        anchor = container.select_one("a[href]")
+        if anchor is not None:
+            href = anchor.get("href", "").strip()
+            if href and href != "javascript:;" and not href.startswith("javascript:"):
+                return self.absolute_url(base_url, href)
+
+        clickable = container.select_one("[onclick]")
+        if clickable is None:
+            return ""
+        onclick = clickable.get("onclick", "")
+        match = re.search(r"location\.href='([^']+)'", onclick)
+        if match:
+            return self.absolute_url(base_url, match.group(1))
+        return ""
+
 
 class SesacCollector(BaseHtmlCollector):
     source_key = "sesac"
     source_name = "청년취업사관학교 SeSAC"
     list_urls = [
-        "https://sesac.seoul.kr/sesac/course/offline/list.do",
+        "https://sesac.seoul.kr/sesac/course/offline/courseList.do",
     ]
 
     def collect_items(self) -> List[Dict]:
@@ -150,13 +235,18 @@ class SesacCollector(BaseHtmlCollector):
             )
             if anchor is None:
                 continue
+            href = anchor.get("href", "")
             title = self._clean_text(anchor.get_text(" ", strip=True))
             raw_text = _text(container)
-            if not title or ("모집" not in raw_text and "교육" not in raw_text and "과정" not in raw_text):
+            if (
+                not title
+                or href.startswith("javascript:")
+                or ("courseDetail.do" not in href and "모집" not in raw_text and "모집 기간" not in raw_text)
+            ):
                 continue
             item = self.make_item(
-                title=title,
-                link=self.absolute_url(base_url, anchor.get("href", "")),
+                title=self._clean_live_title(title, raw_text),
+                link=self.absolute_url(base_url, href),
                 raw=raw_text,
                 raw_deadline=self.extract_date(raw_text),
                 category_hint="교육",
@@ -166,12 +256,22 @@ class SesacCollector(BaseHtmlCollector):
                 items.append(item)
         return items
 
+    def _clean_live_title(self, title: str, raw_text: str) -> str:
+        cleaned = self._clean_text(title)
+        cleaned = re.sub(r"^(모집중|상시모집|마감임박)\s+", "", cleaned)
+        cleaned = re.sub(r"\s+D-\d+\b", "", cleaned)
+        cleaned = re.sub(r"\s+모집\s*기간\s+\d{4}[./-]\d{1,2}[./-]\d{1,2}\s*-\s*\d{4}[./-]\d{1,2}[./-]\d{1,2}.*$", "", cleaned)
+        cleaned = re.sub(r"\s+\d+$", "", cleaned)
+        if not cleaned or cleaned == title:
+            cleaned = re.sub(r"\s+모집\s*기간\s+.*$", "", raw_text)
+        return self._clean_text(cleaned)
+
 
 class Seoul50PlusCollector(BaseHtmlCollector):
     source_key = "seoul_50plus"
     source_name = "서울시 50플러스"
     list_urls = [
-        "https://www.50plus.or.kr/org/program.do",
+        "https://service1.50plus.or.kr/",
     ]
 
     def collect_items(self) -> List[Dict]:
@@ -188,17 +288,42 @@ class Seoul50PlusCollector(BaseHtmlCollector):
     def parse_html(self, html: str, *, base_url: str) -> List[Dict]:
         soup = self.soup_from_html(html)
         items: List[Dict] = []
+        for anchor in soup.select("a[href*='/in_appView.do?ANN_NO=']"):
+            title = self._clean_title(anchor.get_text(" ", strip=True), _text(anchor.find_parent(["li", "div", "article"]) or anchor))
+            if not title:
+                continue
+            container = anchor.find_parent(["li", "div", "article"]) or anchor
+            raw_text = _text(container)
+            item = self.make_item(
+                title=title,
+                link=self.absolute_url(base_url, anchor.get("href", "")),
+                raw=raw_text,
+                raw_deadline=self.extract_date(raw_text),
+                category_hint=self._resolve_category(raw_text),
+                target=["중장년"],
+            )
+            if item is not None:
+                items.append(item)
         for container in soup.select("li, tr, .list-item, .card, article"):
             anchor = container.select_one("a[href]")
             if anchor is None:
                 continue
-            title = self._clean_text(anchor.get_text(" ", strip=True))
+            title = self._clean_title(anchor.get_text(" ", strip=True), _text(container))
+            href = anchor.get("href", "")
+            if (
+                href.startswith("javascript:")
+                or "/in_appView.do?ANN_NO=" in href
+                or self._is_menu_like_title(title)
+            ):
+                continue
             raw_text = _text(container)
             if not title or not any(token in raw_text for token in ("50+", "중장년", "교육", "일자리", "모집", "강좌")):
                 continue
+            if not any(token in raw_text for token in ("모집", "채용", "강좌", "신청")) and self.extract_date(raw_text) is None:
+                continue
             item = self.make_item(
                 title=title,
-                link=self.absolute_url(base_url, anchor.get("href", "")),
+                link=self.absolute_url(base_url, href),
                 raw=raw_text,
                 raw_deadline=self.extract_date(raw_text),
                 category_hint=self._resolve_category(raw_text),
@@ -213,12 +338,32 @@ class Seoul50PlusCollector(BaseHtmlCollector):
             return "취업"
         return "교육"
 
+    def _clean_title(self, title: str, raw_text: str) -> str:
+        cleaned = self._clean_text(title)
+        if any(token in cleaned for token in ("모집기간", "모집인원", "활동비", "행사일자", "행사장소")):
+            cleaned = raw_text
+        cleaned = re.sub(r"^(기타|민간채용공고|채용설명회|취업 훈련|AI 디지털 교육|건강몽땅 교육|50플러스센터 교육)\s+", "", cleaned)
+        cleaned = re.sub(r"\s+활동비\s*:.*$", "", cleaned)
+        cleaned = re.sub(r"\s+모집인원\s*:.*$", "", cleaned)
+        cleaned = re.sub(r"\s+모집기간\s*:\s*\d{4}[./-]\d{1,2}[./-]\d{1,2}\s*-\s*\d{4}[./-]\d{1,2}[./-]\d{1,2}.*$", "", cleaned)
+        cleaned = re.sub(r"\s+행사일자\s*:.*$", "", cleaned)
+        cleaned = re.sub(r"\s+행사장소\s*:.*$", "", cleaned)
+        cleaned = re.sub(r"\s+신청\s*[··]\s*접수하기.*$", "", cleaned)
+        return self._clean_text(cleaned)
+
+    def _is_menu_like_title(self, title: str) -> bool:
+        if not title:
+            return True
+        if title in {"중장년취업사관학교", "취업상담", "직업교육", "취업지원", "기업지원", "일자리 참여 신청", "참여 신청", "신청하기"}:
+            return True
+        return bool(re.fullmatch(r"(일자리|교육|강좌)\s*참여\s*신청", title))
+
 
 class CampusTownCollector(BaseHtmlCollector):
     source_key = "campus_town"
     source_name = "서울캠퍼스타운"
     list_urls = [
-        "https://campustown.seoul.go.kr/site/main/program/program/list",
+        "https://campustown.seoul.go.kr/site/main/board/university_news/list",
     ]
 
     def collect_items(self) -> List[Dict]:
@@ -257,6 +402,22 @@ class CampusTownCollector(BaseHtmlCollector):
             )
             if item is not None:
                 items.append(item)
+
+        for anchor in soup.select("a[href*='/site/main/board/university_news/']"):
+            title = self._clean_text(anchor.get_text(" ", strip=True))
+            if not title or title == "캠타프로그램":
+                continue
+            container = anchor.find_parent(["li", "tr", "div", "article"]) or anchor
+            raw_text = self.extract_texts([title, _text(container)])
+            item = self.make_item(
+                title=title,
+                link=self.absolute_url(base_url, anchor.get("href", "")),
+                raw=raw_text,
+                raw_deadline=self.extract_date(raw_text),
+                category_hint=self._resolve_category(raw_text),
+            )
+            if item is not None:
+                items.append(item)
         return items
 
     def _resolve_category(self, text: str) -> str:
@@ -269,8 +430,7 @@ class SeoulWomanUpCollector(BaseHtmlCollector):
     source_key = "seoul_womanup"
     source_name = "서울커리업"
     list_urls = [
-        "https://womanup.seoulwomanup.or.kr/womanup/edu/selectThisMonthPageList.do",
-        "https://womanup.seoulwomanup.or.kr/womanup/main/main.do",
+        "https://project.seoulcareerup.or.kr/swm/internship/recruit/list.do?menu_no=02030200",
     ]
 
     def collect_items(self) -> List[Dict]:
@@ -287,6 +447,39 @@ class SeoulWomanUpCollector(BaseHtmlCollector):
     def parse_html(self, html: str, *, base_url: str) -> List[Dict]:
         soup = self.soup_from_html(html)
         items: List[Dict] = []
+        for container in soup.select("tbody tr"):
+            cells = [self._clean_text(cell.get_text(" ", strip=True)) for cell in container.find_all("td")]
+            if len(cells) < 6:
+                continue
+            recruit_type = cells[1]
+            district = cells[2]
+            job_field = cells[3]
+            company = cells[5]
+            detail = container.select_one("a[onclick]")
+            if not company or not job_field or detail is None:
+                continue
+            match = re.search(r"fnView\((\d+)\)", detail.get("onclick", ""))
+            if match is None:
+                continue
+            title = self._clean_text(f"{company} {job_field} 인턴십")
+            raw_text = self.extract_texts(cells)
+            if district:
+                raw_text = self.extract_texts([raw_text, district])
+            item = self.make_item(
+                title=title,
+                link=self.absolute_url(
+                    base_url,
+                    f"/swm/internship/recruit/view.do?jobDescriptionId={match.group(1)}&menu_no=02030200",
+                ),
+                raw=raw_text,
+                raw_deadline=self.extract_date(raw_text),
+                category_hint="취업",
+                target=["여성"],
+                sponsor_name=company,
+            )
+            if item is not None:
+                items.append(item)
+
         for container in soup.select("li, tr, .list-item, .card, article, .program-item"):
             anchor = container.select_one("a[href]")
             if anchor is None:

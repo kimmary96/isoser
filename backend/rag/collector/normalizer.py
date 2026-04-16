@@ -2,6 +2,8 @@ from datetime import datetime
 from typing import Dict, Optional
 import re
 
+ALLOWED_CATEGORIES = {"AI", "IT", "디자인", "경영", "창업", "기타"}
+
 
 def normalize(raw_item: Dict) -> Optional[Dict]:
     meta = raw_item.get("source_meta", {})
@@ -16,7 +18,7 @@ def normalize(raw_item: Dict) -> Optional[Dict]:
         "collection_method": meta.get("collection_method", "public_api"),
         "scope": meta.get("scope", "national"),
         "title": title,
-        "category": category_hint if category_hint else _classify_category(title),
+        "category": _normalize_category(category_hint, title),
         "target": raw_item.get("target") or _extract_targets(title),
         "region": meta.get("region", "전국"),
         "region_detail": meta.get("region_detail", ""),
@@ -41,6 +43,13 @@ def _classify_category(title: str) -> str:
     return "기타"
 
 
+def _normalize_category(category_hint: Optional[str], title: str) -> str:
+    normalized_hint = (category_hint or "").strip()
+    if normalized_hint in ALLOWED_CATEGORIES:
+        return normalized_hint
+    return _classify_category(title)
+
+
 def _extract_targets(title: str) -> list:
     targets = []
     if "청년" in title:
@@ -61,6 +70,16 @@ def _parse_deadline(raw: str) -> Optional[str]:
         return None
     # YYYY-MM-DD 또는 YYYYMMDD 처리
     raw = raw.strip().replace("/", "-").replace(".", "-")
+    compact_match = re.search(r"\b(\d{4})(\d{2})(\d{2})\b", raw)
+    if compact_match:
+        try:
+            return datetime(
+                int(compact_match.group(1)),
+                int(compact_match.group(2)),
+                int(compact_match.group(3))
+            ).strftime("%Y-%m-%d")
+        except ValueError:
+            pass
     match = re.search(r"(\d{4})-(\d{1,2})-(\d{1,2})", raw)
     if match:
         try:

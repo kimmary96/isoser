@@ -33,6 +33,25 @@ def test_move_task_file_retries_then_succeeds(tmp_path, monkeypatch) -> None:
     assert dst.read_text(encoding="utf-8") == "task"
 
 
+def test_start_running_heartbeat_touches_running_file(tmp_path, monkeypatch) -> None:
+    running_path = tmp_path / "tasks" / "running" / "TASK-TEST.md"
+    running_path.parent.mkdir(parents=True)
+    running_path.write_text("running", encoding="utf-8")
+    before = running_path.stat().st_mtime_ns
+
+    monkeypatch.setattr(watcher, "RUNNING_HEARTBEAT_SECONDS", 0.01)
+
+    stop_event, thread = watcher.start_running_heartbeat(str(running_path))
+    try:
+        time.sleep(0.03)
+    finally:
+        stop_event.set()
+        thread.join(timeout=1)
+
+    after = running_path.stat().st_mtime_ns
+    assert after > before
+
+
 def test_handle_task_writes_blocked_report_when_move_to_running_fails(tmp_path, monkeypatch) -> None:
     inbox_dir = tmp_path / "tasks" / "inbox"
     running_dir = tmp_path / "tasks" / "running"
@@ -84,6 +103,56 @@ def test_handle_task_writes_blocked_report_when_move_to_running_fails(tmp_path, 
     assert "Watcher could not move the task packet into running." in report_path.read_text(encoding="utf-8")
     assert "stage: blocked" in alert_path.read_text(encoding="utf-8")
     assert "type: watcher-alert" in alert_path.read_text(encoding="utf-8")
+
+
+def test_run_codex_starts_and_stops_running_heartbeat(monkeypatch) -> None:
+    class FakeThread:
+        def __init__(self) -> None:
+            self.join_calls = 0
+
+        def join(self, timeout: float | None = None) -> None:
+            self.join_calls += 1
+
+    class FakeEvent:
+        def __init__(self) -> None:
+            self.set_calls = 0
+
+        def set(self) -> None:
+            self.set_calls += 1
+
+    fake_thread = FakeThread()
+    fake_event = FakeEvent()
+    heartbeat_calls: list[str] = []
+
+    def fake_start_running_heartbeat(running_path: str):
+        heartbeat_calls.append(running_path)
+        return fake_event, fake_thread
+
+    class FakeProcess:
+        def __init__(self) -> None:
+            self.stdout = iter(["line 1\n", "line 2\n"])
+
+        def wait(self) -> int:
+            return 0
+
+    monkeypatch.setattr(watcher, "build_codex_prompt", lambda *_args, **_kwargs: "prompt")
+    monkeypatch.setattr(watcher, "resolve_codex_command", lambda: "codex")
+    monkeypatch.setattr(watcher, "start_running_heartbeat", fake_start_running_heartbeat)
+    monkeypatch.setattr(watcher.subprocess, "Popen", lambda *args, **kwargs: FakeProcess())
+    monkeypatch.setattr(watcher, "parse_token_count", lambda output: 123)
+
+    exit_code, token_count = watcher.run_codex(
+        "TASK-TEST.md",
+        "TASK-TEST",
+        "feature",
+        running_path="tasks/running/TASK-TEST.md",
+    )
+
+    assert exit_code == 0
+    assert token_count == 123
+    assert heartbeat_calls == ["tasks/running/TASK-TEST.md"]
+    assert fake_event.set_calls == 1
+    assert fake_thread.join_calls == 1
 
 
 def test_parse_changed_files_from_result_report_reads_bullets(tmp_path) -> None:

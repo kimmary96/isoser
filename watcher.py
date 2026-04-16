@@ -11,6 +11,7 @@ import json
 import os
 import re
 import subprocess
+import threading
 import time
 import traceback
 from shutil import which
@@ -50,6 +51,7 @@ WATCHER_LOCK_PATH = "./.watcher.lock"
 PROJECT_PATH = r"D:\02_2025_AI_Lab\isoser"
 SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL", "").strip()
 STALE_RUNNING_MINUTES = 20
+RUNNING_HEARTBEAT_SECONDS = 30
 MAX_AUTO_RECOVERY_ATTEMPTS = 2
 REPLAN_REQUIRED_ATTEMPTS = 2
 MOVE_RETRY_ATTEMPTS = 5
@@ -908,6 +910,30 @@ def resolve_codex_command() -> str:
     return resolve_cli_command(CODEX_CANDIDATES)
 
 
+def touch_running_task(path: str) -> None:
+    try:
+        Path(path).touch()
+    except OSError:
+        # A stale-cleanup or manual move can race with the heartbeat; best effort is enough.
+        pass
+
+
+def start_running_heartbeat(running_path: str) -> tuple[threading.Event, threading.Thread]:
+    stop_event = threading.Event()
+
+    def heartbeat_loop() -> None:
+        while not stop_event.wait(RUNNING_HEARTBEAT_SECONDS):
+            touch_running_task(running_path)
+
+    heartbeat_thread = threading.Thread(
+        target=heartbeat_loop,
+        name=f"watcher-heartbeat:{os.path.basename(running_path)}",
+        daemon=True,
+    )
+    heartbeat_thread.start()
+    return stop_event, heartbeat_thread
+
+
 def build_codex_prompt(task_filename: str, task_id: str, task_type: str) -> str:
     if task_type in DOC_TASK_TYPES:
         return (
@@ -937,7 +963,13 @@ def build_codex_prompt(task_filename: str, task_id: str, task_type: str) -> str:
     )
 
 
-def run_codex(task_filename: str, task_id: str, task_type: str) -> tuple[int, Optional[int]]:
+def run_codex(
+    task_filename: str,
+    task_id: str,
+    task_type: str,
+    *,
+    running_path: str,
+) -> tuple[int, Optional[int]]:
     prompt = build_codex_prompt(task_filename, task_id, task_type)
     codex_command = resolve_codex_command()
     print(f"Codex 실행: {task_filename}")
@@ -952,11 +984,16 @@ def run_codex(task_filename: str, task_id: str, task_type: str) -> tuple[int, Op
         bufsize=1,
     )
     collected_output: list[str] = []
+    heartbeat_stop, heartbeat_thread = start_running_heartbeat(running_path)
 
-    assert process.stdout is not None
-    for line in process.stdout:
-        print(line, end="")
-        collected_output.append(line)
+    try:
+        assert process.stdout is not None
+        for line in process.stdout:
+            print(line, end="")
+            collected_output.append(line)
+    finally:
+        heartbeat_stop.set()
+        heartbeat_thread.join(timeout=1)
 
     exit_code = process.wait()
     combined_output = "".join(collected_output)
@@ -1240,7 +1277,12 @@ def handle_task(task_path: str) -> None:
         return
 
     try:
-        exit_code, token_count = run_codex(filename, task_id, task_type)
+        exit_code, token_count = run_codex(
+            filename,
+            task_id,
+            task_type,
+            running_path=running_path,
+        )
     except Exception as error:
         write_report(
             task_id,

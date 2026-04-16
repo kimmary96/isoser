@@ -44,6 +44,7 @@ class SupabaseClient:
     def __init__(self, url: str, service_key: str) -> None:
         self.url = url.rstrip("/")
         self.service_key = service_key
+        self.upsert_batch_size = 100
 
     def upsert_programs(self, rows: List[Dict]) -> None:
         if not rows:
@@ -57,14 +58,16 @@ class SupabaseClient:
         }
         with requests.Session() as session:
             session.trust_env = False
-            response = session.post(
-                f"{self.url}/rest/v1/programs",
-                params={"on_conflict": "title,source"},
-                json=rows,
-                headers=headers,
-                timeout=10,
-            )
-        response.raise_for_status()
+            for index in range(0, len(rows), self.upsert_batch_size):
+                batch = rows[index : index + self.upsert_batch_size]
+                response = session.post(
+                    f"{self.url}/rest/v1/programs",
+                    params={"on_conflict": "title,source"},
+                    json=batch,
+                    headers=headers,
+                    timeout=30,
+                )
+                response.raise_for_status()
 
 
 def _create_supabase_client() -> SupabaseClient:
@@ -88,6 +91,17 @@ COLLECTORS = [
 ]
 
 
+def _deduplicate_rows(rows: List[Dict]) -> List[Dict]:
+    deduped: Dict[tuple[str, str], Dict] = {}
+    for row in rows:
+        title = str(row.get("title") or "").strip()
+        source = str(row.get("source") or "").strip()
+        if not title or not source:
+            continue
+        deduped[(title, source)] = row
+    return list(deduped.values())
+
+
 def run_all_collectors() -> Dict:
     saved_count = 0
     failed_count = 0
@@ -104,10 +118,31 @@ def run_all_collectors() -> Dict:
     for collector in ordered_collectors:
         source_saved = 0
         source_failed = 0
+        source_status = "idle"
+        source_message = ""
         try:
             raw_items = collector.collect()
         except Exception as exc:
             print(f"[scheduler] collector failed: {collector.__class__.__name__}: {exc}")
+            failed_count += 1
+            source_failed += 1
+            source_status = "collector_exception"
+            source_message = str(exc)
+            source_results.append(
+                {
+                    "tier": collector.tier,
+                    "source": collector.source_name,
+                    "saved": source_saved,
+                    "failed": source_failed,
+                    "status": source_status,
+                    "message": source_message,
+                }
+            )
+            continue
+
+        source_status = getattr(collector, "last_collect_status", "success" if raw_items else "empty")
+        source_message = getattr(collector, "last_collect_message", "")
+        if not raw_items and source_status not in {"success", "empty"}:
             failed_count += 1
             source_failed += 1
             source_results.append(
@@ -116,6 +151,8 @@ def run_all_collectors() -> Dict:
                     "source": collector.source_name,
                     "saved": source_saved,
                     "failed": source_failed,
+                    "status": source_status,
+                    "message": source_message,
                 }
             )
             continue
@@ -134,6 +171,7 @@ def run_all_collectors() -> Dict:
                 failed_count += 1
                 source_failed += 1
 
+        normalized_rows = _deduplicate_rows(normalized_rows)
         if not normalized_rows:
             source_results.append(
                 {
@@ -141,6 +179,8 @@ def run_all_collectors() -> Dict:
                     "source": collector.source_name,
                     "saved": source_saved,
                     "failed": source_failed,
+                    "status": "empty" if source_failed == 0 else "normalize_failed",
+                    "message": source_message or "No rows to save after normalization",
                 }
             )
             continue
@@ -149,10 +189,14 @@ def run_all_collectors() -> Dict:
             supabase.upsert_programs(normalized_rows)
             saved_count += len(normalized_rows)
             source_saved += len(normalized_rows)
+            source_status = "saved"
+            source_message = ""
         except Exception as exc:
             print(f"[scheduler] supabase upsert failed for {collector.__class__.__name__}: {exc}")
             failed_count += len(normalized_rows)
             source_failed += len(normalized_rows)
+            source_status = "upsert_failed"
+            source_message = str(exc)
 
         source_results.append(
             {
@@ -160,6 +204,8 @@ def run_all_collectors() -> Dict:
                 "source": collector.source_name,
                 "saved": source_saved,
                 "failed": source_failed,
+                "status": source_status,
+                "message": source_message,
             }
         )
 

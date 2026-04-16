@@ -12,6 +12,7 @@
 - `tasks/done`으로 완료된 task는 watcher가 task-scoped commit/push를 수행하고, fast-forward 가능하면 같은 commit을 `origin/main`에도 자동 반영한다.
 - `origin/main` 자동 반영까지 성공한 완료 task는 watcher completed Slack 알림 요약에 main push 결과가 함께 기록된다.
 - watcher는 `tasks/drifted/`와 `tasks/blocked/`를 다시 검사해 자동 복구 가능한 packet은 `tasks/inbox/`로 재투입한다.
+- watcher는 Codex 실행 중 `tasks/running/<task>.md` heartbeat를 주기적으로 갱신해, stdout이 잠잠한 장기 실행에서도 stale timeout으로 오판되는 일을 줄인다.
 - task packet은 선택적으로 `planned_files`와 `planned_worktree_fingerprint`를 담아, 같은 `HEAD` 안에서도 계획 당시 worktree 상태가 달라졌는지 더 엄격하게 검증할 수 있다.
 - `scripts/compute_task_fingerprint.py`는 planner가 `planned_files` 기준 fingerprint frontmatter 줄을 바로 생성할 수 있게 돕는다.
 - `scripts/summarize_run_ledgers.py`는 local/cowork watcher ledger를 읽어 최근 상태와 stage 집계를 빠르게 확인하게 해준다.
@@ -43,6 +44,11 @@
 - `frontend/app/dashboard/layout.tsx`는 landing-a 헤더를 유지한 채 대시보드 사이드바와 본문을 렌더링한다.
 - `backend/routers/programs.py`는 `/programs/count`와 확장된 목록 query(`q`, `regions`, `recruiting_only`, `sort`)를 지원한다.
 - `programs.compare_meta` JSONB 컬럼이 migration으로 추가되어 비교 화면의 대상/허들/커리큘럼 메타데이터를 저장할 수 있다.
+- `backend/rag/collector/scheduler.py`는 source별 `status`/`message`를 함께 반환해 `0건 수집(empty)`과 `설정/요청/저장 실패`를 구분해 기록한다.
+- Tier 1 collector 중 `고용24`는 현재 유효한 국민내일배움카드 훈련과정 OpenAPI(`callOpenApiSvcInfo310L01.do`)를 사용하고, `K-Startup`은 현재 운영 중인 `nidapi.k-startup.go.kr` 조회서비스로 수집한다.
+- scheduler의 Supabase upsert는 `(title, source)` 기준으로 source별 중복을 먼저 제거하고 100건 배치로 나눠 저장해, 대량 payload에서 PostgREST conflict 오류가 전체 source를 실패시키는 문제를 줄였다.
+- 현재 full scheduler smoke 기준 Tier 1 실패는 `HRD_API_KEY` 미설정만 남아 있고, `고용24`와 `K-Startup`은 서울 대상 데이터가 정상 저장된다.
+- Tier 2 HTML collector는 `SeSAC` 제목에서 상태 chip/D-day/모집 메타를 제거하고, `서울시 50플러스`는 `일자리 참여 신청` 같은 메뉴성 항목을 제외하도록 정제 규칙을 강화했다.
 
 ## Key references
 - automation index: [automation/README.md](./automation/README.md)

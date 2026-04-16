@@ -17,7 +17,7 @@ TAG_RE = re.compile(r"<[^>]+>")
 
 class BaseHtmlCollector(BaseCollector):
     tier: int = 2
-    source_type: str = "regional_crawl"
+    source_type: str = "seoul_city"
     collection_method: str = "web_crawl"
     scope: str = "seoul"
     region: str = "서울"

@@ -20,6 +20,8 @@
 
 ## 2026-04-15 watcher pipeline hardening
 
+- 기록 버전: `60da25d7d70db974c3aca75cca3e48c76d86dc5e`
+- 기록 시각: `2026-04-15T22:00:02.1780427+09:00`
 - 변경 파일
   - `scripts/watcher_shared.py`
   - `scripts/compute_task_fingerprint.py`
@@ -1114,3 +1116,23 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - `backend/rag/collector/base_html_collector.py`, `backend/rag/collector/scheduler.py`
   - Tier 2 서울시 HTML collector 공통 베이스에 `BeautifulSoup` 파싱 유틸을 복구해 parser 테스트 6건이 실제 실행되도록 고정함
   - scheduler import fallback은 `ModuleNotFoundError` 중 `rag` 경로 불일치에만 반응하도록 좁혀 실행 환경 차이만 흡수하고 실제 collector import 오류는 숨기지 않게 유지함
+- `watcher.py`, `tests/test_watcher.py`
+  - Codex 실행 중 별도 heartbeat 스레드가 `tasks/running/<task>.md` mtime을 주기적으로 갱신하도록 보강해, 결과 리포트를 쓴 뒤 stdout이 잠잠해지는 작업이 stale timeout으로 `blocked` 처리되던 오탐을 줄임
+  - watcher 테스트에 heartbeat touch와 `run_codex()` heartbeat 시작/정리 경로를 추가해 장기 실행 중 queue 상태 보존을 고정함
+
+## 2026-04-16 추가 메모
+
+- `backend/rag/collector/regional_html_collectors.py`, `backend/tests/test_tier2_collectors.py`
+  - `SeSAC` 제목 정제 규칙을 상태 chip, D-day, 모집기간 꼬리 메타 제거 중심으로 고정하고 테스트를 추가함
+  - `서울시 50플러스`에서 `일자리 참여 신청` 같은 메뉴성 anchor를 별도로 걸러 live 수집 품질을 높임
+- `backend/rag/collector/base_api_collector.py`, `backend/rag/collector/scheduler.py`, `backend/tests/test_scheduler_collectors.py`
+  - API collector가 `last_collect_status`/`last_collect_message`를 남기도록 바꿔, scheduler가 `0건 수집`과 `config_error`/`request_failed`를 구분해 source별 상태를 반환하도록 정리함
+  - scheduler는 normalize 후 `(title, source)` 기준 dedupe와 100건 batch upsert를 적용해 대량 source 저장 시 PostgREST conflict 실패를 줄임
+- `backend/rag/collector/work24_collector.py`
+  - 오래된 `wantedInfoSrch.do` 대신 현재 동작하는 고용24 국민내일배움카드 훈련과정 OpenAPI(`callOpenApiSvcInfo310L01.do`)로 전환하고, `WORK24_TRAINING_AUTH_KEY`를 기본 키로 사용하도록 정리함
+- `backend/rag/collector/kstartup_collector.py`
+  - 예전 `apis.data.go.kr/B552735/...` endpoint 대신 공공데이터포털의 현재 K-Startup 조회서비스 `nidapi.k-startup.go.kr/api/kisedKstartupService/v1/getAnnouncementInformation`로 옮기고, 서울 지역/접수 종료일 필터를 기본 적용함
+- `backend/rag/collector/hrd_collector.py`
+  - `HRDNET_API_KEY` alias를 허용해 운영 환경 이름 차이 때문에 collector가 불필요하게 비활성화되는 경우를 줄임
+- `backend/rag/collector/normalizer.py`
+  - compact date(`YYYYMMDD`)도 `deadline`으로 파싱되도록 보강해 K-Startup 응답의 접수마감일이 누락되지 않게 함

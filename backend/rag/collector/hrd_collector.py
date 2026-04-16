@@ -12,6 +12,7 @@ class HrdCollector(BaseApiCollector):
 
     endpoint: str = "https://www.hrd.go.kr/jsp/HRDP/HRDPO00/HRDPOA60/HRDPOA60_1.jsp"
     api_key_env: str = "HRD_API_KEY"
+    api_key_env_aliases: tuple[str, ...] = ("HRDNET_API_KEY",)
     timeout_seconds: int = 10
     max_pages: int = 5
     page_size: int = 100
