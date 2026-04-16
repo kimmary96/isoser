@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
+import logging
 from typing import Any, Literal
 
 from fastapi import APIRouter, HTTPException, Query
@@ -9,14 +11,19 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 
 from chains.coach_graph import IntroGenerateResponse, run_coach_graph
+from logging_config import get_logger, log_event
 from rag.schema import CoachResponse
 from repositories.coach_session_repo import (
     CoachSessionRecord,
     CoachSessionRepoError,
     get_coach_session_repo,
 )
+from utils.supabase_admin import request_supabase
 
 router = APIRouter()
+logger = get_logger(__name__)
+COACH_RECOMMENDATION_LIMIT = 3
+COACH_RECOMMENDATION_FETCH_LIMIT = 12
 
 ALLOWED_SECTION_TYPES = {
     "회사경력",
@@ -25,6 +32,140 @@ ALLOWED_SECTION_TYPES = {
     "학생활동",
     "요약",
 }
+
+
+def _quote_program_ids(program_ids: list[str]) -> str:
+    return ",".join(f'"{program_id}"' for program_id in program_ids if program_id)
+
+
+def _normalize_fit_keywords(raw_value: Any) -> list[str]:
+    if not isinstance(raw_value, list):
+        return []
+
+    normalized: list[str] = []
+    for item in raw_value:
+        text = str(item).strip()
+        if text and text not in normalized:
+            normalized.append(text)
+
+    return normalized[:3]
+
+
+def _coerce_score(raw_value: Any) -> float:
+    try:
+        return float(raw_value or 0)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+async def _load_coach_recommended_programs(
+    user_id: str,
+    *,
+    limit: int = COACH_RECOMMENDATION_LIMIT,
+) -> list[dict[str, Any]]:
+    if not user_id:
+        return []
+
+    try:
+        rows = await request_supabase(
+            method="GET",
+            path="/rest/v1/recommendations",
+            params={
+                "select": "program_id,reason,fit_keywords,final_score,expires_at,generated_at",
+                "user_id": f"eq.{user_id}",
+                "expires_at": f"gte.{datetime.now(timezone.utc).isoformat()}",
+                "order": "final_score.desc",
+                "limit": str(max(limit * 4, COACH_RECOMMENDATION_FETCH_LIMIT)),
+            },
+        )
+        if not isinstance(rows, list) or not rows:
+            return []
+
+        ranked_rows: list[dict[str, Any]] = []
+        seen_program_ids: set[str] = set()
+        for row in rows:
+            program_id = str(row.get("program_id") or "").strip()
+            if not program_id or program_id in seen_program_ids:
+                continue
+            seen_program_ids.add(program_id)
+            ranked_rows.append(dict(row))
+            if len(ranked_rows) >= max(limit * 2, limit):
+                break
+
+        quoted_program_ids = _quote_program_ids(
+            [str(row.get("program_id") or "").strip() for row in ranked_rows]
+        )
+        if not quoted_program_ids:
+            return []
+
+        program_rows = await request_supabase(
+            method="GET",
+            path="/rest/v1/programs",
+            params={
+                "select": "id,title,category,location,deadline,provider",
+                "id": f"in.({quoted_program_ids})",
+            },
+        )
+        if not isinstance(program_rows, list) or not program_rows:
+            return []
+
+        programs_by_id = {
+            str(row.get("id") or "").strip(): dict(row)
+            for row in program_rows
+            if str(row.get("id") or "").strip()
+        }
+
+        recommended_programs: list[dict[str, Any]] = []
+        for row in ranked_rows:
+            program_id = str(row.get("program_id") or "").strip()
+            program = programs_by_id.get(program_id)
+            if not program:
+                continue
+
+            recommended_programs.append(
+                {
+                    "program_id": program_id,
+                    "title": str(program.get("title") or "").strip(),
+                    "category": str(program.get("category") or "").strip(),
+                    "location": str(program.get("location") or "").strip(),
+                    "deadline": str(program.get("deadline") or "").strip(),
+                    "provider": str(program.get("provider") or "").strip(),
+                    "reason": str(row.get("reason") or "").strip(),
+                    "fit_keywords": _normalize_fit_keywords(row.get("fit_keywords")),
+                    "score": _coerce_score(row.get("final_score")),
+                }
+            )
+            if len(recommended_programs) >= limit:
+                break
+
+        return recommended_programs
+    except HTTPException as exc:
+        if exc.status_code == 503:
+            log_event(
+                logger,
+                logging.INFO,
+                "coach_recommendations_skipped_unconfigured",
+                user_id=user_id,
+            )
+            return []
+
+        log_event(
+            logger,
+            logging.WARNING,
+            "coach_recommendations_load_failed",
+            user_id=user_id,
+            error=str(exc),
+        )
+        return []
+    except Exception as exc:
+        log_event(
+            logger,
+            logging.WARNING,
+            "coach_recommendations_load_failed",
+            user_id=user_id,
+            error=str(exc),
+        )
+        return []
 
 
 class CoachMessage(BaseModel):
@@ -214,6 +355,7 @@ async def get_coach_feedback(request: CoachRequest):
     saved_session: CoachSessionRecord | None = None
     restored_history = [message.model_dump() for message in request.history]
     session_id = request.session_id or ""
+    recommended_programs: list[dict[str, Any]] = []
 
     try:
         if should_persist_session and repo is not None and request.user_id:
@@ -234,6 +376,9 @@ async def get_coach_feedback(request: CoachRequest):
 
             session_id = saved_session.id
 
+        if request.mode == "feedback" and request.user_id:
+            recommended_programs = await _load_coach_recommended_programs(request.user_id)
+
         result = await run_coach_graph(
             session_id=session_id,
             activity_text=activity_input_text,
@@ -242,6 +387,7 @@ async def get_coach_feedback(request: CoachRequest):
             selected_suggestion_index=request.selected_suggestion_index,
             history=restored_history,
             mode=request.mode,
+            recommended_programs=recommended_programs,
         )
 
         if should_persist_session and repo is not None and request.user_id:

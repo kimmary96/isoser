@@ -191,6 +191,7 @@ class CoachPromptInput(TypedDict, total=False):
     section_type: str
     history: list[dict[str, str]]
     selected_suggestion_index: int | None
+    recommended_programs: list[dict[str, Any]]
 
 
 class CoachState(TypedDict):
@@ -205,6 +206,7 @@ class CoachState(TypedDict):
     history: list[dict[str, str]]
     rag_context: str
     rag_results: dict[str, list[dict[str, Any]]]
+    recommended_programs: list[dict[str, Any]]
     feedback: str
     missing_elements: list[str]
     structure_diagnosis: dict[str, Any]
@@ -277,6 +279,36 @@ def _format_history(history: list[dict[str, str]], limit: int = 6) -> str:
     return "\n".join(lines) if lines else "- 없음"
 
 
+def _format_recommended_programs(recommended_programs: list[dict[str, Any]], limit: int = 3) -> str:
+    """Render top recommended programs for prompt grounding."""
+
+    if not recommended_programs:
+        return "- none"
+
+    lines: list[str] = []
+    for index, item in enumerate(recommended_programs[:limit], start=1):
+        title = _safe_text(item.get("title")) or "Untitled program"
+        category = _safe_text(item.get("category")) or "Unspecified"
+        location = _safe_text(item.get("location")) or "Unspecified"
+        deadline = _safe_text(item.get("deadline")) or "Unspecified"
+        reason = _safe_text(item.get("reason")) or "No recommendation reason stored"
+        fit_keywords = [
+            _safe_text(keyword)
+            for keyword in (item.get("fit_keywords") or [])
+            if _safe_text(keyword)
+        ]
+        keyword_text = ", ".join(fit_keywords[:3]) if fit_keywords else "none"
+
+        lines.append(f"{index}. {title}")
+        lines.append(
+            f"   - Meta: category={category} | location={location} | deadline={deadline}"
+        )
+        lines.append(f"   - Reason: {reason}")
+        lines.append(f"   - Fit keywords: {keyword_text}")
+
+    return "\n".join(lines)
+
+
 def build_rag_context(
     job_keyword_patterns: list[dict],
     star_examples: list[dict],
@@ -322,6 +354,10 @@ def build_coach_prompt(
 ) -> str:
     """Build the user prompt for the coach model."""
 
+    recommended_programs_context = _format_recommended_programs(
+        user_input.get("recommended_programs", [])
+    )
+
     selected_index = user_input.get("selected_suggestion_index")
     selected_hint = (
         str(selected_index) if selected_index is not None else "없음"
@@ -331,6 +367,9 @@ def build_coach_prompt(
 ---
 {rag_context}
 ---
+
+[Recommended Programs Context]
+{recommended_programs_context}
 
 [사용자 입력]
 - 목표 직무: {_safe_text(user_input.get("job_title"))}
@@ -741,6 +780,7 @@ async def coach_response_node(state: CoachState) -> CoachState:
         "section_type": state["section_type"],
         "history": state["history"],
         "selected_suggestion_index": state["selected_suggestion_index"],
+        "recommended_programs": state["recommended_programs"],
     }
     if state["mode"] == "intro_generate":
         prompt = build_intro_generate_prompt(
@@ -884,10 +924,12 @@ async def run_coach_graph(
     section_type: str = "",
     selected_suggestion_index: int | None = None,
     mode: CoachMode = "feedback",
+    recommended_programs: list[dict[str, Any]] | None = None,
 ) -> dict:
     """Run the Coach AI graph and return a mode-specific response payload."""
 
     history = history or []
+    recommended_programs = recommended_programs or []
     log_event(
         logger,
         logging.INFO,
@@ -897,6 +939,7 @@ async def run_coach_graph(
         job_title=job_title,
         section_type=section_type,
         history_count=len(history),
+        recommended_program_count=len(recommended_programs),
     )
     initial_state: CoachState = {
         "mode": mode,
@@ -912,6 +955,7 @@ async def run_coach_graph(
             "job_posting_snippets": [],
             "star_examples": [],
         },
+        "recommended_programs": recommended_programs,
         "feedback": "",
         "missing_elements": [],
         "structure_diagnosis": {},

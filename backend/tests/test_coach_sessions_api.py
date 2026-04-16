@@ -216,6 +216,57 @@ def test_get_user_sessions_returns_summaries(client, fake_repo) -> None:
     assert payload[0]["suggestion_type"] == "quantification"
 
 
+def test_feedback_passes_recommended_programs_to_graph(
+    client,
+    fake_repo,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, Any] = {}
+
+    async def fake_run_coach_graph(**kwargs):  # noqa: ANN003
+        captured.update(kwargs)
+        return _graph_result(kwargs["activity_text"])
+
+    async def fake_load_coach_recommended_programs(user_id: str, *, limit: int = 3):  # noqa: ANN202
+        assert user_id == "user-1"
+        assert limit == 3
+        return [
+            {
+                "program_id": "program-1",
+                "title": "Backend Performance Bootcamp",
+                "category": "IT",
+                "location": "Seoul",
+                "deadline": "2026-05-01",
+                "reason": "Matches backend performance tuning and caching experience.",
+                "fit_keywords": ["Redis", "API", "Performance"],
+                "score": 0.91,
+            }
+        ]
+
+    monkeypatch.setattr(coach_router, "run_coach_graph", fake_run_coach_graph)
+    monkeypatch.setattr(
+        coach_router,
+        "_load_coach_recommended_programs",
+        fake_load_coach_recommended_programs,
+    )
+
+    response = client.post(
+        "/coach/feedback",
+        json={
+            "session_id": "session-1",
+            "user_id": "user-1",
+            "activity_description": "Redis cache rollout improved API latency.",
+            "job_title": "Backend Engineer",
+            "section_type": next(iter(coach_router.ALLOWED_SECTION_TYPES)),
+            "selected_suggestion_index": 0,
+            "history": [],
+        },
+    )
+
+    assert response.status_code == 200
+    assert captured["recommended_programs"][0]["title"] == "Backend Performance Bootcamp"
+
+
 def test_get_session_detail_restores_last_exchange(client, fake_repo) -> None:
     fake_repo.sessions["session-1"] = CoachSessionRecord(
         id="session-1",

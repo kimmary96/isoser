@@ -2,6 +2,7 @@
 
 Update 2026-04-16:
 - `backend/routers/programs.py` now uses a db-first recommendation flow: Level 1 static `recommendation_rules`, Level 2 `profile_hash + query_hash` cache in `recommendations`, then Level 3 `ProgramsRAG` fallback.
+- `backend/routers/coach.py` now loads each signed-in user's latest cached recommended programs and injects them into `backend/chains/coach_graph.py` prompt context, with soft-fail behavior when Supabase or recommendation cache is unavailable.
 
 현재 운영 구조의 짧은 요약입니다. 세부 운영 문서는 `docs/automation/` 아래로 분리했습니다.
 

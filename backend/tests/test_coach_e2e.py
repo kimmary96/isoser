@@ -149,6 +149,33 @@ def test_structure_diagnosis_present(client, monkeypatch: pytest.MonkeyPatch) ->
     assert "priority_focus" in structure
 
 
+def test_build_coach_prompt_includes_recommended_program_context() -> None:
+    prompt = coach_graph.build_coach_prompt(
+        rag_context="[RAG]",
+        user_input={
+            "activity_description": "Redis cache rollout improved API latency.",
+            "job_title": "Backend Engineer",
+            "section_type": "?꾨줈?앺듃",
+            "history": [],
+            "recommended_programs": [
+                {
+                    "title": "Backend Performance Bootcamp",
+                    "category": "IT",
+                    "location": "Seoul",
+                    "deadline": "2026-05-01",
+                    "reason": "Matches backend performance tuning and caching experience.",
+                    "fit_keywords": ["Redis", "API", "Performance"],
+                }
+            ],
+        },
+        iteration_count=1,
+    )
+
+    assert "[Recommended Programs Context]" in prompt
+    assert "Backend Performance Bootcamp" in prompt
+    assert "Redis, API, Performance" in prompt
+
+
 def test_coach_feedback_short_input(client) -> None:
     response = client.post(
         "/coach/feedback",

@@ -1386,6 +1386,55 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-17: `scripts/summarize_run_ledgers.py`, `scripts/summarize_actionable_ledgers.py`, `tests/test_summarize_run_ledgers.py`, `tests/test_summarize_actionable_ledgers.py`, `CLAUDE.md`
   - 운영 요약 스크립트가 현재 queue snapshot도 함께 출력하도록 확장해 `tasks/review-required/` 대기 현황을 ledger 이벤트와 별개로 바로 볼 수 있게 함
   - 상위 프로젝트 문서 `CLAUDE.md`에도 supervisor 3단계와 `tasks/review-required/` 전용 큐 의미를 반영해 운영 용어를 맞춤
-- 2026-04-20: `backend/rag/collector/tier4_collectors.py`, `backend/rag/collector/scheduler.py`
+ - 2026-04-20: `backend/rag/collector/tier4_collectors.py`, `backend/rag/collector/scheduler.py`
   - 서울 자치구 Tier 4 HTML collector 6종을 전용 모듈로 분리해 추가하고, scheduler dry-run 경로에 Tier 4 등록을 연결함
   - 실서비스 HTML 구조 기준으로 HTTP-only 구로, `cntrId=CT00006` 고정 성동, Imweb board 패턴 노원, 메인 기반 마포 제약을 각 collector 내부에 고정해 기존 Tier 1~3 계약은 유지함
+- 2026-04-17: `watcher.py`, `tests/test_watcher.py`
+  - 같은 blocked/runtime/push fingerprint에 대한 auto-remediation packet이 이미 active queue에 있으면 watcher가 alert 파일과 ledger는 계속 남기되 중복 Slack 알림은 suppress 하도록 조정함
+  - repeated alert auto-remediation이 이미 진행 중인 동안 같은 root cause가 채널을 다시 paging 하는 운영 노이즈를 줄이는 데 초점을 맞춤
+- 2026-04-17: `backend/rag/programs_rag.py`, `backend/routers/programs.py`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/lib/api/app.ts`, `frontend/lib/types/index.ts`
+  - 추천 점수를 `관련도 0.6 + 마감 임박도 0.4` 하이브리드 스코어로 통일하고, 캐시 조회 시에도 현재 deadline 기준으로 urgency/final score를 다시 계산해 구버전 cache가 정렬을 망치지 않도록 정리함
+  - 캘린더 전용 `GET /recommend/calendar` 및 BFF `GET /api/dashboard/recommend-calendar`를 추가해 `deadline`, `d_day_label`, `relevance_score`, `urgency_score`, `final_score`를 함께 전달하도록 분리함
+## 2026-04-16 recommendation backend stage3
+
+- changed files:
+  - `backend/routers/programs.py`
+  - `backend/rag/recommendation_rules_seed.py`
+  - `backend/.env.example`
+  - `backend/tests/test_programs_router.py`
+  - `backend/tests/test_recommendation_rules_seed.py`
+  - `supabase/migrations/20260416132000_fix_recommendations_cache_contract.sql`
+  - `docs/current-state.md`
+- why:
+  - move `/programs/recommend` to the guide's db-first flow
+  - use `recommendation_rules` before live RAG
+  - cache personalized results by `profile_hash + query_hash`
+  - preserve cached `reason` / `fit_keywords`
+  - document exact backend env key names and where to obtain them
+- preserved behaviors:
+  - anonymous users still get default program recommendations
+  - filtered program list/count routes keep the same API contract
+  - personalized fallback still returns default programs when profile/activity data is insufficient
+- risks / follow-ups:
+  - live Supabase migration application and Work24/Gemini integration are still unverified without secrets
+  - `recommendations` uniqueness changed to `user_id + query_hash + program_id`, so live migration order must be checked before rollout
+
+## 2026-04-16 coach recommendation context
+
+- changed files:
+  - `backend/routers/coach.py`
+  - `backend/chains/coach_graph.py`
+  - `backend/tests/test_coach_e2e.py`
+  - `backend/tests/test_coach_sessions_api.py`
+  - `docs/current-state.md`
+- why:
+  - load the latest cached recommended programs for signed-in users before running the coach graph
+  - inject recommendation titles, reasons, and fit keywords into the coach prompt as additional grounding context
+  - keep coach feedback working even when Supabase or the recommendation cache is unavailable
+- preserved behaviors:
+  - intro-generate mode still skips recommendation loading and session persistence
+  - feedback mode still works for anonymous users and for users with no cached recommendations
+  - existing coach session persistence contract is unchanged
+- risks / follow-ups:
+  - the prompt now depends on recommendation cache freshness, so stale `recommendations` rows can influence coach tone until live invalidation is verified
+  - Gemini fallback responses still ignore recommendation context because fallback generation remains heuristic-only
