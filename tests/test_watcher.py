@@ -702,12 +702,32 @@ def test_build_slack_alert_payload_adds_structured_blocks() -> None:
 
 
 def test_startup_warning_messages_warns_when_slack_webhook_missing(monkeypatch) -> None:
-    monkeypatch.setattr(watcher, "SLACK_WEBHOOK_URL", "")
+    monkeypatch.setattr(watcher, "get_slack_webhook_url", lambda: "")
 
     warnings = watcher.startup_warning_messages()
 
     assert len(warnings) == 1
     assert "SLACK_WEBHOOK_URL" in warnings[0]
+
+
+def test_get_slack_webhook_url_reads_process_env(monkeypatch) -> None:
+    monkeypatch.setenv("SLACK_WEBHOOK_URL", "https://hooks.slack.com/services/test/process")
+    monkeypatch.setattr(watcher, "WATCHER_ENV_PATH", "./missing.env")
+
+    assert watcher.get_slack_webhook_url() == "https://hooks.slack.com/services/test/process"
+
+
+def test_get_slack_webhook_url_falls_back_to_watcher_env(tmp_path, monkeypatch) -> None:
+    watcher_env_path = tmp_path / ".watcher.env"
+    watcher_env_path.write_text(
+        "SLACK_WEBHOOK_URL=https://hooks.slack.com/services/test/file\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.delenv("SLACK_WEBHOOK_URL", raising=False)
+    monkeypatch.setattr(watcher, "WATCHER_ENV_PATH", str(watcher_env_path))
+
+    assert watcher.get_slack_webhook_url() == "https://hooks.slack.com/services/test/file"
 
 
 def test_move_stale_running_tasks_removes_duplicate_running_marker(tmp_path, monkeypatch) -> None:

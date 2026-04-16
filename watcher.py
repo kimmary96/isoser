@@ -18,7 +18,6 @@ from shutil import which
 from datetime import datetime
 from typing import Optional
 from pathlib import Path
-from urllib import error as urllib_error
 from urllib import request as urllib_request
 
 from scripts.watcher_shared import (
@@ -48,8 +47,8 @@ ALERTS_DIR = "./dispatch/alerts"
 LEDGER_PATH = "./dispatch/run-ledger.jsonl"
 COWORK_PACKETS_DIR = "./cowork/packets"
 WATCHER_LOCK_PATH = "./.watcher.lock"
+WATCHER_ENV_PATH = "./.watcher.env"
 PROJECT_PATH = r"D:\02_2025_AI_Lab\isoser"
-SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL", "").strip()
 STALE_RUNNING_MINUTES = 20
 RUNNING_HEARTBEAT_SECONDS = 30
 MAX_AUTO_RECOVERY_ATTEMPTS = 2
@@ -102,11 +101,37 @@ def ensure_directories() -> None:
 
 def startup_warning_messages() -> list[str]:
     warnings: list[str] = []
-    if not SLACK_WEBHOOK_URL:
+    if not get_slack_webhook_url():
         warnings.append(
             "경고: SLACK_WEBHOOK_URL 이 설정되지 않아 watcher alert는 dispatch/alerts 에만 기록되고 Slack 전송은 생략됩니다."
         )
     return warnings
+
+
+def get_slack_webhook_url() -> str:
+    env_value = os.environ.get("SLACK_WEBHOOK_URL", "").strip()
+    if env_value:
+        return env_value
+
+    watcher_env_path = Path(WATCHER_ENV_PATH)
+    if not watcher_env_path.exists():
+        return ""
+
+    try:
+        for line in watcher_env_path.read_text(encoding="utf-8").splitlines():
+            stripped = line.strip()
+            if not stripped or stripped.startswith("#") or "=" not in stripped:
+                continue
+            name, value = stripped.split("=", 1)
+            if name.strip() != "SLACK_WEBHOOK_URL":
+                continue
+            resolved = value.strip().strip("\"'")
+            if resolved:
+                return resolved
+    except OSError as error:
+        print(f"watcher env 파일 읽기 실패: {type(error).__name__}: {error}")
+
+    return ""
 
 
 def append_run_ledger(
@@ -519,7 +544,8 @@ def notify_slack_for_alert(
     summary: Optional[str] = None,
     next_action: Optional[str] = None,
 ) -> None:
-    if not SLACK_WEBHOOK_URL:
+    webhook_url = get_slack_webhook_url()
+    if not webhook_url:
         return
 
     payload = build_slack_alert_payload(
@@ -532,7 +558,7 @@ def notify_slack_for_alert(
         next_action=next_action,
     )
     request = urllib_request.Request(
-        SLACK_WEBHOOK_URL,
+        webhook_url,
         data=json.dumps(payload).encode("utf-8"),
         headers={"Content-Type": "application/json"},
         method="POST",
@@ -540,7 +566,7 @@ def notify_slack_for_alert(
     try:
         with urllib_request.urlopen(request, timeout=10) as response:
             response.read()
-    except (urllib_error.URLError, TimeoutError) as error:
+    except Exception as error:
         print(f"Slack alert 전송 실패: {type(error).__name__}: {error}")
 
 

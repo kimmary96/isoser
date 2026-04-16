@@ -1,37 +1,36 @@
 ## Overall assessment
 
-Not ready for promotion yet. The frontmatter is complete, `planned_against_commit: 469cd3f` matches current `HEAD`, and the cited current-code assumptions mostly match the repository. However, execution is blocked by a missing referenced packet and by unresolved behavior decisions that would force the implementer to choose semantics on their own.
+Not ready for promotion yet. The packet frontmatter is complete, `planned_against_commit: 469cd3f` resolves in the repo, and drift against the cited implementation area is limited rather than severe. However, the packet currently depends on a missing compare-relevance reference file and cites the dashboard display path incompletely, so an execution runner would still have to guess part of the intended scope.
 
 ## Findings
 
-- Frontmatter completeness: complete. Required fields `id`, `status`, `type`, `title`, `planned_at`, and `planned_against_commit` are present.
-- Optional metadata: `planned_files` and `planned_worktree_fingerprint` are not present, so there is nothing extra to verify there.
-- Missing reference: the packet says the compare-page work should follow `cowork/packets/feat-compare-relevance-score.md`, but that file does not exist in the current repository. The packet cannot be executed as written for the compare-page portion without that source spec.
-- Repository path accuracy: the packet correctly points to `backend/rag/programs_rag.py`, `backend/routers/programs.py`, `frontend/app/(landing)/compare/programs-compare-client.tsx`, and `frontend/lib/types/index.ts`. However, the dashboard rendering path is understated. The relevance badge is actually rendered in `frontend/app/dashboard/page.tsx`, while `frontend/app/api/dashboard/recommended-programs/route.ts` only reshapes backend data.
-- Verification command accuracy: acceptance criterion 8 uses `python -m mypy routers/programs.py --ignore-missing-imports`, but the repository path is `backend/routers/programs.py`. The packet should state the exact working directory or use the repo-root path.
-- Current-state match: the compare page still contains the expected placeholder UI. `frontend/app/(landing)/compare/programs-compare-client.tsx` still shows `준비 중` in the relevance section, `backend/routers/programs.py` does not expose `/programs/compare-relevance`, and `frontend/lib/types/index.ts` does not define `ProgramRelevanceItem`.
-- Drift risk: there are already staged local changes in overlapping frontend files, including `frontend/app/dashboard/page.tsx`, `frontend/app/api/dashboard/recommended-programs/route.ts`, and `frontend/lib/types/index.ts`. The packet is still reviewable against current `HEAD`, but promotion into execution without first acknowledging that overlap would be risky.
-- Acceptance ambiguity: the packet adds `relevance_score` to the API but does not fully specify the fate of the existing `ProgramRecommendItem.score` field. That is execution-critical because the current frontend path already uses `item.score` via `_score`, and the packet also says `final_score` should remain for internal sorting only.
-- Acceptance ambiguity: the packet leaves the recommendation sort rule unresolved in Open Question 1. That affects backend ranking, cache ordering, and what users see first, so it should not remain open at promotion time.
-- Cache/schema ambiguity: the packet requires `relevance_score` to be added to the `recommendations` table and says legacy cached rows should fall back from `final_score`, but it does not explicitly state how `_load_cached_recommendations`, `_save_recommendations`, response serialization, and cache ordering should behave once both fields exist.
+- Frontmatter completeness: pass. Required fields `id`, `status`, `type`, `title`, `planned_at`, and `planned_against_commit` are present.
+- Optional metadata: `planned_files` and `planned_worktree_fingerprint` are not present, so there was nothing extra to verify.
+- Repository path accuracy: partial pass. The cited compare-page reference `cowork/packets/feat-compare-relevance-score.md` does not exist in the current repo. The only nearby packet is `cowork/packets/TASK-2026-04-15-1100-programs-compare.md`, and that packet still specifies the compare AI section as `"준비 중"`, so it does not serve as the promised implementation spec.
+- Repository path accuracy: partial pass. The packet cites `frontend/app/api/dashboard/recommended-programs/route.ts` for frontend display, but the actual rendered relevance badge is currently in `frontend/app/dashboard/page.tsx`. The API route only maps backend `item.score` into frontend `_score`.
+- Drift risk: acceptable but real. Since `469cd3f`, only `frontend/app/dashboard/page.tsx` and `frontend/lib/types/index.ts` changed among the packet’s named files. `backend/rag/programs_rag.py`, `backend/routers/programs.py`, and `frontend/app/(landing)/compare/programs-compare-client.tsx` have not drifted relative to that commit. This means the packet is still close to the codebase, but the dashboard-specific file references should be refreshed to current HEAD `767a26942fefc3b05935f810f7b52753069272b5`.
+- Current-code validation: pass. The packet’s main assumptions about the code still hold:
+  - `backend/rag/programs_rag.py` still includes `name` and `portfolio_url` in `_profile_document()`.
+  - Activity limits are still `activities[:10]` for the profile document and `activities[:20]` for fallback keywords.
+  - Both fallback and semantic paths still compute `final_score = relevance/semantic * 0.8 + urgency_score * 0.2`.
+  - `backend/routers/programs.py` still exposes `final_score` and `urgency_score` but no `relevance_score`.
+  - `frontend/app/(landing)/compare/programs-compare-client.tsx` still renders the `"★ 나와의 관련도 — AI 분석 (준비 중)"` placeholder.
+  - No `/programs/compare-relevance` endpoint or `ProgramRelevanceItem` type exists today.
+- Acceptance clarity: incomplete. Criteria 5 and 6 depend on an external compare-relevance spec that is missing. As written, the runner does not have a concrete request/response contract for `/programs/compare-relevance`, the exact compare-page data shape, or the precise non-login response shape beyond a badge string.
+- Missing references: material. The packet says to implement `feat-compare-relevance-score.md` “그대로” and to review it for drift first, but that file is unavailable locally. That is a blocking reference gap for promotion.
 
 ## Recommendation
 
-Do not promote yet.
+Do not promote this packet yet. Make these packet changes first:
 
-Before promotion, update the packet to:
+- Replace the missing `cowork/packets/feat-compare-relevance-score.md` reference with the correct local file path, or inline the compare-relevance spec directly into this packet.
+- Update the frontend implementation references to match the current consumer chain: `frontend/app/api/dashboard/recommended-programs/route.ts`, `frontend/app/dashboard/page.tsx`, and `frontend/lib/types/index.ts`.
+- Add the exact `/programs/compare-relevance` request and response schema, including the logged-out behavior and the fields needed to satisfy acceptance criteria 5 and 6 without guesswork.
 
-- attach or restore the missing `cowork/packets/feat-compare-relevance-score.md` reference, or inline the exact compare-page requirements directly into this packet;
-- resolve the sort rule explicitly, instead of leaving it as an open question;
-- define the response-field contract exactly: what `ProgramRecommendItem.score` means after this task, whether frontend should read `relevance_score` directly, and whether any fallback order is required for old cache rows;
-- correct the frontend touch list to include `frontend/app/dashboard/page.tsx` as a direct implementation target;
-- correct the mypy verification path or state the intended working directory;
-- acknowledge the existing staged overlap in the dashboard frontend files so the implementer knows this task must be merged carefully against current local changes.
-
-After those packet changes, this looks promotable with minor revision rather than a full rewrite.
+If those fixes are made, the packet looks promotable with minor changes only. The current code drift is low enough that promotion should be safe after the missing reference and acceptance-contract gaps are closed.
 
 ## Review Run Metadata
 
-- generated_at: `2026-04-16T13:12:05`
+- generated_at: `2026-04-16T13:42:18`
 - watcher_exit_code: `0`
-- codex_tokens_used: `85,696`
+- codex_tokens_used: `66,397`
