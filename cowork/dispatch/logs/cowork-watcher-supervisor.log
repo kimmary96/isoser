@@ -10841,3 +10841,2640 @@ index 54f5cbb8ace03210da099a2c678a200ced3b759a..3d49208b21b776b68dd35f7ba5a1209d
 [2026-04-16T13:36:32] [cowork_watcher] Launching watcher process.
 [2026-04-16T13:37:26] [cowork_watcher] Supervisor started. run_script=D:\02_2025_AI_Lab\isoser\scripts\run_cowork_watcher.ps1 lock=D:\02_2025_AI_Lab\isoser\.cowork_watcher.lock
 [2026-04-16T13:37:26] [cowork_watcher] Launching watcher process.
+cowork watcher 시작됨. cowork/packets 감시 중...
+경고: packet review 시 commit drift 감지 (planned=469cd3f, head=767a26942fefc3b05935f810f7b52753069272b5)
+Codex review 실행: TASK-2026-04-16-1130-relevance-score-accuracy.md
+2026-04-16T04:40:03.844497Z  WARN codex_core::plugins::manager: failed to warm featured plugin ids cache error=remote plugin sync request to https://chatgpt.com/backend-api/plugins/featured failed with status 403 Forbidden: <html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style global>body{font-family:Arial,Helvetica,sans-serif}.container{align-items:center;display:flex;flex-direction:column;gap:2rem;height:100%;justify-content:center;width:100%}@keyframes enlarge-appear{0%{opacity:0;transform:scale(75%) rotate(-90deg)}to{opacity:1;transform:scale(100%) rotate(0deg)}}.logo{color:#8e8ea0}.scale-appear{animation:enlarge-appear .4s ease-out}@media (min-width:768px){.scale-appear{height:48px;width:48px}}.data:empty{display:none}.data{border-radius:5px;color:#8e8ea0;text-align:center}@media (prefers-color-scheme:dark){body{background-color:#343541}.logo{color:#acacbe}}</style>
+  <meta http-equiv="refresh" content="360"></head>
+  <body>
+    <div class="container">
+      <div class="logo">
+        <svg
+          width="41"
+          height="41"
+          viewBox="0 0 41 41"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          strokeWidth="2"
+          class="scale-appear"
+        >
+          <path
+            d="M37.5324 16.8707C37.9808 15.5241 38.1363 14.0974 37.9886 12.6859C37.8409 11.2744 37.3934 9.91076 36.676 8.68622C35.6126 6.83404 33.9882 5.3676 32.0373 4.4985C30.0864 3.62941 27.9098 3.40259 25.8215 3.85078C24.8796 2.7893 23.7219 1.94125 22.4257 1.36341C21.1295 0.785575 19.7249 0.491269 18.3058 0.500197C16.1708 0.495044 14.0893 1.16803 12.3614 2.42214C10.6335 3.67624 9.34853 5.44666 8.6917 7.47815C7.30085 7.76286 5.98686 8.3414 4.8377 9.17505C3.68854 10.0087 2.73073 11.0782 2.02839 12.312C0.956464 14.1591 0.498905 16.2988 0.721698 18.4228C0.944492 20.5467 1.83612 22.5449 3.268 24.1293C2.81966 25.4759 2.66413 26.9026 2.81182 28.3141C2.95951 29.7256 3.40701 31.0892 4.12437 32.3138C5.18791 34.1659 6.8123 35.6322 8.76321 36.5013C10.7141 37.3704 12.8907 37.5973 14.9789 37.1492C15.9208 38.2107 17.0786 39.0587 18.3747 39.6366C19.6709 40.2144 21.0755 40.5087 22.4946 40.4998C24.6307 40.5054 26.7133 39.8321 28.4418 38.5772C30.1704 37.3223 31.4556 35.5506 32.1119 33.5179C33.5027 33.2332 34.8167 32.6547 35.9659 31.821C37.115 30.9874 38.0728 29.9178 38.7752 28.684C39.8458 26.8371 40.3023 24.6979 40.0789 22.5748C39.8556 20.4517 38.9639 18.4544 37.5324 16.8707ZM22.4978 37.8849C20.7443 37.8874 19.0459 37.2733 17.6994 36.1501C17.7601 36.117 17.8666 36.0586 17.936 36.0161L25.9004 31.4156C26.1003 31.3019 26.2663 31.137 26.3813 30.9378C26.4964 30.7386 26.5563 30.5124 26.5549 30.2825V19.0542L29.9213 20.998C29.9389 21.0068 29.9541 21.0198 29.9656 21.0359C29.977 21.052 29.9842 21.0707 29.9867 21.0902V30.3889C29.9842 32.375 29.1946 34.2791 27.7909 35.6841C26.3872 37.0892 24.4838 37.8806 22.4978 37.8849ZM6.39227 31.0064C5.51397 29.4888 5.19742 27.7107 5.49804 25.9832C5.55718 26.0187 5.66048 26.0818 5.73461 26.1244L13.699 30.7248C13.8975 30.8408 14.1233 30.902 14.3532 30.902C14.583 30.902 14.8088 30.8408 15.0073 30.7248L24.731 25.1103V28.9979C24.7321 29.0177 24.7283 29.0376 24.7199 29.0556C24.7115 29.0736 24.6988 29.0893 24.6829 29.1012L16.6317 33.7497C14.9096 34.7416 12.8643 35.0097 10.9447 34.4954C9.02506 33.9811 7.38785 32.7263 6.39227 31.0064ZM4.29707 13.6194C5.17156 12.0998 6.55279 10.9364 8.19885 10.3327C8.19885 10.4013 8.19491 10.5228 8.19491 10.6071V19.808C8.19351 20.0378 8.25334 20.2638 8.36823 20.4629C8.48312 20.6619 8.64893 20.8267 8.84863 20.9404L18.5723 26.5542L15.206 28.4979C15.1894 28.5089 15.1703 28.5155 15.1505 28.5173C15.1307 28.5191 15.1107 28.516 15.0924 28.5082L7.04046 23.8557C5.32135 22.8601 4.06716 21.2235 3.55289 19.3046C3.03862 17.3858 3.30624 15.3413 4.29707 13.6194ZM31.955 20.0556L22.2312 14.4411L25.5976 12.4981C25.6142 12.4872 25.6333 12.4805 25.6531 12.4787C25.6729 12.4769 25.6928 12.4801 25.7111 12.4879L33.7631 17.1364C34.9967 17.849 36.0017 18.8982 36.6606 20.1613C37.3194 21.4244 37.6047 22.849 37.4832 24.2684C37.3617 25.6878 36.8382 27.0432 35.9743 28.1759C35.1103 29.3086 33.9415 30.1717 32.6047 30.6641C32.6047 30.5947 32.6047 30.4733 32.6047 30.3889V21.188C32.6066 20.9586 32.5474 20.7328 32.4332 20.5338C32.319 20.3348 32.154 20.1698 31.955 20.0556ZM35.3055 15.0128C35.2464 14.9765 35.1431 14.9142 35.069 14.8717L27.1045 10.2712C26.906 10.1554 26.6803 10.0943 26.4504 10.0943C26.2206 10.0943 25.9948 10.1554 25.7963 10.2712L16.0726 15.8858V11.9982C16.0715 11.9783 16.0753 11.9585 16.0837 11.9405C16.0921 11.9225 16.1048 11.9068 16.1207 11.8949L24.1719 7.25025C25.4053 6.53903 26.8158 6.19376 28.2383 6.25482C29.6608 6.31589 31.0364 6.78077 32.2044 7.59508C33.3723 8.40939 34.2842 9.53945 34.8334 10.8531C35.3826 12.1667 35.5464 13.6095 35.3055 15.0128ZM14.2424 21.9419L10.8752 19.9981C10.8576 19.9893 10.8423 19.9763 10.8309 19.9602C10.8195 19.9441 10.8122 19.9254 10.8098 19.9058V10.6071C10.8107 9.18295 11.2173 7.78848 11.9819 6.58696C12.7466 5.38544 13.8377 4.42659 15.1275 3.82264C16.4173 3.21869 17.8524 2.99464 19.2649 3.1767C20.6775 3.35876 22.0089 3.93941 23.1034 4.85067C23.0427 4.88379 22.937 4.94215 22.8668 4.98473L14.9024 9.58517C14.7025 9.69878 14.5366 9.86356 14.4215 10.0626C14.3065 10.2616 14.2466 10.4877 14.2479 10.7175L14.2424 21.9419ZM16.071 17.9991L20.4018 15.4978L24.7325 17.9975V22.9985L20.4018 25.4983L16.071 22.9985V17.9991Z"
+            fill="currentColor"
+          />
+        </svg>
+      </div>
+      <div class="data"><div class="main-wrapper" role="main"><div class="main-content"><noscript><div class="h2"><span id="challenge-error-text">Enable JavaScript and cookies to continue</span></div></noscript></div></div><script>(function(){window._cf_chl_opt = {cFPWv: 'g',cH: '8ETyVX9P5OIGFsC2YQXgAQ_bac3_FKmV3S6W56i0WfQ-1776314403-1.2.1.1-M.CDnWu_z_hVhOKmghIzYubzu_iaNWwCSAjgS7Ih78Nzt1lGsdJkhsrLr9Am3n1h',cITimeS: '1776314403',cRay: '9ed0827ab8925995',cTplB: '0',cTplC:1,cTplO:0,cTplV:5,cType: 'managed',cUPMDTk:"/backend-api/plugins/featured?platform=codex&__cf_chl_tk=k8tJzV7MTnBJztpZZYqg7uFxp4KVZeYKLYqqlamJMzU-1776314403-1.0.1.1-b71fnMoJbhiIOm6rXviZk4Uif3iVYJ3udA_KBZIrSCQ",cvId: '3',cZone: 'chatgpt.com',fa:"/backend-api/plugins/featured?platform=codex&__cf_chl_f_tk=k8tJzV7MTnBJztpZZYqg7uFxp4KVZeYKLYqqlamJMzU-1776314403-1.0.1.1-b71fnMoJbhiIOm6rXviZk4Uif3iVYJ3udA_KBZIrSCQ",md: 'i8iLZaveBJYfvmOtFkYJTCvCiOPEW0KAY5Q2bNhAJeg-1776314403-1.2.1.1-W9kjvSuAsg5c5RGUFVxYe8j1ua1v2BV9uUEntxnFty3b12qL.kJ2A2OOPYbjsLB0mb5JoaccqYc240FLnAl2TOP57o_0DdQiR0s099r820jKT0Uu2jmOvOl3.GOlkxDnZ3l0ySL_bl9eDZyqJ_ypEgQmuKlzdV4Ew6B3sUkRgt0cXaVxD0._a8YujC8zjwLyL2E1RXY2RZmVdnxrbd2Hf1GNV6.36ebebPsxc809gqADNpPoKnM5OpUCEi6Cm9j36dqbLbKtdmsjWx2xrD1uiq37BJIlJxzWA6M5XK7SxwqrNwL75it86DxW0LZF5QOikTYo5L6a_hWgAWTCPgE322l66ee1ZYFDRyeGW3v59VLT3oj70rsBvoG19VVOwqLMsF06VxyZxNxGQT922ecmbvTbESCSFxcFQ9uBQwbn.FHpe.fDfuE0ipcoIPXaEZquPs09wGuor.c19XNR.ijFU3Br8Vn_UABPXQgnuHdAZQ4tsInjoL9g.6c8lY0z8SWkzLajRVGP5_zPQhC3uKpa9zzohzPKZmft5gf.l5xwR0rjOgiotd0gd.9vaDWK.IUeBIwqrLlq4eKnRW30R4ZZtoefPuYCaBdpDq9nqocYf5iCMX43LGN37VoYs_vXfT47maQ_D70Zau9v8Ev3Jsnlzn7vtBBZK1akZVOA.Psr6IxfnTz0EUMxvfJGH6yPAV0Tu.p8JmkrGg3sOkSNqUi15om3gAaBivupJQU0KwaPPAdiOOqlhlOzwGOH8yOyoScu4Pzo7aNqH2n8.a23tHBOC2OhjdoJpVhfkGZBJg5WWhcM19T4s3YM6qoudyyHhC118PY5E5fYsei1VWXy9w3Pj5HP2DXQGq0fYW8toJqDFrh3HFavDpYs33NybbdsK10nw2nWChhp2QDq2ufd4G3fKIjdauAwcQIDWKD08GlbWkyQ9hqtyiEoVrPbS.Car3o4pWf4gEhYWFuuxl8EpKzRyYyiVj.hhEppkB3bKN4V36g5QZpIdTpGRwKGTSt5nW8258S3TAIZtg.jfC7Vtll4aqCAO_5e5X50dVAqIS7qvYk',mdrd: 'bnyB6usBShEtjrZ6.02_jwA0mXsLBIi577quQqhJVcA-1776314403-1.2.1.1-2BoanWjxkr44v7kI_rL9rLp4705q7I8vP7HHtztRMA0iRTxC7iHv.0RTrQ2WNQ3zQB35jMMwPjCFEyzpZtXRDNhOWMq4S5ATcT7LhcBXiMTT98SVNnD5VrbPo._TAhxLKyyGyT8H_gBJ_eYM0DDfdgDqZbn3NhR8.yrUKpfn8_Z5egzZK2fm65vXWH56Sd4p3_hGXiH_hBu48rsw1SmA6TjGN.Ffjgh7GqF3pj4IyTgSYzQ8V9.Z.wcuUNavbR5qxUtCAxPgFlynseDfi_yYz9H0fKLAfuiobXKSJnlrSqoTgVdDDu8Jq5Q_wzp8XQ_s9LSSy_IqvCUxO1kUaiFL9wBCMGSb9Bs96hwnxMCcuNd6lEI7A9jEwGS2qpBDwUy5mejbapdTazzNhA2xpnbLTzSNEUTCwseMhjc.VKLCqa757ddxNzOl.7j0ZqeDzsCcwHrqRroAf1g8Z49m4JTil4QVkUJK8TvnyEW.j8Z7aCZAey7Oc.R3yN0QzDY8F5UcmosEDtEulu8d1VXulye.Dqeh7vFDlTYEWFdiWq.YAmYyliTELA1u0ybF.MVxNLLq.lD9izJoj7Z_KBQB4e9Xc.9Mx5sb.ZnAxxseKo3uy8oXaWDVUQKHYryfiYlRqRshGLOT7dA9EHX8xvoJP3UpbeGrTfLLSjbzPGva04Tuzx6Z03HgLSu3vb6Ss1kmAYsu5cs2m391zdvFy2Ft__eEw7LkJ126NTZyxxqBMabd9XDvH4nG50yAitYry3iaNkYlECJXLjdq.dW2hV1rpOmMXBB2X.5Ab19aBDoxA1PR_N7200gzJ_3Tjc.XwFyWrNG6HKgDfdfOg_FWWfLJqh2viIbURuvIUkrFSghT9pmkXAqOieUjfjuj4m10yxsBP7ivW5TXqLp0MZr8KiwHaHvr2PARHI7CLYQ7PYC_JDx6zQria2ROMFQ_vzGAq_dljgetan2KT7LCEfVLDSkohIn_3Rz2MdmwPbmrjVZk6ceXCATnb.pwKTjxFwUFggXFOBmiUEzAshudOpQSTDbVPTgyPmOBo12Xehi347gruL3Z1WXuvqPEMOYb.rJyzLFYRryIZOFmf9Tjgv6En8vaiTpxCO8mK6TjHJMmb5vUvRSa4wO2J.VGtTcX7D.8JkrnN_0YA2k2onoTkGK2YvZhnzvgfJh8pXyg3iUnFNufin0TxmOZeH0g6iHEWLQbY6PhBC9GA5QNFxvcXuSx2MTVl2qfC31za0OINZRwWzSCvu4JUTZ5KxMxY923fHT3TXNVJXekwoItJ6ZHz2mWBm5IuShyA5irFyEGsq6xnrVjvZ.r6f0wn2RmZ7jRWKhTB7sgW28oTg_Q9np82ebff1LqJnQ0JaSB1BjddI9bUphaKLfmo.h9q_vxIzReFGUwTMH63XB7Npi5LxikgtLS8TN_1fmt.prb9W.BaZ0ZlCwlvnzEmCEhd5PEhQC9AFvuqf.3F1EkwSMkjJ_A0eLQUgQhWKNcCo8HDut.nxh7UrucumfpO2SFiU3VQNx9fnTnmeFnQmY8n2F6.Averyot77avoC2yDc_d6Pw2vFJLDIIYrptBKeU5pEOTnIjxECLgZ8ugrtSUCtf5129XdWKqMZvfz2Orlgx7PYoMUAh6tBwt10qm9yYqydHIRXGDCFw1RsGVZupIieoGNv4xQ17DMKD6XtUFvUus5YoKK1JpBRt5duNMSj8WodK.acteqScFGgg3ANc2Awf1BKZrqp4d6z69VT.DcWbTCe3va4Y1.IlhchZbd7CXkyDR9xWBmllDm0bzoh40R3RN0NolpR.N0INwb3rSG6GFemXkVFjsuEnv4JB_ma8DTylYE2VL8LjjVe9OnHm6GCmZbTnPeSIG1fppyVh6jksvulAJf43YdcZvHPdMrzwKfYb48Bn8Z3I5cwhcu77f8W0RvcDXPuO2QU8i1PzZLlJ0_5me9ah7pm0d7G.gIn8hiyiy7VfxZAEoXpYrnesi63HSzd8GuyYRWIItpcB8AXotKecG0T.jphtJ5Qnspbu.JMw4tp4drBb1zSFpJtYwz8LtQdBPScNnZDC_wPb72VKke9LZXhDQkdIf7vPo42YUEY9fiUalIK1.cB83h7jArkxesN34rDifdC53azqg0teK.ZomNiwskuThEo8kcQ9iJHCEmcRKRYzHK0V6UMq2uAr6M8hKsViy0kaN3iFJWgHpuLTzfgHb7wfkJW8CftGhj.XeiF.qXEuShSMymnHlbcGN12qJTKwg7zuiM3QMV95yffclEiqvcwXBk5VpyIinORqnB5f9ohP5VOHdYvI_',};var a = document.createElement('script');a.src = '/cdn-cgi/challenge-platform/h/g/orchestrate/chl_page/v1?ray=9ed0827ab8925995';window._cf_chl_opt.cOgUHash = location.hash === '' && location.href.indexOf('#') !== -1 ? '#' : location.hash;window._cf_chl_opt.cOgUQuery = location.search === '' && location.href.slice(0, location.href.length - window._cf_chl_opt.cOgUHash.length).indexOf('?') !== -1 ? '?' : location.search;if (window.history && window.history.replaceState) {var ogU = location.pathname + window._cf_chl_opt.cOgUQuery + window._cf_chl_opt.cOgUHash;history.replaceState(null, null,"/backend-api/plugins/featured?platform=codex&__cf_chl_rt_tk=k8tJzV7MTnBJztpZZYqg7uFxp4KVZeYKLYqqlamJMzU-1776314403-1.0.1.1-b71fnMoJbhiIOm6rXviZk4Uif3iVYJ3udA_KBZIrSCQ"+ window._cf_chl_opt.cOgUHash);a.onload = function() {history.replaceState(null, null, ogU);}}document.getElementsByTagName('head')[0].appendChild(a);}());</script></div>
+    </div>
+  </body>
+</html>
+
+2026-04-16T04:40:03.844642Z  WARN codex_core::plugins::startup_sync: startup remote plugin sync failed; will retry on next app-server start error=remote plugin sync request to https://chatgpt.com/backend-api/plugins/list failed with status 403 Forbidden: <html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style global>body{font-family:Arial,Helvetica,sans-serif}.container{align-items:center;display:flex;flex-direction:column;gap:2rem;height:100%;justify-content:center;width:100%}@keyframes enlarge-appear{0%{opacity:0;transform:scale(75%) rotate(-90deg)}to{opacity:1;transform:scale(100%) rotate(0deg)}}.logo{color:#8e8ea0}.scale-appear{animation:enlarge-appear .4s ease-out}@media (min-width:768px){.scale-appear{height:48px;width:48px}}.data:empty{display:none}.data{border-radius:5px;color:#8e8ea0;text-align:center}@media (prefers-color-scheme:dark){body{background-color:#343541}.logo{color:#acacbe}}</style>
+  <meta http-equiv="refresh" content="360"></head>
+  <body>
+    <div class="container">
+      <div class="logo">
+        <svg
+          width="41"
+          height="41"
+          viewBox="0 0 41 41"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          strokeWidth="2"
+          class="scale-appear"
+        >
+          <path
+            d="M37.5324 16.8707C37.9808 15.5241 38.1363 14.0974 37.9886 12.6859C37.8409 11.2744 37.3934 9.91076 36.676 8.68622C35.6126 6.83404 33.9882 5.3676 32.0373 4.4985C30.0864 3.62941 27.9098 3.40259 25.8215 3.85078C24.8796 2.7893 23.7219 1.94125 22.4257 1.36341C21.1295 0.785575 19.7249 0.491269 18.3058 0.500197C16.1708 0.495044 14.0893 1.16803 12.3614 2.42214C10.6335 3.67624 9.34853 5.44666 8.6917 7.47815C7.30085 7.76286 5.98686 8.3414 4.8377 9.17505C3.68854 10.0087 2.73073 11.0782 2.02839 12.312C0.956464 14.1591 0.498905 16.2988 0.721698 18.4228C0.944492 20.5467 1.83612 22.5449 3.268 24.1293C2.81966 25.4759 2.66413 26.9026 2.81182 28.3141C2.95951 29.7256 3.40701 31.0892 4.12437 32.3138C5.18791 34.1659 6.8123 35.6322 8.76321 36.5013C10.7141 37.3704 12.8907 37.5973 14.9789 37.1492C15.9208 38.2107 17.0786 39.0587 18.3747 39.6366C19.6709 40.2144 21.0755 40.5087 22.4946 40.4998C24.6307 40.5054 26.7133 39.8321 28.4418 38.5772C30.1704 37.3223 31.4556 35.5506 32.1119 33.5179C33.5027 33.2332 34.8167 32.6547 35.9659 31.821C37.115 30.9874 38.0728 29.9178 38.7752 28.684C39.8458 26.8371 40.3023 24.6979 40.0789 22.5748C39.8556 20.4517 38.9639 18.4544 37.5324 16.8707ZM22.4978 37.8849C20.7443 37.8874 19.0459 37.2733 17.6994 36.1501C17.7601 36.117 17.8666 36.0586 17.936 36.0161L25.9004 31.4156C26.1003 31.3019 26.2663 31.137 26.3813 30.9378C26.4964 30.7386 26.5563 30.5124 26.5549 30.2825V19.0542L29.9213 20.998C29.9389 21.0068 29.9541 21.0198 29.9656 21.0359C29.977 21.052 29.9842 21.0707 29.9867 21.0902V30.3889C29.9842 32.375 29.1946 34.2791 27.7909 35.6841C26.3872 37.0892 24.4838 37.8806 22.4978 37.8849ZM6.39227 31.0064C5.51397 29.4888 5.19742 27.7107 5.49804 25.9832C5.55718 26.0187 5.66048 26.0818 5.73461 26.1244L13.699 30.7248C13.8975 30.8408 14.1233 30.902 14.3532 30.902C14.583 30.902 14.8088 30.8408 15.0073 30.7248L24.731 25.1103V28.9979C24.7321 29.0177 24.7283 29.0376 24.7199 29.0556C24.7115 29.0736 24.6988 29.0893 24.6829 29.1012L16.6317 33.7497C14.9096 34.7416 12.8643 35.0097 10.9447 34.4954C9.02506 33.9811 7.38785 32.7263 6.39227 31.0064ZM4.29707 13.6194C5.17156 12.0998 6.55279 10.9364 8.19885 10.3327C8.19885 10.4013 8.19491 10.5228 8.19491 10.6071V19.808C8.19351 20.0378 8.25334 20.2638 8.36823 20.4629C8.48312 20.6619 8.64893 20.8267 8.84863 20.9404L18.5723 26.5542L15.206 28.4979C15.1894 28.5089 15.1703 28.5155 15.1505 28.5173C15.1307 28.5191 15.1107 28.516 15.0924 28.5082L7.04046 23.8557C5.32135 22.8601 4.06716 21.2235 3.55289 19.3046C3.03862 17.3858 3.30624 15.3413 4.29707 13.6194ZM31.955 20.0556L22.2312 14.4411L25.5976 12.4981C25.6142 12.4872 25.6333 12.4805 25.6531 12.4787C25.6729 12.4769 25.6928 12.4801 25.7111 12.4879L33.7631 17.1364C34.9967 17.849 36.0017 18.8982 36.6606 20.1613C37.3194 21.4244 37.6047 22.849 37.4832 24.2684C37.3617 25.6878 36.8382 27.0432 35.9743 28.1759C35.1103 29.3086 33.9415 30.1717 32.6047 30.6641C32.6047 30.5947 32.6047 30.4733 32.6047 30.3889V21.188C32.6066 20.9586 32.5474 20.7328 32.4332 20.5338C32.319 20.3348 32.154 20.1698 31.955 20.0556ZM35.3055 15.0128C35.2464 14.9765 35.1431 14.9142 35.069 14.8717L27.1045 10.2712C26.906 10.1554 26.6803 10.0943 26.4504 10.0943C26.2206 10.0943 25.9948 10.1554 25.7963 10.2712L16.0726 15.8858V11.9982C16.0715 11.9783 16.0753 11.9585 16.0837 11.9405C16.0921 11.9225 16.1048 11.9068 16.1207 11.8949L24.1719 7.25025C25.4053 6.53903 26.8158 6.19376 28.2383 6.25482C29.6608 6.31589 31.0364 6.78077 32.2044 7.59508C33.3723 8.40939 34.2842 9.53945 34.8334 10.8531C35.3826 12.1667 35.5464 13.6095 35.3055 15.0128ZM14.2424 21.9419L10.8752 19.9981C10.8576 19.9893 10.8423 19.9763 10.8309 19.9602C10.8195 19.9441 10.8122 19.9254 10.8098 19.9058V10.6071C10.8107 9.18295 11.2173 7.78848 11.9819 6.58696C12.7466 5.38544 13.8377 4.42659 15.1275 3.82264C16.4173 3.21869 17.8524 2.99464 19.2649 3.1767C20.6775 3.35876 22.0089 3.93941 23.1034 4.85067C23.0427 4.88379 22.937 4.94215 22.8668 4.98473L14.9024 9.58517C14.7025 9.69878 14.5366 9.86356 14.4215 10.0626C14.3065 10.2616 14.2466 10.4877 14.2479 10.7175L14.2424 21.9419ZM16.071 17.9991L20.4018 15.4978L24.7325 17.9975V22.9985L20.4018 25.4983L16.071 22.9985V17.9991Z"
+            fill="currentColor"
+          />
+        </svg>
+      </div>
+      <div class="data"><div class="main-wrapper" role="main"><div class="main-content"><noscript><div class="h2"><span id="challenge-error-text">Enable JavaScript and cookies to continue</span></div></noscript></div></div><script>(function(){window._cf_chl_opt = {cFPWv: 'g',cH: 'c5_tXkjPuuvg7o_cZiLaxqGBhn02A_X___NUua9MNMk-1776314403-1.2.1.1-ZvivPyJMgOUiHZ0Z4KNHIEn0b6UYDYGVoWayiKoEPDNH241jqI3SGpNhhZyo8ef2',cITimeS: '1776314403',cRay: '9ed0827abc1983e5',cTplB: '0',cTplC:1,cTplO:0,cTplV:5,cType: 'managed',cUPMDTk:"/backend-api/plugins/list?__cf_chl_tk=6StxJR_C74sikAMtHiwWNh8q_GYOndLIYLCVG8nc_Jw-1776314403-1.0.1.1-lnklBcX8fBqjKNtGB3dYvs8lMhshYSbzl_eEjBEsHbE",cvId: '3',cZone: 'chatgpt.com',fa:"/backend-api/plugins/list?__cf_chl_f_tk=6StxJR_C74sikAMtHiwWNh8q_GYOndLIYLCVG8nc_Jw-1776314403-1.0.1.1-lnklBcX8fBqjKNtGB3dYvs8lMhshYSbzl_eEjBEsHbE",md: 'cijHttoL7edarMerQ0tAqpW0Yfp9Alrz.0.UNHHL3Nk-1776314403-1.2.1.1-fgrRNTsgKhIAcv_KjkdNbk68RAii4xk2qT8Ui9ChUZAyb1nk9fGWAl2IIpZQ3PPvkw_FjpqDsT9I9LLNiTK_OgsDZXf_zsnpV1qOuNtQ10ysffA8xfemankuKuaoMnPsStcdtxI1lp2cmHcdlcUm0P4uwakNBnhbSvM2Ualt9zInM4QSQOlUQ4rqKlsn9S8VHK9sQjzdNHr50d1ckANJY337HvfR8DwtJdBWnNyHtG7soKX7x9VnJ7sB4YXUgWa7sYXe0YtYiPUSy7QAH9Zob3MQ1T2.dUxGJ5S_GosJCVGh8GgkVFbblhBfpGxzGtK3GOuuF9FYv8bu5KrM42zCuLL9VZkHQ457AOImlL6KOzs4cghNDhsad30P0O6sKBEV2C17S0C2KvSxqIvTqjCfg9L.f4yfv72CkLStwte.4J1UwJ8u99wfE93JZcLvvqc6ZqTBH907MJfWBFIN3fEhV20uun6bclqPYc4b6PCrl8cAYs5dKTEoGbrRh1AZdj0FLInV7Trx1tFwipKgum27OietRAzGFULORy1NShtfXl7jmzVW5snV475IQrIXz6O6z3FQfCqYvLQs1b48KX74Hcu_lSKOS88ghZRqVXwRFhKk2ZWENHXIC5Cdxnt6hJl6BPXpQVmI.aKA.kSNUS_jj.sgXjp2IABVsSG6wKNl94gOLp4S4bK1ZmEEEp5qIOl_u7dbXEVZoO.CJAdOSH9LYUqdB.3PD8w5BuUnfydn6vgkX6qkv8Dz0Y6IiCNAwRu7_6uMg38WmuGHZ7B1ivCo1f3ONr.qzMivby.Oq4hVLwl7ZFS_wNuCmm9ahdFf0.qVq2FDAc8JGH40odyjdr3IE9CJu8XwGhXESS8z9TuJHOeJu.xdMnag0DusYMMuIZZ8t6orHLYkw4GBfPVGFUIdtZDuEGrl_VidXgECeaSl8IBnYSiFps8PO6.yzg3U0qQMmd3Ex7ZKon.7ruugtlChTF5phwQEPXREqVB6bhZHKhwkUHiHguF92YTJErM5yPhzynRGuZekyRNyBmUmK1Kdnw',mdrd: '._W3ynO6HAQv1E3l3_ATNLAMEksZsZmRwwdCeAyHX2M-1776314403-1.2.1.1-k5SC3xPT1K65XFxQGuT1.Z0YKDih9HcwEVmoL5hVPzzRMwhsW7ALS0j550r0kQdBf5rBPHjDHGkzNK..5x40k7UZ_FnfXpY02E38NH748TdinUibdv6GDrZRpaz.qvzeGW1.K4XVUEEX2PLcKYrmO58l99nM3UlPQdVtdAzhQDrDAQzAcIkFy_qYb3deYnrYZQ1n0089iJx0OcHMaLjCNHXqZEdQxbJTQKyMiq4xu29KSimv7L6X2EJmJz08MT4beve3D.ZApLd1PkcI3slqBY8E0BjjaIg1E.IoagSK3sNpdPiWoZnCBJ6sM3LphqN.jfo1QenT.eSVv2DED2di5bSirvcFlLGYIkppJMEonS2XG78UekmEC7ZdunoOvGwtxgWrhtlhDOS2clj6wwpvCo0fiI0tUhICxuMhQ9eD4JPWcsX0FfmKoolZWHh5mFgYcineq2m8ttGTIf6xU31dqYeOcbuEbi_OBwM4igUe2.pMfw71KMmFXLUH9_kHdE_EXb4jZoSexOUUTuaG.caSy6IpMVowrvmrHWiLenP8bPjAKfNekrlJxRWoNjAmnMLCju6pRoiauFmcFm0s_ne1ICGA4Q_e1a3jwp.mUxztK2Q6Ub6vwpf7pF2HAo9t4BgwDVELDEdfYpBbbZNSltllvDPRCnl7BRSKWHZo3BKbRLd0oQvWTWZf7dMVYTes8InOEl2ByUleJwWUfT4hjY9Y.cLYA2qvu.sevipqTcMMhVFXLI71901gVdha1hFlRfybNdKPjmqP_x_oIyfwWE8IDtry02gKpIOUqlIuVyeF3igd2O7mv5BRFauqn1oMjGfhNZr9.idqeI4cXg2D2_h8DQ7iUDAbpet46uYpXuMxEC2YXe6EGco3l00CLGvjSYNBhb8M8g_J3e2sRrXRt94.Of1j0Qq_wm5P_q4Dl46Ed8hr0RC9T2P4pPxhoSxRmkw6B6eywpfdmEhlleDOJNWIpKoRwoyN1Jbr78WwDrq6FML.TrvxRwOH4j2VFLXzR5QNzvl7MVLBF0TRcAzDSkCRwBJXpXN.r9YsrfpctqvBiL_WY1CT6cmseZuAlMXVAxS2ph65Mc0rV86eZnCtZgwNBzND8j07ijGVmU8XXs14EL.swiTBLH8ANxaeKyRN6kglvb988t8Kc1O8nHfQLwekzqWg_F1TdHdCw42O0NLBuxxOo6QxEv_dMfHA6gc9KZhg.ti5qASI_JBiHcp0IBC9oUOT.E_OOY9dYhvr7jXSm9Kf38Qk8heWM_9pLwz6d7qI1xTcMmpw5K9ORVkaZaKblMXQqLKDkwgO1ZoORwF1.amVbU5KueDOIQIk14cIryQaZl4UT.WyuUo4c5TYdAs8PW58ySlxllYPVnvWKp7fhChBBMV0tVBfyhm3uQNsHFpeUxy6852Ev9HQ2HxN7wFv8uvDhT3Nc.8xmZhzT2cfoUMBHr6WB207cwoWKDN0c6fS1A0PWETRvu.k_DoABqCkFr4Its3k0oGkxrDHMKlnw2xsmzC8S7saI6U72A3frEDfY6lRoGn0SPebcLCY.cAhuz6Q3kRoy2P_i3LkRyMwmFr9iJv1sG82VwMSmDfcJ.NGs.pdB1Jnqu.ms92uXt_3GeXmmgukiW6OGzS.zcHt1UXI_BtA0ho_R9gWF_j92qQz.dBANU9SXC7t8nsI1JniYdiY4Bi3PfgyZwA40uYEQI0lfTV7zBoR7oFsxHnD02oWy..kWwZgFP8G.yBG4gT7RbsJhQJVQdoen3dMQmQILP83nNEYkEx9Q1xBkNbLpgMP0zfLMBNOnvXk6tHDBiqTcVUhrbcFKqWJoBPOvGigcQwWBkB0.DaRi4U4HmZFvixPRo0jnO0s_7JeW8hSaH8BUveq92rhnEEn7pZV.cq28bHGd1lOj.cvsA7Ek25t9h1Pi3mJmTpVHh14uBOIbsG9A9MvA0I_y1ekiCcnAJk8Bwe.OhX1mw93igrcM.A7gyF3skoEq6NWsUee6tqH4eN1UFLX94d7quDm31ws0cSk7HZ6XlBlTJAscc6kPMUIFw6vXnW7e5MywaOi.4.X6ij9YH8J_6Lpy8c92y69WNiEpX1VvLRldDYBUBj58xkTTBcx9jm3tV6FcY4LM4e9V2Z.H8aPATCLV40lvr.cgV569OgIexI3Nka.fl10TIajW4YeVsx1kCvXumiJ.YfWMFAUwK5y_ujxwlQLHgHuVy_DEzdxxlrwNVOLh4GmZm_9irx.7NfnA3niz5Xg8YP6uL0kVwr3Dr_B0swgZzGC.zMGwq4rynkFm7knXGyM1wktj31p',};var a = document.createElement('script');a.src = '/cdn-cgi/challenge-platform/h/g/orchestrate/chl_page/v1?ray=9ed0827abc1983e5';window._cf_chl_opt.cOgUHash = location.hash === '' && location.href.indexOf('#') !== -1 ? '#' : location.hash;window._cf_chl_opt.cOgUQuery = location.search === '' && location.href.slice(0, location.href.length - window._cf_chl_opt.cOgUHash.length).indexOf('?') !== -1 ? '?' : location.search;if (window.history && window.history.replaceState) {var ogU = location.pathname + window._cf_chl_opt.cOgUQuery + window._cf_chl_opt.cOgUHash;history.replaceState(null, null,"/backend-api/plugins/list?__cf_chl_rt_tk=6StxJR_C74sikAMtHiwWNh8q_GYOndLIYLCVG8nc_Jw-1776314403-1.0.1.1-lnklBcX8fBqjKNtGB3dYvs8lMhshYSbzl_eEjBEsHbE"+ window._cf_chl_opt.cOgUHash);a.onload = function() {history.replaceState(null, null, ogU);}}document.getElementsByTagName('head')[0].appendChild(a);}());</script></div>
+    </div>
+  </body>
+</html>
+
+2026-04-16T04:40:03.902375Z  WARN codex_core::shell_snapshot: Failed to create shell snapshot for powershell: Shell snapshot not supported yet for PowerShell
+OpenAI Codex v0.120.0 (research preview)
+--------
+workdir: D:\02_2025_AI_Lab\isoser
+model: gpt-5.4
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR, C:\Users\User\.codex\memories]
+reasoning effort: medium
+reasoning summaries: none
+session id: 019d9496-cc1f-77f3-8278-0787e49eba3d
+--------
+user
+Read AGENTS.md, cowork/FOLDER_INSTRUCTIONS.md, and cowork/packets/TASK-2026-04-16-1130-relevance-score-accuracy.md. Do not implement code. Do not edit source files. Review only the task packet for execution readiness against the current repository. Check frontmatter completeness, repository path accuracy, drift risk, ambiguity, acceptance clarity, and missing references. If the packet contains optional planned_files or planned_worktree_fingerprint metadata, verify that those fields still match the current worktree. If needed, inspect only directly relevant local files. Write the review to cowork/reviews/TASK-2026-04-16-1130-relevance-score-accuracy-review.md. Use short sections: Overall assessment, Findings, Recommendation. If the packet is promotable with minor or no changes, say so explicitly. If the packet is not ready, say exactly what must change before promotion. Do not move files. Do not modify the packet.
+2026-04-16T04:40:04.607138Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:04.615404Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:04.625170Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:04.629103Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:04.637973Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:04.647699Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:04.661737Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:04.701472Z  WARN codex_core::plugins::manager: failed to refresh curated plugin cache after sync: failed to refresh curated plugin cache for build-web-apps@openai-curated: failed to back up plugin cache entry: 액세스가 거부되었습니다. (os error 5)
+2026-04-16T04:40:05.671056Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:05.678786Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:05.686553Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:05.699683Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:05.715009Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:05.728990Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+codex
+I’m reviewing the task packet against the current repository state and will only inspect the packet, the local instructions, and directly relevant files needed to assess drift and readiness.
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command 'git rev-parse HEAD' in D:\02_2025_AI_Lab\isoser
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command 'git status --short' in D:\02_2025_AI_Lab\isoser
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command 'Get-Content AGENTS.md' in D:\02_2025_AI_Lab\isoser
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command 'Get-Content cowork/FOLDER_INSTRUCTIONS.md' in D:\02_2025_AI_Lab\isoser
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command 'Get-Content cowork/packets/TASK-2026-04-16-1130-relevance-score-accuracy.md' in D:\02_2025_AI_Lab\isoser
+ succeeded in 1796ms:
+767a26942fefc3b05935f810f7b52753069272b5
+
+ succeeded in 1796ms:
+# Cowork Folder Instructions
+
+`cowork/` is a local scratch workspace, not part of the default execution flow.
+
+## Fixed rules
+
+### 1. Reference documents are read-only here
+- Do not directly edit `CLAUDE.md`, `AGENTS.md`, `README.md`, or `docs/*.md` from cowork output.
+- If a reference document needs to change, write a proposal in `cowork/reviews/` or raise it in chat first.
+
+### 2. Draft output locations
+- Put planning or wording drafts in `cowork/drafts/`.
+- Put Task Packet drafts in `cowork/packets/`.
+- Put meeting notes or raw thinking in `cowork/notes/`.
+- Put document reviews, change proposals, or promotion notes in `cowork/reviews/`.
+- Put approval markers in `cowork/approvals/`.
+- Put cowork watcher-generated review and promotion status notes in `cowork/dispatch/`.
+- Put local implementation watcher terminal alerts in `dispatch/alerts/` at the repository root, not under `cowork/`.
+
+### 3. Task Packet draft rules
+- Files in `cowork/packets/` are drafts only.
+- Do not treat `cowork/packets/` as an execution queue.
+- `cowork/packets/` holds the editable source packet, not the review output.
+- Review output goes to `cowork/reviews/`.
+- If review requests changes, update the packet in `cowork/packets/` and let review be regenerated against that latest packet.
+- After human review, promote an approved packet to `tasks/inbox/` for local watcher execution.
+- For remote fallback, promote an approved packet to `tasks/remote/` before push.
+- Approval markers use `cowork/approvals/<task-id>.ok`.
+- Default promotion target is `tasks/inbox/`; set `target: remote` in the approval file for remote fallback.
+- Promotion copies the latest packet into an execution queue; it does not move the review markdown there.
+
+### 4. Creation and automation rules
+- `cowork/` should exist only because a user explicitly wanted a scratch workspace.
+- VS Code startup, watcher automation, and Codex execution should not assume `cowork/` exists.
+- `tasks/` remains the only execution queue in this repository.
+
+## Folder map
+- `cowork/drafts/`
+- `cowork/packets/`
+- `cowork/notes/`
+- `cowork/reviews/`
+- `cowork/approvals/`
+- `cowork/dispatch/`
+- `dispatch/alerts/`
+
+ succeeded in 1797ms:
+# Repository Agent Rules
+
+## Core behavior
+- Always inspect the current repository state before making changes.
+- Never assume the task packet matches the current codebase.
+- Compare task assumptions with the actual code before coding.
+- Prefer minimal safe changes that preserve existing behavior.
+- Suggest local refactoring when it reduces complexity in touched areas.
+- Avoid broad rewrites unless the task explicitly asks for them.
+
+## Task packet requirements
+- Treat every task as a structured task packet, not a casual prompt.
+- Require these frontmatter fields before implementation:
+  - `id`
+  - `status`
+  - `type`
+  - `title`
+  - `planned_at`
+  - `planned_against_commit`
+- If required fields are missing, write a short blocked report to `reports/<task-id>-blocked.md` and stop.
+- If `planned_against_commit` is materially out of date for the touched area, write `reports/<task-id>-drift.md` and stop before risky edits.
+
+## Task processing
+When given a task file:
+1. Read the task file completely.
+2. Inspect the current repository and the files relevant to the task.
+3. Compare `planned_against_commit` and task assumptions with the current codebase.
+4. If drift is significant, write `reports/<task-id>-drift.md` and stop.
+5. If drift is acceptable, implement the task with minimal safe changes.
+6. Run relevant checks for the touched area.
+7. Write `reports/<task-id>-result.md`.
+8. Update `docs/current-state.md` if structure or behavior changed.
+9. Append key changes to `docs/refactoring-log.md`.
+
+## Tech stack
+- Frontend: Next.js 15, TypeScript, Tailwind CSS, Pretendard
+- Backend: FastAPI, Python 3.10
+- DB: Supabase (PostgreSQL)
+- AI: Gemini 2.5 Flash
+
+## Coding standards
+- Keep TypeScript strict and avoid `any` unless justified.
+- Prefer readable, maintainable code over clever abstractions.
+- Reuse existing patterns before introducing new ones.
+- Flag duplicated logic and oversized components.
+
+## Reporting
+Every result report must include:
+- changed files
+- why changes were made
+- preserved behaviors
+- risks / possible regressions
+- follow-up refactoring candidates
+
+ succeeded in 1796ms:
+---
+id: TASK-2026-04-16-1130-relevance-score-accuracy
+status: draft
+type: improvement
+title: "관련도 점수 정확도 개선 — 순수 적합도·마감 임박도 분리 및 프로필 쿼리 정제"
+planned_at: 2026-04-16
+planned_against_commit: 469cd3f
+priority: high
+planned_by: Claude (PM)
+---
+
+# 관련도 점수 정확도 개선
+
+## Goal
+
+현재 대시보드 추천 프로그램과 비교 페이지의 "나와의 관련도"는 두 가지 문제를 가진다.
+
+첫째, `final_score = semantic_score * 0.8 + urgency_score * 0.2` 공식으로 관련도와 마감 임박도를 혼합하여 표시한다. 결과적으로 유저 프로필과 거리가 있는 프로그램이더라도 마감이 임박하면 관련도가 높게 표시된다. 유저 입장에서는 "내 관련도 65%"가 진짜 적합도인지, 마감 급박도가 올린 숫자인지 알 수 없다.
+
+둘째, 쿼리 구성 시 `name`(이름), `portfolio_url`(URL 문자열) 같은 의미 없는 텍스트가 섞여 시맨틱 검색 품질을 떨어뜨린다.
+
+이 태스크의 목표는 두 지표를 완전히 분리하고, 프로필 쿼리에서 노이즈 필드를 제거하여 "관련도"가 실제 프로필-프로그램 의미 유사도를 나타내도록 개선하는 것이다.
+
+비교 페이지 "나와의 관련도" 구현(`feat-compare-relevance-score.md`, commit 60da25d 기준 작성)도 같은 설계 원칙을 따르므로, 해당 스펙을 이 태스크와 함께 검토하고 현재 HEAD(`469cd3f`)와 drift 여부를 확인한 뒤 진행한다.
+
+---
+
+## 배경 — 현재 구현 위치
+
+| 항목 | 파일 | 핵심 내용 |
+|------|------|-----------|
+| 점수 계산 (메인) | `backend/rag/programs_rag.py` L436 | `final_score = semantic_score * 0.8 + urgency_score * 0.2` |
+| 점수 계산 (fallback) | `backend/rag/programs_rag.py` L315 | 동일 공식 |
+| 프로필 쿼리 구성 | `backend/rag/programs_rag.py` L89 `_profile_document()` | `name`, `portfolio_url` 포함, 활동 10개 |
+| fallback 키워드 | `backend/rag/programs_rag.py` L182 `_profile_keywords()` | 활동 20개, 광의 키워드 부분 일치 |
+| 추천 응답 스키마 | `backend/routers/programs.py` L80 | `final_score`, `urgency_score` 반환 |
+| 프론트 대시보드 | `frontend/app/api/dashboard/recommended-programs/route.ts` | `final_score`를 `%` 변환 표시 |
+| 비교 페이지 스펙 | `cowork/packets/feat-compare-relevance-score.md` (uploaded) | `/programs/compare-relevance` 엔드포인트 + 키워드 교집합 방식 |
+
+---
+
+## User Flow
+
+1. 유저가 대시보드를 열면 추천 프로그램 카드에 "관련도 XX%" 배지가 보인다.
+2. 현재: 이 XX%는 `semantic_score * 0.8 + urgency_score * 0.2` 혼합값이다.
+3. 개선 후: 카드는 "관련도 XX%"(순수 적합도)와 "D-5 마감 임박"(urgency 별도 표시)을 분리해 보여준다.
+4. 유저가 비교 페이지에서 프로그램 2–3개를 비교할 때도 같은 기준(순수 관련도)으로 표시된다.
+5. 관련도 점수가 실제 스킬/경력 맥락과 맞지 않는 프로그램이 상단에 올라오는 현상이 줄어든다.
+
+---
+
+## UI Requirements
+
+### 대시보드 추천 카드 (캘린더 뷰 포함)
+
+- 기존: "관련도 XX%" 배지 하나
+- 변경: "관련도 XX%" 배지 + 마감 7일 이내일 때만 별도 "마감 D-N" 칩 표시
+- 마감 임박 칩은 관련도 배지와 시각적으로 구분된 색상 (예: 관련도 → 파랑 계열, 마감 임박 → 주황/빨강 계열)
+- urgency_score가 0이거나 마감 정보가 없는 경우 임박 칩을 표시하지 않음
+
+### 비교 페이지 ("나와의 관련도" 섹션)
+
+- `feat-compare-relevance-score.md` 스펙 그대로 적용 (종합 관련도 + 기술 스택 일치도 + 매칭된 스킬 태그)
+- urgency를 관련도와 혼합하지 않음 — 비교 페이지 관련도는 순수 프로필-프로그램 유사도만 반영
+
+---
+
+## 변경 명세
+
+### 1. `backend/rag/programs_rag.py` — `_profile_document()` 쿼리 정제
+
+현재 포함 필드 중 제거 대상:
+- `name`: 이름은 시맨틱 검색과 무관
+- `portfolio_url`: URL 문자열은 임베딩 노이즈
+
+유지 및 강조 대상 (텍스트 반복으로 가중치 부여 가능):
+- `self_intro`, `bio`: 직무 관심사와 목표가 담김 → 2회 포함
+- `skills`: 직무 스킬 → 2회 포함
+- `career`, `education_history`, `certifications`, `languages`: 1회
+
+활동 데이터 한도:
+- 현재 10개 → 20개로 상향 (title + role + description + skills)
+
+구현 방향 (구체적 코드 고정 없이 의도 기술):
+- `_profile_document` 함수 내 `name`과 `portfolio_url` 제거
+- `self_intro`와 `skills`를 두 번 포함하여 임베딩 가중치 상향
+- 활동 순회 한도를 `activities[:20]`으로 조정
+
+### 2. `backend/rag/programs_rag.py` — 점수 분리
+
+현재 `final_score` 계산 로직 (메인 경로 L436, fallback 경로 L315):
+
+```
+# 현재
+final_score = semantic_score * 0.8 + urgency_score * 0.2
+```
+
+변경 의도:
+- `relevance_score` = 순수 시맨틱 유사도 (메인) 또는 키워드 교집합 정규화값 (fallback)
+- `urgency_score` = 마감 임박도 (기존 공식 유지)
+- `final_score` = 정렬 전용 보조 점수 (내부 사용). 유저에게 직접 노출하지 않거나, 노출 시 "정렬 기준"임을 명확히 함
+- API 응답에 `relevance_score`를 별도 필드로 추가
+
+`ProgramRecommendItem` 스키마에 `relevance_score: float | None = None` 필드 추가.
+
+### 3. `backend/rag/programs_rag.py` — fallback 키워드 가중치 조정
+
+현재 fallback은 `skills`, `career`, `bio`, `self_intro`를 동일 가중치로 처리.
+
+변경 의도:
+- `skills` 키워드는 프로그램 title/skills 매칭 시 가중치 1.5 적용
+- `self_intro` 키워드는 가중치 1.2 적용
+- 활동 한도를 `activities[:30]`으로 상향
+- 단일 글자 또는 2글자 이하 한글 토큰 stopword 처리 강화
+
+### 4. 추천 캐시 스키마 — `recommendations` 테이블
+
+현재 저장: `similarity_score`, `urgency_score`, `final_score`
+추가: `relevance_score` 컬럼 (float, nullable)
+
+마이그레이션 파일로 컬럼 추가. 기존 행은 `relevance_score = null` (신규 추천 시 갱신됨).
+
+### 5. 프론트엔드 — 대시보드 카드 UI
+
+파일 위치: 추천 프로그램을 표시하는 캘린더/카드 컴포넌트 (구현 러너가 현재 파일 위치 확인)
+
+변경 의도:
+- `final_score` 대신 `relevance_score`를 "관련도 XX%" 배지에 사용
+- `urgency_score`가 임계값 초과 시 (예: `>= 0.5`, 즉 마감 15일 이내) 별도 "마감 임박" 칩 표시
+- `urgency_score`가 없거나 낮으면 임박 칩 미표시
+
+### 6. 비교 페이지 관련도 구현
+
+`feat-compare-relevance-score.md` (업로드된 파일 기준 스펙)을 그대로 구현.
+단, 현재 HEAD(`469cd3f`)와 비교해 drift 여부를 먼저 점검 후 진행.
+
+점검 항목:
+- `frontend/app/(landing)/compare/programs-compare-client.tsx` L483–L493 "준비 중" 하드코딩 존재 여부
+- `backend/routers/programs.py`에 `/compare-relevance` 엔드포인트 미존재 여부
+- `frontend/lib/types/index.ts`에 `ProgramRelevanceItem` 타입 미존재 여부
+
+모두 확인되면 스펙 그대로 구현. 파일이 이미 변경된 경우 해당 부분만 조정.
+
+---
+
+## Acceptance Criteria
+
+1. 대시보드 추천 카드에서 "관련도 XX%" 배지의 값이 `relevance_score` (순수 적합도) 기반으로 표시된다.
+2. `urgency_score`가 높은(마감 임박) 프로그램은 관련도 배지와 별개의 "마감 임박" 칩으로 표시된다.
+3. `POST /programs/recommend` 응답에 `relevance_score` 필드가 포함된다.
+4. `_profile_document` 쿼리에서 `name`, `portfolio_url`이 제거되었음을 코드로 확인할 수 있다.
+5. 비교 페이지 "나와의 관련도" 섹션이 "준비 중" 대신 실제 점수와 바 차트를 표시한다.
+6. 비로그인 상태에서 비교 페이지는 "로그인 후 확인" 배지를 표시한다.
+7. TypeScript 빌드 오류 없음 (`npx tsc --noEmit`).
+8. Python 타입 힌트 오류 없음 (`python -m mypy routers/programs.py --ignore-missing-imports`).
+
+---
+
+## Constraints
+
+- LLM 호출 없음 — 관련도 계산은 임베딩 거리 또는 키워드 교집합으로만 처리
+- 기존 `final_score` 필드와 캐시 구조를 완전히 제거하지 않음 (정렬 보조용으로 유지)
+- `recommendations` 테이블 마이그레이션은 기존 마이그레이션 파일 수정 없이 새 SQL 파일로 추가
+- 24시간 추천 캐시 TTL 유지 — 이번 변경으로 기존 캐시를 강제 무효화하지 않음 (신규 추천 시 자연 갱신)
+- 브라우저에서 Supabase 직접 접근 없음 — 모든 데이터는 Next API Route 경유
+
+---
+
+## Non-goals
+
+- 추천 알고리즘 자체의 전면 교체 (ChromaDB 시맨틱 검색 구조 유지)
+- 관련도 점수 계산에 LLM 투입 (Phase 2 후보)
+- 프로그램 추천 개수 변경 (상위 9개 유지)
+- 유저별 추천 캐시 즉시 무효화 기능 추가 (현재 24시간 TTL 유지)
+- `urgency_score` 계산 공식 변경 (`max(0, 1 - days_left/30)` 유지)
+
+---
+
+## Edge Cases
+
+- `relevance_score`가 null인 캐시 행 (마이그레이션 이전 저장된 행): `final_score`를 `relevance_score`로 fallback 처리하여 기존 캐시 유효 기간 내 UI 표시 유지
+- 비교 페이지에서 프로그램 슬롯이 0개인 경우: `/programs/compare-relevance` API 호출하지 않음
+- 비교 페이지에서 동일 program_id가 중복 추가된 경우: 서버 측에서 dedup 후 점수 반환
+- `skills` 필드가 빈 배열이거나 null인 유저: `skill_match_score = 0` 반환, 에러 없이 처리
+- 활동 데이터가 없는 신규 유저: `self_intro` + `bio` + `skills` 만으로 쿼리 구성, 결과 품질 저하는 허용
+
+---
+
+## Open Questions
+
+1. ~~정렬 기준 결정 필요~~ **확정 (2026-04-16)**: `relevance_score` 내림차순 정렬 + 동점 시 `urgency_score` 보조 정렬. `final_score` 혼합 정렬은 사용하지 않음.
+2. 관련도 임계값 표시: 관련도 점수가 낮은 경우 (예: 20점 미만) "분석 중" 또는 미표시로 처리할지, 낮은 점수 그대로 보여줄지. UX 관점에서는 낮은 점수를 보여주는 것이 신뢰도를 높일 수 있음.
+3. 비교 페이지 drift 확인: `feat-compare-relevance-score.md`가 commit `60da25d` 기준으로 작성되었고 현재 HEAD는 `469cd3f`. 구현 러너가 실제 파일 상태 확인 후 diff 있으면 패킷 조정 필요.
+
+ succeeded in 1805ms:
+ M cowork/dispatch/logs/cowork-watcher-supervisor.log
+ M cowork/packets/TASK-2026-04-16-1130-relevance-score-accuracy.md
+ M dispatch/logs/watcher-supervisor.log
+
+2026-04-16T04:40:16.944825Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:16.958779Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:16.975852Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:16.996246Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:17.014805Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:17.040945Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+codex
+I’ve confirmed the packet is still a draft and that the repository has moved past the packet’s `planned_against_commit`. Next I’m checking only the files the packet names so I can judge whether that drift is material or minor.
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command 'git rev-parse --verify 469cd3f' in D:\02_2025_AI_Lab\isoser
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command 'Get-Content cowork/packets/feat-compare-relevance-score.md' in D:\02_2025_AI_Lab\isoser
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command "rg -n \"_profile_document|_profile_keywords|final_score|urgency_score|relevance_score|activities\\[:|portfolio_url|name\" backend/rag/programs_rag.py" in D:\02_2025_AI_Lab\isoser
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command 'rg -n "ProgramRecommendItem|final_score|urgency_score|relevance_score|compare-relevance" backend/routers/programs.py' in D:\02_2025_AI_Lab\isoser
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command 'rg -n "final_score|urgency_score|relevance_score|recommended-programs|관련도|마감" frontend/app/api/dashboard/recommended-programs/route.ts frontend/app -g "*.ts" -g "*.tsx"' in D:\02_2025_AI_Lab\isoser
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command 'rg -n "ProgramRelevanceItem|compare-relevance|relevance" frontend/lib/types/index.ts frontend/lib/types -g "*.ts"' in D:\02_2025_AI_Lab\isoser
+ succeeded in 1847ms:
+469cd3f06a5e9e73cefddcf7181afa014948de69
+
+ succeeded in 1823ms:
+80:    final_score: float | None = None
+81:    urgency_score: float | None = None
+94:class ProgramRecommendItem(BaseModel):
+103:    items: list[ProgramRecommendItem] = Field(default_factory=list)
+110:def _serialize_program_recommendation(item: ProgramRecommendation) -> ProgramRecommendItem:
+111:    return ProgramRecommendItem(
+283:                "select": "program_id,similarity_score,urgency_score,final_score,generated_at",
+286:                "order": "final_score.desc",
+313:                "urgency_score": float(item.program.get("urgency_score") or 0),
+314:                "final_score": float(item.score or 0),
+350:) -> list[ProgramRecommendItem]:
+352:        ProgramRecommendItem(
+354:            score=program.get("final_score"),
+368:) -> list[ProgramRecommendItem]:
+376:    items: list[ProgramRecommendItem] = []
+387:        program_record["urgency_score"] = row.get("urgency_score")
+388:        program_record["final_score"] = row.get("final_score")
+390:            ProgramRecommendItem(
+392:                score=float(row.get("final_score") or 0),
+
+ succeeded in 1832ms:
+20:logger = get_logger(__name__)
+58:        "name",
+89:def _profile_document(profile: Mapping[str, Any]) -> str:
+92:        "name",
+97:        "portfolio_url",
+114:    for activity in activities[:10]:
+146:    collection_name = "programs"
+151:    def _urgency_score(self, program: dict) -> float:
+182:    def _profile_keywords(
+206:        for activity in activities[:20]:
+222:        title_text = " ".join(self._tokenize_text(program.get("title") or program.get("name")))
+265:        relevance_score = min(
+275:        return matched_keywords[:5], relevance_score
+284:            title = _safe_text(program.get("title") or program.get("name")) or "이 과정"
+296:        keywords = self._profile_keywords(profile, activities)
+313:            matched_keywords, relevance_score = self._program_match_context(program_record, keywords)
+314:            urgency_score = self._urgency_score(program_record)
+315:            final_score = round(relevance_score * 0.8 + urgency_score * 0.2, 4)
+317:            program_record["similarity_score"] = relevance_score
+318:            program_record["urgency_score"] = urgency_score
+319:            program_record["final_score"] = final_score
+320:            if final_score <= 0:
+325:                    score=final_score,
+334:                item.program.get("final_score", 0.0),
+335:                item.program.get("urgency_score", 0.0),
+358:            self.collection_name,
+383:                _profile_document(profile),
+403:            self.collection_name,
+409:            search_results = self._manager.search(self.collection_name, query, n_results=top_k)
+434:            urgency_score = self._urgency_score(program_record)
+436:            final_score = round(semantic_score * 0.8 + urgency_score * 0.2, 4)
+439:            program_record["urgency_score"] = urgency_score
+440:            program_record["final_score"] = final_score
+445:                    score=final_score,
+458:                item.program.get("final_score", 0.0),
+459:                item.program.get("urgency_score", 0.0),
+486:                        "title": program.get("title") or program.get("name"),
+
+ succeeded in 1831ms:
+frontend/app\(landing)\compare\programs-compare-client.tsx:57:  if (daysLeft < 0) return "마감";
+frontend/app\(landing)\compare\programs-compare-client.tsx:350:                          tag.startsWith("D-") || tag === "D-Day" || tag === "마감"
+frontend/app\(landing)\compare\programs-compare-client.tsx:365:              <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">마감일</div>
+frontend/app\(landing)\compare\programs-compare-client.tsx:483:            {sectionHeader("★ 나와의 관련도 — AI 분석 (준비 중)", "bg-[#0A0F1E] text-white")}
+frontend/app\(landing)\compare\programs-compare-client.tsx:484:            {["종합 관련도", "기술 스택 일치도"].map((label) => (
+frontend/app\(landing)\landing-a\_components.tsx:150:          지금 23개 프로그램 마감 임박
+frontend/app\(landing)\landing-a\_components.tsx:240:              const urgencyChip = chip === "마감임박";
+frontend/app\(landing)\landing-a\_components.tsx:275:              마감 임박 프로그램{" "}
+frontend/app\(landing)\landing-a\_components.tsx:352:                <span className="text-xs font-bold text-[var(--blue)]">관련도 {card.match}%</span>
+frontend/app\(landing)\landing-a\_components.tsx:385:              최대 3개를 나란히 놓고 조건과 관련도를 빠르게 비교할 수 있습니다.
+frontend/app\(landing)\landing-a\_components.tsx:412:                  <span className="text-[var(--muted)]">마감</span>
+frontend/app\(landing)\landing-a\_content.ts:78:  "마감임박",
+frontend/app\(landing)\landing-a\_content.ts:169:    deadline: "D-1 · 내일 마감",
+frontend/app\(landing)\landing-a\_content.ts:207:    description: "내 프로필과 관심 분야를 기반으로 관련도 높은 순서로 정렬합니다.",
+frontend/app\(landing)\landing-a\_content.ts:219:    description: "마감 전 필요한 서류를 정리하고 바로 지원 흐름으로 연결합니다.",
+frontend/app\(landing)\landing-b\_components.tsx:66:            3가지 조건만 알려주시면 <strong className="text-[var(--ink)]">마감 임박순으로 정렬해드립니다</strong>
+frontend/app\(landing)\landing-b\_components.tsx:101:                가장 가까운 것을 선택하세요. 이 정보로 마감·지역·지원율을 필터링합니다.
+frontend/app\(landing)\landing-b\_components.tsx:312:          <div className="shrink-0 text-[11px] font-extrabold text-[var(--red)]">D-7 이내 마감</div>
+frontend/app\(landing)\landing-b\page.tsx:34:      "마감 임박순",
+frontend/app\(landing)\landing-b\_content.ts:166:    description: "847개 국가 지원 프로그램을 마감·지역·대상 조건으로 빠르게 추립니다.",
+frontend/app\(landing)\landing-b\_content.ts:181:    description: "마감일과 준비 일정을 자동으로 정리해 놓치지 않게 돕습니다.",
+frontend/app\(landing)\programs\[id]\page.tsx:62:                <span className="rounded-full bg-slate-100 px-3 py-1">마감 {formatDateLabel(program.deadline)}</span>
+frontend/app\(landing)\programs\page.tsx:10:  { value: "deadline", label: "마감 임박순" },
+frontend/app\(landing)\programs\page.tsx:132:    return { label: "마감", tone: "bg-slate-200 text-slate-700" };
+frontend/app\(landing)\programs\page.tsx:281:                    {SORT_OPTIONS.find((option) => option.value === sort)?.label ?? "마감 임박순"}
+frontend/app\dashboard\page.tsx:79:    return "관련도 0%";
+frontend/app\dashboard\page.tsx:83:  return `관련도 ${percent}%`;
+frontend/app\dashboard\page.tsx:202:      <div className="mb-3 text-sm text-slate-600">신청 마감: {deadlineLabel}</div>
+frontend/app\dashboard\page.tsx:205:        {formatRelevance(program._score ?? program.final_score)}
+frontend/app\dashboard\page.tsx:317:      ? "해당 날짜에 마감되는 프로그램이 없습니다"
+
+2026-04-16T04:40:31.624570Z ERROR codex_core::tools::router: error=Exit code: 1
+Wall time: 1.8 seconds
+Output:
+
+ exited 1 in 1837ms:
+2026-04-16T04:40:31.645086Z ERROR codex_core::tools::router: error=Exit code: 1
+Wall time: 1.9 seconds
+Output:
+[31;1mGet-Content: [0m
+[31;1m[36;1mLine |[0m
+[31;1m[36;1m[36;1m   2 | [0m [36;1mGet-Content cowork/packets/feat-compare-relevance-score.md[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m     | [31;1mCannot find path 'D:\02_2025_AI_Lab\isoser\cowork\packets\feat-compare-relevance-score.md' because it does not exist.[0m
+
+ exited 1 in 1871ms:
+[31;1mGet-Content: [0m
+[31;1m[36;1mLine |[0m
+[31;1m[36;1m[36;1m   2 | [0m [36;1mGet-Content cowork/packets/feat-compare-relevance-score.md[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m     | [31;1mCannot find path 'D:\02_2025_AI_Lab\isoser\cowork\packets\feat-compare-relevance-score.md' because it does not exist.[0m
+
+2026-04-16T04:40:31.714196Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:31.730880Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:31.746755Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:31.765669Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:31.782568Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:31.806956Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+codex
+One reference file named in the packet does not exist at the stated path, which may be a packet defect rather than code drift. I’m checking the actual compare spec location and the current implementations around the packet’s cited lines before writing the review.
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command 'rg --files cowork/packets' in D:\02_2025_AI_Lab\isoser
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command 'Get-Content backend/rag/programs_rag.py | Select-Object -Index (80..130)' in D:\02_2025_AI_Lab\isoser
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command 'Get-Content backend/rag/programs_rag.py | Select-Object -Index (180..330)' in D:\02_2025_AI_Lab\isoser
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command 'Get-Content backend/rag/programs_rag.py | Select-Object -Index (430..465)' in D:\02_2025_AI_Lab\isoser
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command 'Get-Content backend/routers/programs.py | Select-Object -First 140' in D:\02_2025_AI_Lab\isoser
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command 'Get-Content frontend/app/dashboard/page.tsx | Select-Object -First 260' in D:\02_2025_AI_Lab\isoser
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command 'Get-Content frontend/app/(landing)/compare/programs-compare-client.tsx | Select-Object -Index (470..515)' in D:\02_2025_AI_Lab\isoser
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command 'Get-Content frontend/lib/types/index.ts | Select-Object -First 260' in D:\02_2025_AI_Lab\isoser
+ succeeded in 2006ms:
+cowork/packets\TASK-2026-04-16-1130-relevance-score-accuracy.md
+cowork/packets\TASK-2026-04-16-1100-tier4-district-crawl.md
+cowork/packets\TASK-2026-04-16-1000-tier3-semi-public-crawl.md
+cowork/packets\TASK-2026-04-15-1720-recommend-frontend.md
+cowork/packets\TASK-2026-04-15-1710-recommend-api-enhance.md
+cowork/packets\TASK-2026-04-15-1700-recommend-data-pipeline.md
+cowork/packets\TASK-2026-04-15-1420-crawling-phase2-api-validation.md
+cowork/packets\TASK-2026-04-15-1400-crawling-phase1-hrdclub-sba.md
+cowork/packets\TASK-2026-04-15-1100-programs-compare.md
+cowork/packets\TASK-2026-04-15-0100-landing-a.md
+cowork/packets\TASK-2026-04-15-0100-dispatch-approval-smoke.md
+cowork/packets\TASK-2026-04-14-2330-landing-page-b.md
+
+ succeeded in 2005ms:
+    return {
+        "category": _safe_text(program.get("category")),
+        "location": _safe_text(program.get("location")),
+        "is_active": bool(program.get("is_active", True)),
+        "provider": _safe_text(program.get("provider")),
+    }
+
+
+def _profile_document(profile: Mapping[str, Any]) -> str:
+    parts: list[str] = []
+    for key in (
+        "name",
+        "bio",
+        "education",
+        "job_title",
+        "self_intro",
+        "portfolio_url",
+    ):
+        text = _safe_text(profile.get(key))
+        if text:
+            parts.append(f"{key}: {text}")
+
+    for key in ("career", "education_history", "awards", "certifications", "languages", "skills"):
+        value = profile.get(key)
+        if isinstance(value, list):
+            normalized = [str(item).strip() for item in value if str(item).strip()]
+            if normalized:
+                parts.append(f"{key}: {', '.join(normalized)}")
+    return "\n".join(parts)
+
+
+def _activities_document(activities: Sequence[Mapping[str, Any]]) -> str:
+    lines: list[str] = []
+    for activity in activities[:10]:
+        title = _safe_text(activity.get("title"))
+        role = _safe_text(activity.get("role"))
+        description = _safe_text(activity.get("description"))
+        skills = activity.get("skills")
+        skill_text = ""
+        if isinstance(skills, list):
+            normalized = [str(item).strip() for item in skills if str(item).strip()]
+            if normalized:
+                skill_text = f" | skills: {', '.join(normalized)}"
+        chunk = " / ".join(part for part in (title, role, description) if part)
+        if chunk:
+            lines.append(f"- {chunk}{skill_text}")
+    return "\n".join(lines)
+
+
+def _extract_json_object(text: str) -> dict[str, Any]:
+    cleaned = text.strip().replace("```json", "").replace("```", "").strip()
+
+ succeeded in 2003ms:
+
+    def _profile_keywords(
+        self,
+        profile: Mapping[str, Any],
+        activities: Sequence[Mapping[str, Any]],
+    ) -> list[str]:
+        keywords: list[str] = []
+        seen: set[str] = set()
+
+        def add_tokens(tokens: Sequence[str]) -> None:
+            for token in tokens:
+                normalized = token.strip().lower()
+                if not normalized or normalized in seen:
+                    continue
+                seen.add(normalized)
+                keywords.append(normalized)
+
+        for key in ("skills", "career", "education_history", "certifications", "bio", "self_intro"):
+            value = profile.get(key)
+            if isinstance(value, list):
+                for item in value:
+                    add_tokens(self._tokenize_text(item))
+            else:
+                add_tokens(self._tokenize_text(value))
+
+        for activity in activities[:20]:
+            for key in ("skills", "title", "role", "description"):
+                value = activity.get(key)
+                if isinstance(value, list):
+                    for item in value:
+                        add_tokens(self._tokenize_text(item))
+                else:
+                    add_tokens(self._tokenize_text(value))
+
+        return keywords[:40]
+
+    def _program_match_context(
+        self,
+        program: Mapping[str, Any],
+        keywords: Sequence[str],
+    ) -> tuple[list[str], float]:
+        title_text = " ".join(self._tokenize_text(program.get("title") or program.get("name")))
+        category_text = " ".join(self._tokenize_text(program.get("category")))
+        location_text = " ".join(self._tokenize_text(program.get("location")))
+        body_text = " ".join(
+            self._tokenize_text(
+                " ".join(
+                    str(program.get(key) or "")
+                    for key in (
+                        "summary",
+                        "description",
+                        "provider",
+                        "curriculum",
+                        "target",
+                        "location",
+                        "category",
+                    )
+                )
+            )
+        )
+        matched_keywords: list[str] = []
+        title_hits = 0
+        category_hits = 0
+        location_hits = 0
+        body_hits = 0
+
+        for keyword in keywords:
+            if keyword in title_text:
+                matched_keywords.append(keyword)
+                title_hits += 1
+                continue
+            if keyword in category_text:
+                matched_keywords.append(keyword)
+                category_hits += 1
+                continue
+            if keyword in location_text:
+                matched_keywords.append(keyword)
+                location_hits += 1
+                continue
+            if keyword in body_text:
+                matched_keywords.append(keyword)
+                body_hits += 1
+
+        keyword_budget = max(1, min(len(keywords), 8))
+        relevance_score = min(
+            1.0,
+            (
+                title_hits * 1.4
+                + category_hits * 1.1
+                + location_hits * 0.8
+                + body_hits * 0.6
+            )
+            / keyword_budget,
+        )
+        return matched_keywords[:5], relevance_score
+
+    def _build_fallback_reason(
+        self,
+        program: Mapping[str, Any],
+        matched_keywords: Sequence[str],
+    ) -> str:
+        if matched_keywords:
+            top_keywords = ", ".join(matched_keywords[:3])
+            title = _safe_text(program.get("title") or program.get("name")) or "이 과정"
+            return f"{top_keywords} 경험과 연결되는 내용이 있어 {title}을 추천합니다."
+        return "프로필과 활동 이력을 기준으로 현재 조건에 맞는 과정이라 추천합니다."
+
+    def _fallback_recommend(
+        self,
+        *,
+        profile: Mapping[str, Any],
+        activities: Sequence[Mapping[str, Any]],
+        programs: Sequence[Mapping[str, Any]],
+        top_k: int,
+    ) -> list[ProgramRecommendation]:
+        keywords = self._profile_keywords(profile, activities)
+        if not keywords:
+            return []
+
+        recommendations: list[ProgramRecommendation] = []
+        for program in programs:
+            program_id = _safe_text(program.get("id"))
+            if not program_id:
+                continue
+            program_record = dict(program)
+            from datetime import date
+
+            date_str = program_record.get("deadline") or program_record.get("end_date")
+            if date_str:
+                days_left = (date.fromisoformat(str(date_str)[:10]) - date.today()).days
+            else:
+                days_left = None
+            matched_keywords, relevance_score = self._program_match_context(program_record, keywords)
+            urgency_score = self._urgency_score(program_record)
+            final_score = round(relevance_score * 0.8 + urgency_score * 0.2, 4)
+            program_record["days_left"] = days_left
+            program_record["similarity_score"] = relevance_score
+            program_record["urgency_score"] = urgency_score
+            program_record["final_score"] = final_score
+            if final_score <= 0:
+                continue
+            recommendations.append(
+                ProgramRecommendation(
+                    program_id=program_id,
+                    score=final_score,
+                    reason=self._build_fallback_reason(program_record, matched_keywords),
+                    fit_keywords=list(matched_keywords[:3]),
+                    program=program_record,
+                )
+            )
+
+
+ succeeded in 2105ms:
+from datetime import datetime, timedelta, timezone
+import logging
+from typing import Any
+
+import httpx
+from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Query
+from pydantic import BaseModel, ConfigDict, Field
+
+
+def _should_fallback_to_backend(error: ModuleNotFoundError) -> bool:
+    return error.name is not None and (
+        error.name == "rag" or error.name.startswith("rag.")
+    )
+
+
+try:
+    from backend.logging_config import get_logger, log_event
+except ImportError:
+    from logging_config import get_logger, log_event
+
+try:
+    from rag.collector.scheduler import run_all_collectors
+    from rag.programs_rag import ProgramRecommendation, ProgramsRAG
+except ModuleNotFoundError as error:
+    if not _should_fallback_to_backend(error):
+        raise
+    from backend.rag.collector.scheduler import run_all_collectors
+    from backend.rag.programs_rag import ProgramRecommendation, ProgramsRAG
+
+from utils.supabase_admin import (
+    build_service_headers,
+    get_current_user_from_authorization,
+    get_supabase_admin_settings,
+    request_supabase,
+)
+
+logger = get_logger(__name__)
+programs_router = APIRouter(prefix="/programs", tags=["programs"])
+router = programs_router
+programs_rag = ProgramsRAG()
+
+PROGRAM_SORT_OPTIONS = {"deadline", "latest"}
+PROGRAM_TEACHING_METHODS = {"온라인", "오프라인", "혼합"}
+RECOMMEND_CACHE_TTL_HOURS = 24
+REGION_QUERY_ALIASES: dict[str, tuple[str, ...]] = {
+    "서울": ("서울",),
+    "경기": ("경기",),
+    "부산": ("부산",),
+    "대전·충청": ("대전", "충청", "세종"),
+    "대구·경북": ("대구", "경북"),
+    "온라인": ("온라인", "비대면", "원격"),
+}
+
+
+class ProgramListItem(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    id: str | int | None = None
+    title: str | None = None
+    category: str | None = None
+    location: str | None = None
+    provider: str | None = None
+    summary: str | None = None
+    description: str | None = None
+    tags: list[str] | str | None = None
+    skills: list[str] | str | None = None
+    application_url: str | None = None
+    application_method: str | None = None
+    source: str | None = None
+    source_url: str | None = None
+    link: str | None = None
+    deadline: str | None = None
+    start_date: str | None = None
+    end_date: str | None = None
+    support_type: str | None = None
+    teaching_method: str | None = None
+    is_certified: bool | None = None
+    is_active: bool | None = None
+    is_ad: bool | None = None
+    final_score: float | None = None
+    urgency_score: float | None = None
+    days_left: int | None = None
+    compare_meta: dict[str, Any] | None = None
+
+
+class ProgramRecommendRequest(BaseModel):
+    top_k: int = Field(default=9, ge=1, le=20)
+    category: str | None = Field(default=None, description="카테고리 필터")
+    region: str | None = Field(default=None, description="지역 필터")
+    job_title: str | None = Field(default=None, description="직무명")
+    force_refresh: bool = Field(default=False, description="캐시 무시 여부")
+
+
+class ProgramRecommendItem(BaseModel):
+    program_id: str
+    score: float | None = None
+    reason: str
+    fit_keywords: list[str] = Field(default_factory=list)
+    program: ProgramListItem
+
+
+class ProgramRecommendResponse(BaseModel):
+    items: list[ProgramRecommendItem] = Field(default_factory=list)
+
+
+class ProgramCountResponse(BaseModel):
+    count: int
+
+
+def _serialize_program_recommendation(item: ProgramRecommendation) -> ProgramRecommendItem:
+    return ProgramRecommendItem(
+        program_id=item.program_id,
+        score=item.score,
+        reason=item.reason,
+        fit_keywords=item.fit_keywords,
+        program=ProgramListItem.model_validate(item.program),
+    )
+
+
+def _normalize_regions_param(regions: list[str] | None) -> list[str]:
+    if not regions:
+        return []
+
+    normalized: list[str] = []
+    for raw in regions:
+        if not raw:
+            continue
+        for token in str(raw).split(","):
+            cleaned = token.strip()
+            if cleaned:
+                normalized.append(cleaned)
+    return normalized
+
+
+def _normalize_teaching_methods_param(teaching_methods: list[str] | None) -> list[str]:
+    if not teaching_methods:
+        return []
+
+    normalized: list[str] = []
+    for raw in teaching_methods:
+
+ succeeded in 2107ms:
+                days_left = (date.fromisoformat(str(date_str)[:10]) - date.today()).days
+            else:
+                days_left = None
+            urgency_score = self._urgency_score(program_record)
+            semantic_score = self._semantic_score(result.score)
+            final_score = round(semantic_score * 0.8 + urgency_score * 0.2, 4)
+            program_record["days_left"] = days_left
+            program_record["similarity_score"] = semantic_score
+            program_record["urgency_score"] = urgency_score
+            program_record["final_score"] = final_score
+            reason_payload = reasons.get(program_id, {})
+            recommendations.append(
+                ProgramRecommendation(
+                    program_id=program_id,
+                    score=final_score,
+                    reason=_safe_text(reason_payload.get("reason")) or "프로필과 연관성이 높아 추천합니다.",
+                    fit_keywords=[
+                        str(item).strip()
+                        for item in reason_payload.get("fit_keywords", [])
+                        if str(item).strip()
+                    ][:3],
+                    program=program_record,
+                )
+            )
+
+        recommendations.sort(
+            key=lambda item: (
+                item.program.get("final_score", 0.0),
+                item.program.get("urgency_score", 0.0),
+            ),
+            reverse=True,
+        )
+        return recommendations
+
+    async def _generate_reasons(
+        self,
+
+ succeeded in 2105ms:
+"use client";
+
+import { useCallback, useEffect, useMemo, useState } from "react";
+
+import MiniCalendar from "@/components/MiniCalendar";
+import { getDashboardMe, getRecommendedPrograms } from "@/lib/api/app";
+import type { Program } from "@/lib/types";
+
+const CATEGORY_OPTIONS = [
+  { label: "전체", value: null },
+  { label: "IT·컴퓨터", value: "IT" },
+  { label: "디자인", value: "디자인" },
+  { label: "경영·마케팅", value: "경영" },
+  { label: "어학", value: "어학" },
+] as const;
+
+const REGION_OPTIONS = [
+  { label: "전체", value: null },
+  { label: "서울", value: "서울" },
+  { label: "경기", value: "경기" },
+  { label: "온라인", value: "온라인" },
+] as const;
+
+function formatUserName(value: string | null | undefined): string {
+  const trimmed = value?.trim();
+  return trimmed || "사용자";
+}
+
+function formatMonthDay(value: string | null | undefined): string | null {
+  if (!value) return null;
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${month}/${day}`;
+}
+
+function formatTrainingPeriod(
+  startDate: string | null | undefined,
+  endDate: string | null | undefined
+): string {
+  const start = formatMonthDay(startDate);
+  const end = formatMonthDay(endDate);
+
+  if (start && end) {
+    return `${start} ~ ${end}`;
+  }
+
+  if (start) {
+    return `${start} ~ 정보 없음`;
+  }
+
+  if (end) {
+    return `정보 없음 ~ ${end}`;
+  }
+
+  return "정보 없음";
+}
+
+function formatDeadline(value: string | null | undefined): string {
+  const formatted = formatMonthDay(value);
+  return formatted ? `${formatted}까지` : "정보 없음";
+}
+
+function toDateKey(value: string): string | null {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function formatRelevance(score: number | null | undefined): string {
+  if (typeof score !== "number" || Number.isNaN(score)) {
+    return "관련도 0%";
+  }
+
+  const percent = score <= 1 ? Math.round(score * 100) : Math.round(score);
+  return `관련도 ${percent}%`;
+}
+
+function getRecommendedReason(value: string | null | undefined): string | null {
+  const trimmed = value?.trim();
+  return trimmed || null;
+}
+
+function getFitKeywords(value: string[] | null | undefined): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.map((keyword) => keyword.trim()).filter(Boolean).slice(0, 3);
+}
+
+function formatSource(source: string | null | undefined): string {
+  if (source === "work24_training") {
+    return "Work24 훈련과정";
+  }
+
+  return source || "출처 미상";
+}
+
+function getCardBorderClass(daysLeft: number | null | undefined): string {
+  if (typeof daysLeft !== "number" || Number.isNaN(daysLeft) || daysLeft > 14) {
+    return "border-l-4 border-l-green-400";
+  }
+
+  if (daysLeft <= 7) {
+    return "border-l-4 border-l-red-500";
+  }
+
+  return "border-l-4 border-l-yellow-400";
+}
+
+function getDdayBadge(daysLeft: number | null | undefined) {
+  if (typeof daysLeft !== "number" || Number.isNaN(daysLeft) || daysLeft < 0) {
+    return null;
+  }
+
+  if (daysLeft <= 7) {
+    return {
+      label: `D-${daysLeft}`,
+      className: "bg-red-100 text-red-700",
+    };
+  }
+
+  if (daysLeft <= 14) {
+    return {
+      label: `D-${daysLeft}`,
+      className: "bg-yellow-100 text-yellow-700",
+    };
+  }
+
+  return {
+    label: `D-${daysLeft}`,
+    className: "bg-green-100 text-green-700",
+  };
+}
+
+function SkeletonCard() {
+  return (
+    <div className="animate-pulse rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="h-5 w-3/4 rounded bg-slate-200" />
+          <div className="mt-2 h-4 w-24 rounded bg-slate-100" />
+        </div>
+        <div className="h-7 w-14 rounded-full bg-slate-100" />
+      </div>
+      <div className="mb-5 h-4 w-20 rounded bg-slate-100" />
+      <div className="mb-6 h-4 w-24 rounded bg-slate-200" />
+      <div className="mb-4 flex gap-2">
+        <div className="h-6 w-16 rounded-full bg-slate-100" />
+        <div className="h-6 w-16 rounded-full bg-slate-100" />
+      </div>
+      <div className="mb-6 h-4 w-full rounded bg-slate-100" />
+      <div className="h-4 w-20 rounded bg-slate-100" />
+    </div>
+  );
+}
+
+function ProgramCard({
+  program,
+  cardId,
+}: {
+  program: Program;
+  cardId?: string;
+}) {
+  const trainingPeriodLabel = formatTrainingPeriod(program.start_date, program.end_date);
+  const deadlineLabel = formatDeadline(program.deadline);
+  const ddayBadge = getDdayBadge(program.days_left);
+  const cardBorderClass = getCardBorderClass(program.days_left);
+  const programLink = program.link || program.application_url || program.source_url;
+  const recommendedReason = getRecommendedReason(program._reason);
+  const fitKeywords = getFitKeywords(program._fit_keywords);
+
+  return (
+    <article
+      id={cardId}
+      className={`flex min-h-[260px] flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md ${cardBorderClass}`}
+    >
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h3 className="line-clamp-2 text-base font-semibold text-slate-950">{program.title || "제목 없음"}</h3>
+          <p className="mt-2 text-sm text-slate-500">{formatSource(program.source)}</p>
+        </div>
+        {ddayBadge ? (
+          <span
+            className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-xs font-semibold ${ddayBadge.className}`}
+          >
+            {ddayBadge.label}
+          </span>
+        ) : null}
+      </div>
+
+      <div className="mb-2 text-sm text-slate-600">훈련 기간: {trainingPeriodLabel}</div>
+
+      <div className="mb-3 text-sm text-slate-600">신청 마감: {deadlineLabel}</div>
+
+      <div className="mb-3 text-sm font-medium text-slate-800">
+        {formatRelevance(program._score ?? program.final_score)}
+      </div>
+
+      {fitKeywords.length > 0 ? (
+        <div className="mb-3 flex flex-wrap gap-2">
+          {fitKeywords.map((keyword) => (
+            <span
+              key={`${program.id ?? program.title ?? "program"}-${keyword}`}
+              className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700"
+            >
+              {keyword}
+            </span>
+          ))}
+        </div>
+      ) : null}
+
+      {recommendedReason ? (
+        <p className="mb-6 line-clamp-2 text-sm text-slate-600">{recommendedReason}</p>
+      ) : null}
+
+      <div className="mt-auto">
+        {programLink ? (
+          <a
+            href={programLink}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-700"
+          >
+            자세히 보기
+          </a>
+        ) : (
+          <span className="text-sm text-slate-400">링크 없음</span>
+        )}
+      </div>
+    </article>
+  );
+}
+
+export default function DashboardPage() {
+  const [userName, setUserName] = useState("사용자");
+  const [programs, setPrograms] = useState<Program[]>([]);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleDateClick = (date: string) => {
+    setSelectedDate((current) => (current === date ? null : date));
+  };
+
+  const filteredPrograms = useMemo(() => {
+    if (!selectedDate) {
+      return programs;
+    }
+
+
+ succeeded in 2104ms:
+// Shared app types for Supabase rows and backend API payloads.
+
+export interface Profile {
+  id: string;
+  name: string | null;
+  avatar_url?: string;
+  bio?: string | null;
+  portfolio_url?: string | null;
+  email: string | null;
+  phone: string | null;
+  education: string | null;
+  career: string[] | null;
+  education_history: string[] | null;
+  awards: string[] | null;
+  certifications: string[] | null;
+  languages: string[] | null;
+  skills: string[] | null;
+  self_intro: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Activity {
+  id: string;
+  user_id: string;
+  type: "회사경력" | "프로젝트" | "대외활동" | "학생활동";
+  title: string;
+  organization?: string;
+  team_size?: number;
+  team_composition?: string;
+  my_role?: string;
+  contributions?: string[];
+  image_urls?: string[];
+  period: string | null;
+  role: string | null;
+  skills: string[] | null;
+  description: string | null;
+  star_situation?: string;
+  star_task?: string;
+  star_action?: string;
+  star_result?: string;
+  is_visible: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Resume {
+  id: string;
+  user_id: string;
+  title: string;
+  target_job: string | null;
+  template_id: string;
+  selected_activity_ids: string[] | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CoverLetter {
+  id: string;
+  user_id: string;
+  title: string;
+  company_name: string | null;
+  job_title: string | null;
+  prompt_question: string | null;
+  content: string;
+  qa_items?: { question: string; answer: string }[] | null;
+  tags: string[] | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CoachMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface StructureDiagnosis {
+  has_problem_definition: boolean;
+  has_tech_decision: boolean;
+  has_quantified_result: boolean;
+  has_role_clarification: boolean;
+  has_implementation_detail: boolean;
+  missing_elements: string[];
+  priority_focus: string;
+}
+
+export interface RewriteSuggestion {
+  text: string;
+  focus:
+    | "star_gap"
+    | "quantification"
+    | "verb_strength"
+    | "job_fit"
+    | "tech_decision"
+    | "problem_definition";
+  section: string;
+  rationale: string;
+  reference_pattern?: string | null;
+}
+
+export interface CoachSession {
+  id: string;
+  user_id: string;
+  job_title: string;
+  section_type: Activity["type"] | "요약";
+  activity_description: string;
+  iteration_count: number;
+  last_feedback: string | null;
+  last_suggestions: RewriteSuggestion[];
+  selected_suggestion_index: number | null;
+  suggestion_type: string | null;
+  last_structure_diagnosis: StructureDiagnosis | Record<string, unknown>;
+  missing_elements: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ParsedProfile {
+  name: string;
+  email: string;
+  phone: string;
+  bio?: string;
+  education: string;
+  career?: string[];
+  education_history?: string[];
+  awards?: string[];
+  certifications?: string[];
+  languages?: string[];
+  skills?: string[];
+  self_intro?: string;
+}
+
+export interface ParsedActivity {
+  type: Activity["type"];
+  title: string;
+  period: string;
+  role: string;
+  skills: string[];
+  description: string;
+}
+
+export interface ParsePdfResponse {
+  profile: ParsedProfile;
+  activities: ParsedActivity[];
+}
+
+export interface CoachFeedbackRequest {
+  session_id?: string;
+  user_id?: string | null;
+  activity_description: string;
+  job_title: string;
+  section_type: Activity["type"] | "요약";
+  selected_suggestion_index?: number | null;
+  history: CoachMessage[];
+}
+
+export interface CoachIntroGenerateRequest {
+  mode: "intro_generate";
+  activity_description: string;
+  activity_type: string;
+  org_name: string;
+  period: string;
+  team_size: number;
+  role: string;
+  skills: string[];
+  contribution: string;
+  section_type?: Activity["type"] | "요약";
+}
+
+export interface CoachFeedbackResponse {
+  session_id: string;
+  feedback: string;
+  structure_diagnosis: StructureDiagnosis;
+  rewrite_suggestions: RewriteSuggestion[];
+  missing_elements: string[];
+  iteration_count: number;
+  updated_history: CoachMessage[];
+}
+
+export interface CoachIntroGenerateResponse {
+  intro_candidates: string[];
+}
+
+export interface CoachSessionSummary {
+  id: string;
+  user_id: string;
+  job_title: string;
+  section_type: string;
+  activity_description: string;
+  iteration_count: number;
+  last_feedback: string | null;
+  suggestion_type: string | null;
+  missing_elements: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CoachSessionDetail extends CoachSessionSummary {
+  last_suggestions: RewriteSuggestion[];
+  selected_suggestion_index: number | null;
+  last_structure_diagnosis: StructureDiagnosis | Record<string, unknown>;
+  restored_history: CoachMessage[];
+}
+
+export interface MatchAnalyzeRequest {
+  job_posting: string;
+  activities: Pick<Activity, "id" | "title" | "description">[];
+  profile_context?: {
+    name?: string;
+    education?: string;
+    career?: string[];
+    education_history?: string[];
+    awards?: string[];
+    certifications?: string[];
+    languages?: string[];
+    skills?: string[];
+    self_intro?: string;
+  };
+}
+
+export type CompareStatus = "pass" | "warn" | "block";
+
+export interface CompareMeta {
+  subsidy_rate?: string | null;
+  teaching_method?: string | null;
+  employment_connection?: string | null;
+  target_group?: string | null;
+  age_restriction?: string | null;
+  education_requirement?: string | null;
+  employment_restriction?: string | null;
+  experience_requirement?: string | null;
+  coding_skill_required?: string | CompareStatus | null;
+  naeilbaeumcard_required?: boolean | CompareStatus | null;
+  employment_insurance?: string | boolean | CompareStatus | null;
+  portfolio_required?: boolean | CompareStatus | null;
+  interview_required?: boolean | CompareStatus | null;
+  target_job?: string | null;
+}
+
+export interface Program {
+  id: string | number | null;
+  title: string | null;
+  category: string | null;
+  location: string | null;
+  provider: string | null;
+  summary: string | null;
+  description?: string | null;
+  tags: string[] | string | null;
+  skills: string[] | string | null;
+  application_url?: string | null;
+  application_method?: string | null;
+  source?: string | null;
+  source_url?: string | null;
+  link?: string | null;
+  deadline?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  support_type?: string | null;
+  teaching_method?: string | null;
+  is_certified?: boolean | null;
+
+2026-04-16T04:40:49.388483Z ERROR codex_core::tools::router: error=Exit code: 1
+Wall time: 2.1 seconds
+Output:
+[31;1mlanding: [0m
+[31;1m[36;1mLine |[0m
+[31;1m[36;1m[36;1m   2 | [0m Get-Content frontend/app/([36;1mlanding[0m)/compare/programs-compare-client.ts …[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m                           ~~~~~~~[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m     | [31;1mThe term 'landing' is not recognized as a name of a cmdlet, function, script file, or executable program.[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m[31;1mCheck the spelling of the name, or if a path was included, verify that the path is correct and try again.[0m
+
+ exited 1 in 2113ms:
+[31;1mlanding: [0m
+[31;1m[36;1mLine |[0m
+[31;1m[36;1m[36;1m   2 | [0m Get-Content frontend/app/([36;1mlanding[0m)/compare/programs-compare-client.ts …[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m                           ~~~~~~~[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m     | [31;1mThe term 'landing' is not recognized as a name of a cmdlet, function, script file, or executable program.[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m[31;1mCheck the spelling of the name, or if a path was included, verify that the path is correct and try again.[0m
+
+2026-04-16T04:40:49.462012Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:49.478572Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:49.496690Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:49.518531Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:49.535493Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:49.560598Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command 'Get-Content frontend/lib/types/index.ts | Select-Object -Index (200..280)' in D:\02_2025_AI_Lab\isoser
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command "Get-Content 'frontend/app/(landing)/compare/programs-compare-client.tsx' | Select-Object -Index (470..515)" in D:\02_2025_AI_Lab\isoser
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command 'git diff --stat 469cd3f..HEAD -- backend/rag/programs_rag.py backend/routers/programs.py frontend/app/dashboard/page.tsx frontend/app/(landing)/compare/programs-compare-client.tsx frontend/lib/types/index.ts' in D:\02_2025_AI_Lab\isoser
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command "git diff --unified=0 469cd3f..HEAD -- backend/rag/programs_rag.py backend/routers/programs.py frontend/app/dashboard/page.tsx 'frontend/app/(landing)/compare/programs-compare-client.tsx' frontend/lib/types/index.ts" in D:\02_2025_AI_Lab\isoser
+ succeeded in 1687ms:
+  last_structure_diagnosis: StructureDiagnosis | Record<string, unknown>;
+  restored_history: CoachMessage[];
+}
+
+export interface MatchAnalyzeRequest {
+  job_posting: string;
+  activities: Pick<Activity, "id" | "title" | "description">[];
+  profile_context?: {
+    name?: string;
+    education?: string;
+    career?: string[];
+    education_history?: string[];
+    awards?: string[];
+    certifications?: string[];
+    languages?: string[];
+    skills?: string[];
+    self_intro?: string;
+  };
+}
+
+export type CompareStatus = "pass" | "warn" | "block";
+
+export interface CompareMeta {
+  subsidy_rate?: string | null;
+  teaching_method?: string | null;
+  employment_connection?: string | null;
+  target_group?: string | null;
+  age_restriction?: string | null;
+  education_requirement?: string | null;
+  employment_restriction?: string | null;
+  experience_requirement?: string | null;
+  coding_skill_required?: string | CompareStatus | null;
+  naeilbaeumcard_required?: boolean | CompareStatus | null;
+  employment_insurance?: string | boolean | CompareStatus | null;
+  portfolio_required?: boolean | CompareStatus | null;
+  interview_required?: boolean | CompareStatus | null;
+  target_job?: string | null;
+}
+
+export interface Program {
+  id: string | number | null;
+  title: string | null;
+  category: string | null;
+  location: string | null;
+  provider: string | null;
+  summary: string | null;
+  description?: string | null;
+  tags: string[] | string | null;
+  skills: string[] | string | null;
+  application_url?: string | null;
+  application_method?: string | null;
+  source?: string | null;
+  source_url?: string | null;
+  link?: string | null;
+  deadline?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  support_type?: string | null;
+  teaching_method?: string | null;
+  is_certified?: boolean | null;
+  is_active?: boolean | null;
+  is_ad?: boolean | null;
+  final_score?: number | null;
+  urgency_score?: number | null;
+  days_left?: number | null;
+  compare_meta?: CompareMeta | null;
+  _reason?: string | null;
+  _fit_keywords?: string[] | null;
+  _score?: number | null;
+}
+
+export type ProgramSort = "deadline" | "latest";
+
+export interface ProgramListParams {
+  q?: string;
+  category?: string;
+  scope?: string;
+  region_detail?: string;
+  regions?: string[];
+  teaching_methods?: string[];
+  recruiting_only?: boolean;
+
+ succeeded in 1689ms:
+                );
+              })}
+            </div>
+            <div className="row contents">
+              <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">수료 후 목표 직무</div>
+              {slots.map((program, index) => (
+                <ValueCell key={`target-job-${program?.id ?? index}`} winner={winnerIndex === index} empty={!program}>
+                  {program ? getText(program.compare_meta?.target_job) : "정보 없음"}
+                </ValueCell>
+              ))}
+            </div>
+
+            {sectionHeader("★ 나와의 관련도 — AI 분석 (준비 중)", "bg-[#0A0F1E] text-white")}
+            {["종합 관련도", "기술 스택 일치도"].map((label) => (
+              <div key={label} className="row contents">
+                <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">{label}</div>
+                {slots.map((program, index) => (
+                  <ValueCell key={`${label}-${program?.id ?? index}`} winner={winnerIndex === index}>
+                    준비 중
+                  </ValueCell>
+                ))}
+              </div>
+            ))}
+
+            <div className="border-r border-slate-200 bg-slate-100 px-4 py-4 text-sm font-medium text-slate-600">결정하셨나요?</div>
+            {slots.map((program, index) => (
+              <div
+                key={`cta-${program?.id ?? index}`}
+                className={`flex flex-col gap-2 border-r px-4 py-4 ${winnerIndex === index ? "bg-orange-50/60" : "bg-slate-100"} border-slate-200 last:border-r-0`}
+              >
+                {program ? (
+                  <>
+                    {program.application_url ? (
+                      <a
+                        href={program.application_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center justify-center rounded-xl bg-[#F97316] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600"
+                      >
+                        지금 지원하기 →
+                      </a>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled
+                        className="inline-flex items-center justify-center rounded-xl bg-slate-300 px-4 py-2.5 text-sm font-semibold text-white"
+
+ succeeded in 1764ms:
+diff --git a/frontend/app/dashboard/page.tsx b/frontend/app/dashboard/page.tsx
+index 7956069..505d48b 100644
+--- a/frontend/app/dashboard/page.tsx
++++ b/frontend/app/dashboard/page.tsx
+@@ -3 +3 @@
+-import { useEffect, useMemo, useState } from "react";
++import { useCallback, useEffect, useMemo, useState } from "react";
+@@ -8,0 +9,15 @@ import type { Program } from "@/lib/types";
++const CATEGORY_OPTIONS = [
++  { label: "전체", value: null },
++  { label: "IT·컴퓨터", value: "IT" },
++  { label: "디자인", value: "디자인" },
++  { label: "경영·마케팅", value: "경영" },
++  { label: "어학", value: "어학" },
++] as const;
++
++const REGION_OPTIONS = [
++  { label: "전체", value: null },
++  { label: "서울", value: "서울" },
++  { label: "경기", value: "경기" },
++  { label: "온라인", value: "온라인" },
++] as const;
++
+@@ -70,0 +86,13 @@ function formatRelevance(score: number | null | undefined): string {
++function getRecommendedReason(value: string | null | undefined): string | null {
++  const trimmed = value?.trim();
++  return trimmed || null;
++}
++
++function getFitKeywords(value: string[] | null | undefined): string[] {
++  if (!Array.isArray(value)) {
++    return [];
++  }
++
++  return value.map((keyword) => keyword.trim()).filter(Boolean).slice(0, 3);
++}
++
+@@ -127,0 +156,5 @@ function SkeletonCard() {
++      <div className="mb-4 flex gap-2">
++        <div className="h-6 w-16 rounded-full bg-slate-100" />
++        <div className="h-6 w-16 rounded-full bg-slate-100" />
++      </div>
++      <div className="mb-6 h-4 w-full rounded bg-slate-100" />
+@@ -144,0 +178,2 @@ function ProgramCard({
++  const recommendedReason = getRecommendedReason(program._reason);
++  const fitKeywords = getFitKeywords(program._fit_keywords);
+@@ -149 +184 @@ function ProgramCard({
+-      className={`flex min-h-[220px] flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md ${cardBorderClass}`}
++      className={`flex min-h-[260px] flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md ${cardBorderClass}`}
+@@ -169 +204,20 @@ function ProgramCard({
+-      <div className="mb-6 text-sm font-medium text-slate-800">{formatRelevance(program.final_score)}</div>
++      <div className="mb-3 text-sm font-medium text-slate-800">
++        {formatRelevance(program._score ?? program.final_score)}
++      </div>
++
++      {fitKeywords.length > 0 ? (
++        <div className="mb-3 flex flex-wrap gap-2">
++          {fitKeywords.map((keyword) => (
++            <span
++              key={`${program.id ?? program.title ?? "program"}-${keyword}`}
++              className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700"
++            >
++              {keyword}
++            </span>
++          ))}
++        </div>
++      ) : null}
++
++      {recommendedReason ? (
++        <p className="mb-6 line-clamp-2 text-sm text-slate-600">{recommendedReason}</p>
++      ) : null}
+@@ -192,0 +247,2 @@ export default function DashboardPage() {
++  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
++  const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
+@@ -211,4 +267,2 @@ export default function DashboardPage() {
+-  useEffect(() => {
+-    let mounted = true;
+-
+-    const loadDashboard = async () => {
++  const loadPrograms = useCallback(
++    async (options?: { category?: string | null; region?: string | null }) => {
+@@ -219,4 +273,14 @@ export default function DashboardPage() {
+-        const [meResult, programResult] = await Promise.all([
+-          getDashboardMe(),
+-          getRecommendedPrograms(),
+-        ]);
++        const result = await getRecommendedPrograms({
++          category: options?.category ?? undefined,
++          region: options?.region ?? undefined,
++        });
++        setPrograms(result.programs);
++      } catch (e) {
++        setPrograms([]);
++        setError(e instanceof Error ? e.message : "추천 프로그램을 불러오지 못했습니다.");
++      } finally {
++        setLoading(false);
++      }
++    },
++    []
++  );
+@@ -224 +288,2 @@ export default function DashboardPage() {
+-        const nextPrograms = programResult.programs;
++  useEffect(() => {
++    let mounted = true;
+@@ -225,0 +291,3 @@ export default function DashboardPage() {
++    const loadUser = async () => {
++      try {
++        const meResult = await getDashboardMe();
+@@ -227 +294,0 @@ export default function DashboardPage() {
+-
+@@ -229,2 +296 @@ export default function DashboardPage() {
+-        setPrograms(nextPrograms);
+-      } catch (e) {
++      } catch {
+@@ -232,6 +298 @@ export default function DashboardPage() {
+-        setPrograms([]);
+-        setError(e instanceof Error ? e.message : "추천 프로그램을 불러오지 못했습니다.");
+-      } finally {
+-        if (mounted) {
+-          setLoading(false);
+-        }
++        setUserName("사용자");
+@@ -241 +302 @@ export default function DashboardPage() {
+-    void loadDashboard();
++    void loadUser();
+@@ -247,0 +309,13 @@ export default function DashboardPage() {
++  useEffect(() => {
++    void loadPrograms({ category: selectedCategory, region: selectedRegion });
++  }, [loadPrograms, selectedCategory, selectedRegion]);
++
++  const isFiltered = Boolean(selectedCategory || selectedRegion);
++  const emptyMessage = error
++    ? error
++    : selectedDate && programs.length > 0
++      ? "해당 날짜에 마감되는 프로그램이 없습니다"
++      : isFiltered
++        ? "해당 조건에 맞는 추천 프로그램이 없습니다"
++        : "추천 프로그램이 없습니다";
++
+@@ -272,0 +347,54 @@ export default function DashboardPage() {
++          <div className="mb-6 space-y-4">
++            <div>
++              <p className="mb-2 text-sm font-medium text-slate-700">카테고리</p>
++              <div className="flex flex-wrap gap-2">
++                {CATEGORY_OPTIONS.map((option) => {
++                  const isActive = selectedCategory === option.value;
++                  return (
++                    <button
++                      key={`category-${option.label}`}
++                      type="button"
++                      onClick={() => {
++                        setSelectedCategory(option.value);
++                        setSelectedRegion(null);
++                      }}
++                      className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
++                        isActive
++                          ? "border-blue-600 bg-blue-600 text-white"
++                          : "border-slate-200 bg-white text-slate-600"
++                      }`}
++                    >
++                      {option.label}
++                    </button>
++                  );
++                })}
++              </div>
++            </div>
++
++            <div>
++              <p className="mb-2 text-sm font-medium text-slate-700">지역</p>
++              <div className="flex flex-wrap gap-2">
++                {REGION_OPTIONS.map((option) => {
++                  const isActive = selectedRegion === option.value;
++                  return (
++                    <button
++                      key={`region-${option.label}`}
++                      type="button"
++                      onClick={() => {
++                        setSelectedRegion(option.value);
++                        setSelectedCategory(null);
++                      }}
++                      className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
++                        isActive
++                          ? "border-blue-600 bg-blue-600 text-white"
++                          : "border-slate-200 bg-white text-slate-600"
++                      }`}
++                    >
++                      {option.label}
++                    </button>
++                  );
++                })}
++              </div>
++            </div>
++          </div>
++
+@@ -275,3 +403,3 @@ export default function DashboardPage() {
+-              <SkeletonCard />
+-              <SkeletonCard />
+-              <SkeletonCard />
++              {Array.from({ length: 9 }).map((_, index) => (
++                <SkeletonCard key={`skeleton-${index}`} />
++              ))}
+@@ -295,9 +423 @@ export default function DashboardPage() {
+-              <p className="text-sm text-slate-500">
+-                {error
+-                  ? error
+-                  : selectedDate
+-                    ? "해당 날짜에 마감되는 프로그램이 없습니다"
+-                    : programs.length > 0
+-                      ? "추천 프로그램이 없습니다"
+-                      : "추천 프로그램이 없습니다"}
+-              </p>
++              <p className="text-sm text-slate-500">{emptyMessage}</p>
+diff --git a/frontend/lib/types/index.ts b/frontend/lib/types/index.ts
+index 135ecbc..744477a 100644
+--- a/frontend/lib/types/index.ts
++++ b/frontend/lib/types/index.ts
+@@ -266,0 +267,3 @@ export interface Program {
++  _reason?: string | null;
++  _fit_keywords?: string[] | null;
++  _score?: number | null;
+
+2026-04-16T04:40:58.506363Z ERROR codex_core::tools::router: error=Exit code: 1
+Wall time: 1.8 seconds
+Output:
+[31;1mlanding: [0m
+[31;1m[36;1mLine |[0m
+[31;1m[36;1m[36;1m   2 | [0m … rams.py frontend/app/dashboard/page.tsx frontend/app/([36;1mlanding[0m)/compar …[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m                                                         ~~~~~~~[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m     | [31;1mThe term 'landing' is not recognized as a name of a cmdlet, function, script file, or executable program.[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m[31;1mCheck the spelling of the name, or if a path was included, verify that the path is correct and try again.[0m
+
+ exited 1 in 1773ms:
+[31;1mlanding: [0m
+[31;1m[36;1mLine |[0m
+[31;1m[36;1m[36;1m   2 | [0m … rams.py frontend/app/dashboard/page.tsx frontend/app/([36;1mlanding[0m)/compar …[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m                                                         ~~~~~~~[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m     | [31;1mThe term 'landing' is not recognized as a name of a cmdlet, function, script file, or executable program.[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m[31;1mCheck the spelling of the name, or if a path was included, verify that the path is correct and try again.[0m
+
+2026-04-16T04:40:58.577402Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:58.594421Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:58.612707Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:58.635149Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:58.651809Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:40:58.675894Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+codex
+I have enough context to judge readiness. I’m verifying whether the cited backend and compare-page files actually drifted since `469cd3f`, and I’m checking the recommendations schema reference because the packet asks for a migration.
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command "git diff --stat 469cd3f..HEAD -- backend/rag/programs_rag.py backend/routers/programs.py frontend/app/dashboard/page.tsx 'frontend/app/(landing)/compare/programs-compare-client.tsx' frontend/lib/types/index.ts" in D:\02_2025_AI_Lab\isoser
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command "git diff --name-only 469cd3f..HEAD -- backend/rag/programs_rag.py backend/routers/programs.py 'frontend/app/(landing)/compare/programs-compare-client.tsx' frontend/app/dashboard/page.tsx frontend/lib/types/index.ts" in D:\02_2025_AI_Lab\isoser
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command 'rg -n "recommendations|similarity_score|urgency_score|final_score|relevance_score" -g "*.sql" -g "*.py" -g "*.ts" -g "*.tsx" .' in D:\02_2025_AI_Lab\isoser
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command "git show --stat --oneline 469cd3f -- backend/rag/programs_rag.py backend/routers/programs.py frontend/app/dashboard/page.tsx 'frontend/app/(landing)/compare/programs-compare-client.tsx' frontend/lib/types/index.ts" in D:\02_2025_AI_Lab\isoser
+ succeeded in 1667ms:
+frontend/app/dashboard/page.tsx
+frontend/lib/types/index.ts
+
+ succeeded in 1673ms:
+ frontend/app/dashboard/page.tsx | 188 ++++++++++++++++++++++++++++++++--------
+ frontend/lib/types/index.ts     |   3 +
+ 2 files changed, 157 insertions(+), 34 deletions(-)
+
+ succeeded in 1659ms:
+.\backend\rag\programs_rag.py:151:    def _urgency_score(self, program: dict) -> float:
+.\backend\rag\programs_rag.py:265:        relevance_score = min(
+.\backend\rag\programs_rag.py:275:        return matched_keywords[:5], relevance_score
+.\backend\rag\programs_rag.py:300:        recommendations: list[ProgramRecommendation] = []
+.\backend\rag\programs_rag.py:313:            matched_keywords, relevance_score = self._program_match_context(program_record, keywords)
+.\backend\rag\programs_rag.py:314:            urgency_score = self._urgency_score(program_record)
+.\backend\rag\programs_rag.py:315:            final_score = round(relevance_score * 0.8 + urgency_score * 0.2, 4)
+.\backend\rag\programs_rag.py:317:            program_record["similarity_score"] = relevance_score
+.\backend\rag\programs_rag.py:318:            program_record["urgency_score"] = urgency_score
+.\backend\rag\programs_rag.py:319:            program_record["final_score"] = final_score
+.\backend\rag\programs_rag.py:320:            if final_score <= 0:
+.\backend\rag\programs_rag.py:322:            recommendations.append(
+.\backend\rag\programs_rag.py:325:                    score=final_score,
+.\backend\rag\programs_rag.py:332:        recommendations.sort(
+.\backend\rag\programs_rag.py:334:                item.program.get("final_score", 0.0),
+.\backend\rag\programs_rag.py:335:                item.program.get("urgency_score", 0.0),
+.\backend\rag\programs_rag.py:339:        return recommendations[:top_k]
+.\backend\rag\programs_rag.py:419:        recommendations: list[ProgramRecommendation] = []
+.\backend\rag\programs_rag.py:434:            urgency_score = self._urgency_score(program_record)
+.\backend\rag\programs_rag.py:436:            final_score = round(semantic_score * 0.8 + urgency_score * 0.2, 4)
+.\backend\rag\programs_rag.py:438:            program_record["similarity_score"] = semantic_score
+.\backend\rag\programs_rag.py:439:            program_record["urgency_score"] = urgency_score
+.\backend\rag\programs_rag.py:440:            program_record["final_score"] = final_score
+.\backend\rag\programs_rag.py:442:            recommendations.append(
+.\backend\rag\programs_rag.py:445:                    score=final_score,
+.\backend\rag\programs_rag.py:456:        recommendations.sort(
+.\backend\rag\programs_rag.py:458:                item.program.get("final_score", 0.0),
+.\backend\rag\programs_rag.py:459:                item.program.get("urgency_score", 0.0),
+.\backend\rag\programs_rag.py:463:        return recommendations
+.\frontend\lib\types\index.ts:263:  final_score?: number | null;
+.\frontend\lib\types\index.ts:264:  urgency_score?: number | null;
+.\backend\routers\programs.py:80:    final_score: float | None = None
+.\backend\routers\programs.py:81:    urgency_score: float | None = None
+.\backend\routers\programs.py:276:async def _load_cached_recommendations(user_id: str) -> list[dict[str, Any]] | None:
+.\backend\routers\programs.py:281:            path="/rest/v1/recommendations",
+.\backend\routers\programs.py:283:                "select": "program_id,similarity_score,urgency_score,final_score,generated_at",
+.\backend\routers\programs.py:286:                "order": "final_score.desc",
+.\backend\routers\programs.py:296:async def _save_recommendations(
+.\backend\routers\programs.py:298:    recommendations: list[ProgramRecommendation],
+.\backend\routers\programs.py:300:    if not recommendations:
+.\backend\routers\programs.py:305:    for item in recommendations:
+.\backend\routers\programs.py:312:                "similarity_score": float(item.program.get("similarity_score") or 0),
+.\backend\routers\programs.py:313:                "urgency_score": float(item.program.get("urgency_score") or 0),
+.\backend\routers\programs.py:314:                "final_score": float(item.score or 0),
+.\backend\routers\programs.py:325:            path="/rest/v1/recommendations",
+.\backend\routers\programs.py:334:async def _delete_user_recommendations(user_id: str) -> None:
+.\backend\routers\programs.py:338:            path="/rest/v1/recommendations",
+.\backend\routers\programs.py:354:            score=program.get("final_score"),
+.\backend\routers\programs.py:386:        program_record["similarity_score"] = row.get("similarity_score")
+.\backend\routers\programs.py:387:        program_record["urgency_score"] = row.get("urgency_score")
+.\backend\routers\programs.py:388:        program_record["final_score"] = row.get("final_score")
+.\backend\routers\programs.py:392:                score=float(row.get("final_score") or 0),
+.\backend\routers\programs.py:589:        cached_rows = await _load_cached_recommendations(current_user.id)
+.\backend\routers\programs.py:599:        await _delete_user_recommendations(current_user.id)
+.\backend\routers\programs.py:606:    recommendations = await programs_rag.recommend(
+.\backend\routers\programs.py:615:    if not recommendations:
+.\backend\routers\programs.py:623:        await _save_recommendations(current_user.id, recommendations)
+.\backend\routers\programs.py:626:        items=[_serialize_program_recommendation(item) for item in recommendations]
+.\supabase\migrations\20260415_create_recommendations.sql:1:CREATE TABLE IF NOT EXISTS recommendations (
+.\supabase\migrations\20260415_create_recommendations.sql:5:  similarity_score FLOAT DEFAULT 0,
+.\supabase\migrations\20260415_create_recommendations.sql:6:  urgency_score FLOAT DEFAULT 0,
+.\supabase\migrations\20260415_create_recommendations.sql:7:  final_score FLOAT DEFAULT 0,
+.\supabase\migrations\20260415_create_recommendations.sql:9:  CONSTRAINT recommendations_unique UNIQUE (user_id, program_id)
+.\frontend\app\dashboard\page.tsx:205:        {formatRelevance(program._score ?? program.final_score)}
+
+ succeeded in 1661ms:
+2026-04-16T04:41:13.808368Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:41:13.823366Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:41:13.839192Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:41:13.856977Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:41:13.872696Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:41:13.895866Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+codex
+The main blocker looks procedural rather than architectural: the packet depends on a compare-page spec file that is not present at the cited path. I’m opening the only likely local packet so I can verify whether the packet simply points to the wrong file or is missing a required dependency.
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command 'Get-Content cowork/packets/TASK-2026-04-15-1100-programs-compare.md' in D:\02_2025_AI_Lab\isoser
+ succeeded in 1509ms:
+---
+id: TASK-2026-04-15-1100-programs-compare
+status: queued
+type: feature
+title: 부트캠프 비교 페이지 — /programs/compare
+priority: high
+planned_by: claude
+planned_at: 2026-04-15T11:00:00+09:00
+planned_against_commit: d2dc9fe36272d06812f26781c8659aad98dd6054
+---
+
+# Goal
+
+최대 3개 프로그램을 나란히 놓고 기본 정보·모집 대상·지원 허들·커리큘럼을 한눈에 비교하는 `/programs/compare` 페이지를 추가한다.
+
+비교 대상은 URL 쿼리 파라미터(`?ids=uuid1,uuid2,uuid3`)로 관리한다. 페이지 자체는 비로그인 공개 접근이 가능하다.
+
+UI 초안 참조 파일은 `cowork/drafts/isoser-compare-v3.html`이다. 실행 기준 문서는 본 packet이며, 구현 시 draft의 레이아웃·컬러·컴포넌트 구조를 저장소 실제 경로와 Next.js 구조에 맞게 변환한다.
+
+**Drift 주의 — 현재 repo 상태 확인 필수:**
+
+- `/programs/page.tsx`, `/programs/[id]/page.tsx`는 이미 구현돼 있다. 이 파일들을 건드리지 않는다
+- `programs` 테이블은 이미 존재하며 `id`, `title`, `deadline`, `days_left`, `skills`, `tags`, `provider`, `location`, `source` 등 기본 컬럼을 갖고 있다. 단, 허들 관련 컬럼(연령 제한, 코딩 실력 요건 등)은 없다
+- 이 Task에서 허들 데이터를 위해 `compare_meta JSONB` 컬럼 하나를 migration으로 추가한다
+- `Program` 타입은 `frontend/lib/types/index.ts`에 정의되어 있다. 새 컬럼 추가 시 이 타입도 함께 업데이트한다
+
+# User Flow
+
+- 비로그인 사용자가 nav "부트캠프 비교" 탭 또는 `/programs/compare`에 직접 접근한다
+- URL에 `?ids=`가 없으면 3개 빈 슬롯이 표시된다. 페이지 하단 "추천 프로그램" 섹션에서 "+ 비교에 추가" 버튼으로 슬롯을 채운다
+- 슬롯에 프로그램이 추가되면 URL이 `?ids=uuid1` → `?ids=uuid1,uuid2` 순으로 업데이트된다 (router.replace)
+- 슬롯의 × 버튼을 누르면 해당 UUID가 URL에서 제거되고 슬롯이 빈 상태로 돌아간다
+- 비교 테이블에서 기본 정보 / 모집 대상 / 지원 허들 / 커리큘럼 섹션을 확인한다
+- 허들 항목에 빨간 배지가 있으면 사전 해결 필요 사항을 인지한다
+- "AI 관련도" 섹션은 모든 사용자에게 "준비 중" 플레이스홀더를 표시한다 (로그인 여부 무관)
+- CTA 행에서 "지금 지원하기" (외부 `application_url` 새탭), "이력서 즉시 만들기" (`/dashboard/resume` 로그인 시, `/login` 비로그인 시)를 클릭한다
+
+# UI Requirements
+
+**컬러 시스템** (`cowork/drafts/isoser-compare-v3.html` 기준, Pretendard 폰트 유지)
+
+| 변수 | 값 |
+|---|---|
+| `--ink` | `#0A0F1E` |
+| `--blue` | `#2563EB` |
+| `--fire` | `#F97316` |
+| `--red` | `#EF4444` |
+| `--amber` | `#F59E0B` |
+| `--green` | `#22C55E` |
+| `--surface` | `#F1F5F9` |
+| `--border` | `#E2E8F0` |
+
+**페이지 헤더**
+
+- 다크(#0A0F1E) 배경, 타이틀 "부트캠프 비교 분석", 서브텍스트
+- 헤더 하단 pill: "개발자 대상 포함", "비개발자 대상 포함", "로그인 시 AI 자동 판단 (준비 중)"
+
+**범례 바**
+
+- "허들 표시" 레이블 + 초록(조건 충족 가능) / 노랑(확인 필요) / 빨강(지원 불가) 3종 설명
+- 오른쪽 끝: "로그인 시 내 프로필 기준 자동 판단 (준비 중)"
+
+**비교 카드 — CSS Grid 구조**
+
+- `grid-template-columns: 170px repeat(3, 1fr)`
+- 4열 고정. 첫 번째 열: 항목 레이블(회색 배경). 2~4열: 프로그램 데이터
+- `.row { display: contents }` 패턴으로 논리적 묶음만 하고 레이아웃에서 투명
+
+**슬롯 헤더 행 (직계 자식 4개)**
+
+- 1열 (slot-corner): 현재 비교 중 건수 표시 (예: "2 / 3개")
+- 2~4열 (slot-cell): 프로그램이 있으면 프로그램 정보, 없으면 빈 슬롯
+- Winner 슬롯 조건: `days_left`가 가장 작은 프로그램. 동점이면 먼저 추가된 프로그램. AI 점수 기반 판단은 이번 범위 밖
+- Winner 슬롯: `border-top: 3px solid var(--fire)`, "나에게 가장 적합" 배지, 연한 오렌지 배경
+- 슬롯 안 표시 요소: 출처(`source`), 프로그램명(`title`), 마감 D-day 태그 (`days_left` 기준), 대상 태그 (`compare_meta.target_group`), 지원율 태그 (`compare_meta.subsidy_rate`), × 삭제 버튼
+- 빈 슬롯: "＋ 프로그램 추가 / 아래 목록에서 선택" 안내, 클릭 시 포커스 없음 (추천 프로그램 섹션에서 추가)
+
+**비교 테이블 섹션 — 각 섹션은 전체 열 스팬 섹션 헤더 + 데이터 행으로 구성**
+
+섹션 헤더 배경색:
+- 기본 정보: `#F8FAFC`
+- 모집 대상: `#F5F3FF`
+- 지원 허들: `#FEF9EC`, 빨간 경고 문구 포함
+- 커리큘럼: `#EFF6FF`
+- AI 관련도: `#0A0F1E` (다크, "준비 중" 표시)
+
+**기본 정보 섹션 행 (5행)**
+
+| 항목 | 데이터 출처 |
+|---|---|
+| 마감일 | `deadline` + `days_left`. D-3 이하 빨강, D-4~7 주황, D-8~14 노랑 강조 |
+| 과정 기간 | `start_date` ~ `end_date`. 없으면 "정보 없음" |
+| 국비 지원율 | `compare_meta.subsidy_rate`. null이면 "정보 없음" |
+| 수업 방식 | `compare_meta.teaching_method`. null이면 "정보 없음" |
+| 취업 연계 | `compare_meta.employment_connection`. null이면 "정보 없음" |
+
+**모집 대상 섹션 행 (5행)**
+
+| 항목 | 데이터 출처 |
+|---|---|
+| 주요 대상 | `compare_meta.target_group`. null이면 "정보 없음" |
+| 연령 제한 | `compare_meta.age_restriction`. null이면 "정보 없음" |
+| 학력 요건 | `compare_meta.education_requirement`. null이면 "정보 없음" |
+| 재직자 지원 | `compare_meta.employment_restriction`. null이면 "정보 없음" |
+| 경력 조건 | `compare_meta.experience_requirement`. null이면 "정보 없음" |
+
+**지원 허들 섹션 행 (5행)**
+
+각 행은 허들 배지 3종 중 하나를 표시. `compare_meta`가 null이면 "정보 없음"으로 표시.
+
+허들 배지 규칙:
+- `pass` (초록): 조건 충족 가능 또는 제한 없음
+- `warn` (노랑): 확인 필요 또는 부분 제한
+- `block` (빨강): 지원 전 반드시 해결 필요
+
+| 항목 | 데이터 출처 |
+|---|---|
+| 사전 코딩 실력 | `compare_meta.coding_skill_required`. null → "정보 없음" |
+| 국민내일배움카드 | `compare_meta.naeilbaeumcard_required`. null → "정보 없음" |
+| 고용보험 이력 | `compare_meta.employment_insurance`. null → "정보 없음" |
+| 포트폴리오 제출 | `compare_meta.portfolio_required`. null → "정보 없음". 필요한 경우 "이소서에서 바로 만들 수 있습니다" 링크 노트 표시 |
+| 면접 / 코딩테스트 | `compare_meta.interview_required`. null → "정보 없음" |
+
+**커리큘럼 섹션 행 (2행)**
+
+| 항목 | 데이터 출처 |
+|---|---|
+| 주요 기술 스택 | `skills` (기존 컬럼). 없으면 "정보 없음" |
+| 수료 후 목표 직무 | `compare_meta.target_job`. null → "정보 없음" |
+
+**AI 관련도 섹션**
+
+- 섹션 헤더: 다크 배경, "★ 나와의 관련도 — AI 분석 (준비 중)"
+- 종합 관련도 행: 모든 슬롯에 "준비 중" 텍스트 표시. 진행 바 없음
+- 기술 스택 일치도 행: 동일
+
+**CTA 행 (직계 자식 4개)**
+
+- 프로그램 있는 슬롯: "지금 지원하기 →" (fire 버튼, `application_url` 새탭 오픈. `application_url`이 null이면 버튼 비활성화 또는 미표시) + "이력서 즉시 만들기" (res 버튼, 로그인 시 `/dashboard/resume`, 비로그인 시 `/login`)
+- 빈 슬롯: "+ 프로그램 추가" ghost 버튼 (클릭 무반응, 안내 텍스트 역할)
+
+**AI 배너**
+
+- 다크 배경 배너, "로그인하면 나의 허들 항목을 AI가 자동 판단해드립니다" 카피 (이번 Task에서 기능 미구현, 배너 UI만)
+- "Google로 무료 시작" 버튼 → `/login`
+
+**추천 프로그램 섹션**
+
+- 섹션 타이틀: "비교에 추가해볼 만한 프로그램"
+- 4열 카드 그리드
+- 데이터: 기존 `listPrograms` 백엔드 API 호출 (limit=8). 현재 비교 중인 ids를 제외한 프로그램 중 앞 4개 표시
+- 카드 구성: 출처(`source`), D-day (`days_left`), 프로그램명(`title`), 태그(`tags`), "+ 비교에 추가" 버튼
+- "+ 비교에 추가" 버튼: 클릭 시 URL의 ids에 해당 UUID 추가 (이미 3개면 버튼 비활성화)
+
+# Acceptance Criteria
+
+1. `/programs/compare`에 비로그인 상태로 접근 가능하다 (middleware 수정 불필요 — 실행 전 middleware 변경 여부 확인)
+2. URL `?ids=uuid1,uuid2` 형태로 접근 시 해당 프로그램 데이터가 슬롯에 로드된다
+3. 추천 프로그램 카드의 "+ 비교에 추가" 클릭 시 URL ids에 추가되고 슬롯에 반영된다
+4. 슬롯의 × 클릭 시 해당 UUID가 URL에서 제거되고 슬롯이 빈 상태로 바뀐다
+5. ids가 3개일 때 "+ 비교에 추가" 버튼이 비활성화된다
+6. `compare_meta`가 null인 프로그램은 허들·모집 대상·커리큘럼의 모든 셀에 "정보 없음" 텍스트를 표시한다. 에러 없이 렌더링된다
+7. `compare_meta`에 값이 있는 항목은 허들 배지(pass/warn/block)로 정확히 표시된다
+8. 비교 카드 그리드가 4열(레이블 1열 + 슬롯 3열)로 정확히 렌더링된다. `.row { display: contents }` 패턴을 사용한다
+9. winner 슬롯 (days_left 최솟값 기준)에 fire border-top + "나에게 가장 적합" 배지가 표시된다
+10. "지금 지원하기" 버튼이 `application_url`이 있는 경우 새탭으로 열린다. null인 경우 버튼이 비활성화 또는 미표시된다
+11. AI 관련도 섹션이 "준비 중" 상태로 렌더링된다. 에러가 없어야 한다
+12. 추천 프로그램 섹션이 현재 비교 중인 ids를 제외한 프로그램 중 최대 4개를 표시한다
+13. `supabase/migrations/`에 `compare_meta JSONB` 컬럼 추가 migration이 포함된다
+14. `frontend/lib/types/index.ts`의 `Program` 타입에 `compare_meta?: CompareMetaType | null`이 추가된다
+
+# Constraints
+
+- `/programs/page.tsx`, `/programs/[id]/page.tsx` 수정 금지 (기존 파일 건드리지 않음)
+- 기존 migration 파일 수정 금지. `compare_meta` 컬럼 추가는 새 migration 파일로만
+- 브라우저에서 Supabase 직접 호출 금지. 데이터는 기존 `getProgram` 및 `listPrograms` API 경유
+- URL state 관리는 `router.replace` 기반으로 한다. `localStorage`나 `sessionStorage`는 사용하지 않는다
+- 비교 중인 ids 파싱 시 유효하지 않은 UUID가 포함된 경우 해당 슬롯은 에러 없이 빈 슬롯으로 처리한다
+- compare 페이지는 Client Component가 필요한 부분(슬롯 추가/제거 상호작용)과 Server Component(초기 데이터 페치)를 적절히 분리한다. 기존 hook + component 분리 패턴 참고
+- AI 점수 기반 winner 판단 금지. winner는 `days_left` 최솟값 기준으로만 결정한다
+- 폰트는 Pretendard 유지. draft의 Noto Sans KR 적용 금지
+
+# Non-goals
+
+- AI 관련도 실제 계산 (종합 관련도 %, 기술 스택 일치도 %)
+- 로그인 사용자 프로필 기반 허들 자동 판단
+- `/programs` 카드에 "비교에 추가" 버튼 추가 (별도 Task)
+- `compare_meta` 데이터 실제 수집/입력 로직 (migration으로 컬럼만 추가)
+- 모바일 전용 레이아웃 최적화
+- 비교 결과 공유 기능
+
+# Edge Cases
+
+- URL ids가 0개: 3개 빈 슬롯 + 추천 프로그램 섹션 표시. 에러 없음
+- URL에 존재하지 않는 UUID 포함: `getProgram` 호출 시 404 또는 null 반환 → 해당 슬롯을 빈 슬롯으로 처리
+- URL에 중복 UUID 포함: 첫 번째 UUID만 사용하고 중복 제거 후 URL 정규화
+- ids가 3개 초과인 URL 직접 입력: 처음 3개만 사용, 나머지 무시
+- `days_left`가 동일한 프로그램이 여러 개인 경우: 슬롯에 먼저 추가된 프로그램을 winner로 판정
+- `days_left`가 null인 프로그램: winner 판정에서 제외. D-day 배지 미표시
+- `application_url`이 null인 경우: "지금 지원하기" 버튼 비활성화 처리 (`disabled` 속성 + 회색 스타일)
+- 추천 프로그램 API 실패: 섹션 자체를 미표시 또는 "추천 프로그램을 불러올 수 없습니다" 안내. 비교 카드 렌더링은 영향받지 않음
+
+# Open Questions
+
+1. `compare_meta` JSONB의 필드 값 표준화 — 허들 배지 로직(pass/warn/block 분기)을 위해 값 형식을 정해야 한다. 권장 형식:
+   - `coding_skill_required`: `"none"` (pass) / `"basic"` (warn) / `"required"` (block) / null (정보 없음)
+   - `naeilbaeumcard_required`: `false` (pass) / `true` (warn) / null (정보 없음)
+   - `portfolio_required`: `false` (pass) / `true` (warn) / null (정보 없음)
+   - `employment_restriction`: `"all"` (pass) / `"employed_ok"` (pass) / `"unemployed_only"` (warn) / null (정보 없음)
+   구현 러너는 이 형식을 기준으로 배지 분기 로직을 작성한다
+2. winner 선정 기준 — 현재는 `days_left` 최솟값. 추후 AI 점수 기반으로 전환 예정. 코드에 주석으로 교체 지점 명시 권장
+
+# Transport Notes
+
+- Local execution target: `tasks/inbox/TASK-2026-04-15-1100-programs-compare.md`
+- Remote fallback target: `tasks/remote/TASK-2026-04-15-1100-programs-compare.md`
+- 실행 전 현재 HEAD가 `d2dc9fe36272d06812f26781c8659aad98dd6054`인지 확인한다. 다른 commit이라면 `/programs/page.tsx`, `/programs/[id]/page.tsx`, `Program` 타입, migration 목록을 실제 repo 기준으로 재검토한다
+
+2026-04-16T04:41:25.842618Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:41:25.857176Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:41:25.873125Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:41:25.891599Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:41:25.907392Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:41:25.930569Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command 'Test-Path frontend/app/api/dashboard/recommended-programs/route.ts' in D:\02_2025_AI_Lab\isoser
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command 'if (Test-Path frontend/app/api/dashboard/recommended-programs/route.ts) { Get-Content frontend/app/api/dashboard/recommended-programs/route.ts | Select-Object -First 220 }' in D:\02_2025_AI_Lab\isoser
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command 'rg -n "getRecommendedPrograms|recommended-programs" frontend/lib frontend/app -g "*.ts" -g "*.tsx"' in D:\02_2025_AI_Lab\isoser
+ succeeded in 1540ms:
+True
+
+ succeeded in 1547ms:
+import { apiError, apiOk } from "@/lib/api/route-response";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import type { ProgramRecommendResponse } from "@/lib/types";
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const category = searchParams.get("category")?.trim() || undefined;
+    const region = searchParams.get("region")?.trim() || undefined;
+    const forceRefresh = searchParams.get("force_refresh") === "true";
+
+    const supabase = await createServerSupabaseClient();
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
+    const accessToken = !error && session?.access_token ? session.access_token : null;
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+    };
+    if (accessToken) {
+      headers.Authorization = `Bearer ${accessToken}`;
+    }
+
+    const response = await fetch(`${BACKEND_URL}/programs/recommend`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        top_k: 9,
+        category,
+        region,
+        force_refresh: forceRefresh,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(errorData?.detail || "추천 프로그램을 불러오지 못했습니다.");
+    }
+
+    const data = (await response.json()) as ProgramRecommendResponse;
+    const programs = (data.items ?? [])
+      .map((item) => {
+        if (!item.program) return null;
+
+        return {
+          ...item.program,
+          _reason: item.reason ?? null,
+          _fit_keywords: item.fit_keywords ?? null,
+          _score: item.score ?? null,
+        };
+      })
+      .filter((program): program is NonNullable<typeof program> => Boolean(program))
+      .slice(0, 9);
+
+    return apiOk({ programs });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "추천 프로그램을 불러오지 못했습니다.";
+    return apiError(message, 400, "BAD_REQUEST");
+  }
+}
+
+ succeeded in 1582ms:
+frontend/lib\api\app.ts:115:export async function getRecommendedPrograms(
+frontend/lib\api\app.ts:124:  const url = `/api/dashboard/recommended-programs${query ? `?${query}` : ""}`;
+frontend/lib\api\app.ts:135:    await getRecommendedPrograms({ forceRefresh: true });
+frontend/app\dashboard\page.tsx:6:import { getDashboardMe, getRecommendedPrograms } from "@/lib/api/app";
+frontend/app\dashboard\page.tsx:273:        const result = await getRecommendedPrograms({
+
+2026-04-16T04:41:35.102671Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:41:35.117156Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:41:35.133081Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:41:35.152491Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:41:35.167831Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:41:35.192279Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+codex
+I found another packet defect: the dashboard display path cited in the packet is not the only consumer anymore. The API route maps backend `item.score` into frontend `_score`, while the actual badge rendering currently lives in the dashboard page component.
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command 'rg -n "ProgramRecommendResponse|ProgramRecommendItem" frontend/lib/types/index.ts frontend/lib/types -g "*.ts"' in D:\02_2025_AI_Lab\isoser
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command 'Get-Content frontend/lib/types/index.ts | Select-Object -Index (300..360)' in D:\02_2025_AI_Lab\isoser
+exec
+"C:\\Program Files\\PowerShell\\7\\pwsh.exe" -Command 'Get-Content backend/routers/programs.py | Select-Object -Index (270..405)' in D:\02_2025_AI_Lab\isoser
+ succeeded in 1579ms:
+}
+
+export interface SkillSuggestResponse {
+  input_role: string;
+  normalized_job_key: string;
+  display_name_ko: string;
+  job_family: string;
+  job_bucket: string;
+  matched_alias?: string | null;
+  recommended_skill_tags: string[];
+  evidence_keywords: string[];
+  source_refs: string[];
+}
+
+export interface ActivityConvertRequest {
+  target: "star" | "portfolio" | "both";
+  activity: {
+    id?: string | null;
+    type: Activity["type"];
+    title: string;
+    organization?: string | null;
+    team_size?: number | null;
+    team_composition?: string | null;
+    my_role?: string | null;
+    contributions?: string[];
+    period?: string | null;
+    role?: string | null;
+    skills?: string[];
+    description?: string | null;
+    star_situation?: string | null;
+    star_task?: string | null;
+    star_action?: string | null;
+    star_result?: string | null;
+  };
+}
+
+export interface StarConversionResponse {
+  activity_id: string | null;
+  title: string;
+  type: Activity["type"];
+  star_situation: string;
+  star_task: string;
+  star_action: string;
+  star_result: string;
+  missing_fields: string[];
+  review_tags: string[];
+}
+
+export interface PortfolioMetricResponse {
+  value: string;
+  label: string;
+}
+
+export interface PortfolioOverviewResponse {
+  title: string;
+  activity_type: Activity["type"];
+  organization?: string | null;
+  period?: string | null;
+  period_start?: string | null;
+  period_end?: string | null;
+  duration?: string | null;
+
+ succeeded in 1585ms:
+        for row in rows
+        if str(row.get("id") or "").strip()
+    }
+
+
+async def _load_cached_recommendations(user_id: str) -> list[dict[str, Any]] | None:
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=RECOMMEND_CACHE_TTL_HOURS)).isoformat()
+    try:
+        rows = await request_supabase(
+            method="GET",
+            path="/rest/v1/recommendations",
+            params={
+                "select": "program_id,similarity_score,urgency_score,final_score,generated_at",
+                "user_id": f"eq.{user_id}",
+                "generated_at": f"gte.{cutoff}",
+                "order": "final_score.desc",
+                "limit": "20",
+            },
+        )
+    except Exception as exc:
+        log_event(logger, logging.WARNING, "recommend_cache_load_failed", error=str(exc))
+        return None
+    return rows if isinstance(rows, list) and rows else None
+
+
+async def _save_recommendations(
+    user_id: str,
+    recommendations: list[ProgramRecommendation],
+) -> None:
+    if not recommendations:
+        return
+
+    now = datetime.now(timezone.utc).isoformat()
+    payload = []
+    for item in recommendations:
+        if not item.program_id:
+            continue
+        payload.append(
+            {
+                "user_id": user_id,
+                "program_id": item.program_id,
+                "similarity_score": float(item.program.get("similarity_score") or 0),
+                "urgency_score": float(item.program.get("urgency_score") or 0),
+                "final_score": float(item.score or 0),
+                "generated_at": now,
+            }
+        )
+
+    if not payload:
+        return
+
+    try:
+        await request_supabase(
+            method="POST",
+            path="/rest/v1/recommendations",
+            params={"on_conflict": "user_id,program_id"},
+            payload=payload,
+            prefer="resolution=merge-duplicates,return=minimal",
+        )
+    except Exception as exc:
+        log_event(logger, logging.WARNING, "recommend_cache_save_failed", error=str(exc))
+
+
+async def _delete_user_recommendations(user_id: str) -> None:
+    try:
+        await request_supabase(
+            method="DELETE",
+            path="/rest/v1/recommendations",
+            params={"user_id": f"eq.{user_id}"},
+        )
+    except Exception as exc:
+        log_event(logger, logging.WARNING, "recommend_cache_delete_failed", error=str(exc))
+
+
+def _build_default_recommendation_items(
+    programs: list[dict[str, Any]],
+    *,
+    top_k: int,
+    reason: str,
+) -> list[ProgramRecommendItem]:
+    return [
+        ProgramRecommendItem(
+            program_id=str(program.get("id") or ""),
+            score=program.get("final_score"),
+            reason=reason,
+            fit_keywords=[],
+            program=ProgramListItem.model_validate(program),
+        )
+        for program in programs[:top_k]
+        if str(program.get("id") or "").strip()
+    ]
+
+
+async def _build_cached_recommendation_items(
+    cached_rows: list[dict[str, Any]],
+    *,
+    top_k: int,
+) -> list[ProgramRecommendItem]:
+    program_ids = [
+        str(row.get("program_id") or "").strip()
+        for row in cached_rows
+        if str(row.get("program_id") or "").strip()
+    ]
+    programs_by_id = await _fetch_programs_by_ids(program_ids)
+
+    items: list[ProgramRecommendItem] = []
+    for row in cached_rows:
+        program_id = str(row.get("program_id") or "").strip()
+        if not program_id:
+            continue
+        program = programs_by_id.get(program_id)
+        if not program:
+            continue
+
+        program_record = dict(program)
+        program_record["similarity_score"] = row.get("similarity_score")
+        program_record["urgency_score"] = row.get("urgency_score")
+        program_record["final_score"] = row.get("final_score")
+        items.append(
+            ProgramRecommendItem(
+                program_id=program_id,
+                score=float(row.get("final_score") or 0),
+                reason="최근 생성된 추천 결과를 캐시에서 불러왔습니다.",
+                fit_keywords=[],
+                program=ProgramListItem.model_validate(program_record),
+            )
+        )
+        if len(items) >= top_k:
+            break
+
+    return items
+
+
+async def _count_program_rows(
+    *,
+    category: str | None = None,
+
+ succeeded in 1590ms:
+frontend/lib/types/index.ts:291:export interface ProgramRecommendItem {
+frontend/lib/types/index.ts:299:export interface ProgramRecommendResponse {
+frontend/lib/types/index.ts:300:  items: ProgramRecommendItem[];
+frontend/lib/types\index.ts:291:export interface ProgramRecommendItem {
+frontend/lib/types\index.ts:299:export interface ProgramRecommendResponse {
+frontend/lib/types\index.ts:300:  items: ProgramRecommendItem[];
+
+2026-04-16T04:41:42.846929Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:41:42.860213Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:41:42.875111Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:41:42.893882Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:41:42.910488Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:41:42.935274Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+codex
+I’m writing the review now. It will stay in `cowork/reviews/` and will call out that the packet is close, but not promotable until the missing compare-relevance reference and a few current-path details are fixed.
+apply patch
+patch: completed
+D:\02_2025_AI_Lab\isoser\cowork\reviews\TASK-2026-04-16-1130-relevance-score-accuracy-review.md
+diff --git a/cowork/reviews/TASK-2026-04-16-1130-relevance-score-accuracy-review.md b/cowork/reviews/TASK-2026-04-16-1130-relevance-score-accuracy-review.md
+index d0784b59d9813655a1abc7ea41fc0bb2e0c1473f..fad80c418759f3257ac4dd8372f16647cc79db1a
+--- a/cowork/reviews/TASK-2026-04-16-1130-relevance-score-accuracy-review.md
++++ b/cowork/reviews/TASK-2026-04-16-1130-relevance-score-accuracy-review.md
+@@ -1,37 +1,30 @@
+ ## Overall assessment
+ 
+-Not ready for promotion yet. The frontmatter is complete, `planned_against_commit: 469cd3f` matches current `HEAD`, and the cited current-code assumptions mostly match the repository. However, execution is blocked by a missing referenced packet and by unresolved behavior decisions that would force the implementer to choose semantics on their own.
++Not ready for promotion yet. The packet frontmatter is complete, `planned_against_commit: 469cd3f` resolves in the repo, and drift against the cited implementation area is limited rather than severe. However, the packet currently depends on a missing compare-relevance reference file and cites the dashboard display path incompletely, so an execution runner would still have to guess part of the intended scope.
+ 
+ ## Findings
+ 
+-- Frontmatter completeness: complete. Required fields `id`, `status`, `type`, `title`, `planned_at`, and `planned_against_commit` are present.
+-- Optional metadata: `planned_files` and `planned_worktree_fingerprint` are not present, so there is nothing extra to verify there.
+-- Missing reference: the packet says the compare-page work should follow `cowork/packets/feat-compare-relevance-score.md`, but that file does not exist in the current repository. The packet cannot be executed as written for the compare-page portion without that source spec.
+-- Repository path accuracy: the packet correctly points to `backend/rag/programs_rag.py`, `backend/routers/programs.py`, `frontend/app/(landing)/compare/programs-compare-client.tsx`, and `frontend/lib/types/index.ts`. However, the dashboard rendering path is understated. The relevance badge is actually rendered in `frontend/app/dashboard/page.tsx`, while `frontend/app/api/dashboard/recommended-programs/route.ts` only reshapes backend data.
+-- Verification command accuracy: acceptance criterion 8 uses `python -m mypy routers/programs.py --ignore-missing-imports`, but the repository path is `backend/routers/programs.py`. The packet should state the exact working directory or use the repo-root path.
+-- Current-state match: the compare page still contains the expected placeholder UI. `frontend/app/(landing)/compare/programs-compare-client.tsx` still shows `준비 중` in the relevance section, `backend/routers/programs.py` does not expose `/programs/compare-relevance`, and `frontend/lib/types/index.ts` does not define `ProgramRelevanceItem`.
+-- Drift risk: there are already staged local changes in overlapping frontend files, including `frontend/app/dashboard/page.tsx`, `frontend/app/api/dashboard/recommended-programs/route.ts`, and `frontend/lib/types/index.ts`. The packet is still reviewable against current `HEAD`, but promotion into execution without first acknowledging that overlap would be risky.
+-- Acceptance ambiguity: the packet adds `relevance_score` to the API but does not fully specify the fate of the existing `ProgramRecommendItem.score` field. That is execution-critical because the current frontend path already uses `item.score` via `_score`, and the packet also says `final_score` should remain for internal sorting only.
+-- Acceptance ambiguity: the packet leaves the recommendation sort rule unresolved in Open Question 1. That affects backend ranking, cache ordering, and what users see first, so it should not remain open at promotion time.
+-- Cache/schema ambiguity: the packet requires `relevance_score` to be added to the `recommendations` table and says legacy cached rows should fall back from `final_score`, but it does not explicitly state how `_load_cached_recommendations`, `_save_recommendations`, response serialization, and cache ordering should behave once both fields exist.
++- Frontmatter completeness: pass. Required fields `id`, `status`, `type`, `title`, `planned_at`, and `planned_against_commit` are present.
++- Optional metadata: `planned_files` and `planned_worktree_fingerprint` are not present, so there was nothing extra to verify.
++- Repository path accuracy: partial pass. The cited compare-page reference `cowork/packets/feat-compare-relevance-score.md` does not exist in the current repo. The only nearby packet is `cowork/packets/TASK-2026-04-15-1100-programs-compare.md`, and that packet still specifies the compare AI section as `"준비 중"`, so it does not serve as the promised implementation spec.
++- Repository path accuracy: partial pass. The packet cites `frontend/app/api/dashboard/recommended-programs/route.ts` for frontend display, but the actual rendered relevance badge is currently in `frontend/app/dashboard/page.tsx`. The API route only maps backend `item.score` into frontend `_score`.
++- Drift risk: acceptable but real. Since `469cd3f`, only `frontend/app/dashboard/page.tsx` and `frontend/lib/types/index.ts` changed among the packet’s named files. `backend/rag/programs_rag.py`, `backend/routers/programs.py`, and `frontend/app/(landing)/compare/programs-compare-client.tsx` have not drifted relative to that commit. This means the packet is still close to the codebase, but the dashboard-specific file references should be refreshed to current HEAD `767a26942fefc3b05935f810f7b52753069272b5`.
++- Current-code validation: pass. The packet’s main assumptions about the code still hold:
++  - `backend/rag/programs_rag.py` still includes `name` and `portfolio_url` in `_profile_document()`.
++  - Activity limits are still `activities[:10]` for the profile document and `activities[:20]` for fallback keywords.
++  - Both fallback and semantic paths still compute `final_score = relevance/semantic * 0.8 + urgency_score * 0.2`.
++  - `backend/routers/programs.py` still exposes `final_score` and `urgency_score` but no `relevance_score`.
++  - `frontend/app/(landing)/compare/programs-compare-client.tsx` still renders the `"★ 나와의 관련도 — AI 분석 (준비 중)"` placeholder.
++  - No `/programs/compare-relevance` endpoint or `ProgramRelevanceItem` type exists today.
++- Acceptance clarity: incomplete. Criteria 5 and 6 depend on an external compare-relevance spec that is missing. As written, the runner does not have a concrete request/response contract for `/programs/compare-relevance`, the exact compare-page data shape, or the precise non-login response shape beyond a badge string.
++- Missing references: material. The packet says to implement `feat-compare-relevance-score.md` “그대로” and to review it for drift first, but that file is unavailable locally. That is a blocking reference gap for promotion.
+ 
+ ## Recommendation
+ 
+-Do not promote yet.
+-
+-Before promotion, update the packet to:
++Do not promote this packet yet. Make these packet changes first:
+ 
+-- attach or restore the missing `cowork/packets/feat-compare-relevance-score.md` reference, or inline the exact compare-page requirements directly into this packet;
+-- resolve the sort rule explicitly, instead of leaving it as an open question;
+-- define the response-field contract exactly: what `ProgramRecommendItem.score` means after this task, whether frontend should read `relevance_score` directly, and whether any fallback order is required for old cache rows;
+-- correct the frontend touch list to include `frontend/app/dashboard/page.tsx` as a direct implementation target;
+-- correct the mypy verification path or state the intended working directory;
+-- acknowledge the existing staged overlap in the dashboard frontend files so the implementer knows this task must be merged carefully against current local changes.
++- Replace the missing `cowork/packets/feat-compare-relevance-score.md` reference with the correct local file path, or inline the compare-relevance spec directly into this packet.
++- Update the frontend implementation references to match the current consumer chain: `frontend/app/api/dashboard/recommended-programs/route.ts`, `frontend/app/dashboard/page.tsx`, and `frontend/lib/types/index.ts`.
++- Add the exact `/programs/compare-relevance` request and response schema, including the logged-out behavior and the fields needed to satisfy acceptance criteria 5 and 6 without guesswork.
+ 
+-After those packet changes, this looks promotable with minor revision rather than a full rewrite.
+-
+-## Review Run Metadata
+-
+-- generated_at: `2026-04-16T13:12:05`
+-- watcher_exit_code: `0`
+-- codex_tokens_used: `85,696`
++If those fixes are made, the packet looks promotable with minor changes only. The current code drift is low enough that promotion should be safe after the missing reference and acceptance-contract gaps are closed.
+
+2026-04-16T04:42:13.273013Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:42:13.288814Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:42:13.306208Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:42:13.328574Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:42:13.346795Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+2026-04-16T04:42:13.369358Z  WARN codex_core::plugins::manifest: ignoring interface.defaultPrompt: prompt must be at most 128 characters path=C:\Users\User\.codex\.tmp\plugins\plugins\build-ios-apps\.codex-plugin/plugin.json
+diff --git a/cowork/reviews/TASK-2026-04-16-1130-relevance-score-accuracy-review.md b/cowork/reviews/TASK-2026-04-16-1130-relevance-score-accuracy-review.md
+index d0784b59d9813655a1abc7ea41fc0bb2e0c1473f..fad80c418759f3257ac4dd8372f16647cc79db1a
+--- a/cowork/reviews/TASK-2026-04-16-1130-relevance-score-accuracy-review.md
++++ b/cowork/reviews/TASK-2026-04-16-1130-relevance-score-accuracy-review.md
+@@ -1,37 +1,30 @@
+ ## Overall assessment
+ 
+-Not ready for promotion yet. The frontmatter is complete, `planned_against_commit: 469cd3f` matches current `HEAD`, and the cited current-code assumptions mostly match the repository. However, execution is blocked by a missing referenced packet and by unresolved behavior decisions that would force the implementer to choose semantics on their own.
++Not ready for promotion yet. The packet frontmatter is complete, `planned_against_commit: 469cd3f` resolves in the repo, and drift against the cited implementation area is limited rather than severe. However, the packet currently depends on a missing compare-relevance reference file and cites the dashboard display path incompletely, so an execution runner would still have to guess part of the intended scope.
+ 
+ ## Findings
+ 
+-- Frontmatter completeness: complete. Required fields `id`, `status`, `type`, `title`, `planned_at`, and `planned_against_commit` are present.
+-- Optional metadata: `planned_files` and `planned_worktree_fingerprint` are not present, so there is nothing extra to verify there.
+-- Missing reference: the packet says the compare-page work should follow `cowork/packets/feat-compare-relevance-score.md`, but that file does not exist in the current repository. The packet cannot be executed as written for the compare-page portion without that source spec.
+-- Repository path accuracy: the packet correctly points to `backend/rag/programs_rag.py`, `backend/routers/programs.py`, `frontend/app/(landing)/compare/programs-compare-client.tsx`, and `frontend/lib/types/index.ts`. However, the dashboard rendering path is understated. The relevance badge is actually rendered in `frontend/app/dashboard/page.tsx`, while `frontend/app/api/dashboard/recommended-programs/route.ts` only reshapes backend data.
+-- Verification command accuracy: acceptance criterion 8 uses `python -m mypy routers/programs.py --ignore-missing-imports`, but the repository path is `backend/routers/programs.py`. The packet should state the exact working directory or use the repo-root path.
+-- Current-state match: the compare page still contains the expected placeholder UI. `frontend/app/(landing)/compare/programs-compare-client.tsx` still shows `준비 중` in the relevance section, `backend/routers/programs.py` does not expose `/programs/compare-relevance`, and `frontend/lib/types/index.ts` does not define `ProgramRelevanceItem`.
+-- Drift risk: there are already staged local changes in overlapping frontend files, including `frontend/app/dashboard/page.tsx`, `frontend/app/api/dashboard/recommended-programs/route.ts`, and `frontend/lib/types/index.ts`. The packet is still reviewable against current `HEAD`, but promotion into execution without first acknowledging that overlap would be risky.
+-- Acceptance ambiguity: the packet adds `relevance_score` to the API but does not fully specify the fate of the existing `ProgramRecommendItem.score` field. That is execution-critical because the current frontend path already uses `item.score` via `_score`, and the packet also says `final_score` should remain for internal sorting only.
+-- Acceptance ambiguity: the packet leaves the recommendation sort rule unresolved in Open Question 1. That affects backend ranking, cache ordering, and what users see first, so it should not remain open at promotion time.
+-- Cache/schema ambiguity: the packet requires `relevance_score` to be added to the `recommendations` table and says legacy cached rows should fall back from `final_score`, but it does not explicitly state how `_load_cached_recommendations`, `_save_recommendations`, response serialization, and cache ordering should behave once both fields exist.
++- Frontmatter completeness: pass. Required fields `id`, `status`, `type`, `title`, `planned_at`, and `planned_against_commit` are present.
++- Optional metadata: `planned_files` and `planned_worktree_fingerprint` are not present, so there was nothing extra to verify.
++- Repository path accuracy: partial pass. The cited compare-page reference `cowork/packets/feat-compare-relevance-score.md` does not exist in the current repo. The only nearby packet is `cowork/packets/TASK-2026-04-15-1100-programs-compare.md`, and that packet still specifies the compare AI section as `"준비 중"`, so it does not serve as the promised implementation spec.
++- Repository path accuracy: partial pass. The packet cites `frontend/app/api/dashboard/recommended-programs/route.ts` for frontend display, but the actual rendered relevance badge is currently in `frontend/app/dashboard/page.tsx`. The API route only maps backend `item.score` into frontend `_score`.
++- Drift risk: acceptable but real. Since `469cd3f`, only `frontend/app/dashboard/page.tsx` and `frontend/lib/types/index.ts` changed among the packet’s named files. `backend/rag/programs_rag.py`, `backend/routers/programs.py`, and `frontend/app/(landing)/compare/programs-compare-client.tsx` have not drifted relative to that commit. This means the packet is still close to the codebase, but the dashboard-specific file references should be refreshed to current HEAD `767a26942fefc3b05935f810f7b52753069272b5`.
++- Current-code validation: pass. The packet’s main assumptions about the code still hold:
++  - `backend/rag/programs_rag.py` still includes `name` and `portfolio_url` in `_profile_document()`.
++  - Activity limits are still `activities[:10]` for the profile document and `activities[:20]` for fallback keywords.
++  - Both fallback and semantic paths still compute `final_score = relevance/semantic * 0.8 + urgency_score * 0.2`.
++  - `backend/routers/programs.py` still exposes `final_score` and `urgency_score` but no `relevance_score`.
++  - `frontend/app/(landing)/compare/programs-compare-client.tsx` still renders the `"★ 나와의 관련도 — AI 분석 (준비 중)"` placeholder.
++  - No `/programs/compare-relevance` endpoint or `ProgramRelevanceItem` type exists today.
++- Acceptance clarity: incomplete. Criteria 5 and 6 depend on an external compare-relevance spec that is missing. As written, the runner does not have a concrete request/response contract for `/programs/compare-relevance`, the exact compare-page data shape, or the precise non-login response shape beyond a badge string.

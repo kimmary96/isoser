@@ -1,34 +1,50 @@
-# Recovery: TASK-2026-04-16-1000-tier3-semi-public-crawl
+# Recovery Report: TASK-2026-04-16-1000-tier3-semi-public-crawl
 
-changed files
+## Summary
+
+Automatic recovery was safe because the prior blocked state was caused by watcher staleness, not by missing credentials, approvals, or unresolved product decisions.
+
+## Changed Files
+
 - `tasks/blocked/TASK-2026-04-16-1000-tier3-semi-public-crawl.md`
 - `reports/TASK-2026-04-16-1000-tier3-semi-public-crawl-recovery.md`
 
-why changes were made
-- The blocked report shows a mechanical stale-run transition from `tasks/running/...` to `tasks/blocked/...`, not a product, approval, or credential dependency.
-- The current worktree already contains Tier 3-related changes in the exact files named by the packet, so the packet assumption of a clean implementation start was stale.
-- I refreshed `planned_against_commit` to the current `HEAD`, kept `status: queued`, and set `auto_recovery_attempts: 1` so the watcher can retry once with current repository context.
-- I narrowed the packet instructions so the next watcher run resumes and validates the existing Tier 3 work instead of recreating files or overwriting partial implementation.
+## What Changed In The Packet
 
-preserved behaviors
-- Original task intent remains unchanged: implement and verify `KobiaCollector`, `KisedCollector`, and Tier 3 scheduler integration.
-- No unrelated source files were modified.
-- No source implementation or tests were changed during recovery.
+- Refreshed `planned_against_commit` from `469cd3f06a5e9e73cefddcf7181afa014948de69` to current HEAD `9c25b1edf6392821c77aac60968a5bef6cb46ad5`.
+- Set `auto_recovery_attempts` to `2`.
+- Kept `status` as `queued`.
+- Narrowed stale wording from "current worktree already has partial changes" to "current HEAD already has the target Tier 3 files" so the next watcher run validates and extends the committed implementation instead of assuming uncommitted partial work.
+- Removed the obsolete open question about whether `tier3_collectors.py` should be split out, because that file already exists in the current repository state.
+- Updated the transport note so the next run checks against the current HEAD.
 
-why retry is now safe
-- The only confirmed failure reason was staleness while the task sat in `running`.
-- There is no evidence in the blocked report of missing credentials, missing approvals, or unresolved product decisions.
-- The refreshed packet now points at the current commit and explicitly tells the next run to inspect and continue the existing Tier 3 worktree state before editing.
+## Why Retry Is Safe
 
-risks / possible regressions
-- Relevant tests could not be executed in this environment because `pytest` is not installed on the current shell path, so runtime safety is inferred from packet/worktree inspection rather than test execution.
-- The worktree is dirty in the targeted Tier 3 files, so the next watcher run still needs to avoid duplicating or clobbering in-progress changes.
+- The blocked report shows an automatic move caused by timeout in `tasks/running`, not an implementation failure requiring external intervention.
+- The task still has all required frontmatter fields.
+- The files explicitly referenced by the packet currently exist at HEAD:
+  - `backend/rag/collector/tier3_collectors.py`
+  - `backend/rag/collector/scheduler.py`
+  - `backend/tests/test_tier3_collectors.py`
+  - `backend/tests/test_scheduler_collectors.py`
+- No credential, approval, or product-decision prerequisite was identified from the blocked report or the validated packet.
 
-follow-up refactoring candidates
-- After the retry completes, consider adding optional `planned_files` and a worktree fingerprint to future packets for collector tasks that are likely to be resumed after partial implementation.
+## Preserved Intent
+
+- The task still targets Tier 3 KOBIA and KISED collector completion plus scheduler integration.
+- The retry remains scoped to reviewing and safely completing the existing implementation rather than rewriting unrelated source files.
+
+## Risks / Possible Regressions
+
+- A future retry still needs to validate the current HTML structure of KOBIA and KISED at execution time.
+- If HEAD changes again before the next watcher run, the packet may require another drift refresh.
+
+## Follow-up Refactoring Candidates
+
+- None in this recovery step; source files were intentionally left untouched.
 
 ## Run Metadata
 
-- generated_at: `2026-04-16T13:33:59`
+- generated_at: `2026-04-16T13:56:53`
 - watcher_exit_code: `0`
-- codex_tokens_used: `51,394`
+- codex_tokens_used: `43,792`

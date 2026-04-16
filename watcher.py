@@ -18,7 +18,6 @@ from shutil import which
 from datetime import datetime
 from typing import Optional
 from pathlib import Path
-from urllib import error as urllib_error
 from urllib import request as urllib_request
 
 from scripts.watcher_shared import (
@@ -48,8 +47,8 @@ ALERTS_DIR = "./dispatch/alerts"
 LEDGER_PATH = "./dispatch/run-ledger.jsonl"
 COWORK_PACKETS_DIR = "./cowork/packets"
 WATCHER_LOCK_PATH = "./.watcher.lock"
+WATCHER_ENV_PATH = "./.watcher.env"
 PROJECT_PATH = r"D:\02_2025_AI_Lab\isoser"
-SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL", "").strip()
 STALE_RUNNING_MINUTES = 20
 RUNNING_HEARTBEAT_SECONDS = 30
 MAX_AUTO_RECOVERY_ATTEMPTS = 2
@@ -102,11 +101,37 @@ def ensure_directories() -> None:
 
 def startup_warning_messages() -> list[str]:
     warnings: list[str] = []
-    if not SLACK_WEBHOOK_URL:
+    if not get_slack_webhook_url():
         warnings.append(
             "경고: SLACK_WEBHOOK_URL 이 설정되지 않아 watcher alert는 dispatch/alerts 에만 기록되고 Slack 전송은 생략됩니다."
         )
     return warnings
+
+
+def get_slack_webhook_url() -> str:
+    env_value = os.environ.get("SLACK_WEBHOOK_URL", "").strip()
+    if env_value:
+        return env_value
+
+    watcher_env_path = Path(WATCHER_ENV_PATH)
+    if not watcher_env_path.exists():
+        return ""
+
+    try:
+        for line in watcher_env_path.read_text(encoding="utf-8").splitlines():
+            stripped = line.strip()
+            if not stripped or stripped.startswith("#") or "=" not in stripped:
+                continue
+            name, value = stripped.split("=", 1)
+            if name.strip() != "SLACK_WEBHOOK_URL":
+                continue
+            resolved = value.strip().strip("\"'")
+            if resolved:
+                return resolved
+    except OSError as error:
+        print(f"watcher env 파일 읽기 실패: {type(error).__name__}: {error}")
+
+    return ""
 
 
 def append_run_ledger(
@@ -380,6 +405,11 @@ def localize_slack_operator_text(text: Optional[str]) -> Optional[str]:
     return localized
 
 
+def is_smoke_task(task_id: str) -> bool:
+    normalized = (task_id or "").strip().upper()
+    return normalized.startswith("TASK-TEST-")
+
+
 def format_slack_alert_message(
     *,
     task_id: str,
@@ -390,6 +420,23 @@ def format_slack_alert_message(
     summary: Optional[str] = None,
     next_action: Optional[str] = None,
 ) -> str:
+    localized_summary = localize_slack_operator_text(summary) or summary
+    localized_next_action = localize_slack_operator_text(next_action) or next_action
+
+    if is_smoke_task(task_id):
+        lines = [
+            "🧪 watcher smoke alert",
+            "",
+            f"*작업*: `{task_id}`",
+            f"*단계*: {stage}",
+            f"*상태*: {status}",
+        ]
+        if localized_summary:
+            lines.extend(["", f"*요약*: {localized_summary}"])
+        if localized_next_action:
+            lines.extend(["", f"*다음*: {localized_next_action}"])
+        return "\n".join(lines)
+
     emoji = {
         "completed": "✅",
         "recovered": "🔁",
@@ -424,10 +471,10 @@ def format_slack_alert_message(
     ]
     if report_path:
         lines.extend(["", "*리포트*", f"`{report_path}`"])
-    if summary:
-        lines.extend(["", "*요약*", localize_slack_operator_text(summary) or summary])
-    if next_action:
-        lines.extend(["", "*다음 조치*", localize_slack_operator_text(next_action) or next_action])
+    if localized_summary:
+        lines.extend(["", "*요약*", localized_summary])
+    if localized_next_action:
+        lines.extend(["", "*다음 조치*", localized_next_action])
     return "\n".join(lines)
 
 
@@ -450,6 +497,29 @@ def build_slack_alert_payload(
         summary=summary,
         next_action=next_action,
     )
+    localized_summary = localize_slack_operator_text(summary) or summary
+    localized_next_action = localize_slack_operator_text(next_action) or next_action
+
+    if is_smoke_task(task_id):
+        smoke_lines = [
+            f"*작업*: `{task_id}`",
+            f"*단계*: {stage}",
+            f"*상태*: {status}",
+        ]
+        if localized_summary:
+            smoke_lines.append(f"*요약*: {localized_summary}")
+        if localized_next_action:
+            smoke_lines.append(f"*다음*: {localized_next_action}")
+        return {
+            "text": text,
+            "blocks": [
+                {
+                    "type": "section",
+                    "text": {"type": "mrkdwn", "text": "\n".join(smoke_lines)},
+                }
+            ],
+        }
+
     emoji = {
         "completed": "✅",
         "recovered": "🔁",
@@ -492,18 +562,18 @@ def build_slack_alert_payload(
             "text": {"type": "mrkdwn", "text": "\n".join(overview)},
         },
     ]
-    if summary:
+    if localized_summary:
         blocks.append(
             {
                 "type": "section",
-                "text": {"type": "mrkdwn", "text": f"*요약*\n{localize_slack_operator_text(summary) or summary}"},
+                "text": {"type": "mrkdwn", "text": f"*요약*\n{localized_summary}"},
             }
         )
-    if next_action:
+    if localized_next_action:
         blocks.append(
             {
                 "type": "section",
-                "text": {"type": "mrkdwn", "text": f"*다음 조치*\n{localize_slack_operator_text(next_action) or next_action}"},
+                "text": {"type": "mrkdwn", "text": f"*다음 조치*\n{localized_next_action}"},
             }
         )
     return {"text": text, "blocks": blocks}
@@ -519,7 +589,8 @@ def notify_slack_for_alert(
     summary: Optional[str] = None,
     next_action: Optional[str] = None,
 ) -> None:
-    if not SLACK_WEBHOOK_URL:
+    webhook_url = get_slack_webhook_url()
+    if not webhook_url:
         return
 
     payload = build_slack_alert_payload(
@@ -532,7 +603,7 @@ def notify_slack_for_alert(
         next_action=next_action,
     )
     request = urllib_request.Request(
-        SLACK_WEBHOOK_URL,
+        webhook_url,
         data=json.dumps(payload).encode("utf-8"),
         headers={"Content-Type": "application/json"},
         method="POST",
@@ -540,7 +611,7 @@ def notify_slack_for_alert(
     try:
         with urllib_request.urlopen(request, timeout=10) as response:
             response.read()
-    except (urllib_error.URLError, TimeoutError) as error:
+    except Exception as error:
         print(f"Slack alert 전송 실패: {type(error).__name__}: {error}")
 
 

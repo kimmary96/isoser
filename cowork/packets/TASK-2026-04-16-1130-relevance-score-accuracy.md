@@ -188,6 +188,6 @@ final_score = semantic_score * 0.8 + urgency_score * 0.2
 
 ## Open Questions
 
-1. 정렬 기준: 추천 목록 정렬을 `final_score` (혼합값) 대신 `relevance_score` 기준으로 완전히 바꿀지, 아니면 `relevance_score` 내림차순 + `urgency_score` 보조 정렬로 바꿀지 결정 필요. 현재는 후자(유저에게 더 관련 높은 것 상단, 동점 시 마감 임박 우선)를 권장.
+1. ~~정렬 기준 결정 필요~~ **확정 (2026-04-16)**: `relevance_score` 내림차순 정렬 + 동점 시 `urgency_score` 보조 정렬. `final_score` 혼합 정렬은 사용하지 않음.
 2. 관련도 임계값 표시: 관련도 점수가 낮은 경우 (예: 20점 미만) "분석 중" 또는 미표시로 처리할지, 낮은 점수 그대로 보여줄지. UX 관점에서는 낮은 점수를 보여주는 것이 신뢰도를 높일 수 있음.
 3. 비교 페이지 drift 확인: `feat-compare-relevance-score.md`가 commit `60da25d` 기준으로 작성되었고 현재 HEAD는 `469cd3f`. 구현 러너가 실제 파일 상태 확인 후 diff 있으면 패킷 조정 필요.
