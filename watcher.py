@@ -405,6 +405,11 @@ def localize_slack_operator_text(text: Optional[str]) -> Optional[str]:
     return localized
 
 
+def is_smoke_task(task_id: str) -> bool:
+    normalized = (task_id or "").strip().upper()
+    return normalized.startswith("TASK-TEST-")
+
+
 def format_slack_alert_message(
     *,
     task_id: str,
@@ -415,6 +420,23 @@ def format_slack_alert_message(
     summary: Optional[str] = None,
     next_action: Optional[str] = None,
 ) -> str:
+    localized_summary = localize_slack_operator_text(summary) or summary
+    localized_next_action = localize_slack_operator_text(next_action) or next_action
+
+    if is_smoke_task(task_id):
+        lines = [
+            "🧪 watcher smoke alert",
+            "",
+            f"*작업*: `{task_id}`",
+            f"*단계*: {stage}",
+            f"*상태*: {status}",
+        ]
+        if localized_summary:
+            lines.extend(["", f"*요약*: {localized_summary}"])
+        if localized_next_action:
+            lines.extend(["", f"*다음*: {localized_next_action}"])
+        return "\n".join(lines)
+
     emoji = {
         "completed": "✅",
         "recovered": "🔁",
@@ -449,10 +471,10 @@ def format_slack_alert_message(
     ]
     if report_path:
         lines.extend(["", "*리포트*", f"`{report_path}`"])
-    if summary:
-        lines.extend(["", "*요약*", localize_slack_operator_text(summary) or summary])
-    if next_action:
-        lines.extend(["", "*다음 조치*", localize_slack_operator_text(next_action) or next_action])
+    if localized_summary:
+        lines.extend(["", "*요약*", localized_summary])
+    if localized_next_action:
+        lines.extend(["", "*다음 조치*", localized_next_action])
     return "\n".join(lines)
 
 
@@ -475,6 +497,29 @@ def build_slack_alert_payload(
         summary=summary,
         next_action=next_action,
     )
+    localized_summary = localize_slack_operator_text(summary) or summary
+    localized_next_action = localize_slack_operator_text(next_action) or next_action
+
+    if is_smoke_task(task_id):
+        smoke_lines = [
+            f"*작업*: `{task_id}`",
+            f"*단계*: {stage}",
+            f"*상태*: {status}",
+        ]
+        if localized_summary:
+            smoke_lines.append(f"*요약*: {localized_summary}")
+        if localized_next_action:
+            smoke_lines.append(f"*다음*: {localized_next_action}")
+        return {
+            "text": text,
+            "blocks": [
+                {
+                    "type": "section",
+                    "text": {"type": "mrkdwn", "text": "\n".join(smoke_lines)},
+                }
+            ],
+        }
+
     emoji = {
         "completed": "✅",
         "recovered": "🔁",
@@ -517,18 +562,18 @@ def build_slack_alert_payload(
             "text": {"type": "mrkdwn", "text": "\n".join(overview)},
         },
     ]
-    if summary:
+    if localized_summary:
         blocks.append(
             {
                 "type": "section",
-                "text": {"type": "mrkdwn", "text": f"*요약*\n{localize_slack_operator_text(summary) or summary}"},
+                "text": {"type": "mrkdwn", "text": f"*요약*\n{localized_summary}"},
             }
         )
-    if next_action:
+    if localized_next_action:
         blocks.append(
             {
                 "type": "section",
-                "text": {"type": "mrkdwn", "text": f"*다음 조치*\n{localize_slack_operator_text(next_action) or next_action}"},
+                "text": {"type": "mrkdwn", "text": f"*다음 조치*\n{localized_next_action}"},
             }
         )
     return {"text": text, "blocks": blocks}

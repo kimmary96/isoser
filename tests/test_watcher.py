@@ -648,6 +648,25 @@ def test_format_slack_alert_message_contains_core_fields() -> None:
     assert "Codex가 저장소 드리프트 때문에 중단되었습니다." in message
 
 
+def test_format_slack_alert_message_uses_compact_smoke_format() -> None:
+    message = watcher.format_slack_alert_message(
+        task_id="TASK-TEST-SMOKE",
+        stage="blocked",
+        status="action-required",
+        packet_path="tasks/blocked/TASK-TEST-SMOKE.md",
+        report_path="reports/TASK-TEST-SMOKE-blocked.md",
+        summary="Task packet is missing required frontmatter fields.",
+        next_action="Fill the missing frontmatter fields and resubmit the task packet.",
+    )
+
+    assert "🧪 watcher smoke alert" in message
+    assert "*작업*: `TASK-TEST-SMOKE`" in message
+    assert "*단계*: blocked" in message
+    assert "*상태*: action-required" in message
+    assert "tasks/blocked/TASK-TEST-SMOKE.md" not in message
+    assert "reports/TASK-TEST-SMOKE-blocked.md" not in message
+
+
 def test_format_slack_alert_message_surfaces_main_promotion_summary() -> None:
     message = watcher.format_slack_alert_message(
         task_id="TASK-TEST",
@@ -683,11 +702,11 @@ def test_format_slack_alert_message_for_replan_required() -> None:
 
 def test_build_slack_alert_payload_adds_structured_blocks() -> None:
     payload = watcher.build_slack_alert_payload(
-        task_id="TASK-TEST",
+        task_id="TASK-LIVE",
         stage="push-failed",
         status="action-required",
-        packet_path="tasks/done/TASK-TEST.md",
-        report_path="reports/TASK-TEST-result.md",
+        packet_path="tasks/done/TASK-LIVE.md",
+        report_path="reports/TASK-LIVE-result.md",
         summary="Watcher git sync failed.",
         next_action="Git Automation 섹션을 확인한 뒤 수동으로 push 하세요.",
     )
@@ -699,6 +718,27 @@ def test_build_slack_alert_payload_adds_structured_blocks() -> None:
     assert len(blocks) >= 3
     summary_block = blocks[2]["text"]["text"]
     assert "watcher의 Git 동기화에 실패했습니다." in summary_block
+
+
+def test_build_slack_alert_payload_uses_compact_blocks_for_smoke_task() -> None:
+    payload = watcher.build_slack_alert_payload(
+        task_id="TASK-TEST-SMOKE",
+        stage="blocked",
+        status="action-required",
+        packet_path="tasks/blocked/TASK-TEST-SMOKE.md",
+        report_path="reports/TASK-TEST-SMOKE-blocked.md",
+        summary="Task packet is missing required frontmatter fields.",
+        next_action="Fill the missing frontmatter fields and resubmit the task packet.",
+    )
+
+    blocks = payload["blocks"]
+    assert isinstance(blocks, list)
+    assert len(blocks) == 1
+    block_text = blocks[0]["text"]["text"]
+    assert "*작업*: `TASK-TEST-SMOKE`" in block_text
+    assert "*단계*: blocked" in block_text
+    assert "*상태*: action-required" in block_text
+    assert "reports/TASK-TEST-SMOKE-blocked.md" not in block_text
 
 
 def test_startup_warning_messages_warns_when_slack_webhook_missing(monkeypatch) -> None:
