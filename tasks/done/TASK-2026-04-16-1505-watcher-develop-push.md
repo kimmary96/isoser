@@ -4,8 +4,7 @@ status: queued
 type: bug
 title: "watcher git automation — develop 브랜치 push 후 main promotion 실패를 에러로 처리하지 않도록 수정"
 planned_at: 2026-04-16T15:05:00+09:00
-planned_against_commit: 8bb94c8dbc86630d49879795016a4e9618c7dc22
-auto_recovery_attempts: 1
+planned_against_commit: 1a9bf74d7fcce8932e6146982b571da2ca8ab7b6
 ---
 
 # Goal

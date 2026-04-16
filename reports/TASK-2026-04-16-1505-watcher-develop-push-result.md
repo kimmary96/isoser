@@ -32,3 +32,22 @@
 - generated_at: `2026-04-16T15:16:07`
 - watcher_exit_code: `0`
 - codex_tokens_used: `56,780`
+
+## Git Automation
+
+- status: `main-promotion-skipped`
+- branch: `develop`
+- commit: `b0bceaa6787b988ff3469a85b85e3c2224786aa9`
+- note: origin/main is not an ancestor of the task commit, so watcher skipped automatic main promotion.
+
+## Run Metadata
+
+- generated_at: `2026-04-16T17:55:24`
+- watcher_exit_code: `0`
+- codex_tokens_used: `46,441`
+
+## Run Metadata
+
+- generated_at: `2026-04-16T18:02:52`
+- watcher_exit_code: `0`
+- codex_tokens_used: `55,616`
