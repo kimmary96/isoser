@@ -101,6 +101,18 @@ class SupervisorRunResult(TypedDict):
     supervisor_step: Optional[Literal["inspection", "implementation", "verification"]]
 
 
+class AlertRunbookResult(TypedDict, total=False):
+    handled: bool
+    stage: str
+    status: str
+    packet_path: str
+    report_path: Optional[str]
+    summary: Optional[str]
+    next_action: Optional[str]
+    runbook: str
+    note: str
+
+
 def ensure_directories() -> None:
     ensure_directories_exist(
         [
@@ -218,6 +230,82 @@ def compute_alert_fingerprint(*, stage: str, summary: Optional[str], next_action
     normalized_next_action = normalize_alert_signature_text(next_action)
     payload = f"{normalized_stage}|{normalized_summary}|{normalized_next_action}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def resolve_repo_path(path_value: str) -> str:
+    normalized = path_value.strip().strip("`").replace("/", os.sep)
+    if os.path.isabs(normalized):
+        return os.path.normpath(normalized)
+    return os.path.normpath(os.path.join(PROJECT_PATH, normalized.lstrip(".\\/")))
+
+
+def parse_branch_and_commit_from_summary(summary: Optional[str]) -> tuple[Optional[str], Optional[str]]:
+    if not summary:
+        return (None, None)
+
+    branch_match = re.search(r"\(branch=([^),\s]+)\)", summary)
+    commit_match = re.search(r"commit=([a-f0-9]{7,40})", summary, flags=re.IGNORECASE)
+    branch = branch_match.group(1).strip() if branch_match else None
+    commit = commit_match.group(1).strip() if commit_match else None
+    return (branch, commit)
+
+
+def apply_alert_runbook(
+    *,
+    task_id: str,
+    stage: str,
+    status: str,
+    packet_path: str,
+    report_path: Optional[str],
+    summary: Optional[str],
+    next_action: Optional[str],
+) -> Optional[AlertRunbookResult]:
+    if stage == "push-failed" and summary and "origin/main is not an ancestor of the task commit" in summary:
+        branch, commit = parse_branch_and_commit_from_summary(summary)
+        resolved_summary = "Task completed successfully. Automatic main promotion was skipped because origin/main was not a fast-forward target."
+        if branch and commit:
+            resolved_summary = f"Task completed and pushed to origin/{branch} at {commit}. Automatic main promotion was skipped because origin/main was not a fast-forward target."
+        elif branch:
+            resolved_summary = f"Task completed and pushed to origin/{branch}. Automatic main promotion was skipped because origin/main was not a fast-forward target."
+        return {
+            "handled": True,
+            "stage": "self-healed",
+            "status": "done",
+            "packet_path": packet_path,
+            "report_path": report_path,
+            "summary": resolved_summary,
+            "next_action": "No action required unless you want to inspect the result report Git Automation section.",
+            "runbook": "downgrade-main-promotion-skip",
+            "note": "Known non-blocking Git state was downgraded from push-failed to self-healed.",
+        }
+
+    if stage == "runtime-error" and summary and "FileExistsError: Destination already exists:" in summary and "/tasks/done" in summary.replace("\\", "/"):
+        source_abs = resolve_repo_path(packet_path)
+        if not os.path.exists(source_abs):
+            return None
+
+        destination_match = re.search(r"Destination already exists:\s*(.+?)\s*$", summary)
+        if not destination_match:
+            return None
+        destination_abs = resolve_repo_path(destination_match.group(1))
+        if not os.path.exists(destination_abs):
+            return None
+
+        archived_path = archive_duplicate_task(source_abs, existing_stage="done")
+        archived_relpath = report_relpath(archived_path)
+        return {
+            "handled": True,
+            "stage": "self-healed",
+            "status": "done",
+            "packet_path": archived_relpath,
+            "report_path": report_path,
+            "summary": "Watcher archived a duplicate task packet because a completed task file already existed.",
+            "next_action": "No action required unless you want to inspect the archived duplicate packet.",
+            "runbook": "archive-duplicate-done-packet",
+            "note": f"Duplicate packet archived to {archived_relpath}.",
+        }
+
+    return None
 
 
 def alert_repeat_count(alert_fingerprint: str) -> int:
@@ -520,19 +608,49 @@ def write_alert(
     summary: Optional[str] = None,
     next_action: Optional[str] = None,
 ) -> str:
-    alert_path = os.path.join(ALERTS_DIR, f"{task_id}-{stage}.md")
-    slack_thread_ts = slack_thread_ts_for_task(task_id)
-    alert_fingerprint = compute_alert_fingerprint(stage=stage, summary=summary, next_action=next_action)
-    repeat_count = alert_repeat_count(alert_fingerprint) + 1
-    auto_remediation_packet = enqueue_auto_remediation_task(
+    original_stage = stage
+    original_status = status
+    original_packet_path = packet_path
+    original_report_path = report_path
+    original_summary = summary
+    original_next_action = next_action
+    runbook_result = apply_alert_runbook(
+        task_id=task_id,
         stage=stage,
-        alert_fingerprint=alert_fingerprint,
-        repeat_count=repeat_count,
+        status=status,
+        packet_path=packet_path,
+        report_path=report_path,
         summary=summary,
         next_action=next_action,
     )
+    if runbook_result and runbook_result.get("handled"):
+        stage = str(runbook_result.get("stage", stage))
+        status = str(runbook_result.get("status", status))
+        packet_path = str(runbook_result.get("packet_path", packet_path))
+        report_path = runbook_result.get("report_path", report_path)
+        summary = runbook_result.get("summary", summary)
+        next_action = runbook_result.get("next_action", next_action)
+
+    alert_path = os.path.join(ALERTS_DIR, f"{task_id}-{stage}.md")
+    slack_thread_ts = slack_thread_ts_for_task(task_id)
+    alert_fingerprint = compute_alert_fingerprint(
+        stage=original_stage,
+        summary=original_summary,
+        next_action=original_next_action,
+    )
+    repeat_count = alert_repeat_count(alert_fingerprint) + 1
+    auto_remediation_packet = None
+    if not runbook_result:
+        auto_remediation_packet = enqueue_auto_remediation_task(
+            stage=original_stage,
+            alert_fingerprint=alert_fingerprint,
+            repeat_count=repeat_count,
+            summary=original_summary,
+            next_action=original_next_action,
+        )
     severity = {
         "completed": "info",
+        "self-healed": "info",
         "recovered": "info",
         "needs-review": "warning",
         "replan-required": "warning",
@@ -559,6 +677,17 @@ def write_alert(
         lines.append(f"next_action: {next_action}")
     lines.append(f"alert_fingerprint: `{alert_fingerprint}`")
     lines.append(f"repeat_count: `{repeat_count}`")
+    if runbook_result:
+        lines.append(f"self_heal_runbook: `{runbook_result.get('runbook', '')}`")
+        note = str(runbook_result.get("note", "")).strip()
+        if note:
+            lines.append(f"self_heal_note: {note}")
+    if stage != original_stage:
+        lines.append(f"original_stage: `{original_stage}`")
+        lines.append(f"original_status: `{original_status}`")
+        lines.append(f"original_packet: `{original_packet_path}`")
+        if original_report_path:
+            lines.append(f"original_report: `{original_report_path}`")
     if auto_remediation_packet:
         lines.append(f"auto_remediation_packet: `{auto_remediation_packet}`")
     if slack_thread_ts:
@@ -578,6 +707,9 @@ def write_alert(
             "alert_fingerprint": alert_fingerprint,
             "alert_repeat_count": repeat_count,
             "auto_remediation_packet": auto_remediation_packet,
+            "original_stage": original_stage,
+            "original_status": original_status,
+            "self_heal_runbook": runbook_result.get("runbook") if runbook_result else None,
         },
     )
     notify_slack_for_alert(
@@ -613,6 +745,22 @@ def localize_slack_operator_text(text: Optional[str]) -> Optional[str]:
         ("No manual action required unless the retried task fails again.", "재시도한 task가 다시 실패하지 않는 한 수동 조치는 필요하지 않습니다."),
         ("Watcher refreshed the drift task packet and requeued it for another implementation run.", "watcher가 drift task packet을 갱신해 다시 구현 큐에 넣었습니다."),
         ("Watcher refreshed the blocked task packet and requeued it for another implementation run.", "watcher가 blocked task packet을 갱신해 다시 구현 큐에 넣었습니다."),
+        (
+            "Task completed successfully. Automatic main promotion was skipped because origin/main was not a fast-forward target.",
+            "작업은 정상 완료되었고 origin/main 자동 반영은 fast-forward 대상이 아니라 건너뛰었습니다.",
+        ),
+        (
+            "Watcher archived a duplicate task packet because a completed task file already existed.",
+            "이미 완료된 task 파일이 있어 watcher가 중복 task packet을 자동 보관했습니다.",
+        ),
+        (
+            "No action required unless you want to inspect the archived duplicate packet.",
+            "보관된 중복 packet을 확인할 계획이 아니라면 별도 조치는 필요하지 않습니다.",
+        ),
+        (
+            "No action required unless you want to inspect the result report Git Automation section.",
+            "결과 리포트의 Git Automation 섹션을 확인할 계획이 아니라면 별도 조치는 필요하지 않습니다.",
+        ),
         ("Watcher could not move the task packet into running.", "watcher가 task packet을 running으로 옮기지 못했습니다."),
         ("Clear any editor or sync lock on the task file, then requeue it.", "task 파일의 에디터 또는 동기화 잠금을 해제한 뒤 다시 큐에 넣으세요."),
         ("Task packet is missing required frontmatter fields.", "task packet에 필수 frontmatter 필드가 빠져 있습니다."),
@@ -694,6 +842,7 @@ def format_slack_alert_message(
 
     emoji = {
         "completed": "✅",
+        "self-healed": "🛠️",
         "recovered": "🔁",
         "needs-review": "📝",
         "replan-required": "🧭",
@@ -703,6 +852,7 @@ def format_slack_alert_message(
     }.get(stage, "ℹ️")
     stage_labels = {
         "completed": "완료",
+        "self-healed": "자동 자가복구",
         "recovered": "자동 복구",
         "needs-review": "검토 필요",
         "replan-required": "재설계 필요",
@@ -782,6 +932,7 @@ def build_slack_alert_payload(
 
     emoji = {
         "completed": "✅",
+        "self-healed": "🛠️",
         "recovered": "🔁",
         "needs-review": "📝",
         "replan-required": "🧭",
@@ -791,6 +942,7 @@ def build_slack_alert_payload(
     }.get(stage, "ℹ️")
     stage_labels = {
         "completed": "완료",
+        "self-healed": "자동 자가복구",
         "recovered": "자동 복구",
         "needs-review": "검토 필요",
         "replan-required": "재설계 필요",

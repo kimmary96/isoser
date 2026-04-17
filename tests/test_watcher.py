@@ -1081,49 +1081,46 @@ def test_write_alert_enqueues_auto_remediation_packet_after_repeated_alerts(tmp_
     monkeypatch.setattr(watcher, "current_head", lambda: "abc123")
     monkeypatch.setattr(watcher, "notify_slack_for_alert", lambda **kwargs: None)
 
-    summary = (
-        "origin/main is not an ancestor of the task commit, so watcher skipped automatic main promotion. "
-        "(branch=develop), commit=1a9bf74d7fcce8932e6146982b571da2ca8ab7b6"
-    )
-    next_action = "Review the result report Git Automation section and push manually if needed."
+    summary = "Watcher could not move the task packet into running."
+    next_action = "Clear any editor or sync lock on the task file, then requeue it."
 
     watcher.write_alert(
         "TASK-2026-04-16-1800-fix-commit-stamp-on-promote",
-        "push-failed",
+        "blocked",
         status="action-required",
-        packet_path="tasks/done/TASK-2026-04-16-1800-fix-commit-stamp-on-promote.md",
-        report_path="reports/TASK-2026-04-16-1800-fix-commit-stamp-on-promote-result.md",
+        packet_path="tasks/inbox/TASK-2026-04-16-1800-fix-commit-stamp-on-promote.md",
+        report_path="reports/TASK-2026-04-16-1800-fix-commit-stamp-on-promote-blocked.md",
         summary=summary,
         next_action=next_action,
     )
     watcher.write_alert(
         "TASK-2026-04-16-1535-seo-metadata-jsonld",
-        "push-failed",
+        "blocked",
         status="action-required",
-        packet_path="tasks/done/TASK-2026-04-16-1535-seo-metadata-jsonld.md",
-        report_path="reports/TASK-2026-04-16-1535-seo-metadata-jsonld-result.md",
-        summary=summary.replace("1a9bf74d7fcce8932e6146982b571da2ca8ab7b6", "e72482dca8efd55213792a8a6e10159b62e9b891"),
+        packet_path="tasks/inbox/TASK-2026-04-16-1535-seo-metadata-jsonld.md",
+        report_path="reports/TASK-2026-04-16-1535-seo-metadata-jsonld-blocked.md",
+        summary=summary,
         next_action=next_action,
     )
     watcher.write_alert(
         "TASK-2026-04-16-1530-adsense-slots",
-        "push-failed",
+        "blocked",
         status="action-required",
-        packet_path="tasks/done/TASK-2026-04-16-1530-adsense-slots.md",
-        report_path="reports/TASK-2026-04-16-1530-adsense-slots-result.md",
-        summary=summary.replace("1a9bf74d7fcce8932e6146982b571da2ca8ab7b6", "961b30d1383a6f4c69e4d608a55fb4268ed49d99"),
+        packet_path="tasks/inbox/TASK-2026-04-16-1530-adsense-slots.md",
+        report_path="reports/TASK-2026-04-16-1530-adsense-slots-blocked.md",
+        summary=summary,
         next_action=next_action,
     )
 
-    queued_packets = list(inbox_dir.glob("TASK-*-auto-remediate-push-failed-*.md"))
+    queued_packets = list(inbox_dir.glob("TASK-*-auto-remediate-blocked-*.md"))
     assert len(queued_packets) == 1
     packet_body = queued_packets[0].read_text(encoding="utf-8")
     assert "auto_remediation_fingerprint:" in packet_body
-    assert "repeat_count: `3`" in (alerts_dir / "TASK-2026-04-16-1530-adsense-slots-push-failed.md").read_text(
+    assert "repeat_count: `3`" in (alerts_dir / "TASK-2026-04-16-1530-adsense-slots-blocked.md").read_text(
         encoding="utf-8"
     )
     assert "auto_remediation_packet:" in (
-        alerts_dir / "TASK-2026-04-16-1530-adsense-slots-push-failed.md"
+        alerts_dir / "TASK-2026-04-16-1530-adsense-slots-blocked.md"
     ).read_text(encoding="utf-8")
 
     ledger_body = ledger_path.read_text(encoding="utf-8")
@@ -1166,6 +1163,94 @@ def test_write_alert_does_not_duplicate_auto_remediation_packet_for_same_fingerp
 
     queued_packets = list(inbox_dir.glob("TASK-*-auto-remediate-blocked-*.md"))
     assert len(queued_packets) == 1
+
+
+def test_write_alert_self_heals_main_promotion_skip_into_info_alert(tmp_path, monkeypatch) -> None:
+    alerts_dir = tmp_path / "dispatch" / "alerts"
+    inbox_dir = tmp_path / "tasks" / "inbox"
+    alerts_dir.mkdir(parents=True)
+    inbox_dir.mkdir(parents=True)
+    ledger_path = tmp_path / "dispatch" / "run-ledger.jsonl"
+
+    monkeypatch.setattr(watcher, "ALERTS_DIR", str(alerts_dir))
+    monkeypatch.setattr(watcher, "INBOX_DIR", str(inbox_dir))
+    monkeypatch.setattr(watcher, "REMOTE_DIR", str(tmp_path / "tasks" / "remote"))
+    monkeypatch.setattr(watcher, "RUNNING_DIR", str(tmp_path / "tasks" / "running"))
+    monkeypatch.setattr(watcher, "DONE_DIR", str(tmp_path / "tasks" / "done"))
+    monkeypatch.setattr(watcher, "BLOCKED_DIR", str(tmp_path / "tasks" / "blocked"))
+    monkeypatch.setattr(watcher, "DRIFTED_DIR", str(tmp_path / "tasks" / "drifted"))
+    monkeypatch.setattr(watcher, "REVIEW_REQUIRED_DIR", str(tmp_path / "tasks" / "review-required"))
+    monkeypatch.setattr(watcher, "ARCHIVE_DIR", str(tmp_path / "tasks" / "archive"))
+    monkeypatch.setattr(watcher, "LEDGER_PATH", str(ledger_path))
+    monkeypatch.setattr(watcher, "notify_slack_for_alert", lambda **kwargs: None)
+
+    watcher.write_alert(
+        "TASK-2026-04-16-1530-adsense-slots",
+        "push-failed",
+        status="action-required",
+        packet_path="tasks/done/TASK-2026-04-16-1530-adsense-slots.md",
+        report_path="reports/TASK-2026-04-16-1530-adsense-slots-result.md",
+        summary="origin/main is not an ancestor of the task commit, so watcher skipped automatic main promotion. (branch=develop), commit=961b30d1383a6f4c69e4d608a55fb4268ed49d99",
+        next_action="Review the result report Git Automation section and push manually if needed.",
+    )
+
+    alert_body = (alerts_dir / "TASK-2026-04-16-1530-adsense-slots-self-healed.md").read_text(encoding="utf-8")
+    assert "stage: self-healed" in alert_body
+    assert "status: done" in alert_body
+    assert "self_heal_runbook: `downgrade-main-promotion-skip`" in alert_body
+    assert "original_stage: `push-failed`" in alert_body
+    assert "origin/develop" in alert_body
+    assert '"stage": "self-healed"' in ledger_path.read_text(encoding="utf-8")
+    assert not list(inbox_dir.glob("TASK-*-auto-remediate-push-failed-*.md"))
+
+
+def test_write_alert_self_heals_duplicate_done_runtime_error_by_archiving_packet(tmp_path, monkeypatch) -> None:
+    alerts_dir = tmp_path / "dispatch" / "alerts"
+    inbox_dir = tmp_path / "tasks" / "inbox"
+    done_dir = tmp_path / "tasks" / "done"
+    archive_dir = tmp_path / "tasks" / "archive"
+    alerts_dir.mkdir(parents=True)
+    inbox_dir.mkdir(parents=True)
+    done_dir.mkdir(parents=True)
+    archive_dir.mkdir(parents=True)
+    ledger_path = tmp_path / "dispatch" / "run-ledger.jsonl"
+
+    packet_path = inbox_dir / "TASK-2026-04-16-1505-watcher-develop-push.md"
+    done_path = done_dir / "TASK-2026-04-16-1505-watcher-develop-push.md"
+    packet_path.write_text("queued\n", encoding="utf-8")
+    done_path.write_text("done\n", encoding="utf-8")
+
+    monkeypatch.setattr(watcher, "PROJECT_PATH", str(tmp_path))
+    monkeypatch.setattr(watcher, "ALERTS_DIR", str(alerts_dir))
+    monkeypatch.setattr(watcher, "INBOX_DIR", str(inbox_dir))
+    monkeypatch.setattr(watcher, "REMOTE_DIR", str(tmp_path / "tasks" / "remote"))
+    monkeypatch.setattr(watcher, "RUNNING_DIR", str(tmp_path / "tasks" / "running"))
+    monkeypatch.setattr(watcher, "DONE_DIR", str(done_dir))
+    monkeypatch.setattr(watcher, "BLOCKED_DIR", str(tmp_path / "tasks" / "blocked"))
+    monkeypatch.setattr(watcher, "DRIFTED_DIR", str(tmp_path / "tasks" / "drifted"))
+    monkeypatch.setattr(watcher, "REVIEW_REQUIRED_DIR", str(tmp_path / "tasks" / "review-required"))
+    monkeypatch.setattr(watcher, "ARCHIVE_DIR", str(archive_dir))
+    monkeypatch.setattr(watcher, "LEDGER_PATH", str(ledger_path))
+    monkeypatch.setattr(watcher, "notify_slack_for_alert", lambda **kwargs: None)
+
+    watcher.write_alert(
+        "TASK-2026-04-16-1505-watcher-develop-push",
+        "runtime-error",
+        status="action-required",
+        packet_path="./tasks/inbox/TASK-2026-04-16-1505-watcher-develop-push.md",
+        report_path="reports/TASK-2026-04-16-1505-watcher-develop-push-result.md",
+        summary="handle inbox task: FileExistsError: Destination already exists: ./tasks/done\\TASK-2026-04-16-1505-watcher-develop-push.md",
+        next_action="Inspect watcher console output or traceback for the exception details. The watcher kept running.",
+    )
+
+    archived_packets = list(archive_dir.glob("TASK-2026-04-16-1505-watcher-develop-push-duplicate-from-done-*.md"))
+    assert len(archived_packets) == 1
+    assert not packet_path.exists()
+    alert_body = (alerts_dir / "TASK-2026-04-16-1505-watcher-develop-push-self-healed.md").read_text(encoding="utf-8")
+    assert "stage: self-healed" in alert_body
+    assert "self_heal_runbook: `archive-duplicate-done-packet`" in alert_body
+    assert "original_stage: `runtime-error`" in alert_body
+    assert archived_packets[0].name in alert_body
 
 
 def test_move_stale_running_tasks_removes_duplicate_running_marker(tmp_path, monkeypatch) -> None:

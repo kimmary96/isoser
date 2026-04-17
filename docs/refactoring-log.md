@@ -10,6 +10,7 @@
   - watcher alert에 `alert_fingerprint`와 `repeat_count`를 함께 기록해 task id, commit hash 같은 가변값이 달라도 같은 root cause를 같은 이슈로 묶을 수 있게 함
   - `blocked`, `runtime-error`, `push-failed`가 동일 fingerprint로 3회 이상 반복되면 `tasks/inbox/`에 자동 remediation packet을 생성해 supervisor 플로우가 루트 원인 수정 작업을 직접 다시 집도록 확장함
   - 같은 fingerprint에 대해 remediation packet은 한 번만 열리도록 중복 방지 검사를 추가하고, 생성 사실은 local run ledger의 `auto-remediation-queued` 이벤트로 남기도록 함
+  - 알려진 fingerprint에는 즉시 실행 runbook을 추가해 `origin/main` 자동 반영 스킵은 `self-healed` 정보 알림으로 다운그레이드하고, `tasks/done/` 중복으로 생기는 runtime-error는 duplicate packet archive로 즉시 정리하도록 확장함
 - 유지된 동작:
   - 기존 Slack alert 파일과 watcher ledger 기록은 계속 남고, 알림 자체가 사라지지는 않음
   - `completed` / `recovered` 같은 정상 흐름은 자동 remediation 대상에서 제외함

@@ -23,7 +23,8 @@
 - `scripts/summarize_actionable_ledgers.py`는 `blocked`, `drift`, `needs-review`, `replan-required` 같은 즉시 대응이 필요한 상태만 따로 좁혀 보여준다.
 - `scripts/prune_run_ledgers.py`는 active JSONL ledger에서 오래된 이벤트를 archive로 옮겨 장기 운영 시 파일이 과도하게 커지는 문제를 완화한다.
 - `scripts/create_task_packet.py`는 current HEAD와 optional fingerprint field까지 채운 packet 초안을 바로 생성해 planner 쪽 기본값을 강화한다.
-- local `watcher.py`는 반복되는 `blocked` / `runtime-error` / `push-failed` 알림에 대해 summary+next_action 기반 fingerprint를 남기고, 같은 root cause가 3회 이상 반복되면 `tasks/inbox/`에 자동 remediation packet을 생성해 루트 원인 수정 작업을 다시 supervisor 플로우로 투입한다.
+- local `watcher.py`는 알려진 반복 알림에 대해 fingerprint별 self-healing runbook을 먼저 적용한다. 현재는 `origin/main` 자동 반영 스킵을 비차단 `self-healed`로 다운그레이드하고, 이미 `tasks/done/`에 완료본이 있는 중복 packet 런타임 오류를 자동 archive로 정리한다.
+- runbook으로 처리되지 않는 `blocked` / `runtime-error` / `push-failed` 알림은 summary+next_action 기반 fingerprint를 남기고, 같은 root cause가 3회 이상 반복되면 `tasks/inbox/`에 자동 remediation packet을 생성해 루트 원인 수정 작업을 다시 supervisor 플로우로 투입한다.
 - watcher와 cowork watcher는 개별 packet 처리 중 예외가 나도 전체 프로세스를 종료하지 않고 `runtime-error` 기록을 남긴 뒤 다음 루프를 계속 돈다.
 - `scripts/watcher_shared.py`의 lock PID 확인은 Windows에서 `os.kill(pid, 0)` 대신 `tasklist` 기반으로 동작해, stale `.watcher.lock` / `.cowork_watcher.lock` 때문에 supervisor가 재시작 루프에 빠지는 문제를 줄였다.
 - `cowork_watcher.py`는 Codex review subprocess가 예외로 끝나거나 review 파일을 만들지 못해도 전체 워처를 죽이지 않고 해당 packet만 `review-failed` dispatch로 격리한다.
