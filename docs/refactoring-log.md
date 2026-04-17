@@ -1,5 +1,18 @@
 # 리팩토링 로그
 
+## 2026-04-17 에이전트 플로우 발표용 문서 추가
+
+- 수정 파일:
+  - `docs/automation/agentic-flow-presentation.md`
+  - `docs/current-state.md`
+- 변경 내용:
+  - 팀 설명용으로 end-to-end agentic flow를 발표 관점에서 다시 정리한 문서를 추가함
+  - 기존 운영 원본 문서 `local-flow.md`를 기준으로, 역할 분리, 상태 전이, auto recovery, self-healing, Slack 개입 지점을 더 짧고 설명 순서에 맞게 재구성함
+  - `docs/current-state.md` 키 레퍼런스에 발표용 문서 링크를 추가함
+- 유지된 동작:
+  - watcher 동작이나 queue semantics 자체는 바꾸지 않음
+  - 기존 운영 기준 문서는 계속 `docs/automation/local-flow.md`와 `docs/automation/overview.md`를 사용함
+
 ## 2026-04-17 대시보드 캘린더 섹션 분리 및 BFF 전환
 
 - 수정 파일:

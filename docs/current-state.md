@@ -98,6 +98,7 @@
 - automation index: [automation/README.md](./automation/README.md)
 - automation overview: [automation/overview.md](./automation/overview.md)
 - local flow: [automation/local-flow.md](./automation/local-flow.md)
+- presentation summary: [automation/agentic-flow-presentation.md](./automation/agentic-flow-presentation.md)
 - watcher LangGraph review: [automation/watcher-langgraph.md](./automation/watcher-langgraph.md)
 - task packet contract: [automation/task-packets.md](./automation/task-packets.md)
 - dispatch split: [automation/dispatch-channels.md](./automation/dispatch-channels.md)

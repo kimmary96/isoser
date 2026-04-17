@@ -42,3 +42,9 @@
 
 ## Recommended next step
 - Replan or refresh the packet against current `HEAD`, using the already-landed calendar CTA and BFF flow as the new baseline before implementing resume prefill.
+
+## Run Metadata
+
+- generated_at: `2026-04-17T12:54:25`
+- watcher_exit_code: `0`
+- codex_tokens_used: `73,413`
