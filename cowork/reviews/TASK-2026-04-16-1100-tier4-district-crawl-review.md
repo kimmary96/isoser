@@ -1,38 +1,36 @@
 ## Overall assessment
 
-Not ready for promotion. Frontmatter is complete, and `planned_against_commit: 469cd3f` still matches `HEAD`, but the touched collector/scheduler area has materially drifted in the current worktree. The packet also has missing local references and a few execution details that are still ambiguous.
+Promotable with no blocking packet changes. The frontmatter is complete, the repository paths cited by the packet are valid for the current repo state, and the optional `planned_files` / `planned_worktree_fingerprint` metadata still matches the live worktree. `planned_against_commit` is older than current `HEAD`, but the directly touched collector/test area shows no material drift from that baseline.
 
 ## Findings
 
-- Frontmatter completeness: pass. Required fields `id`, `status`, `type`, `title`, `planned_at`, and `planned_against_commit` are present.
-- Optional metadata: `planned_files` and `planned_worktree_fingerprint` are not present, so there is nothing to verify for those fields.
-- Material drift risk: `backend/rag/collector/scheduler.py` is already modified in the worktree and now imports/registers Tier 3 collectors. `backend/tests/test_scheduler_collectors.py` is also modified, and `backend/rag/collector/tier3_collectors.py` exists as new in-progress adjacent work. This task would edit the same scheduler registration path, so the packet is no longer isolated against the live repository state.
-- Existing repo evidence already matches that drift concern: `reports/TASK-2026-04-16-1100-tier4-district-crawl-drift.md` already records the scheduler/Tier 3 overlap.
-- Repository path accuracy: the transport targets listed in the packet do not currently exist as real files: `tasks/inbox/TASK-2026-04-16-1100-tier4-district-crawl.md` and `tasks/remote/TASK-2026-04-16-1100-tier4-district-crawl.md` both resolve false right now. That is acceptable as a future promotion target, but the packet should not imply they already exist.
-- Missing references: `cowork/drafts/isoser-tier4-local-district-crawling-validated.md` does not exist locally, so the main validation reference named by the packet is unavailable.
-- Missing references: the cited predecessor `TASK-2026-04-15-1500-tier2-seoul-crawl` is not present in `tasks/inbox/` or `tasks/remote/`, so the packet points to a prerequisite by id without a reachable local packet path.
-- Partial predecessor reference only: `TASK-2026-04-16-1000-tier3-semi-public-crawl` is available in `cowork/packets/` and `tasks/running/`, which confirms Tier 3 work is active rather than stabilized.
-- Acceptance clarity gap: the packet requires all six collectors to return at least one item in live dry-run execution, but it does not define the exact required local verification artifact set for promotion in the presence of flaky external sites. It should say whether packet acceptance requires unit tests with saved HTML fixtures, live manual verification, or both.
-- Acceptance clarity gap: the packet requires specific logging behaviors such as `"HTTPS 비정상, HTTP 전환"` and other source-specific messages, but it does not identify where those log assertions must be tested or whether exact string matching is mandatory.
-- Ambiguity: Open Question 1 leaves file placement undecided between a new `tier4_collectors.py` and extending `tier3_collectors.py`. In the live repo, `backend/rag/collector/tier3_collectors.py` already exists and is new/in flight, so leaving file ownership undecided increases merge risk.
+- Frontmatter completeness: pass. Required fields `id`, `status`, `type`, `title`, `planned_at`, and `planned_against_commit` are all present.
+- Baseline commit: `planned_against_commit: 4a8369f` resolves in this repository. Current `HEAD` is `fc27188`, but `git diff --name-status 4a8369f -- backend/rag/collector/scheduler.py backend/rag/collector/tier3_collectors.py backend/rag/collector/tier4_collectors.py backend/tests/test_scheduler_collectors.py backend/tests/test_tier4_collectors.py` returned no changes in the already-existing touched files, so committed drift in the planned area is low.
+- Optional metadata: `planned_files` is present and `planned_worktree_fingerprint: a282bf99d4f7c6b8f288bd66348677603e118c3ddeb392330ddddd090f3ad2ae` still matches the current worktree exactly.
+- Repository path accuracy: the baseline files referenced for execution exist and match the packet narrative:
+  - `backend/rag/collector/scheduler.py`
+  - `backend/rag/collector/tier3_collectors.py`
+  - `backend/tests/test_scheduler_collectors.py`
+  - `reports/TASK-2026-04-16-1000-tier3-semi-public-crawl-result.md`
+  - `reports/TASK-2026-04-16-1100-tier4-district-crawl-drift.md`
+  - `reports/TASK-2026-04-16-1100-tier4-district-crawl-recovery.md`
+- Planned creation paths are also consistent with current state: `backend/rag/collector/tier4_collectors.py` and `backend/tests/test_tier4_collectors.py` do not exist yet, which matches the task’s intent to add them.
+- Current repo assumptions line up with the packet:
+  - `scheduler.py` currently registers Tier 1 to Tier 3 collectors and sorts by `tier`.
+  - `tier3_collectors.py` already exists as a separate module.
+  - There is no existing Tier 4 collector module, so this does not appear to be a duplicate implementation request.
+- Acceptance clarity is generally strong. The packet clearly specifies target sources, fixed metadata, scheduler behavior, required tests, and allowed verification fallbacks.
+- Non-blocking caution: the transport note `tasks/inbox/TASK-2026-04-16-1100-tier4-district-crawl.md` is a future promotion target, not a currently existing file. That is normal and does not block promotion.
+- Non-blocking caution: the packet references current `HEAD` in body text as `4a8369f350e7a0aa8b3b5e4613dc92050f5ec3f6`, which is no longer the repository’s latest commit. Because the optional fingerprint still matches and the touched files have not drifted, this is stale wording rather than a blocking drift issue.
 
 ## Recommendation
 
-Do not promote yet.
+This packet is ready for promotion as-is.
 
-Before promotion, the packet should be updated to:
-
-- Rebase the plan against the stabilized post-Tier-3 worktree state, then replace `planned_against_commit` if needed.
-- Resolve the scheduler drift first by stabilizing or committing the current Tier 3 collector changes.
-- Replace or remove the missing reference to `cowork/drafts/isoser-tier4-local-district-crawling-validated.md`.
-- Point prerequisite references to reachable local packet/report paths, not just task ids.
-- Decide the Tier 4 collector file location explicitly instead of leaving it as an open question.
-- Clarify the required verification method and artifacts for the six collectors and the required logging assertions.
-
-After those changes, the packet should be re-reviewed. In its current form, it is not promotable.
+If you want a cleanup pass before promotion, the only minor improvement would be to refresh the body text that says "current HEAD `4a8369f...`" so it does not read like a live repository claim. That is optional; it is not required for safe execution because the planned file fingerprint still matches the current worktree.
 
 ## Review Run Metadata
 
-- generated_at: `2026-04-16T13:15:53`
+- generated_at: `2026-04-17T12:45:10`
 - watcher_exit_code: `0`
-- codex_tokens_used: `55,397`
+- codex_tokens_used: `124,655`

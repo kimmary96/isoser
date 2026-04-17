@@ -4,42 +4,49 @@ status: queued
 type: feature
 title: "Tier 4 지역구 크롤링 — 서울 자치구 6개 collector 구현 및 scheduler 연결"
 priority: high
-planned_by: Claude (PM)
-planned_at: 2026-04-16T11:00:00+09:00
-planned_against_commit: 469cd3f
+planned_by: Codex
+planned_at: 2026-04-17T15:55:00+09:00
+planned_against_commit: 4a8369f
+planned_files: backend/rag/collector/scheduler.py, backend/rag/collector/tier3_collectors.py, backend/rag/collector/tier4_collectors.py, backend/tests/test_scheduler_collectors.py, backend/tests/test_tier4_collectors.py
+planned_worktree_fingerprint: a282bf99d4f7c6b8f288bd66348677603e118c3ddeb392330ddddd090f3ad2ae
 ---
 
 # Goal
 
-Tier 4 지역구 수집 계층으로 서울 자치구 6개 소스의 collector를 신규 구현하고, 기존 scheduler에 Tier 4로 등록한다.
+현재 Tier 1~3까지만 등록된 collector 파이프라인에 Tier 4 지역구 수집 계층을 추가한다.
 
-Tier 4는 서울시 광역 허브가 아니라 자치구 밀착 프로그램을 다루는 계층이다. 대상은 구청, 구 단위 청년센터, 구 단위 고용복지센터, 구 단위 창업센터이며, 전국 단위 API 허브와 겹치는 공고보다 구 단위 운영 프로그램을 우선 수집한다.
+이번 task는 서울 자치구/구 단위 기관 6개 소스를 대상으로 신규 collector를 구현하고, scheduler dry-run 및 parser 단위 테스트까지 포함해 "현재 저장소 기준으로 다시 실행 가능한 packet"으로 마무리하는 것이 목적이다.
 
-이번 task는 로컬 검증이 완료된 범위만 구현한다. 6개 소스의 접속 상태와 HTML 구조를 모두 검증했으며, 일부 소스는 접근 경로 주의사항이 확정됐다.
+# Current Repository Baseline
 
-구현 순서는 난이도 기준으로 아래와 같다:
-1. `DobongStartupCollector` — 구현 난도 낮음, 구조 명확
-2. `GuroCollector` — 구현 난도 낮음, HTTP 우회 필요
-3. `SeongdongCollector` — 구현 난도 중간, 우회 경로 고정 필요
-4. `NowonCollector` — 구현 난도 중간, Imweb 기반 selector 주의
-5. `DobongCollector` — 구현 난도 중상, 키워드 필터 필수
-6. `MapoCollector` — 구현 난도 중상, 메인 기반 접근만 가능
+- 현재 `backend/rag/collector/scheduler.py`에는 Tier 1~3 collector만 등록되어 있다.
+- Tier 3 구현은 이미 `backend/rag/collector/tier3_collectors.py`로 분리되어 안정화된 상태다.
+- Tier 4 collector 전용 모듈은 아직 없다.
+- 기존 drift 사유였던 "Tier 3가 같은 scheduler 영역에서 미완료 상태" 문제는 현재 기준으로 해소됐다.
+- 따라서 이 task는 현재 HEAD `4a8369f` 기준으로 다시 진행 가능하다.
+
+# Fixed Implementation Decisions
+
+- Tier 4 collector는 `backend/rag/collector/tier4_collectors.py` 신설로 구현한다.
+- 기존 `tier3_collectors.py`에는 Tier 4 코드를 섞지 않는다.
+- scheduler는 현재 tier 정렬 규칙을 유지한 채 Tier 4 collector import/register만 추가한다.
+- 검증은 라이브 사이트 의존 smoke가 아니라 fixture 수준의 parser 단위 테스트 + scheduler dry-run 테스트를 필수 기준으로 삼는다.
+- 라이브 사이트 접속 확인은 선택적 수동 확인 메모로만 남기고, packet acceptance의 필수 조건으로 두지 않는다.
 
 # User Flow
 
-이 task는 사용자 직접 노출 기능이 아니라 데이터 수집 파이프라인이다.
+1. scheduler가 `run_all_collectors(upsert=False)`를 실행한다.
+2. Tier 1, Tier 2, Tier 3 다음에 Tier 4 collector가 tier 오름차순으로 실행된다.
+3. 각 Tier 4 collector는 목록/메인 섹션 HTML에서 제목, 링크, 마감일, 카테고리 힌트, raw 메타를 추출한다.
+4. dry-run에서는 source별 `status`/`message`와 수집 건수만 반환한다.
+5. 실제 upsert 경로에서는 기존 normalize 및 Supabase 저장 흐름을 그대로 재사용한다.
+6. 개별 Tier 4 collector 실패가 전체 배치를 중단시키지 않는다.
 
-1. scheduler가 `run_all_collectors()`를 실행한다.
-2. Tier 4 collector가 순서대로 실행된다.
-3. 각 collector가 목록 또는 메인 섹션을 파싱해 제목/링크/마감일/카테고리를 추출한다.
-4. 정규화 후 `programs` 테이블에 upsert된다.
-5. 개별 collector 실패는 전체 배치를 중단시키지 않는다.
+# Scope
 
-# 작업 상세
+## 공통 메타
 
-## 공통 메타 및 스키마
-
-모든 Tier 4 collector가 공유하는 고정값:
+모든 Tier 4 collector는 아래 고정 메타를 따른다.
 
 ```python
 source_type = "district_crawl"
@@ -50,215 +57,123 @@ tier = 4
 is_ad = False
 ```
 
-공통 raw 보존 필드:
-- `posted_at`
-- `status_text`
-- `period_text`
-- `target_text`
-- `place_text`
-- `board_id`
-- `page_source`
+- `region_detail`은 각 구 이름으로 고정한다.
+- `raw`에는 최소한 재수집 키와 파싱 근거 텍스트를 남긴다.
+- `.collect()` 반환 형식은 기존 `BaseHtmlCollector` 패턴을 유지한다.
 
-`region_detail`에 각 구 이름을 고정 저장한다 (예: `"도봉구"`, `"구로구"`).
+## 구현 대상 collector 6개
 
-## 작업 1 — DobongStartupCollector
+1. `DobongStartupCollector`
+   - 소스: `https://dobongstartup.com`
+   - 대상: 공지사항 `/bbs/board.php?bo_table=donotic`, 프로그램 `/program/programlist.php`
+   - 필수 raw: `pg_id`, `wr_id`, `board_table`, `target_text`, `status_text`
+   - 기본 카테고리: `창업`
 
-**소스:** 도봉창업센터 `https://dobongstartup.com`
+2. `GuroCollector`
+   - 소스: `http://youtheroom.kr`
+   - 대상: 프로그램 `/product/list.php?ca_id=10`, 공지 `/bbs/board.php?tbl=bbs41`
+   - HTTPS를 기본값으로 쓰지 말고 `http://youtheroom.kr`를 기준 URL로 고정한다.
+   - 필수 raw: `mode`, `num`, `ca_id`, `tbl`, `status_text`
+   - 키워드 기반 카테고리: `IT`, `취업`
 
-**수집 대상:**
-- 공지사항: `/bbs/board.php?bo_table=donotic`
-- 프로그램 신청: `/program/programlist.php`
+3. `SeongdongCollector`
+   - 소스: `https://youth.seoul.go.kr`
+   - 대상: `cntrId=CT00006` 고정 프로그램/공지 경로
+   - `site=sd` 경로는 사용하지 않는다.
+   - 필수 raw: `cntrId`, `pstSn`, `sprtInfoId`, `period_text`, `place_text`
+   - 키워드 기반 카테고리: `IT`, `취업`
 
-**추출 필드:**
-- `title`, `link`, `deadline` (신청마감), `program_period`, `target_text`, `status_text`
-- `raw` — `{pg_id, wr_id, board_table}`
+4. `NowonCollector`
+   - 소스: `https://www.nwjob.kr`
+   - 대상: 취업정보 board와 메인 프로그램 카드
+   - Imweb 특성상 복잡한 class 체인에 덜 의존하고 `/?q=...&bmode=view&idx=...&t=board` 링크 패턴을 우선 사용한다.
+   - 필수 raw: `idx`, `q_param`, `board_path`, `status_text`
+   - 키워드 기반 카테고리: `취업`, `훈련`
 
-**카테고리:** 기본값 `창업`
+5. `DobongCollector`
+   - 소스: `https://www.dobong.go.kr`
+   - 대상: `bbs.asp?code=10008769`, `bbs.asp?code=10008770`, 필요 시 메인 배너 보조 파싱
+   - 제목 키워드 필터로 일반 구정 공지를 제외한다.
+   - 필수 raw: `code`, `page_source`
+   - 키워드 기반 카테고리: `취업`, `훈련`
 
-**주의:**
-- 입주기업 전용 프로그램과 일반 공개 프로그램이 섞임 → `raw.target_text`로 보존 후 후처리에서 분리 가능하게 둔다
-- `pg_id`, `wr_id`를 raw에 반드시 보존 (재수집 안정성)
+6. `MapoCollector`
+   - 소스: `https://mapoworkfare.or.kr`
+   - 대상: 메인 페이지 노출 섹션만 사용
+   - `/notice` 직접 접근 전제는 두지 않는다.
+   - 필수 raw: `page_source`
+   - 키워드 기반 카테고리: `취업`, `훈련`
 
-## 작업 2 — GuroCollector
+## Scheduler 변경 범위
 
-**소스:** 구로 청년이룸 `http://youtheroom.kr` (HTTPS TLS 오류 확인됨)
+- `backend/rag/collector/scheduler.py`에 Tier 4 collector import 및 등록 추가
+- collector 실행 순서는 기존처럼 `tier` 값 기준 정렬 유지
+- Tier 4 collector 실패는 source 단위 실패로만 기록하고 다음 collector로 계속 진행
 
-**수집 대상:**
-- 프로그램 목록: `/product/list.php?ca_id=10`
-- 공지사항: `/bbs/board.php?tbl=bbs41`
+## 테스트 변경 범위
 
-**추출 필드:**
-- `title`, `link`, `deadline`, `status_text`
-- `raw` — `{mode, num, ca_id, tbl}`
-
-**카테고리:** `IT`, `취업` (제목 키워드 기반 분류)
-- `AI`, `VR`, `개발`, `디지털`, `마케팅`, `데이터` → `IT`
-- `취업`, `면접`, `커리어`, `컨설팅`, `상담` → `취업`
-
-**주의:**
-- base URL은 반드시 `http://youtheroom.kr` (HTTPS 사용 금지, 현재 TLS 오류)
-- 로그인 전용 메뉴 (`AI 자소서/면접`, `취업솔루션`) 접근 시도하지 않는다
-- `/bbs/board.php?tbl=bbs41` 상세 링크 패턴: `mode=VIEW&num=`
-
-## 작업 3 — SeongdongCollector
-
-**소스:** 서울청년센터 성동 `https://youth.seoul.go.kr`
-
-**수집 대상:**
-- 프로그램: `/orang/cntr/program.do?key=2309210001&cntrId=CT00006`
-- 공지: `/orang/cntr/notice.do?key=2309210001&cntrId=CT00006`
-
-**추출 필드:**
-- `title`, `link`, `status_text`, `period_text`, `place_text`
-- `raw` — `{cntrId: "CT00006", pstSn, sprtInfoId}`
-
-**카테고리:** `IT`, `취업`
-- `IT`, `AI`, `개발`, `디지털` → `IT`
-- `취업`, `일경험`, `커리어`, `면접` → `취업`
-
-**주의:**
-- 반드시 `cntrId=CT00006`를 고정 파라미터로 사용 (성동 센터 식별자)
-- 사용자 제공 경로 `index.do?site=sd`는 현재 302 → 404이므로 사용 금지
-- 오랑 플랫폼 공통 구조 — 성동이 아닌 타 센터 데이터 혼입 주의, 제목에 `성동` 포함 여부 또는 cntrId 기반으로 필터링
-
-## 작업 4 — NowonCollector
-
-**소스:** 노원구 청년일자리센터 청년내일 `https://www.nwjob.kr`
-
-**수집 대상:**
-- 취업정보: `/18` 또는 해당 board 경로
-- 메인 프로그램 카드 (보조)
-
-**추출 필드:**
-- `title`, `link`, `deadline`, `status_text`
-- `raw` — `{idx, q_param, board_path}`
-- 링크 패턴: `/?q=...&bmode=view&idx=...&t=board`
-
-**카테고리:** `취업`, `훈련`
-- `취업`, `면접`, `자소서`, `커리어`, `사진촬영` → `취업`
-- `클래스`, `교육`, `과정`, `AI` → `훈련`
-
-**주의:**
-- Imweb 기반 생성 HTML로 class 체인이 길다 — selector를 최대한 좁고 단순하게 잡는다
-- `href=\"/?q=...&bmode=view&idx=...&t=board\"` 패턴을 기본 링크 키로 사용
-
-## 작업 5 — DobongCollector
-
-**소스:** 도봉구청 일자리경제과 `https://www.dobong.go.kr`
-
-**수집 대상:**
-- 공지사항: `bbs.asp?code=10008769`
-- 행사/모집: `bbs.asp?code=10008770`
-- 메인 배너/팝업 중 일자리/취업/교육 관련 링크 (보조)
-
-**추출 필드:**
-- `title`, `link`, `deadline`
-- `raw` — `{code, page_source}`
-
-**카테고리:** `취업`, `훈련`
-
-**키워드 필터 (title 기준):**
-- 포함 시 수집: `취업`, `일자리`, `아카데미`, `자격증`, `교육`, `창업`, `지역경제과`, `훈련`
-- 필터 미통과 항목은 수집하지 않는다 (일반 구정 공지 제외)
-
-**주의:**
-- 구청 전체 게시판 크롤링이 아니라 일자리/취업/교육 키워드 기반 필터 수집 방식
-- 메인 배너 기반 항목은 링크만 저장하고 상세 재진입은 2차로 미룬다
-
-## 작업 6 — MapoCollector
-
-**소스:** 마포구고용복지지원센터 `https://mapoworkfare.or.kr`
-
-**수집 대상:**
-- 메인 페이지 프로그램/공지 섹션 (`GET /` 기반)
-- 메인에서 노출된 상세 URL 직접 저장 (`/program/...`, `/notice/...`)
-
-**추출 필드:**
-- `title`, `link`, `deadline`
-- `raw` — `{page_source: "main"}`
-
-**카테고리:** `취업`, `훈련`
-
-**키워드 필터:**
-- `청년도전`, `취업`, `교육`, `자격증`, `컴퓨터`, `일준비`, `채용` 포함 시 수집
-
-**주의:**
-- `/notice` 직접 GET 호출 시 403 → 메인 페이지 파싱 기반으로만 접근
-- `HEAD` 요청으로 health check 시 405/403 오탐 발생 → health check를 `GET` 기반으로 단순화
-- 생활문화교육과 취업훈련이 혼재 → 키워드 필터 필수, 통과 못 하면 버린다
-
-## 작업 7 — scheduler 등록
-
-**파일:** `backend/rag/collector/scheduler.py`
-
-- 6개 Tier 4 collector를 import 및 등록
-- Tier 1 → Tier 2 → Tier 3 → Tier 4 순서로 실행
-- 개별 Tier 4 collector 실패 시 다음 collector로 진행, 전체 배치 중단 없음
+- `backend/tests/test_tier4_collectors.py` 신설
+- 각 collector마다 최소 1개 이상의 inline HTML fixture 테스트를 작성해 파싱 결과를 검증
+- `backend/tests/test_scheduler_collectors.py`에 Tier 4가 dry-run 결과에 포함되고 Tier 순서가 유지되는지 확인하는 테스트를 추가
+- 외부 네트워크 접속 없이 테스트 가능해야 한다
 
 # Acceptance Criteria
 
-1. 6개 collector 각각이 `run_all_collectors(upsert=False)` 실행 시 포함된 결과가 출력된다.
-2. `DobongStartupCollector`가 공지 또는 프로그램 목록에서 1건 이상 추출한다.
-3. `GuroCollector`가 프로그램 목록에서 1건 이상 추출한다 (HTTP 기준).
-4. `SeongdongCollector`가 `cntrId=CT00006` 기반으로 성동 프로그램 목록에서 1건 이상 추출한다.
-5. `NowonCollector`가 취업정보 또는 메인 카드에서 1건 이상 추출한다.
-6. `DobongCollector`가 키워드 필터를 통과한 항목 1건 이상을 추출한다.
-7. `MapoCollector`가 메인 기반 파싱으로 프로그램/공지 항목 1건 이상을 추출한다.
-8. 모든 Tier 4 수집 결과에 `source_type='district_crawl'`, `tier=4`, `region='서울'`, `region_detail=구명`이 포함된다.
-9. 개별 collector 실패가 전체 배치를 중단시키지 않는다.
-10. 수집 실패 시 기존 DB 데이터는 변경되지 않는다.
-11. GuroCollector HTTPS 시도 시 오류가 발생해도 HTTP fallback 또는 HTTP 고정으로 정상 수집된다.
-12. SeongdongCollector가 `site=sd` 경로 시도 없이 `cntrId=CT00006` 경로를 기준으로만 동작한다.
+1. `backend/rag/collector/tier4_collectors.py`가 새로 추가되고 6개 collector class를 포함한다.
+2. 각 collector는 `BaseHtmlCollector` 기반으로 구현되고 `.collect()` 반환 형식이 기존 normalize 경로와 호환된다.
+3. Tier 4 수집 결과에는 `source_type="district_crawl"`, `collection_method="web_crawl"`, `tier=4`, `region="서울"`, `region_detail=<구명>`이 들어간다.
+4. `scheduler.run_all_collectors(upsert=False)` 경로에서 Tier 4 collector가 Tier 3 뒤에 포함된다.
+5. 개별 Tier 4 collector 예외 또는 빈 결과가 전체 scheduler 실행을 중단시키지 않는다.
+6. `backend/tests/test_tier4_collectors.py`에서 6개 collector의 핵심 파싱 규칙이 검증된다.
+7. `backend/tests/test_scheduler_collectors.py`에서 Tier 4 registration/order가 검증된다.
+8. `GuroCollector` 테스트는 HTTP 기준 URL만 사용하고 HTTPS 의존을 만들지 않는다.
+9. `SeongdongCollector` 테스트는 `cntrId=CT00006` 경로만 전제하고 `site=sd` 의존을 만들지 않는다.
+10. 결과 보고서에는 라이브 검증 여부와 미실행 사유를 명확히 적는다.
 
 # Constraints
 
-- `BaseCollector` 또는 `BaseHtmlCollector` 기존 인터페이스(`.collect()` 반환 형식) 준수
-- `urllib` + `BeautifulSoup` 기반 구조 유지 (브라우저 자동화 사용 금지)
-- Supabase upsert 중복 기준: `on_conflict: "title, source"` — 기존 코드와 동일
-- Render 512MB 메모리 제약 감안, 페이지 단위 배치 처리 유지
-- 환경 변수 추가 불필요 (별도 API 키 없음)
-- 기존 Tier 1, Tier 2, Tier 3 collector 동작에 영향 없음
+- `BaseCollector`, `BaseHtmlCollector`, `normalize()` 기존 인터페이스를 유지한다.
+- 브라우저 자동화는 사용하지 않는다.
+- `urllib` + `BeautifulSoup` 기반 구현 패턴을 유지한다.
+- 기존 Tier 1~3 collector 동작을 깨지 않는 최소 변경을 우선한다.
+- Supabase upsert conflict key는 기존과 같은 `title,source`를 전제로 한다.
+- dirty worktree가 있으므로 현재 task와 무관한 기존 수정은 되돌리지 않는다.
 
 # Non-goals
 
-- 각 소스 상세 본문 전체 정제 (2차 범위)
+- 각 소스의 본문 상세 페이지 전부 정제
 - 첨부파일 다운로드
-- 지도/장소 좌표화
-- 다중 상세 페이지 추가 탐색
-- 프론트엔드 `/programs` 허브 UI 변경
-- `compare_meta` 필드 채우기
-- 수집 자동화 cron/GitHub Actions 설정
-- SeongdongCollector의 타 구 센터(`cntrId` 다른 센터) 수집
+- 지도/좌표 데이터화
+- 글로벌 cross-source dedupe 도입
+- 프론트엔드 `/programs` UI 변경
+- cron/GitHub Actions 배포 설정 변경
 
 # Edge Cases
 
-- `GuroCollector` HTTPS 접근 시 TLS 오류: HTTP fallback으로 재시도 또는 HTTP 기준 고정, 로그에 "HTTPS 비정상, HTTP 전환" 기록
-- `SeongdongCollector`에서 `cntrId=CT00006` 경로가 비어 있는 경우: 파싱 실패 처리, 로그에 "성동 센터 목록 0건 또는 경로 변경 의심" 기록
-- `MapoCollector` GET 메인 요청 자체가 차단된 경우: 재시도 없이 실패 처리, 다음 collector 진행
-- `DobongCollector` 키워드 필터 전체 미통과: 수집 0건으로 기록, 정상으로 간주하지 않고 로그에 필터 결과 기록
-- `NowonCollector` Imweb HTML 구조 변경으로 링크 패턴 미탐지: 빈 배열 반환, 로그에 "selector 오탐 의심" 기록
-- 동일 프로그램을 여러 구 센터가 재게시: `source + title + deadline` 기준으로 구별, 동일 title이라도 source가 다르면 별건으로 취급
-- 3회 연속 수집 0건: HTML 구조 변경 또는 접근 정책 변경으로 간주, 운영 메모에 기록
+- `GuroCollector`: HTTPS가 아니라 HTTP 고정 URL을 사용하고, 테스트도 그 전제를 따른다.
+- `SeongdongCollector`: `cntrId=CT00006` 목록이 0건이면 source 단위 실패 메시지를 남기고 다음 collector로 진행한다.
+- `NowonCollector`: Imweb selector가 바뀌면 링크 패턴 미탐지 시 빈 배열 반환과 상태 메시지 기록을 허용한다.
+- `DobongCollector`: 키워드 필터 미통과 시 0건이 될 수 있으며, 이 경우 필터 결과를 메시지로 남긴다.
+- `MapoCollector`: 메인 HTML만 파싱 대상으로 보고 직접 notice/program endpoint 성공을 가정하지 않는다.
 
-# Open Questions
+# Required Verification
 
-1. `tier4_collectors.py`를 별도 파일로 분리할지, `tier3_collectors.py`와 합칠지 — Tier 3 파일 크기 확인 후 판단
-2. `DobongCollector` 메인 배너 파싱의 실제 안정성 — 구현 중 확인 후 메인 배너 수집 포함 여부 결정
-3. 글로벌 dedupe 도입 시점 — `SeongdongCollector`와 `GuroCollector`의 외부 연계 프로그램 재게시 중복이 실제로 얼마나 발생하는지 1차 수집 결과 보고 결정
-4. `MapoCollector` 메인 기반 파싱만으로 장기 안정적인지 — 2차에서 `/program` 직접 경로 접근 가능 여부 재검증 필요
+- 우선 검증:
+  - `backend\venv\Scripts\python.exe -m pytest backend\tests\test_tier4_collectors.py backend\tests\test_scheduler_collectors.py -q`
+- 보조 검증:
+  - 가능하면 `backend\venv\Scripts\python.exe -c "from backend.rag.collector.scheduler import run_all_collectors; import json; print(json.dumps(run_all_collectors(upsert=False), ensure_ascii=False)[:2000])"`
+- 로컬 환경상 네트워크/패키지 제약 때문에 라이브 확인이 불가능하면 result report에 그 사유를 남기고 fixture 테스트 통과를 주된 검증 근거로 사용한다.
+
+# References
+
+- scheduler baseline: `backend/rag/collector/scheduler.py`
+- Tier 3 baseline: `backend/rag/collector/tier3_collectors.py`
+- Tier 3 result reference: `reports/TASK-2026-04-16-1000-tier3-semi-public-crawl-result.md`
+- previous drift context: `reports/TASK-2026-04-16-1100-tier4-district-crawl-drift.md`
+- previous recovery context: `reports/TASK-2026-04-16-1100-tier4-district-crawl-recovery.md`
 
 # Transport Notes
 
-- Local execution target: `tasks/inbox/TASK-2026-04-16-1100-tier4-district-crawl.md`
-- Remote fallback target: `tasks/remote/TASK-2026-04-16-1100-tier4-district-crawl.md`
-- 실행 전 현재 HEAD가 `469cd3f`인지 확인한다. 다른 commit이면 drift 검토 후 `planned_against_commit`을 실제 HEAD로 교체하고 영향받는 섹션을 재검토한다.
-- 참조 문서: `cowork/drafts/isoser-tier4-local-district-crawling-validated.md` 또는 업로드된 검증 기획안 전문
-- 선행 task: `TASK-2026-04-15-1500-tier2-seoul-crawl` (Tier 2 scheduler 구조 확인 필요), `TASK-2026-04-16-1000-tier3-semi-public-crawl` (Tier 3 등록 이후 Tier 4 연결 권장)
-
-## Auto Recovery Context
-
-- source_task: `tasks/drifted/TASK-2026-04-16-1100-tier4-district-crawl.md`
-- failure_stage: `drift`
-- failure_report: `reports/TASK-2026-04-16-1100-tier4-district-crawl-drift.md`
-- recovery_report: `reports/TASK-2026-04-16-1100-tier4-district-crawl-recovery.md`
-- reviewer_action: update the packet or provide approval/feedback before requeueing
+- Current queue location: `tasks/drifted/TASK-2026-04-16-1100-tier4-district-crawl.md`
+- Once reviewed, the runnable target is `tasks/inbox/TASK-2026-04-16-1100-tier4-district-crawl.md`
+- This packet was replanned against current HEAD `4a8369f350e7a0aa8b3b5e4613dc92050f5ec3f6`.

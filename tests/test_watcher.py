@@ -1165,6 +1165,55 @@ def test_write_alert_does_not_duplicate_auto_remediation_packet_for_same_fingerp
     assert len(queued_packets) == 1
 
 
+def test_write_alert_suppresses_duplicate_slack_when_active_auto_remediation_exists(tmp_path, monkeypatch) -> None:
+    alerts_dir = tmp_path / "dispatch" / "alerts"
+    inbox_dir = tmp_path / "tasks" / "inbox"
+    alerts_dir.mkdir(parents=True)
+    inbox_dir.mkdir(parents=True)
+    ledger_path = tmp_path / "dispatch" / "run-ledger.jsonl"
+    notifications: list[dict[str, object]] = []
+
+    monkeypatch.setattr(watcher, "ALERTS_DIR", str(alerts_dir))
+    monkeypatch.setattr(watcher, "INBOX_DIR", str(inbox_dir))
+    monkeypatch.setattr(watcher, "REMOTE_DIR", str(tmp_path / "tasks" / "remote"))
+    monkeypatch.setattr(watcher, "RUNNING_DIR", str(tmp_path / "tasks" / "running"))
+    monkeypatch.setattr(watcher, "DONE_DIR", str(tmp_path / "tasks" / "done"))
+    monkeypatch.setattr(watcher, "BLOCKED_DIR", str(tmp_path / "tasks" / "blocked"))
+    monkeypatch.setattr(watcher, "DRIFTED_DIR", str(tmp_path / "tasks" / "drifted"))
+    monkeypatch.setattr(watcher, "REVIEW_REQUIRED_DIR", str(tmp_path / "tasks" / "review-required"))
+    monkeypatch.setattr(watcher, "ARCHIVE_DIR", str(tmp_path / "tasks" / "archive"))
+    monkeypatch.setattr(watcher, "LEDGER_PATH", str(ledger_path))
+    monkeypatch.setattr(watcher, "current_head", lambda: "abc123")
+    monkeypatch.setattr(watcher, "notify_slack_for_alert", lambda **kwargs: notifications.append(kwargs))
+
+    summary = "Watcher could not move the task packet into running."
+    next_action = "Clear any editor or sync lock on the task file, then requeue it."
+
+    for task_id in [
+        "TASK-2026-04-17-1200-blocked-test",
+        "TASK-2026-04-17-1201-blocked-test",
+        "TASK-2026-04-17-1202-blocked-test",
+        "TASK-2026-04-17-1203-blocked-test",
+    ]:
+        watcher.write_alert(
+            task_id,
+            "blocked",
+            status="action-required",
+            packet_path=f"tasks/inbox/{task_id}.md",
+            report_path=f"reports/{task_id}-blocked.md",
+            summary=summary,
+            next_action=next_action,
+        )
+
+    assert len(notifications) == 3
+    queued_packets = list(inbox_dir.glob("TASK-*-auto-remediate-blocked-*.md"))
+    assert len(queued_packets) == 1
+    last_alert = (alerts_dir / "TASK-2026-04-17-1203-blocked-test-blocked.md").read_text(encoding="utf-8")
+    assert "repeat_count: `4`" in last_alert
+    assert "slack_notification: `suppressed-duplicate`" in last_alert
+    assert '"slack_notification": "suppressed-duplicate"' in ledger_path.read_text(encoding="utf-8")
+
+
 def test_write_alert_self_heals_main_promotion_skip_into_info_alert(tmp_path, monkeypatch) -> None:
     alerts_dir = tmp_path / "dispatch" / "alerts"
     inbox_dir = tmp_path / "tasks" / "inbox"
