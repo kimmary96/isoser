@@ -16,6 +16,24 @@
 - 후속 메모:
   - 모집완료 아카이브를 별도로 보여줄 필요가 있으면 정렬 옵션과 별개로 상태 필터를 분리하는 것이 더 명확함
 
+## 2026-04-16 Compare 프로그램 선택 모달 추가
+
+- 수정 파일:
+  - `frontend/app/(landing)/compare/page.tsx`
+  - `frontend/app/(landing)/compare/programs-compare-client.tsx`
+  - `frontend/app/(landing)/compare/program-select-modal.tsx`
+  - `frontend/app/api/dashboard/bookmarks/route.ts`
+  - `frontend/lib/api/app.ts`
+- 변경 내용:
+  - compare 페이지에 슬롯별 프로그램 선택 모달을 추가하고, 찜 목록과 전체 검색에서 프로그램을 고를 수 있도록 확장함
+  - compare URL `ids` 파라미터가 내부 빈 슬롯을 보존할 수 있게 정규화 규칙을 조정해 선택한 슬롯 인덱스를 그대로 반영하도록 맞춤
+  - 로그인 사용자의 찜 목록은 Next API route가 backend `/bookmarks`를 프록시하는 경로로 불러오도록 정리함
+- 유지된 동작:
+  - 하단 추천 카드의 직접 추가 흐름과 compare 관련도 계산 흐름은 유지
+  - 비교 데이터의 단일 소스는 계속 URL `ids` 파라미터로 유지
+- 후속 메모:
+  - compare 슬롯 순서를 drag-and-drop 또는 명시적 swap으로 재배치할 필요가 생기면 현재의 positional URL 규칙을 재사용할 수 있음
+
 ## 2026-04-16 watcher stale lock Windows 복구
 
 - 수정 파일:
@@ -1206,3 +1224,15 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - `backend/rag/programs_rag.py`, `backend/routers/programs.py`, `frontend/app/dashboard/page.tsx`, `frontend/app/(landing)/compare/programs-compare-client.tsx`
   - 추천 점수에서 순수 관련도(`relevance_score`)와 마감 임박도(`urgency_score`)를 분리하고, 프로필 쿼리에서 이름/포트폴리오 URL 노이즈를 제거해 시맨틱 검색 품질을 높임
   - 비교 페이지는 별도 `/programs/compare-relevance` 계산 경로를 추가해 관련도 바, 기술 스택 일치도, 매칭 스킬 태그를 로그인 사용자 기준으로 표시하도록 정리함
+- `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/recommended-programs-section.tsx`
+  - 공개 `/programs` 상단에 로그인 사용자 전용 맞춤 추천 섹션을 추가하고, 비로그인 사용자에게는 로그인 유도 배너를 노출하도록 분리함
+  - 추천 fetch 실패 시 섹션만 숨기고 기존 필터, 검색, 페이지네이션, 카드 CTA 흐름은 그대로 유지하도록 구성함
+- 2026-04-16: 프로그램 허브 SEO 작업으로 루트/랜딩/비교/프로그램 상세 metadata를 정리하고, 상세 페이지에 `getProgram(id)` 재사용 기반 JSON-LD `Course` 스키마 출력을 추가함.
+- 2026-04-16: `NEXT_PUBLIC_ADSENSE_CLIENT` 기반 AdSense 스크립트와 공용 `AdSlot` 컴포넌트를 추가하고, 공개 `landing-a` / `programs` / `programs/[id]`에만 최소 수동 슬롯을 삽입해 대시보드 비광고 정책을 유지함.
+- 2026-04-16: `watcher.py`, `tests/test_watcher.py`, `docs/current-state.md`
+  - local watcher가 cowork approval marker의 `slack_message_ts`를 읽어 같은 task의 후속 Slack alert를 기존 작업 스레드에 이어서 보내도록 보강함
+  - `tasks/inbox`에 이미 `running`/`blocked`/`drifted`/`done` 상태가 있는 동일 packet이 다시 들어오면 watcher가 재실행 대신 `tasks/archive/`로 보관하고 건너뛰게 해 `FileExistsError` runtime-error 루프를 막음
+  - 완료 처리 시 `tasks/done/<task>.md`가 이미 존재해도 watcher가 중복 running packet만 archive로 치우고 Git/Slack 후속 처리를 이어가도록 보강했으며, 회귀 테스트를 추가함
+- 2026-04-16: `cowork_watcher.py`, `tests/test_cowork_watcher.py`, `docs/current-state.md`
+  - cowork watcher가 승인된 packet의 목적지(`tasks/inbox|remote`)가 이미 존재하면 중복 승격으로 간주하고 기존 파일을 재사용하도록 바꿔 `FileExistsError` runtime-error 반복을 막음
+  - 이 경우에도 `promoted` dispatch를 남겨 후속 루프가 멈추지 않게 하고, remote approval queue는 `already present in <target>` 메모와 함께 consume 처리하도록 정리함

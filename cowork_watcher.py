@@ -625,6 +625,10 @@ def localize_cowork_dispatch_text(text: str) -> str:
             "packet copied from cowork scratch space into an execution queue",
             "packet을 cowork scratch 공간에서 실행 큐로 복사했습니다.",
         ),
+        (
+            "packet already existed in the execution queue, so watcher treated this approval as already promoted",
+            "packet이 이미 실행 큐에 있어서 watcher가 이번 승인을 이미 승격된 상태로 처리했습니다.",
+        ),
     ]
     for source, target in replacements:
         localized = localized.replace(source, target)
@@ -844,6 +848,21 @@ def review_dispatch_path_for(task_id: str) -> str:
 
 def promoted_dispatch_path_for(task_id: str) -> str:
     return os.path.join(COWORK_DISPATCH_DIR, f"{task_id}-promoted.md")
+
+
+def stamp_commit_placeholder(file_path: str) -> bool:
+    """승격된 packet의 TODO_CURRENT_HEAD를 실제 HEAD SHA로 치환한다."""
+    try:
+        content = read_markdown(file_path)
+        if "TODO_CURRENT_HEAD" not in content:
+            return False
+        head = current_head()
+        if not head:
+            return False
+        write_markdown(file_path, content.replace("TODO_CURRENT_HEAD", head))
+        return True
+    except Exception:
+        return False
 
 
 def reset_stale_promotion_state(task_id: str) -> None:
@@ -1082,8 +1101,17 @@ def handle_approval(packet_path: str) -> None:
     slack_thread_ts = approval_metadata.get("slack_message_ts", "")
     destination_dir = TASKS_REMOTE_DIR if target == "remote" else TASKS_INBOX_DIR
     destination_path = os.path.join(destination_dir, filename)
+    destination_already_exists = os.path.exists(destination_path)
+    if not destination_already_exists:
+        copy_file(packet_path, destination_path)
 
-    copy_file(packet_path, destination_path)
+    stamped = stamp_commit_placeholder(destination_path)
+    stamped_head = current_head() if stamped else ""
+    note = (
+        "packet already existed in the execution queue, so watcher treated this approval as already promoted"
+        if destination_already_exists
+        else "packet copied from cowork scratch space into an execution queue"
+    )
     write_dispatch(
         task_id,
         "promoted",
@@ -1095,15 +1123,19 @@ def handle_approval(packet_path: str) -> None:
             f"packet: `tasks/{target}/{filename}`",
             f"approved_at: `{datetime.now().isoformat(timespec='seconds')}`",
             *([f"- slack_thread_ts: `{slack_thread_ts}`"] if slack_thread_ts else []),
-            "- note: packet copied from cowork scratch space into an execution queue",
+            *([f"- commit_stamped: `{stamped_head}`"] if stamped_head else []),
+            f"- note: {note}",
         ],
     )
-    print(f"승격 완료: {filename} -> tasks/{target} (copy)")
+    if destination_already_exists:
+        print(f"승격 중복 감지: {filename} -> tasks/{target} (already existed)")
+    else:
+        print(f"승격 완료: {filename} -> tasks/{target} (copy)")
     if remote_approval:
         mark_remote_approval_state(
             task_id,
             state="consumed",
-            note=f"promoted to {target}",
+            note=f"promoted to {target}" if not destination_already_exists else f"already present in {target}",
             request_id=request_id or None,
         )
 

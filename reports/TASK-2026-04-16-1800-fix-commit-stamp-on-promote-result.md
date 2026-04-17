@@ -18,12 +18,27 @@
 
 ## 검증
 
-- `cowork_watcher.py` 문법 컴파일 확인
+- `cowork_watcher.py` 소스를 `compile(..., "exec")`로 읽어 문법 확인
 - workspace probe 파일에 `TODO_CURRENT_HEAD`를 넣고 `stamp_commit_placeholder()` 실행
-- probe 결과가 현재 HEAD `961b30d1383a6f4c69e4d608a55fb4268ed49d99`로 치환되는 것 확인
+- probe 결과가 현재 HEAD `1a9bf74d7fcce8932e6146982b571da2ca8ab7b6`로 치환되는 것 확인
 
 ## Run Metadata
 
 - generated_at: `2026-04-16T17:48:03`
 - watcher_exit_code: `0`
 - codex_tokens_used: `53,601`
+- verification_refreshed_at: `2026-04-16T18:00:00+09:00`
+- verification_note: `workspace 정책 때문에 __pycache__ 생성 기반 py_compile은 실패해 source compile로 대체함`
+
+## Git Automation
+
+- status: `main-promotion-skipped`
+- branch: `develop`
+- commit: `1a9bf74d7fcce8932e6146982b571da2ca8ab7b6`
+- note: origin/main is not an ancestor of the task commit, so watcher skipped automatic main promotion.
+
+## Run Metadata
+
+- generated_at: `2026-04-16T17:51:45`
+- watcher_exit_code: `0`
+- codex_tokens_used: `50,447`

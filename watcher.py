@@ -42,10 +42,12 @@ RUNNING_DIR = "./tasks/running"
 DONE_DIR = "./tasks/done"
 BLOCKED_DIR = "./tasks/blocked"
 DRIFTED_DIR = "./tasks/drifted"
+ARCHIVE_DIR = "./tasks/archive"
 REPORTS_DIR = "./reports"
 ALERTS_DIR = "./dispatch/alerts"
 LEDGER_PATH = "./dispatch/run-ledger.jsonl"
 COWORK_PACKETS_DIR = "./cowork/packets"
+COWORK_APPROVALS_DIR = "./cowork/approvals"
 WATCHER_LOCK_PATH = "./.watcher.lock"
 WATCHER_ENV_PATH = "./.watcher.env"
 PROJECT_PATH = r"D:\02_2025_AI_Lab\isoser"
@@ -93,6 +95,7 @@ def ensure_directories() -> None:
             DONE_DIR,
             BLOCKED_DIR,
             DRIFTED_DIR,
+            ARCHIVE_DIR,
             REPORTS_DIR,
             ALERTS_DIR,
         ]
@@ -287,6 +290,7 @@ def write_alert(
     next_action: Optional[str] = None,
 ) -> str:
     alert_path = os.path.join(ALERTS_DIR, f"{task_id}-{stage}.md")
+    slack_thread_ts = slack_thread_ts_for_task(task_id)
     severity = {
         "completed": "info",
         "recovered": "info",
@@ -313,6 +317,8 @@ def write_alert(
         lines.append(f"summary: {summary}")
     if next_action:
         lines.append(f"next_action: {next_action}")
+    if slack_thread_ts:
+        lines.append(f"slack_thread_ts: `{slack_thread_ts}`")
 
     with open(alert_path, "w", encoding="utf-8") as file:
         file.write("\n".join(lines).rstrip() + "\n")
@@ -499,6 +505,7 @@ def build_slack_alert_payload(
     )
     localized_summary = localize_slack_operator_text(summary) or summary
     localized_next_action = localize_slack_operator_text(next_action) or next_action
+    slack_thread_ts = slack_thread_ts_for_task(task_id)
 
     if is_smoke_task(task_id):
         smoke_lines = [
@@ -510,7 +517,7 @@ def build_slack_alert_payload(
             smoke_lines.append(f"*요약*: {localized_summary}")
         if localized_next_action:
             smoke_lines.append(f"*다음*: {localized_next_action}")
-        return {
+        payload: dict[str, object] = {
             "text": text,
             "blocks": [
                 {
@@ -519,6 +526,10 @@ def build_slack_alert_payload(
                 }
             ],
         }
+        if slack_thread_ts:
+            payload["thread_ts"] = slack_thread_ts
+            payload["reply_broadcast"] = False
+        return payload
 
     emoji = {
         "completed": "✅",
@@ -576,7 +587,11 @@ def build_slack_alert_payload(
                 "text": {"type": "mrkdwn", "text": f"*다음 조치*\n{localized_next_action}"},
             }
         )
-    return {"text": text, "blocks": blocks}
+    payload = {"text": text, "blocks": blocks}
+    if slack_thread_ts:
+        payload["thread_ts"] = slack_thread_ts
+        payload["reply_broadcast"] = False
+    return payload
 
 
 def notify_slack_for_alert(
@@ -613,6 +628,22 @@ def notify_slack_for_alert(
             response.read()
     except Exception as error:
         print(f"Slack alert 전송 실패: {type(error).__name__}: {error}")
+
+
+def slack_thread_ts_for_task(task_id: str) -> str:
+    approval_path = os.path.join(COWORK_APPROVALS_DIR, f"{task_id}.ok")
+    if not os.path.exists(approval_path):
+        return ""
+
+    try:
+        text = Path(approval_path).read_text(encoding="utf-8")
+    except OSError:
+        return ""
+
+    match = re.search(r"^\s*slack_message_ts\s*:\s*(.+?)\s*$", text, flags=re.IGNORECASE | re.MULTILINE)
+    if not match:
+        return ""
+    return match.group(1).strip().strip("`")
 
 
 def append_run_metadata(
@@ -1063,6 +1094,16 @@ def start_running_heartbeat(running_path: str) -> tuple[threading.Event, threadi
     return stop_event, heartbeat_thread
 
 
+def archive_duplicate_task(task_path: str, *, existing_stage: str) -> str:
+    filename = os.path.basename(task_path)
+    stem, ext = os.path.splitext(filename)
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    archive_name = f"{stem}-duplicate-from-{existing_stage}-{timestamp}{ext or '.md'}"
+    archive_path = os.path.join(ARCHIVE_DIR, archive_name)
+    move_task_file(task_path, archive_path)
+    return archive_path
+
+
 def build_codex_prompt(task_filename: str, task_id: str, task_type: str) -> str:
     if task_type in DOC_TASK_TYPES:
         return (
@@ -1282,11 +1323,42 @@ def handle_recovery(task_path: str, *, failure_stage: str) -> None:
 def handle_task(task_path: str) -> None:
     filename = os.path.basename(task_path)
     running_path = os.path.join(RUNNING_DIR, filename)
+    task_id = sanitize_task_id(filename.removesuffix(".md"))
+
+    duplicate_destinations = [
+        ("running", running_path),
+        ("blocked", os.path.join(BLOCKED_DIR, filename)),
+        ("drifted", os.path.join(DRIFTED_DIR, filename)),
+        ("done", os.path.join(DONE_DIR, filename)),
+    ]
+    duplicate_stage = next(
+        (stage for stage, destination in duplicate_destinations if os.path.exists(destination)),
+        None,
+    )
+    if duplicate_stage is not None:
+        if os.path.exists(task_path):
+            try:
+                metadata, _ = read_task_metadata(task_path)
+                task_id = sanitize_task_id(metadata.get("id", task_id))
+            except OSError:
+                pass
+        archived_path = archive_duplicate_task(task_path, existing_stage=duplicate_stage)
+        append_run_ledger(
+            task_id,
+            "duplicate-skipped",
+            status="skipped",
+            packet_path=task_path.replace("\\", "/"),
+            details={
+                "existing_stage": duplicate_stage,
+                "archived_path": archived_path.replace("\\", "/"),
+            },
+        )
+        print(f"중복 inbox packet 보관됨: {filename} (현재 상태: {duplicate_stage})")
+        return
 
     try:
         move_task_file(task_path, running_path)
     except (PermissionError, FileExistsError) as error:
-        task_id = sanitize_task_id(filename.removesuffix(".md"))
         if os.path.exists(task_path):
             try:
                 metadata, _ = read_task_metadata(task_path)
@@ -1448,7 +1520,19 @@ def handle_task(task_path: str) -> None:
     if exit_code == 0 and os.path.exists(result_report):
         append_run_metadata(result_report, exit_code=exit_code, token_count=token_count)
         done_path = os.path.join(DONE_DIR, filename)
-        move_task_file(running_path, done_path)
+        try:
+            move_task_file(running_path, done_path)
+        except FileExistsError:
+            archived_path = archive_duplicate_task(running_path, existing_stage="done")
+            append_run_ledger(
+                task_id,
+                "duplicate-completion",
+                status="skipped",
+                packet_path=f"tasks/running/{filename}",
+                report_path=f"reports/{task_id}-result.md",
+                details={"archived_path": archived_path.replace("\\", "/")},
+            )
+            print(f"중복 완료 packet 보관됨: {filename} (done already exists)")
         try:
             git_status, git_message, git_branch, git_commit_sha = sync_completed_task_to_git(
                 task_id=task_id,

@@ -86,7 +86,14 @@ export function LandingBQuizSection({
               </span>
               <span className="text-[var(--muted)]">{progressLabel}</span>
             </div>
-            <div className="h-1 overflow-hidden rounded-full bg-[var(--border)]">
+            <div
+              className="h-1 overflow-hidden rounded-full bg-[var(--border)]"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={3}
+              aria-valuenow={step}
+              aria-label={`퀴즈 진행도: ${progressLabel}`}
+            >
               <div
                 className="h-full rounded-full bg-[linear-gradient(90deg,var(--blue),var(--sky))] transition-all duration-300"
                 style={{ width: progressWidth }}
@@ -201,6 +208,7 @@ export function LandingBQuizSection({
                     value={answers.directInterest}
                     onFocus={onDirectInterestFocus}
                     onChange={(event) => onDirectInterestChange(event.target.value)}
+                    aria-label="관심 분야 직접 입력"
                     placeholder="원하는 분야 직접 입력 (예: 회계, 물류, 의료)"
                     className="w-full border-none bg-transparent text-sm font-semibold text-[var(--ink)] outline-none placeholder:font-normal placeholder:text-[var(--muted)]"
                   />

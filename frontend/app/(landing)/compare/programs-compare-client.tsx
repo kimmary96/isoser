@@ -8,6 +8,8 @@ import { getProgramCompareRelevance } from "@/lib/api/app";
 import type { CompareMeta, CompareStatus, Program } from "@/lib/types";
 import type { ProgramRelevanceItem } from "@/lib/types";
 
+import ProgramSelectModal from "./program-select-modal";
+
 type ProgramsCompareClientProps = {
   initialSlots: Array<Program | null>;
   canonicalIds: string[];
@@ -257,16 +259,31 @@ export default function ProgramsCompareClient({
   const searchParams = useSearchParams();
   const slots = initialSlots.slice(0, 3);
   while (slots.length < 3) slots.push(null);
+  const slotIds = slots.map((program) => (typeof program?.id === "string" ? program.id : null));
   const activeCount = slots.filter(Boolean).length;
-  const canonicalIdsParam = canonicalIds.join(",");
+  const canonicalIdsParam = serializeSlotIds(slotIds);
   const resumeHref = isLoggedIn ? "/dashboard/resume" : "/login";
   const [relevanceItems, setRelevanceItems] = useState<Record<string, ProgramRelevanceItem>>({});
   const [relevanceLoading, setRelevanceLoading] = useState(false);
   const [relevanceError, setRelevanceError] = useState<string | null>(null);
+  const [modalSlotIndex, setModalSlotIndex] = useState<number | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   const activeProgramIds = useMemo(() => canonicalIds, [canonicalIds]);
   const relevanceWinnerIndex = getRelevanceWinnerIndex(slots, relevanceItems);
   const winnerIndex = relevanceWinnerIndex >= 0 ? relevanceWinnerIndex : getWinnerIndex(slots);
+
+  useEffect(() => {
+    if (!notice) return;
+
+    const timeoutId = window.setTimeout(() => {
+      setNotice(null);
+    }, 2500);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [notice]);
 
   useEffect(() => {
     if (!needsNormalization) return;
@@ -320,21 +337,48 @@ export default function ProgramsCompareClient({
     };
   }, [activeProgramIds, isLoggedIn]);
 
-  function replaceIds(nextIds: string[]) {
+  function replaceIds(nextIds: Array<string | null>) {
     const params = new URLSearchParams(searchParams.toString());
-    if (nextIds.length > 0) params.set("ids", nextIds.join(","));
+    const serialized = serializeSlotIds(nextIds);
+    if (serialized) params.set("ids", serialized);
     else params.delete("ids");
     const next = params.toString();
     router.replace(next ? `${pathname}?${next}` : pathname);
   }
 
-  function handleAdd(programId: string) {
-    if (!programId || canonicalIds.includes(programId) || canonicalIds.length >= 3) return;
-    replaceIds([...canonicalIds, programId]);
+  function handleAddToSlot(programId: string, slotIndex: number) {
+    if (!programId || canonicalIds.includes(programId) || slotIndex < 0 || slotIndex > 2) return;
+    const nextSlotIds = slotIds.slice();
+    nextSlotIds[slotIndex] = programId;
+    replaceIds(nextSlotIds);
   }
 
-  function handleRemove(programId: string) {
-    replaceIds(canonicalIds.filter((id) => id !== programId));
+  function handleAdd(programId: string) {
+    if (!programId) return;
+    if (canonicalIds.includes(programId)) {
+      setNotice("이미 비교 중인 프로그램입니다.");
+      return;
+    }
+
+    const emptyIndex = slotIds.findIndex((slotId) => slotId === null);
+    if (emptyIndex < 0) {
+      setNotice("비교 슬롯이 가득 찼습니다.");
+      return;
+    }
+
+    handleAddToSlot(programId, emptyIndex);
+  }
+
+  function handleRemove(slotIndex: number) {
+    if (slotIndex < 0 || slotIndex > 2) return;
+    const nextSlotIds = slotIds.slice();
+    nextSlotIds[slotIndex] = null;
+    replaceIds(nextSlotIds);
+  }
+
+  function openAddModal(slotIndex: number) {
+    if (slotIndex < 0 || slotIndex > 2 || slotIds[slotIndex]) return;
+    setModalSlotIndex(slotIndex);
   }
 
   const sectionHeader = (label: string, className: string, note?: string) => (
@@ -346,6 +390,24 @@ export default function ProgramsCompareClient({
 
   return (
     <main className="min-h-screen bg-slate-100 text-slate-950">
+      {notice ? (
+        <div className="fixed left-1/2 top-6 z-[70] -translate-x-1/2 rounded-full bg-[#0A0F1E] px-4 py-2 text-sm font-medium text-white shadow-lg">
+          {notice}
+        </div>
+      ) : null}
+
+      <ProgramSelectModal
+        open={modalSlotIndex !== null}
+        slotIndex={modalSlotIndex}
+        selectedProgramIds={canonicalIds}
+        isLoggedIn={isLoggedIn}
+        onClose={() => setModalSlotIndex(null)}
+        onSelectProgram={(programId) => {
+          if (modalSlotIndex === null) return;
+          handleAddToSlot(programId, modalSlotIndex);
+        }}
+      />
+
       <div className="border-b border-white/10 bg-[#0A0F1E]">
         <div className="mx-auto max-w-7xl px-6 py-10">
           <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">부트캠프 비교 분석</h1>
@@ -387,14 +449,16 @@ export default function ProgramsCompareClient({
 
               if (!program) {
                 return (
-                  <div
+                  <button
                     key={`slot-empty-${index}`}
-                    className="flex min-h-[180px] flex-col items-center justify-center border-b border-r border-slate-200 bg-slate-100 px-4 py-5 text-center"
+                    type="button"
+                    onClick={() => openAddModal(index)}
+                    className="flex min-h-[180px] flex-col items-center justify-center border-b border-r border-slate-200 bg-slate-100 px-4 py-5 text-center transition hover:bg-slate-50"
                   >
                     <span className="text-3xl text-slate-300">＋</span>
                     <p className="mt-2 text-sm font-semibold text-slate-600">프로그램 추가</p>
-                    <p className="text-xs text-slate-400">아래 목록에서 선택</p>
-                  </div>
+                    <p className="text-xs text-slate-400">찜 목록 또는 검색에서 선택</p>
+                  </button>
                 );
               }
 
@@ -421,7 +485,7 @@ export default function ProgramsCompareClient({
                     </div>
                     <button
                       type="button"
-                      onClick={() => handleRemove(programId)}
+                      onClick={() => handleRemove(index)}
                       className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-slate-200 bg-white text-sm text-slate-400 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-500"
                       aria-label={`${program.title || "프로그램"} 비교에서 제거`}
                     >
@@ -656,8 +720,8 @@ export default function ProgramsCompareClient({
                 ) : (
                   <button
                     type="button"
-                    disabled
-                    className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-400"
+                    onClick={() => openAddModal(index)}
+                    className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-500 transition hover:border-orange-200 hover:text-orange-600"
                   >
                     + 프로그램 추가
                   </button>
@@ -690,7 +754,7 @@ export default function ProgramsCompareClient({
               {suggestions.map((program) => {
                 const tags = normalizeTextList(program.tags).slice(0, 3);
                 const programId = typeof program.id === "string" ? program.id : "";
-                const disabled = !programId || canonicalIds.length >= 3 || canonicalIds.includes(programId);
+                const disabled = !programId || canonicalIds.includes(programId);
 
                 return (
                   <article key={programId || String(program.id)} className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -727,4 +791,22 @@ export default function ProgramsCompareClient({
       </div>
     </main>
   );
+}
+
+function serializeSlotIds(slotIds: Array<string | null>): string {
+  const normalized = slotIds.slice(0, 3);
+  while (normalized.length < 3) normalized.push(null);
+
+  let lastFilledIndex = -1;
+  normalized.forEach((slotId, index) => {
+    if (slotId) {
+      lastFilledIndex = index;
+    }
+  });
+
+  if (lastFilledIndex < 0) return "";
+  return normalized
+    .slice(0, lastFilledIndex + 1)
+    .map((slotId) => slotId ?? "")
+    .join(",");
 }

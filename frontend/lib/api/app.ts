@@ -153,6 +153,20 @@ export async function getProgramCompareRelevance(
   );
 }
 
+export async function getDashboardBookmarks(): Promise<{
+  items: Array<{
+    programId: string | null;
+    createdAt: string | null;
+    program: Program | null;
+  }>;
+}> {
+  return requestAppJson(
+    "/api/dashboard/bookmarks",
+    { method: "GET" },
+    "찜한 프로그램을 불러오지 못했습니다."
+  );
+}
+
 export async function updateDashboardProfileSection(
   patch: Partial<Profile>
 ): Promise<{ profile: Profile }> {

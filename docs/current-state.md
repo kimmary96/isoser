@@ -33,6 +33,10 @@
 - cowork packet이 같은 `task_id`로 다시 review-ready가 되면 예전 approval marker와 promoted dispatch를 정리한 뒤 재승인 흐름을 연다.
 - cowork Slack review-ready 알림은 같은 `task_id` 재발행 시 이전 알림을 대체한다는 표식을 포함하고, review snapshot 문구는 한국어 중심의 번호형 `판정`/`핵심 확인사항` 포맷으로 정규화한다.
 - Slack에서 cowork 승인/거절 버튼을 누르면 기존 review-ready 메시지를 새 top-level 메시지로 늘리지 않고 갱신하며, 이후 `승격 완료`/`승격 보류` 후속 알림은 같은 작업 스레드로 이어진다.
+- local `watcher.py`도 task별 Slack approval marker에 저장된 `slack_message_ts`를 재사용해, 같은 task의 `completed`/`drift`/`blocked`/`push-failed`/`runtime-error` 알림을 가능한 한 기존 Slack 스레드에 이어서 기록한다.
+- `tasks/inbox`에 이미 `running`/`blocked`/`drifted`/`done` 상태가 존재하는 같은 파일명이 다시 들어오면 watcher는 재실행 대신 `tasks/archive/`로 보관하고 중복 inbox packet을 건너뛴다.
+- 실행 중이던 packet이 완료 단계에서 이미 같은 이름의 `tasks/done` 파일과 충돌하면 watcher는 런타임 예외로 죽지 않고 중복 packet만 `tasks/archive/`로 치워 후속 Git/Slack 처리만 계속한다.
+- `cowork_watcher.py`는 이미 `tasks/inbox/` 또는 `tasks/remote/`에 존재하는 packet을 다시 승인받아도 `FileExistsError`로 죽지 않고, 기존 승격본을 재사용한 것으로 기록만 남긴다.
 - review-ready Slack 메시지는 패킷/리뷰 경로와 승인 방법 안내를 숨기고, `판정`과 번호형 `핵심 확인사항` 중심으로 압축해서 보여준다.
 - Slack approval은 로컬 파일 marker 대신 Supabase `cowork_approvals` 공유 큐에 기록되고, 로컬 `cowork_watcher.py`가 이를 poll해서 `tasks/inbox|remote` 승격과 consumed 처리를 수행한다.
 - shared approval queue row는 가능하면 `id` 기준으로 claim 후 consumed/failed/ignored 상태를 갱신해 중복 poll 상황에서도 같은 승인 요청을 다시 소비하지 않도록 보강됐다.

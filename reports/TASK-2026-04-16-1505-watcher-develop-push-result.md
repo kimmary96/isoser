@@ -51,3 +51,10 @@
 - generated_at: `2026-04-16T18:02:52`
 - watcher_exit_code: `0`
 - codex_tokens_used: `55,616`
+
+## Git Automation
+
+- status: `main-promotion-skipped`
+- branch: `develop`
+- commit: `d14fc20a4ee388b408c7ade95b3d5c83c27e4c22`
+- note: origin/main is not an ancestor of the task commit, so watcher skipped automatic main promotion.

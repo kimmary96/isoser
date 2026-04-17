@@ -180,6 +180,54 @@ def test_handle_approval_consumes_remote_shared_request(tmp_path: Path, monkeypa
     ]
 
 
+def test_handle_approval_treats_existing_destination_as_already_promoted(tmp_path: Path, monkeypatch) -> None:
+    packets_dir = tmp_path / "packets"
+    reviews_dir = tmp_path / "reviews"
+    dispatch_dir = tmp_path / "dispatch"
+    approvals_dir = tmp_path / "approvals"
+    inbox_dir = tmp_path / "inbox"
+    remote_dir = tmp_path / "remote"
+
+    for directory in [packets_dir, reviews_dir, dispatch_dir, approvals_dir, inbox_dir, remote_dir]:
+        directory.mkdir(parents=True, exist_ok=True)
+
+    packet = packets_dir / "TASK-TEST-ALREADY-PROMOTED.md"
+    packet.write_text(
+        "\n".join(
+            [
+                "---",
+                "id: TASK-TEST-ALREADY-PROMOTED",
+                "status: queued",
+                "type: feature",
+                "title: Existing destination handling",
+                "planned_at: 2026-04-15T00:00:00+09:00",
+                "planned_against_commit: abc123",
+                "---",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (reviews_dir / "TASK-TEST-ALREADY-PROMOTED-review.md").write_text("# ready review\n", encoding="utf-8")
+    (approvals_dir / "TASK-TEST-ALREADY-PROMOTED.ok").write_text("target: inbox\n", encoding="utf-8")
+    existing_destination = inbox_dir / "TASK-TEST-ALREADY-PROMOTED.md"
+    existing_destination.write_text("already there\n", encoding="utf-8")
+
+    monkeypatch.setattr(cowork_watcher, "COWORK_PACKETS_DIR", str(packets_dir))
+    monkeypatch.setattr(cowork_watcher, "COWORK_REVIEWS_DIR", str(reviews_dir))
+    monkeypatch.setattr(cowork_watcher, "COWORK_DISPATCH_DIR", str(dispatch_dir))
+    monkeypatch.setattr(cowork_watcher, "COWORK_APPROVALS_DIR", str(approvals_dir))
+    monkeypatch.setattr(cowork_watcher, "TASKS_INBOX_DIR", str(inbox_dir))
+    monkeypatch.setattr(cowork_watcher, "TASKS_REMOTE_DIR", str(remote_dir))
+
+    cowork_watcher.handle_approval(str(packet))
+
+    dispatch_path = dispatch_dir / "TASK-TEST-ALREADY-PROMOTED-promoted.md"
+    assert dispatch_path.exists()
+    body = dispatch_path.read_text(encoding="utf-8")
+    assert "already promoted" in body
+    assert existing_destination.read_text(encoding="utf-8") == "already there\n"
+
+
 def test_stale_review_blocks_promotion(tmp_path: Path, monkeypatch) -> None:
     packets_dir = tmp_path / "packets"
     reviews_dir = tmp_path / "reviews"

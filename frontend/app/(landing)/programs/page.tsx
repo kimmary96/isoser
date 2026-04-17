@@ -1,9 +1,31 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { LandingANavBar, LandingATickerBar } from "@/app/(landing)/landing-a/_components";
+import AdSlot from "@/components/AdSlot";
 import { getProgramCount, listPrograms } from "@/lib/api/backend";
 import { PROGRAM_CATEGORIES } from "@/lib/program-categories";
+import { getSiteUrl } from "@/lib/seo";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Program, ProgramSort } from "@/lib/types";
+
+import RecommendedProgramsSection from "./recommended-programs-section";
+
+export const metadata: Metadata = {
+  title: "국비 교육·취업 지원 프로그램 목록 | 이소서",
+  description:
+    "카테고리, 지역, 모집중 여부와 마감 임박순 정렬로 국비 교육·취업 지원 프로그램을 빠르게 찾을 수 있는 이소서 프로그램 허브.",
+  alternates: {
+    canonical: "/programs",
+  },
+  openGraph: {
+    title: "국비 교육·취업 지원 프로그램 목록 | 이소서",
+    description:
+      "카테고리, 지역, 모집중 여부와 마감 임박순 정렬로 국비 교육·취업 지원 프로그램을 빠르게 찾을 수 있는 이소서 프로그램 허브.",
+    type: "website",
+    url: getSiteUrl("/programs"),
+  },
+};
 
 const PAGE_SIZE = 20;
 const SORT_OPTIONS: { value: ProgramSort; label: string }[] = [
@@ -222,6 +244,17 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
   let programs: Program[] = [];
   let totalCount = 0;
   let error: string | null = null;
+  let isLoggedIn = false;
+
+  try {
+    const supabase = await createServerSupabaseClient();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    isLoggedIn = Boolean(session);
+  } catch {
+    isLoggedIn = false;
+  }
 
   try {
     [programs, totalCount] = await Promise.all([
@@ -284,6 +317,8 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
               </div>
             </div>
           </section>
+
+          <RecommendedProgramsSection isLoggedIn={isLoggedIn} />
 
           <section className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
             <aside className="lg:sticky lg:top-20 lg:self-start">
@@ -398,206 +433,220 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
 
             <section className="min-w-0">
               <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-              <div className="flex flex-col gap-4 border-b border-slate-100 pb-5 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">
-                    {error ? "프로그램을 불러오지 못했습니다" : `결과 ${totalCount}개`}
-                  </p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    {selectedCategory === "전체" ? "전체 카테고리" : selectedCategory}
-                    {selectedRegions.length ? ` · ${selectedRegions.join(", ")}` : ""}
-                    {recruitingOnly ? " · 모집중만" : ""}
-                  </p>
-                </div>
-                <p className="text-sm text-slate-500">
-                  페이지 {safePage} / {totalPages}
-                </p>
-              </div>
-
-              {activeFilters.length > 0 ? (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {activeFilters.map((chip) => (
-                    <Link
-                      key={`${chip.label}-${chip.href}`}
-                      href={chip.href}
-                      className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
-                    >
-                      {chip.label} ×
-                    </Link>
-                  ))}
-                </div>
-              ) : null}
-
-              {error ? (
-                <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 px-6 py-12 text-center text-sm text-rose-700">
-                  {error}
-                </div>
-              ) : programs.length === 0 ? (
-                <div className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-16 text-center">
-                  <p className="text-base font-semibold text-slate-900">
-                    {hasAnyFilter ? "조건에 맞는 프로그램이 없습니다" : "현재 등록된 프로그램이 없습니다"}
-                  </p>
-                  <p className="mt-2 text-sm text-slate-500">
-                    {hasAnyFilter
-                      ? "검색어와 필터를 조정해 다른 프로그램을 찾아보세요."
-                      : "동기화 이후 프로그램이 등록되면 이곳에 표시됩니다."}
-                  </p>
-                  {hasAnyFilter ? (
-                    <div className="mt-5">
-                      <Link
-                        href="/programs"
-                        className="inline-flex rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
-                      >
-                        필터 초기화
-                      </Link>
-                    </div>
-                  ) : null}
-                </div>
-              ) : (
-                <>
-                  <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-                    {programs.map((program) => {
-                      const tags = normalizeTextList(program.tags);
-                      const skills = normalizeTextList(program.skills);
-                      const chips = [...tags, ...skills].slice(0, 4);
-                      const deadlineBadge = getDeadlineBadge(program);
-                      const externalLink = program.application_url || program.link || program.source_url;
-
-                      return (
-                        <article
-                          key={program.id}
-                          className="flex h-full flex-col rounded-3xl border border-slate-200 bg-slate-50 p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="min-w-0">
-                              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                                {program.source || "출처 미상"}
-                              </p>
-                              <h2 className="mt-2 line-clamp-2 text-xl font-semibold tracking-tight text-slate-950">
-                                {program.title || "제목 미정"}
-                              </h2>
-                            </div>
-                            {deadlineBadge ? (
-                              <span
-                                className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${deadlineBadge.tone}`}
-                              >
-                                {deadlineBadge.label}
-                              </span>
-                            ) : null}
-                          </div>
-
-                          <div className="mt-4 flex flex-wrap gap-2 text-sm text-slate-600">
-                            <span className="rounded-full bg-white px-3 py-1">{program.category || "미분류"}</span>
-                            <span className="rounded-full bg-white px-3 py-1">{program.provider || "기관 정보 없음"}</span>
-                            <span className="rounded-full bg-white px-3 py-1">{program.location || "지역 정보 없음"}</span>
-                          </div>
-
-                          <p className="mt-4 text-sm font-medium text-slate-700">
-                            일정 {formatDateLabel(program.start_date)} - {formatDateLabel(program.end_date)}
-                          </p>
-
-                          <p className="mt-4 line-clamp-4 text-sm leading-6 text-slate-600">
-                            {program.summary || program.description || "프로그램 소개가 아직 등록되지 않았습니다."}
-                          </p>
-
-                          <div className="mt-5 flex flex-wrap gap-2">
-                            {chips.length > 0 ? (
-                              chips.map((chip) => (
-                                <span
-                                  key={`${program.id}-${chip}`}
-                                  className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600"
-                                >
-                                  #{chip}
-                                </span>
-                              ))
-                            ) : (
-                              <span className="text-xs text-slate-400">태그 정보 없음</span>
-                            )}
-                          </div>
-
-                          <div className="mt-6 flex flex-wrap gap-2">
-                            <Link
-                              href={`/programs/${program.id}`}
-                              className="inline-flex rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
-                            >
-                              상세 보기
-                            </Link>
-                            {externalLink ? (
-                              <a
-                                href={externalLink}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="inline-flex rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
-                              >
-                                지원 링크
-                              </a>
-                            ) : null}
-                          </div>
-                        </article>
-                      );
-                    })}
+                <AdSlot
+                  slotId="programs-results-top-banner"
+                  className="mb-6 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3"
+                />
+                <div className="flex flex-col gap-4 border-b border-slate-100 pb-5 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">
+                      {error ? "프로그램을 불러오지 못했습니다" : `결과 ${totalCount}개`}
+                    </p>
+                    <p className="mt-1 text-sm text-slate-500">
+                      {selectedCategory === "전체" ? "전체 카테고리" : selectedCategory}
+                      {selectedRegions.length ? ` · ${selectedRegions.join(", ")}` : ""}
+                      {recruitingOnly ? " · 모집중만" : ""}
+                    </p>
                   </div>
+                  <p className="text-sm text-slate-500">
+                    페이지 {safePage} / {totalPages}
+                  </p>
+                </div>
 
-                  {totalPages > 1 ? (
-                    <nav className="mt-8 flex flex-wrap items-center justify-center gap-2" aria-label="페이지네이션">
+                {activeFilters.length > 0 ? (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {activeFilters.map((chip) => (
                       <Link
-                        href={buildProgramsHref({
-                          q,
-                          category: selectedCategory,
-                          regions: selectedRegions,
-                          recruiting: recruitingOnly,
-                          sort,
-                          page: Math.max(1, safePage - 1),
-                        })}
-                        className={`rounded-xl border px-3 py-2 text-sm font-medium transition ${
-                          safePage === 1
-                            ? "pointer-events-none border-slate-200 text-slate-300"
-                            : "border-slate-300 text-slate-700 hover:bg-slate-100"
-                        }`}
+                        key={`${chip.label}-${chip.href}`}
+                        href={chip.href}
+                        className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
                       >
-                        이전
+                        {chip.label} ×
                       </Link>
-                      {visiblePages.map((pageNumber) => (
+                    ))}
+                  </div>
+                ) : null}
+
+                {error ? (
+                  <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 px-6 py-12 text-center text-sm text-rose-700">
+                    {error}
+                  </div>
+                ) : programs.length === 0 ? (
+                  <div className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-16 text-center">
+                    <p className="text-base font-semibold text-slate-900">
+                      {hasAnyFilter ? "조건에 맞는 프로그램이 없습니다" : "현재 등록된 프로그램이 없습니다"}
+                    </p>
+                    <p className="mt-2 text-sm text-slate-500">
+                      {hasAnyFilter
+                        ? "검색어와 필터를 조정해 다른 프로그램을 찾아보세요."
+                        : "동기화 이후 프로그램이 등록되면 이곳에 표시됩니다."}
+                    </p>
+                    {hasAnyFilter ? (
+                      <div className="mt-5">
                         <Link
-                          key={pageNumber}
+                          href="/programs"
+                          className="inline-flex rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+                        >
+                          필터 초기화
+                        </Link>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : (
+                  <>
+                    <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+                      {programs.map((program) => {
+                        const tags = normalizeTextList(program.tags);
+                        const skills = normalizeTextList(program.skills);
+                        const chips = [...tags, ...skills].slice(0, 4);
+                        const deadlineBadge = getDeadlineBadge(program);
+                        const externalLink = program.application_url || program.link || program.source_url;
+                        const compareHref =
+                          typeof program.id === "string" || typeof program.id === "number"
+                            ? `/compare?ids=${encodeURIComponent(String(program.id))}`
+                            : "/compare";
+
+                        return (
+                          <article
+                            key={program.id}
+                            className="flex h-full flex-col rounded-3xl border border-slate-200 bg-slate-50 p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0">
+                                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                                  {program.source || "출처 미상"}
+                                </p>
+                                <h2 className="mt-2 line-clamp-2 text-xl font-semibold tracking-tight text-slate-950">
+                                  {program.title || "제목 미정"}
+                                </h2>
+                              </div>
+                              {deadlineBadge ? (
+                                <span
+                                  className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${deadlineBadge.tone}`}
+                                >
+                                  {deadlineBadge.label}
+                                </span>
+                              ) : null}
+                            </div>
+
+                            <div className="mt-4 flex flex-wrap gap-2 text-sm text-slate-600">
+                              <span className="rounded-full bg-white px-3 py-1">{program.category || "미분류"}</span>
+                              <span className="rounded-full bg-white px-3 py-1">{program.provider || "기관 정보 없음"}</span>
+                              <span className="rounded-full bg-white px-3 py-1">{program.location || "지역 정보 없음"}</span>
+                            </div>
+
+                            <p className="mt-4 text-sm font-medium text-slate-700">
+                              일정 {formatDateLabel(program.start_date)} - {formatDateLabel(program.end_date)}
+                            </p>
+
+                            <p className="mt-4 line-clamp-4 text-sm leading-6 text-slate-600">
+                              {program.summary || program.description || "프로그램 소개가 아직 등록되지 않았습니다."}
+                            </p>
+
+                            <div className="mt-5 flex flex-wrap gap-2">
+                              {chips.length > 0 ? (
+                                chips.map((chip) => (
+                                  <span
+                                    key={`${program.id}-${chip}`}
+                                    className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600"
+                                  >
+                                    #{chip}
+                                  </span>
+                                ))
+                              ) : (
+                                <span className="text-xs text-slate-400">태그 정보 없음</span>
+                              )}
+                            </div>
+
+                            <div className="mt-6 flex flex-wrap gap-2">
+                              <Link
+                                href={`/programs/${program.id}`}
+                                className="inline-flex rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
+                              >
+                                상세 보기
+                              </Link>
+                              <Link
+                                href={compareHref}
+                                className="inline-flex rounded-xl border border-orange-200 bg-orange-50 px-4 py-2.5 text-sm font-medium text-orange-700 transition hover:bg-orange-100"
+                              >
+                                비교에 추가
+                              </Link>
+                              {externalLink ? (
+                                <a
+                                  href={externalLink}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="inline-flex rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+                                >
+                                  지원 링크
+                                </a>
+                              ) : null}
+                            </div>
+                          </article>
+                        );
+                      })}
+                    </div>
+
+                    {totalPages > 1 ? (
+                      <nav className="mt-8 flex flex-wrap items-center justify-center gap-2" aria-label="페이지네이션">
+                        <Link
                           href={buildProgramsHref({
                             q,
                             category: selectedCategory,
                             regions: selectedRegions,
                             recruiting: recruitingOnly,
                             sort,
-                            page: pageNumber,
+                            page: Math.max(1, safePage - 1),
                           })}
-                          className={`rounded-xl px-3 py-2 text-sm font-medium transition ${
-                            pageNumber === safePage
-                              ? "bg-slate-950 text-white"
-                              : "border border-slate-300 text-slate-700 hover:bg-slate-100"
+                          className={`rounded-xl border px-3 py-2 text-sm font-medium transition ${
+                            safePage === 1
+                              ? "pointer-events-none border-slate-200 text-slate-300"
+                              : "border-slate-300 text-slate-700 hover:bg-slate-100"
                           }`}
                         >
-                          {pageNumber}
+                          이전
                         </Link>
-                      ))}
-                      <Link
-                        href={buildProgramsHref({
-                          q,
-                          category: selectedCategory,
-                          regions: selectedRegions,
-                          recruiting: recruitingOnly,
-                          sort,
-                          page: Math.min(totalPages, safePage + 1),
-                        })}
-                        className={`rounded-xl border px-3 py-2 text-sm font-medium transition ${
-                          safePage === totalPages
-                            ? "pointer-events-none border-slate-200 text-slate-300"
-                            : "border-slate-300 text-slate-700 hover:bg-slate-100"
-                        }`}
-                      >
-                        다음
-                      </Link>
-                    </nav>
-                  ) : null}
-                </>
-              )}
+                        {visiblePages.map((pageNumber) => (
+                          <Link
+                            key={pageNumber}
+                            href={buildProgramsHref({
+                              q,
+                              category: selectedCategory,
+                              regions: selectedRegions,
+                              recruiting: recruitingOnly,
+                              sort,
+                              page: pageNumber,
+                            })}
+                            className={`rounded-xl px-3 py-2 text-sm font-medium transition ${
+                              pageNumber === safePage
+                                ? "bg-slate-950 text-white"
+                                : "border border-slate-300 text-slate-700 hover:bg-slate-100"
+                            }`}
+                          >
+                            {pageNumber}
+                          </Link>
+                        ))}
+                        <Link
+                          href={buildProgramsHref({
+                            q,
+                            category: selectedCategory,
+                            regions: selectedRegions,
+                            recruiting: recruitingOnly,
+                            sort,
+                            page: Math.min(totalPages, safePage + 1),
+                          })}
+                          className={`rounded-xl border px-3 py-2 text-sm font-medium transition ${
+                            safePage === totalPages
+                              ? "pointer-events-none border-slate-200 text-slate-300"
+                              : "border-slate-300 text-slate-700 hover:bg-slate-100"
+                          }`}
+                        >
+                          다음
+                        </Link>
+                      </nav>
+                    ) : null}
+                  </>
+                )}
               </div>
             </section>
           </section>

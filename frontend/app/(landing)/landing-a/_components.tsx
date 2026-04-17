@@ -5,13 +5,12 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 
 import { getDashboardMe } from "@/lib/api/app";
+import type { Program } from "@/lib/types";
 
 import {
   chipOptions,
   compareCards,
   flowSteps,
-  heroCards,
-  programCards,
   tickerLoop,
   toneClassMap,
 } from "./_content";
@@ -24,6 +23,60 @@ type HeaderUser = {
 function getHeaderInitial(name: string | null | undefined) {
   const initial = name?.trim()?.slice(0, 1);
   return initial ? initial.toUpperCase() : "U";
+}
+
+function normalizeTextList(value: string[] | string | null | undefined): string[] {
+  if (Array.isArray(value)) {
+    return value.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+  }
+
+  if (typeof value === "string" && value.trim()) {
+    return value
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
+function formatDateLabel(value: string | null | undefined): string {
+  if (!value) return "일정 추후 공지";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString("ko-KR", { month: "long", day: "numeric" });
+}
+
+function getProgramDeadline(program: Program): string {
+  if (typeof program.days_left === "number") {
+    if (program.days_left < 0) return "마감";
+    if (program.days_left === 0) return "D-Day";
+    return `D-${program.days_left}`;
+  }
+
+  if (program.deadline) {
+    return formatDateLabel(program.deadline);
+  }
+
+  return "일정 추후 공지";
+}
+
+function getProgramDeadlineTone(program: Program): string {
+  if (typeof program.days_left !== "number") return "text-[var(--green)]";
+  if (program.days_left <= 3) return "text-[var(--red)]";
+  if (program.days_left <= 7) return "text-[var(--fire)]";
+  if (program.days_left <= 14) return "text-[var(--amber)]";
+  return "text-[var(--green)]";
+}
+
+function getProgramDetailHref(program: Program): string {
+  return typeof program.id === "string" || typeof program.id === "number" ? `/programs/${program.id}` : "/programs";
+}
+
+function getProgramCompareHref(program: Program): string {
+  return typeof program.id === "string" || typeof program.id === "number"
+    ? `/compare?ids=${encodeURIComponent(String(program.id))}`
+    : "/compare";
 }
 
 export function LandingATickerBar() {
@@ -140,14 +193,19 @@ export function LandingANavBar() {
   );
 }
 
-export function LandingAHeroSection() {
+type LandingAHeroSectionProps = {
+  featuredPrograms: Program[];
+  totalCount: number;
+};
+
+export function LandingAHeroSection({ featuredPrograms, totalCount }: LandingAHeroSectionProps) {
   return (
     <section className="relative overflow-hidden bg-[var(--ink)] px-5 pb-14 pt-16 text-center sm:px-8 sm:pb-16 sm:pt-20 lg:px-12">
       <div className="hero-glow absolute inset-0" />
       <div className="relative z-10 mx-auto max-w-6xl">
         <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(249,115,22,0.45)] bg-[rgba(249,115,22,0.08)] px-4 py-2 text-xs font-bold text-[#FB923C]">
           <span className="h-2 w-2 animate-pulse rounded-full bg-[#FB923C]" />
-          지금 23개 프로그램 마감 임박
+          지금 {totalCount}개 프로그램 확인 가능
         </div>
 
         <h1 className="mx-auto mt-6 max-w-4xl text-4xl font-extrabold leading-tight tracking-[-0.06em] text-white sm:text-5xl lg:text-6xl">
@@ -165,32 +223,33 @@ export function LandingAHeroSection() {
         </p>
 
         <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {heroCards.map((card) => (
+          {featuredPrograms.map((program) => (
             <div
-              key={card.title}
+              key={`${program.id}-${program.title}`}
               className={`rounded-2xl border bg-white/5 px-5 py-5 text-left backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-[rgba(249,115,22,0.45)] hover:bg-[rgba(249,115,22,0.08)] ${
-                card.urgent ? "border-[rgba(239,68,68,0.45)] bg-[rgba(239,68,68,0.08)]" : "border-white/10"
+                typeof program.days_left === "number" && program.days_left <= 3
+                  ? "border-[rgba(239,68,68,0.45)] bg-[rgba(239,68,68,0.08)]"
+                  : "border-white/10"
               }`}
             >
               <div
-                className={`text-3xl font-extrabold tracking-[-0.04em] ${
-                  card.tone === "red"
-                    ? "text-[#F87171]"
-                    : card.tone === "orange"
-                      ? "text-[#FB923C]"
-                      : "text-[#FCD34D]"
-                }`}
+                className={`text-3xl font-extrabold tracking-[-0.04em] ${getProgramDeadlineTone(program)}`}
               >
-                {card.deadline}
+                {getProgramDeadline(program)}
               </div>
-              <div className="mt-3 text-sm font-bold leading-6 text-white">{card.title}</div>
-              <div className="mt-2 text-xs text-[var(--muted)]">{card.source}</div>
+              <div className="mt-3 text-sm font-bold leading-6 text-white">{program.title || "제목 미정"}</div>
+              <div className="mt-2 text-xs text-[var(--muted)]">
+                {[program.source, program.location].filter(Boolean).join(" · ") || "프로그램 정보 확인"}
+              </div>
             </div>
           ))}
 
-          <div className="flex min-h-28 items-center justify-center rounded-2xl border border-dashed border-white/20 bg-white/5 px-5 py-5 text-sm font-medium text-[var(--muted)]">
-            + 20개 더 보기
-          </div>
+          <Link
+            href="/programs?sort=deadline"
+            className="flex min-h-28 items-center justify-center rounded-2xl border border-dashed border-white/20 bg-white/5 px-5 py-5 text-sm font-medium text-[var(--muted)] transition hover:border-white/35 hover:text-white"
+          >
+            + 마감 임박 더 보기
+          </Link>
         </div>
 
         <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
@@ -215,22 +274,33 @@ export function LandingAHeroSection() {
 type FilterBarProps = {
   activeChip: string;
   keyword: string;
-  onActiveChipChange: (value: string) => void;
-  onKeywordChange: (value: string) => void;
 };
 
-export function LandingAFilterBar({ activeChip, keyword, onActiveChipChange, onKeywordChange }: FilterBarProps) {
+export function LandingAFilterBar({ activeChip, keyword }: FilterBarProps) {
   return (
     <section className="sticky top-[100px] z-[160] border-b border-[var(--border)] bg-white/[0.95] px-5 py-4 shadow-[0_2px_12px_rgba(15,23,42,0.06)] backdrop-blur sm:px-8 lg:px-12">
-      <div className="mx-auto flex max-w-6xl flex-col gap-3 lg:flex-row lg:items-center">
+      <form method="GET" action="/landing-a" className="mx-auto flex max-w-6xl flex-col gap-3 lg:flex-row lg:items-center">
         <div className="flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 lg:w-[320px]">
-          <span className="text-sm text-[var(--muted)]">검색</span>
+          <label htmlFor="landing-a-keyword" className="text-sm text-[var(--muted)]">
+            검색
+          </label>
           <input
-            value={keyword}
-            onChange={(event) => onKeywordChange(event.target.value)}
+            id="landing-a-keyword"
+            name="q"
+            type="search"
+            defaultValue={keyword}
+            aria-label="프로그램 검색"
             placeholder="과정명, 기관명, 기술 검색"
             className="w-full border-none bg-transparent text-sm font-medium text-[var(--ink)] outline-none placeholder:text-[var(--muted)]"
           />
+          <button
+            type="submit"
+            name="chip"
+            value={activeChip}
+            className="shrink-0 text-xs font-semibold text-[var(--blue)] transition hover:text-[var(--blue-lo)]"
+          >
+            적용
+          </button>
         </div>
         <div className="hidden h-6 w-px bg-[var(--border)] lg:block" />
         <div className="-mx-1 overflow-x-auto px-1 no-scrollbar">
@@ -242,8 +312,9 @@ export function LandingAFilterBar({ activeChip, keyword, onActiveChipChange, onK
               return (
                 <button
                   key={chip}
-                  type="button"
-                  onClick={() => onActiveChipChange(chip)}
+                  type="submit"
+                  name="chip"
+                  value={chip}
                   className={`rounded-full border px-4 py-2 text-xs font-semibold transition ${
                     active
                       ? urgencyChip
@@ -260,12 +331,26 @@ export function LandingAFilterBar({ activeChip, keyword, onActiveChipChange, onK
             })}
           </div>
         </div>
-      </div>
+      </form>
     </section>
   );
 }
 
-export function LandingAProgramsSection() {
+type LandingAProgramsSectionProps = {
+  programs: Program[];
+  totalCount: number;
+  activeChip: string;
+  keyword: string;
+  error: string | null;
+};
+
+export function LandingAProgramsSection({
+  programs,
+  totalCount,
+  activeChip,
+  keyword,
+  error,
+}: LandingAProgramsSectionProps) {
   return (
     <section className="px-5 py-12 sm:px-8 lg:px-12">
       <div className="mx-auto max-w-6xl">
@@ -284,91 +369,116 @@ export function LandingAProgramsSection() {
           </Link>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {programCards.map((card) => (
-            <article
-              key={`${card.title}-${card.source}`}
-              className={`relative rounded-2xl border bg-white p-6 transition hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(15,23,42,0.1)] ${
-                card.borderTone === "urgent"
-                  ? "border-[rgba(239,68,68,0.35)]"
-                  : card.borderTone === "warm"
-                    ? "border-[rgba(249,115,22,0.28)]"
-                    : card.borderTone === "ad"
-                      ? "border-[rgba(37,99,235,0.3)] bg-[#FAFCFF]"
-                      : "border-[rgba(34,197,94,0.28)]"
-              }`}
-            >
-              {card.ad ? (
-                <span className="absolute right-4 top-4 rounded border border-[rgba(37,99,235,0.3)] px-2 py-1 text-[10px] font-bold text-[var(--blue)]">
-                  광고
-                </span>
-              ) : null}
+        {error ? (
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-6 py-10 text-sm text-rose-700">
+            {error}
+          </div>
+        ) : programs.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-[var(--border)] bg-white px-6 py-10 text-center">
+            <p className="text-base font-semibold text-[var(--ink)]">조건에 맞는 프로그램이 없습니다.</p>
+            <p className="mt-2 text-sm text-[var(--sub)]">
+              {keyword ? `"${keyword}" 검색어와 ` : ""}{activeChip !== "전체" ? `${activeChip} 필터를 ` : ""}조정해보세요.
+            </p>
+          </div>
+        ) : (
+          <>
+            <p className="mb-4 text-sm text-[var(--sub)]">
+              현재 조건에 맞는 프로그램 {totalCount}개 중 상위 {programs.length}개를 보여드립니다.
+            </p>
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {programs.map((program) => {
+                const chips = [...normalizeTextList(program.tags), ...normalizeTextList(program.skills)].slice(0, 4);
+                const externalLink = program.application_url || program.link || program.source_url;
+                const rawScore = program.relevance_score ?? program.final_score ?? program._score ?? 0;
+                const score = rawScore > 1 ? Math.round(rawScore) : Math.round(rawScore * 100);
 
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-xs text-[var(--muted)]">{card.source}</span>
-                <span
-                  className={`text-lg font-extrabold tracking-[-0.04em] ${
-                    card.deadlineTone === "red"
-                      ? "text-[var(--red)]"
-                      : card.deadlineTone === "orange"
-                        ? "text-[var(--fire)]"
-                        : card.deadlineTone === "amber"
-                          ? "text-[var(--amber)]"
-                          : "text-[var(--green)]"
-                  }`}
-                >
-                  {card.deadline}
-                </span>
-              </div>
-
-              <h3 className="mt-4 text-lg font-bold leading-7 tracking-[-0.02em] text-[var(--ink)]">{card.title}</h3>
-
-              <div className="mt-4 flex flex-wrap gap-2">
-                <span className="rounded-md border border-[#BFDBFE] bg-[#EFF6FF] px-3 py-1 text-xs font-semibold text-[var(--blue)]">
-                  {card.category}
-                </span>
-                {card.subsidy ? (
-                  <span className="rounded-md border border-[#BBF7D0] bg-[#F0FDF4] px-3 py-1 text-xs font-semibold text-[var(--green)]">
-                    {card.subsidy}
-                  </span>
-                ) : null}
-                {card.tags.map((tag) => (
-                  <span
-                    key={`${card.title}-${tag}`}
-                    className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs font-medium text-[var(--sub)]"
+                return (
+                  <article
+                    key={`${program.id}-${program.title}`}
+                    className={`relative rounded-2xl border bg-white p-6 transition hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(15,23,42,0.1)] ${
+                      typeof program.days_left === "number" && program.days_left <= 3
+                        ? "border-[rgba(239,68,68,0.35)]"
+                        : "border-[rgba(34,197,94,0.28)]"
+                    }`}
                   >
-                    {tag}
-                  </span>
-                ))}
-              </div>
+                    {program.is_ad ? (
+                      <span className="absolute right-4 top-4 rounded border border-[rgba(37,99,235,0.3)] px-2 py-1 text-[10px] font-bold text-[var(--blue)]">
+                        광고
+                      </span>
+                    ) : null}
 
-              <div className="mt-5 flex items-center gap-3">
-                <div className="h-2 flex-1 overflow-hidden rounded-full bg-[var(--border)]">
-                  <div
-                    className="h-full rounded-full bg-[linear-gradient(90deg,var(--blue),#818CF8)]"
-                    style={{ width: `${card.match}%` }}
-                  />
-                </div>
-                <span className="text-xs font-bold text-[var(--blue)]">관련도 {card.match}%</span>
-              </div>
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-xs text-[var(--muted)]">
+                        {[program.source, program.location].filter(Boolean).join(" · ") || "프로그램 정보"}
+                      </span>
+                      <span className={`text-lg font-extrabold tracking-[-0.04em] ${getProgramDeadlineTone(program)}`}>
+                        {getProgramDeadline(program)}
+                      </span>
+                    </div>
 
-              <div className="mt-5 flex gap-2">
-                <button
-                  type="button"
-                  className="flex-1 rounded-lg bg-[var(--blue)] px-4 py-3 text-sm font-bold text-white transition hover:bg-[var(--blue-lo)]"
-                >
-                  {card.primaryLabel}
-                </button>
-                <button
-                  type="button"
-                  className="rounded-lg border border-[rgba(249,115,22,0.3)] bg-[rgba(249,115,22,0.08)] px-4 py-3 text-sm font-bold text-[var(--fire)] transition hover:bg-[var(--fire)] hover:text-white"
-                >
-                  비교추가
-                </button>
-              </div>
-            </article>
-          ))}
-        </div>
+                    <h3 className="mt-4 text-lg font-bold leading-7 tracking-[-0.02em] text-[var(--ink)]">
+                      {program.title || "제목 미정"}
+                    </h3>
+
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <span className="rounded-md border border-[#BFDBFE] bg-[#EFF6FF] px-3 py-1 text-xs font-semibold text-[var(--blue)]">
+                        {program.category || "카테고리 미분류"}
+                      </span>
+                      {chips.map((chip) => (
+                        <span
+                          key={`${program.id}-${chip}`}
+                          className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs font-medium text-[var(--sub)]"
+                        >
+                          {chip}
+                        </span>
+                      ))}
+                    </div>
+
+                    <p className="mt-4 text-sm leading-6 text-[var(--sub)]">
+                      {program.summary || program.description || "프로그램 요약이 아직 등록되지 않았습니다."}
+                    </p>
+
+                    <div className="mt-5 flex items-center gap-3">
+                      <div className="h-2 flex-1 overflow-hidden rounded-full bg-[var(--border)]">
+                        <div
+                          className="h-full rounded-full bg-[linear-gradient(90deg,var(--blue),#818CF8)]"
+                          style={{ width: `${Math.max(0, Math.min(score, 100))}%` }}
+                        />
+                      </div>
+                      <span className="text-xs font-bold text-[var(--blue)]">관련도 {Math.max(score, 0)}%</span>
+                    </div>
+
+                    <div className="mt-5 flex gap-2">
+                      {externalLink ? (
+                        <a
+                          href={externalLink}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex-1 rounded-lg bg-[var(--blue)] px-4 py-3 text-center text-sm font-bold text-white transition hover:bg-[var(--blue-lo)]"
+                        >
+                          지원하기
+                        </a>
+                      ) : (
+                        <Link
+                          href={getProgramDetailHref(program)}
+                          className="flex-1 rounded-lg bg-[var(--blue)] px-4 py-3 text-center text-sm font-bold text-white transition hover:bg-[var(--blue-lo)]"
+                        >
+                          자세히 보기
+                        </Link>
+                      )}
+                      <Link
+                        href={getProgramCompareHref(program)}
+                        className="rounded-lg border border-[rgba(249,115,22,0.3)] bg-[rgba(249,115,22,0.08)] px-4 py-3 text-sm font-bold text-[var(--fire)] transition hover:bg-[var(--fire)] hover:text-white"
+                      >
+                        비교추가
+                      </Link>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </>
+        )}
       </div>
     </section>
   );
@@ -385,12 +495,12 @@ export function LandingAComparisonSection() {
               최대 3개를 나란히 놓고 조건과 관련도를 빠르게 비교할 수 있습니다.
             </p>
           </div>
-          <button
-            type="button"
+          <Link
+            href="/compare"
             className="rounded-lg bg-[var(--fire)] px-5 py-3 text-sm font-bold text-white transition hover:bg-[var(--fire-lo)]"
           >
             + 비교 추가
-          </button>
+          </Link>
         </div>
 
         <div className="relative z-10 mt-8 grid gap-4 lg:grid-cols-3">
@@ -456,16 +566,16 @@ export function LandingAComparisonSection() {
                 </span>
               </div>
 
-              <button
-                type="button"
-                className={`mt-5 w-full rounded-lg px-4 py-3 text-sm font-bold transition ${
+              <Link
+                href={card.winner ? "/programs?sort=deadline" : "/compare"}
+                className={`mt-5 block w-full rounded-lg px-4 py-3 text-center text-sm font-bold transition ${
                   card.winner
                     ? "bg-[var(--fire)] text-white hover:bg-[var(--fire-lo)]"
                     : "border border-white/12 bg-white/[0.08] text-white/80 hover:bg-white/12"
                 }`}
               >
                 {card.winner ? "지금 지원하기" : "자세히 보기"}
-              </button>
+              </Link>
             </article>
           ))}
         </div>

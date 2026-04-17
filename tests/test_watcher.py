@@ -720,6 +720,23 @@ def test_build_slack_alert_payload_adds_structured_blocks() -> None:
     assert "watcher의 Git 동기화에 실패했습니다." in summary_block
 
 
+def test_build_slack_alert_payload_reuses_known_task_thread(monkeypatch) -> None:
+    monkeypatch.setattr(watcher, "slack_thread_ts_for_task", lambda task_id: "1776325765.533439")
+
+    payload = watcher.build_slack_alert_payload(
+        task_id="TASK-LIVE",
+        stage="push-failed",
+        status="action-required",
+        packet_path="tasks/done/TASK-LIVE.md",
+        report_path="reports/TASK-LIVE-result.md",
+        summary="Watcher git sync failed.",
+        next_action="Git Automation 섹션을 확인한 뒤 수동으로 push 하세요.",
+    )
+
+    assert payload["thread_ts"] == "1776325765.533439"
+    assert payload["reply_broadcast"] is False
+
+
 def test_build_slack_alert_payload_uses_compact_blocks_for_smoke_task() -> None:
     payload = watcher.build_slack_alert_payload(
         task_id="TASK-TEST-SMOKE",
@@ -770,6 +787,27 @@ def test_get_slack_webhook_url_falls_back_to_watcher_env(tmp_path, monkeypatch) 
     assert watcher.get_slack_webhook_url() == "https://hooks.slack.com/services/test/file"
 
 
+def test_slack_thread_ts_for_task_reads_cowork_approval_marker(tmp_path, monkeypatch) -> None:
+    approvals_dir = tmp_path / "cowork" / "approvals"
+    approvals_dir.mkdir(parents=True)
+    approval_path = approvals_dir / "TASK-THREAD.ok"
+    approval_path.write_text(
+        "\n".join(
+            [
+                "approved_by: slack:U123",
+                "slack_message_ts: 1776325765.533439",
+                "slack_channel_id: C123",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(watcher, "COWORK_APPROVALS_DIR", str(approvals_dir))
+
+    assert watcher.slack_thread_ts_for_task("TASK-THREAD") == "1776325765.533439"
+
+
 def test_move_stale_running_tasks_removes_duplicate_running_marker(tmp_path, monkeypatch) -> None:
     running_dir = tmp_path / "tasks" / "running"
     blocked_dir = tmp_path / "tasks" / "blocked"
@@ -792,6 +830,62 @@ def test_move_stale_running_tasks_removes_duplicate_running_marker(tmp_path, mon
 
     assert not running_task.exists()
     assert blocked_task.exists()
+
+
+def test_handle_task_archives_duplicate_inbox_packet_when_done_exists(tmp_path, monkeypatch) -> None:
+    inbox_dir = tmp_path / "tasks" / "inbox"
+    running_dir = tmp_path / "tasks" / "running"
+    blocked_dir = tmp_path / "tasks" / "blocked"
+    drifted_dir = tmp_path / "tasks" / "drifted"
+    done_dir = tmp_path / "tasks" / "done"
+    archive_dir = tmp_path / "tasks" / "archive"
+    reports_dir = tmp_path / "reports"
+    alerts_dir = tmp_path / "dispatch" / "alerts"
+    for directory in [inbox_dir, running_dir, blocked_dir, drifted_dir, done_dir, archive_dir, reports_dir, alerts_dir]:
+        directory.mkdir(parents=True, exist_ok=True)
+
+    task_path = inbox_dir / "TASK-DUPLICATE.md"
+    task_path.write_text(
+        "\n".join(
+            [
+                "---",
+                "id: TASK-DUPLICATE",
+                "status: queued",
+                "type: bug",
+                "title: Duplicate task",
+                "planned_at: 2026-04-16T18:00:00+09:00",
+                "planned_against_commit: abc123",
+                "---",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (done_dir / "TASK-DUPLICATE.md").write_text("done\n", encoding="utf-8")
+    ledger_path = tmp_path / "dispatch" / "run-ledger.jsonl"
+
+    monkeypatch.setattr(watcher, "RUNNING_DIR", str(running_dir))
+    monkeypatch.setattr(watcher, "BLOCKED_DIR", str(blocked_dir))
+    monkeypatch.setattr(watcher, "DRIFTED_DIR", str(drifted_dir))
+    monkeypatch.setattr(watcher, "DONE_DIR", str(done_dir))
+    monkeypatch.setattr(watcher, "ARCHIVE_DIR", str(archive_dir))
+    monkeypatch.setattr(watcher, "REPORTS_DIR", str(reports_dir))
+    monkeypatch.setattr(watcher, "ALERTS_DIR", str(alerts_dir))
+    monkeypatch.setattr(watcher, "LEDGER_PATH", str(ledger_path))
+    monkeypatch.setattr(
+        watcher,
+        "run_codex",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("run_codex should not run")),
+    )
+
+    watcher.handle_task(str(task_path))
+
+    assert not task_path.exists()
+    archived = list(archive_dir.glob("TASK-DUPLICATE-duplicate-from-done-*.md"))
+    assert len(archived) == 1
+    assert (done_dir / "TASK-DUPLICATE.md").exists()
+    ledger_body = ledger_path.read_text(encoding="utf-8")
+    assert '"stage": "duplicate-skipped"' in ledger_body
 
 
 def test_safe_run_task_handler_keeps_watcher_alive_after_runtime_exception(tmp_path, monkeypatch) -> None:
