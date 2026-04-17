@@ -7,6 +7,7 @@ if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 import glob
+import hashlib
 import json
 import os
 import re
@@ -16,7 +17,7 @@ import time
 import traceback
 from shutil import which
 from datetime import datetime
-from typing import Optional
+from typing import Literal, Optional, TypedDict
 from pathlib import Path
 from urllib import request as urllib_request
 
@@ -42,10 +43,13 @@ RUNNING_DIR = "./tasks/running"
 DONE_DIR = "./tasks/done"
 BLOCKED_DIR = "./tasks/blocked"
 DRIFTED_DIR = "./tasks/drifted"
+REVIEW_REQUIRED_DIR = "./tasks/review-required"
+ARCHIVE_DIR = "./tasks/archive"
 REPORTS_DIR = "./reports"
 ALERTS_DIR = "./dispatch/alerts"
 LEDGER_PATH = "./dispatch/run-ledger.jsonl"
 COWORK_PACKETS_DIR = "./cowork/packets"
+COWORK_APPROVALS_DIR = "./cowork/approvals"
 WATCHER_LOCK_PATH = "./.watcher.lock"
 WATCHER_ENV_PATH = "./.watcher.env"
 PROJECT_PATH = r"D:\02_2025_AI_Lab\isoser"
@@ -53,6 +57,7 @@ STALE_RUNNING_MINUTES = 20
 RUNNING_HEARTBEAT_SECONDS = 30
 MAX_AUTO_RECOVERY_ATTEMPTS = 2
 REPLAN_REQUIRED_ATTEMPTS = 2
+AUTO_REMEDIATION_REPEAT_THRESHOLD = 3
 MOVE_RETRY_ATTEMPTS = 5
 MOVE_RETRY_DELAY_SECONDS = 0.5
 REQUIRED_FIELDS = (
@@ -82,6 +87,30 @@ CODE_QUICK_RULES = (
     "Inspect the implementation area directly relevant to the task first. "
     "Avoid broad repository searches unless local search fails."
 )
+SUPERVISOR_AGENT_LABELS = {
+    "inspector": "Supervisor Inspector",
+    "implementer": "Supervisor Implementer",
+    "verifier": "Supervisor Verifier",
+}
+
+
+class SupervisorRunResult(TypedDict):
+    exit_code: int
+    token_count: Optional[int]
+    stage: Literal["implemented", "drift", "blocked", "manual-review", "supervisor-blocked", "unknown"]
+    supervisor_step: Optional[Literal["inspection", "implementation", "verification"]]
+
+
+class AlertRunbookResult(TypedDict, total=False):
+    handled: bool
+    stage: str
+    status: str
+    packet_path: str
+    report_path: Optional[str]
+    summary: Optional[str]
+    next_action: Optional[str]
+    runbook: str
+    note: str
 
 
 def ensure_directories() -> None:
@@ -93,6 +122,8 @@ def ensure_directories() -> None:
             DONE_DIR,
             BLOCKED_DIR,
             DRIFTED_DIR,
+            REVIEW_REQUIRED_DIR,
+            ARCHIVE_DIR,
             REPORTS_DIR,
             ALERTS_DIR,
         ]
@@ -156,6 +187,289 @@ def append_run_ledger(
     if details:
         payload.update(details)
     append_jsonl_record(LEDGER_PATH, payload)
+
+
+def read_run_ledger_rows() -> list[dict[str, object]]:
+    if not os.path.exists(LEDGER_PATH):
+        return []
+
+    rows: list[dict[str, object]] = []
+    try:
+        for raw_line in Path(LEDGER_PATH).read_text(encoding="utf-8").splitlines():
+            line = raw_line.strip()
+            if not line:
+                continue
+            try:
+                parsed = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(parsed, dict):
+                rows.append(parsed)
+    except OSError:
+        return []
+    return rows
+
+
+def normalize_alert_signature_text(text: Optional[str]) -> str:
+    if not text:
+        return ""
+
+    normalized = text.strip().lower().replace("\\", "/")
+    normalized = re.sub(r"task-\d{4}-\d{2}-\d{2}-\d{4}[a-z0-9._-]*", "<task>", normalized)
+    normalized = re.sub(r"[a-f0-9]{40}", "<sha>", normalized)
+    normalized = re.sub(r"[a-f0-9]{12,39}", "<hash>", normalized)
+    normalized = re.sub(r"\d{4}-\d{2}-\d{2}t\d{2}:\d{2}:\d{2}(?:[+-]\d{2}:\d{2})?", "<timestamp>", normalized)
+    normalized = re.sub(r"\b\d+\b", "<n>", normalized)
+    normalized = re.sub(r"\s+", " ", normalized)
+    return normalized.strip()
+
+
+def compute_alert_fingerprint(*, stage: str, summary: Optional[str], next_action: Optional[str]) -> str:
+    normalized_stage = normalize_alert_signature_text(stage)
+    normalized_summary = normalize_alert_signature_text(summary)
+    normalized_next_action = normalize_alert_signature_text(next_action)
+    payload = f"{normalized_stage}|{normalized_summary}|{normalized_next_action}"
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def resolve_repo_path(path_value: str) -> str:
+    normalized = path_value.strip().strip("`").replace("/", os.sep)
+    if os.path.isabs(normalized):
+        return os.path.normpath(normalized)
+    return os.path.normpath(os.path.join(PROJECT_PATH, normalized.lstrip(".\\/")))
+
+
+def parse_branch_and_commit_from_summary(summary: Optional[str]) -> tuple[Optional[str], Optional[str]]:
+    if not summary:
+        return (None, None)
+
+    branch_match = re.search(r"\(branch=([^),\s]+)\)", summary)
+    commit_match = re.search(r"commit=([a-f0-9]{7,40})", summary, flags=re.IGNORECASE)
+    branch = branch_match.group(1).strip() if branch_match else None
+    commit = commit_match.group(1).strip() if commit_match else None
+    return (branch, commit)
+
+
+def apply_alert_runbook(
+    *,
+    task_id: str,
+    stage: str,
+    status: str,
+    packet_path: str,
+    report_path: Optional[str],
+    summary: Optional[str],
+    next_action: Optional[str],
+) -> Optional[AlertRunbookResult]:
+    if stage == "push-failed" and summary and "origin/main is not an ancestor of the task commit" in summary:
+        branch, commit = parse_branch_and_commit_from_summary(summary)
+        resolved_summary = "Task completed successfully. Automatic main promotion was skipped because origin/main was not a fast-forward target."
+        if branch and commit:
+            resolved_summary = f"Task completed and pushed to origin/{branch} at {commit}. Automatic main promotion was skipped because origin/main was not a fast-forward target."
+        elif branch:
+            resolved_summary = f"Task completed and pushed to origin/{branch}. Automatic main promotion was skipped because origin/main was not a fast-forward target."
+        return {
+            "handled": True,
+            "stage": "self-healed",
+            "status": "done",
+            "packet_path": packet_path,
+            "report_path": report_path,
+            "summary": resolved_summary,
+            "next_action": "No action required unless you want to inspect the result report Git Automation section.",
+            "runbook": "downgrade-main-promotion-skip",
+            "note": "Known non-blocking Git state was downgraded from push-failed to self-healed.",
+        }
+
+    if stage == "runtime-error" and summary and "FileExistsError: Destination already exists:" in summary and "/tasks/done" in summary.replace("\\", "/"):
+        source_abs = resolve_repo_path(packet_path)
+        if not os.path.exists(source_abs):
+            return None
+
+        destination_match = re.search(r"Destination already exists:\s*(.+?)\s*$", summary)
+        if not destination_match:
+            return None
+        destination_abs = resolve_repo_path(destination_match.group(1))
+        if not os.path.exists(destination_abs):
+            return None
+
+        archived_path = archive_duplicate_task(source_abs, existing_stage="done")
+        archived_relpath = report_relpath(archived_path)
+        return {
+            "handled": True,
+            "stage": "self-healed",
+            "status": "done",
+            "packet_path": archived_relpath,
+            "report_path": report_path,
+            "summary": "Watcher archived a duplicate task packet because a completed task file already existed.",
+            "next_action": "No action required unless you want to inspect the archived duplicate packet.",
+            "runbook": "archive-duplicate-done-packet",
+            "note": f"Duplicate packet archived to {archived_relpath}.",
+        }
+
+    return None
+
+
+def alert_repeat_count(alert_fingerprint: str) -> int:
+    if not alert_fingerprint:
+        return 0
+
+    count = 0
+    for row in read_run_ledger_rows():
+        if str(row.get("alert_fingerprint", "")).strip() == alert_fingerprint:
+            count += 1
+    return count
+
+
+def remediation_task_exists(alert_fingerprint: str) -> bool:
+    if not alert_fingerprint:
+        return False
+
+    fingerprint_prefix = alert_fingerprint[:12]
+    queue_roots = [
+        INBOX_DIR,
+        REMOTE_DIR,
+        RUNNING_DIR,
+        DONE_DIR,
+        BLOCKED_DIR,
+        DRIFTED_DIR,
+        REVIEW_REQUIRED_DIR,
+        ARCHIVE_DIR,
+    ]
+    for queue_root in queue_roots:
+        if not os.path.exists(queue_root):
+            continue
+        for packet_path in glob.glob(os.path.join(queue_root, "*.md")):
+            try:
+                body = Path(packet_path).read_text(encoding="utf-8")
+            except OSError:
+                continue
+            if f"auto_remediation_fingerprint: {alert_fingerprint}" in body:
+                return True
+            if fingerprint_prefix in os.path.basename(packet_path):
+                return True
+    return False
+
+
+def build_auto_remediation_packet(
+    *,
+    remediation_task_id: str,
+    stage: str,
+    alert_fingerprint: str,
+    repeat_count: int,
+    summary: Optional[str],
+    next_action: Optional[str],
+    examples: list[dict[str, object]],
+) -> str:
+    lines = [
+        "---",
+        f"id: {remediation_task_id}",
+        "status: queued",
+        "type: ops",
+        f"title: Repeated watcher alert auto-remediation ({stage})",
+        f"planned_at: {datetime.now().astimezone().isoformat(timespec='seconds')}",
+        f"planned_against_commit: {current_head()}",
+        "planned_by: watcher-auto-remediation",
+        f"auto_remediation_fingerprint: {alert_fingerprint}",
+        f"auto_remediation_stage: {stage}",
+        f"auto_remediation_repeat_count: {repeat_count}",
+        "---",
+        "# Goal",
+        "",
+        "Resolve the root cause behind a repeated watcher alert so the same operational issue stops paging Slack.",
+        "",
+        "# Repeated Alert Context",
+        "",
+        f"- stage: `{stage}`",
+        f"- fingerprint: `{alert_fingerprint}`",
+        f"- repeat_count: `{repeat_count}`",
+    ]
+    if summary:
+        lines.append(f"- latest_summary: {summary}")
+    if next_action:
+        lines.append(f"- latest_next_action: {next_action}")
+    lines.extend(
+        [
+            "",
+            "## Recent Examples",
+            "",
+        ]
+    )
+    for example in examples[:5]:
+        example_summary = str(example.get("summary", "")).strip()
+        summary_suffix = f" | {example_summary}" if example_summary else ""
+        lines.append(
+            f"- `{example.get('recorded_at', '')}` `{example.get('task_id', '')}` `{example.get('stage', '')}`{summary_suffix}"
+        )
+    lines.extend(
+        [
+            "",
+            "# Constraints",
+            "",
+            "- Prefer fixing the root cause in watcher logic or alert classification before adding more retries.",
+            "- Preserve existing supervisor / packet flow unless the repeated alert proves the flow is misclassified.",
+            "- If the alert is noise rather than a true failure, downgrade or suppress it safely instead of hiding real failures.",
+            "",
+            "# Acceptance Criteria",
+            "",
+            "1. The repeated alert pattern is either fixed at the source or intentionally downgraded with justification.",
+            "2. The watcher no longer emits the same Slack-noise alert for the same root cause under the covered scenario.",
+            "3. Relevant tests cover the repeated-alert handling.",
+            "4. `docs/current-state.md` and `docs/refactoring-log.md` are updated if behavior changes.",
+            "",
+            "# Open Questions",
+            "",
+            "- None.",
+        ]
+    )
+    return "\n".join(lines) + "\n"
+
+
+def enqueue_auto_remediation_task(
+    *,
+    stage: str,
+    alert_fingerprint: str,
+    repeat_count: int,
+    summary: Optional[str],
+    next_action: Optional[str],
+) -> Optional[str]:
+    actionable_stages = {"blocked", "runtime-error", "push-failed"}
+    if stage not in actionable_stages:
+        return None
+    if repeat_count < AUTO_REMEDIATION_REPEAT_THRESHOLD:
+        return None
+    if remediation_task_exists(alert_fingerprint):
+        return None
+
+    examples = [
+        row
+        for row in read_run_ledger_rows()
+        if str(row.get("alert_fingerprint", "")).strip() == alert_fingerprint
+    ]
+    timestamp = datetime.now().strftime("%Y-%m-%d-%H%M")
+    fingerprint_prefix = alert_fingerprint[:12]
+    remediation_task_id = f"TASK-{timestamp}-auto-remediate-{stage}-{fingerprint_prefix}"
+    packet_path = os.path.join(INBOX_DIR, f"{remediation_task_id}.md")
+    packet_body = build_auto_remediation_packet(
+        remediation_task_id=remediation_task_id,
+        stage=stage,
+        alert_fingerprint=alert_fingerprint,
+        repeat_count=repeat_count,
+        summary=summary,
+        next_action=next_action,
+        examples=examples,
+    )
+    Path(packet_path).write_text(packet_body, encoding="utf-8")
+    append_run_ledger(
+        remediation_task_id,
+        "auto-remediation-queued",
+        status="queued",
+        packet_path=packet_path.replace("\\", "/"),
+        details={
+            "source_alert_fingerprint": alert_fingerprint,
+            "source_stage": stage,
+            "source_repeat_count": repeat_count,
+        },
+    )
+    return packet_path.replace("\\", "/")
 
 
 def write_runtime_error_alert(
@@ -276,6 +590,14 @@ def write_report(task_id: str, suffix: str, body: str) -> str:
     return report_path
 
 
+def supervisor_inspection_report_path(task_id: str) -> str:
+    return os.path.join(REPORTS_DIR, f"{task_id}-supervisor-inspection.md")
+
+
+def supervisor_verification_report_path(task_id: str) -> str:
+    return os.path.join(REPORTS_DIR, f"{task_id}-supervisor-verification.md")
+
+
 def write_alert(
     task_id: str,
     stage: str,
@@ -286,9 +608,49 @@ def write_alert(
     summary: Optional[str] = None,
     next_action: Optional[str] = None,
 ) -> str:
+    original_stage = stage
+    original_status = status
+    original_packet_path = packet_path
+    original_report_path = report_path
+    original_summary = summary
+    original_next_action = next_action
+    runbook_result = apply_alert_runbook(
+        task_id=task_id,
+        stage=stage,
+        status=status,
+        packet_path=packet_path,
+        report_path=report_path,
+        summary=summary,
+        next_action=next_action,
+    )
+    if runbook_result and runbook_result.get("handled"):
+        stage = str(runbook_result.get("stage", stage))
+        status = str(runbook_result.get("status", status))
+        packet_path = str(runbook_result.get("packet_path", packet_path))
+        report_path = runbook_result.get("report_path", report_path)
+        summary = runbook_result.get("summary", summary)
+        next_action = runbook_result.get("next_action", next_action)
+
     alert_path = os.path.join(ALERTS_DIR, f"{task_id}-{stage}.md")
+    slack_thread_ts = slack_thread_ts_for_task(task_id)
+    alert_fingerprint = compute_alert_fingerprint(
+        stage=original_stage,
+        summary=original_summary,
+        next_action=original_next_action,
+    )
+    repeat_count = alert_repeat_count(alert_fingerprint) + 1
+    auto_remediation_packet = None
+    if not runbook_result:
+        auto_remediation_packet = enqueue_auto_remediation_task(
+            stage=original_stage,
+            alert_fingerprint=alert_fingerprint,
+            repeat_count=repeat_count,
+            summary=original_summary,
+            next_action=original_next_action,
+        )
     severity = {
         "completed": "info",
+        "self-healed": "info",
         "recovered": "info",
         "needs-review": "warning",
         "replan-required": "warning",
@@ -313,6 +675,23 @@ def write_alert(
         lines.append(f"summary: {summary}")
     if next_action:
         lines.append(f"next_action: {next_action}")
+    lines.append(f"alert_fingerprint: `{alert_fingerprint}`")
+    lines.append(f"repeat_count: `{repeat_count}`")
+    if runbook_result:
+        lines.append(f"self_heal_runbook: `{runbook_result.get('runbook', '')}`")
+        note = str(runbook_result.get("note", "")).strip()
+        if note:
+            lines.append(f"self_heal_note: {note}")
+    if stage != original_stage:
+        lines.append(f"original_stage: `{original_stage}`")
+        lines.append(f"original_status: `{original_status}`")
+        lines.append(f"original_packet: `{original_packet_path}`")
+        if original_report_path:
+            lines.append(f"original_report: `{original_report_path}`")
+    if auto_remediation_packet:
+        lines.append(f"auto_remediation_packet: `{auto_remediation_packet}`")
+    if slack_thread_ts:
+        lines.append(f"slack_thread_ts: `{slack_thread_ts}`")
 
     with open(alert_path, "w", encoding="utf-8") as file:
         file.write("\n".join(lines).rstrip() + "\n")
@@ -323,7 +702,15 @@ def write_alert(
         status=status,
         packet_path=packet_path,
         report_path=report_path,
-        details={"summary": summary} if summary else None,
+        details={
+            "summary": summary,
+            "alert_fingerprint": alert_fingerprint,
+            "alert_repeat_count": repeat_count,
+            "auto_remediation_packet": auto_remediation_packet,
+            "original_stage": original_stage,
+            "original_status": original_status,
+            "self_heal_runbook": runbook_result.get("runbook") if runbook_result else None,
+        },
     )
     notify_slack_for_alert(
         task_id=task_id,
@@ -358,6 +745,22 @@ def localize_slack_operator_text(text: Optional[str]) -> Optional[str]:
         ("No manual action required unless the retried task fails again.", "재시도한 task가 다시 실패하지 않는 한 수동 조치는 필요하지 않습니다."),
         ("Watcher refreshed the drift task packet and requeued it for another implementation run.", "watcher가 drift task packet을 갱신해 다시 구현 큐에 넣었습니다."),
         ("Watcher refreshed the blocked task packet and requeued it for another implementation run.", "watcher가 blocked task packet을 갱신해 다시 구현 큐에 넣었습니다."),
+        (
+            "Task completed successfully. Automatic main promotion was skipped because origin/main was not a fast-forward target.",
+            "작업은 정상 완료되었고 origin/main 자동 반영은 fast-forward 대상이 아니라 건너뛰었습니다.",
+        ),
+        (
+            "Watcher archived a duplicate task packet because a completed task file already existed.",
+            "이미 완료된 task 파일이 있어 watcher가 중복 task packet을 자동 보관했습니다.",
+        ),
+        (
+            "No action required unless you want to inspect the archived duplicate packet.",
+            "보관된 중복 packet을 확인할 계획이 아니라면 별도 조치는 필요하지 않습니다.",
+        ),
+        (
+            "No action required unless you want to inspect the result report Git Automation section.",
+            "결과 리포트의 Git Automation 섹션을 확인할 계획이 아니라면 별도 조치는 필요하지 않습니다.",
+        ),
         ("Watcher could not move the task packet into running.", "watcher가 task packet을 running으로 옮기지 못했습니다."),
         ("Clear any editor or sync lock on the task file, then requeue it.", "task 파일의 에디터 또는 동기화 잠금을 해제한 뒤 다시 큐에 넣으세요."),
         ("Task packet is missing required frontmatter fields.", "task packet에 필수 frontmatter 필드가 빠져 있습니다."),
@@ -439,6 +842,7 @@ def format_slack_alert_message(
 
     emoji = {
         "completed": "✅",
+        "self-healed": "🛠️",
         "recovered": "🔁",
         "needs-review": "📝",
         "replan-required": "🧭",
@@ -448,6 +852,7 @@ def format_slack_alert_message(
     }.get(stage, "ℹ️")
     stage_labels = {
         "completed": "완료",
+        "self-healed": "자동 자가복구",
         "recovered": "자동 복구",
         "needs-review": "검토 필요",
         "replan-required": "재설계 필요",
@@ -499,6 +904,7 @@ def build_slack_alert_payload(
     )
     localized_summary = localize_slack_operator_text(summary) or summary
     localized_next_action = localize_slack_operator_text(next_action) or next_action
+    slack_thread_ts = slack_thread_ts_for_task(task_id)
 
     if is_smoke_task(task_id):
         smoke_lines = [
@@ -510,7 +916,7 @@ def build_slack_alert_payload(
             smoke_lines.append(f"*요약*: {localized_summary}")
         if localized_next_action:
             smoke_lines.append(f"*다음*: {localized_next_action}")
-        return {
+        payload: dict[str, object] = {
             "text": text,
             "blocks": [
                 {
@@ -519,9 +925,14 @@ def build_slack_alert_payload(
                 }
             ],
         }
+        if slack_thread_ts:
+            payload["thread_ts"] = slack_thread_ts
+            payload["reply_broadcast"] = False
+        return payload
 
     emoji = {
         "completed": "✅",
+        "self-healed": "🛠️",
         "recovered": "🔁",
         "needs-review": "📝",
         "replan-required": "🧭",
@@ -531,6 +942,7 @@ def build_slack_alert_payload(
     }.get(stage, "ℹ️")
     stage_labels = {
         "completed": "완료",
+        "self-healed": "자동 자가복구",
         "recovered": "자동 복구",
         "needs-review": "검토 필요",
         "replan-required": "재설계 필요",
@@ -576,7 +988,11 @@ def build_slack_alert_payload(
                 "text": {"type": "mrkdwn", "text": f"*다음 조치*\n{localized_next_action}"},
             }
         )
-    return {"text": text, "blocks": blocks}
+    payload = {"text": text, "blocks": blocks}
+    if slack_thread_ts:
+        payload["thread_ts"] = slack_thread_ts
+        payload["reply_broadcast"] = False
+    return payload
 
 
 def notify_slack_for_alert(
@@ -613,6 +1029,22 @@ def notify_slack_for_alert(
             response.read()
     except Exception as error:
         print(f"Slack alert 전송 실패: {type(error).__name__}: {error}")
+
+
+def slack_thread_ts_for_task(task_id: str) -> str:
+    approval_path = os.path.join(COWORK_APPROVALS_DIR, f"{task_id}.ok")
+    if not os.path.exists(approval_path):
+        return ""
+
+    try:
+        text = Path(approval_path).read_text(encoding="utf-8")
+    except OSError:
+        return ""
+
+    match = re.search(r"^\s*slack_message_ts\s*:\s*(.+?)\s*$", text, flags=re.IGNORECASE | re.MULTILINE)
+    if not match:
+        return ""
+    return match.group(1).strip().strip("`")
 
 
 def append_run_metadata(
@@ -711,12 +1143,15 @@ def escalate_task_for_manual_review(
     reason: str,
     stage: str = "needs-review",
     reviewer_action: str = "update the packet or provide approval/feedback before requeueing",
+    report_path_override: Optional[str] = None,
+    source_stage_override: Optional[str] = None,
 ) -> None:
     filename = os.path.basename(task_path)
     task_id = sanitize_task_id(filename.removesuffix(".md"))
     cowork_packet = cowork_packet_path(task_id)
     dispatch_path = manual_review_dispatch_path(task_id, stage=stage)
-    recovery_report = recovery_report_path(task_id)
+    review_report_path = report_path_override or recovery_report_path(task_id)
+    source_stage = source_stage_override or ("drifted" if failure_stage == "drift" else "blocked")
     desired_packet_body = build_manual_review_packet(
         task_path,
         failure_stage=failure_stage,
@@ -737,8 +1172,8 @@ def escalate_task_for_manual_review(
     if os.path.exists(dispatch_path):
         alert_mtime = os.path.getmtime(dispatch_path)
         refresh_sources = [os.path.getmtime(task_path)]
-        if os.path.exists(recovery_report):
-            refresh_sources.append(os.path.getmtime(recovery_report))
+        if os.path.exists(review_report_path):
+            refresh_sources.append(os.path.getmtime(review_report_path))
         if os.path.exists(cowork_packet):
             refresh_sources.append(os.path.getmtime(cowork_packet))
         should_write_alert = alert_mtime < max(refresh_sources)
@@ -750,8 +1185,8 @@ def escalate_task_for_manual_review(
         task_id,
         stage,
         status="action-required",
-        packet_path=f"tasks/{'drifted' if failure_stage == 'drift' else 'blocked'}/{filename}",
-        report_path=f"reports/{task_id}-recovery.md",
+        packet_path=f"tasks/{source_stage}/{filename}",
+        report_path=review_report_path.replace("\\", "/"),
         summary=reason,
         next_action=(
             f"Review `cowork/packets/{task_id}.md`, wait for the cowork review-ready alert, then approve or reject it in Slack "
@@ -815,6 +1250,17 @@ def parse_changed_files_from_result_report(report_path: str) -> list[str]:
     return changed_files
 
 
+def parse_supervisor_verdict(report_path: str) -> Optional[str]:
+    if not os.path.exists(report_path):
+        return None
+
+    text = Path(report_path).read_text(encoding="utf-8")
+    match = re.search(r"^\s*-\s*verdict:\s*(pass|review-required)\s*$", text, flags=re.IGNORECASE | re.MULTILINE)
+    if not match:
+        return None
+    return match.group(1).strip().lower()
+
+
 def path_is_stageable(path_rel: str) -> bool:
     path_abs = os.path.join(PROJECT_PATH, path_rel.replace("/", os.sep))
     if os.path.exists(path_abs):
@@ -841,6 +1287,12 @@ def sync_completed_task_to_git(
         os.path.relpath(result_report, PROJECT_PATH).replace("\\", "/"),
         *changed_files,
     ]
+    inspection_report = supervisor_inspection_report_path(task_id)
+    verification_report = supervisor_verification_report_path(task_id)
+    if os.path.exists(inspection_report):
+        stage_targets.append(os.path.relpath(inspection_report, PROJECT_PATH).replace("\\", "/"))
+    if os.path.exists(verification_report):
+        stage_targets.append(os.path.relpath(verification_report, PROJECT_PATH).replace("\\", "/"))
 
     # Stage only task-specific paths so unrelated worktree changes are not swept in.
     unique_targets = [target for target in dict.fromkeys(stage_targets) if path_is_stageable(target)]
@@ -888,60 +1340,50 @@ def sync_completed_task_to_git(
         )
         return ("push-failed", push_output.strip() or "git push failed", branch, commit_sha)
 
+    promotion_note: Optional[str] = None
     if branch != "main":
         fetch_main_result = run_git(["fetch", "origin", "main"], check=False)
         fetch_main_output = (fetch_main_result.stdout or "") + (fetch_main_result.stderr or "")
         if fetch_main_result.returncode != 0:
-            append_git_metadata(
-                result_report,
-                status="main-fetch-failed",
-                branch=branch,
-                commit_sha=commit_sha,
-                message=fetch_main_output.strip() or "git fetch origin main failed",
+            promotion_note = (
+                f"{commit_message} Pushed to origin/{branch}. "
+                "Automatic main promotion skipped because git fetch origin main failed: "
+                f"{fetch_main_output.strip() or 'git fetch origin main failed'}"
             )
-            return ("main-fetch-failed", fetch_main_output.strip() or "git fetch origin main failed", branch, commit_sha)
+        else:
+            ancestry_check = run_git(["merge-base", "--is-ancestor", "origin/main", commit_sha], check=False)
+            if ancestry_check.returncode != 0:
+                promotion_note = (
+                    f"{commit_message} Pushed to origin/{branch}. "
+                    "Automatic main promotion skipped because origin/main is not an ancestor of the task commit."
+                )
+            else:
+                main_push_result = run_git(["push", "origin", f"{commit_sha}:refs/heads/main"], check=False)
+                main_push_output = (main_push_result.stdout or "") + (main_push_result.stderr or "")
+                if main_push_result.returncode == 0:
+                    append_git_metadata(
+                        result_report,
+                        status="merged-main",
+                        branch=branch,
+                        commit_sha=commit_sha,
+                        message=f"{commit_message} Auto-promoted to origin/main.",
+                    )
+                    return ("merged-main", f"{commit_message} Auto-promoted to origin/main.", branch, commit_sha)
 
-        ancestry_check = run_git(["merge-base", "--is-ancestor", "origin/main", commit_sha], check=False)
-        if ancestry_check.returncode != 0:
-            message = "origin/main is not an ancestor of the task commit, so watcher skipped automatic main promotion."
-            append_git_metadata(
-                result_report,
-                status="main-promotion-skipped",
-                branch=branch,
-                commit_sha=commit_sha,
-                message=message,
-            )
-            return ("main-promotion-skipped", message, branch, commit_sha)
-
-        main_push_result = run_git(["push", "origin", f"{commit_sha}:refs/heads/main"], check=False)
-        main_push_output = (main_push_result.stdout or "") + (main_push_result.stderr or "")
-        if main_push_result.returncode != 0:
-            append_git_metadata(
-                result_report,
-                status="main-push-failed",
-                branch=branch,
-                commit_sha=commit_sha,
-                message=main_push_output.strip() or "git push to origin/main failed",
-            )
-            return ("main-push-failed", main_push_output.strip() or "git push to origin/main failed", branch, commit_sha)
-
-        append_git_metadata(
-            result_report,
-            status="merged-main",
-            branch=branch,
-            commit_sha=commit_sha,
-            message=f"{commit_message} Auto-promoted to origin/main.",
-        )
-        return ("merged-main", f"{commit_message} Auto-promoted to origin/main.", branch, commit_sha)
+                promotion_note = (
+                    f"{commit_message} Pushed to origin/{branch}. "
+                    "Automatic main promotion failed but branch push succeeded: "
+                    f"{main_push_output.strip() or 'git push to origin/main failed'}"
+                )
 
     append_git_metadata(
         result_report,
         status="pushed",
         branch=branch,
         commit_sha=commit_sha,
-        message=commit_message,
+        message=promotion_note or commit_message,
     )
-    return ("pushed", commit_message, branch, commit_sha)
+    return ("pushed", promotion_note or commit_message, branch, commit_sha)
 
 
 def move_task_file(src: str, dst: str) -> None:
@@ -1073,6 +1515,16 @@ def start_running_heartbeat(running_path: str) -> tuple[threading.Event, threadi
     return stop_event, heartbeat_thread
 
 
+def archive_duplicate_task(task_path: str, *, existing_stage: str) -> str:
+    filename = os.path.basename(task_path)
+    stem, ext = os.path.splitext(filename)
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    archive_name = f"{stem}-duplicate-from-{existing_stage}-{timestamp}{ext or '.md'}"
+    archive_path = os.path.join(ARCHIVE_DIR, archive_name)
+    move_task_file(task_path, archive_path)
+    return archive_path
+
+
 def build_codex_prompt(task_filename: str, task_id: str, task_type: str) -> str:
     if task_type in DOC_TASK_TYPES:
         return (
@@ -1102,16 +1554,116 @@ def build_codex_prompt(task_filename: str, task_id: str, task_type: str) -> str:
     )
 
 
-def run_codex(
-    task_filename: str,
-    task_id: str,
-    task_type: str,
+def build_supervisor_inspector_prompt(task_filename: str, task_id: str, task_type: str) -> str:
+    inspection_report = f"reports/{task_id}-supervisor-inspection.md"
+    if task_type in DOC_TASK_TYPES:
+        return (
+            f"Read tasks/running/{task_filename}. "
+            "You are the Supervisor Inspector agent. "
+            "Your job is to inspect the task packet and current docs state before any implementation work starts. "
+            f"Follow these quick rules: {DOCS_QUICK_RULES} "
+            f"If drift is significant, write reports/{task_id}-drift.md and stop without creating {inspection_report}. "
+            f"If blocked, write reports/{task_id}-blocked.md and stop without creating {inspection_report}. "
+            f"Otherwise write {inspection_report} with these sections: "
+            f"`# Supervisor Inspection: {task_id}`, `## Task Summary`, `## Touched files`, `## Implementation outline`, "
+            "`## Verification plan`, `## Preserved behaviors`, `## Risks`. "
+            "Do not edit source files in this step. Do not write the final result report in this step."
+        )
+    return (
+        f"Read AGENTS.md and tasks/running/{task_filename}. "
+        "You are the Supervisor Inspector agent. "
+        "Inspect the current repository state for this packet before any implementation starts. "
+        f"Follow these quick rules: {CODE_QUICK_RULES} "
+        "Compare planned_against_commit with the current HEAD and inspect the directly relevant implementation area. "
+        "If optional planned_files or planned_worktree_fingerprint metadata exist, verify them against the current worktree. "
+        f"If drift is significant, write reports/{task_id}-drift.md and stop without creating {inspection_report}. "
+        f"If blocked, write reports/{task_id}-blocked.md and stop without creating {inspection_report}. "
+        f"Otherwise write {inspection_report} with these sections: "
+        f"`# Supervisor Inspection: {task_id}`, `## Task Summary`, `## Touched files`, `## Implementation outline`, "
+        "`## Verification plan`, `## Preserved behaviors`, `## Risks`. "
+        "Do not edit source files in this step. Do not write the final result report in this step."
+    )
+
+
+def build_supervisor_implementer_prompt(task_filename: str, task_id: str, task_type: str) -> str:
+    inspection_report = f"reports/{task_id}-supervisor-inspection.md"
+    if task_type in DOC_TASK_TYPES:
+        return (
+            f"Read tasks/running/{task_filename} and {inspection_report}. "
+            "You are the Supervisor Implementer agent working under the watcher supervisor. "
+            "Treat the inspection report as the approved handoff from the inspector agent. "
+            f"Follow these quick rules: {DOCS_QUICK_RULES} "
+            f"If new drift is discovered while implementing, write reports/{task_id}-drift.md and stop. "
+            f"If blocked, write reports/{task_id}-blocked.md and stop. "
+            "Otherwise make the smallest docs-only change, "
+            f"write reports/{task_id}-result.md, update docs/current-state.md only if workflow structure changed, "
+            "append to docs/refactoring-log.md only if meaningful, "
+            "and include a `Changed files` section in the result report. "
+            "You are responsible for implementation and result report drafting only in this step. "
+            "Do not treat this step as the final verification gate."
+        )
+    return (
+        f"Read AGENTS.md, tasks/running/{task_filename}, and {inspection_report}. "
+        "You are the Supervisor Implementer agent working under the watcher supervisor. "
+        "Treat the inspection report as the approved handoff from the inspector agent. "
+        f"Follow these quick rules: {CODE_QUICK_RULES} "
+        f"If new drift is discovered while implementing, write reports/{task_id}-drift.md and stop. "
+        f"If blocked, write reports/{task_id}-blocked.md and stop. "
+        "Otherwise make minimal safe changes, "
+        f"write reports/{task_id}-result.md, update docs/current-state.md only if structure changed, "
+        "append a short note to docs/refactoring-log.md only if meaningful, "
+        "and include a `Changed files` section in the result report. "
+        "You are responsible for implementation and result report drafting only in this step. "
+        "Do not treat this step as the final verification gate."
+    )
+
+
+def build_supervisor_verifier_prompt(task_filename: str, task_id: str, task_type: str) -> str:
+    inspection_report = f"reports/{task_id}-supervisor-inspection.md"
+    result_report = f"reports/{task_id}-result.md"
+    verification_report = f"reports/{task_id}-supervisor-verification.md"
+    if task_type in DOC_TASK_TYPES:
+        return (
+            f"Read tasks/running/{task_filename}, {inspection_report}, and {result_report}. "
+            "You are the Supervisor Verifier agent working under the watcher supervisor. "
+            "This is the final verification gate. "
+            f"Follow these quick rules: {DOCS_QUICK_RULES} "
+            "Stay read-only except for verification artifacts. "
+            f"If drift is discovered, write reports/{task_id}-drift.md and stop without creating {verification_report}. "
+            f"If blocked, write reports/{task_id}-blocked.md and stop without creating {verification_report}. "
+            f"Otherwise verify that the result report matches the actual docs changes and that the lightest relevant checks were run. "
+            f"Then write {verification_report} with these sections: "
+            f"`# Supervisor Verification: {task_id}`, `## Verification Summary`, `## Checks Reviewed`, "
+            "`## Result Report Consistency`, `## Residual Risks`, `## Final Verdict`. "
+            "Under `## Final Verdict` include exactly one bullet in the form `- verdict: pass` or `- verdict: review-required`. "
+            "Do not edit source files in this step."
+        )
+    return (
+        f"Read AGENTS.md, tasks/running/{task_filename}, {inspection_report}, and {result_report}. "
+        "You are the Supervisor Verifier agent working under the watcher supervisor. "
+        "This is the final verification gate. "
+        f"Follow these quick rules: {CODE_QUICK_RULES} "
+        "Stay read-only except for verification artifacts. "
+        f"If drift is discovered, write reports/{task_id}-drift.md and stop without creating {verification_report}. "
+        f"If blocked, write reports/{task_id}-blocked.md and stop without creating {verification_report}. "
+        "Verify that the implementation matches the inspection handoff, that the result report matches the actual file changes, "
+        "and that the checks recorded are sufficient for the touched area. "
+        f"Then write {verification_report} with these sections: "
+        f"`# Supervisor Verification: {task_id}`, `## Verification Summary`, `## Checks Reviewed`, "
+        "`## Result Report Consistency`, `## Residual Risks`, `## Final Verdict`. "
+        "Under `## Final Verdict` include exactly one bullet in the form `- verdict: pass` or `- verdict: review-required`. "
+        "Do not edit source files in this step."
+    )
+
+
+def run_codex_prompt(
+    prompt: str,
     *,
-    running_path: str,
+    label: str,
+    running_path: Optional[str] = None,
 ) -> tuple[int, Optional[int]]:
-    prompt = build_codex_prompt(task_filename, task_id, task_type)
     codex_command = resolve_codex_command()
-    print(f"Codex 실행: {task_filename}")
+    print(f"{label} 실행")
     process = subprocess.Popen(
         [codex_command, "exec", "--full-auto", prompt],
         cwd=PROJECT_PATH,
@@ -1123,7 +1675,10 @@ def run_codex(
         bufsize=1,
     )
     collected_output: list[str] = []
-    heartbeat_stop, heartbeat_thread = start_running_heartbeat(running_path)
+    heartbeat_stop: Optional[threading.Event] = None
+    heartbeat_thread: Optional[threading.Thread] = None
+    if running_path:
+        heartbeat_stop, heartbeat_thread = start_running_heartbeat(running_path)
 
     try:
         assert process.stdout is not None
@@ -1131,13 +1686,176 @@ def run_codex(
             print(line, end="")
             collected_output.append(line)
     finally:
-        heartbeat_stop.set()
-        heartbeat_thread.join(timeout=1)
+        if heartbeat_stop is not None and heartbeat_thread is not None:
+            heartbeat_stop.set()
+            heartbeat_thread.join(timeout=1)
 
     exit_code = process.wait()
     combined_output = "".join(collected_output)
     token_count = parse_token_count(combined_output)
     return exit_code, token_count
+
+
+def run_codex(
+    task_filename: str,
+    task_id: str,
+    task_type: str,
+    *,
+    running_path: str,
+) -> tuple[int, Optional[int]]:
+    prompt = build_codex_prompt(task_filename, task_id, task_type)
+    return run_codex_prompt(
+        prompt,
+        label=f"Codex",
+        running_path=running_path,
+    )
+
+
+def run_supervisor_workflow(
+    task_filename: str,
+    task_id: str,
+    task_type: str,
+    *,
+    running_path: str,
+) -> SupervisorRunResult:
+    inspection_report = supervisor_inspection_report_path(task_id)
+    verification_report = supervisor_verification_report_path(task_id)
+    result_report = os.path.join(REPORTS_DIR, f"{task_id}-result.md")
+    drift_report = os.path.join(REPORTS_DIR, f"{task_id}-drift.md")
+    blocked_report = os.path.join(REPORTS_DIR, f"{task_id}-blocked.md")
+
+    for stale_report in (inspection_report, verification_report, result_report, drift_report, blocked_report):
+        if os.path.exists(stale_report):
+            os.remove(stale_report)
+
+    append_run_ledger(
+        task_id,
+        "supervisor-inspection",
+        status="started",
+        packet_path=f"tasks/running/{task_filename}",
+        report_path=f"reports/{task_id}-supervisor-inspection.md",
+    )
+    inspector_exit_code, inspector_token_count = run_codex_prompt(
+        build_supervisor_inspector_prompt(task_filename, task_id, task_type),
+        label=SUPERVISOR_AGENT_LABELS["inspector"],
+        running_path=running_path,
+    )
+    total_tokens = inspector_token_count
+
+    if os.path.exists(drift_report):
+        return {"exit_code": inspector_exit_code, "token_count": total_tokens, "stage": "drift", "supervisor_step": "inspection"}
+    if os.path.exists(blocked_report):
+        return {"exit_code": inspector_exit_code, "token_count": total_tokens, "stage": "blocked", "supervisor_step": "inspection"}
+    if inspector_exit_code != 0 or not os.path.exists(inspection_report):
+        return {
+            "exit_code": inspector_exit_code,
+            "token_count": total_tokens,
+            "stage": "supervisor-blocked",
+            "supervisor_step": "inspection",
+        }
+
+    append_run_ledger(
+        task_id,
+        "supervisor-implementer",
+        status="started",
+        packet_path=f"tasks/running/{task_filename}",
+        report_path=f"reports/{task_id}-result.md",
+    )
+    implementer_exit_code, implementer_token_count = run_codex_prompt(
+        build_supervisor_implementer_prompt(task_filename, task_id, task_type),
+        label=SUPERVISOR_AGENT_LABELS["implementer"],
+        running_path=running_path,
+    )
+    if total_tokens is None:
+        total_tokens = implementer_token_count
+    elif implementer_token_count is not None:
+        total_tokens += implementer_token_count
+
+    if os.path.exists(drift_report):
+        return {
+            "exit_code": implementer_exit_code,
+            "token_count": total_tokens,
+            "stage": "drift",
+            "supervisor_step": "implementation",
+        }
+    if os.path.exists(blocked_report):
+        return {
+            "exit_code": implementer_exit_code,
+            "token_count": total_tokens,
+            "stage": "blocked",
+            "supervisor_step": "implementation",
+        }
+    if implementer_exit_code != 0 or not os.path.exists(result_report):
+        return {
+            "exit_code": implementer_exit_code,
+            "token_count": total_tokens,
+            "stage": "supervisor-blocked",
+            "supervisor_step": "implementation",
+        }
+
+    append_run_ledger(
+        task_id,
+        "supervisor-verification",
+        status="started",
+        packet_path=f"tasks/running/{task_filename}",
+        report_path=f"reports/{task_id}-supervisor-verification.md",
+    )
+    verifier_exit_code, verifier_token_count = run_codex_prompt(
+        build_supervisor_verifier_prompt(task_filename, task_id, task_type),
+        label=SUPERVISOR_AGENT_LABELS["verifier"],
+        running_path=running_path,
+    )
+    if total_tokens is None:
+        total_tokens = verifier_token_count
+    elif verifier_token_count is not None:
+        total_tokens += verifier_token_count
+
+    if os.path.exists(drift_report):
+        return {
+            "exit_code": verifier_exit_code,
+            "token_count": total_tokens,
+            "stage": "drift",
+            "supervisor_step": "verification",
+        }
+    if os.path.exists(blocked_report):
+        return {
+            "exit_code": verifier_exit_code,
+            "token_count": total_tokens,
+            "stage": "blocked",
+            "supervisor_step": "verification",
+        }
+    verdict = parse_supervisor_verdict(verification_report)
+    if (
+        verifier_exit_code == 0
+        and os.path.exists(result_report)
+        and os.path.exists(verification_report)
+        and verdict == "pass"
+    ):
+        return {
+            "exit_code": verifier_exit_code,
+            "token_count": total_tokens,
+            "stage": "implemented",
+            "supervisor_step": "verification",
+        }
+    if (
+        verifier_exit_code == 0
+        and os.path.exists(result_report)
+        and os.path.exists(verification_report)
+        and verdict == "review-required"
+    ):
+        return {
+            "exit_code": verifier_exit_code,
+            "token_count": total_tokens,
+            "stage": "manual-review",
+            "supervisor_step": "verification",
+        }
+
+    return {
+        "exit_code": verifier_exit_code,
+        "token_count": total_tokens,
+        "stage": "supervisor-blocked",
+        "supervisor_step": "verification",
+    }
 
 
 def build_recovery_prompt(
@@ -1292,11 +2010,43 @@ def handle_recovery(task_path: str, *, failure_stage: str) -> None:
 def handle_task(task_path: str) -> None:
     filename = os.path.basename(task_path)
     running_path = os.path.join(RUNNING_DIR, filename)
+    task_id = sanitize_task_id(filename.removesuffix(".md"))
+
+    duplicate_destinations = [
+        ("running", running_path),
+        ("blocked", os.path.join(BLOCKED_DIR, filename)),
+        ("drifted", os.path.join(DRIFTED_DIR, filename)),
+        ("review-required", os.path.join(REVIEW_REQUIRED_DIR, filename)),
+        ("done", os.path.join(DONE_DIR, filename)),
+    ]
+    duplicate_stage = next(
+        (stage for stage, destination in duplicate_destinations if os.path.exists(destination)),
+        None,
+    )
+    if duplicate_stage is not None:
+        if os.path.exists(task_path):
+            try:
+                metadata, _ = read_task_metadata(task_path)
+                task_id = sanitize_task_id(metadata.get("id", task_id))
+            except OSError:
+                pass
+        archived_path = archive_duplicate_task(task_path, existing_stage=duplicate_stage)
+        append_run_ledger(
+            task_id,
+            "duplicate-skipped",
+            status="skipped",
+            packet_path=task_path.replace("\\", "/"),
+            details={
+                "existing_stage": duplicate_stage,
+                "archived_path": archived_path.replace("\\", "/"),
+            },
+        )
+        print(f"중복 inbox packet 보관됨: {filename} (현재 상태: {duplicate_stage})")
+        return
 
     try:
         move_task_file(task_path, running_path)
     except (PermissionError, FileExistsError) as error:
-        task_id = sanitize_task_id(filename.removesuffix(".md"))
         if os.path.exists(task_path):
             try:
                 metadata, _ = read_task_metadata(task_path)
@@ -1416,7 +2166,7 @@ def handle_task(task_path: str) -> None:
         return
 
     try:
-        exit_code, token_count = run_codex(
+        supervisor_result = run_supervisor_workflow(
             filename,
             task_id,
             task_type,
@@ -1451,14 +2201,74 @@ def handle_task(task_path: str) -> None:
         print(f"차단됨: {filename} (watcher 예외 발생)")
         return
 
+    exit_code = supervisor_result["exit_code"]
+    token_count = supervisor_result["token_count"]
+    if supervisor_result["stage"] == "supervisor-blocked":
+        supervisor_step = supervisor_result.get("supervisor_step")
+        if supervisor_step == "inspection":
+            blocked_summary = "Supervisor inspector did not produce a reusable implementation handoff."
+            expected_report = f"reports/{task_id}-supervisor-inspection.md"
+        elif supervisor_step == "implementation":
+            blocked_summary = "Supervisor implementer did not produce a reusable result report."
+            expected_report = f"reports/{task_id}-result.md"
+        else:
+            blocked_summary = "Supervisor verifier did not produce a reusable verification decision."
+            expected_report = f"reports/{task_id}-supervisor-verification.md"
+        write_report(
+            task_id,
+            "blocked",
+            "\n".join(
+                [
+                    f"# Blocked: {task_id}",
+                    "",
+                    blocked_summary,
+                    "",
+                    f"- file: `tasks/running/{filename}`",
+                    f"- supervisor_step: `{supervisor_step}`",
+                    f"- expected_report: `{expected_report}`",
+                    f"- step_exit_code: `{exit_code}`",
+                    "- action: inspect the watcher output and the failed supervisor step before retrying",
+                ]
+            ),
+        )
+
     result_report = os.path.join(REPORTS_DIR, f"{task_id}-result.md")
     drift_report = os.path.join(REPORTS_DIR, f"{task_id}-drift.md")
     blocked_report = os.path.join(REPORTS_DIR, f"{task_id}-blocked.md")
+    verification_report = supervisor_verification_report_path(task_id)
 
     if exit_code == 0 and os.path.exists(result_report):
+        if supervisor_result["stage"] == "manual-review":
+            if os.path.exists(verification_report):
+                append_run_metadata(verification_report, exit_code=exit_code, token_count=token_count)
+            review_required_path = os.path.join(REVIEW_REQUIRED_DIR, filename)
+            move_task_file(running_path, review_required_path)
+            escalate_task_for_manual_review(
+                review_required_path,
+                failure_stage="blocked",
+                stage="needs-review",
+                reason="Supervisor verifier requested manual review before this task can be accepted.",
+                reviewer_action="review the verification findings, tighten the packet if needed, and only then approve requeueing",
+                report_path_override=f"reports/{task_id}-supervisor-verification.md",
+                source_stage_override="review-required",
+            )
+            print(f"검토 필요: {filename} (verifier requested manual review)")
+            return
         append_run_metadata(result_report, exit_code=exit_code, token_count=token_count)
         done_path = os.path.join(DONE_DIR, filename)
-        move_task_file(running_path, done_path)
+        try:
+            move_task_file(running_path, done_path)
+        except FileExistsError:
+            archived_path = archive_duplicate_task(running_path, existing_stage="done")
+            append_run_ledger(
+                task_id,
+                "duplicate-completion",
+                status="skipped",
+                packet_path=f"tasks/running/{filename}",
+                report_path=f"reports/{task_id}-result.md",
+                details={"archived_path": archived_path.replace("\\", "/")},
+            )
+            print(f"중복 완료 packet 보관됨: {filename} (done already exists)")
         try:
             git_status, git_message, git_branch, git_commit_sha = sync_completed_task_to_git(
                 task_id=task_id,
@@ -1489,7 +2299,6 @@ def handle_task(task_path: str) -> None:
                 "watcher-sync-failed",
                 "main-fetch-failed",
                 "main-push-failed",
-                "main-promotion-skipped",
             }:
                 summary = git_message
                 if git_branch:

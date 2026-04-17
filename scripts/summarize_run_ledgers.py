@@ -6,6 +6,16 @@ from collections import Counter
 from pathlib import Path
 from typing import Any, Optional
 
+LOCAL_QUEUE_PATHS = {
+    "inbox": "tasks/inbox",
+    "running": "tasks/running",
+    "done": "tasks/done",
+    "blocked": "tasks/blocked",
+    "drifted": "tasks/drifted",
+    "review-required": "tasks/review-required",
+    "remote": "tasks/remote",
+}
+
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -113,6 +123,42 @@ def summarize_rows(name: str, rows: list[dict[str, Any]], limit: int) -> list[st
     return lines
 
 
+def queue_snapshot(project_path: str, queue_paths: dict[str, str]) -> dict[str, list[str]]:
+    snapshot: dict[str, list[str]] = {}
+    project_root = Path(project_path).resolve()
+    for label, raw_path in queue_paths.items():
+        queue_dir = project_root / raw_path
+        if not queue_dir.exists():
+            snapshot[label] = []
+            continue
+        snapshot[label] = sorted(path.name for path in queue_dir.glob("*.md"))
+    return snapshot
+
+
+def summarize_queue_snapshot(name: str, snapshot: dict[str, list[str]], limit: int) -> list[str]:
+    lines = [f"[{name}]"]
+    total = sum(len(items) for items in snapshot.values())
+    lines.append(f"queue_records: {total}")
+    if total == 0:
+        lines.append("queue_counts: none")
+        lines.append("queue_samples: none")
+        return lines
+
+    queue_counter = Counter({label: len(items) for label, items in snapshot.items() if items})
+    lines.append(f"queue_counts: {format_counter(queue_counter)}")
+    lines.append("queue_samples:")
+    for label in sorted(snapshot):
+        items = snapshot[label]
+        if not items:
+            continue
+        sample = ", ".join(f"`{item}`" for item in items[:limit])
+        suffix = ""
+        if len(items) > limit:
+            suffix = f" ... (+{len(items) - limit})"
+        lines.append(f"- {label}: {sample}{suffix}")
+    return lines
+
+
 def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
@@ -124,6 +170,12 @@ def main() -> int:
 
     sections = [
         *summarize_rows("local watcher", local_rows, args.limit),
+        "",
+        *summarize_queue_snapshot(
+            "local task queues",
+            queue_snapshot(args.project_path, LOCAL_QUEUE_PATHS),
+            args.limit,
+        ),
         "",
         *summarize_rows("cowork watcher", cowork_rows, args.limit),
     ]

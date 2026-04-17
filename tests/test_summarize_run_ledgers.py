@@ -60,6 +60,8 @@ def test_summarize_run_ledgers_prints_stage_counts_and_latest_statuses(
 
     _write_rows(tmp_path / "dispatch" / "run-ledger.jsonl", local_rows)
     _write_rows(tmp_path / "cowork" / "dispatch" / "run-ledger.jsonl", cowork_rows)
+    (tmp_path / "tasks" / "review-required").mkdir(parents=True)
+    (tmp_path / "tasks" / "review-required" / "TASK-REVIEW.md").write_text("queued", encoding="utf-8")
 
     monkeypatch.setattr(
         "sys.argv",
@@ -81,6 +83,9 @@ def test_summarize_run_ledgers_prints_stage_counts_and_latest_statuses(
     assert "latest_stage_counts: blocked=1, completed=1" in output
     assert "TASK-A: completed / done" in output
     assert "TASK-B: blocked / action-required" in output
+    assert "[local task queues]" in output
+    assert "queue_counts: review-required=1" in output
+    assert "TASK-REVIEW.md" in output
     assert "[cowork watcher]" in output
     assert "stage_counts: promoted=1, review-ready=1" in output
     assert "TASK-C: promoted / recorded" in output

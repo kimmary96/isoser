@@ -22,10 +22,12 @@
   - approval marker: `cowork/approvals/<task-id>.ok`
   - 승인되면 `cowork/packets/<task-id>.md`의 최신본이 `tasks/inbox/` 또는 `tasks/remote/`로 복사되어 execution packet이 된다
 - Local execution path
-  - `tasks/inbox/*.md` -> `tasks/running/` -> `tasks/done/|tasks/drifted/|tasks/blocked/`
+  - `tasks/inbox/*.md` -> `tasks/running/` -> `tasks/done/|tasks/drifted/|tasks/blocked/|tasks/review-required/`
   - `tasks/drifted/*.md|tasks/blocked/*.md` -> auto recovery -> `tasks/inbox/` (가능할 때만)
+  - `tasks/review-required/*.md` -> manual review / cowork approval path
   - reports: `reports/*.md`
   - terminal alerts: `dispatch/alerts/*.md`
+  - LangGraph spec/review: `docs/automation/watcher-langgraph.md`, `scripts/watcher_langgraph.py`
 - Remote fallback path
   - `tasks/remote/*.md` push -> `.github/workflows/claude-dev.yml`
 

@@ -1,9 +1,27 @@
+import type { Metadata } from "next";
 import { LandingANavBar, LandingATickerBar } from "@/app/(landing)/landing-a/_components";
 import { getProgram, listPrograms } from "@/lib/api/backend";
+import { getSiteUrl } from "@/lib/seo";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Program } from "@/lib/types";
 
 import ProgramsCompareClient from "./programs-compare-client";
+
+export const metadata: Metadata = {
+  title: "취업 지원 프로그램 비교 | 이소서",
+  description:
+    "최대 3개의 취업 지원 프로그램을 한 화면에서 비교하고 일정, 지원 조건, 적합도 정보를 빠르게 검토할 수 있습니다.",
+  alternates: {
+    canonical: "/compare",
+  },
+  openGraph: {
+    title: "취업 지원 프로그램 비교 | 이소서",
+    description:
+      "최대 3개의 취업 지원 프로그램을 한 화면에서 비교하고 일정, 지원 조건, 적합도 정보를 빠르게 검토할 수 있습니다.",
+    type: "website",
+    url: getSiteUrl("/compare"),
+  },
+};
 
 type ProgramsComparePageProps = {
   searchParams: Promise<{
@@ -20,18 +38,18 @@ function isUuid(value: string): boolean {
 
 function parseRequestedIds(value?: string | string[]) {
   const rawValues = Array.isArray(value) ? value : value ? [value] : [];
-  const requested = rawValues.flatMap((entry) =>
-    entry
-      .split(",")
-      .map((token) => token.trim())
-      .filter(Boolean)
-  );
+  const requested = rawValues.flatMap((entry) => entry.split(",").map((token) => token.trim()));
 
   const slotIds: Array<string | null> = [];
   const seen = new Set<string>();
   let needsNormalization = rawValues.length > 1 || requested.length > 3;
 
   requested.slice(0, 3).forEach((token) => {
+    if (!token) {
+      slotIds.push(null);
+      return;
+    }
+
     if (!isUuid(token)) {
       slotIds.push(null);
       needsNormalization = true;

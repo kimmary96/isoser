@@ -1,13 +1,21 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import { cache } from "react";
 
 import { LandingANavBar, LandingATickerBar } from "@/app/(landing)/landing-a/_components";
+import AdSlot from "@/components/AdSlot";
 import { getProgram } from "@/lib/api/backend";
+import { getSiteUrl } from "@/lib/seo";
+import type { Program } from "@/lib/types";
 
 type ProgramDetailPageProps = {
   params: Promise<{
     id: string;
   }>;
 };
+
+const getProgramDetail = cache(async (id: string) => getProgram(id));
 
 function normalizeTextList(value: string[] | string | null | undefined): string[] {
   if (Array.isArray(value)) {
@@ -31,16 +39,151 @@ function formatDateLabel(value: string | null | undefined): string {
   return date.toLocaleDateString("ko-KR");
 }
 
+function isNotFoundError(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const message = error.message.toLowerCase();
+  return message.includes("404") || message.includes("not found");
+}
+
+function formatProgramPeriod(program: Program): string | undefined {
+  if (!program.start_date && !program.end_date) {
+    return undefined;
+  }
+
+  const start = program.start_date ? formatDateLabel(program.start_date) : "시작일 미정";
+  const end = program.end_date ? formatDateLabel(program.end_date) : "종료일 미정";
+  return `${start} - ${end}`;
+}
+
+function buildProgramDescription(program: Program): string {
+  const summary = [
+    program.provider ? `${program.provider}에서 운영하는` : undefined,
+    program.category ? `${program.category} 프로그램.` : "취업 지원 프로그램.",
+    program.location || undefined,
+    formatProgramPeriod(program),
+  ].filter(Boolean);
+
+  if (summary.length > 0) {
+    return summary.join(" ");
+  }
+
+  return "이소서에서 제공하는 취업 지원 프로그램 상세 정보입니다.";
+}
+
+function omitUndefined<T extends Record<string, unknown>>(value: T): T {
+  return Object.fromEntries(Object.entries(value).filter(([, entry]) => entry !== undefined)) as T;
+}
+
+function buildProgramJsonLd(program: Program): Record<string, unknown> | null {
+  if (!program.title) {
+    return null;
+  }
+
+  const description = program.description || program.summary || undefined;
+  const location = program.location
+    ? {
+        "@type": "Place",
+        address: program.location,
+      }
+    : undefined;
+  const provider = program.provider
+    ? {
+        "@type": "Organization",
+        name: program.provider,
+      }
+    : undefined;
+  const offers =
+    program.support_type || description
+      ? omitUndefined({
+          "@type": "Offer",
+          price: "0",
+          priceCurrency: "KRW",
+          description: program.support_type || undefined,
+        })
+      : undefined;
+
+  return omitUndefined({
+    "@context": "https://schema.org",
+    "@type": "Course",
+    name: program.title,
+    provider,
+    description,
+    educationalLevel: program.category || undefined,
+    locationCreated: location,
+    startDate: program.start_date || undefined,
+    endDate: program.end_date || undefined,
+    offers,
+  });
+}
+
+async function getProgramForPage(id: string): Promise<Program> {
+  try {
+    return await getProgramDetail(id);
+  } catch (error) {
+    if (isNotFoundError(error)) {
+      notFound();
+    }
+
+    throw error;
+  }
+}
+
+export async function generateMetadata({ params }: ProgramDetailPageProps): Promise<Metadata> {
+  const { id } = await params;
+
+  try {
+    const program = await getProgramDetail(id);
+    const title = program.title ? `${program.title} | 이소서` : "프로그램 상세 | 이소서";
+    const description = buildProgramDescription(program);
+
+    return {
+      title,
+      description,
+      alternates: {
+        canonical: `/programs/${id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        type: "article",
+        url: getSiteUrl(`/programs/${id}`),
+      },
+    };
+  } catch (error) {
+    if (isNotFoundError(error)) {
+      return {
+        title: "프로그램 상세 | 이소서",
+        description: "이소서 프로그램 상세 페이지입니다.",
+      };
+    }
+
+    return {
+      title: "프로그램 상세 | 이소서",
+      description: "이소서 프로그램 상세 페이지입니다.",
+    };
+  }
+}
+
 export default async function ProgramDetailPage({ params }: ProgramDetailPageProps) {
   const { id } = await params;
 
   try {
-    const program = await getProgram(id);
+    const program = await getProgramForPage(id);
     const chips = [...normalizeTextList(program.tags), ...normalizeTextList(program.skills)].slice(0, 10);
     const externalLink = program.application_url || program.link || program.source_url;
+    const jsonLd = buildProgramJsonLd(program);
 
     return (
       <>
+        {jsonLd ? (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          />
+        ) : null}
         <LandingATickerBar />
         <LandingANavBar />
         <main className="min-h-screen bg-slate-50 text-slate-950">
@@ -90,12 +233,21 @@ export default async function ProgramDetailPage({ params }: ProgramDetailPagePro
                   </a>
                 </div>
               ) : null}
+
+              <AdSlot
+                slotId="program-detail-bottom-banner"
+                className="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3"
+              />
             </section>
           </div>
         </main>
       </>
     );
   } catch (e) {
+    if (isNotFoundError(e)) {
+      notFound();
+    }
+
     const message = e instanceof Error ? e.message : "프로그램을 불러오지 못했습니다.";
     return (
       <>
