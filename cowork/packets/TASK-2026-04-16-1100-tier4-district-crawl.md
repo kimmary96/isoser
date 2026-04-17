@@ -174,6 +174,6 @@ is_ad = False
 
 # Transport Notes
 
-- Current queue location: `tasks/drifted/TASK-2026-04-16-1100-tier4-district-crawl.md`
-- Once reviewed, the runnable target is `tasks/inbox/TASK-2026-04-16-1100-tier4-district-crawl.md`
+- Current promoted copy: `tasks/inbox/TASK-2026-04-16-1100-tier4-district-crawl.md`
+- Canonical planning packet: `cowork/packets/TASK-2026-04-16-1100-tier4-district-crawl.md`
 - This packet was replanned against current HEAD `4a8369f350e7a0aa8b3b5e4613dc92050f5ec3f6`.

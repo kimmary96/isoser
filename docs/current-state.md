@@ -98,6 +98,7 @@
 - automation index: [automation/README.md](./automation/README.md)
 - automation overview: [automation/overview.md](./automation/overview.md)
 - local flow: [automation/local-flow.md](./automation/local-flow.md)
+- architecture graph: [automation/agentic-architecture-langgraph.md](./automation/agentic-architecture-langgraph.md)
 - presentation summary: [automation/agentic-flow-presentation.md](./automation/agentic-flow-presentation.md)
 - watcher LangGraph review: [automation/watcher-langgraph.md](./automation/watcher-langgraph.md)
 - task packet contract: [automation/task-packets.md](./automation/task-packets.md)

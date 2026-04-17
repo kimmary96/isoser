@@ -1,6 +1,7 @@
 from backend.rag.collector.base_collector import BaseCollector
 from backend.rag.collector.hrd_collector import HrdCollector
 from backend.rag.collector.scheduler import run_all_collectors
+from backend.rag.collector.tier4_collectors import DobongCollector
 from backend.rag.collector.tier3_collectors import KisedCollector, KobiaCollector
 
 
@@ -174,7 +175,62 @@ def test_scheduler_includes_tier3_collectors_in_dry_run(monkeypatch) -> None:
 
     assert result["saved_count"] == 0
     assert result["failed_count"] == 0
-    assert [source["source"] for source in result["sources"]] == ["tier1", "KOBIA", "KISED"]
+    assert [source["source"] for source in result["sources"]] == ["tier1", "KISED", "KOBIA"]
     assert [source["tier"] for source in result["sources"]] == [1, 3, 3]
     assert all(source["status"] == "dry_run" for source in result["sources"])
     assert "Collected 1 rows; upsert skipped" in result["sources"][1]["message"]
+
+
+def test_scheduler_includes_tier4_collectors_after_tier3(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "backend.rag.collector.scheduler.COLLECTORS",
+        [_Tier1Collector(), KobiaCollector(), DobongCollector()],
+    )
+
+    monkeypatch.setattr(
+        KobiaCollector,
+        "collect",
+        lambda self: [
+            {
+                "title": "KOBIA 창업보육센터 네트워킹 데이",
+                "link": "http://www.kobia.or.kr/board/view.do?idx=1&board_kind=KNOTICE&page=1",
+                "raw_deadline": "2026.05.10",
+                "category_hint": "행사/네트워킹",
+                "target": ["창업보육센터"],
+                "source_meta": {
+                    **self.get_source_meta(),
+                    "source": "KOBIA",
+                    "tier": 3,
+                    "board_kind": "KNOTICE",
+                },
+                "raw": {"idx": "1"},
+            }
+        ],
+    )
+    monkeypatch.setattr(
+        DobongCollector,
+        "collect",
+        lambda self: [
+            {
+                "title": "도봉 청년 취업 교육 참여자 모집",
+                "link": "https://www.dobong.go.kr/WDB_dev/MYDEV/view.asp?code=10008770&num=55",
+                "raw_deadline": "2026-05-20",
+                "category_hint": "훈련",
+                "target": ["청년"],
+                "source_meta": {
+                    **self.get_source_meta(),
+                    "source": "도봉구청",
+                    "tier": 4,
+                },
+                "raw": {"code": "10008770", "page_source": "training_board"},
+            }
+        ],
+    )
+
+    result = run_all_collectors(upsert=False)
+
+    assert result["saved_count"] == 0
+    assert result["failed_count"] == 0
+    assert [source["source"] for source in result["sources"]] == ["tier1", "KOBIA", "도봉구청"]
+    assert [source["tier"] for source in result["sources"]] == [1, 3, 4]
+    assert all(source["status"] == "dry_run" for source in result["sources"])

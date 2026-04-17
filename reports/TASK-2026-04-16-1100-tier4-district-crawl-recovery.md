@@ -1,31 +1,38 @@
 ## Recovery Report
 
 - task id: `TASK-2026-04-16-1100-tier4-district-crawl`
-- checked at: `2026-04-16`
-- current HEAD: `469cd3f06a5e9e73cefddcf7181afa014948de69`
-- recovery action: `not applied`
+- checked at: `2026-04-17`
+- current HEAD: `ddc1083bf1a82c4ed21ccd313e32106227d663b8`
+- recovery action: `applied`
 
-## Why Automatic Recovery Was Not Safe
+## Why Retry Is Safe Now
 
-The failure reason from the drift report is still active in the current worktree, and it still affects the exact implementation area this Tier 4 task would modify:
+The previous drift cause is no longer active in the implementation area this packet will touch:
 
-- `backend/rag/collector/scheduler.py` is still dirty (`MM`) and already contains uncommitted Tier 3 registration and `run_all_collectors(upsert=False)` changes.
-- `backend/tests/test_scheduler_collectors.py` is still dirty (`MM`) with uncommitted Tier 3 scheduler coverage.
-- `backend/rag/collector/tier3_collectors.py` is still untracked (`??`), so the scheduler baseline this task depends on is not yet stabilized.
+- `backend/rag/collector/scheduler.py` is now committed and clean.
+- `backend/rag/collector/tier3_collectors.py` is present as a committed baseline module.
+- `backend/tests/test_scheduler_collectors.py` is committed and clean.
+- `backend/rag/collector/tier4_collectors.py` and `backend/tests/test_tier4_collectors.py` are still absent, which matches the intended implementation scope instead of representing drift.
 
-Because this Tier 4 packet is supposed to add more collectors into the same scheduler path, automatically refreshing the packet to target the current worktree would bake in an unresolved dependency on unfinished Tier 3 work. That is not a safe retry condition for a watcher run.
+This means the packet can safely retry against the current repository baseline without depending on unfinished Tier 3 work or external prerequisites.
 
-## Packet Decision
+## Packet Changes
 
-`tasks/drifted/TASK-2026-04-16-1100-tier4-district-crawl.md` was left unchanged.
+- Refreshed `planned_against_commit` to current HEAD `ddc1083bf1a82c4ed21ccd313e32106227d663b8`.
+- Set `auto_recovery_attempts: 1`.
+- Kept `status: queued`.
+- Revalidated `planned_files` and kept them unchanged because they still match the intended touch set.
+- Revalidated `planned_worktree_fingerprint` and kept it unchanged at `a282bf99d4f7c6b8f288bd66348677603e118c3ddeb392330ddddd090f3ad2ae`.
+- Narrowed the packet baseline text so it states the planned file set is currently clean and references the current HEAD instead of the stale hash.
 
-## What Needs To Happen First
+## Queue Note
 
-- Commit, discard, or otherwise stabilize the current Tier 3 scheduler-related changes.
-- Re-run drift/recovery once `backend/rag/collector/scheduler.py` and its adjacent test/module state represent a clean baseline.
+During this turn the packet was no longer present at `tasks/drifted/TASK-2026-04-16-1100-tier4-district-crawl.md` and had already been moved to `tasks/inbox/TASK-2026-04-16-1100-tier4-district-crawl.md`.
+
+To avoid creating a duplicate queued task, the active inbox copy was refreshed in place and no new drifted copy was created.
 
 ## Run Metadata
 
-- generated_at: `2026-04-16T13:14:41`
+- generated_at: `2026-04-17T12:57:08`
 - watcher_exit_code: `0`
-- codex_tokens_used: `46,000`
+- codex_tokens_used: `73,703`
