@@ -4,6 +4,7 @@ import type {
   CoachMessage,
   CoverLetter,
   Profile,
+  ProgramCalendarRecommendResponse,
   Program,
   ProgramCompareRelevanceResponse,
   Resume,
@@ -137,6 +138,20 @@ export async function invalidateRecommendCache(): Promise<void> {
   } catch {
     // Ignore cache refresh failures so the dashboard can recover on next entry.
   }
+}
+
+export async function getRecommendedCalendar(params?: {
+  forceRefresh?: boolean;
+}): Promise<ProgramCalendarRecommendResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.forceRefresh) searchParams.set("force_refresh", "true");
+
+  const query = searchParams.toString();
+  return requestAppJson<ProgramCalendarRecommendResponse>(
+    `/api/dashboard/recommend-calendar${query ? `?${query}` : ""}`,
+    { method: "GET" },
+    "캘린더 추천 일정을 불러오지 못했습니다."
+  );
 }
 
 export async function getProgramCompareRelevance(

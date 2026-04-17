@@ -120,5 +120,6 @@
   - `docs/worklogs/`: 날짜별 작업 기록
 
 ## Current behavior notes
-- 추천 프로그램 API는 `relevance_score`와 `urgency_score`를 분리해서 반환하며, 카드 UI는 관련도 배지에 `relevance_score`를 사용하고 마감 7일 이내만 별도 마감 칩으로 표시한다.
+- 추천 프로그램 API는 `relevance_score`와 `urgency_score`를 분리해서 반환하며, `final_score = relevance_score * 0.6 + urgency_score * 0.4` 하이브리드 점수로 정렬한다.
+- FastAPI는 `GET /recommend/calendar`를 추가로 제공하며, 대시보드 BFF `GET /api/dashboard/recommend-calendar`는 추천 카드용 `deadline`, `d_day_label`, `relevance_score`, `urgency_score`, `final_score`를 함께 프록시한다.
 - 비교 페이지는 로그인 사용자에 한해 `POST /programs/compare-relevance`로 종합 관련도, 기술 스택 일치도, 매칭 스킬 태그를 계산해 표시한다.

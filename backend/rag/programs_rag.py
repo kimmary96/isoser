@@ -19,6 +19,9 @@ except ImportError:
 
 logger = get_logger(__name__)
 TOKEN_PATTERN = re.compile(r"[0-9A-Za-z가-힣+#]+")
+RECOMMEND_RELEVANCE_WEIGHT = 0.6
+RECOMMEND_URGENCY_WEIGHT = 0.4
+URGENCY_WINDOW_DAYS = 30
 
 PROGRAM_RECOMMEND_PROMPT = """
 너는 사용자의 경력 프로필에 맞는 훈련 과정을 추천하는 커리어 코치다.
@@ -168,9 +171,18 @@ class ProgramsRAG:
             days_left = (target - date.today()).days
             if days_left < 0:
                 return 0.0
-            return max(0.0, 1.0 - days_left / 30)
+            # Keep the decay linear for now so the score stays easy to reason about and tune.
+            return round(max(0.0, 1.0 - days_left / URGENCY_WINDOW_DAYS), 4)
         except Exception:
             return 0.0
+
+    def _final_score(self, relevance_score: float | None, urgency_score: float | None) -> float:
+        relevance = max(0.0, min(1.0, float(relevance_score or 0.0)))
+        urgency = max(0.0, min(1.0, float(urgency_score or 0.0)))
+        return round(
+            relevance * RECOMMEND_RELEVANCE_WEIGHT + urgency * RECOMMEND_URGENCY_WEIGHT,
+            4,
+        )
 
     def _semantic_score(self, distance: float | None) -> float:
         if distance is None:
@@ -327,7 +339,7 @@ class ProgramsRAG:
                 days_left = None
             matched_keywords, relevance_score = self._program_match_context(program_record, keywords)
             urgency_score = self._urgency_score(program_record)
-            final_score = round(relevance_score * 0.8 + urgency_score * 0.2, 4)
+            final_score = self._final_score(relevance_score, urgency_score)
             program_record["days_left"] = days_left
             program_record["similarity_score"] = relevance_score
             program_record["relevance_score"] = relevance_score
@@ -346,14 +358,7 @@ class ProgramsRAG:
                 )
             )
 
-        recommendations.sort(
-            key=lambda item: (
-                item.program.get("relevance_score", 0.0),
-                item.program.get("urgency_score", 0.0),
-                item.program.get("final_score", 0.0),
-            ),
-            reverse=True,
-        )
+        recommendations.sort(key=lambda item: (-float(item.score or 0.0), item.program.get("days_left", 10**9)))
         return recommendations[:top_k]
 
     def sync(self, programs: Sequence[Mapping[str, Any]]) -> int:
@@ -451,7 +456,7 @@ class ProgramsRAG:
                 days_left = None
             urgency_score = self._urgency_score(program_record)
             semantic_score = self._semantic_score(result.score)
-            final_score = round(semantic_score * 0.8 + urgency_score * 0.2, 4)
+            final_score = self._final_score(semantic_score, urgency_score)
             program_record["days_left"] = days_left
             program_record["similarity_score"] = semantic_score
             program_record["relevance_score"] = semantic_score
@@ -473,14 +478,7 @@ class ProgramsRAG:
                 )
             )
 
-        recommendations.sort(
-            key=lambda item: (
-                item.program.get("relevance_score", 0.0),
-                item.program.get("urgency_score", 0.0),
-                item.program.get("final_score", 0.0),
-            ),
-            reverse=True,
-        )
+        recommendations.sort(key=lambda item: (-float(item.score or 0.0), item.program.get("days_left", 10**9)))
         return recommendations
 
     async def _generate_reasons(

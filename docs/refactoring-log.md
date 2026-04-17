@@ -1282,3 +1282,9 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-17: `scripts/summarize_run_ledgers.py`, `scripts/summarize_actionable_ledgers.py`, `tests/test_summarize_run_ledgers.py`, `tests/test_summarize_actionable_ledgers.py`, `CLAUDE.md`
   - 운영 요약 스크립트가 현재 queue snapshot도 함께 출력하도록 확장해 `tasks/review-required/` 대기 현황을 ledger 이벤트와 별개로 바로 볼 수 있게 함
   - 상위 프로젝트 문서 `CLAUDE.md`에도 supervisor 3단계와 `tasks/review-required/` 전용 큐 의미를 반영해 운영 용어를 맞춤
+- 2026-04-17: `watcher.py`, `tests/test_watcher.py`
+  - 같은 blocked/runtime/push fingerprint에 대한 auto-remediation packet이 이미 active queue에 있으면 watcher가 alert 파일과 ledger는 계속 남기되 중복 Slack 알림은 suppress 하도록 조정함
+  - repeated alert auto-remediation이 이미 진행 중인 동안 같은 root cause가 채널을 다시 paging 하는 운영 노이즈를 줄이는 데 초점을 맞춤
+- 2026-04-17: `backend/rag/programs_rag.py`, `backend/routers/programs.py`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/lib/api/app.ts`, `frontend/lib/types/index.ts`
+  - 추천 점수를 `관련도 0.6 + 마감 임박도 0.4` 하이브리드 스코어로 통일하고, 캐시 조회 시에도 현재 deadline 기준으로 urgency/final score를 다시 계산해 구버전 cache가 정렬을 망치지 않도록 정리함
+  - 캘린더 전용 `GET /recommend/calendar` 및 BFF `GET /api/dashboard/recommend-calendar`를 추가해 `deadline`, `d_day_label`, `relevance_score`, `urgency_score`, `final_score`를 함께 전달하도록 분리함

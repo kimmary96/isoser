@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 import logging
 from typing import Any
 
@@ -36,12 +36,16 @@ from utils.supabase_admin import (
 
 logger = get_logger(__name__)
 programs_router = APIRouter(prefix="/programs", tags=["programs"])
-router = programs_router
+calendar_router = APIRouter(tags=["programs"])
+router = APIRouter()
+router.include_router(programs_router)
+router.include_router(calendar_router)
 programs_rag = ProgramsRAG()
 
 PROGRAM_SORT_OPTIONS = {"deadline", "latest"}
 PROGRAM_TEACHING_METHODS = {"온라인", "오프라인", "혼합"}
 RECOMMEND_CACHE_TTL_HOURS = 24
+CALENDAR_RECOMMEND_WINDOW_DAYS = 60
 REGION_QUERY_ALIASES: dict[str, tuple[str, ...]] = {
     "서울": ("서울",),
     "경기": ("경기",),
@@ -105,6 +109,21 @@ class ProgramRecommendResponse(BaseModel):
     items: list[ProgramRecommendItem] = Field(default_factory=list)
 
 
+class ProgramCalendarRecommendItem(BaseModel):
+    program_id: str
+    relevance_score: float
+    urgency_score: float
+    final_score: float
+    deadline: str | None = None
+    d_day_label: str
+    reason: str
+    program: ProgramListItem
+
+
+class ProgramCalendarRecommendResponse(BaseModel):
+    items: list[ProgramCalendarRecommendItem] = Field(default_factory=list)
+
+
 class ProgramCompareRelevanceRequest(BaseModel):
     program_ids: list[str] = Field(default_factory=list)
 
@@ -132,6 +151,97 @@ def _serialize_program_recommendation(item: ProgramRecommendation) -> ProgramRec
         reason=item.reason,
         fit_keywords=item.fit_keywords,
         program=ProgramListItem.model_validate(item.program),
+    )
+
+
+def _parse_program_date(value: Any) -> date | None:
+    if not value:
+        return None
+    try:
+        return date.fromisoformat(str(value)[:10])
+    except (TypeError, ValueError):
+        return None
+
+
+def _resolve_program_deadline(program: dict[str, Any]) -> date | None:
+    return _parse_program_date(program.get("deadline") or program.get("end_date"))
+
+
+def _days_left_for_program(program: dict[str, Any]) -> int | None:
+    deadline = _resolve_program_deadline(program)
+    if deadline is None:
+        return None
+    return (deadline - date.today()).days
+
+
+def _format_d_day_label(days_left: int | None) -> str:
+    if days_left is None:
+        return "상시"
+    if days_left < 0:
+        return "마감"
+    if days_left == 0:
+        return "D-Day"
+    return f"D-{days_left}"
+
+
+def _is_program_expired(program: dict[str, Any]) -> bool:
+    days_left = _days_left_for_program(program)
+    return days_left is not None and days_left < 0
+
+
+def _is_within_calendar_window(
+    program: dict[str, Any],
+    *,
+    window_days: int = CALENDAR_RECOMMEND_WINDOW_DAYS,
+) -> bool:
+    days_left = _days_left_for_program(program)
+    if days_left is None:
+        return True
+    return 0 <= days_left <= window_days
+
+
+def _recommendation_sort_key(program: dict[str, Any], score_field: str = "final_score") -> tuple[float, bool, date]:
+    deadline = _resolve_program_deadline(program)
+    return (
+        -float(program.get(score_field) or 0.0),
+        deadline is None,
+        deadline or date.max,
+    )
+
+
+def _score_program_record(
+    program: dict[str, Any],
+    *,
+    relevance_score: float | None,
+    similarity_score: float | None = None,
+) -> dict[str, Any]:
+    program_record = dict(program)
+    days_left = _days_left_for_program(program_record)
+    urgency_score = programs_rag._urgency_score(program_record)
+    final_score = programs_rag._final_score(relevance_score, urgency_score)
+    program_record["days_left"] = days_left
+    program_record["similarity_score"] = similarity_score if similarity_score is not None else relevance_score
+    program_record["relevance_score"] = round(float(relevance_score or 0.0), 4)
+    program_record["urgency_score"] = urgency_score
+    program_record["final_score"] = final_score
+    return program_record
+
+
+def _to_calendar_recommend_item(
+    *,
+    program_id: str,
+    reason: str,
+    program: dict[str, Any],
+) -> ProgramCalendarRecommendItem:
+    return ProgramCalendarRecommendItem(
+        program_id=program_id,
+        relevance_score=float(program.get("relevance_score") or 0.0),
+        urgency_score=float(program.get("urgency_score") or 0.0),
+        final_score=float(program.get("final_score") or 0.0),
+        deadline=program.get("deadline") or program.get("end_date"),
+        d_day_label=_format_d_day_label(program.get("days_left")),
+        reason=reason,
+        program=ProgramListItem.model_validate(program),
     )
 
 
@@ -292,7 +402,11 @@ async def _fetch_programs_by_ids(program_ids: list[str]) -> dict[str, dict[str, 
     }
 
 
-async def _load_cached_recommendations(user_id: str) -> list[dict[str, Any]] | None:
+async def _load_cached_recommendations(
+    user_id: str,
+    *,
+    limit: int = 20,
+) -> list[dict[str, Any]] | None:
     cutoff = (datetime.now(timezone.utc) - timedelta(hours=RECOMMEND_CACHE_TTL_HOURS)).isoformat()
     try:
         rows = await request_supabase(
@@ -303,7 +417,7 @@ async def _load_cached_recommendations(user_id: str) -> list[dict[str, Any]] | N
                 "user_id": f"eq.{user_id}",
                 "generated_at": f"gte.{cutoff}",
                 "order": "final_score.desc",
-                "limit": "20",
+                "limit": str(limit),
             },
         )
     except Exception as exc:
@@ -368,6 +482,13 @@ def _build_default_recommendation_items(
     top_k: int,
     reason: str,
 ) -> list[ProgramRecommendItem]:
+    scored_programs = [
+        _score_program_record(program, relevance_score=0.0)
+        for program in programs
+        if not _is_program_expired(program)
+    ]
+    scored_programs.sort(key=lambda program: _recommendation_sort_key(program, "urgency_score"))
+
     return [
         ProgramRecommendItem(
             program_id=str(program.get("id") or ""),
@@ -377,7 +498,7 @@ def _build_default_recommendation_items(
             fit_keywords=[],
             program=ProgramListItem.model_validate(program),
         )
-        for program in programs[:top_k]
+        for program in scored_programs[:top_k]
         if str(program.get("id") or "").strip()
     ]
 
@@ -403,28 +524,51 @@ async def _build_cached_recommendation_items(
         if not program:
             continue
 
-        program_record = dict(program)
         cached_relevance_score = row.get("relevance_score")
         if cached_relevance_score is None:
             cached_relevance_score = row.get("final_score")
-        program_record["similarity_score"] = row.get("similarity_score")
-        program_record["relevance_score"] = cached_relevance_score
-        program_record["urgency_score"] = row.get("urgency_score")
-        program_record["final_score"] = row.get("final_score")
+        program_record = _score_program_record(
+            program,
+            relevance_score=float(cached_relevance_score or 0.0),
+            similarity_score=float(row.get("similarity_score") or cached_relevance_score or 0.0),
+        )
+        if _is_program_expired(program_record):
+            continue
         items.append(
             ProgramRecommendItem(
                 program_id=program_id,
-                score=float(row.get("final_score") or 0),
-                relevance_score=float(cached_relevance_score or 0),
+                score=float(program_record.get("final_score") or 0.0),
+                relevance_score=float(program_record.get("relevance_score") or 0.0),
                 reason="최근 생성된 추천 결과를 캐시에서 불러왔습니다.",
                 fit_keywords=[],
                 program=ProgramListItem.model_validate(program_record),
             )
         )
-        if len(items) >= top_k:
-            break
 
-    return items
+    items.sort(key=lambda item: _recommendation_sort_key(item.program.model_dump()))
+    return items[:top_k]
+
+ 
+def _build_calendar_recommendation_items(
+    items: list[ProgramRecommendItem],
+    *,
+    window_days: int = CALENDAR_RECOMMEND_WINDOW_DAYS,
+) -> list[ProgramCalendarRecommendItem]:
+    calendar_items: list[ProgramCalendarRecommendItem] = []
+    for item in items:
+        program_record = item.program.model_dump()
+        if _is_program_expired(program_record) or not _is_within_calendar_window(program_record, window_days=window_days):
+            continue
+        calendar_items.append(
+            _to_calendar_recommend_item(
+                program_id=item.program_id,
+                reason=item.reason,
+                program=program_record,
+            )
+        )
+
+    calendar_items.sort(key=lambda item: _recommendation_sort_key(item.program.model_dump()))
+    return calendar_items
 
 
 async def _count_program_rows(
@@ -724,6 +868,64 @@ async def recommend_programs(
 
     return ProgramRecommendResponse(
         items=[_serialize_program_recommendation(item) for item in recommendations]
+    )
+
+
+@calendar_router.get("/recommend/calendar", response_model=ProgramCalendarRecommendResponse)
+async def recommend_programs_for_calendar(
+    force_refresh: bool = Query(default=False),
+    authorization: str | None = Header(default=None),
+) -> ProgramCalendarRecommendResponse:
+    programs = await _fetch_program_rows(limit=200)
+    if not programs:
+        return ProgramCalendarRecommendResponse(items=[])
+
+    if not authorization:
+        default_items = _build_default_recommendation_items(
+            programs,
+            top_k=60,
+            reason="로그인 정보 없이 마감 임박 순으로 우선 노출한 추천 일정입니다.",
+        )
+        return ProgramCalendarRecommendResponse(
+            items=_build_calendar_recommendation_items(default_items)
+        )
+
+    current_user = await get_current_user_from_authorization(authorization)
+
+    if not force_refresh:
+        cached_rows = await _load_cached_recommendations(current_user.id, limit=60)
+        if cached_rows:
+            cached_items = await _build_cached_recommendation_items(cached_rows, top_k=60)
+            calendar_items = _build_calendar_recommendation_items(cached_items)
+            if calendar_items:
+                return ProgramCalendarRecommendResponse(items=calendar_items)
+
+    if force_refresh:
+        await _delete_user_recommendations(current_user.id)
+
+    profile = await _fetch_profile_row(current_user.id)
+    activities = await _fetch_activity_rows(current_user.id)
+    recommendations = await programs_rag.recommend(
+        profile=profile,
+        activities=activities,
+        programs=programs,
+        top_k=60,
+    )
+
+    if not recommendations:
+        default_items = _build_default_recommendation_items(
+            programs,
+            top_k=60,
+            reason="프로필 기반 추천 데이터가 충분하지 않아 마감 임박 순 추천 일정을 보여줍니다.",
+        )
+        return ProgramCalendarRecommendResponse(
+            items=_build_calendar_recommendation_items(default_items)
+        )
+
+    await _save_recommendations(current_user.id, recommendations)
+    recommendation_items = [_serialize_program_recommendation(item) for item in recommendations]
+    return ProgramCalendarRecommendResponse(
+        items=_build_calendar_recommendation_items(recommendation_items)
     )
 
 
