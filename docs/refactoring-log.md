@@ -1,5 +1,21 @@
 # 리팩토링 로그
 
+## 2026-04-17 반복 watcher 알림 자동 remediation 큐 추가
+
+- 수정 파일:
+  - `watcher.py`
+  - `tests/test_watcher.py`
+  - `docs/current-state.md`
+- 변경 내용:
+  - watcher alert에 `alert_fingerprint`와 `repeat_count`를 함께 기록해 task id, commit hash 같은 가변값이 달라도 같은 root cause를 같은 이슈로 묶을 수 있게 함
+  - `blocked`, `runtime-error`, `push-failed`가 동일 fingerprint로 3회 이상 반복되면 `tasks/inbox/`에 자동 remediation packet을 생성해 supervisor 플로우가 루트 원인 수정 작업을 직접 다시 집도록 확장함
+  - 같은 fingerprint에 대해 remediation packet은 한 번만 열리도록 중복 방지 검사를 추가하고, 생성 사실은 local run ledger의 `auto-remediation-queued` 이벤트로 남기도록 함
+- 유지된 동작:
+  - 기존 Slack alert 파일과 watcher ledger 기록은 계속 남고, 알림 자체가 사라지지는 않음
+  - `completed` / `recovered` 같은 정상 흐름은 자동 remediation 대상에서 제외함
+- 후속 메모:
+  - 향후 반복 fingerprint별로 즉시 실행 가능한 runbook을 붙이면 packet 생성 대신 watcher 자체에서 더 직접적인 self-healing을 수행할 수 있음
+
 ## 2026-04-16 프로그램 페이지 마감 임박 정렬 보정
 
 - 수정 파일:
@@ -1236,3 +1252,23 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-16: `cowork_watcher.py`, `tests/test_cowork_watcher.py`, `docs/current-state.md`
   - cowork watcher가 승인된 packet의 목적지(`tasks/inbox|remote`)가 이미 존재하면 중복 승격으로 간주하고 기존 파일을 재사용하도록 바꿔 `FileExistsError` runtime-error 반복을 막음
   - 이 경우에도 `promoted` dispatch를 남겨 후속 루프가 멈추지 않게 하고, remote approval queue는 `already present in <target>` 메모와 함께 consume 처리하도록 정리함
+- 2026-04-17: `watcher.py`, `tests/test_watcher.py`, `docs/current-state.md`, `docs/automation/local-flow.md`
+  - local watcher execution을 supervisor `inspector -> implementer` 2단계로 나눠, 구현 전에 `reports/<task-id>-supervisor-inspection.md` handoff를 남기도록 정리함
+  - inspector가 drift/blocked를 먼저 걸러내고 implementer는 inspection handoff를 읽어 구현·검증·result report를 작성하도록 prompt 경계를 분리함
+  - 완료 시 git stage 범위에 supervisor inspection report도 포함해 task-scoped worktree를 더 일관되게 유지하도록 조정함
+- 2026-04-17: `scripts/watcher_langgraph.py`, `tests/test_watcher_langgraph.py`, `docs/automation/watcher-langgraph.md`, `docs/automation/overview.md`, `docs/current-state.md`
+  - 현재 watcher supervisor execution path를 LangGraph 상태 그래프로 정리하고, 현재 구현 graph와 verifier gate를 추가한 제안 graph를 함께 문서화함
+  - reviewer 관점에서 verification gate 부재, manual review 노드 비명시성, recovery graph 연결 약점을 정리하고 개선안을 문서에 반영함
+- 2026-04-17: `watcher.py`, `tests/test_watcher.py`, `scripts/watcher_langgraph.py`, `tests/test_watcher_langgraph.py`, `docs/current-state.md`, `docs/automation/local-flow.md`, `docs/automation/watcher-langgraph.md`
+  - watcher supervisor runtime에 `verifier` 단계를 실제로 추가해 완료 조건을 `inspection report + result report + verification report`로 강화함
+  - implementer는 구현과 result report 초안만 담당하고, verifier는 read-only 최종 검증과 `reports/<task-id>-supervisor-verification.md` 산출만 담당하도록 prompt 경계를 분리함
+  - LangGraph 문서와 테스트를 현재 runtime 구조에 맞게 갱신하고, 다음 개선 지점을 verification failure의 manual review 분리로 재정의함
+- 2026-04-17: `watcher.py`, `tests/test_watcher.py`, `scripts/watcher_langgraph.py`, `tests/test_watcher_langgraph.py`, `docs/current-state.md`, `docs/automation/local-flow.md`, `docs/automation/watcher-langgraph.md`
+  - verifier가 `- verdict: review-required`를 machine-readable하게 남기면 watcher가 일반 blocked alert 대신 `needs-review` 공식 경로와 cowork packet escalation로 분기하도록 조정함
+  - verification 보류는 런타임 저장소상 `tasks/blocked/`에 잠시 적재되지만, 운영 의미상으로는 manual review 노드로 다루도록 LangGraph spec과 문서를 맞춤
+- 2026-04-17: `watcher.py`, `tests/test_watcher.py`, `docs/current-state.md`, `docs/automation/local-flow.md`, `docs/automation/overview.md`
+  - verifier의 `review-required` 결과를 `tasks/review-required/` 전용 큐로 분리해 일반 blocked와 운영 의미를 저장소 레벨에서도 분리함
+  - `tasks/review-required/`는 auto recovery 대상에서 제외하고, `needs-review` alert + cowork packet escalation 전용 큐로 문서와 테스트를 정렬함
+- 2026-04-17: `scripts/summarize_run_ledgers.py`, `scripts/summarize_actionable_ledgers.py`, `tests/test_summarize_run_ledgers.py`, `tests/test_summarize_actionable_ledgers.py`, `CLAUDE.md`
+  - 운영 요약 스크립트가 현재 queue snapshot도 함께 출력하도록 확장해 `tasks/review-required/` 대기 현황을 ledger 이벤트와 별개로 바로 볼 수 있게 함
+  - 상위 프로젝트 문서 `CLAUDE.md`에도 supervisor 3단계와 `tasks/review-required/` 전용 큐 의미를 반영해 운영 용어를 맞춤

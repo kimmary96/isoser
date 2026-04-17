@@ -4,16 +4,22 @@ import argparse
 
 try:
     from scripts.summarize_run_ledgers import (
+        LOCAL_QUEUE_PATHS,
         filter_rows_by_stages,
+        queue_snapshot,
         read_jsonl,
         resolve_path,
+        summarize_queue_snapshot,
         summarize_rows,
     )
 except ImportError:
     from summarize_run_ledgers import (
+        LOCAL_QUEUE_PATHS,
         filter_rows_by_stages,
+        queue_snapshot,
         read_jsonl,
         resolve_path,
+        summarize_queue_snapshot,
         summarize_rows,
     )
 
@@ -28,6 +34,11 @@ DEFAULT_ACTIONABLE_STAGES = {
     "push-failed",
     "main-push-failed",
     "runtime-error",
+}
+ACTIONABLE_QUEUE_PATHS = {
+    "blocked": LOCAL_QUEUE_PATHS["blocked"],
+    "drifted": LOCAL_QUEUE_PATHS["drifted"],
+    "review-required": LOCAL_QUEUE_PATHS["review-required"],
 }
 
 
@@ -84,6 +95,12 @@ def main() -> int:
 
     sections = [
         *summarize_rows("local actionable", local_rows, args.limit),
+        "",
+        *summarize_queue_snapshot(
+            "local actionable queues",
+            queue_snapshot(args.project_path, ACTIONABLE_QUEUE_PATHS),
+            args.limit,
+        ),
         "",
         *summarize_rows("cowork actionable", cowork_rows, args.limit),
     ]

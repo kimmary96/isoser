@@ -79,7 +79,9 @@ isoser/
 │   ├── inbox/                        # 로컬 Codex watcher 입력
 │   ├── running/                      # 로컬 실행 중 task
 │   ├── done/                         # 로컬 완료 task
-│   ├── blocked/                      # 필드 누락/실패/드리프트 검토 필요 task
+│   ├── blocked/                      # 메타데이터 누락/실패/외부 의존성으로 멈춘 task
+│   ├── drifted/                      # packet과 현재 저장소가 어긋난 task
+│   ├── review-required/              # verifier가 사람 검토 후 재승인을 요구한 task
 │   └── remote/                       # 원격 GitHub Action용 task
 ├── reports/                          # Codex 결과/차단/드리프트 보고서
 ├── scripts/
@@ -134,7 +136,7 @@ uvicorn main:app --reload                         # http://localhost:8000/docs
 - `cowork/reviews`: 원본 packet에 대한 review 결과 문서
 - `tasks/inbox`: 승인된 최신 packet 사본이 들어가는 로컬 실행 큐
 - `tasks/remote`: 승인된 최신 packet 사본이 들어가는 원격 fallback 큐
-- `tasks/done|blocked|drifted`: 실행 결과 상태 큐
+- `tasks/done|blocked|drifted|review-required`: 실행 결과 상태 큐
 
 ### cowork review -> local execution 경로
 ```text
@@ -147,8 +149,10 @@ Claude에서 기획
 -> 최신 packet을 tasks/inbox/<task-id>.md로 복사
 -> watcher.py 감지
 -> tasks/running 이동
--> Codex가 AGENTS.md를 읽고 구현/검사/보고서 작성
--> 결과에 따라 tasks/done | tasks/blocked | tasks/drifted 이동
+-> supervisor inspector가 handoff 작성
+-> supervisor implementer가 구현 + result report 작성
+-> supervisor verifier가 최종 검증 verdict 작성
+-> 결과에 따라 tasks/done | tasks/blocked | tasks/drifted | tasks/review-required 이동
 ```
 
 ### 원격 fallback 경로
@@ -167,6 +171,7 @@ PC가 꺼져 있을 때
 - 원격 보조 경로는 `tasks/remote`
 - `cowork/`는 scratch/review workspace이며 execution queue가 아님
 - review markdown은 `cowork/reviews`에 남고, 실행 큐에는 review 문서가 아니라 승인된 최신 packet 사본이 들어감
+- `tasks/review-required`는 verifier가 사람 검토를 요구한 전용 큐이며 auto recovery 대상이 아님
 - `[codex]` 커밋 메시지는 로컬 Codex 자동화 전용
 - 원격 워크플로는 `[codex]` 커밋으로 재트리거되지 않게 설정됨
 - 상세 규칙은 `AGENTS.md`, `docs/current-state.md`, `docs/codex-workflow.md` 참고

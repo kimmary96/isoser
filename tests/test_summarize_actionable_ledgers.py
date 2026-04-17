@@ -56,6 +56,8 @@ def test_summarize_actionable_ledgers_filters_non_actionable_rows(
             },
         ],
     )
+    (tmp_path / "tasks" / "review-required").mkdir(parents=True)
+    (tmp_path / "tasks" / "review-required" / "TASK-R.md").write_text("queued", encoding="utf-8")
 
     monkeypatch.setattr(
         "sys.argv",
@@ -75,6 +77,9 @@ def test_summarize_actionable_ledgers_filters_non_actionable_rows(
     assert "[local actionable]" in output
     assert "stage_counts: blocked=1" in output
     assert "TASK-B: blocked / action-required" in output
+    assert "[local actionable queues]" in output
+    assert "queue_counts: review-required=1" in output
+    assert "TASK-R.md" in output
     assert "TASK-A" not in output
     assert "[cowork actionable]" in output
     assert "stage_counts: approval-blocked-stale-review=1" in output

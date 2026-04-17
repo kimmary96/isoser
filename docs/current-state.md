@@ -16,12 +16,14 @@
 - `origin/main` 자동 반영까지 성공한 완료 task는 watcher completed Slack 알림 요약에 main push 결과가 함께 기록된다.
 - watcher는 `tasks/drifted/`와 `tasks/blocked/`를 다시 검사해 자동 복구 가능한 packet은 `tasks/inbox/`로 재투입한다.
 - watcher는 Codex 실행 중 `tasks/running/<task>.md` heartbeat를 주기적으로 갱신해, stdout이 잠잠한 장기 실행에서도 stale timeout으로 오판되는 일을 줄인다.
+- local `watcher.py`의 execution path는 supervisor 단계로 한 번 더 나뉘어, inspector handoff(`reports/<task-id>-supervisor-inspection.md`) 이후 implementer가 코드 수정과 result report를 만들고 verifier가 최종 검증(`reports/<task-id>-supervisor-verification.md`)을 수행한다. verifier가 `review-required` verdict를 내리면 일반 blocked 알림 대신 `tasks/review-required/`와 `needs-review` 공식 경로로 분기한다.
 - task packet은 선택적으로 `planned_files`와 `planned_worktree_fingerprint`를 담아, 같은 `HEAD` 안에서도 계획 당시 worktree 상태가 달라졌는지 더 엄격하게 검증할 수 있다.
 - `scripts/compute_task_fingerprint.py`는 planner가 `planned_files` 기준 fingerprint frontmatter 줄을 바로 생성할 수 있게 돕는다.
 - `scripts/summarize_run_ledgers.py`는 local/cowork watcher ledger를 읽어 최근 상태와 stage 집계를 빠르게 확인하게 해준다.
 - `scripts/summarize_actionable_ledgers.py`는 `blocked`, `drift`, `needs-review`, `replan-required` 같은 즉시 대응이 필요한 상태만 따로 좁혀 보여준다.
 - `scripts/prune_run_ledgers.py`는 active JSONL ledger에서 오래된 이벤트를 archive로 옮겨 장기 운영 시 파일이 과도하게 커지는 문제를 완화한다.
 - `scripts/create_task_packet.py`는 current HEAD와 optional fingerprint field까지 채운 packet 초안을 바로 생성해 planner 쪽 기본값을 강화한다.
+- local `watcher.py`는 반복되는 `blocked` / `runtime-error` / `push-failed` 알림에 대해 summary+next_action 기반 fingerprint를 남기고, 같은 root cause가 3회 이상 반복되면 `tasks/inbox/`에 자동 remediation packet을 생성해 루트 원인 수정 작업을 다시 supervisor 플로우로 투입한다.
 - watcher와 cowork watcher는 개별 packet 처리 중 예외가 나도 전체 프로세스를 종료하지 않고 `runtime-error` 기록을 남긴 뒤 다음 루프를 계속 돈다.
 - `scripts/watcher_shared.py`의 lock PID 확인은 Windows에서 `os.kill(pid, 0)` 대신 `tasklist` 기반으로 동작해, stale `.watcher.lock` / `.cowork_watcher.lock` 때문에 supervisor가 재시작 루프에 빠지는 문제를 줄였다.
 - `cowork_watcher.py`는 Codex review subprocess가 예외로 끝나거나 review 파일을 만들지 못해도 전체 워처를 죽이지 않고 해당 packet만 `review-failed` dispatch로 격리한다.
@@ -77,9 +79,9 @@
 4. packet이 바뀌면 cowork watcher는 최신 packet 기준으로 review를 다시 생성하거나 stale review를 막는다.
 5. 승인되면 cowork watcher는 `cowork/packets/<task-id>.md` 최신본을 `tasks/inbox/` 또는 `tasks/remote/`로 복사한다.
 6. local path라면 `watcher.py`가 `tasks/inbox/`에서 packet을 집어 `tasks/running/`으로 옮기고 Codex를 실행한다.
-7. Codex는 `AGENTS.md` 규칙에 따라 저장소를 점검하고 구현, 검사, `reports/*.md`, 필요한 `docs/*.md` 갱신을 수행한다.
-8. watcher는 실행 결과에 따라 packet을 `tasks/done/`, `tasks/drifted/`, `tasks/blocked/`로 이동한다.
-9. `tasks/drifted/`와 `tasks/blocked/`는 자동 복구가 가능하면 `tasks/inbox/`로 재큐잉되고, 아니면 다시 `cowork/packets/` review 흐름으로 에스컬레이션된다.
+7. local watcher supervisor는 inspector handoff를 먼저 만들고, 이어서 implementer가 구현과 result report를 만들며 verifier가 최종 검증 artifact를 남긴다.
+8. watcher는 실행 결과에 따라 packet을 `tasks/done/`, `tasks/drifted/`, `tasks/blocked/`, `tasks/review-required/`로 이동한다.
+9. `tasks/drifted/`와 `tasks/blocked/`는 자동 복구가 가능하면 `tasks/inbox/`로 재큐잉되고, 아니면 다시 `cowork/packets/` review 흐름으로 에스컬레이션된다. `tasks/review-required/`는 verifier가 수동 검토를 요청한 전용 큐다.
 
 ## Folder semantics
 - `cowork/packets/`: 사람이 계속 수정하는 원본 packet
@@ -89,11 +91,13 @@
 - `tasks/done/`: 성공적으로 끝난 execution packet
 - `tasks/blocked/`: 메타데이터 누락, 실패, 외부 의존성 등으로 멈춘 execution packet
 - `tasks/drifted/`: 계획 기준과 현재 코드가 어긋나 재검토가 필요한 execution packet
+- `tasks/review-required/`: verifier가 사람 검토 후 재승인을 요구한 execution packet
 
 ## Key references
 - automation index: [automation/README.md](./automation/README.md)
 - automation overview: [automation/overview.md](./automation/overview.md)
 - local flow: [automation/local-flow.md](./automation/local-flow.md)
+- watcher LangGraph review: [automation/watcher-langgraph.md](./automation/watcher-langgraph.md)
 - task packet contract: [automation/task-packets.md](./automation/task-packets.md)
 - dispatch split: [automation/dispatch-channels.md](./automation/dispatch-channels.md)
 - operations: [automation/operations.md](./automation/operations.md)

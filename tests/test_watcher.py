@@ -105,6 +105,82 @@ def test_handle_task_writes_blocked_report_when_move_to_running_fails(tmp_path, 
     assert "type: watcher-alert" in alert_path.read_text(encoding="utf-8")
 
 
+def test_handle_task_routes_verifier_review_required_to_needs_review(tmp_path, monkeypatch) -> None:
+    inbox_dir = tmp_path / "tasks" / "inbox"
+    running_dir = tmp_path / "tasks" / "running"
+    review_required_dir = tmp_path / "tasks" / "review-required"
+    reports_dir = tmp_path / "reports"
+    alerts_dir = tmp_path / "dispatch" / "alerts"
+    cowork_packets_dir = tmp_path / "cowork" / "packets"
+
+    inbox_dir.mkdir(parents=True)
+    running_dir.mkdir(parents=True)
+    review_required_dir.mkdir(parents=True)
+    reports_dir.mkdir(parents=True)
+    alerts_dir.mkdir(parents=True)
+    cowork_packets_dir.mkdir(parents=True)
+
+    task_path = inbox_dir / "TASK-TEST-VERIFY-REVIEW.md"
+    task_path.write_text(
+        "\n".join(
+            [
+                "---",
+                "id: TASK-TEST-VERIFY-REVIEW",
+                "status: queued",
+                "type: feature",
+                "title: Verification review route",
+                "planned_at: 2026-04-17T11:00:00+09:00",
+                "planned_against_commit: abc123",
+                "---",
+                "# Goal",
+                "",
+                "Route verifier review-required to needs-review.",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(watcher, "INBOX_DIR", str(inbox_dir))
+    monkeypatch.setattr(watcher, "RUNNING_DIR", str(running_dir))
+    monkeypatch.setattr(watcher, "REVIEW_REQUIRED_DIR", str(review_required_dir))
+    monkeypatch.setattr(watcher, "REPORTS_DIR", str(reports_dir))
+    monkeypatch.setattr(watcher, "ALERTS_DIR", str(alerts_dir))
+    monkeypatch.setattr(watcher, "COWORK_PACKETS_DIR", str(cowork_packets_dir))
+    monkeypatch.setattr(watcher, "PROJECT_PATH", str(tmp_path))
+    monkeypatch.setattr(watcher, "current_head", lambda: "abc123")
+    monkeypatch.setattr(watcher, "notify_slack_for_alert", lambda **kwargs: None)
+
+    def fake_supervisor_workflow(*args, **kwargs):
+        (reports_dir / "TASK-TEST-VERIFY-REVIEW-result.md").write_text(
+            "# Result: TASK-TEST-VERIFY-REVIEW\n\n## Changed files\n\n- `watcher.py`\n",
+            encoding="utf-8",
+        )
+        (reports_dir / "TASK-TEST-VERIFY-REVIEW-supervisor-verification.md").write_text(
+            "# Supervisor Verification: TASK-TEST-VERIFY-REVIEW\n\n## Final Verdict\n\n- verdict: review-required\n",
+            encoding="utf-8",
+        )
+        return {
+            "exit_code": 0,
+            "token_count": 33,
+            "stage": "manual-review",
+            "supervisor_step": "verification",
+        }
+
+    monkeypatch.setattr(watcher, "run_supervisor_workflow", fake_supervisor_workflow)
+
+    watcher.handle_task(str(task_path))
+
+    assert not task_path.exists()
+    assert (review_required_dir / "TASK-TEST-VERIFY-REVIEW.md").exists()
+    alert_body = (alerts_dir / "TASK-TEST-VERIFY-REVIEW-needs-review.md").read_text(encoding="utf-8")
+    assert "stage: needs-review" in alert_body
+    assert "reports/TASK-TEST-VERIFY-REVIEW-supervisor-verification.md" in alert_body
+    assert "tasks/review-required/TASK-TEST-VERIFY-REVIEW.md" in alert_body
+    cowork_packet = (cowork_packets_dir / "TASK-TEST-VERIFY-REVIEW.md").read_text(encoding="utf-8")
+    assert "review the verification findings" in cowork_packet
+
+
 def test_run_codex_starts_and_stops_running_heartbeat(monkeypatch) -> None:
     class FakeThread:
         def __init__(self) -> None:
@@ -155,6 +231,141 @@ def test_run_codex_starts_and_stops_running_heartbeat(monkeypatch) -> None:
     assert fake_thread.join_calls == 1
 
 
+def test_build_supervisor_prompts_reference_handoff_artifact() -> None:
+    inspector_prompt = watcher.build_supervisor_inspector_prompt(
+        "TASK-TEST.md",
+        "TASK-TEST",
+        "feature",
+    )
+    implementer_prompt = watcher.build_supervisor_implementer_prompt(
+        "TASK-TEST.md",
+        "TASK-TEST",
+        "feature",
+    )
+    verifier_prompt = watcher.build_supervisor_verifier_prompt(
+        "TASK-TEST.md",
+        "TASK-TEST",
+        "feature",
+    )
+
+    assert "Supervisor Inspector agent" in inspector_prompt
+    assert "reports/TASK-TEST-supervisor-inspection.md" in inspector_prompt
+    assert "Do not edit source files in this step." in inspector_prompt
+    assert "Supervisor Implementer agent" in implementer_prompt
+    assert "reports/TASK-TEST-supervisor-inspection.md" in implementer_prompt
+    assert "Do not treat this step as the final verification gate." in implementer_prompt
+    assert "Supervisor Verifier agent" in verifier_prompt
+    assert "reports/TASK-TEST-supervisor-verification.md" in verifier_prompt
+    assert "This is the final verification gate." in verifier_prompt
+
+
+def test_run_supervisor_workflow_blocks_when_inspection_handoff_is_missing(tmp_path, monkeypatch) -> None:
+    reports_dir = tmp_path / "reports"
+    dispatch_dir = tmp_path / "dispatch"
+    reports_dir.mkdir(parents=True)
+    dispatch_dir.mkdir(parents=True)
+
+    monkeypatch.setattr(watcher, "REPORTS_DIR", str(reports_dir))
+    monkeypatch.setattr(watcher, "LEDGER_PATH", str(dispatch_dir / "run-ledger.jsonl"))
+
+    prompts: list[str] = []
+
+    def fake_run_codex_prompt(prompt: str, *, label: str, running_path: str | None = None):
+        prompts.append(label)
+        return 0, 11
+
+    monkeypatch.setattr(watcher, "run_codex_prompt", fake_run_codex_prompt)
+
+    result = watcher.run_supervisor_workflow(
+        "TASK-TEST.md",
+        "TASK-TEST",
+        "feature",
+        running_path="tasks/running/TASK-TEST.md",
+    )
+
+    assert result["stage"] == "supervisor-blocked"
+    assert result["supervisor_step"] == "inspection"
+    assert result["token_count"] == 11
+    assert prompts == [watcher.SUPERVISOR_AGENT_LABELS["inspector"]]
+
+
+def test_run_supervisor_workflow_runs_verifier_after_result_report(tmp_path, monkeypatch) -> None:
+    reports_dir = tmp_path / "reports"
+    dispatch_dir = tmp_path / "dispatch"
+    reports_dir.mkdir(parents=True)
+    dispatch_dir.mkdir(parents=True)
+
+    monkeypatch.setattr(watcher, "REPORTS_DIR", str(reports_dir))
+    monkeypatch.setattr(watcher, "LEDGER_PATH", str(dispatch_dir / "run-ledger.jsonl"))
+
+    prompts: list[str] = []
+
+    def fake_run_codex_prompt(prompt: str, *, label: str, running_path: str | None = None):
+        prompts.append(label)
+        if label == watcher.SUPERVISOR_AGENT_LABELS["inspector"]:
+            (reports_dir / "TASK-TEST-supervisor-inspection.md").write_text("inspection", encoding="utf-8")
+        elif label == watcher.SUPERVISOR_AGENT_LABELS["implementer"]:
+            (reports_dir / "TASK-TEST-result.md").write_text("result", encoding="utf-8")
+        elif label == watcher.SUPERVISOR_AGENT_LABELS["verifier"]:
+            (reports_dir / "TASK-TEST-supervisor-verification.md").write_text(
+                "# Supervisor Verification: TASK-TEST\n\n## Final Verdict\n\n- verdict: pass\n",
+                encoding="utf-8",
+            )
+        return 0, 7
+
+    monkeypatch.setattr(watcher, "run_codex_prompt", fake_run_codex_prompt)
+
+    result = watcher.run_supervisor_workflow(
+        "TASK-TEST.md",
+        "TASK-TEST",
+        "feature",
+        running_path="tasks/running/TASK-TEST.md",
+    )
+
+    assert result["stage"] == "implemented"
+    assert result["supervisor_step"] == "verification"
+    assert result["token_count"] == 21
+    assert prompts == [
+        watcher.SUPERVISOR_AGENT_LABELS["inspector"],
+        watcher.SUPERVISOR_AGENT_LABELS["implementer"],
+        watcher.SUPERVISOR_AGENT_LABELS["verifier"],
+    ]
+
+
+def test_run_supervisor_workflow_routes_review_required_verdict_to_manual_review(tmp_path, monkeypatch) -> None:
+    reports_dir = tmp_path / "reports"
+    dispatch_dir = tmp_path / "dispatch"
+    reports_dir.mkdir(parents=True)
+    dispatch_dir.mkdir(parents=True)
+
+    monkeypatch.setattr(watcher, "REPORTS_DIR", str(reports_dir))
+    monkeypatch.setattr(watcher, "LEDGER_PATH", str(dispatch_dir / "run-ledger.jsonl"))
+
+    def fake_run_codex_prompt(prompt: str, *, label: str, running_path: str | None = None):
+        if label == watcher.SUPERVISOR_AGENT_LABELS["inspector"]:
+            (reports_dir / "TASK-TEST-supervisor-inspection.md").write_text("inspection", encoding="utf-8")
+        elif label == watcher.SUPERVISOR_AGENT_LABELS["implementer"]:
+            (reports_dir / "TASK-TEST-result.md").write_text("result", encoding="utf-8")
+        elif label == watcher.SUPERVISOR_AGENT_LABELS["verifier"]:
+            (reports_dir / "TASK-TEST-supervisor-verification.md").write_text(
+                "# Supervisor Verification: TASK-TEST\n\n## Final Verdict\n\n- verdict: review-required\n",
+                encoding="utf-8",
+            )
+        return 0, 5
+
+    monkeypatch.setattr(watcher, "run_codex_prompt", fake_run_codex_prompt)
+
+    result = watcher.run_supervisor_workflow(
+        "TASK-TEST.md",
+        "TASK-TEST",
+        "feature",
+        running_path="tasks/running/TASK-TEST.md",
+    )
+
+    assert result["stage"] == "manual-review"
+    assert result["supervisor_step"] == "verification"
+
+
 def test_parse_changed_files_from_result_report_reads_bullets(tmp_path) -> None:
     report_path = tmp_path / "TASK-TEST-result.md"
     report_path.write_text(
@@ -182,6 +393,16 @@ def test_parse_changed_files_from_result_report_reads_bullets(tmp_path) -> None:
     ]
 
 
+def test_parse_supervisor_verdict_reads_machine_readable_verdict(tmp_path) -> None:
+    report_path = tmp_path / "TASK-TEST-supervisor-verification.md"
+    report_path.write_text(
+        "# Supervisor Verification: TASK-TEST\n\n## Final Verdict\n\n- verdict: review-required\n",
+        encoding="utf-8",
+    )
+
+    assert watcher.parse_supervisor_verdict(str(report_path)) == "review-required"
+
+
 def test_task_queue_sort_key_orders_by_task_number_slot() -> None:
     paths = [
         r"D:\repo\tasks\inbox\TASK-2026-04-15-1710-recommend-api-enhance.md",
@@ -203,6 +424,8 @@ def test_sync_completed_task_to_git_stages_task_paths_and_appends_git_metadata(t
     running_path = project_path / "tasks" / "running" / "TASK-TEST.md"
     done_path = project_path / "tasks" / "done" / "TASK-TEST.md"
     result_report = project_path / "reports" / "TASK-TEST-result.md"
+    inspection_report = project_path / "reports" / "TASK-TEST-supervisor-inspection.md"
+    verification_report = project_path / "reports" / "TASK-TEST-supervisor-verification.md"
     changed_file = project_path / "frontend" / "app" / "example" / "page.tsx"
 
     running_path.parent.mkdir(parents=True)
@@ -213,6 +436,8 @@ def test_sync_completed_task_to_git_stages_task_paths_and_appends_git_metadata(t
     running_path.write_text("running", encoding="utf-8")
     done_path.write_text("done", encoding="utf-8")
     changed_file.write_text("export default function Example() {}", encoding="utf-8")
+    inspection_report.write_text("# Supervisor Inspection: TASK-TEST\n", encoding="utf-8")
+    verification_report.write_text("# Supervisor Verification: TASK-TEST\n", encoding="utf-8")
     result_report.write_text(
         "\n".join(
             [
@@ -232,6 +457,7 @@ def test_sync_completed_task_to_git_stages_task_paths_and_appends_git_metadata(t
     )
 
     monkeypatch.setattr(watcher, "PROJECT_PATH", str(project_path))
+    monkeypatch.setattr(watcher, "REPORTS_DIR", str(project_path / "reports"))
     monkeypatch.setattr(watcher, "current_branch", lambda: "develop")
     monkeypatch.setattr(watcher, "current_head", lambda: "abc123")
 
@@ -273,6 +499,8 @@ def test_sync_completed_task_to_git_stages_task_paths_and_appends_git_metadata(t
     assert "tasks/running/TASK-TEST.md" in calls[0]
     assert "tasks/done/TASK-TEST.md" in calls[0]
     assert "reports/TASK-TEST-result.md" in calls[0]
+    assert "reports/TASK-TEST-supervisor-inspection.md" in calls[0]
+    assert "reports/TASK-TEST-supervisor-verification.md" in calls[0]
     assert "frontend/app/example/page.tsx" in calls[0]
     updated_report = result_report.read_text(encoding="utf-8")
     assert "## Git Automation" in updated_report
@@ -303,6 +531,7 @@ def test_sync_completed_task_to_git_skips_missing_untracked_running_path(tmp_pat
     )
 
     monkeypatch.setattr(watcher, "PROJECT_PATH", str(project_path))
+    monkeypatch.setattr(watcher, "REPORTS_DIR", str(project_path / "reports"))
     monkeypatch.setattr(watcher, "current_branch", lambda: "develop")
     monkeypatch.setattr(watcher, "current_head", lambda: "abc123")
 
@@ -806,6 +1035,137 @@ def test_slack_thread_ts_for_task_reads_cowork_approval_marker(tmp_path, monkeyp
     monkeypatch.setattr(watcher, "COWORK_APPROVALS_DIR", str(approvals_dir))
 
     assert watcher.slack_thread_ts_for_task("TASK-THREAD") == "1776325765.533439"
+
+
+def test_compute_alert_fingerprint_normalizes_task_ids_and_hashes() -> None:
+    first = watcher.compute_alert_fingerprint(
+        stage="push-failed",
+        summary=(
+            "origin/main is not an ancestor of the task commit, so watcher skipped automatic main promotion. "
+            "(branch=develop), commit=1a9bf74d7fcce8932e6146982b571da2ca8ab7b6 for TASK-2026-04-16-1800-fix"
+        ),
+        next_action="Review the result report Git Automation section and push manually if needed.",
+    )
+    second = watcher.compute_alert_fingerprint(
+        stage="push-failed",
+        summary=(
+            "origin/main is not an ancestor of the task commit, so watcher skipped automatic main promotion. "
+            "(branch=develop), commit=e72482dca8efd55213792a8a6e10159b62e9b891 for TASK-2026-04-16-1535-other"
+        ),
+        next_action="Review the result report Git Automation section and push manually if needed.",
+    )
+
+    assert first == second
+
+
+def test_write_alert_enqueues_auto_remediation_packet_after_repeated_alerts(tmp_path, monkeypatch) -> None:
+    alerts_dir = tmp_path / "dispatch" / "alerts"
+    inbox_dir = tmp_path / "tasks" / "inbox"
+    reports_dir = tmp_path / "reports"
+    alerts_dir.mkdir(parents=True)
+    inbox_dir.mkdir(parents=True)
+    reports_dir.mkdir(parents=True)
+    ledger_path = tmp_path / "dispatch" / "run-ledger.jsonl"
+
+    monkeypatch.setattr(watcher, "ALERTS_DIR", str(alerts_dir))
+    monkeypatch.setattr(watcher, "INBOX_DIR", str(inbox_dir))
+    monkeypatch.setattr(watcher, "REMOTE_DIR", str(tmp_path / "tasks" / "remote"))
+    monkeypatch.setattr(watcher, "RUNNING_DIR", str(tmp_path / "tasks" / "running"))
+    monkeypatch.setattr(watcher, "DONE_DIR", str(tmp_path / "tasks" / "done"))
+    monkeypatch.setattr(watcher, "BLOCKED_DIR", str(tmp_path / "tasks" / "blocked"))
+    monkeypatch.setattr(watcher, "DRIFTED_DIR", str(tmp_path / "tasks" / "drifted"))
+    monkeypatch.setattr(watcher, "REVIEW_REQUIRED_DIR", str(tmp_path / "tasks" / "review-required"))
+    monkeypatch.setattr(watcher, "ARCHIVE_DIR", str(tmp_path / "tasks" / "archive"))
+    monkeypatch.setattr(watcher, "REPORTS_DIR", str(reports_dir))
+    monkeypatch.setattr(watcher, "LEDGER_PATH", str(ledger_path))
+    monkeypatch.setattr(watcher, "current_head", lambda: "abc123")
+    monkeypatch.setattr(watcher, "notify_slack_for_alert", lambda **kwargs: None)
+
+    summary = (
+        "origin/main is not an ancestor of the task commit, so watcher skipped automatic main promotion. "
+        "(branch=develop), commit=1a9bf74d7fcce8932e6146982b571da2ca8ab7b6"
+    )
+    next_action = "Review the result report Git Automation section and push manually if needed."
+
+    watcher.write_alert(
+        "TASK-2026-04-16-1800-fix-commit-stamp-on-promote",
+        "push-failed",
+        status="action-required",
+        packet_path="tasks/done/TASK-2026-04-16-1800-fix-commit-stamp-on-promote.md",
+        report_path="reports/TASK-2026-04-16-1800-fix-commit-stamp-on-promote-result.md",
+        summary=summary,
+        next_action=next_action,
+    )
+    watcher.write_alert(
+        "TASK-2026-04-16-1535-seo-metadata-jsonld",
+        "push-failed",
+        status="action-required",
+        packet_path="tasks/done/TASK-2026-04-16-1535-seo-metadata-jsonld.md",
+        report_path="reports/TASK-2026-04-16-1535-seo-metadata-jsonld-result.md",
+        summary=summary.replace("1a9bf74d7fcce8932e6146982b571da2ca8ab7b6", "e72482dca8efd55213792a8a6e10159b62e9b891"),
+        next_action=next_action,
+    )
+    watcher.write_alert(
+        "TASK-2026-04-16-1530-adsense-slots",
+        "push-failed",
+        status="action-required",
+        packet_path="tasks/done/TASK-2026-04-16-1530-adsense-slots.md",
+        report_path="reports/TASK-2026-04-16-1530-adsense-slots-result.md",
+        summary=summary.replace("1a9bf74d7fcce8932e6146982b571da2ca8ab7b6", "961b30d1383a6f4c69e4d608a55fb4268ed49d99"),
+        next_action=next_action,
+    )
+
+    queued_packets = list(inbox_dir.glob("TASK-*-auto-remediate-push-failed-*.md"))
+    assert len(queued_packets) == 1
+    packet_body = queued_packets[0].read_text(encoding="utf-8")
+    assert "auto_remediation_fingerprint:" in packet_body
+    assert "repeat_count: `3`" in (alerts_dir / "TASK-2026-04-16-1530-adsense-slots-push-failed.md").read_text(
+        encoding="utf-8"
+    )
+    assert "auto_remediation_packet:" in (
+        alerts_dir / "TASK-2026-04-16-1530-adsense-slots-push-failed.md"
+    ).read_text(encoding="utf-8")
+
+    ledger_body = ledger_path.read_text(encoding="utf-8")
+    assert '"stage": "auto-remediation-queued"' in ledger_body
+
+
+def test_write_alert_does_not_duplicate_auto_remediation_packet_for_same_fingerprint(tmp_path, monkeypatch) -> None:
+    alerts_dir = tmp_path / "dispatch" / "alerts"
+    inbox_dir = tmp_path / "tasks" / "inbox"
+    alerts_dir.mkdir(parents=True)
+    inbox_dir.mkdir(parents=True)
+    ledger_path = tmp_path / "dispatch" / "run-ledger.jsonl"
+
+    monkeypatch.setattr(watcher, "ALERTS_DIR", str(alerts_dir))
+    monkeypatch.setattr(watcher, "INBOX_DIR", str(inbox_dir))
+    monkeypatch.setattr(watcher, "REMOTE_DIR", str(tmp_path / "tasks" / "remote"))
+    monkeypatch.setattr(watcher, "RUNNING_DIR", str(tmp_path / "tasks" / "running"))
+    monkeypatch.setattr(watcher, "DONE_DIR", str(tmp_path / "tasks" / "done"))
+    monkeypatch.setattr(watcher, "BLOCKED_DIR", str(tmp_path / "tasks" / "blocked"))
+    monkeypatch.setattr(watcher, "DRIFTED_DIR", str(tmp_path / "tasks" / "drifted"))
+    monkeypatch.setattr(watcher, "REVIEW_REQUIRED_DIR", str(tmp_path / "tasks" / "review-required"))
+    monkeypatch.setattr(watcher, "ARCHIVE_DIR", str(tmp_path / "tasks" / "archive"))
+    monkeypatch.setattr(watcher, "LEDGER_PATH", str(ledger_path))
+    monkeypatch.setattr(watcher, "current_head", lambda: "abc123")
+    monkeypatch.setattr(watcher, "notify_slack_for_alert", lambda **kwargs: None)
+
+    summary = "Watcher could not move the task packet into running."
+    next_action = "Clear any editor or sync lock on the task file, then requeue it."
+
+    for index in range(4):
+        watcher.write_alert(
+            f"TASK-2026-04-17-120{index}-blocked-test",
+            "blocked",
+            status="action-required",
+            packet_path=f"tasks/inbox/TASK-2026-04-17-120{index}-blocked-test.md",
+            report_path=f"reports/TASK-2026-04-17-120{index}-blocked-test-blocked.md",
+            summary=summary,
+            next_action=next_action,
+        )
+
+    queued_packets = list(inbox_dir.glob("TASK-*-auto-remediate-blocked-*.md"))
+    assert len(queued_packets) == 1
 
 
 def test_move_stale_running_tasks_removes_duplicate_running_marker(tmp_path, monkeypatch) -> None:
