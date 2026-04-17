@@ -1,5 +1,22 @@
 # 리팩토링 로그
 
+## 2026-04-17 대시보드 캘린더 섹션 분리 및 BFF 전환
+
+- 수정 파일:
+  - `frontend/app/dashboard/page.tsx`
+  - `frontend/app/dashboard/_hooks/use-dashboard-calendar.ts`
+  - `frontend/app/dashboard/_components/dashboard-calendar-section.tsx`
+  - `frontend/app/dashboard/_components/dashboard-calendar-mini-calendar.tsx`
+- 변경 내용:
+  - 대시보드 홈의 기존 추천 프로그램 기반 캘린더 섹션을 `GET /api/dashboard/recommend-calendar` 소비 전용 hook으로 분리함
+  - 페이지 컴포넌트는 사용자 인사말과 섹션 배치만 맡기고, 캘린더 데이터 fetch/정렬/타임아웃 처리는 dashboard-local hook으로 이동함
+  - 캘린더 UI를 가로 스크롤 카드 + 미니 월간 캘린더 조합으로 재구성하고, 카드 CTA를 `/programs/[id]`, 외부 지원 링크, 이력서 작성 링크로 정리함
+- 유지된 동작:
+  - 대시보드 진입 시 사용자 이름 로딩 흐름은 그대로 유지함
+  - 캘린더 API 실패 시 다른 대시보드 동작을 막지 않고 섹션만 숨김 처리함
+- 후속 메모:
+  - 미니 캘린더 날짜 선택과 카드 포커스 이동을 별도 상태 URL이나 analytics 이벤트로 확장할 수 있음
+
 ## 2026-04-17 반복 watcher 알림 자동 remediation 큐 추가
 
 - 수정 파일:
