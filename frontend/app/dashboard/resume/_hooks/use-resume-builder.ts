@@ -1,22 +1,29 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import {
   createResumeDocument,
   getResumeBuilderData,
+  getResumePrefill,
   updateDashboardProfileSection,
 } from "@/lib/api/app";
-import type { Activity } from "@/lib/types";
+import type { Activity, ResumePrefillData } from "@/lib/types";
 
 export function useResumeBuilder() {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const lastSavedBioRef = useRef("");
   const bioSavingRef = useRef(false);
+  const selectedRef = useRef<Set<string>>(new Set());
+  const targetJobRef = useRef("");
+  const summaryDraftRef = useRef("");
   const [activities, setActivities] = useState<Activity[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [targetJob, setTargetJob] = useState("");
+  const [summaryDraft, setSummaryDraft] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +51,24 @@ export function useResumeBuilder() {
   const [selectedCommonQuestions, setSelectedCommonQuestions] = useState<Set<string>>(new Set());
   const [customQuestion, setCustomQuestion] = useState("");
   const [customQuestionInput, setCustomQuestionInput] = useState("");
+  const [prefillLoading, setPrefillLoading] = useState(false);
+  const [prefillData, setPrefillData] = useState<ResumePrefillData | null>(null);
+  const [pendingPrefill, setPendingPrefill] = useState<ResumePrefillData | null>(null);
+  const [autoSelectedIds, setAutoSelectedIds] = useState<Set<string>>(new Set());
+  const [sourceProgramId, setSourceProgramId] = useState<string | null>(null);
+  const prefillProgramId = searchParams.get("prefill_program_id")?.trim() || null;
+
+  useEffect(() => {
+    selectedRef.current = selected;
+  }, [selected]);
+
+  useEffect(() => {
+    targetJobRef.current = targetJob;
+  }, [targetJob]);
+
+  useEffect(() => {
+    summaryDraftRef.current = summaryDraft;
+  }, [summaryDraft]);
 
   useEffect(() => {
     const fetchActivities = async () => {
@@ -63,7 +88,72 @@ export function useResumeBuilder() {
     void fetchActivities();
   }, []);
 
+  const applyPrefill = (prefill: ResumePrefillData) => {
+    setPrefillData(prefill);
+    setPendingPrefill(null);
+    setTargetJob(prefill.target_job);
+    setSummaryDraft(prefill.summary);
+    setSelected(new Set(prefill.selected_activity_ids));
+    setAutoSelectedIds(new Set(prefill.auto_selected_activity_ids));
+    setSourceProgramId(prefill.status === "missing_program" ? null : prefill.program_id);
+  };
+
+  useEffect(() => {
+    if (loading || !prefillProgramId) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const fetchPrefill = async () => {
+      try {
+        setPrefillLoading(true);
+        const data = await getResumePrefill(prefillProgramId);
+        if (cancelled || !data.prefill) return;
+
+        const hasDraft =
+          selectedRef.current.size > 0 ||
+          targetJobRef.current.trim().length > 0 ||
+          summaryDraftRef.current.trim().length > 0;
+        const shouldDeferApply = hasDraft && data.prefill.status !== "missing_program";
+
+        setPrefillData(data.prefill);
+        if (shouldDeferApply) {
+          setPendingPrefill(data.prefill);
+          return;
+        }
+
+        if (data.prefill.status !== "missing_program") {
+          applyPrefill(data.prefill);
+          return;
+        }
+
+        setSourceProgramId(null);
+      } catch (e) {
+        if (!cancelled) {
+          setError(e instanceof Error ? e.message : "프리필 데이터를 불러오지 못했습니다.");
+        }
+      } finally {
+        if (!cancelled) {
+          setPrefillLoading(false);
+        }
+      }
+    };
+
+    void fetchPrefill();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [loading, prefillProgramId]);
+
   const toggleSelect = (id: string) => {
+    setAutoSelectedIds((prev) => {
+      if (!prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -129,6 +219,7 @@ export function useResumeBuilder() {
         target_job: targetJob || null,
         template_id: templateId,
         selected_activity_ids: Array.from(selected),
+        source_program_id: sourceProgramId,
       });
 
       router.push(`/dashboard/documents?resumeId=${data.id}`);
@@ -139,11 +230,31 @@ export function useResumeBuilder() {
     }
   };
 
+  const applyPendingPrefill = () => {
+    if (!pendingPrefill) return;
+    applyPrefill(pendingPrefill);
+  };
+
+  const resetPrefill = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("prefill_program_id");
+    router.replace(params.size > 0 ? `${pathname}?${params.toString()}` : pathname);
+    setPrefillData(null);
+    setPendingPrefill(null);
+    setAutoSelectedIds(new Set());
+    setSourceProgramId(null);
+    setTargetJob("");
+    setSummaryDraft("");
+    setSelected(new Set());
+  };
+
   return {
     activities,
     selected,
     targetJob,
     setTargetJob,
+    summaryDraft,
+    setSummaryDraft,
     loading,
     saving,
     error,
@@ -173,9 +284,15 @@ export function useResumeBuilder() {
     setCustomQuestion,
     customQuestionInput,
     setCustomQuestionInput,
+    prefillLoading,
+    prefillData,
+    pendingPrefill,
+    autoSelectedIds,
     toggleSelect,
     saveBio,
     handleChatSend,
     handleCreateResume,
+    applyPendingPrefill,
+    resetPrefill,
   };
 }

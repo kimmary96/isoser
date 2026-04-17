@@ -70,6 +70,7 @@ export async function POST(request: Request) {
       target_job?: string | null;
       template_id?: string;
       selected_activity_ids?: string[];
+      source_program_id?: string | null;
     };
 
     const title = body.title?.trim();
@@ -82,17 +83,47 @@ export async function POST(request: Request) {
       return apiError("이력서 생성 요청이 올바르지 않습니다.", 400, "BAD_REQUEST");
     }
 
-    const { data, error } = await supabase
+    const insertPayload = {
+      user_id: user.id,
+      title,
+      target_job: body.target_job ?? null,
+      source_program_id: body.source_program_id?.trim() || null,
+      template_id: templateId,
+      selected_activity_ids: selectedActivityIds,
+    };
+
+    let data: { id: string } | null = null;
+    let error: { message?: string; code?: string } | null = null;
+
+    const insertResult = await supabase
       .from("resumes")
-      .insert({
-        user_id: user.id,
-        title,
-        target_job: body.target_job ?? null,
-        template_id: templateId,
-        selected_activity_ids: selectedActivityIds,
-      })
+      .insert(insertPayload)
       .select("id")
       .single();
+
+    data = insertResult.data;
+    error = insertResult.error;
+
+    if (
+      error &&
+      (error.code === "42703" ||
+        error.message?.toLowerCase().includes("source_program_id"))
+    ) {
+      const fallbackInsert = await supabase
+        .from("resumes")
+        .insert({
+          user_id: user.id,
+          title,
+          target_job: body.target_job ?? null,
+          template_id: templateId,
+          selected_activity_ids: selectedActivityIds,
+        })
+        .select("id")
+        .single();
+
+      data = fallbackInsert.data;
+      error = fallbackInsert.error;
+    }
 
     if (error || !data) {
       throw new Error(error?.message ?? "이력서 저장에 실패했습니다.");

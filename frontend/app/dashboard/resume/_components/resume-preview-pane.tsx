@@ -16,6 +16,7 @@ type ResumePreviewPaneProps = {
   onBioSave: () => Promise<void>;
   bioSaving: boolean;
   targetJob: string;
+  summaryDraft: string;
   selectedCareerActivities: Activity[];
   selectedProjectActivities: Activity[];
   selectedSkillsList: string[];
@@ -29,6 +30,7 @@ export function ResumePreviewPane({
   onBioSave,
   bioSaving,
   targetJob,
+  summaryDraft,
   selectedCareerActivities,
   selectedProjectActivities,
   selectedSkillsList,
@@ -85,6 +87,7 @@ export function ResumePreviewPane({
                 className="mt-0.5 w-full border-b border-transparent bg-transparent text-sm text-gray-500 outline-none focus:border-gray-300"
               />
               {targetJob && <p className="mt-0.5 text-sm text-gray-500">{targetJob}</p>}
+              {summaryDraft && <p className="mt-2 text-xs leading-relaxed text-gray-600">{summaryDraft}</p>}
               <div className="mt-2 flex gap-3 text-xs text-gray-400">
                 {profile?.email && <span>✉ {profile.email}</span>}
                 {profile?.phone && <span>☎ {profile.phone}</span>}

@@ -21,6 +21,7 @@ import type {
   ProgramListResponse,
   ResumeBuilderResponse,
   ResumeExportResponse,
+  ResumePrefillResponse,
   SavedMatchAnalysis,
 } from "@/lib/types";
 
@@ -217,6 +218,14 @@ export async function getResumeBuilderData(): Promise<ResumeBuilderResponse> {
   );
 }
 
+export async function getResumePrefill(programId: string): Promise<ResumePrefillResponse> {
+  return requestAppJson<ResumePrefillResponse>(
+    `/api/dashboard/resume/prefill?program_id=${encodeURIComponent(programId)}`,
+    { method: "GET" },
+    "이력서 프리필 데이터를 불러오지 못했습니다."
+  );
+}
+
 export async function getResumeExportData(
   resumeId?: string | null
 ): Promise<ResumeExportResponse> {
@@ -233,6 +242,7 @@ export async function createResumeDocument(payload: {
   target_job: string | null;
   template_id: string;
   selected_activity_ids: string[];
+  source_program_id?: string | null;
 }): Promise<{ id: string }> {
   return requestAppJson<{ id: string }>(
     "/api/dashboard/resume",

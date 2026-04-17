@@ -49,6 +49,7 @@ export interface Resume {
   user_id: string;
   title: string;
   target_job: string | null;
+  source_program_id?: string | null;
   template_id: string;
   selected_activity_ids: string[] | null;
   created_at: string;
@@ -534,6 +535,30 @@ export interface ResumeBuilderProfile {
 export interface ResumeBuilderResponse {
   activities: Activity[];
   profile: ResumeBuilderProfile | null;
+}
+
+export type ResumePrefillStatus =
+  | "ready"
+  | "missing_program"
+  | "no_activities"
+  | "insufficient_program"
+  | "low_relevance";
+
+export interface ResumePrefillData {
+  status: ResumePrefillStatus;
+  program_id: string;
+  program_title: string | null;
+  requirement_summary: string;
+  target_job: string;
+  summary: string;
+  selected_activity_ids: string[];
+  auto_selected_activity_ids: string[];
+  message: string;
+  cta_href: string | null;
+}
+
+export interface ResumePrefillResponse {
+  prefill: ResumePrefillData | null;
 }
 
 export interface MatchResumeOption {

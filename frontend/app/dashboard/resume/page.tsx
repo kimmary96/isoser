@@ -12,6 +12,8 @@ export default function ResumePage() {
     selected,
     targetJob,
     setTargetJob,
+    summaryDraft,
+    setSummaryDraft,
     loading,
     saving,
     error,
@@ -41,10 +43,16 @@ export default function ResumePage() {
     setCustomQuestion,
     customQuestionInput,
     setCustomQuestionInput,
+    prefillLoading,
+    prefillData,
+    pendingPrefill,
+    autoSelectedIds,
     toggleSelect,
     saveBio,
     handleChatSend,
     handleCreateResume,
+    applyPendingPrefill,
+    resetPrefill,
   } = useResumeBuilder();
 
   const TEMPLATES = [
@@ -96,6 +104,8 @@ export default function ResumePage() {
   const selectedSkillsList = Array.from(selectedSkills);
 
   const currentActivities = leftSubTab === "회사경력" ? careerActivities : projectActivities;
+  const showPrefillBanner = Boolean(prefillData || pendingPrefill || prefillLoading);
+  const bannerPrefill = pendingPrefill ?? prefillData;
 
   if (loading) {
     return (
@@ -108,6 +118,53 @@ export default function ResumePage() {
   return (
     <div className="flex h-screen overflow-hidden bg-[#f8f7f4]">
       <div className="w-72 flex-shrink-0 bg-white border-r border-gray-100 flex flex-col h-full">
+        {showPrefillBanner && (
+          <div className="border-b border-sky-100 bg-sky-50 px-3 py-3">
+            {prefillLoading && <p className="text-xs text-sky-700">프로그램 기준 이력서 초안을 준비하는 중입니다...</p>}
+            {!prefillLoading && bannerPrefill && (
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-sky-800">
+                  {bannerPrefill.program_title
+                    ? `${bannerPrefill.program_title} 지원용 이력서 초안을 준비했습니다`
+                    : bannerPrefill.message}
+                </p>
+                {bannerPrefill.requirement_summary && (
+                  <p className="text-[11px] leading-relaxed text-sky-700">
+                    {bannerPrefill.requirement_summary}
+                  </p>
+                )}
+                <p className="text-[11px] leading-relaxed text-sky-700">{bannerPrefill.message}</p>
+                <div className="flex flex-wrap gap-2">
+                  {pendingPrefill && (
+                    <button
+                      onClick={applyPendingPrefill}
+                      className="rounded-full bg-sky-600 px-3 py-1 text-[11px] font-semibold text-white"
+                    >
+                      프리필 적용
+                    </button>
+                  )}
+                  {bannerPrefill.cta_href && (
+                    <a
+                      href={bannerPrefill.cta_href}
+                      className="rounded-full border border-sky-200 bg-white px-3 py-1 text-[11px] font-semibold text-sky-700"
+                    >
+                      활동 추가
+                    </a>
+                  )}
+                  {!pendingPrefill && bannerPrefill.status !== "missing_program" && (
+                    <button
+                      onClick={resetPrefill}
+                      className="rounded-full border border-sky-200 bg-white px-3 py-1 text-[11px] font-semibold text-sky-700"
+                    >
+                      프리필 되돌리기
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="flex border-b border-gray-100">
           {(["성과저장소", "자기소개서"] as const).map((tab) => (
             <button
@@ -232,6 +289,11 @@ export default function ResumePage() {
                           <p className="text-xs font-bold text-gray-900 line-clamp-2 mt-1">
                             {activity.title}
                           </p>
+                          {autoSelectedIds.has(activity.id) && (
+                            <span className="mt-1 inline-flex rounded-full bg-sky-100 px-1.5 py-0.5 text-[9px] font-semibold text-sky-700">
+                              자동 선택
+                            </span>
+                          )}
                           {activity.period && (
                             <p className="text-[10px] text-gray-400 mt-0.5">{activity.period}</p>
                           )}
@@ -457,6 +519,7 @@ export default function ResumePage() {
         onBioSave={saveBio}
         bioSaving={bioSaving}
         targetJob={targetJob}
+        summaryDraft={summaryDraft}
         selectedCareerActivities={selectedCareerActivities}
         selectedProjectActivities={selectedProjectActivities}
         selectedSkillsList={selectedSkillsList}
@@ -466,6 +529,8 @@ export default function ResumePage() {
       <ResumeAssistantSidebar
         targetJob={targetJob}
         onTargetJobChange={setTargetJob}
+        summaryDraft={summaryDraft}
+        onSummaryDraftChange={setSummaryDraft}
         onCreateResume={handleCreateResume}
         saving={saving}
         canCreate={selected.size > 0}

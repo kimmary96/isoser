@@ -12,6 +12,8 @@ type ChatMessage = {
 type ResumeAssistantSidebarProps = {
   targetJob: string;
   onTargetJobChange: (value: string) => void;
+  summaryDraft: string;
+  onSummaryDraftChange: (value: string) => void;
   onCreateResume: () => Promise<void>;
   saving: boolean;
   canCreate: boolean;
@@ -29,6 +31,8 @@ type ResumeAssistantSidebarProps = {
 export function ResumeAssistantSidebar({
   targetJob,
   onTargetJobChange,
+  summaryDraft,
+  onSummaryDraftChange,
   onCreateResume,
   saving,
   canCreate,
@@ -61,6 +65,14 @@ export function ResumeAssistantSidebar({
           onChange={(e) => onTargetJobChange(e.target.value)}
           placeholder="지원 직무 입력..."
           className="mb-2 w-full rounded-xl border border-gray-200 px-3 py-2 text-xs focus:border-blue-400 focus:outline-none"
+        />
+
+        <textarea
+          value={summaryDraft}
+          onChange={(e) => onSummaryDraftChange(e.target.value)}
+          placeholder="요약 초안을 입력하세요..."
+          rows={4}
+          className="mb-2 w-full resize-none rounded-xl border border-gray-200 px-3 py-2 text-xs focus:border-blue-400 focus:outline-none"
         />
 
         <button

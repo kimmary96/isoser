@@ -1,5 +1,53 @@
 # 리팩토링 로그
 
+## 2026-04-17 캘린더 기반 이력서 프리필 연결
+
+- 수정 파일:
+  - `frontend/app/api/dashboard/resume/prefill/route.ts`
+  - `frontend/app/api/dashboard/resume/route.ts`
+  - `frontend/app/dashboard/resume/page.tsx`
+  - `frontend/app/dashboard/resume/_hooks/use-resume-builder.ts`
+  - `frontend/app/dashboard/resume/_components/resume-assistant-sidebar.tsx`
+  - `frontend/app/dashboard/resume/_components/resume-preview-pane.tsx`
+  - `frontend/lib/api/app.ts`
+  - `frontend/lib/types/index.ts`
+  - `supabase/migrations/20260417162000_add_source_program_id_to_resumes.sql`
+- 변경 내용:
+  - `/dashboard/resume?prefill_program_id=<id>` 진입 시 프로그램 기반 활동 자동 선택과 직무/요약 초안을 내려주는 BFF route를 추가함
+  - resume builder가 프리필 배너, 적용 확인, 되돌리기, 자동 선택 배지를 지원하도록 상태를 확장함
+  - 이력서 저장 payload에 `source_program_id`를 포함하고, `resumes` 테이블에 nullable 컬럼을 추가하는 migration을 생성함
+- 유지된 동작:
+  - 쿼리 파라미터가 없는 일반 이력서 작성 흐름은 기존처럼 동작함
+  - 기존 저장 API는 `source_program_id` 컬럼이 아직 없는 환경에서도 fallback insert로 계속 저장 가능함
+
+## 2026-04-17 에이전트 아키텍처 LangGraph 문서 추가
+
+- 수정 파일:
+  - `docs/automation/agentic-architecture-langgraph.md`
+  - `docs/current-state.md`
+- 변경 내용:
+  - 현재 configured agentic flow를 LangGraph 관점에서 설명하는 상위 아키텍처 문서를 추가함
+  - `cowork_watcher.py` review/promotion, `watcher.py` supervisor execution, recovery loop, self-healing, remote fallback까지 한 장의 graph로 연결해 설명할 수 있게 정리함
+  - `docs/current-state.md` key references에 architecture graph 문서 링크를 추가함
+- 유지된 동작:
+  - 실제 watcher runtime이나 queue 동작은 변경하지 않음
+  - 기존 `watcher-langgraph.md`는 로컬 watcher 내부 subgraph 설명 문서로 계속 유지함
+
+## 2026-04-17 Tier 4 지역구 collector 추가
+
+- 수정 파일:
+  - `backend/rag/collector/tier4_collectors.py`
+  - `backend/rag/collector/scheduler.py`
+  - `backend/tests/test_tier4_collectors.py`
+  - `backend/tests/test_scheduler_collectors.py`
+- 변경 내용:
+  - 서울 자치구 대상 Tier 4 district collector 6종을 추가하고 scheduler에 등록함
+  - 각 collector는 URL/query 패턴과 최소 raw 메타를 남기는 fixture 중심 parser로 구현함
+  - scheduler dry-run 테스트에 Tier 4 등록 및 Tier 3 다음 순서 검증을 추가함
+- 유지된 동작:
+  - 기존 Tier 1~3 collector 동작과 tier 기준 정렬 규칙은 유지함
+  - normalize/upsert 경로와 source 단위 실패 격리는 그대로 유지함
+
 ## 2026-04-17 에이전트 플로우 발표용 문서 추가
 
 - 수정 파일:
