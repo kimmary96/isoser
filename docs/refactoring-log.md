@@ -14,6 +14,15 @@
 - 유지된 동작:
   - 기존 Slack alert 파일과 watcher ledger 기록은 계속 남고, 알림 자체가 사라지지는 않음
   - `completed` / `recovered` 같은 정상 흐름은 자동 remediation 대상에서 제외함
+- 검증 메모:
+  - Python 실행은 시스템 Python이 아니라 `backend\venv\Scripts\python.exe` 기준으로 맞춘다. 이 저장소 watcher 테스트 기준 Python은 3.10.8이다.
+  - watcher/self-healing 회귀 확인 명령:
+    - `backend\venv\Scripts\python.exe -m pytest tests\test_watcher.py tests\test_watcher_shared.py -q`
+    - `backend\venv\Scripts\python.exe -m pytest tests\test_summarize_actionable_ledgers.py tests\test_summarize_run_ledgers.py -q`
+  - 확인 결과:
+    - `tests\test_watcher.py`, `tests\test_watcher_shared.py`: `46 passed in 2.68s`
+    - `tests\test_summarize_actionable_ledgers.py`, `tests\test_summarize_run_ledgers.py`: `4 passed`
+  - Windows에서는 `.pytest_tmp` 정리 단계에서 파일 핸들 때문에 일시적으로 실패할 수 있다. 이 경우 `.pytest_tmp`를 비우고 같은 명령을 다시 실행하면 watcher 변경 자체와 무관한 정리 문제를 분리할 수 있다.
 - 후속 메모:
   - 향후 반복 fingerprint별로 즉시 실행 가능한 runbook을 붙이면 packet 생성 대신 watcher 자체에서 더 직접적인 self-healing을 수행할 수 있음
 
