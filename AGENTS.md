@@ -43,6 +43,15 @@ When given a task file:
 - `docs/current-state.md` is the runtime truth for current behavior.
 - `reports/*.md` and `docs/refactoring-log.md` are supporting history and decision records.
 
+## Git completion workflow
+- After any code, document, or workflow-state change, re-check the repository with `git status --short --branch` before closing the task.
+- Inspect branch sync state against `origin/develop` before pushing, and do not push blindly.
+- Group commits by same-kind work only, such as feature code, docs, watcher workflow state, and log checkpoints.
+- Before pushing, verify whether new files or edits were created during verification, watcher runs, or follow-up automation, and commit them separately when they belong to the same workstream.
+- Before pushing, confirm the worktree is clean for the intended push scope.
+- Unless the user explicitly asks for a different target, push completed work to `develop`.
+- If the branch is behind `origin/develop` or a merge/rebase is in progress, resolve that state first and only then push.
+
 ## Tech stack
 - Frontend: Next.js 15, TypeScript, Tailwind CSS, Pretendard
 - Backend: FastAPI, Python 3.10
