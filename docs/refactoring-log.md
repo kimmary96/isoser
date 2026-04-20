@@ -1,5 +1,22 @@
 # 리팩토링 로그
 
+## 2026-04-20 Compare AI 적합도 v2 해석 레이어 추가
+
+- 수정 파일:
+  - `backend/routers/programs.py`
+  - `backend/tests/test_programs_router.py`
+  - `frontend/app/(landing)/compare/programs-compare-client.tsx`
+  - `frontend/lib/types/index.ts`
+- 변경 내용:
+  - 기존 `POST /programs/compare-relevance` 계산 흐름은 유지한 채, compare relevance 응답에 `fit_label`, `fit_summary`, `readiness_label`, `gap_tags`를 추가하는 deterministic 해석 레이어를 얹음
+  - compare UI의 `★ 나와의 관련도` 섹션을 `★ AI 적합도`로 재구성하고, 기존 점수/매칭 스킬 행을 유지하면서 적합도 판단, 지원 준비도, AI 한줄 요약, 보완 포인트를 추가함
+  - profile/activity 정보가 약한 경우에도 endpoint가 실패하지 않고 낮은 적합도와 보완 태그를 안정적으로 반환하도록 테스트를 보강함
+- 유지된 동작:
+  - compare relevance endpoint 경로와 기존 점수 필드 계약은 그대로 유지함
+  - 로그인 401 기반 흐름과 compare 페이지의 기존 슬롯/URL state/CTA 구조는 변경하지 않음
+- 후속 메모:
+  - 현재 readiness 문구는 준비도 힌트 수준에 머물러 있으므로, 실제 지원 자격 판단과 혼동되지 않게 copy audit을 별도 진행할 여지가 있음
+
 ## 2026-04-20 Tier 4 collector 회귀 테스트 보강
 
 - 수정 파일:

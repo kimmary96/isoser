@@ -72,6 +72,104 @@ def test_normalize_cached_recommendation_rows_marks_missing_component_scores_sta
     assert normalized is None
 
 
+def test_compute_program_relevance_items_adds_fit_interpretation_fields(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        programs.programs_rag,
+        "_profile_keywords",
+        lambda profile, activities: ["react", "typescript", "frontend"],
+    )
+    monkeypatch.setattr(
+        programs.programs_rag,
+        "_program_match_context",
+        lambda program, profile_keywords: (["React", "TypeScript"], 0.82),
+    )
+    monkeypatch.setattr(
+        programs.programs_rag,
+        "_tokenize_text",
+        lambda value: [token.lower() for token in str(value).replace(",", " ").split() if token.strip()],
+    )
+
+    items = programs._compute_program_relevance_items(
+        profile={
+            "skills": ["React", "TypeScript", "Next.js"],
+            "self_intro": "프론트엔드 프로젝트 경험을 꾸준히 정리하고 있습니다.",
+            "bio": "사용자 경험 중심 개발자",
+            "career": ["프론트엔드 인턴 6개월"],
+        },
+        activities=[
+            {"id": "act-1", "title": "프로젝트", "description": "React 대시보드 구축", "skills": ["React"]},
+        ],
+        programs_by_id={
+            "program-1": {
+                "id": "program-1",
+                "title": "React TypeScript 부트캠프",
+                "skills": ["React", "TypeScript"],
+                "summary": "실전 프론트엔드 과정",
+                "description": "React와 TypeScript 중심 교육",
+            }
+        },
+        program_ids=["program-1"],
+    )
+
+    assert len(items) == 1
+    item = items[0]
+    assert item.program_id == "program-1"
+    assert item.relevance_score == 0.82
+    assert item.skill_match_score > 0.5
+    assert item.matched_skills[:2] == ["React", "TypeScript"]
+    assert item.fit_label == "높음"
+    assert item.readiness_label == "바로 지원 추천"
+    assert "전반적으로 잘 맞습니다." in item.fit_summary
+    assert item.gap_tags == []
+
+
+def test_compute_program_relevance_items_handles_sparse_profile_without_failure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        programs.programs_rag,
+        "_profile_keywords",
+        lambda profile, activities: [],
+    )
+    monkeypatch.setattr(
+        programs.programs_rag,
+        "_program_match_context",
+        lambda program, profile_keywords: ([], 0.2),
+    )
+    monkeypatch.setattr(programs.programs_rag, "_tokenize_text", lambda value: [])
+
+    items = programs._compute_program_relevance_items(
+        profile={
+            "skills": [],
+            "self_intro": "",
+            "bio": "",
+            "career": [],
+        },
+        activities=[],
+        programs_by_id={
+            "program-1": {
+                "id": "program-1",
+                "title": "데이터 부트캠프",
+                "summary": "데이터 분석 기초",
+            }
+        },
+        program_ids=["program-1"],
+    )
+
+    assert len(items) == 1
+    item = items[0]
+    assert item.fit_label == "낮음"
+    assert item.readiness_label == "탐색용 확인"
+    assert item.gap_tags == [
+        "프로필 기술 정보 부족",
+        "활동 근거 부족",
+        "기술 스택 근거 부족",
+    ]
+    assert "직접 연관성이 충분히 확인되지 않습니다." in item.fit_summary
+
+
 @pytest.mark.asyncio
 async def test_build_cached_recommendation_items_recalculates_final_score(
     monkeypatch: pytest.MonkeyPatch,

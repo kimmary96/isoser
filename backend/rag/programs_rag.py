@@ -21,6 +21,7 @@ logger = get_logger(__name__)
 TOKEN_PATTERN = re.compile(r"[0-9A-Za-z가-힣+#]+")
 RECOMMEND_RELEVANCE_WEIGHT = 0.6
 RECOMMEND_URGENCY_WEIGHT = 0.4
+URGENCY_WINDOW_DAYS = 30
 
 PROGRAM_RECOMMEND_PROMPT = """
 너는 사용자의 경력 프로필에 맞는 훈련 과정을 추천하는 커리어 코치다.

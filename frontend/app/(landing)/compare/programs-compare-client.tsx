@@ -191,6 +191,29 @@ function ScoreBar({ score }: { score: number | null | undefined }) {
   );
 }
 
+function getRelevanceValueState(
+  program: Program | null,
+  isLoggedIn: boolean,
+  relevanceLoading: boolean,
+  relevanceError: string | null
+): "empty" | "login" | "loading" | "error" | "ready" {
+  if (!program) return "empty";
+  if (!isLoggedIn) return "login";
+  if (relevanceLoading) return "loading";
+  if (relevanceError) return "error";
+  return "ready";
+}
+
+function renderRelevanceFallback(
+  state: "empty" | "login" | "loading" | "error" | "ready"
+): string {
+  if (state === "empty") return "정보 없음";
+  if (state === "login") return "로그인 후 확인";
+  if (state === "loading") return "분석 중";
+  if (state === "error") return "불러오기 실패";
+  return "정보 없음";
+}
+
 export default function ProgramsCompareClient({
   initialSlots,
   canonicalIds,
@@ -581,18 +604,21 @@ export default function ProgramsCompareClient({
               ))}
             </div>
 
-            {sectionHeader("★ 나와의 관련도", "bg-[#0A0F1E] text-white")}
+            {sectionHeader("★ AI 적합도", "bg-[#0A0F1E] text-white")}
             <div className="row contents">
               <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">상태</div>
-              {slots.map((program, index) => (
-                <ValueCell key={`relevance-state-${program?.id ?? index}`} winner={winnerIndex === index} empty={!program}>
-                  {!program ? "정보 없음" : !isLoggedIn ? (
-                    <span className="inline-flex rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600">
-                      로그인 후 확인
-                    </span>
-                  ) : relevanceLoading ? "분석 중" : relevanceError ? "불러오기 실패" : "분석 완료"}
-                </ValueCell>
-              ))}
+              {slots.map((program, index) => {
+                const state = getRelevanceValueState(program, isLoggedIn, relevanceLoading, relevanceError);
+                return (
+                  <ValueCell key={`relevance-state-${program?.id ?? index}`} winner={winnerIndex === index} empty={!program}>
+                    {state === "login" ? (
+                      <span className="inline-flex rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600">
+                        로그인 후 확인
+                      </span>
+                    ) : state === "loading" ? "분석 중" : state === "error" ? "불러오기 실패" : state === "ready" ? "분석 완료" : "정보 없음"}
+                  </ValueCell>
+                );
+              })}
             </div>
             {["종합 관련도", "기술 스택 일치도"].map((label) => (
               <div key={label} className="row contents">
@@ -601,9 +627,10 @@ export default function ProgramsCompareClient({
                   const programId = typeof program?.id === "string" ? program.id : "";
                   const item = programId ? relevanceItems[programId] : null;
                   const score = label === "종합 관련도" ? item?.relevance_score : item?.skill_match_score;
+                  const state = getRelevanceValueState(program, isLoggedIn, relevanceLoading, relevanceError);
                   return (
                     <ValueCell key={`${label}-${program?.id ?? index}`} winner={winnerIndex === index} empty={!program}>
-                      {!program ? "정보 없음" : !isLoggedIn ? "로그인 후 확인" : relevanceLoading ? "분석 중" : item ? <ScoreBar score={score} /> : "정보 없음"}
+                      {state === "ready" && item ? <ScoreBar score={score} /> : renderRelevanceFallback(state)}
                     </ValueCell>
                   );
                 })}
@@ -615,6 +642,7 @@ export default function ProgramsCompareClient({
                 const programId = typeof program?.id === "string" ? program.id : "";
                 const item = programId ? relevanceItems[programId] : null;
                 const matchedSkills = item?.matched_skills ?? [];
+                const state = getRelevanceValueState(program, isLoggedIn, relevanceLoading, relevanceError);
                 return (
                   <ValueCell
                     key={`matched-skills-${program?.id ?? index}`}
@@ -622,7 +650,7 @@ export default function ProgramsCompareClient({
                     empty={!program || (!isLoggedIn && matchedSkills.length === 0)}
                     extraClassName="flex flex-wrap gap-2"
                   >
-                    {!program ? "정보 없음" : !isLoggedIn ? "로그인 후 확인" : matchedSkills.length > 0 ? matchedSkills.map((skill) => (
+                    {state !== "ready" ? renderRelevanceFallback(state) : matchedSkills.length > 0 ? matchedSkills.map((skill) => (
                       <span
                         key={`${programId}-${skill}`}
                         className="rounded-md border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-medium text-orange-700"
@@ -634,6 +662,64 @@ export default function ProgramsCompareClient({
                 );
               })}
             </div>
+            {([
+              {
+                label: "적합도 판단",
+                render: (item: ProgramRelevanceItem | null) =>
+                  item ? (
+                    <span className="inline-flex rounded-md border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-semibold text-orange-700">
+                      {item.fit_label}
+                    </span>
+                  ) : null,
+              },
+              {
+                label: "지원 준비도",
+                render: (item: ProgramRelevanceItem | null) =>
+                  item ? (
+                    <span className="inline-flex rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700">
+                      {item.readiness_label}
+                    </span>
+                  ) : null,
+              },
+              {
+                label: "AI 한줄 요약",
+                render: (item: ProgramRelevanceItem | null) =>
+                  item ? <span className="line-clamp-2 break-words">{item.fit_summary}</span> : null,
+              },
+              {
+                label: "보완 포인트",
+                render: (item: ProgramRelevanceItem | null) =>
+                  item ? (
+                    item.gap_tags.length > 0 ? item.gap_tags.map((tag) => (
+                      <span
+                        key={`${item.program_id}-${tag}`}
+                        className="rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700"
+                      >
+                        {tag}
+                      </span>
+                    )) : "보완 포인트 없음"
+                  ) : null,
+              },
+            ] satisfies Array<{ label: string; render: (item: ProgramRelevanceItem | null) => React.ReactNode }>).map(({ label, render }) => (
+              <div key={label} className="row contents">
+                <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">{label}</div>
+                {slots.map((program, index) => {
+                  const programId = typeof program?.id === "string" ? program.id : "";
+                  const item = programId ? relevanceItems[programId] : null;
+                  const state = getRelevanceValueState(program, isLoggedIn, relevanceLoading, relevanceError);
+                  return (
+                    <ValueCell
+                      key={`${label}-${program?.id ?? index}`}
+                      winner={winnerIndex === index}
+                      empty={!program}
+                      extraClassName={label === "보완 포인트" ? "flex flex-wrap gap-2" : ""}
+                    >
+                      {state === "ready" && item ? render(item) : renderRelevanceFallback(state)}
+                    </ValueCell>
+                  );
+                })}
+              </div>
+            ))}
 
             <div className="border-r border-slate-200 bg-slate-100 px-4 py-4 text-sm font-medium text-slate-600">결정하셨나요?</div>
             {slots.map((program, index) => (
