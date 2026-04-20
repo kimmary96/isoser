@@ -1438,3 +1438,88 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - risks / follow-ups:
   - the prompt now depends on recommendation cache freshness, so stale `recommendations` rows can influence coach tone until live invalidation is verified
   - Gemini fallback responses still ignore recommendation context because fallback generation remains heuristic-only
+
+## 2026-04-16 supabase migration audit follow-up
+
+- changed files:
+  - `supabase/migrations/20260416143000_reconcile_coach_sessions_schema.sql`
+  - `supabase/README.md`
+  - `docs/recommendation/program-recommendation-checklist.md`
+  - `docs/recommendation/recommendation-guide.md.md`
+  - `docs/current-state.md`
+- why:
+  - reconcile legacy `coach_sessions` environments created by `001_init_schema.sql` with the current coach repository contract without editing historical migrations
+  - document the canonical migration chains for `programs`, `recommendations`, `recommendation_rules`, and `coach_sessions`
+  - record which migration files are now treated as stale drafts versus active schema chain references
+- preserved behaviors:
+  - existing recommendation backend and coach integration logic are unchanged
+  - historical migration files remain untouched; the fix is additive through a new corrective migration
+  - fresh environments can keep using the current canonical migration chain without rewriting old files
+- risks / follow-ups:
+  - live DB verification is still pending because `supabase_migrations.schema_migrations` and actual table columns were not queried in this turn
+  - environments that already ran only `001_init_schema.sql` still need `20260416143000_reconcile_coach_sessions_schema.sql` applied before coach session writes are considered safe
+
+## 2026-04-16 recommendation BFF and dashboard contract
+
+- changed files:
+  - `frontend/app/api/dashboard/recommended-programs/route.ts`
+  - `frontend/lib/types/index.ts`
+  - `frontend/lib/api/app.ts`
+  - `frontend/app/dashboard/page.tsx`
+  - `docs/recommendation/program-recommendation-checklist.md`
+  - `docs/recommendation/recommendation-guide.md.md`
+  - `docs/current-state.md`
+- why:
+  - preserve recommendation `reason`, `fit_keywords`, and `score` at the BFF layer instead of dropping them
+  - expose a dedicated recommended program contract to the dashboard client
+  - render recommendation reasons and fit keyword chips in the dashboard UI
+  - document the non-live collaboration risks of using personal API keys against shared services
+- preserved behaviors:
+  - dashboard recommendation loading and empty states remain in place
+  - the backend recommendation API contract is unchanged
+  - live verification is still deferred; this change is local-contract and UI focused
+- risks / follow-ups:
+  - actual logged-in dashboard rendering still needs live verification against a real backend response
+  - writing recommendation cache rows with a personal Gemini key against a shared Supabase project can affect what other collaborators read from `recommendations`
+
+## 2026-04-20 coach and recommendation harness baseline
+
+- changed files:
+  - `docs/recommendation/ai-harness-plan.md`
+  - `backend/tests/test_ai_smoke.py`
+  - `pytest.ini`
+  - `docs/current-state.md`
+- why:
+  - define what "harness engineering" means for the chatbot and recommendation flows
+  - add an executable P0 baseline that smoke-tests `/programs/recommend` and `/coach/feedback`
+  - separate already-implemented backend smoke coverage from still-missing frontend/browser harness work
+- preserved behaviors:
+  - production router logic is unchanged
+  - existing unit and API tests remain the primary regression net for detailed branching
+- risks / follow-ups:
+  - frontend BFF and dashboard rendering still do not have an automated runner
+  - recommendation invalidation smoke after profile/activity mutations is still pending
+
+## 2026-04-20 public preview routes for in-app browser
+
+- changed files:
+  - `frontend/app/api/preview/recommended-programs/route.ts`
+  - `frontend/app/api/preview/coach/route.ts`
+  - `frontend/app/preview/page.tsx`
+  - `frontend/app/preview/_components/preview-shell.tsx`
+  - `frontend/app/preview/recommendation/page.tsx`
+  - `frontend/app/preview/recommendation/recommendation-preview-client.tsx`
+  - `frontend/app/preview/coach/page.tsx`
+  - `frontend/app/preview/coach/coach-preview-client.tsx`
+  - `docs/current-state.md`
+- why:
+  - create login-free local preview routes for the recommendation cards and coach feedback flow so the Codex in-app browser can be used during UI iteration
+  - keep preview traffic separate from the dashboard BFF and signed-in routes
+  - keep the preview endpoints dev-only by returning `404` in production mode
+- preserved behaviors:
+  - existing dashboard recommendation and coach routes are unchanged
+  - preview coach requests remain anonymous and do not persist user sessions
+  - preview recommendation cards still use the real backend `/programs/recommend` response shape
+- risks / follow-ups:
+  - preview recommendation uses anonymous recommendations, so personalized dashboard behavior still needs regular-browser verification
+  - preview coach does not include signed-in recommendation context because in-app browser login state is intentionally avoided

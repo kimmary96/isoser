@@ -271,6 +271,12 @@ export interface Program {
   _relevance_score?: number | null;
 }
 
+export interface RecommendedProgram extends Program {
+  reason: string;
+  fitKeywords: string[];
+  score: number | null;
+}
+
 export type ProgramSort = "deadline" | "latest";
 
 export interface ProgramListParams {
@@ -600,4 +606,8 @@ export interface CoverLetterMutationResponse {
 
 export interface ProgramListResponse {
   programs: Program[];
+}
+
+export interface RecommendedProgramsResponse {
+  programs: RecommendedProgram[];
 }

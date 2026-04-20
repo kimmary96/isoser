@@ -267,6 +267,66 @@ def test_feedback_passes_recommended_programs_to_graph(
     assert captured["recommended_programs"][0]["title"] == "Backend Performance Bootcamp"
 
 
+def test_feedback_restores_existing_session_history_before_running_graph(
+    client,
+    fake_repo,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    section_type = next(iter(coach_router.ALLOWED_SECTION_TYPES))
+    fake_repo.sessions["session-1"] = CoachSessionRecord(
+        id="session-1",
+        user_id="user-1",
+        job_title="Backend Engineer",
+        section_type=section_type,
+        activity_description="Earlier coaching draft.",
+        iteration_count=2,
+        last_feedback="Earlier feedback",
+        last_suggestions=[],
+        selected_suggestion_index=None,
+        suggestion_type="quantification",
+        last_structure_diagnosis={"priority_focus": "quantification"},
+        missing_elements=[],
+        created_at="2026-04-03T00:00:00+00:00",
+        updated_at="2026-04-03T00:05:00+00:00",
+    )
+    captured: dict[str, Any] = {}
+
+    async def fake_run_coach_graph(**kwargs):  # noqa: ANN003
+        captured.update(kwargs)
+        history = kwargs["history"]
+        activity_text = kwargs["activity_text"]
+        return {
+            **_graph_result(activity_text),
+            "updated_history": history
+            + [
+                {"role": "user", "content": activity_text},
+                {"role": "assistant", "content": f"feedback for {activity_text}"},
+            ],
+        }
+
+    monkeypatch.setattr(coach_router, "run_coach_graph", fake_run_coach_graph)
+
+    response = client.post(
+        "/coach/feedback",
+        json={
+            "session_id": "session-1",
+            "user_id": "user-1",
+            "activity_description": "Current revision adds impact metrics.",
+            "job_title": "Backend Engineer",
+            "section_type": section_type,
+            "selected_suggestion_index": 0,
+            "history": [{"role": "user", "content": "stale client history"}],
+        },
+    )
+
+    assert response.status_code == 200
+    assert captured["history"] == [
+        {"role": "user", "content": "Earlier coaching draft."},
+        {"role": "assistant", "content": "Earlier feedback"},
+    ]
+    assert response.json()["updated_history"][:2] == captured["history"]
+
+
 def test_get_session_detail_restores_last_exchange(client, fake_repo) -> None:
     fake_repo.sessions["session-1"] = CoachSessionRecord(
         id="session-1",

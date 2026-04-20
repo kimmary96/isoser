@@ -517,6 +517,90 @@
 - [ ] 추천 이유와 키워드가 카드에 보인다.
 - [ ] 프로필/활동 변경 후 추천이 갱신된다.
 - [ ] 테스트/수동 검증 결과가 기록된다.
+## 2026-04-16 coach recommendation context update
+
+- [x] `backend/routers/coach.py`
+  - 로그인 사용자 기준으로 `recommendations`와 `programs`에서 상위 추천 결과를 읽어온다
+  - Supabase 미설정, 추천 캐시 0건, 조회 실패 시에도 코치 응답은 soft-fail로 유지한다
+- [x] `backend/chains/coach_graph.py`
+  - `CoachState`와 `CoachPromptInput`에 `recommended_programs`를 추가한다
+  - 코치 프롬프트에 `[추천 프로그램 문맥]` 블록을 주입한다
+- [x] 기존 동작 유지
+  - `intro_generate` 모드는 계속 추천 조회를 건너뛴다
+  - 비로그인 사용자와 캐시 miss 사용자는 기존 코치 흐름을 그대로 사용한다
+  - 추천 문맥을 읽지 못해도 coach API 자체는 실패하지 않는다
+- [x] 로컬 검증
+  - `backend\\.venv310\\Scripts\\python.exe -m compileall backend/chains/coach_graph.py backend/routers/coach.py backend/tests/test_coach_e2e.py backend/tests/test_coach_sessions_api.py`
+  - `backend\\.venv310\\Scripts\\python.exe -m pytest backend/tests/test_coach_e2e.py backend/tests/test_coach_sessions_api.py`
+  - 결과: `16 passed`
+- [ ] 라이브 검증 보류
+  - 실제 `recommendations`가 채워진 로그인 사용자로 코치 응답 문맥을 확인한다
+  - stale 캐시 row가 코치 응답에 과하게 영향을 주지 않는지 확인한다
+  - fallback 응답은 아직 추천 문맥을 직접 사용하지 않는다
+
+영향 파일:
+
+- `backend/routers/coach.py`
+- `backend/chains/coach_graph.py`
+- `backend/tests/test_coach_e2e.py`
+- `backend/tests/test_coach_sessions_api.py`
+
+## 2026-04-16 stage4-5 local update
+
+- [x] `frontend/app/api/dashboard/recommended-programs/route.ts`
+  - 백엔드 `items[].program`만 전달하던 BFF를 수정해 `reason`, `fitKeywords`, `score`를 같이 내려주도록 변경했다.
+  - 인증 실패는 `401 UNAUTHORIZED`, 백엔드 5xx는 `502 UPSTREAM_ERROR`로 구분했다.
+- [x] `frontend/lib/types/index.ts`
+  - `RecommendedProgram`, `RecommendedProgramsResponse` 타입을 추가했다.
+- [x] `frontend/lib/api/app.ts`
+  - `getRecommendedPrograms()` 반환 타입을 추천 전용 응답으로 변경했다.
+- [x] `frontend/app/dashboard/page.tsx`
+  - 추천 카드에 추천 사유와 키워드를 노출하도록 수정했다.
+  - 점수 표시는 `score ?? final_score` 우선순위로 읽도록 맞췄다.
+  - 기존 로딩/빈 상태 흐름은 유지했다.
+- [ ] live 검증 보류
+  - 실제 로그인 사용자 기준 BFF 응답 shape 확인
+  - 실제 추천 카드의 사유/키워드 노출 확인
+  - 느린 네트워크/백엔드 오류 시 에러 문구 확인
+
+영향 파일:
+
+- `frontend/app/api/dashboard/recommended-programs/route.ts`
+- `frontend/lib/types/index.ts`
+- `frontend/lib/api/app.ts`
+- `frontend/app/dashboard/page.tsx`
+
+## 2026-04-16 migration audit follow-up
+
+- [x] `supabase/migrations/001_init_schema.sql`의 구형 `coach_sessions`와 `supabase/migrations/20260403093000_create_coach_sessions.sql`의 현재 계약 드리프트를 확인했다.
+- [x] corrective migration을 추가했다.
+  - 구현: `supabase/migrations/20260416143000_reconcile_coach_sessions_schema.sql`
+  - 목적: 구형 환경에서도 현재 코드가 기대하는 `job_title`, `section_type`, `activity_description`, `last_structure_diagnosis`, `missing_elements` 등을 보정한다.
+  - 원칙: 과거 migration 파일을 직접 수정하지 않고 새 migration으로 교정한다.
+- [x] `programs` 정본 체인을 다시 고정했다.
+  - 기준: `20260410120000` -> `20260410133000` -> `20260415113000` -> `20260415170000`
+  - 메모: `20260415_create_programs.sql`은 현재 앱 정본 스키마가 아니라 별도 초안으로 취급한다.
+- [x] `recommendations` 현재 계약을 다시 고정했다.
+  - 기준: `20260415_create_recommendations.sql` + `20260416120000_expand_recommendations_cache_columns.sql` + `20260416132000_fix_recommendations_cache_contract.sql`
+  - 메모: `20260415_create_recommendations.sql` 단독 상태의 `user_id + program_id` unique 계약은 현재 코드와 다르다.
+- [x] `supabase/README.md`에 정본 체인과 live 확인 SQL을 반영했다.
+- [ ] live DB에서 실제 적용 상태를 확인한다.
+  - `supabase_migrations.schema_migrations`
+  - `information_schema.columns`
+  - `pg_constraint` 기준 `recommendations` unique 계약
+
+영향 파일:
+
+- `supabase/README.md`
+- `supabase/migrations/001_init_schema.sql`
+- `supabase/migrations/20260403093000_create_coach_sessions.sql`
+- `supabase/migrations/20260415_create_programs.sql`
+- `supabase/migrations/20260415_create_recommendations.sql`
+- `supabase/migrations/20260416120000_expand_recommendations_cache_columns.sql`
+- `supabase/migrations/20260416121000_create_recommendation_rules.sql`
+- `supabase/migrations/20260416132000_fix_recommendations_cache_contract.sql`
+- `supabase/migrations/20260416143000_reconcile_coach_sessions_schema.sql`
+
 ## 2026-04-16 stage3 local update
 
 - [x] `backend/routers/programs.py`

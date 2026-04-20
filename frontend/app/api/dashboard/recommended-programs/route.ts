@@ -1,6 +1,6 @@
 import { apiError, apiOk } from "@/lib/api/route-response";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import type { ProgramRecommendResponse } from "@/lib/types";
+import type { ProgramRecommendResponse, RecommendedProgramsResponse } from "@/lib/types";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
@@ -16,10 +16,12 @@ export async function GET(request: Request) {
       data: { session },
       error,
     } = await supabase.auth.getSession();
+
     const accessToken = !error && session?.access_token ? session.access_token : null;
     const headers: HeadersInit = {
       "Content-Type": "application/json",
     };
+
     if (accessToken) {
       headers.Authorization = `Bearer ${accessToken}`;
     }
@@ -37,26 +39,34 @@ export async function GET(request: Request) {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.detail || "추천 프로그램을 불러오지 못했습니다.");
+      const message = errorData?.error || errorData?.detail || "추천 프로그램을 불러오지 못했습니다.";
+      const status = response.status >= 500 ? 502 : response.status;
+      const code = response.status >= 500 ? "UPSTREAM_ERROR" : "BAD_REQUEST";
+      return apiError(message, status, code);
     }
 
     const data = (await response.json()) as ProgramRecommendResponse;
     const programs = (data.items ?? [])
       .map((item) => {
-        if (!item.program) return null;
+        if (!item.program) {
+          return null;
+        }
 
         return {
           ...item.program,
           _reason: item.reason ?? null,
           _fit_keywords: item.fit_keywords ?? null,
-          _score: item.score ?? null,
+          _score: item.score ?? item.program.final_score ?? null,
           _relevance_score: item.relevance_score ?? item.program.relevance_score ?? null,
+          reason: item.reason,
+          fitKeywords: item.fit_keywords ?? [],
+          score: item.score ?? item.program.final_score ?? null,
         };
       })
       .filter((program): program is NonNullable<typeof program> => Boolean(program))
       .slice(0, 9);
 
-    return apiOk({ programs });
+    return apiOk<RecommendedProgramsResponse>({ programs });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "추천 프로그램을 불러오지 못했습니다.";

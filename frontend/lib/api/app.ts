@@ -18,7 +18,8 @@ import type {
   DocumentsResponse,
   CalendarRecommendResponse,
   MatchDashboardResponse,
-  ProgramListResponse,
+  RecommendedProgram,
+  RecommendedProgramsResponse,
   ResumeBuilderResponse,
   ResumeExportResponse,
   SavedMatchAnalysis,
@@ -116,7 +117,7 @@ export interface RecommendProgramsParams {
 
 export async function getRecommendedPrograms(
   params?: RecommendProgramsParams
-): Promise<{ programs: Program[] }> {
+): Promise<{ programs: RecommendedProgram[] }> {
   const searchParams = new URLSearchParams();
   if (params?.category) searchParams.set("category", params.category);
   if (params?.region) searchParams.set("region", params.region);
@@ -125,7 +126,7 @@ export async function getRecommendedPrograms(
   const query = searchParams.toString();
   const url = `/api/dashboard/recommended-programs${query ? `?${query}` : ""}`;
 
-  return requestAppJson<ProgramListResponse>(
+  return requestAppJson<RecommendedProgramsResponse>(
     url,
     { method: "GET" },
     "추천 프로그램을 불러오지 못했습니다."
@@ -341,6 +342,24 @@ export async function requestCoverLetterCoaching(payload: {
       body: JSON.stringify(payload),
     },
     "AI 코칭 요청에 실패했습니다."
+  );
+}
+
+export async function requestActivityCoaching(payload: {
+  session_id?: string;
+  activity_description: string;
+  job_title: string;
+  section_type: Activity["type"];
+  history: CoachMessage[];
+}): Promise<CoachFeedbackResponse> {
+  return requestAppJson<CoachFeedbackResponse>(
+    "/api/dashboard/activities/coach",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+    "AI coach request failed."
   );
 }
 
