@@ -10,10 +10,13 @@ import type { Program } from "@/lib/types";
 import {
   chipOptions,
   compareCards,
-  flowSteps,
+  journeySteps,
   tickerLoop,
   toneClassMap,
+  trustPoints,
+  workspaceStages,
 } from "./_content";
+import { landingAStyles } from "./_styles";
 
 type HeaderUser = {
   displayName: string;
@@ -79,6 +82,11 @@ function getProgramCompareHref(program: Program): string {
     : "/compare";
 }
 
+function getProgramScore(program: Program): number {
+  const rawScore = program.relevance_score ?? program.final_score ?? program._score ?? 0;
+  return rawScore > 1 ? Math.round(rawScore) : Math.round(rawScore * 100);
+}
+
 export function LandingATickerBar() {
   return (
     <div className="sticky top-0 z-[220] h-9 overflow-hidden bg-[var(--red)] text-white">
@@ -137,35 +145,35 @@ export function LandingANavBar() {
   const isDashboardActive = pathname.startsWith("/dashboard");
 
   return (
-    <nav className="sticky top-9 z-[210] border-b border-white/10 bg-[rgba(10,15,30,0.96)] px-5 py-4 backdrop-blur-xl sm:px-8 lg:px-12">
+    <nav className="sticky top-9 z-[210] border-b border-white/10 bg-[rgba(10,19,37,0.9)] px-5 py-4 backdrop-blur-xl sm:px-8 lg:px-12">
       <div className="mx-auto flex max-w-6xl items-center gap-4">
-        <Link href="/landing-a" className="text-xl font-extrabold tracking-[-0.04em] text-white">
-          이소<span className="text-[var(--sky)]">서</span>
+        <Link href="/landing-a" className="flex items-center gap-3">
+          <div>
+            <div className="text-xl font-extrabold tracking-[-0.05em] text-white">
+              이소<span className="text-[var(--sky)]">서</span>
+            </div>
+            <p className="hidden text-[10px] uppercase tracking-[0.28em] text-white/45 sm:block">
+              Career Operating System
+            </p>
+          </div>
         </Link>
-        <div className="ml-auto hidden items-center gap-7 text-sm text-white/60 md:flex">
-          <Link
-            href="/programs"
-            className={`transition hover:text-white ${isProgramsActive ? "text-white" : ""}`}
-          >
-            프로그램
+
+        <div className="ml-auto hidden items-center gap-7 text-sm text-white/62 md:flex">
+          <Link href="/programs" className={`transition hover:text-white ${isProgramsActive ? "text-white" : ""}`}>
+            프로그램 탐색
           </Link>
-          <Link
-            href="/compare"
-            className={`transition hover:text-white ${isCompareActive ? "text-white" : ""}`}
-          >
-            부트캠프 비교
+          <Link href="/compare" className={`transition hover:text-white ${isCompareActive ? "text-white" : ""}`}>
+            비교
           </Link>
-          <Link
-            href="/dashboard"
-            className={`transition hover:text-white ${isDashboardActive ? "text-white" : ""}`}
-          >
-            내 프로필
+          <Link href="/dashboard" className={`transition hover:text-white ${isDashboardActive ? "text-white" : ""}`}>
+            워크스페이스
           </Link>
         </div>
+
         {authChecked && user ? (
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+            className="inline-flex items-center gap-3 rounded-full border border-white/12 bg-white/6 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
           >
             {user.avatarUrl ? (
               <img
@@ -178,12 +186,13 @@ export function LandingANavBar() {
                 {getHeaderInitial(user.displayName)}
               </div>
             )}
-            <span>{user.displayName}</span>
+            <span className="hidden sm:inline">{user.displayName}</span>
+            <span className="text-white/55">워크스페이스</span>
           </Link>
         ) : (
           <Link
             href="/login"
-            className="rounded-lg bg-[var(--fire)] px-4 py-2 text-sm font-bold text-white shadow-[0_6px_24px_rgba(249,115,22,0.28)] transition hover:-translate-y-0.5 hover:bg-[var(--fire-lo)]"
+            className="rounded-full bg-[var(--fire)] px-4 py-2 text-sm font-bold text-white shadow-[0_12px_32px_rgba(249,115,22,0.24)] transition hover:-translate-y-0.5 hover:bg-[var(--fire-lo)]"
           >
             무료로 시작하기
           </Link>
@@ -200,72 +209,119 @@ type LandingAHeroSectionProps = {
 
 export function LandingAHeroSection({ featuredPrograms, totalCount }: LandingAHeroSectionProps) {
   return (
-    <section className="relative overflow-hidden bg-[var(--ink)] px-5 pb-14 pt-16 text-center sm:px-8 sm:pb-16 sm:pt-20 lg:px-12">
-      <div className="hero-glow absolute inset-0" />
-      <div className="relative z-10 mx-auto max-w-6xl">
-        <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(249,115,22,0.45)] bg-[rgba(249,115,22,0.08)] px-4 py-2 text-xs font-bold text-[#FB923C]">
-          <span className="h-2 w-2 animate-pulse rounded-full bg-[#FB923C]" />
-          지금 {totalCount}개 프로그램 확인 가능
-        </div>
+    <section className="landing-hero hero-grid relative overflow-hidden px-5 pb-16 pt-14 sm:px-8 sm:pb-20 lg:px-12 lg:pt-18">
+      <div className="relative z-10 mx-auto grid max-w-6xl gap-10 lg:grid-cols-[minmax(0,1.1fr)_460px] lg:items-end">
+        <div className="max-w-2xl">
+          <p className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/8 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/70">
+            <span className="h-2 w-2 rounded-full bg-[var(--fire)]" />
+            Public career support, organized
+          </p>
+          <h1 className="mt-6 text-4xl font-extrabold leading-[1.02] tracking-[-0.07em] text-white sm:text-5xl lg:text-[5.25rem]">
+            취업 지원 정보를
+            <br />
+            <span className="hero-wordmark">지원 가능한 흐름</span>으로
+            <br />
+            다시 정리합니다
+          </h1>
+          <p className="mt-6 max-w-xl text-base leading-7 text-white/68 sm:text-lg">
+            이소서는 공공 취업 지원 공고를 모아 보여주는 데서 멈추지 않습니다. 탐색한 프로그램을 로그인 후
+            추천 캘린더, 문서 작성, 공고 매치 분석까지 같은 워크스페이스로 이어 붙입니다.
+          </p>
 
-        <h1 className="mx-auto mt-6 max-w-4xl text-4xl font-extrabold leading-tight tracking-[-0.06em] text-white sm:text-5xl lg:text-6xl">
-          취업 지원 정보,
-          <br />
-          <span className="hero-gradient-blue">흩어진 채로</span> 두면
-          <br />
-          <span className="hero-gradient-fire">기회를 놓칩니다</span>
-        </h1>
-
-        <p className="mx-auto mt-6 max-w-2xl text-sm leading-7 text-white/60 sm:text-base">
-          고용24, HRD넷, K-디지털, 서울시 일자리까지
-          <br />
-          AI가 내 상황에 맞는 순서로 정리해드립니다.
-        </p>
-
-        <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {featuredPrograms.map((program) => (
-            <div
-              key={`${program.id}-${program.title}`}
-              className={`rounded-2xl border bg-white/5 px-5 py-5 text-left backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-[rgba(249,115,22,0.45)] hover:bg-[rgba(249,115,22,0.08)] ${
-                typeof program.days_left === "number" && program.days_left <= 3
-                  ? "border-[rgba(239,68,68,0.45)] bg-[rgba(239,68,68,0.08)]"
-                  : "border-white/10"
-              }`}
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Link
+              href="/programs?sort=deadline"
+              className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3.5 text-sm font-bold text-[var(--ink)] transition hover:-translate-y-0.5"
             >
-              <div
-                className={`text-3xl font-extrabold tracking-[-0.04em] ${getProgramDeadlineTone(program)}`}
-              >
-                {getProgramDeadline(program)}
-              </div>
-              <div className="mt-3 text-sm font-bold leading-6 text-white">{program.title || "제목 미정"}</div>
-              <div className="mt-2 text-xs text-[var(--muted)]">
-                {[program.source, program.location].filter(Boolean).join(" · ") || "프로그램 정보 확인"}
-              </div>
+              지금 지원 가능한 프로그램 보기
+            </Link>
+            <Link
+              href="/login"
+              className="inline-flex items-center justify-center rounded-full border border-white/16 bg-white/8 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/12"
+            >
+              로그인 후 AI 추천 받기
+            </Link>
+          </div>
+
+          <div className="mt-10 grid gap-4 sm:grid-cols-3">
+            <div className="border-l border-white/14 pl-4">
+              <div className="text-3xl font-extrabold tracking-[-0.05em] text-white">{totalCount}</div>
+              <p className="mt-1 text-sm text-white/58">현재 탐색 가능한 프로그램 수</p>
             </div>
-          ))}
-
-          <Link
-            href="/programs?sort=deadline"
-            className="flex min-h-28 items-center justify-center rounded-2xl border border-dashed border-white/20 bg-white/5 px-5 py-5 text-sm font-medium text-[var(--muted)] transition hover:border-white/35 hover:text-white"
-          >
-            + 마감 임박 더 보기
-          </Link>
+            <div className="border-l border-white/14 pl-4">
+              <div className="text-3xl font-extrabold tracking-[-0.05em] text-white">3단계</div>
+              <p className="mt-1 text-sm text-white/58">탐색에서 대시보드까지 연결</p>
+            </div>
+            <div className="border-l border-white/14 pl-4">
+              <div className="text-3xl font-extrabold tracking-[-0.05em] text-white">1곳</div>
+              <p className="mt-1 text-sm text-white/58">공고, 문서, 매치 분석 워크스페이스</p>
+            </div>
+          </div>
         </div>
 
-        <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
-          <Link
-            href="/login"
-            className="rounded-xl bg-[var(--fire)] px-7 py-4 text-sm font-bold text-white shadow-[0_8px_28px_rgba(249,115,22,0.32)] transition hover:-translate-y-0.5 hover:bg-[var(--fire-lo)]"
-          >
-            AI 맞춤 추천 받기
-          </Link>
-          <Link
-            href="/programs"
-            className="rounded-xl border border-white/15 bg-white/[0.08] px-7 py-4 text-sm font-semibold text-white transition hover:bg-white/15"
-          >
-            전체 프로그램 보기
-          </Link>
+        <div className="glass-panel relative overflow-hidden rounded-[32px] border border-white/12 p-5 text-white shadow-[0_28px_80px_rgba(0,0,0,0.24)]">
+          <div className="flex items-center justify-between border-b border-white/10 pb-4">
+            <div>
+              <p className="text-xs uppercase tracking-[0.24em] text-white/45">Live board</p>
+              <h2 className="mt-2 text-2xl font-bold tracking-[-0.04em] text-white">이번 주 우선 확인</h2>
+            </div>
+            <Link href="/dashboard" className="text-sm font-semibold text-[var(--sky)]">
+              워크스페이스 →
+            </Link>
+          </div>
+
+          <div className="mt-5 space-y-3">
+            {featuredPrograms.map((program) => (
+              <div
+                key={`${program.id}-${program.title}`}
+                className="rounded-[24px] border border-white/10 bg-black/16 p-4 transition hover:border-white/18 hover:bg-black/22"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.18em] text-white/42">
+                      {[program.source, program.location].filter(Boolean).join(" · ") || "Program signal"}
+                    </p>
+                    <h3 className="mt-2 text-base font-semibold leading-6 text-white">
+                      {program.title || "제목 미정"}
+                    </h3>
+                  </div>
+                  <div className={`text-xl font-extrabold tracking-[-0.04em] ${getProgramDeadlineTone(program)}`}>
+                    {getProgramDeadline(program)}
+                  </div>
+                </div>
+
+                <div className="mt-4 flex items-center justify-between text-sm text-white/60">
+                  <span>{program.category || "카테고리 미분류"}</span>
+                  <span>관련도 {Math.max(getProgramScore(program), 0)}%</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-5 rounded-[24px] border border-dashed border-white/16 bg-white/5 p-4">
+            <p className="text-xs uppercase tracking-[0.18em] text-white/42">Next after login</p>
+            <p className="mt-2 text-sm leading-6 text-white/72">
+              프로필을 연결하면 랜딩에서 본 프로그램을 대시보드 추천 캘린더와 문서 생성 흐름으로 이어서 관리할 수
+              있습니다.
+            </p>
+          </div>
         </div>
+      </div>
+    </section>
+  );
+}
+
+export function LandingATrustSection() {
+  return (
+    <section className="px-5 py-10 sm:px-8 lg:px-12">
+      <div className="section-shell soft-panel mx-auto grid max-w-6xl gap-6 rounded-[32px] px-6 py-8 lg:grid-cols-3 lg:px-8">
+        {trustPoints.map((point, index) => (
+          <div key={point.title} className={index < trustPoints.length - 1 ? "lg:pr-6" : ""}>
+            <div className="trust-divider h-px w-16" />
+            <h2 className="mt-4 text-xl font-bold tracking-[-0.03em] text-[var(--ink)]">{point.title}</h2>
+            <p className="mt-3 text-sm leading-7 text-[var(--sub)]">{point.description}</p>
+          </div>
+        ))}
       </div>
     </section>
   );
@@ -278,9 +334,9 @@ type FilterBarProps = {
 
 export function LandingAFilterBar({ activeChip, keyword }: FilterBarProps) {
   return (
-    <section className="sticky top-[100px] z-[160] border-b border-[var(--border)] bg-white/[0.95] px-5 py-4 shadow-[0_2px_12px_rgba(15,23,42,0.06)] backdrop-blur sm:px-8 lg:px-12">
+    <section className="sticky top-[100px] z-[160] border-b border-[var(--border)] bg-white/92 px-5 py-4 backdrop-blur sm:px-8 lg:px-12">
       <form method="GET" action="/landing-a" className="mx-auto flex max-w-6xl flex-col gap-3 lg:flex-row lg:items-center">
-        <div className="flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 lg:w-[320px]">
+        <div className="flex items-center gap-3 rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-3 lg:w-[360px]">
           <label htmlFor="landing-a-keyword" className="text-sm text-[var(--muted)]">
             검색
           </label>
@@ -297,12 +353,11 @@ export function LandingAFilterBar({ activeChip, keyword }: FilterBarProps) {
             type="submit"
             name="chip"
             value={activeChip}
-            className="shrink-0 text-xs font-semibold text-[var(--blue)] transition hover:text-[var(--blue-lo)]"
+            className="shrink-0 rounded-full bg-[var(--ink)] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[var(--ink-soft)]"
           >
             적용
           </button>
         </div>
-        <div className="hidden h-6 w-px bg-[var(--border)] lg:block" />
         <div className="-mx-1 overflow-x-auto px-1 no-scrollbar">
           <div className="flex min-w-max gap-2">
             {chipOptions.map((chip) => {
@@ -352,125 +407,137 @@ export function LandingAProgramsSection({
   error,
 }: LandingAProgramsSectionProps) {
   return (
-    <section className="px-5 py-12 sm:px-8 lg:px-12">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2 className="text-2xl font-bold tracking-[-0.03em] text-[var(--ink)]">
-              마감 임박 프로그램{" "}
-              <span className="ml-2 rounded bg-[var(--red)] px-2 py-1 text-[10px] font-extrabold uppercase tracking-[0.08em] text-white">
-                D-7 이내
-              </span>
+    <section className="px-5 py-14 sm:px-8 lg:px-12">
+      <div className="program-shell mx-auto max-w-6xl rounded-[32px] border border-[var(--border)] px-6 py-8 shadow-[0_22px_60px_rgba(10,19,37,0.06)] sm:px-8">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-2xl">
+            <p className="text-xs uppercase tracking-[0.24em] text-[var(--blue)]">Opportunity feed</p>
+            <h2 className="mt-3 text-3xl font-bold tracking-[-0.05em] text-[var(--ink)]">
+              지금 탐색할 프로그램을 빠르게 고릅니다
             </h2>
-            <p className="mt-2 text-sm text-[var(--sub)]">정보 허브에서 바로 확인할 수 있는 주요 프로그램만 먼저 정리했습니다.</p>
+            <p className="mt-3 text-sm leading-7 text-[var(--sub)]">
+              비로그인 상태에서는 우선 공고를 탐색하고, 로그인 후에는 이 결과를 그대로 추천 캘린더와 문서 워크플로우로
+              이어 붙입니다.
+            </p>
           </div>
-          <Link href="/programs" className="text-sm font-semibold text-[var(--blue)]">
-            전체보기 →
-          </Link>
+          <div className="flex flex-wrap gap-3 text-sm">
+            <Link
+              href="/programs"
+              className="inline-flex items-center rounded-full border border-[var(--border)] bg-white px-4 py-2 font-semibold text-[var(--ink)] transition hover:border-[var(--blue)] hover:text-[var(--blue)]"
+            >
+              전체 프로그램 보기
+            </Link>
+            <Link
+              href="/login"
+              className="inline-flex items-center rounded-full bg-[var(--blue)] px-4 py-2 font-semibold text-white transition hover:bg-[var(--blue-lo)]"
+            >
+              로그인 후 추천 연결
+            </Link>
+          </div>
         </div>
 
         {error ? (
-          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-6 py-10 text-sm text-rose-700">
+          <div className="mt-8 rounded-3xl border border-rose-200 bg-rose-50 px-6 py-10 text-sm text-rose-700">
             {error}
           </div>
         ) : programs.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-[var(--border)] bg-white px-6 py-10 text-center">
+          <div className="mt-8 rounded-3xl border border-dashed border-[var(--border)] bg-white px-6 py-10 text-center">
             <p className="text-base font-semibold text-[var(--ink)]">조건에 맞는 프로그램이 없습니다.</p>
             <p className="mt-2 text-sm text-[var(--sub)]">
-              {keyword ? `"${keyword}" 검색어와 ` : ""}{activeChip !== "전체" ? `${activeChip} 필터를 ` : ""}조정해보세요.
+              {keyword ? `"${keyword}" 검색어와 ` : ""}
+              {activeChip !== "전체" ? `${activeChip} 필터를 ` : ""}
+              조정해보세요.
             </p>
           </div>
         ) : (
           <>
-            <p className="mb-4 text-sm text-[var(--sub)]">
-              현재 조건에 맞는 프로그램 {totalCount}개 중 상위 {programs.length}개를 보여드립니다.
-            </p>
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="mt-8 flex flex-col gap-3 border-b border-[var(--border)] pb-5 text-sm text-[var(--sub)] sm:flex-row sm:items-center sm:justify-between">
+              <p>현재 조건에 맞는 프로그램 {totalCount}개 중 상위 {programs.length}개를 보여드립니다.</p>
+              <p>탐색 후 로그인하면 추천 캘린더와 문서 준비 흐름으로 이어집니다.</p>
+            </div>
+            <div className="mt-8 grid gap-4 lg:grid-cols-3">
               {programs.map((program) => {
                 const chips = [...normalizeTextList(program.tags), ...normalizeTextList(program.skills)].slice(0, 4);
                 const externalLink = program.application_url || program.link || program.source_url;
-                const rawScore = program.relevance_score ?? program.final_score ?? program._score ?? 0;
-                const score = rawScore > 1 ? Math.round(rawScore) : Math.round(rawScore * 100);
+                const score = getProgramScore(program);
 
                 return (
                   <article
                     key={`${program.id}-${program.title}`}
-                    className={`relative rounded-2xl border bg-white p-6 transition hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(15,23,42,0.1)] ${
+                    className={`rounded-[28px] border bg-white p-6 shadow-[0_16px_44px_rgba(10,19,37,0.05)] transition hover:-translate-y-1 hover:shadow-[0_22px_56px_rgba(10,19,37,0.1)] ${
                       typeof program.days_left === "number" && program.days_left <= 3
-                        ? "border-[rgba(239,68,68,0.35)]"
-                        : "border-[rgba(34,197,94,0.28)]"
+                        ? "border-[rgba(239,68,68,0.3)]"
+                        : "border-[rgba(216,227,242,0.95)]"
                     }`}
                   >
-                    {program.is_ad ? (
-                      <span className="absolute right-4 top-4 rounded border border-[rgba(37,99,235,0.3)] px-2 py-1 text-[10px] font-bold text-[var(--blue)]">
-                        광고
-                      </span>
-                    ) : null}
-
-                    <div className="flex items-center justify-between gap-4">
-                      <span className="text-xs text-[var(--muted)]">
-                        {[program.source, program.location].filter(Boolean).join(" · ") || "프로그램 정보"}
-                      </span>
-                      <span className={`text-lg font-extrabold tracking-[-0.04em] ${getProgramDeadlineTone(program)}`}>
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.14em] text-[var(--muted)]">
+                          {[program.source, program.location].filter(Boolean).join(" · ") || "프로그램 정보"}
+                        </p>
+                        <h3 className="mt-3 text-lg font-bold leading-7 tracking-[-0.03em] text-[var(--ink)]">
+                          {program.title || "제목 미정"}
+                        </h3>
+                      </div>
+                      <div className={`text-xl font-extrabold tracking-[-0.05em] ${getProgramDeadlineTone(program)}`}>
                         {getProgramDeadline(program)}
-                      </span>
+                      </div>
                     </div>
 
-                    <h3 className="mt-4 text-lg font-bold leading-7 tracking-[-0.02em] text-[var(--ink)]">
-                      {program.title || "제목 미정"}
-                    </h3>
-
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      <span className="rounded-md border border-[#BFDBFE] bg-[#EFF6FF] px-3 py-1 text-xs font-semibold text-[var(--blue)]">
+                    <div className="mt-5 flex flex-wrap gap-2">
+                      <span className="rounded-full bg-[var(--surface-strong)] px-3 py-1 text-xs font-semibold text-[var(--blue)]">
                         {program.category || "카테고리 미분류"}
                       </span>
                       {chips.map((chip) => (
                         <span
                           key={`${program.id}-${chip}`}
-                          className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs font-medium text-[var(--sub)]"
+                          className="rounded-full border border-[var(--border)] px-3 py-1 text-xs font-medium text-[var(--sub)]"
                         >
                           {chip}
                         </span>
                       ))}
                     </div>
 
-                    <p className="mt-4 text-sm leading-6 text-[var(--sub)]">
+                    <p className="mt-5 text-sm leading-7 text-[var(--sub)]">
                       {program.summary || program.description || "프로그램 요약이 아직 등록되지 않았습니다."}
                     </p>
 
-                    <div className="mt-5 flex items-center gap-3">
-                      <div className="h-2 flex-1 overflow-hidden rounded-full bg-[var(--border)]">
+                    <div className="mt-6">
+                      <div className="mb-2 flex items-center justify-between text-xs font-semibold text-[var(--sub)]">
+                        <span>이소서 관련도</span>
+                        <span>{Math.max(score, 0)}%</span>
+                      </div>
+                      <div className="h-2 overflow-hidden rounded-full bg-[var(--surface-strong)]">
                         <div
-                          className="h-full rounded-full bg-[linear-gradient(90deg,var(--blue),#818CF8)]"
+                          className="h-full rounded-full bg-[linear-gradient(90deg,var(--blue),#7EA9FF)]"
                           style={{ width: `${Math.max(0, Math.min(score, 100))}%` }}
                         />
                       </div>
-                      <span className="text-xs font-bold text-[var(--blue)]">관련도 {Math.max(score, 0)}%</span>
                     </div>
 
-                    <div className="mt-5 flex gap-2">
+                    <div className="mt-6 flex gap-2">
                       {externalLink ? (
                         <a
                           href={externalLink}
                           target="_blank"
                           rel="noreferrer"
-                          className="flex-1 rounded-lg bg-[var(--blue)] px-4 py-3 text-center text-sm font-bold text-white transition hover:bg-[var(--blue-lo)]"
+                          className="flex-1 rounded-full bg-[var(--ink)] px-4 py-3 text-center text-sm font-bold text-white transition hover:bg-[var(--ink-soft)]"
                         >
-                          지원하기
+                          지원 정보 보기
                         </a>
                       ) : (
                         <Link
                           href={getProgramDetailHref(program)}
-                          className="flex-1 rounded-lg bg-[var(--blue)] px-4 py-3 text-center text-sm font-bold text-white transition hover:bg-[var(--blue-lo)]"
+                          className="flex-1 rounded-full bg-[var(--ink)] px-4 py-3 text-center text-sm font-bold text-white transition hover:bg-[var(--ink-soft)]"
                         >
                           자세히 보기
                         </Link>
                       )}
                       <Link
                         href={getProgramCompareHref(program)}
-                        className="rounded-lg border border-[rgba(249,115,22,0.3)] bg-[rgba(249,115,22,0.08)] px-4 py-3 text-sm font-bold text-[var(--fire)] transition hover:bg-[var(--fire)] hover:text-white"
+                        className="rounded-full border border-[var(--border)] px-4 py-3 text-sm font-bold text-[var(--ink)] transition hover:border-[var(--blue)] hover:text-[var(--blue)]"
                       >
-                        비교추가
+                        비교
                       </Link>
                     </div>
                   </article>
@@ -484,133 +551,156 @@ export function LandingAProgramsSection({
   );
 }
 
-export function LandingAComparisonSection() {
+export function LandingAWorkspaceSection() {
   return (
-    <section id="compare" className="px-5 pb-12 sm:px-8 lg:px-12">
-      <div className="mx-auto max-w-6xl overflow-hidden rounded-[28px] bg-[var(--ink)] px-6 py-10 sm:px-8 lg:px-11">
-        <div className="relative z-10 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <h2 className="text-2xl font-extrabold tracking-[-0.04em] text-white">부트캠프 비교 분석</h2>
-            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-              최대 3개를 나란히 놓고 조건과 관련도를 빠르게 비교할 수 있습니다.
-            </p>
+    <section className="px-5 pb-14 sm:px-8 lg:px-12">
+      <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[0.94fr_1.06fr]">
+        <div className="section-shell soft-panel rounded-[32px] px-6 py-8 sm:px-8">
+          <p className="text-xs uppercase tracking-[0.24em] text-[var(--blue)]">Funnel</p>
+          <h2 className="mt-3 text-3xl font-bold tracking-[-0.05em] text-[var(--ink)]">
+            랜딩에서 끝나지 않고, 대시보드로 넘깁니다
+          </h2>
+          <p className="mt-4 text-sm leading-7 text-[var(--sub)]">
+            이 랜딩의 역할은 공고를 보여주는 데서 끝나지 않습니다. 비로그인 사용자는 공고를 탐색하고, 로그인 후에는
+            이소서 대시보드에서 추천 캘린더와 문서 워크플로우로 자연스럽게 이어집니다.
+          </p>
+
+          <div className="mt-8 space-y-4">
+            {workspaceStages.map((stage) => (
+              <div key={stage.step} className="rounded-[24px] border border-[var(--border)] bg-white px-5 py-5">
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-xs font-bold tracking-[0.18em] text-[var(--muted)]">{stage.step}</span>
+                  <Link href={stage.href} className="text-sm font-semibold text-[var(--blue)]">
+                    {stage.cta} →
+                  </Link>
+                </div>
+                <h3 className="mt-3 text-lg font-bold tracking-[-0.03em] text-[var(--ink)]">{stage.title}</h3>
+                <p className="mt-2 text-sm leading-7 text-[var(--sub)]">{stage.description}</p>
+              </div>
+            ))}
           </div>
-          <Link
-            href="/compare"
-            className="rounded-lg bg-[var(--fire)] px-5 py-3 text-sm font-bold text-white transition hover:bg-[var(--fire-lo)]"
-          >
-            + 비교 추가
-          </Link>
         </div>
 
-        <div className="relative z-10 mt-8 grid gap-4 lg:grid-cols-3">
-          {compareCards.map((card) => (
-            <article
-              key={card.title}
-              className={`relative rounded-2xl border px-5 pb-5 pt-6 ${
-                card.winner ? "border-[rgba(249,115,22,0.5)] bg-[rgba(249,115,22,0.08)]" : "border-white/10 bg-white/[0.06]"
-              }`}
-            >
-              {card.winner ? (
-                <span className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--fire)] px-4 py-1 text-[10px] font-extrabold tracking-[0.08em] text-white">
-                  나에게 가장 적합
-                </span>
-              ) : null}
-              <h3 className="text-base font-bold leading-6 text-white">{card.title}</h3>
-              <div className="mt-5 space-y-3 text-sm">
-                <div className="flex items-center justify-between gap-4">
-                  <span className="text-[var(--muted)]">마감</span>
-                  <span
-                    className={`font-semibold ${
-                      card.deadlineTone === "red"
-                        ? "text-[#F87171]"
-                        : card.deadlineTone === "amber"
-                          ? "text-[#FCD34D]"
-                          : "text-white/[0.75]"
-                    }`}
-                  >
-                    {card.deadline}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between gap-4">
-                  <span className="text-[var(--muted)]">국비 지원</span>
-                  <span className={card.winner ? "font-extrabold text-[var(--fire)]" : "font-semibold text-white/[0.85]"}>
-                    {card.subsidy}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between gap-4">
-                  <span className="text-[var(--muted)]">기간</span>
-                  <span className="font-semibold text-white/[0.85]">{card.duration}</span>
-                </div>
-                <div className="flex items-center justify-between gap-4">
-                  <span className="text-[var(--muted)]">특징</span>
-                  <span className={card.winner ? "font-extrabold text-[var(--fire)]" : "font-semibold text-white/[0.85]"}>
-                    {card.outcome}
-                  </span>
-                </div>
-              </div>
+        <div className="compare-shell overflow-hidden rounded-[32px] px-6 py-8 text-white sm:px-8">
+          <p className="text-xs uppercase tracking-[0.24em] text-white/42">After login</p>
+          <h2 className="mt-3 text-3xl font-bold tracking-[-0.05em] text-white">
+            기존 대시보드와 단절되지 않는 워크스페이스
+          </h2>
+          <p className="mt-4 max-w-xl text-sm leading-7 text-white/64">
+            로그인 이후에는 추천 프로그램 캘린더, 성과저장소, 자기소개서, 이력서, 공고 매치 분석이 같은 언어로 연결됩니다.
+          </p>
 
-              <div className="mt-5 flex items-center gap-3">
-                <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/10">
-                  <div
-                    className={
-                      card.winner
-                        ? "h-full rounded-full bg-[linear-gradient(90deg,var(--fire),#FBBF24)]"
-                        : "h-full rounded-full bg-[linear-gradient(90deg,var(--sky),#818CF8)]"
-                    }
-                    style={{ width: `${card.match}%` }}
-                  />
+          <div className="mt-8 grid gap-3">
+            <div className="rounded-[24px] border border-white/10 bg-white/6 px-5 py-5">
+              <p className="text-xs uppercase tracking-[0.16em] text-white/42">Dashboard</p>
+              <div className="mt-3 flex items-end justify-between gap-4">
+                <div>
+                  <h3 className="text-xl font-bold tracking-[-0.04em] text-white">추천 캘린더</h3>
+                  <p className="mt-2 text-sm leading-6 text-white/62">
+                    마감 일정과 맞춤 추천을 한 화면에서 관리합니다.
+                  </p>
                 </div>
-                <span className={card.winner ? "text-sm font-extrabold text-[var(--fire)]" : "text-sm font-extrabold text-[var(--sky)]"}>
-                  {card.match}%
-                </span>
+                <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/72">추천</span>
               </div>
+            </div>
 
-              <Link
-                href={card.winner ? "/programs?sort=deadline" : "/compare"}
-                className={`mt-5 block w-full rounded-lg px-4 py-3 text-center text-sm font-bold transition ${
-                  card.winner
-                    ? "bg-[var(--fire)] text-white hover:bg-[var(--fire-lo)]"
-                    : "border border-white/12 bg-white/[0.08] text-white/80 hover:bg-white/12"
-                }`}
-              >
-                {card.winner ? "지금 지원하기" : "자세히 보기"}
-              </Link>
-            </article>
-          ))}
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-[24px] border border-white/10 bg-black/16 px-5 py-5">
+                <p className="text-xs uppercase tracking-[0.16em] text-white/42">Documents</p>
+                <h3 className="mt-3 text-lg font-bold tracking-[-0.03em] text-white">이력서 · 자기소개서</h3>
+                <p className="mt-2 text-sm leading-6 text-white/62">
+                  공고 탐색 후 바로 서류 초안을 이어서 다듬습니다.
+                </p>
+              </div>
+              <div className="rounded-[24px] border border-white/10 bg-black/16 px-5 py-5">
+                <p className="text-xs uppercase tracking-[0.16em] text-white/42">Match</p>
+                <h3 className="mt-3 text-lg font-bold tracking-[-0.03em] text-white">공고 매치 분석</h3>
+                <p className="mt-2 text-sm leading-6 text-white/62">
+                  관심 공고와 내 이력을 기준으로 실행 우선순위를 정합니다.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
-export function LandingAFlowSection() {
+export function LandingAComparisonSection() {
   return (
-    <section id="flow" className="px-5 pb-12 sm:px-8 lg:px-12">
-      <div className="mx-auto max-w-6xl rounded-[28px] border border-[var(--border)] bg-white px-6 py-10 sm:px-8 lg:px-11">
-        <h2 className="text-2xl font-bold tracking-[-0.03em] text-[var(--ink)]">이소서로 취업 지원하는 방법</h2>
+    <section className="px-5 pb-14 sm:px-8 lg:px-12">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-6 max-w-2xl">
+          <p className="text-xs uppercase tracking-[0.24em] text-[var(--blue)]">Decision support</p>
+          <h2 className="mt-3 text-3xl font-bold tracking-[-0.05em] text-[var(--ink)]">
+            공고 비교도 결국 전환 퍼널의 일부입니다
+          </h2>
+          <p className="mt-3 text-sm leading-7 text-[var(--sub)]">
+            어떤 사용자는 바로 지원하고, 어떤 사용자는 비교가 필요하고, 어떤 사용자는 서류 준비까지 이어져야 합니다.
+            랜딩은 이 세 경로를 같은 제품 안에서 다룰 수 있어야 합니다.
+          </p>
+        </div>
 
-        <div className="mt-8 grid gap-y-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-x-0">
-          {flowSteps.map((step, index) => (
-            <div key={step.step} className="relative px-0 sm:px-2 lg:px-5">
-              {index < flowSteps.length - 1 ? (
-                <span className="absolute right-[-10px] top-4 hidden text-2xl text-[var(--muted)] lg:block">→</span>
-              ) : null}
-              <div
-                className={`flex h-11 w-11 items-center justify-center rounded-xl text-sm font-extrabold tracking-[-0.03em] ${
-                  step.tone === "blue"
-                    ? "bg-[#EFF6FF] text-[var(--blue)]"
-                    : step.tone === "amber"
-                      ? "bg-[#FEF3C7] text-[var(--amber)]"
-                      : step.tone === "orange"
-                        ? "bg-[#FFF7ED] text-[var(--fire)]"
-                        : "bg-[#F0FDF4] text-[var(--green)]"
-                }`}
-              >
+        <div className="grid gap-4 lg:grid-cols-3">
+          {compareCards.map((card) => {
+            const toneClass =
+              card.tone === "fire"
+                ? "border-[rgba(249,115,22,0.28)] bg-[rgba(255,247,237,0.92)]"
+                : card.tone === "blue"
+                  ? "border-[rgba(43,111,242,0.22)] bg-[rgba(239,246,255,0.92)]"
+                  : "border-[rgba(216,227,242,0.95)] bg-white";
+
+            return (
+              <article key={card.title} className={`rounded-[28px] border p-6 ${toneClass}`}>
+                <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">{card.signal}</p>
+                <h3 className="mt-3 text-xl font-bold tracking-[-0.04em] text-[var(--ink)]">{card.title}</h3>
+                <div className="mt-5 space-y-4 text-sm leading-6 text-[var(--sub)]">
+                  <div>
+                    <span className="font-semibold text-[var(--ink)]">적합한 상황</span>
+                    <p className="mt-1">{card.fit}</p>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-[var(--ink)]">핵심 판단 요소</span>
+                    <p className="mt-1">{card.timeline}</p>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-[var(--ink)]">이소서 연결 방식</span>
+                    <p className="mt-1">{card.support}</p>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function LandingAJourneySection() {
+  return (
+    <section className="px-5 pb-14 sm:px-8 lg:px-12">
+      <div className="section-shell soft-panel mx-auto max-w-6xl rounded-[32px] px-6 py-8 sm:px-8">
+        <div className="max-w-2xl">
+          <p className="text-xs uppercase tracking-[0.24em] text-[var(--blue)]">Journey</p>
+          <h2 className="mt-3 text-3xl font-bold tracking-[-0.05em] text-[var(--ink)]">
+            로그인 이후 연결 흐름도 랜딩에서 미리 설명합니다
+          </h2>
+          <p className="mt-3 text-sm leading-7 text-[var(--sub)]">
+            탐색만 가능한 제품처럼 보이면 로그인 동기가 약해집니다. 그래서 랜딩 본문에서부터 로그인 후 워크플로우를
+            명시적으로 보여줍니다.
+          </p>
+        </div>
+
+        <div className="mt-8 grid gap-6 lg:grid-cols-4">
+          {journeySteps.map((step, index) => (
+            <div key={step.step} className={`journey-line relative ${index === journeySteps.length - 1 ? "" : ""}`}>
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--ink)] text-sm font-bold text-white">
                 {step.step}
               </div>
-              <h3 className="mt-4 text-base font-bold text-[var(--ink)]">{step.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-[var(--sub)]">{step.description}</p>
+              <h3 className="mt-4 text-lg font-bold tracking-[-0.03em] text-[var(--ink)]">{step.title}</h3>
+              <p className="mt-2 text-sm leading-7 text-[var(--sub)]">{step.description}</p>
             </div>
           ))}
         </div>
@@ -621,26 +711,33 @@ export function LandingAFlowSection() {
 
 export function LandingACtaSection() {
   return (
-    <section className="px-5 pb-12 sm:px-8 lg:px-12">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 overflow-hidden rounded-[28px] bg-[linear-gradient(135deg,var(--ink)_0%,var(--ink-soft)_100%)] px-6 py-10 sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-11">
-        <div className="relative z-10">
-          <h2 className="text-3xl font-extrabold leading-tight tracking-[-0.04em] text-white">
-            프로필 등록하면
+    <section className="px-5 pb-14 sm:px-8 lg:px-12">
+      <div className="compare-shell mx-auto flex max-w-6xl flex-col gap-6 overflow-hidden rounded-[32px] px-6 py-10 text-white sm:px-8 lg:flex-row lg:items-end lg:justify-between">
+        <div className="max-w-2xl">
+          <p className="text-xs uppercase tracking-[0.24em] text-white/42">Final CTA</p>
+          <h2 className="mt-3 text-3xl font-bold leading-tight tracking-[-0.05em] text-white sm:text-4xl">
+            프로그램을 찾았다면,
             <br />
-            AI가 딱 맞는 것만 골라드립니다
+            이제 지원 준비를 같은 흐름으로 이어가면 됩니다
           </h2>
-          <p className="mt-3 text-sm leading-7 text-white/[0.55]">
-            성과저장소 데이터 기반 개인화 추천, 이력서·포트폴리오 초안 생성,
-            <br />
-            전체 기능 무료로 바로 시작할 수 있습니다.
+          <p className="mt-4 text-sm leading-7 text-white/62">
+            로그인 후에는 추천 프로그램 캘린더, 성과저장소, 이력서, 자기소개서, 매치 분석이 같은 제품 안에서 이어집니다.
           </p>
         </div>
-        <Link
-          href="/login"
-          className="relative z-10 inline-flex w-full items-center justify-center rounded-xl bg-[var(--fire)] px-7 py-4 text-sm font-bold text-white shadow-[0_8px_28px_rgba(249,115,22,0.28)] transition hover:-translate-y-0.5 hover:bg-[var(--fire-lo)] lg:w-auto"
-        >
-          Google로 시작하기
-        </Link>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <Link
+            href="/login"
+            className="inline-flex items-center justify-center rounded-full bg-[var(--fire)] px-6 py-3.5 text-sm font-bold text-white transition hover:bg-[var(--fire-lo)]"
+          >
+            무료로 시작하기
+          </Link>
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center justify-center rounded-full border border-white/14 bg-white/8 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/12"
+          >
+            대시보드 미리 보기
+          </Link>
+        </div>
       </div>
     </section>
   );
@@ -649,15 +746,21 @@ export function LandingACtaSection() {
 export function LandingAFooter() {
   return (
     <footer className="bg-[var(--ink)] px-5 py-10 sm:px-8 lg:px-12">
-      <div className="mx-auto flex max-w-6xl flex-col gap-3 text-sm text-slate-400 lg:flex-row lg:items-center lg:justify-between">
+      <div className="mx-auto flex max-w-6xl flex-col gap-4 border-t border-white/10 pt-8 text-sm text-slate-400 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <div className="text-lg font-extrabold tracking-[-0.04em] text-white">
             이소<span className="text-[var(--sky)]">서</span>
           </div>
-          <p className="mt-2 text-sm text-slate-400">국가 취업 지원 정보 허브 · AI 추천 · 이력서·포트폴리오 생성</p>
+          <p className="mt-2 text-sm leading-6 text-slate-400">
+            공공 취업 지원 탐색을 시작점으로, 개인화 추천과 문서 워크플로우까지 연결하는 커리어 SaaS.
+          </p>
         </div>
-        <p>© 2026 Isoser</p>
+        <div className="text-sm text-slate-500">© 2026 Isoser. Career support workspace.</div>
       </div>
     </footer>
   );
+}
+
+export function LandingAStyleTag() {
+  return <style jsx global>{landingAStyles}</style>;
 }
