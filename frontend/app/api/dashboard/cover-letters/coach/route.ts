@@ -1,5 +1,6 @@
 import { apiError, apiOk, apiRateLimited } from "@/lib/api/route-response";
 import { enforceRateLimit } from "@/lib/server/rate-limit";
+import { logRouteError } from "@/lib/server/route-logging";
 import type { CoachFeedbackRequest, CoachFeedbackResponse } from "@/lib/types";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -60,8 +61,28 @@ export async function POST(request: Request) {
     return apiOk(data);
   } catch (error) {
     if (error instanceof Error && error.name === "TimeoutError") {
+      logRouteError(
+        {
+          route: "/api/dashboard/cover-letters/coach",
+          method: "POST",
+          category: "coach",
+          status: 504,
+          code: "UPSTREAM_ERROR",
+          note: "timeout",
+        },
+        error
+      );
       return apiError("AI 코칭 응답이 지연되고 있습니다. 잠시 후 다시 시도해주세요.", 504, "UPSTREAM_ERROR");
     }
+    logRouteError(
+      {
+        route: "/api/dashboard/cover-letters/coach",
+        method: "POST",
+        category: "coach",
+        status: 400,
+      },
+      error
+    );
     const message = error instanceof Error ? error.message : "AI 코칭 요청에 실패했습니다.";
     return apiError(message, 400, "BAD_REQUEST");
   }

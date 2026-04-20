@@ -4,6 +4,7 @@ import {
   MAX_AVATAR_IMAGE_SIZE_BYTES,
   validateImageFile,
 } from "@/lib/server/upload-validation";
+import { logRouteError } from "@/lib/server/route-logging";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Profile } from "@/lib/types";
 
@@ -112,6 +113,15 @@ export async function GET() {
       matchAnalyses: matchRows ?? [],
     });
   } catch (error) {
+    logRouteError(
+      {
+        route: "/api/dashboard/profile",
+        method: "GET",
+        category: "profile",
+        status: 400,
+      },
+      error
+    );
     const message =
       error instanceof Error ? error.message : "프로필 데이터를 불러오지 못했습니다.";
     return apiError(message, 400, "BAD_REQUEST");
@@ -168,6 +178,15 @@ export async function PATCH(request: Request) {
 
     return apiOk({ profile: normalizeProfile((profileRow as Record<string, unknown> | null) ?? null) });
   } catch (error) {
+    logRouteError(
+      {
+        route: "/api/dashboard/profile",
+        method: "PATCH",
+        category: "profile",
+        status: 400,
+      },
+      error
+    );
     const message = error instanceof Error ? error.message : "프로필 저장에 실패했습니다.";
     return apiError(message, 400, "BAD_REQUEST");
   }
@@ -267,6 +286,15 @@ export async function PUT(request: Request) {
       profile: normalizeProfile((profileRow as Record<string, unknown> | null) ?? null),
     });
   } catch (error) {
+    logRouteError(
+      {
+        route: "/api/dashboard/profile",
+        method: "PUT",
+        category: "profile",
+        status: 400,
+      },
+      error
+    );
     const message = error instanceof Error ? error.message : "프로필 저장에 실패했습니다.";
     return apiError(message, 400, "BAD_REQUEST");
   }

@@ -167,6 +167,31 @@
   - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
   - `frontend`: `npm run build` 통과
 
+## 2026-04-20 프론트 BFF 구조화 실패 로그 추가
+
+- 수정 파일:
+  - `frontend/lib/server/route-logging.ts`
+  - `frontend/app/api/auth/google/route.ts`
+  - `frontend/app/api/dashboard/activities/images/route.ts`
+  - `frontend/app/api/dashboard/profile/route.ts`
+  - `frontend/app/api/dashboard/match/route.ts`
+  - `frontend/app/api/dashboard/cover-letters/coach/route.ts`
+  - `frontend/app/api/summary/route.ts`
+  - `frontend/app/api/programs/compare-relevance/route.ts`
+  - `docs/current-state.md`
+  - `docs/refactoring-log.md`
+- 변경 내용:
+  - 주요 프론트 BFF 라우트 실패를 공통 JSON 로그로 남기는 `route-logging` 유틸을 추가함
+  - route, method, category, status, code 중심으로 로그를 남기고, 민감정보가 될 수 있는 토큰/요청 본문 전문은 기록하지 않도록 제한함
+  - timeout 계열 실패는 일반 실패와 구분되게 `note: timeout`을 남기도록 정리함
+- 유지된 동작:
+  - 사용자 응답 구조와 오류 메시지 계약은 유지함
+  - 로그 추가 외에 인증/업로드/분석/요약 동작 자체는 바꾸지 않음
+- 검증 메모:
+  - `frontend`: `npm run lint` 통과 (기존 `<img>` warning만 유지)
+  - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
+  - `frontend`: `npm run build` 통과
+
 ## 2026-04-20 public flow 후속 정리
 
 - 수정 파일:

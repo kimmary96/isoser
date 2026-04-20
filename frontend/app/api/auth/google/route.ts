@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { apiRateLimited } from "@/lib/api/route-response";
 import { buildRateLimitKey, enforceRateLimit } from "@/lib/server/rate-limit";
+import { logRouteError } from "@/lib/server/route-logging";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
@@ -40,7 +41,17 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.redirect(data.url);
-  } catch {
+  } catch (error) {
+    logRouteError(
+      {
+        route: "/api/auth/google",
+        method: "GET",
+        category: "auth",
+        status: 302,
+        code: "oauth_start_failed",
+      },
+      error
+    );
     return NextResponse.redirect(new URL("/login?error=oauth_start_failed", request.url));
   }
 }

@@ -6,6 +6,7 @@ import {
   sanitizeStorageSegment,
   validateImageFile,
 } from "@/lib/server/upload-validation";
+import { logRouteError } from "@/lib/server/route-logging";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 async function getAuthenticatedClient() {
@@ -79,6 +80,15 @@ export async function POST(request: Request) {
 
     return apiOk({ urls });
   } catch (error) {
+    logRouteError(
+      {
+        route: "/api/dashboard/activities/images",
+        method: "POST",
+        category: "upload",
+        status: 400,
+      },
+      error
+    );
     const message = error instanceof Error ? error.message : "이미지 업로드에 실패했습니다.";
     return apiError(message, 400, "BAD_REQUEST");
   }

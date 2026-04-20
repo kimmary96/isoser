@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 
 import { apiError, apiOk, apiRateLimited } from "@/lib/api/route-response";
 import { buildRateLimitKey, enforceRateLimit } from "@/lib/server/rate-limit";
+import { logRouteError } from "@/lib/server/route-logging";
 
 export async function POST(req: NextRequest) {
   try {
@@ -63,8 +64,28 @@ export async function POST(req: NextRequest) {
     return apiOk({ summary });
   } catch (error) {
     if (error instanceof Error && error.name === "TimeoutError") {
+      logRouteError(
+        {
+          route: "/api/summary",
+          method: "POST",
+          category: "summary",
+          status: 504,
+          code: "UPSTREAM_ERROR",
+          note: "timeout",
+        },
+        error
+      );
       return apiError("Summary generation timed out", 504, "UPSTREAM_ERROR");
     }
+    logRouteError(
+      {
+        route: "/api/summary",
+        method: "POST",
+        category: "summary",
+        status: 500,
+      },
+      error
+    );
     return apiError("Summary generation failed", 500, "INTERNAL_ERROR");
   }
 }
