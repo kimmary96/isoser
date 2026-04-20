@@ -1,5 +1,19 @@
 # 리팩토링 로그
 
+## 2026-04-20 review-required 종료 처리 규칙 명시
+
+- 수정 파일:
+  - `docs/current-state.md`
+  - `docs/automation/local-flow.md`
+  - `docs/automation/overview.md`
+  - `docs/automation/operations.md`
+- 변경 내용:
+  - `tasks/review-required/`를 살아 있는 수동 검토 대기열로만 사용하고, 검토가 끝난 packet은 `tasks/archive/`로 이동하는 운영 규칙을 문서화함
+  - 구현이 이미 반영돼 stale로 닫는 packet도 `review-required/`에 남기지 않고 archive로 정리하며, `reports/*` verification/result/needs-review 문서는 audit trail로 유지한다고 명시함
+- 유지된 동작:
+  - verifier가 `review-required` verdict를 내리면 watcher가 전용 큐와 `needs-review` alert로 분기하는 기존 흐름은 유지함
+  - `reports/*`와 dispatch alert는 계속 판단 근거 저장소로 남음
+
 ## 2026-04-20 Agent 규칙 문서 진입점 정리
 
 - 수정 파일:

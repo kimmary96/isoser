@@ -19,6 +19,7 @@
 - watcher는 `tasks/drifted/`와 `tasks/blocked/`를 다시 검사해 자동 복구 가능한 packet은 `tasks/inbox/`로 재투입한다.
 - watcher는 Codex 실행 중 `tasks/running/<task>.md` heartbeat를 주기적으로 갱신해, stdout이 잠잠한 장기 실행에서도 stale timeout으로 오판되는 일을 줄인다.
 - local `watcher.py`의 execution path는 supervisor 단계로 한 번 더 나뉘어, inspector handoff(`reports/<task-id>-supervisor-inspection.md`) 이후 implementer가 코드 수정과 result report를 만들고 verifier가 최종 검증(`reports/<task-id>-supervisor-verification.md`)을 수행한다. verifier가 `review-required` verdict를 내리면 일반 blocked 알림 대신 `tasks/review-required/`와 `needs-review` 공식 경로로 분기한다.
+- `tasks/review-required/`는 살아 있는 수동 검토 대기열로만 사용한다. 사람이 검토를 마쳐 재실행이 아니라 종결/보류/대체로 처리하기로 결정한 packet은 `tasks/archive/`로 이동하고 `reports/*` 판단 근거는 그대로 유지한다.
 - task packet은 선택적으로 `planned_files`와 `planned_worktree_fingerprint`를 담아, 같은 `HEAD` 안에서도 계획 당시 worktree 상태가 달라졌는지 더 엄격하게 검증할 수 있다.
 - `scripts/compute_task_fingerprint.py`는 planner가 `planned_files` 기준 fingerprint frontmatter 줄을 바로 생성할 수 있게 돕는다.
 - `scripts/summarize_run_ledgers.py`는 local/cowork watcher ledger를 읽어 최근 상태와 stage 집계를 빠르게 확인하게 해준다.
@@ -91,7 +92,7 @@
 6. local path라면 `watcher.py`가 `tasks/inbox/`에서 packet을 집어 `tasks/running/`으로 옮기고 Codex를 실행한다.
 7. local watcher supervisor는 inspector handoff를 먼저 만들고, 이어서 implementer가 구현과 result report를 만들며 verifier가 최종 검증 artifact를 남긴다.
 8. watcher는 실행 결과에 따라 packet을 `tasks/done/`, `tasks/drifted/`, `tasks/blocked/`, `tasks/review-required/`로 이동한다.
-9. `tasks/drifted/`와 `tasks/blocked/`는 자동 복구가 가능하면 `tasks/inbox/`로 재큐잉되고, 아니면 다시 `cowork/packets/` review 흐름으로 에스컬레이션된다. `tasks/review-required/`는 verifier가 수동 검토를 요청한 전용 큐다.
+9. `tasks/drifted/`와 `tasks/blocked/`는 자동 복구가 가능하면 `tasks/inbox/`로 재큐잉되고, 아니면 다시 `cowork/packets/` review 흐름으로 에스컬레이션된다. `tasks/review-required/`는 verifier가 수동 검토를 요청한 전용 큐이며, 검토가 끝난 packet은 그 큐에 남기지 않고 `tasks/archive/` 또는 후속 execution queue로 정리한다.
 
 ## Folder semantics
 - `cowork/packets/`: 사람이 계속 수정하는 원본 packet
@@ -101,7 +102,8 @@
 - `tasks/done/`: 성공적으로 끝난 execution packet
 - `tasks/blocked/`: 메타데이터 누락, 실패, 외부 의존성 등으로 멈춘 execution packet
 - `tasks/drifted/`: 계획 기준과 현재 코드가 어긋나 재검토가 필요한 execution packet
-- `tasks/review-required/`: verifier가 사람 검토 후 재승인을 요구한 execution packet
+- `tasks/review-required/`: verifier가 사람 검토 후 재승인을 요구한 살아 있는 execution packet만 두는 큐
+- `tasks/archive/`: 중복 packet, review 처리 완료 packet, 재실행 대상이 아닌 stale packet을 보관하는 아카이브
 
 ## Key references
 - automation index: [automation/README.md](./automation/README.md)
@@ -119,6 +121,7 @@
 - `tasks/`: local task queue state
 - `dispatch/alerts/`: local watcher terminal alerts
 - `reports/`: implementation, drift, blocked reports
+- `reports/`의 `supervisor-verification`, `result`, `needs-review` 같은 문서는 packet이 `tasks/archive/`로 이동해도 audit trail로 계속 유지한다
 - `docs/`: reference docs and operational docs
 - `scripts/`: watcher 실행 스크립트와 watcher 공통 유틸
   - `docs/automation/`: watcher, dispatch, task packet, 운영 흐름
