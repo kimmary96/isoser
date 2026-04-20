@@ -76,6 +76,7 @@
 - 현재 full scheduler smoke 기준 `고용24`와 `K-Startup`은 서울 대상 데이터가 정상 저장되고, HRD는 기본 비활성 상태다.
 - Tier 2 HTML collector는 `SeSAC` 제목에서 상태 chip/D-day/모집 메타를 제거하고, `서울시 50플러스`는 `일자리 참여 신청` 같은 메뉴성 항목을 제외하도록 정제 규칙을 강화했다.
 - `backend/rag/collector/tier4_collectors.py`는 서울 자치구 Tier 4 수집기 6종(도봉창업센터, 구로 청년이룸, 서울청년센터 성동, 노원 청년내일, 도봉구청 일자리경제과, 마포구고용복지지원센터)을 모아 두고, `scheduler.py`는 이를 Tier 4로 등록해 `run_all_collectors(upsert=False)` dry-run 경로에서도 함께 실행한다.
+- `backend/tests/test_tier4_collectors.py`와 `backend/tests/test_scheduler_collectors.py`는 Tier 4 collector별 파서 계약과 scheduler dry-run 포함 여부를 fixture 기반으로 고정한다. 노원 수집기는 애매한 제목을 기본값 `취업`으로 몰지 않고 `기타`로 남겨 오분류를 줄인다.
 
 ## End-to-end packet flow
 1. planner가 `cowork/packets/<task-id>.md`에 task packet 원본을 만든다.

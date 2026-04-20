@@ -1,0 +1,9 @@
+# Dispatch: TASK-2026-04-17-1520-calendar-to-resume-prefill
+
+stage: review-ready
+status: pending-approval
+packet: `cowork/packets/TASK-2026-04-17-1520-calendar-to-resume-prefill.md`
+review: `cowork/reviews/TASK-2026-04-17-1520-calendar-to-resume-prefill-review.md`
+created_at: `2026-04-20T15:14:43`
+- freshness: review is aligned with the current packet contents
+- next_step: reviewer approves in Slack and the shared approval queue is consumed by the local cowork watcher

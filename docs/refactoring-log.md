@@ -1,5 +1,25 @@
 # 리팩토링 로그
 
+## 2026-04-20 Tier 4 collector 회귀 테스트 보강
+
+- 수정 파일:
+  - `backend/rag/collector/tier4_collectors.py`
+  - `backend/tests/test_tier4_collectors.py`
+  - `backend/tests/test_scheduler_collectors.py`
+  - `docs/current-state.md`
+- 변경 내용:
+  - Tier 4 collector 6종 각각에 대해 HTML fixture 기반 parser 회귀 테스트를 추가해 링크 조합, raw 보존 필드, 키워드 필터, district 메타데이터를 고정함
+  - scheduler dry-run 테스트를 Tier 4까지 확장해 Tier 1 이후 6개 district source가 모두 `tier=4`, `status=dry_run`으로 포함되는 계약을 고정함
+  - `NowonCollector`의 분류 기본값을 `취업`에서 `기타`로 낮춰, 키워드가 불명확한 공지를 과도하게 취업 카테고리로 몰아넣는 오분류를 줄임
+- 유지된 동작:
+  - 기존 Tier 4 collector 등록 순서와 scheduler tier 정렬 방식은 그대로 유지함
+  - district collector의 수집 대상, source 메타데이터, raw payload 구조는 바꾸지 않음
+- 검증 메모:
+  - `backend\venv\Scripts\python.exe -m pytest backend/tests/test_tier4_collectors.py backend/tests/test_scheduler_collectors.py -q`
+  - 결과: `11 passed`
+- 후속 메모:
+  - 실서비스 HTML 변경 감지는 여전히 live smoke나 운영 수집 로그를 함께 봐야 하므로, 필요하면 이후에 source별 saved HTML fixture를 더 현실적으로 보강할 수 있음
+
 ## 2026-04-20 watcher 경로 고정값 및 승격 stamp/supervisor 루프 보정
 
 - 수정 파일:

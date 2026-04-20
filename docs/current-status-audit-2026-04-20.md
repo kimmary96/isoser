@@ -1,7 +1,7 @@
 # 현재 개발 상황 점검 보고서
 
 - 작성일: 2026-04-20
-- 기준 저장소: `D:\02_2025_AI_Lab\isoser`
+- 기준 저장소: 현재 워크스페이스 루트 기준 저장소
 - 점검 범위:
   - frontend / backend 주요 라우트와 화면
   - 최근 작업 문서(`docs/current-state.md`, `docs/refactoring-log.md`, `README.md`)
