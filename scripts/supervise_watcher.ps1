@@ -91,8 +91,20 @@ if ($logDir) {
 }
 
 Write-SupervisorLog "Supervisor started. run_script=$RunScriptPath lock=$LockPath"
+$lastObservedLiveLockPid = $null
 
 while ($true) {
+    $lockPid = Get-LockPid -Path $LockPath
+    if ($lockPid -and (Test-ProcessAlive -ProcessId $lockPid)) {
+        if ($lastObservedLiveLockPid -ne $lockPid) {
+            Write-SupervisorLog "Watcher already active with live lock pid=$lockPid. Skipping launch and rechecking soon."
+            $lastObservedLiveLockPid = $lockPid
+        }
+        Start-Sleep -Seconds 2
+        continue
+    }
+
+    $lastObservedLiveLockPid = $null
     Write-SupervisorLog "Launching watcher process."
     $LASTEXITCODE = 0
 
@@ -116,11 +128,15 @@ while ($true) {
 
     $lockPid = Get-LockPid -Path $LockPath
     if ($lockPid -and (Test-ProcessAlive -ProcessId $lockPid)) {
-        Write-SupervisorLog "Run script returned but live lock pid=$lockPid still exists. Waiting before next check."
+        if ($lastObservedLiveLockPid -ne $lockPid) {
+            Write-SupervisorLog "Run script returned but live lock pid=$lockPid still exists. Waiting before next check."
+            $lastObservedLiveLockPid = $lockPid
+        }
         Start-Sleep -Seconds 2
         continue
     }
 
+    $lastObservedLiveLockPid = $null
     Write-SupervisorLog "Watcher exited. exit_code=$exitCode restart_in=${RestartDelaySeconds}s"
     Start-Sleep -Seconds $RestartDelaySeconds
 }

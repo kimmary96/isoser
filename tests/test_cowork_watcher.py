@@ -441,6 +441,145 @@ def test_handle_packet_review_writes_review_failed_when_review_file_missing(tmp_
     assert "- exit_code: `17`" in body
 
 
+def test_handle_packet_review_marks_not_ready_review_as_review_failed(tmp_path: Path, monkeypatch) -> None:
+    packets_dir = tmp_path / "packets"
+    reviews_dir = tmp_path / "reviews"
+    dispatch_dir = tmp_path / "dispatch"
+    approvals_dir = tmp_path / "approvals"
+    inbox_dir = tmp_path / "inbox"
+    remote_dir = tmp_path / "remote"
+
+    for directory in [packets_dir, reviews_dir, dispatch_dir, approvals_dir, inbox_dir, remote_dir]:
+        directory.mkdir(parents=True, exist_ok=True)
+
+    packet = packets_dir / "TASK-TEST-REVIEW-NOT-READY.md"
+    packet.write_text(
+        "\n".join(
+            [
+                "---",
+                "id: TASK-TEST-REVIEW-NOT-READY",
+                "status: queued",
+                "type: feature",
+                "title: Not ready review classification",
+                "planned_at: 2026-04-15T00:00:00+09:00",
+                "planned_against_commit: abc123",
+                "---",
+                "",
+                "# Goal",
+                "",
+                "Review classification test.",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(cowork_watcher, "COWORK_PACKETS_DIR", str(packets_dir))
+    monkeypatch.setattr(cowork_watcher, "COWORK_REVIEWS_DIR", str(reviews_dir))
+    monkeypatch.setattr(cowork_watcher, "COWORK_DISPATCH_DIR", str(dispatch_dir))
+    monkeypatch.setattr(cowork_watcher, "COWORK_APPROVALS_DIR", str(approvals_dir))
+    monkeypatch.setattr(cowork_watcher, "TASKS_INBOX_DIR", str(inbox_dir))
+    monkeypatch.setattr(cowork_watcher, "TASKS_REMOTE_DIR", str(remote_dir))
+    monkeypatch.setattr(cowork_watcher, "current_head", lambda: "abc123")
+
+    def fake_run_codex_review(_filename: str, task_id: str) -> tuple[int, int | None]:
+        (reviews_dir / f"{task_id}-review.md").write_text(
+            "\n".join(
+                [
+                    "# Overall assessment",
+                    "",
+                    "Packet is close.",
+                    "",
+                    "# Recommendation",
+                    "",
+                    "Not ready for promotion yet.",
+                ]
+            ),
+            encoding="utf-8",
+        )
+        return (0, 123)
+
+    monkeypatch.setattr(cowork_watcher, "run_codex_review", fake_run_codex_review)
+    monkeypatch.setattr(cowork_watcher, "notify_slack_for_dispatch", lambda **kwargs: None)
+
+    cowork_watcher.handle_packet_review(str(packet))
+
+    dispatch_path = dispatch_dir / "TASK-TEST-REVIEW-NOT-READY-review-failed.md"
+    assert dispatch_path.exists()
+    body = dispatch_path.read_text(encoding="utf-8")
+    assert "status: action-required" in body
+    assert "review states the packet is not ready for promotion" in body
+    assert not (dispatch_dir / "TASK-TEST-REVIEW-NOT-READY-review-ready.md").exists()
+
+
+def test_handle_packet_review_marks_ready_review_as_review_ready(tmp_path: Path, monkeypatch) -> None:
+    packets_dir = tmp_path / "packets"
+    reviews_dir = tmp_path / "reviews"
+    dispatch_dir = tmp_path / "dispatch"
+    approvals_dir = tmp_path / "approvals"
+    inbox_dir = tmp_path / "inbox"
+    remote_dir = tmp_path / "remote"
+
+    for directory in [packets_dir, reviews_dir, dispatch_dir, approvals_dir, inbox_dir, remote_dir]:
+        directory.mkdir(parents=True, exist_ok=True)
+
+    packet = packets_dir / "TASK-TEST-REVIEW-READY.md"
+    packet.write_text(
+        "\n".join(
+            [
+                "---",
+                "id: TASK-TEST-REVIEW-READY",
+                "status: queued",
+                "type: feature",
+                "title: Ready review classification",
+                "planned_at: 2026-04-15T00:00:00+09:00",
+                "planned_against_commit: abc123",
+                "---",
+                "",
+                "# Goal",
+                "",
+                "Review classification test.",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(cowork_watcher, "COWORK_PACKETS_DIR", str(packets_dir))
+    monkeypatch.setattr(cowork_watcher, "COWORK_REVIEWS_DIR", str(reviews_dir))
+    monkeypatch.setattr(cowork_watcher, "COWORK_DISPATCH_DIR", str(dispatch_dir))
+    monkeypatch.setattr(cowork_watcher, "COWORK_APPROVALS_DIR", str(approvals_dir))
+    monkeypatch.setattr(cowork_watcher, "TASKS_INBOX_DIR", str(inbox_dir))
+    monkeypatch.setattr(cowork_watcher, "TASKS_REMOTE_DIR", str(remote_dir))
+    monkeypatch.setattr(cowork_watcher, "current_head", lambda: "abc123")
+
+    def fake_run_codex_review(_filename: str, task_id: str) -> tuple[int, int | None]:
+        (reviews_dir / f"{task_id}-review.md").write_text(
+            "\n".join(
+                [
+                    "# Overall assessment",
+                    "",
+                    "Packet is aligned.",
+                    "",
+                    "# Recommendation",
+                    "",
+                    "Promote as-is.",
+                ]
+            ),
+            encoding="utf-8",
+        )
+        return (0, 321)
+
+    monkeypatch.setattr(cowork_watcher, "run_codex_review", fake_run_codex_review)
+    monkeypatch.setattr(cowork_watcher, "notify_slack_for_dispatch", lambda **kwargs: None)
+
+    cowork_watcher.handle_packet_review(str(packet))
+
+    dispatch_path = dispatch_dir / "TASK-TEST-REVIEW-READY-review-ready.md"
+    assert dispatch_path.exists()
+    body = dispatch_path.read_text(encoding="utf-8")
+    assert "status: pending-approval" in body
+    assert "next_step" in body
+
+
 def test_format_slack_dispatch_message_contains_core_fields(monkeypatch) -> None:
     monkeypatch.setattr(cowork_watcher, "packet_title_for", lambda task_id: "테스트 비교 페이지")
     monkeypatch.setattr(cowork_watcher, "review_snapshot_for", lambda task_id: [
@@ -632,6 +771,39 @@ def test_handle_packet_review_blocks_stale_optional_worktree_fingerprint(tmp_pat
     assert "Worktree fingerprint mismatch" in review_text
     dispatch_text = (dispatch_dir / "TASK-TEST-FP-REVIEW-review-ready.md").read_text(encoding="utf-8")
     assert "optional planned worktree fingerprint is stale" in dispatch_text
+
+
+def test_stamp_commit_placeholder_only_updates_frontmatter_field(tmp_path: Path, monkeypatch) -> None:
+    packet = tmp_path / "TASK-TEST-STAMP.md"
+    packet.write_text(
+        "\n".join(
+            [
+                "---",
+                "id: TASK-TEST-STAMP",
+                "status: queued",
+                "type: feature",
+                "title: Stamp placeholder test",
+                "planned_at: 2026-04-20T00:00:00+09:00",
+                "planned_against_commit: TODO_CURRENT_HEAD",
+                "---",
+                "",
+                "# Notes",
+                "",
+                "Body should keep TODO_CURRENT_HEAD as plain text.",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(cowork_watcher, "current_head", lambda: "abc123def456")
+
+    assert cowork_watcher.stamp_commit_placeholder(str(packet)) is True
+
+    stamped = packet.read_text(encoding="utf-8")
+    assert "planned_against_commit: abc123def456" in stamped
+    assert "Body should keep TODO_CURRENT_HEAD as plain text." in stamped
+    assert stamped.count("TODO_CURRENT_HEAD") == 1
 
 
 def test_startup_warning_messages_warns_when_slack_webhook_missing(monkeypatch) -> None:
