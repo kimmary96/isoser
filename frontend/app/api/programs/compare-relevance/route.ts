@@ -28,7 +28,7 @@ export async function POST(request: Request) {
       return apiError("로그인 후 관련도를 확인할 수 있습니다.", 401, "UNAUTHORIZED");
     }
 
-    const rateLimit = enforceRateLimit({
+    const rateLimit = await enforceRateLimit({
       namespace: "compare-relevance",
       key: accessToken,
       maxRequests: 12,

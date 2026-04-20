@@ -6,7 +6,7 @@ import { logRouteError } from "@/lib/server/route-logging";
 
 export async function POST(req: NextRequest) {
   try {
-    const rateLimit = enforceRateLimit({
+    const rateLimit = await enforceRateLimit({
       namespace: "summary",
       key: buildRateLimitKey(req, "summary"),
       maxRequests: 10,

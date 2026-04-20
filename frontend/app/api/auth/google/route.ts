@@ -7,7 +7,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
   try {
-    const rateLimit = enforceRateLimit({
+    const rateLimit = await enforceRateLimit({
       namespace: "auth-google",
       key: buildRateLimitKey(request, "auth-google"),
       maxRequests: 8,

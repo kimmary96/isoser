@@ -192,6 +192,34 @@
   - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
   - `frontend`: `npm run build` 통과
 
+## 2026-04-20 Upstash 전역 rate limiting fallback 추가
+
+- 수정 파일:
+  - `frontend/lib/server/rate-limit.ts`
+  - `frontend/app/api/auth/google/route.ts`
+  - `frontend/app/api/dashboard/activities/images/route.ts`
+  - `frontend/app/api/dashboard/profile/route.ts`
+  - `frontend/app/api/dashboard/match/route.ts`
+  - `frontend/app/api/dashboard/cover-letters/coach/route.ts`
+  - `frontend/app/api/summary/route.ts`
+  - `frontend/app/api/programs/compare-relevance/route.ts`
+  - `docs/current-state.md`
+  - `docs/refactoring-log.md`
+- 변경 내용:
+  - `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`이 있으면 Upstash Redis REST 기반 fixed-window 요청 제한을 사용하도록 확장함
+  - Upstash가 없거나 호출 실패 시 기존 메모리 기반 제한으로 자동 fallback 하도록 정리함
+  - 저장 key는 SHA-256 해시 형태로 바꿔 access token이나 user id 원문이 내부 key로 직접 남지 않게 함
+- 유지된 동작:
+  - 기존 요청 제한 임계값과 사용자 응답 계약은 그대로 유지함
+  - Upstash 환경변수가 없는 현재 환경에서도 기존 메모리 기반 제한이 그대로 동작함
+- 한계와 리스크:
+  - 현재 Upstash 구현은 간단한 fixed-window + `INCR`/`PEXPIRE` 조합이라, 더 정교한 sliding window 알고리즘은 아니다
+  - Upstash 장애 시 메모리 fallback으로 내려가므로 완전한 전역 보장은 일시적으로 약해질 수 있다
+- 검증 메모:
+  - `frontend`: `npm run lint` 통과 (기존 `<img>` warning만 유지)
+  - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
+  - `frontend`: `npm run build` 통과
+
 ## 2026-04-20 public flow 후속 정리
 
 - 수정 파일:

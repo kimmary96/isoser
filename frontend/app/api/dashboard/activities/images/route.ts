@@ -26,7 +26,7 @@ async function getAuthenticatedClient() {
 export async function POST(request: Request) {
   try {
     const { supabase, user } = await getAuthenticatedClient();
-    const rateLimit = enforceRateLimit({
+    const rateLimit = await enforceRateLimit({
       namespace: "activity-image-upload",
       key: user.id,
       maxRequests: 12,

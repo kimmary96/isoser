@@ -131,7 +131,7 @@ export async function GET() {
 export async function PATCH(request: Request) {
   try {
     const { supabase, user } = await getAuthenticatedClient();
-    const rateLimit = enforceProfileWriteRateLimit(user.id);
+    const rateLimit = await enforceProfileWriteRateLimit(user.id);
     if (!rateLimit.allowed) {
       return apiRateLimited(
         "프로필 저장 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.",
@@ -195,7 +195,7 @@ export async function PATCH(request: Request) {
 export async function PUT(request: Request) {
   try {
     const { supabase, user } = await getAuthenticatedClient();
-    const rateLimit = enforceProfileWriteRateLimit(user.id);
+    const rateLimit = await enforceProfileWriteRateLimit(user.id);
     if (!rateLimit.allowed) {
       return apiRateLimited(
         "프로필 저장 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.",

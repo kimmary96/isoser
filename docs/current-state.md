@@ -66,7 +66,8 @@
 - `frontend/tsconfig.codex-check.json`은 `.next/types`를 직접 포함하지 않아 stale Next.js 생성 파일 때문에 standalone 타입체크가 거짓 실패하지 않는다.
 - `frontend/lib/server/upload-validation.ts`는 활동 이미지/프로필 이미지 업로드 전에 허용 형식(JPG/PNG/WEBP/GIF), 파일 크기 제한, storage path segment 정규화를 공통으로 적용한다.
 - `frontend/lib/server/upload-validation.ts`는 확장자/MIME뿐 아니라 파일 헤더(signature, magic number)도 함께 검사해 이름만 바꾼 위장 파일 업로드를 1차로 차단한다.
-- `frontend/lib/server/rate-limit.ts`는 프론트 BFF route에서 사용하는 프로세스 로컬 메모리 기반 최소 요청 제한 유틸을 제공한다. 현재는 분산 저장소를 쓰지 않으므로 다중 인스턴스 간 완전한 공유 제한은 아니다.
+- `frontend/lib/server/rate-limit.ts`는 프론트 BFF route에서 사용하는 요청 제한 유틸을 제공한다. `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`이 있으면 Upstash Redis REST 기반 전역 제한을 사용하고, 없거나 실패하면 기존 프로세스 로컬 메모리 제한으로 자동 fallback한다.
+- `frontend/lib/server/rate-limit.ts`의 내부 저장 key는 원본 식별자(user id, access token, ip)를 그대로 쓰지 않고 SHA-256 해시 형태로 저장해 Redis key나 메모리 key에 민감값이 직접 남지 않도록 한다.
 - `frontend/app/api/auth/google/route.ts`는 OAuth 시작 요청에 분당 8회 기준의 최소 요청 제한을 적용해 짧은 시간에 로그인 시작 요청이 과도하게 반복되는 경우 429를 반환한다.
 - `frontend/app/api/dashboard/activities/images/route.ts`는 인증 사용자 기준 분당 12회 업로드 요청 제한을 적용해 이미지 업로드 남용을 1차로 완화한다.
 - `frontend/app/api/dashboard/profile/route.ts`의 `PATCH`/`PUT`는 인증 사용자 기준 분당 20회 프로필 수정 제한을 적용해 반복 저장 남용을 줄인다.

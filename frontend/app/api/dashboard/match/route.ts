@@ -118,7 +118,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const { supabase, user } = await getAuthenticatedClient();
-    const rateLimit = enforceRateLimit({
+    const rateLimit = await enforceRateLimit({
       namespace: "match-analysis",
       key: user.id,
       maxRequests: 6,

@@ -23,7 +23,7 @@ async function getAuthenticatedUserId() {
 export async function POST(request: Request) {
   try {
     const userId = await getAuthenticatedUserId();
-    const rateLimit = enforceRateLimit({
+    const rateLimit = await enforceRateLimit({
       namespace: "coach-feedback",
       key: userId,
       maxRequests: 8,
