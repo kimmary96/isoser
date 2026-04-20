@@ -36,3 +36,9 @@
 ## Notes
 - 이번 단계에서는 workflow 구조 변화가 없어 `docs/current-state.md`를 수정하지 않았다.
 - 이번 단계에서는 의미 있는 구조 개편이 없어 `docs/refactoring-log.md`를 추가 갱신하지 않았다.
+
+## Run Metadata
+
+- generated_at: `2026-04-20T21:07:05`
+- watcher_exit_code: `0`
+- codex_tokens_used: `193,106`
