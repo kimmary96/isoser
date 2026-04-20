@@ -220,6 +220,30 @@
   - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
   - `frontend`: `npm run build` 통과
 
+## 2026-04-20 next/image 점진 전환 1차
+
+- 수정 파일:
+  - `frontend/next.config.ts`
+  - `frontend/app/(landing)/landing-a/_components.tsx`
+  - `frontend/app/dashboard/layout.tsx`
+  - `frontend/app/dashboard/profile/_components/profile-hero-section.tsx`
+  - `frontend/app/dashboard/activities/_components/activity-basic-tab.tsx`
+  - `docs/current-state.md`
+  - `docs/refactoring-log.md`
+- 변경 내용:
+  - Supabase storage public URL을 `next/image` remotePatterns로 허용함
+  - 공개 랜딩 헤더 아바타, 대시보드 사이드바 아바타, 프로필 대표 이미지, 활동 이미지 썸네일을 `img`에서 `next/image`로 전환함
+- 유지된 동작:
+  - 기존 이미지 표시 위치와 크기는 유지함
+  - blob preview를 사용하는 프로필 편집 모달 이미지는 안전성을 위해 이번 단계에서 그대로 둠
+- 한계와 리스크:
+  - 외부 blob/object URL을 쓰는 미리보기 이미지는 아직 `img`를 유지하므로 lint warning 1건은 남을 수 있다
+  - remotePatterns는 현재 Supabase storage public URL 기준이며, 다른 외부 이미지 도메인을 추가로 쓰기 시작하면 설정 확장이 필요하다
+- 검증 메모:
+  - `frontend`: `npm run lint` 통과
+  - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
+  - `frontend`: `npm run build` 통과
+
 ## 2026-04-20 public flow 후속 정리
 
 - 수정 파일:

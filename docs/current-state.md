@@ -76,6 +76,7 @@
 - `frontend/app/api/dashboard/cover-letters/coach/route.ts`의 `POST`는 인증 사용자 기준 분당 8회 제한과 30초 timeout을 적용해 AI 코칭 요청의 남용과 무한 대기 가능성을 줄인다.
 - `frontend/app/api/programs/compare-relevance/route.ts`의 `POST`는 로그인 세션 기준 분당 12회 제한과 20초 timeout을 적용해 비교 관련도 계산 요청의 남용과 지연을 완화한다.
 - `frontend/lib/server/route-logging.ts`는 프론트 BFF route 실패를 JSON 구조 로그로 남기며, route/method/category/status/code 중심으로 기록하고 토큰·본문 전문 같은 민감정보는 남기지 않는다.
+- `frontend/next.config.ts`는 `NEXT_PUBLIC_SUPABASE_URL` 기반 Supabase storage public URL을 `next/image` remotePatterns로 허용해, storage 이미지 구간을 점진적으로 `Image` 컴포넌트로 전환할 수 있게 한다.
 - `frontend/get_token.mjs`는 기본 실행 시 access token을 바로 출력하지 않고, `--print` 인자를 준 경우에만 토큰을 출력한다.
 - `frontend/app/api/summary/route.ts`는 Gemini summary 호출에 20초 timeout을 적용해 상류 AI 응답이 장시간 멈출 때 504 형태의 upstream 오류로 빠르게 실패한다.
 - `backend/tests/test_know_survey.py`는 저장소에 포함되지 않은 KNOW 원본 코드북/원자료가 없을 때 관련 테스트만 skip하고, 전체 pytest 수집을 중단시키지 않는다.

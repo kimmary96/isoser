@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
@@ -176,9 +177,12 @@ export function LandingANavBar() {
             className="relative z-[1] inline-flex items-center gap-3 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm font-semibold text-[var(--ink)] transition hover:bg-white"
           >
             {user.avatarUrl ? (
-              <img
+              <Image
                 src={user.avatarUrl}
                 alt={`${user.displayName} 프로필 이미지`}
+                width={32}
+                height={32}
+                sizes="32px"
                 className="h-8 w-8 rounded-full object-cover"
               />
             ) : (
