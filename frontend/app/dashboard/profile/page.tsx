@@ -34,11 +34,9 @@ export default function DashboardPage() {
   const {
     profile,
     activities,
-    matchAnalyses,
     loading,
     saving,
     error,
-    setError,
     updateProfileSection,
     isProfileModalOpen,
     setIsProfileModalOpen,
@@ -84,11 +82,6 @@ export default function DashboardPage() {
       ? activityType === "프로젝트" || activityType === "개인프로젝트"
       : activityType === activeTab;
   });
-  const recommendedRate =
-    matchAnalyses.length > 0
-      ? matchAnalyses.filter((item) => item.total_score >= 75).length / matchAnalyses.length
-      : 0;
-  const recentMatchAnalyses = matchAnalyses.slice(0, 3);
   const completionScore = useMemo(() => {
     let score = 0;
     if (!profile) return 0;
@@ -118,8 +111,6 @@ export default function DashboardPage() {
 
     return Math.min(score, 100);
   }, [profile, activities]);
-  const profileAny = profile as Profile & { avatar_url?: string | null };
-
   return (
     <div className="min-h-screen bg-[#f3f6fb] px-6 py-8">
       <div className="mx-auto max-w-6xl space-y-6">

@@ -33,7 +33,6 @@ export function useActivityDetail(activityId: string, isNewActivity: boolean, in
   const [jobTitle, setJobTitle] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<"basic" | "star">("basic");
   const [starSituation, setStarSituation] = useState("");
   const [starTask, setStarTask] = useState("");

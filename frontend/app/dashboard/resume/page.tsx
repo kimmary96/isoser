@@ -1,7 +1,6 @@
 
 "use client";
 
-import type { Activity } from "@/lib/types";
 import { useResumeBuilder } from "./_hooks/use-resume-builder";
 import { ResumeAssistantSidebar } from "./_components/resume-assistant-sidebar";
 import { ResumePreviewPane } from "./_components/resume-preview-pane";

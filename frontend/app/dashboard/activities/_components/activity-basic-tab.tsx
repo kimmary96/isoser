@@ -1,6 +1,6 @@
 import type { ChangeEvent, KeyboardEvent } from "react";
 
-import type { Activity, ActivityConvertRequest } from "@/lib/types";
+import type { Activity } from "@/lib/types";
 
 type ActivityBasicTabProps = {
   activity: Activity;
@@ -50,7 +50,6 @@ type ActivityBasicTabProps = {
 };
 
 export function ActivityBasicTab({
-  activity,
   isNewActivity,
   typeDraft,
   onTypeDraftChange,
