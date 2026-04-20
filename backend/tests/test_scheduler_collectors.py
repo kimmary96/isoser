@@ -2,6 +2,14 @@ from backend.rag.collector.base_collector import BaseCollector
 from backend.rag.collector.hrd_collector import HrdCollector
 from backend.rag.collector.scheduler import run_all_collectors
 from backend.rag.collector.tier3_collectors import KisedCollector, KobiaCollector
+from backend.rag.collector.tier4_collectors import (
+    DobongCollector,
+    DobongStartupCollector,
+    GuroCollector,
+    MapoCollector,
+    NowonCollector,
+    SeongdongCollector,
+)
 
 
 class _DummySupabase:
@@ -174,7 +182,54 @@ def test_scheduler_includes_tier3_collectors_in_dry_run(monkeypatch) -> None:
 
     assert result["saved_count"] == 0
     assert result["failed_count"] == 0
-    assert [source["source"] for source in result["sources"]] == ["tier1", "KOBIA", "KISED"]
+    assert [source["source"] for source in result["sources"]] == ["tier1", "KISED", "KOBIA"]
     assert [source["tier"] for source in result["sources"]] == [1, 3, 3]
     assert all(source["status"] == "dry_run" for source in result["sources"])
     assert "Collected 1 rows; upsert skipped" in result["sources"][1]["message"]
+
+
+def test_scheduler_includes_tier4_collectors_in_dry_run(monkeypatch) -> None:
+    tier4_collectors = [
+        DobongStartupCollector(),
+        GuroCollector(),
+        SeongdongCollector(),
+        NowonCollector(),
+        DobongCollector(),
+        MapoCollector(),
+    ]
+    monkeypatch.setattr(
+        "backend.rag.collector.scheduler.COLLECTORS",
+        [_Tier1Collector(), *tier4_collectors],
+    )
+
+    for collector in tier4_collectors:
+        monkeypatch.setattr(
+            collector.__class__,
+            "collect",
+            lambda self: [
+                {
+                    "title": f"{self.source_name} 테스트 수집",
+                    "link": f"https://example.com/{self.source_key}",
+                    "raw_deadline": "2026-05-20",
+                    "category_hint": "기타",
+                    "source_meta": self.get_source_meta(),
+                    "raw": {"source": self.source_key},
+                }
+            ],
+        )
+
+    result = run_all_collectors(upsert=False)
+
+    assert result["saved_count"] == 0
+    assert result["failed_count"] == 0
+    assert [source["tier"] for source in result["sources"]] == [1, 4, 4, 4, 4, 4, 4]
+    assert [source["source"] for source in result["sources"]] == [
+        "tier1",
+        "도봉구청년창업센터",
+        "구로 청년이룸",
+        "서울청년센터 성동",
+        "노원구 청년일자리센터 청년내일",
+        "도봉구청 일자리경제과",
+        "마포구고용복지지원센터",
+    ]
+    assert all(source["status"] == "dry_run" for source in result["sources"])

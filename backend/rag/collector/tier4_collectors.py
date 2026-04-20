@@ -551,7 +551,7 @@ class NowonCollector(DistrictHtmlCollector):
             return "훈련"
         if any(keyword in title for keyword in ("취업", "면접", "자소서", "커리어", "사진촬영")):
             return "취업"
-        return "취업"
+        return "기타"
 
 
 class DobongCollector(DistrictHtmlCollector):
