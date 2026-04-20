@@ -1,28 +1,45 @@
-## Drift Report
+# TASK-2026-04-16-1100-tier4-district-crawl Drift Report
 
-- task id: `TASK-2026-04-16-1100-tier4-district-crawl`
-- checked at: `2026-04-16`
-- planned commit: `469cd3f`
-- current HEAD: `469cd3f06a5e9e73cefddcf7181afa014948de69`
+## Summary
 
-## Findings
+- task packet baseline `planned_against_commit` is `b994efe8e9ba084b7a73e601bec0a3e7a8b7872f`
+- current `HEAD` is `c297240c32b48f454167b8628ddccd6e5841145b`
+- the touched collector area is no longer in the pre-execution state assumed by the packet
+- this task should be treated as a review/reconciliation item, not a clean implementation packet
 
-`planned_against_commit` matches `HEAD`, but the implementation area relevant to this task has already drifted in the current worktree:
+## Drift basis
 
-- `backend/rag/collector/scheduler.py` has uncommitted changes adding Tier 3 imports, Tier 3 collector registration, and `run_all_collectors(upsert=False)` dry-run behavior.
-- `backend/tests/test_scheduler_collectors.py` has uncommitted changes covering the Tier 3 scheduler registration path.
-- `backend/rag/collector/tier3_collectors.py` is present as a new untracked/uncommitted collector module.
+- `backend/rag/collector/tier4_collectors.py` already exists as a new implementation file in the worktree.
+- `backend/rag/collector/scheduler.py` already includes Tier 4 imports and registrations.
+- `reports/TASK-2026-04-16-1100-tier4-district-crawl-result.md` already claims implementation and live verification were completed.
+- `reports/TASK-2026-04-16-1100-tier4-district-crawl-supervisor-verification.md` ended with `verdict: review-required`, so this packet is already in a post-implementation review phase.
+- the packet still describes open execution choices that are no longer open in the codebase, especially the file-placement question for Tier 4 collectors.
 
-## Why This Is Significant
+## Current problems
 
-This task needs to modify the same scheduler pipeline and adjacent collector registration logic. Proceeding from the current worktree would combine the Tier 4 work with unfinished or uncommitted Tier 3 changes, making it unsafe to validate task scope or produce an isolated minimal change.
+1. Workflow traceability is weak.
+   The packet assumes pending work, but the repository already contains implementation, result, and verification artifacts for the same task. Re-running from the packet would duplicate or blur ownership.
 
-## Decision
+2. Tier 4 regression coverage is missing.
+   `backend/tests/test_scheduler_collectors.py:126` still stops at Tier 3 dry-run coverage, and there is no Tier 4 parser or scheduler registration regression test.
 
-Stop before implementation. Rebase or commit/stabilize the current Tier 3 collector worktree state first, then re-run this task packet against the updated baseline.
+3. Shared documentation diffs are mixed.
+   The earlier verification already flagged `docs/current-state.md` and `docs/refactoring-log.md` as containing unrelated concurrent edits, which makes this task’s report-to-diff mapping unreliable.
 
-## Run Metadata
+4. Some collector heuristics remain brittle.
+   `backend/rag/collector/tier4_collectors.py:549` defaults `NowonCollector` category resolution to `취업`, which can hide classification mistakes instead of surfacing ambiguous cases for review.
 
-- generated_at: `2026-04-16T13:13:40`
-- watcher_exit_code: `0`
-- codex_tokens_used: `55,309`
+## Recommended next step
+
+- do not treat this packet as executable implementation work
+- keep the task in review/reconciliation status
+- create a follow-up packet that does only these scoped actions:
+  - add Tier 4 scheduler dry-run regression coverage
+  - add fixture-based parser tests for the six district collectors
+  - reconcile result report wording with the actual mixed doc diffs
+  - review permissive category/default heuristics in Tier 4 collectors
+
+## Safety note
+
+- no code changes were applied as part of this drift handling
+- this report records current state so the next task can start from the real repository condition

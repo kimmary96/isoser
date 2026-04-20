@@ -23,6 +23,14 @@ try:
         SeoulWomanUpCollector,
     )
     from rag.collector.tier3_collectors import KisedCollector, KobiaCollector
+    from rag.collector.tier4_collectors import (
+        DobongCollector,
+        DobongStartupCollector,
+        GuroCollector,
+        MapoCollector,
+        NowonCollector,
+        SeongdongCollector,
+    )
     from rag.collector.work24_collector import Work24Collector
 except ModuleNotFoundError as error:
     if not _should_fallback_to_backend(error):
@@ -39,6 +47,14 @@ except ModuleNotFoundError as error:
         SeoulWomanUpCollector,
     )
     from backend.rag.collector.tier3_collectors import KisedCollector, KobiaCollector
+    from backend.rag.collector.tier4_collectors import (
+        DobongCollector,
+        DobongStartupCollector,
+        GuroCollector,
+        MapoCollector,
+        NowonCollector,
+        SeongdongCollector,
+    )
     from backend.rag.collector.work24_collector import Work24Collector
 
 
@@ -92,6 +108,12 @@ COLLECTORS = [
     SeoulWomanUpCollector(),
     KobiaCollector(),
     KisedCollector(),
+    DobongStartupCollector(),
+    GuroCollector(),
+    SeongdongCollector(),
+    NowonCollector(),
+    DobongCollector(),
+    MapoCollector(),
 ]
 
 
