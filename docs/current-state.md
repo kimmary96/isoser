@@ -65,11 +65,13 @@
 - `frontend/.eslintrc.json`이 추가되어 `frontend`의 `npm run lint`가 더 이상 초기 대화형 ESLint 설정 프롬프트에 막히지 않고 비대화형 검증으로 동작한다.
 - `frontend/tsconfig.codex-check.json`은 `.next/types`를 직접 포함하지 않아 stale Next.js 생성 파일 때문에 standalone 타입체크가 거짓 실패하지 않는다.
 - `frontend/lib/server/upload-validation.ts`는 활동 이미지/프로필 이미지 업로드 전에 허용 형식(JPG/PNG/WEBP/GIF), 파일 크기 제한, storage path segment 정규화를 공통으로 적용한다.
+- `frontend/lib/server/upload-validation.ts`는 확장자/MIME뿐 아니라 파일 헤더(signature, magic number)도 함께 검사해 이름만 바꾼 위장 파일 업로드를 1차로 차단한다.
 - `frontend/lib/server/rate-limit.ts`는 프론트 BFF route에서 사용하는 프로세스 로컬 메모리 기반 최소 요청 제한 유틸을 제공한다. 현재는 분산 저장소를 쓰지 않으므로 다중 인스턴스 간 완전한 공유 제한은 아니다.
 - `frontend/app/api/auth/google/route.ts`는 OAuth 시작 요청에 분당 8회 기준의 최소 요청 제한을 적용해 짧은 시간에 로그인 시작 요청이 과도하게 반복되는 경우 429를 반환한다.
 - `frontend/app/api/dashboard/activities/images/route.ts`는 인증 사용자 기준 분당 12회 업로드 요청 제한을 적용해 이미지 업로드 남용을 1차로 완화한다.
 - `frontend/app/api/dashboard/profile/route.ts`의 `PATCH`/`PUT`는 인증 사용자 기준 분당 20회 프로필 수정 제한을 적용해 반복 저장 남용을 줄인다.
 - `frontend/app/api/summary/route.ts`는 호출자 IP 기준 분당 10회 요청 제한과 20초 timeout을 함께 적용해 AI summary 상류 호출의 남용과 장시간 대기를 동시에 완화한다.
+- `frontend/get_token.mjs`는 기본 실행 시 access token을 바로 출력하지 않고, `--print` 인자를 준 경우에만 토큰을 출력한다.
 - `frontend/app/api/summary/route.ts`는 Gemini summary 호출에 20초 timeout을 적용해 상류 AI 응답이 장시간 멈출 때 504 형태의 upstream 오류로 빠르게 실패한다.
 - `backend/tests/test_know_survey.py`는 저장소에 포함되지 않은 KNOW 원본 코드북/원자료가 없을 때 관련 테스트만 skip하고, 전체 pytest 수집을 중단시키지 않는다.
 - `backend/chains/job_posting_rewrite_chain.py`의 Gemini rewrite 호출은 timeout 시 task cancel/cleanup까지 정리해 fallback 테스트에서 `coroutine was never awaited` 경고를 다시 만들지 않는다.

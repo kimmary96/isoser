@@ -197,7 +197,7 @@ export async function PUT(request: Request) {
     let nextAvatarUrl = String(formData.get("current_avatar_url") ?? "").trim() || null;
 
     if (avatarFile instanceof File && avatarFile.size > 0) {
-      const validationError = validateImageFile(avatarFile, {
+      const validationError = await validateImageFile(avatarFile, {
         maxSizeBytes: MAX_AVATAR_IMAGE_SIZE_BYTES,
         label: "프로필 이미지",
       });

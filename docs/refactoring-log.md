@@ -87,6 +87,29 @@
   - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
   - `frontend`: `npm run build` 통과
 
+## 2026-04-20 업로드 파일 실체 검사와 토큰 출력 안전장치
+
+- 수정 파일:
+  - `frontend/lib/server/upload-validation.ts`
+  - `frontend/app/api/dashboard/activities/images/route.ts`
+  - `frontend/app/api/dashboard/profile/route.ts`
+  - `frontend/get_token.mjs`
+  - `docs/current-state.md`
+- 변경 내용:
+  - 업로드 이미지 검증이 확장자와 MIME만 보지 않고 파일 헤더(signature, magic number)까지 확인하도록 보강함
+  - 활동 이미지/프로필 이미지 업로드 라우트가 새 비동기 검증 유틸을 사용하도록 조정함
+  - 로컬 개발용 `get_token.mjs`는 기본 실행에서 access token을 출력하지 않고, `--print` 인자가 있을 때만 출력하도록 안전장치를 추가함
+- 유지된 동작:
+  - 정상적인 JPG/PNG/WEBP/GIF 업로드 흐름과 업로드 후 public URL 반환 구조는 유지함
+  - 토큰이 정말 필요한 로컬 디버깅 상황에서는 기존처럼 명시적으로 출력 가능함
+- 한계와 리스크:
+  - 현재 업로드 검증은 파일 헤더 기반 1차 방어이며, 이미지 디코딩 자체의 악성 payload 검사는 아니다
+  - `get_token.mjs`는 여전히 로컬 개발 보조 스크립트이므로 운영 환경 사용 금지 원칙은 유지해야 함
+- 검증 메모:
+  - `frontend`: `npm run lint` 통과 (기존 `<img>` warning만 유지)
+  - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
+  - `frontend`: `npm run build` 통과
+
 ## 2026-04-20 public flow 후속 정리
 
 - 수정 파일:

@@ -53,7 +53,7 @@ export async function POST(request: Request) {
     const safeActivityId = sanitizeStorageSegment(activityId);
 
     for (const file of files) {
-      const validationError = validateImageFile(file, {
+      const validationError = await validateImageFile(file, {
         maxSizeBytes: MAX_ACTIVITY_IMAGE_SIZE_BYTES,
         label: "활동 이미지",
       });
