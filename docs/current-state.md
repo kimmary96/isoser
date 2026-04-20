@@ -82,6 +82,8 @@
 - `frontend/get_token.mjs`는 기본 실행 시 access token을 바로 출력하지 않고, `--print` 인자를 준 경우에만 토큰을 출력한다.
 - `docs/launch-smoke-test.md`는 공개 진입, 로그인, 프로필, 활동 저장소, AI 기능, 추천/비교, 운영 로그까지 포함한 런칭 전 smoke test 체크리스트를 제공한다.
 - `docs/launch-checklist-nontechnical.md`는 비개발자도 10분 안에 따라 할 수 있는 배포 직전 체크리스트를 제공한다.
+- `docs/launch-checklist-notion.md`는 운영자가 Notion에 그대로 붙여 넣어 체크박스로 사용할 수 있는 배포 체크리스트를 제공한다.
+- `docs/launch-checklist-slack.md`는 운영 채널에 바로 붙여 넣을 수 있는 Slack용 배포 점검/승인/보류/완료 템플릿을 제공한다.
 - `frontend/app/api/summary/route.ts`는 Gemini summary 호출에 20초 timeout을 적용해 상류 AI 응답이 장시간 멈출 때 504 형태의 upstream 오류로 빠르게 실패한다.
 - `backend/tests/test_know_survey.py`는 저장소에 포함되지 않은 KNOW 원본 코드북/원자료가 없을 때 관련 테스트만 skip하고, 전체 pytest 수집을 중단시키지 않는다.
 - `backend/chains/job_posting_rewrite_chain.py`의 Gemini rewrite 호출은 timeout 시 task cancel/cleanup까지 정리해 fallback 테스트에서 `coroutine was never awaited` 경고를 다시 만들지 않는다.

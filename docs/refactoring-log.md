@@ -300,6 +300,20 @@
 - 유지된 동작:
   - 코드 동작 변경 없음
 
+## 2026-04-20 운영용 Notion / Slack 배포 템플릿 추가
+
+- 수정 파일:
+  - `docs/launch-checklist-notion.md`
+  - `docs/launch-checklist-slack.md`
+  - `docs/current-state.md`
+  - `docs/refactoring-log.md`
+- 변경 내용:
+  - Notion에 바로 붙여 넣어 쓸 수 있는 체크박스형 배포 체크리스트를 추가함
+  - Slack 운영 채널에 바로 붙여 넣어 쓸 수 있는 배포 점검 결과, 승인 요청, 조건부 배포, 배포 보류, 배포 완료 템플릿을 추가함
+  - 체크 결과가 배포 가능/조건부 배포/배포 보류 판단으로 자연스럽게 이어지도록 문구를 정리함
+- 유지된 동작:
+  - 코드 동작 변경 없음
+
 ## 2026-04-20 public flow 후속 정리
 
 - 수정 파일:
