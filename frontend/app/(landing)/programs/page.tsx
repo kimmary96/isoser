@@ -28,18 +28,14 @@ export const metadata: Metadata = {
 };
 
 const PAGE_SIZE = 20;
-const SORT_OPTIONS: { value: ProgramSort; label: string }[] = [
-  { value: "deadline", label: "마감 임박순" },
-  { value: "latest", label: "최신순" },
-];
+const DEFAULT_SORT: ProgramSort = "deadline";
 const REGION_OPTIONS = ["서울", "경기", "부산", "대전·충청", "대구·경북", "온라인"] as const;
 
 type ProgramsPageSearchParams = {
   q?: string | string[];
   category?: string | string[];
   regions?: string | string[];
-  recruiting?: string | string[];
-  sort?: string | string[];
+  closed?: string | string[];
   page?: string | string[];
 };
 
@@ -79,11 +75,6 @@ function normalizeQuery(value?: string | string[]): string {
   return (takeFirst(value) || "").trim();
 }
 
-function normalizeSort(value?: string | string[]): ProgramSort {
-  const sort = takeFirst(value);
-  return sort === "latest" ? "latest" : "deadline";
-}
-
 function normalizeRegions(value?: string | string[]): string[] {
   const candidates = Array.isArray(value) ? value : value ? [value] : [];
   const normalized = candidates.flatMap((candidate) =>
@@ -96,9 +87,9 @@ function normalizeRegions(value?: string | string[]): string[] {
   return REGION_OPTIONS.filter((region) => normalized.includes(region));
 }
 
-function normalizeRecruiting(value?: string | string[]): boolean {
-  const recruiting = takeFirst(value);
-  return recruiting === "true" || recruiting === "1" || recruiting === "on";
+function normalizeShowClosed(value?: string | string[]): boolean {
+  const closed = takeFirst(value);
+  return closed === "true" || closed === "1" || closed === "on";
 }
 
 function normalizePage(value?: string | string[]): number {
@@ -110,8 +101,7 @@ function buildProgramsHref(params: {
   q?: string;
   category?: string;
   regions?: string[];
-  recruiting?: boolean;
-  sort?: ProgramSort;
+  closed?: boolean;
   page?: number;
 }): string {
   const searchParams = new URLSearchParams();
@@ -121,8 +111,7 @@ function buildProgramsHref(params: {
   if (params.regions?.length) {
     params.regions.forEach((region) => searchParams.append("regions", region));
   }
-  if (params.recruiting) searchParams.set("recruiting", "true");
-  if (params.sort && params.sort !== "deadline") searchParams.set("sort", params.sort);
+  if (params.closed) searchParams.set("closed", "true");
   if (params.page && params.page > 1) searchParams.set("page", String(params.page));
 
   const query = searchParams.toString();
@@ -151,7 +140,10 @@ function getDeadlineBadge(program: Program): { label: string; tone: string } | n
 
   const daysLeft = Math.floor((deadlineDate.getTime() - today.getTime()) / 86400000);
   if (daysLeft < 0) {
-    return { label: "마감", tone: "bg-slate-200 text-slate-700" };
+    return { label: `마감 · ${formatDateLabel(rawDate)}`, tone: "bg-slate-200 text-slate-700" };
+  }
+  if (daysLeft === 0) {
+    return { label: "D-Day", tone: "bg-rose-100 text-rose-700" };
   }
   if (daysLeft <= 3) {
     return { label: `D-${daysLeft}`, tone: "bg-rose-100 text-rose-700" };
@@ -167,8 +159,7 @@ function renderActiveFilters(params: {
   q: string;
   category: string;
   regions: string[];
-  recruiting: boolean;
-  sort: ProgramSort;
+  showClosed: boolean;
 }) {
   const chips: { label: string; href: string }[] = [];
 
@@ -178,8 +169,7 @@ function renderActiveFilters(params: {
       href: buildProgramsHref({
         category: params.category,
         regions: params.regions,
-        recruiting: params.recruiting,
-        sort: params.sort,
+        closed: params.showClosed,
       }),
     });
   }
@@ -190,8 +180,7 @@ function renderActiveFilters(params: {
       href: buildProgramsHref({
         q: params.q,
         regions: params.regions,
-        recruiting: params.recruiting,
-        sort: params.sort,
+        closed: params.showClosed,
       }),
     });
   }
@@ -203,20 +192,18 @@ function renderActiveFilters(params: {
         q: params.q,
         category: params.category,
         regions: params.regions.filter((item) => item !== region),
-        recruiting: params.recruiting,
-        sort: params.sort,
+        closed: params.showClosed,
       }),
     });
   });
 
-  if (params.recruiting) {
+  if (params.showClosed) {
     chips.push({
-      label: "모집중만",
+      label: "최근 3개월 마감 포함",
       href: buildProgramsHref({
         q: params.q,
         category: params.category,
         regions: params.regions,
-        sort: params.sort,
       }),
     });
   }
@@ -229,16 +216,16 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
   const q = normalizeQuery(resolvedSearchParams.q);
   const selectedCategory = normalizeSelectedCategory(resolvedSearchParams.category);
   const selectedRegions = normalizeRegions(resolvedSearchParams.regions);
-  const recruitingOnly = normalizeRecruiting(resolvedSearchParams.recruiting);
-  const sort = normalizeSort(resolvedSearchParams.sort);
+  const showClosedRecent = normalizeShowClosed(resolvedSearchParams.closed);
+  const recruitingOnly = !showClosedRecent;
+  const sort = DEFAULT_SORT;
   const page = normalizePage(resolvedSearchParams.page);
   const offset = (page - 1) * PAGE_SIZE;
   const activeFilters = renderActiveFilters({
     q,
     category: selectedCategory,
     regions: selectedRegions,
-    recruiting: recruitingOnly,
-    sort,
+    showClosed: showClosedRecent,
   });
 
   let programs: Program[] = [];
@@ -263,6 +250,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
         category: selectedCategory !== "전체" ? selectedCategory : undefined,
         regions: selectedRegions,
         recruiting_only: recruitingOnly,
+        include_closed_recent: showClosedRecent,
         sort,
         limit: PAGE_SIZE,
         offset,
@@ -272,6 +260,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
         category: selectedCategory !== "전체" ? selectedCategory : undefined,
         regions: selectedRegions,
         recruiting_only: recruitingOnly,
+        include_closed_recent: showClosedRecent,
       }),
     ]);
   } catch (e) {
@@ -283,7 +272,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
   const visiblePages = Array.from({ length: totalPages }, (_, index) => index + 1).filter(
     (pageNumber) => pageNumber >= Math.max(1, safePage - 2) && pageNumber <= Math.min(totalPages, safePage + 2)
   );
-  const hasAnyFilter = Boolean(q || selectedCategory !== "전체" || selectedRegions.length || recruitingOnly);
+  const hasAnyFilter = Boolean(q || selectedCategory !== "전체" || selectedRegions.length || showClosedRecent);
 
   return (
     <>
@@ -296,11 +285,11 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
               <div className="max-w-2xl">
                 <p className="text-sm font-medium uppercase tracking-[0.24em] text-sky-200">Programs Hub</p>
                 <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-                  국가 취업 지원 프로그램 허브
+                  오늘 기준으로 지원 가능한 공고부터 먼저 보여드립니다
                 </h1>
                 <p className="mt-3 text-sm leading-6 text-slate-300 sm:text-base">
-                  훈련 과정과 지원 프로그램을 한곳에서 찾고, 검색과 필터로 현재 열려 있는 기회를 빠르게
-                  좁혀보세요.
+                  기본값은 모집중 공고만 마감 임박순으로 정렬합니다. 체크를 켠 경우에만 최근 3개월 내 마감된 활동을
+                  함께 확인할 수 있습니다.
                 </p>
               </div>
               <div className="grid gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200 sm:min-w-64">
@@ -309,10 +298,8 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                   <p className="mt-1 text-2xl font-semibold text-white">{error ? "-" : `${totalCount}개`}</p>
                 </div>
                 <div>
-                  <p className="text-slate-400">정렬</p>
-                  <p className="mt-1 font-medium text-white">
-                    {SORT_OPTIONS.find((option) => option.value === sort)?.label ?? "마감 임박순"}
-                  </p>
+                  <p className="text-slate-400">표시 기준</p>
+                  <p className="mt-1 font-medium text-white">오늘 기준 마감순</p>
                 </div>
               </div>
             </div>
@@ -342,34 +329,26 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                 </div>
 
                 <div className="mt-6">
-                  <label htmlFor="sort" className="text-sm font-semibold text-slate-900">
-                    정렬
-                  </label>
-                  <select
-                    id="sort"
-                    name="sort"
-                    defaultValue={sort}
-                    className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-slate-900"
-                  >
-                    {SORT_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                  <p className="text-sm font-semibold text-slate-900">정렬</p>
+                  <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700">
+                    오늘 기준 마감 임박순
+                  </div>
                 </div>
 
                 <div className="mt-6 rounded-2xl bg-slate-50 p-4">
                   <label className="flex items-center gap-3 text-sm font-medium text-slate-800">
                     <input
                       type="checkbox"
-                      name="recruiting"
+                      name="closed"
                       value="true"
-                      defaultChecked={recruitingOnly}
+                      defaultChecked={showClosedRecent}
                       className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900"
                     />
-                    모집중만 보기
+                    마감된 활동 보기
                   </label>
+                  <p className="mt-2 text-xs leading-5 text-slate-500">
+                    기본값은 모집중 공고만 표시합니다. 체크하면 최근 3개월 내 마감된 공고까지 함께 보여줍니다.
+                  </p>
                 </div>
 
                 <fieldset className="mt-6">
@@ -445,7 +424,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                     <p className="mt-1 text-sm text-slate-500">
                       {selectedCategory === "전체" ? "전체 카테고리" : selectedCategory}
                       {selectedRegions.length ? ` · ${selectedRegions.join(", ")}` : ""}
-                      {recruitingOnly ? " · 모집중만" : ""}
+                      {showClosedRecent ? " · 최근 3개월 마감 포함" : " · 모집중만"}
                     </p>
                   </div>
                   <p className="text-sm text-slate-500">
@@ -533,6 +512,9 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                               <span className="rounded-full bg-white px-3 py-1">{program.category || "미분류"}</span>
                               <span className="rounded-full bg-white px-3 py-1">{program.provider || "기관 정보 없음"}</span>
                               <span className="rounded-full bg-white px-3 py-1">{program.location || "지역 정보 없음"}</span>
+                              {program.is_active === false ? (
+                                <span className="rounded-full bg-rose-50 px-3 py-1 text-rose-700">최근 마감</span>
+                              ) : null}
                             </div>
 
                             <p className="mt-4 text-sm font-medium text-slate-700">
@@ -594,8 +576,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                             q,
                             category: selectedCategory,
                             regions: selectedRegions,
-                            recruiting: recruitingOnly,
-                            sort,
+                            closed: showClosedRecent,
                             page: Math.max(1, safePage - 1),
                           })}
                           className={`rounded-xl border px-3 py-2 text-sm font-medium transition ${
@@ -613,8 +594,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                               q,
                               category: selectedCategory,
                               regions: selectedRegions,
-                              recruiting: recruitingOnly,
-                              sort,
+                              closed: showClosedRecent,
                               page: pageNumber,
                             })}
                             className={`rounded-xl px-3 py-2 text-sm font-medium transition ${
@@ -631,8 +611,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                             q,
                             category: selectedCategory,
                             regions: selectedRegions,
-                            recruiting: recruitingOnly,
-                            sort,
+                            closed: showClosedRecent,
                             page: Math.min(totalPages, safePage + 1),
                           })}
                           className={`rounded-xl border px-3 py-2 text-sm font-medium transition ${
