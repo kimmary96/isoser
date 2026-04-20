@@ -263,6 +263,19 @@
   - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
   - `frontend`: `npm run build` 통과
 
+## 2026-04-20 profile edit modal 이미지 경고 정리
+
+- 수정 파일:
+  - `frontend/app/dashboard/profile/_components/profile-edit-modal.tsx`
+  - `docs/current-state.md`
+  - `docs/refactoring-log.md`
+- 변경 내용:
+  - 프로필 편집 모달의 avatar preview를 `img`에서 `next/image`로 전환함
+  - blob URL과 storage URL 모두 안전하게 처리하기 위해 `unoptimized`를 사용함
+- 유지된 동작:
+  - 모달의 미리보기 이미지 표시 방식과 크기는 그대로 유지함
+  - 업로드 전 로컬 미리보기와 기존 저장 이미지 모두 계속 표시 가능함
+
 ## 2026-04-20 런칭 smoke test 체크리스트 정리
 
 - 수정 파일:

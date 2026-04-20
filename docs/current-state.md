@@ -78,6 +78,7 @@
 - `frontend/app/api/programs/compare-relevance/route.ts`의 `POST`는 로그인 세션 기준 분당 12회 제한과 20초 timeout을 적용해 비교 관련도 계산 요청의 남용과 지연을 완화한다.
 - `frontend/lib/server/route-logging.ts`는 프론트 BFF route 실패를 JSON 구조 로그로 남기며, route/method/category/status/code 중심으로 기록하고 토큰·본문 전문 같은 민감정보는 남기지 않는다.
 - `frontend/next.config.ts`는 `NEXT_PUBLIC_SUPABASE_URL` 기반 Supabase storage public URL을 `next/image` remotePatterns로 허용해, storage 이미지 구간을 점진적으로 `Image` 컴포넌트로 전환할 수 있게 한다.
+- 프로필 편집 모달의 avatar preview는 blob URL과 storage URL을 모두 받을 수 있어 `next/image`의 `unoptimized` 모드로 렌더링한다.
 - `frontend/get_token.mjs`는 기본 실행 시 access token을 바로 출력하지 않고, `--print` 인자를 준 경우에만 토큰을 출력한다.
 - `docs/launch-smoke-test.md`는 공개 진입, 로그인, 프로필, 활동 저장소, AI 기능, 추천/비교, 운영 로그까지 포함한 런칭 전 smoke test 체크리스트를 제공한다.
 - `frontend/app/api/summary/route.ts`는 Gemini summary 호출에 20초 timeout을 적용해 상류 AI 응답이 장시간 멈출 때 504 형태의 upstream 오류로 빠르게 실패한다.

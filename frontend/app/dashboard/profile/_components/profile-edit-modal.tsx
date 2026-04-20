@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { ChangeEvent, RefObject } from "react";
 
 type ProfileEditModalProps = {
@@ -51,9 +52,13 @@ export function ProfileEditModal({
           <div className="flex items-center gap-4">
             <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-gray-100">
               {avatarPreviewUrl ? (
-                <img
+                <Image
                   src={avatarPreviewUrl}
                   alt="avatar preview"
+                  width={80}
+                  height={80}
+                  sizes="80px"
+                  unoptimized
                   className="h-full w-full object-cover"
                 />
               ) : (
