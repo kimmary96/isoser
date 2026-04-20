@@ -4,6 +4,7 @@
 
 ## Summary
 - 로컬 구현 자동화는 `watcher.py`가 담당한다.
+- 저장소 루트에는 `main.py` ASGI shim이 있어 `uvicorn main:app --reload --port 8000`를 루트에서도 직접 실행할 수 있다.
 - cowork scratch review와 promotion은 `cowork_watcher.py`가 담당한다.
 - `cowork/packets`는 execution queue가 아니라 review 대상 원본 packet 저장소다.
 - `cowork/reviews`는 packet review 산출물 저장소다.

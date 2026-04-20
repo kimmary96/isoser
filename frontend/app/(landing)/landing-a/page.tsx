@@ -148,7 +148,7 @@ export default async function LandingAPage({ searchParams }: LandingAPageProps) 
       </div>
       <LandingAFooter />
 
-      <style jsx>{landingAStyles}</style>
+      <style>{landingAStyles}</style>
     </main>
   );
 }

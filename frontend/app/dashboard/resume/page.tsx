@@ -1,12 +1,13 @@
 
 "use client";
 
+import { Suspense } from "react";
 import type { Activity } from "@/lib/types";
 import { useResumeBuilder } from "./_hooks/use-resume-builder";
 import { ResumeAssistantSidebar } from "./_components/resume-assistant-sidebar";
 import { ResumePreviewPane } from "./_components/resume-preview-pane";
 
-export default function ResumePage() {
+function ResumePageContent() {
   const {
     activities,
     selected,
@@ -545,5 +546,19 @@ export default function ResumePage() {
         onChatSend={() => handleChatSend(selectedActivities)}
       />
     </div>
+  );
+}
+
+export default function ResumePage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <p className="text-gray-500">불러오는 중...</p>
+        </main>
+      }
+    >
+      <ResumePageContent />
+    </Suspense>
   );
 }

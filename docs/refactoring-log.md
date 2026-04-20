@@ -1,5 +1,18 @@
 # 리팩토링 로그
 
+## 2026-04-17 루트 FastAPI 엔트리포인트 shim 추가
+
+- 수정 파일:
+  - `main.py`
+  - `docs/current-state.md`
+  - `docs/refactoring-log.md`
+- 변경 내용:
+  - 저장소 루트에서 `uvicorn main:app --reload --port 8000`를 바로 실행할 수 있도록 `backend.main`을 감싸는 ASGI shim을 추가함
+  - `backend/main.py`의 기존 absolute import 전제를 유지하면서도 루트 실행 시 필요한 `backend/` 경로를 `sys.path`에 주입하도록 구성함
+- 유지된 동작:
+  - `cd backend` 후 `uvicorn main:app`로 실행하는 기존 개발 흐름은 그대로 유지함
+  - 실제 FastAPI 앱 정의와 라우터 등록 위치는 계속 `backend/main.py`를 사용함
+
 ## 2026-04-17 캘린더 기반 이력서 프리필 연결
 
 - 수정 파일:
