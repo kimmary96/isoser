@@ -108,7 +108,7 @@ isoser/
 │   ├── tests/                        # 테스트 15개 파일
 │   └── main.py
 ├── docs/
-│   ├── 이소서 (Isoser) v2 — 통합 사업계획서.md
+│   ├── 이소서 (Isoser) v3 — 통합 사업계획서.md
 │   ├── current-state.md
 │   ├── refactoring-log.md
 │   ├── api-contract.md               # Next App API + FastAPI 계약 문서
