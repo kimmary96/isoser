@@ -1,5 +1,92 @@
 # 리팩토링 로그
 
+## 2026-04-20 검증 체계 복구와 저위험 안정화
+
+- 수정 파일:
+  - `frontend/.eslintrc.json`
+  - `frontend/tsconfig.codex-check.json`
+  - `frontend/components/AdSlot.tsx`
+  - `frontend/app/(onboarding)/onboarding/page.tsx`
+  - `frontend/app/api/auth/signout/route.ts`
+  - `frontend/app/api/dashboard/activities/[id]/route.ts`
+  - `frontend/app/api/dashboard/activities/coach-session/route.ts`
+  - `frontend/app/api/dashboard/activities/images/route.ts`
+  - `frontend/app/api/dashboard/activities/route.ts`
+  - `frontend/app/api/dashboard/documents/route.ts`
+  - `frontend/app/api/dashboard/match/route.ts`
+  - `frontend/app/api/dashboard/profile/route.ts`
+  - `frontend/app/api/dashboard/resume-export/route.ts`
+  - `frontend/app/api/dashboard/resume/route.ts`
+  - `frontend/app/api/onboarding/route.ts`
+  - `frontend/app/api/summary/route.ts`
+  - `frontend/app/dashboard/activities/_components/activity-basic-tab.tsx`
+  - `frontend/app/dashboard/activities/_hooks/use-activity-detail.ts`
+  - `frontend/app/dashboard/match/page.tsx`
+  - `frontend/app/dashboard/profile/page.tsx`
+  - `frontend/app/dashboard/resume/page.tsx`
+  - `backend/tests/test_know_survey.py`
+  - `backend/chains/job_posting_rewrite_chain.py`
+  - `docs/current-state.md`
+- 변경 내용:
+  - 프론트에 실제 ESLint 설정을 추가해 `next lint`가 초기 설정 프롬프트에 빠지지 않고 CI/로컬 모두 비대화형 검증으로 실행되게 정리함
+  - `tsconfig.codex-check.json`에서 `.next/types` 직접 의존을 끊어 stale 생성물 때문에 standalone 타입체크가 거짓 실패하던 문제를 정리함
+  - KNOW 원본 자료가 저장소에 없는 환경에서도 `backend/tests/test_know_survey.py`가 import 시점 `StopIteration`으로 전체 pytest 수집을 중단하지 않게 수정함
+  - `job_posting_rewrite_chain.py`의 Gemini rewrite 호출을 task cancel/cleanup 방식으로 감싸 fallback 테스트에서 `coroutine was never awaited` 경고가 다시 나오지 않게 정리함
+  - 프론트 라우트/페이지에 남아 있던 unused import·unused state·문자열 lint 오류를 제거하고, `AdSlot`의 conditional Hook 호출을 동일 순서 호출로 바꿔 React Hook 규칙 위반을 해소함
+- 유지된 동작:
+  - 공개 랜딩, 대시보드, 활동/문서 API 계약, OAuth 흐름, 이력서/분석 기능의 입력·출력 의미는 바꾸지 않음
+  - 프론트의 `<img>` 사용은 이번 작업에서 동작 변경 위험이 있어 유지했고, lint warning만 남김
+- 검증 메모:
+  - `frontend`: `npm run lint` 통과 (경고만 남음)
+  - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
+  - `frontend`: `npm run build` 통과
+  - 저장소 루트: `backend\venv\Scripts\python.exe -m pytest backend/tests tests -q` 통과 (`218 passed, 1 skipped, 6 warnings`)
+
+## 2026-04-20 업로드 방어와 요약 API timeout 보강
+
+- 수정 파일:
+  - `frontend/lib/server/upload-validation.ts`
+  - `frontend/app/api/dashboard/activities/images/route.ts`
+  - `frontend/app/api/dashboard/profile/route.ts`
+  - `frontend/app/api/summary/route.ts`
+  - `docs/current-state.md`
+- 변경 내용:
+  - 활동 이미지/프로필 이미지 업로드 전에 허용 형식(JPG/PNG/WEBP/GIF)과 최대 크기를 공통 유틸로 검증하도록 정리함
+  - 활동 이미지 업로드는 한 번에 최대 5개까지만 허용하고, storage path에 들어가는 `activityId`를 안전한 문자만 남기도록 정규화함
+  - AI summary API는 Gemini 상류 호출이 장시간 응답하지 않을 때 무한 대기 대신 20초 timeout 후 upstream 오류로 빠르게 실패하도록 보강함
+- 유지된 동작:
+  - 정상 이미지 업로드 흐름, 업로드 후 public URL 반환 계약, 프로필 저장 흐름, summary API 응답 구조는 유지함
+  - 기존 사용자가 올리던 일반적인 JPG/PNG/WEBP/GIF 이미지는 계속 허용됨
+- 검증 메모:
+  - `frontend`: `npm run lint` 통과 (기존 `<img>` warning만 유지)
+  - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
+  - `frontend`: `npm run build` 통과
+
+## 2026-04-20 최소 rate limiting 적용
+
+- 수정 파일:
+  - `frontend/lib/server/rate-limit.ts`
+  - `frontend/lib/api/route-response.ts`
+  - `frontend/app/api/auth/google/route.ts`
+  - `frontend/app/api/dashboard/activities/images/route.ts`
+  - `frontend/app/api/dashboard/profile/route.ts`
+  - `frontend/app/api/summary/route.ts`
+  - `docs/current-state.md`
+- 변경 내용:
+  - 프론트 BFF route에서 재사용할 수 있는 메모리 기반 최소 요청 제한 유틸을 추가함
+  - Google OAuth 시작, 활동 이미지 업로드, 프로필 수정, summary API에만 좁게 적용해 고비용/남용 가능 경로부터 1차 방어를 넣음
+  - 제한 초과 시 공통 `RATE_LIMITED` 오류 코드와 `Retry-After` 헤더를 반환하도록 응답 헬퍼를 확장함
+- 유지된 동작:
+  - 정상 요청의 입력/출력 구조, OAuth redirect 경로, 업로드 결과 형식, summary API 응답 계약은 유지함
+  - 분당 임계값 이내의 일반 사용자 흐름은 기존과 동일하게 동작함
+- 한계와 리스크:
+  - 현재 제한은 프로세스 로컬 메모리 기반이라 다중 인스턴스 환경에서 완전한 전역 제한은 아님
+  - 운영 트래픽 특성에 따라 임계값은 추후 조정이 필요할 수 있음
+- 검증 메모:
+  - `frontend`: `npm run lint` 통과 (기존 `<img>` warning만 유지)
+  - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
+  - `frontend`: `npm run build` 통과
+
 ## 2026-04-20 public flow 후속 정리
 
 - 수정 파일:
