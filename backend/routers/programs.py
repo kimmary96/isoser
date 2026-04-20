@@ -364,6 +364,7 @@ def _build_program_query_params(
     regions: list[str] | None = None,
     teaching_methods: list[str] | None = None,
     recruiting_only: bool = False,
+    include_closed_recent: bool = False,
     sort: str = "deadline",
     limit: int | None = None,
     offset: int | None = None,
@@ -386,8 +387,12 @@ def _build_program_query_params(
         params["region_detail"] = f"eq.{region_detail}"
     if q:
         params["title"] = f"ilike.*{q.strip()}*"
-    if recruiting_only or effective_sort == "deadline":
-        params["is_active"] = "eq.true"
+    today_iso = date.today().isoformat()
+    recent_cutoff_iso = (date.today() - timedelta(days=90)).isoformat()
+    if include_closed_recent:
+        params["deadline"] = f"gte.{recent_cutoff_iso}"
+    elif recruiting_only or effective_sort == "deadline":
+        params["deadline"] = f"gte.{today_iso}"
     normalized_teaching_methods = _normalize_teaching_methods_param(teaching_methods)
     if normalized_teaching_methods:
         quoted_values = ",".join(f'"{value}"' for value in normalized_teaching_methods)
@@ -398,6 +403,55 @@ def _build_program_query_params(
         params["or"] = "(" + ",".join(f"location.ilike.*{keyword}*" for keyword in normalized_regions) + ")"
 
     return params
+
+
+def _serialize_program_list_row(program: dict[str, Any]) -> dict[str, Any]:
+    record = dict(program)
+    deadline = _resolve_program_deadline(record)
+    days_left = _calculate_days_left(deadline)
+    record["deadline"] = deadline
+    record["days_left"] = days_left
+    if days_left is not None:
+        record["is_active"] = days_left >= 0
+    return record
+
+
+def _sort_program_list_rows(
+    rows: list[dict[str, Any]],
+    *,
+    sort: str,
+    include_closed_recent: bool,
+) -> list[dict[str, Any]]:
+    if sort != "deadline":
+        return rows
+
+    def sort_key(row: dict[str, Any]) -> tuple[int, int]:
+        parsed_deadline = _parse_program_deadline(str(row.get("deadline") or ""))
+        is_active = bool(row.get("is_active"))
+        if include_closed_recent and not is_active:
+            return (2, -(parsed_deadline.toordinal() if parsed_deadline else date.min.toordinal()))
+        if parsed_deadline is None:
+            return (1, date.max.toordinal())
+        return (0, parsed_deadline.toordinal())
+
+    return sorted(rows, key=sort_key)
+
+
+def _postprocess_program_list_rows(
+    rows: list[dict[str, Any]],
+    *,
+    sort: str,
+    include_closed_recent: bool,
+    limit: int,
+    offset: int,
+) -> list[dict[str, Any]]:
+    serialized_rows = [_serialize_program_list_row(row) for row in rows]
+    sorted_rows = _sort_program_list_rows(
+        serialized_rows,
+        sort=sort,
+        include_closed_recent=include_closed_recent,
+    )
+    return sorted_rows[offset : offset + limit]
 
 
 def _parse_content_range_total(value: str | None) -> int:
@@ -639,10 +693,10 @@ async def _count_program_rows(
     regions: list[str] | None = None,
     teaching_methods: list[str] | None = None,
     recruiting_only: bool = False,
+    include_closed_recent: bool = False,
 ) -> int:
-    settings = get_supabase_admin_settings()
     params = _build_program_query_params(
-        select="id",
+        select="id,deadline,end_date,is_active,created_at",
         category=category,
         scope=scope,
         region_detail=region_detail,
@@ -650,28 +704,18 @@ async def _count_program_rows(
         regions=regions,
         teaching_methods=teaching_methods,
         recruiting_only=recruiting_only,
-        limit=1,
-        offset=0,
+        include_closed_recent=include_closed_recent,
     )
-
-    async with httpx.AsyncClient(timeout=settings.timeout_seconds, trust_env=False) as client:
-        response = await client.get(
-            f"{settings.url}/rest/v1/programs",
-            params=params,
-            headers=build_service_headers(settings.service_role_key, prefer="count=exact"),
+    rows = await request_supabase(method="GET", path="/rest/v1/programs", params=params)
+    if not isinstance(rows, list):
+        return 0
+    return len(
+        _sort_program_list_rows(
+            [_serialize_program_list_row(row) for row in rows],
+            sort="deadline",
+            include_closed_recent=include_closed_recent,
         )
-
-    if not response.is_success:
-        detail = response.text
-        try:
-            body = response.json()
-        except ValueError:
-            body = None
-        if isinstance(body, dict):
-            detail = str(body.get("message") or body.get("hint") or body.get("details") or detail)
-        raise HTTPException(status_code=500, detail=f"Supabase request failed: {detail}")
-
-    return _parse_content_range_total(response.headers.get("content-range"))
+    )
 
 
 async def _fetch_profile_row(user_id: str) -> dict[str, Any]:
@@ -880,6 +924,7 @@ async def list_programs(
     regions: list[str] | None = Query(default=None),
     teaching_methods: list[str] | None = Query(default=None),
     recruiting_only: bool = False,
+    include_closed_recent: bool = False,
     sort: str = Query(default="deadline"),
     limit: int = Query(default=20, ge=1),
     offset: int = Query(default=0, ge=0),
@@ -893,12 +938,19 @@ async def list_programs(
         regions=regions,
         teaching_methods=teaching_methods,
         recruiting_only=recruiting_only,
+        include_closed_recent=include_closed_recent,
         sort=sort,
+    )
+    rows = await request_supabase(method="GET", path="/rest/v1/programs", params=params)
+    if not isinstance(rows, list):
+        return []
+    return _postprocess_program_list_rows(
+        rows,
+        sort=sort,
+        include_closed_recent=include_closed_recent,
         limit=limit,
         offset=offset,
     )
-
-    return await request_supabase(method="GET", path="/rest/v1/programs", params=params)
 
 
 @programs_router.get("/count", response_model=ProgramCountResponse)
@@ -910,6 +962,7 @@ async def count_programs(
     regions: list[str] | None = Query(default=None),
     teaching_methods: list[str] | None = Query(default=None),
     recruiting_only: bool = False,
+    include_closed_recent: bool = False,
 ) -> ProgramCountResponse:
     count = await _count_program_rows(
         category=category,
@@ -919,6 +972,7 @@ async def count_programs(
         regions=regions,
         teaching_methods=teaching_methods,
         recruiting_only=recruiting_only,
+        include_closed_recent=include_closed_recent,
     )
     return ProgramCountResponse(count=count)
 

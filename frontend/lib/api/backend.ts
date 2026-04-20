@@ -239,6 +239,7 @@ export async function listPrograms(params?: ProgramListParams): Promise<Program[
     params.teaching_methods.forEach((method) => searchParams.append("teaching_methods", method));
   }
   if (params?.recruiting_only) searchParams.set("recruiting_only", "true");
+  if (params?.include_closed_recent) searchParams.set("include_closed_recent", "true");
   if (params?.sort) searchParams.set("sort", params.sort);
   if (typeof params?.limit === "number") searchParams.set("limit", String(params.limit));
   if (typeof params?.offset === "number") searchParams.set("offset", String(params.offset));
@@ -266,6 +267,7 @@ export async function getProgramCount(params?: ProgramListParams): Promise<numbe
     params.teaching_methods.forEach((method) => searchParams.append("teaching_methods", method));
   }
   if (params?.recruiting_only) searchParams.set("recruiting_only", "true");
+  if (params?.include_closed_recent) searchParams.set("include_closed_recent", "true");
 
   const query = searchParams.toString();
   const result = await requestJson<ProgramCountResponse>(

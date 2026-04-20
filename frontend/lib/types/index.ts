@@ -281,6 +281,7 @@ export interface ProgramListParams {
   regions?: string[];
   teaching_methods?: string[];
   recruiting_only?: boolean;
+  include_closed_recent?: boolean;
   sort?: ProgramSort;
   limit?: number;
   offset?: number;
