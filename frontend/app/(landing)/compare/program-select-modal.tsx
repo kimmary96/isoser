@@ -219,7 +219,8 @@ export default function ProgramSelectModal({
         const programs = await listPrograms({
           q: query.trim() || undefined,
           limit: 20,
-          sort: "latest",
+          sort: "deadline",
+          recruiting_only: true,
         });
         if (cancelled) return;
         setSearchResults(normalizePrograms(programs));

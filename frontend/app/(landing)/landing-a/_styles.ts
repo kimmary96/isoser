@@ -30,9 +30,9 @@ export const landingAStyles = `
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(circle at 18% 18%, rgba(43, 111, 242, 0.26), transparent 34%),
-      radial-gradient(circle at 82% 22%, rgba(249, 115, 22, 0.18), transparent 28%),
-      linear-gradient(180deg, rgba(10, 19, 37, 0.9), rgba(10, 19, 37, 1));
+      radial-gradient(circle at 18% 18%, rgba(43, 111, 242, 0.16), transparent 34%),
+      radial-gradient(circle at 82% 22%, rgba(249, 115, 22, 0.12), transparent 28%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 247, 251, 0.94));
     pointer-events: none;
   }
 
@@ -55,7 +55,7 @@ export const landingAStyles = `
   }
 
   .hero-wordmark {
-    background: linear-gradient(90deg, #ffffff, #8fc2ff 55%, #f8b37a 100%);
+    background: linear-gradient(90deg, #0a1325, #2b6ff2 55%, #f97316 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
@@ -84,8 +84,8 @@ export const landingAStyles = `
   }
 
   .glass-panel {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.04));
-    backdrop-filter: blur(16px);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(244, 247, 251, 0.96));
+    box-shadow: 0 28px 80px rgba(10, 19, 37, 0.08);
   }
 
   .program-shell {
@@ -96,8 +96,10 @@ export const landingAStyles = `
 
   .compare-shell {
     background:
-      radial-gradient(circle at top left, rgba(143, 194, 255, 0.16), transparent 28%),
-      linear-gradient(180deg, rgba(10, 19, 37, 1), rgba(20, 35, 63, 1));
+      radial-gradient(circle at top left, rgba(143, 194, 255, 0.2), transparent 28%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(236, 244, 255, 0.96));
+    border: 1px solid rgba(216, 227, 242, 0.95);
+    box-shadow: 0 22px 60px rgba(10, 19, 37, 0.08);
   }
 
   .journey-line::before {
