@@ -32,6 +32,34 @@
 - 후속 메모:
   - 현재 readiness 문구는 준비도 힌트 수준에 머물러 있으므로, 실제 지원 자격 판단과 혼동되지 않게 copy audit을 별도 진행할 여지가 있음
 
+## 2026-04-20 공개 랜딩/프로그램/비교 화면 정리와 마감 기준 재정렬
+
+- 수정 파일:
+  - `backend/routers/programs.py`
+  - `backend/tests/test_programs_router.py`
+  - `frontend/app/(auth)/login/page.tsx`
+  - `frontend/app/(landing)/landing-a/_components.tsx`
+  - `frontend/app/(landing)/landing-a/_styles.ts`
+  - `frontend/app/(landing)/programs/page.tsx`
+  - `frontend/app/(landing)/compare/programs-compare-client.tsx`
+  - `frontend/app/(landing)/compare/program-select-modal.tsx`
+  - `frontend/lib/api/backend.ts`
+  - `frontend/lib/types/index.ts`
+  - `docs/current-state.md`
+- 변경 내용:
+  - 로그인 페이지와 공개 랜딩/비교 화면을 대시보드와 더 가까운 라이트 톤으로 정리해 대비 문제를 줄이고 공통 제품 인상을 맞춤
+  - 랜딩 메인 카피를 `흩어진 국비 지원 정보, 내 상황에 맞는 것만 골라드립니다` 흐름으로 교체하고, 공개 CTA와 보조 설명을 현재 프로그램 탐색/워크스페이스 구조에 맞게 다듬음
+  - 프로그램 목록은 기본값으로 모집중 공고만 오늘 기준 마감순으로 노출하고, `마감된 활동 보기`를 켰을 때만 최근 3개월 내 마감 공고를 함께 표시하도록 UI와 backend query contract를 같이 변경함
+  - programs router가 더 이상 Supabase `is_active` 값만 신뢰하지 않고 실제 `deadline`을 기준으로 목록/카운트를 재계산해, 메인 랜딩과 프로그램 검색에 마감 공고가 섞이는 문제를 줄임
+  - compare 선택 모달 검색도 기본적으로 모집중 공고와 deadline 정렬을 따르도록 맞춤
+- 유지된 동작:
+  - `/landing-a`, `/programs`, `/compare`, `/login`의 기존 공개 라우트 구조는 유지함
+  - compare 페이지의 3슬롯 URL state, 로그인 사용자 관련도 계산, 추천 프로그램 추가 흐름은 유지함
+  - 프로그램 검색의 카테고리/지역/페이지네이션 구조는 유지함
+- 후속 메모:
+  - `landing-b`가 계속 실험용 경로로 남아 있으므로, 실제 운영에서 더 이상 쓰지 않으면 `/landing-a`로 정리할지 검토할 수 있음
+  - `deadline`이 비어 있는 source에 대해서는 수집기 정규화 품질을 추가로 높이지 않으면 목록 후순위 처리나 제외가 늘어날 수 있음
+
 ## 2026-04-20 Tier 4 collector 회귀 테스트 보강
 
 - 수정 파일:

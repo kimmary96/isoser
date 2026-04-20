@@ -376,16 +376,16 @@ export default function ProgramsCompareClient({
         }}
       />
 
-      <div className="border-b border-white/10 bg-[#0A0F1E]">
+      <div className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-7xl px-6 py-10">
-          <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">부트캠프 비교 분석</h1>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">
+          <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">프로그램 비교 분석</h1>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
             최대 3개 프로그램을 나란히 놓고 기본 정보, 운영 방식, 프로그램 개요를 현재 수집되는 데이터 기준으로 비교하세요.
           </p>
           <div className="mt-5 flex flex-wrap gap-2 text-xs font-semibold">
-            <span className="rounded-full border border-slate-300/30 bg-slate-400/10 px-3 py-1 text-slate-200">현재 운영 데이터 기준 비교</span>
-            <span className="rounded-full border border-amber-300/30 bg-amber-400/10 px-3 py-1 text-amber-200">일부 운영 메타는 데이터 미수집으로 표시</span>
-            <span className="rounded-full border border-emerald-300/30 bg-emerald-400/10 px-3 py-1 text-emerald-200">로그인 시 관련도 분석 제공</span>
+            <span className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-slate-700">현재 운영 데이터 기준 비교</span>
+            <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-amber-700">일부 운영 메타는 데이터 미수집으로 표시</span>
+            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-emerald-700">로그인 시 관련도 분석 제공</span>
           </div>
         </div>
       </div>
@@ -771,10 +771,10 @@ export default function ProgramsCompareClient({
           </div>
         </section>
 
-        <section className="mt-7 flex flex-col gap-4 rounded-3xl border border-white/10 bg-[#0A0F1E] px-6 py-6 text-white lg:flex-row lg:items-center">
+        <section className="mt-7 flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white px-6 py-6 text-slate-950 lg:flex-row lg:items-center">
           <div className="flex-1">
             <h2 className="text-lg font-semibold">로그인하면 내 프로필 기준 관련도를 함께 볼 수 있습니다</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-300">기본 비교 표는 로그인 없이 확인할 수 있고, 로그인하면 관련도 분석이 추가로 계산됩니다.</p>
+            <p className="mt-2 text-sm leading-6 text-slate-600">기본 비교 표는 로그인 없이 확인할 수 있고, 로그인하면 관련도 분석이 추가로 계산됩니다.</p>
           </div>
           <Link href="/login" className="inline-flex items-center justify-center rounded-xl bg-[#F97316] px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange-600">
             Google로 무료 시작

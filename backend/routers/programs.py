@@ -2,7 +2,6 @@ from datetime import date, datetime, timedelta, timezone
 import logging
 from typing import Any, Literal
 
-import httpx
 from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Query
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -28,9 +27,7 @@ except ModuleNotFoundError as error:
     from backend.rag.programs_rag import ProgramRecommendation, ProgramsRAG
 
 from utils.supabase_admin import (
-    build_service_headers,
     get_current_user_from_authorization,
-    get_supabase_admin_settings,
     request_supabase,
 )
 

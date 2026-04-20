@@ -145,27 +145,27 @@ export function LandingANavBar() {
   const isDashboardActive = pathname.startsWith("/dashboard");
 
   return (
-    <nav className="sticky top-9 z-[210] border-b border-white/10 bg-[rgba(10,19,37,0.9)] px-5 py-4 backdrop-blur-xl sm:px-8 lg:px-12">
+    <nav className="sticky top-9 z-[210] border-b border-[var(--border)] bg-white/92 px-5 py-4 backdrop-blur-xl sm:px-8 lg:px-12">
       <div className="mx-auto flex max-w-6xl items-center gap-4">
         <Link href="/landing-a" className="flex items-center gap-3">
           <div>
-            <div className="text-xl font-extrabold tracking-[-0.05em] text-white">
+            <div className="text-xl font-extrabold tracking-[-0.05em] text-[var(--ink)]">
               이소<span className="text-[var(--sky)]">서</span>
             </div>
-            <p className="hidden text-[10px] uppercase tracking-[0.28em] text-white/45 sm:block">
-              Career Operating System
+            <p className="hidden text-[10px] uppercase tracking-[0.28em] text-[var(--muted)] sm:block">
+              Public Program Finder
             </p>
           </div>
         </Link>
 
-        <div className="ml-auto hidden items-center gap-7 text-sm text-white/62 md:flex">
-          <Link href="/programs" className={`transition hover:text-white ${isProgramsActive ? "text-white" : ""}`}>
+        <div className="ml-auto hidden items-center gap-7 text-sm text-[var(--sub)] md:flex">
+          <Link href="/programs" className={`transition hover:text-[var(--ink)] ${isProgramsActive ? "text-[var(--ink)]" : ""}`}>
             프로그램 탐색
           </Link>
-          <Link href="/compare" className={`transition hover:text-white ${isCompareActive ? "text-white" : ""}`}>
+          <Link href="/compare" className={`transition hover:text-[var(--ink)] ${isCompareActive ? "text-[var(--ink)]" : ""}`}>
             비교
           </Link>
-          <Link href="/dashboard" className={`transition hover:text-white ${isDashboardActive ? "text-white" : ""}`}>
+          <Link href="/dashboard" className={`transition hover:text-[var(--ink)] ${isDashboardActive ? "text-[var(--ink)]" : ""}`}>
             워크스페이스
           </Link>
         </div>
@@ -173,7 +173,7 @@ export function LandingANavBar() {
         {authChecked && user ? (
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-3 rounded-full border border-white/12 bg-white/6 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+            className="inline-flex items-center gap-3 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm font-semibold text-[var(--ink)] transition hover:bg-white"
           >
             {user.avatarUrl ? (
               <img
@@ -182,12 +182,12 @@ export function LandingANavBar() {
                 className="h-8 w-8 rounded-full object-cover"
               />
             ) : (
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15 text-xs font-bold text-white">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--ink)] text-xs font-bold text-white">
                 {getHeaderInitial(user.displayName)}
               </div>
             )}
             <span className="hidden sm:inline">{user.displayName}</span>
-            <span className="text-white/55">워크스페이스</span>
+            <span className="text-[var(--sub)]">워크스페이스</span>
           </Link>
         ) : (
           <Link
@@ -212,20 +212,19 @@ export function LandingAHeroSection({ featuredPrograms, totalCount }: LandingAHe
     <section className="landing-hero hero-grid relative overflow-hidden px-5 pb-16 pt-14 sm:px-8 sm:pb-20 lg:px-12 lg:pt-18">
       <div className="relative z-10 mx-auto grid max-w-6xl gap-10 lg:grid-cols-[minmax(0,1.1fr)_460px] lg:items-end">
         <div className="max-w-2xl">
-          <p className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/8 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/70">
+          <p className="inline-flex items-center gap-2 rounded-full border border-[rgba(43,111,242,0.18)] bg-[rgba(43,111,242,0.06)] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--blue)]">
             <span className="h-2 w-2 rounded-full bg-[var(--fire)]" />
-            Public career support, organized
+            Public Support Programs
           </p>
-          <h1 className="mt-6 text-4xl font-extrabold leading-[1.02] tracking-[-0.07em] text-white sm:text-5xl lg:text-[5.25rem]">
-            취업 지원 정보를
+          <h1 className="mt-6 text-4xl font-extrabold leading-[1.08] tracking-[-0.07em] text-[var(--ink)] sm:text-5xl lg:text-[4.7rem]">
+            흩어진 국비 지원 정보,
             <br />
-            <span className="hero-wordmark">지원 가능한 흐름</span>으로
-            <br />
-            다시 정리합니다
+            <span className="hero-wordmark">내 상황에 맞는 것만 골라드립니다</span>
           </h1>
-          <p className="mt-6 max-w-xl text-base leading-7 text-white/68 sm:text-lg">
-            이소서는 공공 취업 지원 공고를 모아 보여주는 데서 멈추지 않습니다. 탐색한 프로그램을 로그인 후
-            추천 캘린더, 문서 작성, 공고 매치 분석까지 같은 워크스페이스로 이어 붙입니다.
+          <p className="mt-6 max-w-xl text-base leading-7 text-[var(--sub)] sm:text-lg">
+            각종 부트캠프, K-디지털, 서울시 일자리까지 한곳에 모았습니다.
+            <br />
+            3가지 조건만 알려주시면 마감 임박순으로 정렬해드립니다.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -237,33 +236,33 @@ export function LandingAHeroSection({ featuredPrograms, totalCount }: LandingAHe
             </Link>
             <Link
               href="/login"
-              className="inline-flex items-center justify-center rounded-full border border-white/16 bg-white/8 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/12"
+              className="inline-flex items-center justify-center rounded-full border border-[var(--border)] bg-white px-6 py-3.5 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--blue)] hover:text-[var(--blue)]"
             >
               로그인 후 AI 추천 받기
             </Link>
           </div>
 
           <div className="mt-10 grid gap-4 sm:grid-cols-3">
-            <div className="border-l border-white/14 pl-4">
-              <div className="text-3xl font-extrabold tracking-[-0.05em] text-white">{totalCount}</div>
-              <p className="mt-1 text-sm text-white/58">현재 탐색 가능한 프로그램 수</p>
+            <div className="border-l border-[var(--border)] pl-4">
+              <div className="text-3xl font-extrabold tracking-[-0.05em] text-[var(--ink)]">{totalCount}</div>
+              <p className="mt-1 text-sm text-[var(--sub)]">현재 탐색 가능한 프로그램 수</p>
             </div>
-            <div className="border-l border-white/14 pl-4">
-              <div className="text-3xl font-extrabold tracking-[-0.05em] text-white">3단계</div>
-              <p className="mt-1 text-sm text-white/58">탐색에서 대시보드까지 연결</p>
+            <div className="border-l border-[var(--border)] pl-4">
+              <div className="text-3xl font-extrabold tracking-[-0.05em] text-[var(--ink)]">3가지</div>
+              <p className="mt-1 text-sm text-[var(--sub)]">상황, 수업 방식, 관심 분야</p>
             </div>
-            <div className="border-l border-white/14 pl-4">
-              <div className="text-3xl font-extrabold tracking-[-0.05em] text-white">1곳</div>
-              <p className="mt-1 text-sm text-white/58">공고, 문서, 매치 분석 워크스페이스</p>
+            <div className="border-l border-[var(--border)] pl-4">
+              <div className="text-3xl font-extrabold tracking-[-0.05em] text-[var(--ink)]">1곳</div>
+              <p className="mt-1 text-sm text-[var(--sub)]">탐색, 비교, 추천 워크스페이스</p>
             </div>
           </div>
         </div>
 
-        <div className="glass-panel relative overflow-hidden rounded-[32px] border border-white/12 p-5 text-white shadow-[0_28px_80px_rgba(0,0,0,0.24)]">
-          <div className="flex items-center justify-between border-b border-white/10 pb-4">
+        <div className="glass-panel relative overflow-hidden rounded-[32px] border border-[var(--border)] p-5 text-[var(--ink)]">
+          <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
             <div>
-              <p className="text-xs uppercase tracking-[0.24em] text-white/45">Live board</p>
-              <h2 className="mt-2 text-2xl font-bold tracking-[-0.04em] text-white">이번 주 우선 확인</h2>
+              <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Live board</p>
+              <h2 className="mt-2 text-2xl font-bold tracking-[-0.04em] text-[var(--ink)]">이번 주 우선 확인</h2>
             </div>
             <Link href="/dashboard" className="text-sm font-semibold text-[var(--sky)]">
               워크스페이스 →
@@ -274,14 +273,14 @@ export function LandingAHeroSection({ featuredPrograms, totalCount }: LandingAHe
             {featuredPrograms.map((program) => (
               <div
                 key={`${program.id}-${program.title}`}
-                className="rounded-[24px] border border-white/10 bg-black/16 p-4 transition hover:border-white/18 hover:bg-black/22"
+                className="rounded-[24px] border border-[var(--border)] bg-white p-4 transition hover:border-[var(--blue)]"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.18em] text-white/42">
+                    <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">
                       {[program.source, program.location].filter(Boolean).join(" · ") || "Program signal"}
                     </p>
-                    <h3 className="mt-2 text-base font-semibold leading-6 text-white">
+                    <h3 className="mt-2 text-base font-semibold leading-6 text-[var(--ink)]">
                       {program.title || "제목 미정"}
                     </h3>
                   </div>
@@ -290,7 +289,7 @@ export function LandingAHeroSection({ featuredPrograms, totalCount }: LandingAHe
                   </div>
                 </div>
 
-                <div className="mt-4 flex items-center justify-between text-sm text-white/60">
+                <div className="mt-4 flex items-center justify-between text-sm text-[var(--sub)]">
                   <span>{program.category || "카테고리 미분류"}</span>
                   <span>관련도 {Math.max(getProgramScore(program), 0)}%</span>
                 </div>
@@ -298,9 +297,9 @@ export function LandingAHeroSection({ featuredPrograms, totalCount }: LandingAHe
             ))}
           </div>
 
-          <div className="mt-5 rounded-[24px] border border-dashed border-white/16 bg-white/5 p-4">
-            <p className="text-xs uppercase tracking-[0.18em] text-white/42">Next after login</p>
-            <p className="mt-2 text-sm leading-6 text-white/72">
+          <div className="mt-5 rounded-[24px] border border-dashed border-[var(--border)] bg-[var(--surface)] p-4">
+            <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">Next after login</p>
+            <p className="mt-2 text-sm leading-6 text-[var(--sub)]">
               프로필을 연결하면 랜딩에서 본 프로그램을 대시보드 추천 캘린더와 문서 생성 흐름으로 이어서 관리할 수
               있습니다.
             </p>
@@ -581,41 +580,41 @@ export function LandingAWorkspaceSection() {
           </div>
         </div>
 
-        <div className="compare-shell overflow-hidden rounded-[32px] px-6 py-8 text-white sm:px-8">
-          <p className="text-xs uppercase tracking-[0.24em] text-white/42">After login</p>
-          <h2 className="mt-3 text-3xl font-bold tracking-[-0.05em] text-white">
+        <div className="compare-shell overflow-hidden rounded-[32px] px-6 py-8 text-[var(--ink)] sm:px-8">
+          <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">After login</p>
+          <h2 className="mt-3 text-3xl font-bold tracking-[-0.05em] text-[var(--ink)]">
             기존 대시보드와 단절되지 않는 워크스페이스
           </h2>
-          <p className="mt-4 max-w-xl text-sm leading-7 text-white/64">
+          <p className="mt-4 max-w-xl text-sm leading-7 text-[var(--sub)]">
             로그인 이후에는 추천 프로그램 캘린더, 성과저장소, 자기소개서, 이력서, 공고 매치 분석이 같은 언어로 연결됩니다.
           </p>
 
           <div className="mt-8 grid gap-3">
-            <div className="rounded-[24px] border border-white/10 bg-white/6 px-5 py-5">
-              <p className="text-xs uppercase tracking-[0.16em] text-white/42">Dashboard</p>
+            <div className="rounded-[24px] border border-[var(--border)] bg-white px-5 py-5">
+              <p className="text-xs uppercase tracking-[0.16em] text-[var(--muted)]">Dashboard</p>
               <div className="mt-3 flex items-end justify-between gap-4">
                 <div>
-                  <h3 className="text-xl font-bold tracking-[-0.04em] text-white">추천 캘린더</h3>
-                  <p className="mt-2 text-sm leading-6 text-white/62">
+                  <h3 className="text-xl font-bold tracking-[-0.04em] text-[var(--ink)]">추천 캘린더</h3>
+                  <p className="mt-2 text-sm leading-6 text-[var(--sub)]">
                     마감 일정과 맞춤 추천을 한 화면에서 관리합니다.
                   </p>
                 </div>
-                <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/72">추천</span>
+                <span className="rounded-full bg-[var(--surface-strong)] px-3 py-1 text-xs font-semibold text-[var(--blue)]">추천</span>
               </div>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-[24px] border border-white/10 bg-black/16 px-5 py-5">
-                <p className="text-xs uppercase tracking-[0.16em] text-white/42">Documents</p>
-                <h3 className="mt-3 text-lg font-bold tracking-[-0.03em] text-white">이력서 · 자기소개서</h3>
-                <p className="mt-2 text-sm leading-6 text-white/62">
+              <div className="rounded-[24px] border border-[var(--border)] bg-white px-5 py-5">
+                <p className="text-xs uppercase tracking-[0.16em] text-[var(--muted)]">Documents</p>
+                <h3 className="mt-3 text-lg font-bold tracking-[-0.03em] text-[var(--ink)]">이력서 · 자기소개서</h3>
+                <p className="mt-2 text-sm leading-6 text-[var(--sub)]">
                   공고 탐색 후 바로 서류 초안을 이어서 다듬습니다.
                 </p>
               </div>
-              <div className="rounded-[24px] border border-white/10 bg-black/16 px-5 py-5">
-                <p className="text-xs uppercase tracking-[0.16em] text-white/42">Match</p>
-                <h3 className="mt-3 text-lg font-bold tracking-[-0.03em] text-white">공고 매치 분석</h3>
-                <p className="mt-2 text-sm leading-6 text-white/62">
+              <div className="rounded-[24px] border border-[var(--border)] bg-white px-5 py-5">
+                <p className="text-xs uppercase tracking-[0.16em] text-[var(--muted)]">Match</p>
+                <h3 className="mt-3 text-lg font-bold tracking-[-0.03em] text-[var(--ink)]">공고 매치 분석</h3>
+                <p className="mt-2 text-sm leading-6 text-[var(--sub)]">
                   관심 공고와 내 이력을 기준으로 실행 우선순위를 정합니다.
                 </p>
               </div>
@@ -712,15 +711,15 @@ export function LandingAJourneySection() {
 export function LandingACtaSection() {
   return (
     <section className="px-5 pb-14 sm:px-8 lg:px-12">
-      <div className="compare-shell mx-auto flex max-w-6xl flex-col gap-6 overflow-hidden rounded-[32px] px-6 py-10 text-white sm:px-8 lg:flex-row lg:items-end lg:justify-between">
+      <div className="compare-shell mx-auto flex max-w-6xl flex-col gap-6 overflow-hidden rounded-[32px] px-6 py-10 text-[var(--ink)] sm:px-8 lg:flex-row lg:items-end lg:justify-between">
         <div className="max-w-2xl">
-          <p className="text-xs uppercase tracking-[0.24em] text-white/42">Final CTA</p>
-          <h2 className="mt-3 text-3xl font-bold leading-tight tracking-[-0.05em] text-white sm:text-4xl">
+          <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Final CTA</p>
+          <h2 className="mt-3 text-3xl font-bold leading-tight tracking-[-0.05em] text-[var(--ink)] sm:text-4xl">
             프로그램을 찾았다면,
             <br />
             이제 지원 준비를 같은 흐름으로 이어가면 됩니다
           </h2>
-          <p className="mt-4 text-sm leading-7 text-white/62">
+          <p className="mt-4 text-sm leading-7 text-[var(--sub)]">
             로그인 후에는 추천 프로그램 캘린더, 성과저장소, 이력서, 자기소개서, 매치 분석이 같은 제품 안에서 이어집니다.
           </p>
         </div>
@@ -733,7 +732,7 @@ export function LandingACtaSection() {
           </Link>
           <Link
             href="/dashboard"
-            className="inline-flex items-center justify-center rounded-full border border-white/14 bg-white/8 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/12"
+            className="inline-flex items-center justify-center rounded-full border border-[var(--border)] bg-white px-6 py-3.5 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--blue)] hover:text-[var(--blue)]"
           >
             대시보드 미리 보기
           </Link>
@@ -745,17 +744,17 @@ export function LandingACtaSection() {
 
 export function LandingAFooter() {
   return (
-    <footer className="bg-[var(--ink)] px-5 py-10 sm:px-8 lg:px-12">
-      <div className="mx-auto flex max-w-6xl flex-col gap-4 border-t border-white/10 pt-8 text-sm text-slate-400 lg:flex-row lg:items-center lg:justify-between">
+    <footer className="bg-white px-5 py-10 sm:px-8 lg:px-12">
+      <div className="mx-auto flex max-w-6xl flex-col gap-4 border-t border-[var(--border)] pt-8 text-sm text-[var(--sub)] lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <div className="text-lg font-extrabold tracking-[-0.04em] text-white">
+          <div className="text-lg font-extrabold tracking-[-0.04em] text-[var(--ink)]">
             이소<span className="text-[var(--sky)]">서</span>
           </div>
-          <p className="mt-2 text-sm leading-6 text-slate-400">
+          <p className="mt-2 text-sm leading-6 text-[var(--sub)]">
             공공 취업 지원 탐색을 시작점으로, 개인화 추천과 문서 워크플로우까지 연결하는 커리어 SaaS.
           </p>
         </div>
-        <div className="text-sm text-slate-500">© 2026 Isoser. Career support workspace.</div>
+        <div className="text-sm text-[var(--muted)]">© 2026 Isoser. Career support workspace.</div>
       </div>
     </footer>
   );

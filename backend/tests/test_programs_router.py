@@ -24,7 +24,7 @@ def test_build_program_query_params_for_filtered_list() -> None:
     assert params["select"] == "*"
     assert params["category"] == "eq.IT"
     assert params["title"] == "ilike.*부트캠프*"
-    assert params["is_active"] == "eq.true"
+    assert params["deadline"] == f"gte.{date.today().isoformat()}"
     assert params["order"] == "created_at.desc.nullslast"
     assert params["limit"] == "20"
     assert params["offset"] == "40"
@@ -38,7 +38,17 @@ def test_build_program_query_params_deadline_sort_only_includes_active_programs(
     )
 
     assert params["order"] == "deadline.asc.nullslast"
-    assert params["is_active"] == "eq.true"
+    assert params["deadline"] == f"gte.{date.today().isoformat()}"
+
+
+def test_build_program_query_params_include_closed_recent_uses_90_day_cutoff() -> None:
+    params = programs._build_program_query_params(
+        select="*",
+        include_closed_recent=True,
+        sort="deadline",
+    )
+
+    assert params["deadline"] == f"gte.{(date.today() - timedelta(days=90)).isoformat()}"
 
 
 def test_normalize_regions_param_splits_csv_values() -> None:
@@ -70,6 +80,28 @@ def test_normalize_cached_recommendation_rows_marks_missing_component_scores_sta
     )
 
     assert normalized is None
+
+
+def test_postprocess_program_list_rows_keeps_active_first_then_recent_closed() -> None:
+    active_deadline = (date.today() + timedelta(days=2)).isoformat()
+    closed_deadline = (date.today() - timedelta(days=5)).isoformat()
+    older_closed_deadline = (date.today() - timedelta(days=20)).isoformat()
+
+    rows = programs._postprocess_program_list_rows(
+        [
+          {"id": "closed-older", "title": "closed-older", "deadline": older_closed_deadline, "is_active": True},
+          {"id": "closed-recent", "title": "closed-recent", "deadline": closed_deadline, "is_active": True},
+          {"id": "active", "title": "active", "deadline": active_deadline, "is_active": True},
+        ],
+        sort="deadline",
+        include_closed_recent=True,
+        limit=10,
+        offset=0,
+    )
+
+    assert [row["id"] for row in rows] == ["active", "closed-recent", "closed-older"]
+    assert rows[0]["is_active"] is True
+    assert rows[1]["is_active"] is False
 
 
 def test_compute_program_relevance_items_adds_fit_interpretation_fields(
