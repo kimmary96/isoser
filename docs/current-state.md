@@ -130,3 +130,4 @@
 - recommendation cache read는 저장된 `final_score`를 그대로 신뢰하지 않고 `relevance_score * 0.6 + urgency_score * 0.4`로 재계산하며, component score가 하나라도 없으면 stale cache로 보고 fresh recommendation path로 우회한다.
 - `frontend/app/api/dashboard/recommend-calendar/route.ts`와 `frontend/lib/api/app.ts`는 새 캘린더 추천 BFF/helper를 제공하며, 비로그인 사용자도 `relevance_score = 0`을 유지한 `{ items: CalendarRecommendItem[] }` 응답을 받을 수 있다.
 - 비교 페이지는 로그인 사용자에 한해 `POST /programs/compare-relevance`로 종합 관련도, 기술 스택 일치도, 매칭 스킬 태그를 계산해 표시한다.
+- compare relevance 응답은 기존 점수 필드 외에 `fit_label`, `fit_summary`, `readiness_label`, `gap_tags`를 함께 반환하고, compare UI는 이를 `★ AI 적합도` 섹션에서 적합도 판단, 지원 준비도, 한줄 요약, 보완 포인트로 해석해 보여준다.

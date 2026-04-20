@@ -6,6 +6,7 @@
 - `backend/tests/test_programs_router.py`
 - `frontend/app/(landing)/compare/programs-compare-client.tsx`
 - `frontend/lib/types/index.ts`
+- `docs/current-state.md`
 - `docs/refactoring-log.md`
 
 ## Why changes were made
