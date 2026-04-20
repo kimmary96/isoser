@@ -145,9 +145,9 @@ export function LandingANavBar() {
   const isDashboardActive = pathname.startsWith("/dashboard");
 
   return (
-    <nav className="sticky top-9 z-[210] border-b border-[var(--border)] bg-white/92 px-5 py-4 backdrop-blur-xl sm:px-8 lg:px-12">
+    <nav className="sticky top-9 z-[230] isolate border-b border-[var(--border)] bg-white/92 px-5 py-4 backdrop-blur-xl sm:px-8 lg:px-12">
       <div className="mx-auto flex max-w-6xl items-center gap-4">
-        <Link href="/landing-a" className="flex items-center gap-3">
+        <Link href="/landing-a" className="relative z-[1] flex items-center gap-3">
           <div>
             <div className="text-xl font-extrabold tracking-[-0.05em] text-[var(--ink)]">
               이소<span className="text-[var(--sky)]">서</span>
@@ -159,13 +159,13 @@ export function LandingANavBar() {
         </Link>
 
         <div className="ml-auto hidden items-center gap-7 text-sm text-[var(--sub)] md:flex">
-          <Link href="/programs" className={`transition hover:text-[var(--ink)] ${isProgramsActive ? "text-[var(--ink)]" : ""}`}>
+          <Link href="/programs" className={`relative z-[1] transition hover:text-[var(--ink)] ${isProgramsActive ? "text-[var(--ink)]" : ""}`}>
             프로그램 탐색
           </Link>
-          <Link href="/compare" className={`transition hover:text-[var(--ink)] ${isCompareActive ? "text-[var(--ink)]" : ""}`}>
+          <Link href="/compare" className={`relative z-[1] transition hover:text-[var(--ink)] ${isCompareActive ? "text-[var(--ink)]" : ""}`}>
             비교
           </Link>
-          <Link href="/dashboard" className={`transition hover:text-[var(--ink)] ${isDashboardActive ? "text-[var(--ink)]" : ""}`}>
+          <Link href="/dashboard" className={`relative z-[1] transition hover:text-[var(--ink)] ${isDashboardActive ? "text-[var(--ink)]" : ""}`}>
             워크스페이스
           </Link>
         </div>
@@ -173,7 +173,7 @@ export function LandingANavBar() {
         {authChecked && user ? (
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-3 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm font-semibold text-[var(--ink)] transition hover:bg-white"
+            className="relative z-[1] inline-flex items-center gap-3 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm font-semibold text-[var(--ink)] transition hover:bg-white"
           >
             {user.avatarUrl ? (
               <img
@@ -192,7 +192,7 @@ export function LandingANavBar() {
         ) : (
           <Link
             href="/login"
-            className="rounded-full bg-[var(--fire)] px-4 py-2 text-sm font-bold text-white shadow-[0_12px_32px_rgba(249,115,22,0.24)] transition hover:-translate-y-0.5 hover:bg-[var(--fire-lo)]"
+            className="relative z-[1] rounded-full bg-[var(--fire)] px-4 py-2 text-sm font-bold text-white shadow-[0_12px_32px_rgba(249,115,22,0.24)] transition hover:-translate-y-0.5 hover:bg-[var(--fire-lo)]"
           >
             무료로 시작하기
           </Link>
