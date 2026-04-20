@@ -2,6 +2,8 @@
 
 현재 운영 구조의 짧은 요약입니다. 세부 운영 문서는 `docs/automation/` 아래로 분리했습니다.
 
+에이전트가 이 저장소에 처음 들어오면 먼저 [agent-playbook.md](./agent-playbook.md)와 `AGENTS.md`를 읽고, 그 다음 이 문서를 현재 동작 기준으로 사용합니다.
+
 ## Summary
 - 로컬 구현 자동화는 `watcher.py`가 담당한다.
 - cowork scratch review와 promotion은 `cowork_watcher.py`가 담당한다.

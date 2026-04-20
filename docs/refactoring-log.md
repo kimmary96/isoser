@@ -1,5 +1,20 @@
 # 리팩토링 로그
 
+## 2026-04-20 Agent 규칙 문서 진입점 정리
+
+- 수정 파일:
+  - `AGENTS.md`
+  - `docs/agent-playbook.md`
+  - `docs/automation/task-packets.md`
+  - `docs/current-state.md`
+- 변경 내용:
+  - 새 에이전트가 어디를 먼저 읽고 어떤 문서를 기준으로 판단해야 하는지 명확히 하기 위해 `docs/agent-playbook.md`를 단일 진입 문서로 추가함
+  - `AGENTS.md`에 read order와 rule precedence를 명시해 packet, folder instructions, current-state 사이의 우선순위를 고정함
+  - task packet contract와 current-state 문서에도 새 진입 문서를 링크해, planner / reviewer / implementer가 같은 읽기 순서를 따르도록 정리함
+- 유지된 동작:
+  - 기존 watcher / cowork watcher 흐름과 packet contract 자체는 변경하지 않음
+  - 기존 세부 운영 문서들은 계속 세부 참조 문서로 유지함
+
 ## 2026-04-20 Compare AI 적합도 v2 해석 레이어 추가
 
 - 수정 파일:

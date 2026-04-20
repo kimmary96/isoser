@@ -1,5 +1,9 @@
 # Repository Agent Rules
 
+## First Read
+- Start with [docs/agent-playbook.md](./docs/agent-playbook.md) for the repository-wide read order and document map.
+- Use this file as the top-level rule source, then follow the playbook's priority order for packet, folder, and runtime documents.
+
 ## Core behavior
 - Always inspect the current repository state before making changes.
 - Never assume the task packet matches the current codebase.
@@ -31,6 +35,13 @@ When given a task file:
 7. Write `reports/<task-id>-result.md`.
 8. Update `docs/current-state.md` if structure or behavior changed.
 9. Append key changes to `docs/refactoring-log.md`.
+
+## Rule precedence
+- `AGENTS.md` is the top-level development rule source.
+- Folder-scoped instructions apply next inside their own directories.
+- The current task packet defines scope, acceptance, and constraints for the task.
+- `docs/current-state.md` is the runtime truth for current behavior.
+- `reports/*.md` and `docs/refactoring-log.md` are supporting history and decision records.
 
 ## Tech stack
 - Frontend: Next.js 15, TypeScript, Tailwind CSS, Pretendard
