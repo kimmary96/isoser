@@ -244,6 +244,25 @@
   - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
   - `frontend`: `npm run build` 통과
 
+## 2026-04-20 업로드 이미지 크기 정보 검사 추가
+
+- 수정 파일:
+  - `frontend/lib/server/upload-validation.ts`
+  - `docs/current-state.md`
+  - `docs/refactoring-log.md`
+- 변경 내용:
+  - PNG/GIF/WEBP/JPEG 파일의 width/height를 직접 읽어 정상 이미지 여부를 한 번 더 검증하도록 보강함
+  - 8000px를 넘는 비정상 고해상도 이미지는 업로드를 거부하도록 제한을 추가함
+- 유지된 동작:
+  - 정상적인 일반 이미지 업로드 흐름과 반환 계약은 유지함
+  - 기존 magic number 검사와 파일 크기 제한도 그대로 유지함
+- 한계와 리스크:
+  - 현재 검증은 파일 헤더와 이미지 메타데이터 기반이며, 외부 안티바이러스 엔진 연동은 아니다
+- 검증 메모:
+  - `frontend`: `npm run lint` 통과 (blob preview용 `<img>` warning 1건 유지)
+  - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
+  - `frontend`: `npm run build` 통과
+
 ## 2026-04-20 public flow 후속 정리
 
 - 수정 파일:
