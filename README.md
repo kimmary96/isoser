@@ -40,8 +40,12 @@
 
 ## 주요 화면
 
-- `/dashboard`: 프로필, 경력 카드, 스킬, 활동 요약
-- `/dashboard/onboarding`: PDF 업로드 및 초기 데이터 저장
+- `/landing-a`: 공개 메인 랜딩
+- `/programs`: 공개 프로그램 탐색
+- `/compare`: 공개 프로그램 비교
+- `/login`: Google OAuth 로그인
+- `/dashboard`: 추천/문서 워크스페이스
+- `/onboarding`: 신규 사용자 초기 데이터 저장
 - `/dashboard/activities`: 활동 저장소
 - `/dashboard/activities/[id]`: 활동 상세, STAR 편집, AI 코치 진입
 - `/dashboard/match`: 공고 분석, 기업 정보 요약, 분석 이력
@@ -228,7 +232,6 @@ npm run dev
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
-GEMINI_API_KEY=your_gemini_api_key
 ```
 
 ### `backend/.env`
@@ -278,11 +281,18 @@ CHROMA_PERSIST_DIR=./chroma_store_v2
   - `NEXT_PUBLIC_SUPABASE_URL`
   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
   - `NEXT_PUBLIC_BACKEND_URL`
-  - `GEMINI_API_KEY`
+  - 선택: `NEXT_PUBLIC_SITE_URL`
 
 ### Backend (Render)
 - Root Directory: `backend`
 - 필수 환경변수
   - `GOOGLE_API_KEY`
+  - `SUPABASE_URL`
+  - `SUPABASE_SERVICE_ROLE_KEY`
   - `CHROMA_PERSIST_DIR`
 - 시작 전에 `python rag/seed.py` 실행이 필요합니다.
+
+## 인증 설정 문서
+
+- 로컬 Supabase OAuth/Auth 설정: `docs/auth/supabase-auth-local.md`
+- 운영 Supabase OAuth/Auth 설정: `docs/auth/supabase-auth-production.md`

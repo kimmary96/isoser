@@ -1,5 +1,253 @@
 # 리팩토링 로그
 
+## 2026-04-20 public flow 후속 정리
+
+- 수정 파일:
+  - `frontend/app/(landing)/landing-b/page.tsx`
+  - `frontend/app/(landing)/landing-b/_components.tsx`
+  - `frontend/app/(landing)/landing-b/_content.ts`
+  - `frontend/app/(landing)/landing-b/_styles.ts`
+  - `README.md`
+  - `docs/current-state.md`
+  - `docs/specs/api-contract.md`
+  - `docs/auth/supabase-auth-local.md`
+  - `docs/auth/supabase-auth-production.md`
+- 변경 내용:
+  - `rg` 기준으로 `landing-b` 라우트가 자기 파일군 외부에서 참조되지 않고, 루트/로그인/OAuth/공개 네비게이션 어디에서도 연결되지 않아 실사용 경로가 아니라고 판단해 제거함
+  - 공개 메인 흐름 문서를 현재 코드 기준으로 다시 맞춰 `/landing-a`를 기본 진입점으로 유지하는 로그인/OAuth 동작과 `/onboarding` 신규 사용자 분기를 함수명 기준으로 정리함
+  - Supabase Auth 설정 문서를 로컬/운영으로 분리해 `frontend/app/api/auth/google/route.ts`, `frontend/app/auth/callback/route.ts`, `frontend/middleware.ts`가 요구하는 Redirect URL과 env를 따로 적음
+  - `README.md`와 `docs/specs/api-contract.md`의 오래된 `/dashboard/onboarding`, `/dashboard` 기본 callback 설명을 현재 라우트 기준으로 정정함
+- 유지된 동작:
+  - 루트 `/`는 계속 `/landing-a`로 리다이렉트됨
+  - Google OAuth 시작/콜백 처리 함수와 `/dashboard*`, `/onboarding` 인증 보호 정책은 그대로 유지함
+- 검증 메모:
+  - 로컬 코드 검증은 `frontend`에서 `npm run build`로 수행
+  - 운영 `https://isoser.vercel.app/login`은 200 응답을 확인했지만, `https://isoser.vercel.app/landing-a`와 `/compare`는 이 작업 시점에 60초 timeout이 발생해 헤더 클릭 동작을 배포 환경에서 끝까지 재현하지는 못함
+
+## 2026-04-20 landing-b A/B 테스트 보존 복원
+
+- 수정 파일:
+  - `frontend/app/(landing)/landing-b/page.tsx`
+  - `frontend/app/(landing)/landing-b/_components.tsx`
+  - `frontend/app/(landing)/landing-b/_content.ts`
+  - `frontend/app/(landing)/landing-b/_styles.ts`
+  - `docs/current-state.md`
+  - `docs/refactoring-log.md`
+- 변경 내용:
+  - `landing-b`를 완전 제거하지 않고, A/B 테스트용 실험 랜딩으로 다시 복원함
+  - 현재 공개 기본 진입, 로그인 기본 복귀, 공통 헤더 링크에서는 계속 `landing-a`를 메인으로 유지하고 `landing-b`는 직접 실험 링크/광고/분석 유입용 별도 경로로만 남기도록 정리함
+  - 문서에도 `landing-b`가 현재 운영 메인 라우트가 아니라 보존된 실험 경로라는 점을 명시함
+- 유지된 동작:
+  - 루트 `/`와 로그인 기본 복귀는 계속 `/landing-a`
+  - `landing-b`는 별도 OAuth 기본 진입점이나 공통 네비게이션 링크로 연결하지 않음
+
+## 2026-04-20 공개 랜딩/프로그램/비교/로그인 흐름 정리와 OAuth 콜백 보정
+
+### 작업 목적
+- 로그인 전후 화면의 톤과 흐름을 맞추고, 공개 랜딩과 로그인 이후 진입 흐름의 단절을 줄인다.
+- 프로그램/비교 화면을 로그인 전후 기준으로 일관되게 보이도록 정리한다.
+- 프로그램 데이터 노출 기준을 `오늘 날짜 기준 마감순`으로 통일하고, 기본값은 `모집중 공고만` 보이게 수정한다.
+- 로컬 개발 중 Supabase OAuth가 Vercel 도메인으로 튀는 문제를 확인하고, 로컬 테스트 기준 설정을 정리한다.
+
+### 리팩토링 전 문제점
+- 로그인 전 랜딩과 로그인 후 화면의 시각 언어가 달랐고, 일부 구간은 검은 배경/검은 글씨 조합으로 가독성이 떨어졌다.
+- 로그인 후 사용자가 예전에 만든 랜딩 또는 기대와 다른 화면으로 이동하는 흐름이 있었다.
+- 공개 프로그램/비교 화면과 로그인 이후 화면 간 제품 인상이 일치하지 않았다.
+- 메인 랜딩과 프로그램 검색에서 이미 마감된 공고가 기본 노출되었다.
+- 프로그램 목록의 `모집중만 보기` 필터가 의도대로 동작하지 않았고, 최근 마감 공고와 모집중 공고의 구분도 불명확했다.
+- 공개 비교/프로그램 헤더의 `프로그램 탐색`, `비교` 버튼이 클릭되지 않는 증상이 있었다.
+- 로컬 `localhost:3000/login`에서 Google 로그인 시작 후 Supabase가 `https://isoser.vercel.app/login?error=oauth_callback_failed`로 보내는 문제가 있었다.
+- 백엔드 테스트는 저장소 문제라기보다 잘못된 Python 인터프리터 사용으로 실패했다.
+
+### 실제 변경 사항
+
+#### 1. 공개 랜딩/로그인/비교/프로그램 UI 정리
+- 공개 랜딩을 라이트 톤 기준으로 정리하고, 로그인 화면과 로그인 이후 제품 톤을 더 가깝게 맞춤.
+- 랜딩 메인 카피를 아래 문구로 교체:
+  - `흩어진 국비 지원 정보,`
+  - `내 상황에 맞는 것만 골라드립니다`
+  - `각종 부트캠프, K-디지털, 서울시 일자리까지 한곳에 모았습니다.`
+  - `3가지 조건만 알려주시면 마감 임박순으로 정렬해드립니다`
+- 프로그램/비교 페이지는 새 공개 랜딩 헤더와 톤을 공유하도록 정리.
+- 헤더 네비게이션에 stacking context와 z-index를 보강해 클릭 불가 가능성을 낮춤.
+
+#### 2. 프로그램 데이터 정렬/필터 기준 수정
+- backend 프로그램 목록과 count 계산 로직이 더 이상 Supabase의 `is_active`만 신뢰하지 않고, `deadline` 기준으로 `오늘 날짜`를 다시 계산하도록 수정.
+- 기본값은 `모집중 공고만 + 마감 임박순(deadline asc)` 노출로 통일.
+- `마감된 활동 보기` 체크 시에만 `최근 3개월 내 마감 공고`를 함께 보이도록 변경.
+- compare 검색/선택 모달도 같은 기준으로 모집중 공고 위주 정렬을 따르도록 조정.
+
+#### 3. 로그인/OAuth 복귀 흐름 수정
+- `/api/auth/google`에서 `next` query를 받아 Google OAuth 시작 시 Supabase redirect URL에 포함하도록 수정.
+- `/auth/callback`에서 `next`를 읽어 로그인 완료 후 원래 보던 화면으로 돌아갈 수 있게 수정.
+- 기본 로그인 완료 진입점은 `/landing-a`로 유지.
+- `/login` 페이지는 서버에서 세션을 먼저 확인해 이미 로그인된 사용자는 다시 로그인 화면을 보지 않고 원래 화면 또는 `/landing-a`로 리다이렉트되게 변경.
+- 로그인 페이지에서 Google 로그인 버튼이 `window.location.href` 기반 클라이언트 처리 대신 복귀 경로를 포함한 링크 방식으로 동작하도록 정리.
+
+#### 4. 로컬 개발 환경 확인
+- backend용 Python은 `backend/venv/Scripts/python.exe`의 `Python 3.10.8`이 맞음을 확인.
+- 해당 인터프리터로 `backend/tests/test_programs_router.py` 실행 시 `14 passed` 확인.
+- 로컬 Supabase OAuth 문제는 코드보다 `Supabase URL Configuration` 설정 영향이 더 크다는 점을 확인.
+- 로컬 테스트 기준으로 `Site URL`을 `http://localhost:3000`, Redirect URLs를 `/auth/callback` 기준으로 맞추면 정상 동작함을 확인.
+
+### 파일별 / 컴포넌트별 변경 내용
+
+#### `backend/routers/programs.py`
+- 프로그램 목록과 count의 모집 상태 판단을 `deadline` 기준 현재 날짜 재계산으로 보정.
+- `include_closed_recent=true`일 때 최근 90일 내 마감 공고만 추가 포함.
+- `deadline` 정렬에서 모집중 공고를 우선, 최근 마감 공고는 그 뒤에 최근순으로 재정렬하도록 보강.
+
+#### `backend/tests/test_programs_router.py`
+- 모집중 기본 노출, 최근 마감 포함, deadline 정렬 기준을 회귀 테스트로 고정.
+- Python 3.10 venv 기준 실행 확인.
+
+#### `frontend/app/(landing)/landing-a/_components.tsx`
+- `LandingANavBar`의 라이트 톤/공통 제품 헤더 유지.
+- 메인 랜딩 카피 교체.
+- 헤더 링크 `프로그램 탐색`, `비교`, `워크스페이스`에 `relative z-[1]` 부여.
+- nav에 `z-[230] isolate` 추가해 클릭 불가 가능성 완화.
+- 로그인 CTA, 워크스페이스 링크 스타일 정리.
+
+#### `frontend/app/(landing)/landing-a/page.tsx`
+- 공개 랜딩 허브로 유지.
+- 프로그램 데이터를 불러와 히어로/필터/프로그램 섹션과 연결.
+- 메인 랜딩이 `/landing-a` 기준으로 계속 동작하도록 유지.
+
+#### `frontend/app/(auth)/login/page.tsx`
+- 삭제/불안정 상태였던 로그인 페이지를 복구.
+- 서버 컴포넌트 형태로 세션 확인 후 이미 로그인된 경우 `redirect()`.
+- `searchParams.error`, `searchParams.redirectedFrom` 처리 추가.
+- `Google로 계속하기` 링크가 `/api/auth/google?next=...`를 사용하도록 변경.
+
+#### `frontend/app/api/auth/google/route.ts`
+- `requestedNext`를 읽고 기본값을 `/landing-a`로 설정.
+- `supabase.auth.signInWithOAuth()`의 `options.redirectTo`를 `${origin}/auth/callback?next=...` 형식으로 구성.
+
+#### `frontend/app/auth/callback/route.ts`
+- `code`, `next`를 읽음.
+- `redirectTarget` 기본값을 `/landing-a`로 유지.
+- 기존 사용자(`profiles` row 존재)는 `redirectTarget`으로 보냄.
+- 신규 사용자는 `/onboarding` 유지.
+
+#### `frontend/middleware.ts`
+- 루트 `/?code=...` 유입을 `/auth/callback?next=/landing-a`로 정규화.
+- `/programs/compare` -> `/compare` 리다이렉트 유지.
+- `pathname === "/login"`인데 이미 세션이 있으면 `redirectedFrom` 또는 `/landing-a`로 돌려보내도록 추가.
+- 보호 경로(`/onboarding`, `/dashboard...`) 비로그인 접근 시 `/login?redirectedFrom=...` 유지.
+
+#### `frontend/app/(landing)/programs/page.tsx`
+- 기본값은 모집중만, 정렬은 오늘 기준 마감 임박순.
+- `마감된 활동 보기` 체크 시에만 최근 3개월 마감 공고 포함.
+- 설명 문구와 필터 레이블을 새 정책에 맞게 갱신.
+
+#### `frontend/app/(landing)/compare/programs-compare-client.tsx`
+- compare 페이지가 공개 랜딩 헤더/톤을 공유하도록 유지.
+- 추천/검색 시 모집중 공고 위주 정렬 정책과 맞물리도록 사용.
+
+#### `frontend/app/(landing)/compare/program-select-modal.tsx`
+- compare 선택 모달 검색 결과가 모집중/마감 기준 정책을 따르도록 연계.
+
+#### `frontend/lib/api/backend.ts`
+- 프로그램 목록/count에서 `recruiting_only`, `include_closed_recent`, `sort` 등 query 전달 유지 및 연계.
+
+#### `docs/current-state.md`
+- 현재 공개 랜딩/프로그램/비교/로그인/OAuth 동작 기준을 문서화.
+- `frontend/middleware.ts`, `frontend/app/auth/callback/route.ts`, `frontend/app/api/auth/google/route.ts`, `frontend/app/(auth)/login/page.tsx` 기준 현재 동작을 반영.
+
+#### `docs/refactoring-log.md`
+- 공개 랜딩/프로그램/비교 정리, 로그인 복귀 흐름 보정 내용을 기록.
+
+#### `reports/TASK-2026-04-20-1705-public-ui-deadline-alignment-result.md`
+- 이번 공개 UI/마감 기준 정리 작업 결과를 기록.
+- backend pytest 재검증 결과까지 업데이트.
+
+### 변경 이유
+- 제품 첫 진입과 로그인 이후 경험이 지나치게 달라 사용자가 같은 서비스 안에 있다는 인상을 받기 어려웠다.
+- 마감 공고 기본 노출은 프로그램 탐색의 신뢰도를 떨어뜨렸다.
+- 로컬 개발 중 OAuth가 배포 도메인으로 튀면 빠른 테스트와 문제 재현이 어려워진다.
+- `/auth/callback`을 실제 코드 경로로 쓰면서 Supabase Redirect URL에 `/callback`이 남아 있으면 실패가 반복된다.
+- 로그인 완료 후 복귀 경로(`next`)가 없으면 화면 전환이 사용자가 기대한 흐름과 어긋난다.
+
+### 유지된 기존 동작
+- 신규 사용자는 계속 `/onboarding`으로 진입한다.
+- 공개 라우트 구조 `/landing-a`, `/programs`, `/compare`, `/login`은 유지했다.
+- 보호 라우트 `/dashboard` 계열 구조는 유지했다.
+- compare의 3슬롯 URL state와 로그인 사용자 관련도 계산 구조는 유지했다.
+- 프로그램 검색의 카테고리/지역/페이지네이션 구조는 유지했다.
+- Render 백엔드 자체는 유지하고, 로컬 개발 시에는 프론트가 로컬 백엔드를 보도록 설정만 바꾸는 운영 방식은 유지 가능하다.
+
+### 영향 범위
+- 공개 랜딩 첫 인상
+- 로그인 페이지 UX
+- Google OAuth 시작/콜백 흐름
+- 로그인 후 복귀 경로
+- 프로그램 목록 기본 노출 정책
+- 최근 마감 공고 표시 정책
+- compare 선택/추천 흐름
+- 로컬 개발 환경의 인증 테스트 절차
+
+### 테스트 체크리스트
+
+#### UI / 라우팅
+- [x] `/landing-a` 접속 시 라이트 톤 랜딩 정상 표시
+- [x] 메인 카피가 요청 문구로 반영되었는지 확인
+- [ ] 헤더 `프로그램 탐색`, `비교`, `워크스페이스` 클릭 동작 수동 재확인
+- [ ] 로그인 후 사용자가 기대하는 진입 화면이 `/landing-a` 기준으로 맞는지 재확인
+- [ ] 로그인 전후 화면 톤 일치 여부 수동 점검
+
+#### 프로그램 정책
+- [x] 기본 목록이 모집중 공고만 노출되는 로직 반영
+- [x] `마감된 활동 보기` 체크 시 최근 3개월 마감 공고만 포함되는 로직 반영
+- [x] deadline 정렬이 오늘 기준으로 재계산되는 backend 테스트 통과
+- [ ] 실제 운영 데이터에서 마감 공고가 랜딩/프로그램에 다시 섞이지 않는지 수동 확인
+
+#### OAuth / 인증
+- [x] `/api/auth/google`가 `next`를 붙여 `/auth/callback`으로 보냄
+- [x] `/auth/callback`가 `next`를 받아 복귀 처리
+- [x] 이미 로그인된 사용자가 `/login`에 가면 다시 로그인 화면을 밟지 않음
+- [x] 로컬 Supabase 설정에서 `Site URL=http://localhost:3000` 기준 정상 동작 확인
+- [ ] 운영 Supabase 설정에서 `https://isoser.vercel.app/auth/callback` 기준 재확인
+
+#### 빌드 / 테스트
+- [x] `frontend`: `npm run build` 통과
+- [x] `backend`: `backend\venv\Scripts\python.exe -m pytest backend/tests/test_programs_router.py` 통과 (`14 passed`)
+- [x] backend Python 인터프리터가 `3.10.8`인 것 확인
+
+### 남은 과제
+- `landing-b` 실험 경로는 아직 남아 있음. 실제 운영에서 더 이상 사용하지 않으면 정리 필요.
+- 로그인 후 “정확히 어떤 화면이 기본 진입점이어야 하는지”는 `/landing-a`와 `/dashboard` 사이에서 제품 정책을 최종 확정할 필요가 있음.
+- 헤더 클릭 불가 증상은 z-index 보정으로 완화했지만, 실제 브라우저/배포 환경에서 재현이 완전히 사라졌는지 재확인 필요.
+- Supabase 운영용/로컬용 auth 설정을 수동으로 번갈아 바꾸는 대신, 개발용 Supabase 프로젝트 분리 여부를 검토할 필요가 있음.
+- `NEXT_PUBLIC_BACKEND_URL`의 로컬/배포 환경값을 더 명확히 문서화하거나 실행 스크립트로 보조할 여지가 있음.
+- 공개 랜딩과 대시보드의 정보 구조를 더 일관되게 맞출지 추가 UX 검토가 필요함.
+
+### 불확실한 내용
+- “로그인 후 원래 랜딩이 보인다”는 사용자 보고와 실제 코드 경로 사이에는 시점별 차이가 있었음.
+  - 확인된 최종 코드 기준 기본 복귀는 `/landing-a`
+  - 다만 사용자가 본 실제 배포 동작은 Supabase 설정과 배포 버전 차이의 영향을 받았을 가능성이 큼
+- 헤더 버튼 클릭 불가의 정확한 1차 원인은 레이어 충돌로 추정했으나, 브라우저 DevTools로 완전한 원인 고정까지는 하지 않았음.
+- Vercel/Render/Supabase의 실제 콘솔 값은 이 대화에서 일부는 사용자가 직접 확인했고, 일부는 코드/환경파일 기준으로 추정함.
+
+### 다음 대화에서 바로 이어갈 수 있는 후속 작업 프롬프트
+
+```md
+현재 공개 랜딩/프로그램/비교/로그인 흐름 리팩토링은 반영된 상태다.
+다음 작업을 이어서 진행해줘.
+
+우선순위:
+1. landing-b가 실제로 더 이상 필요 없는지 코드 기준으로 확인
+2. 필요 없으면 관련 라우트/링크/문서 정리
+3. 로그인 후 기본 진입점을 landing-a로 유지할지 dashboard로 바꿀지 비교 정리
+4. 헤더 클릭 불가 이슈가 배포 환경에서도 완전히 해결됐는지 검증
+5. 로컬/운영 Supabase auth 설정을 문서로 분리 정리
+
+반드시 해줄 것:
+- 현재 코드 기준으로만 판단
+- 실제 참조 파일명과 함수명 명시
+- 변경 시 docs/current-state.md와 docs/refactoring-log.md까지 같이 반영
+- 테스트 결과를 함께 정리
+```
+
 ## 2026-04-20 백업 브랜치 기준 agent 규칙/참조 복원
 
 - 수정 파일:
@@ -40,6 +288,21 @@
 - 유지된 동작:
   - 기존 watcher / cowork watcher 흐름과 packet contract 자체는 변경하지 않음
   - 기존 세부 운영 문서들은 계속 세부 참조 문서로 유지함
+
+## 2026-04-20 Compare 현재 적재 컬럼 기준 재정의
+
+- 수정 파일:
+  - `frontend/app/(landing)/compare/programs-compare-client.tsx`
+  - `docs/current-state.md`
+- 변경 내용:
+  - compare 표 본문이 `compare_meta` 부재 때문에 대량 `"정보 없음"`을 노출하던 구조를 정리하고, 현재 운영 적재 컬럼 기준의 기본 정보, 운영 정보, 프로그램 개요 비교로 재구성함
+  - source별 운영 메타처럼 수집 편차가 큰 값은 `"데이터 미수집"`, 실사용 컬럼의 단순 빈 값은 `"정보 없음"`으로 구분해 문구 정책을 분리함
+  - 상단 slot chip과 지원 링크 fallback도 현재 컬럼 기준(`application_url -> source_url -> link`)으로 단순화해 compare_meta 의존을 제거함
+- 유지된 동작:
+  - `/compare` 라우트, 최대 3슬롯, URL `ids` 상태 관리, 추천 프로그램 영역, compare relevance API 흐름은 유지함
+  - `compare_meta` 컬럼과 타입 자체는 삭제하지 않고, UI의 기본 표시 의존성에서만 제외함
+- 후속 메모:
+  - `programs-compare-client.tsx` 한 파일 안에 current-columns와 AI fit v2가 함께 들어 있으므로, 이후 compare row 정의와 relevance section을 분리 컴포넌트/상수로 나누면 scope 경계가 더 선명해질 수 있음
 
 ## 2026-04-20 Compare AI 적합도 v2 해석 레이어 추가
 

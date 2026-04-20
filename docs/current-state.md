@@ -65,10 +65,11 @@
 - `frontend/app/page.tsx`는 루트 접근을 `/landing-a`로 리다이렉트해서 landing-a를 메인 랜딩 허브로 고정한다.
 - `frontend/middleware.ts`는 루트 `/?code=...` OAuth 유입을 `/auth/callback?next=/landing-a`로 정규화해서 로그인 후 landing-a 주소를 깨끗하게 유지한다.
 - `frontend/middleware.ts`는 레거시 `/programs/compare` 접근을 `/compare`로 리다이렉트해서 새 랜딩 축 라우트 구조로 정리한다.
-- `frontend/app/auth/callback/route.ts`는 기존 사용자 로그인 완료 후 기본 진입점을 `/landing-a`로 돌리고, 신규 사용자는 계속 `/onboarding`으로 보낸다.
-- `frontend/app/(landing)/landing-a/_components.tsx`의 상단 헤더는 `Programs`, `Compare`, `내 프로필` 링크와 로그인 사용자 표시를 공통 네비게이션으로 사용한다.
-- `frontend/app/(landing)` 아래에는 `landing-a`, `landing-b`, `programs`, `compare`가 함께 정리되어 랜딩 축 라우트를 한 그룹으로 관리한다.
+- `frontend/app/auth/callback/route.ts`의 `GET()`는 기존 사용자 로그인 완료 후 기본 진입점을 `/landing-a`로 돌리고, 신규 사용자는 계속 `/onboarding`으로 보낸다.
+- `frontend/app/(landing)/landing-a/_components.tsx`의 `LandingANavBar()`는 상단 헤더에서 `프로그램 탐색`, `비교`, `워크스페이스` 링크와 로그인 사용자 표시를 공통 네비게이션으로 사용한다.
+- `frontend/app/(landing)` 아래 공개 랜딩 축 라우트는 `landing-a`, `landing-b`, `programs`, `compare`로 정리되어 있다. 이 중 `landing-b`는 현재 기본 진입이나 공통 네비게이션에는 연결하지 않는 A/B 테스트 보존 경로다.
 - `frontend/app/dashboard/layout.tsx`는 landing-a 헤더를 유지한 채 대시보드 사이드바와 본문을 렌더링한다.
+- Supabase 인증 설정 문서는 `docs/auth/supabase-auth-local.md`, `docs/auth/supabase-auth-production.md`로 로컬/운영을 분리해 관리한다.
 - `backend/routers/programs.py`는 `/programs/count`와 확장된 목록 query(`q`, `regions`, `recruiting_only`, `include_closed_recent`, `sort`)를 지원하고, 목록/카운트 모두 Supabase의 `is_active` 값만 신뢰하지 않고 실제 `deadline` 기준으로 오늘 이후 모집중 공고만 기본 노출한다.
 - `backend/routers/programs.py`의 `include_closed_recent=true` 경로는 최근 90일 이내 마감 공고만 추가로 포함하며, `deadline` 정렬에서는 모집중 공고를 먼저 오름차순으로, 최근 마감 공고를 그다음 최근순으로 재정렬한다.
 - `backend/routers/admin.py`의 `POST /admin/sync/programs`는 운영 Supabase `programs` 스키마가 일부 뒤처진 경우에도 누락 컬럼을 제외하고, hybrid unique constraint 충돌 시 row-by-row fallback으로 upsert를 이어가도록 보강됐다.
@@ -139,5 +140,6 @@
 - `backend/routers/programs.py`는 기존 `POST /programs/recommend`를 유지한 채 `GET /programs/recommend/calendar`를 추가해 `{ items: [...] }` 계약으로 캘린더 전용 추천을 제공하고, 이 경로에서만 만료 프로그램 제외 + `final_score desc`, `deadline asc` 정렬을 적용한다.
 - recommendation cache read는 저장된 `final_score`를 그대로 신뢰하지 않고 `relevance_score * 0.6 + urgency_score * 0.4`로 재계산하며, component score가 하나라도 없으면 stale cache로 보고 fresh recommendation path로 우회한다.
 - `frontend/app/api/dashboard/recommend-calendar/route.ts`와 `frontend/lib/api/app.ts`는 새 캘린더 추천 BFF/helper를 제공하며, 비로그인 사용자도 `relevance_score = 0`을 유지한 `{ items: CalendarRecommendItem[] }` 응답을 받을 수 있다.
+- 비교 페이지는 현재 운영 적재 컬럼 기준으로 기본 정보, 운영 정보, 프로그램 개요만 비교하고, `compare_meta`는 더 이상 표 본문의 기본 의존성이 아니다. 운영 메타 성격의 빈 값은 `데이터 미수집`, 실사용 컬럼의 빈 값은 `정보 없음`으로 구분해 표시한다.
 - 비교 페이지는 로그인 사용자에 한해 `POST /programs/compare-relevance`로 종합 관련도, 기술 스택 일치도, 매칭 스킬 태그를 계산해 표시한다.
 - compare relevance 응답은 기존 점수 필드 외에 `fit_label`, `fit_summary`, `readiness_label`, `gap_tags`를 함께 반환하고, compare UI는 이를 `★ AI 적합도` 섹션에서 적합도 판단, 지원 준비도, 한줄 요약, 보완 포인트로 해석해 보여준다.
