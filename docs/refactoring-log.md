@@ -263,6 +263,18 @@
   - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
   - `frontend`: `npm run build` 통과
 
+## 2026-04-20 런칭 smoke test 체크리스트 정리
+
+- 수정 파일:
+  - `docs/launch-smoke-test.md`
+  - `docs/current-state.md`
+  - `docs/refactoring-log.md`
+- 변경 내용:
+  - 공개 진입, 로그인, 대시보드, 활동 저장소, AI 기능, 추천/비교, 운영 로그까지 한 번에 확인할 수 있는 런칭용 smoke test 체크리스트를 문서화함
+  - 현재 의도적 보류 항목(blob preview용 `<img>`, 외부 안티바이러스 미연동)도 같이 적어 운영자가 남은 리스크를 구분할 수 있게 정리함
+- 유지된 동작:
+  - 코드 동작 변경 없음
+
 ## 2026-04-20 public flow 후속 정리
 
 - 수정 파일:
