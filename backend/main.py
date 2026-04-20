@@ -12,7 +12,7 @@ configure_logging()
 load_backend_dotenv()
 assert_python_version()
 
-from routers import activities, admin, bookmarks, coach, company, match, parse, programs, skills, slack
+from routers import activities, admin, assistant, bookmarks, coach, company, match, parse, programs, skills, slack
 from rag.chroma_client import get_chroma_health_summary, init_chroma
 
 
@@ -47,6 +47,7 @@ app.add_middleware(
 
 # 라우터 등록
 app.include_router(parse.router, prefix="/parse", tags=["parse"])
+app.include_router(assistant.router)
 app.include_router(coach.router, prefix="/coach", tags=["coach"])
 app.include_router(match.router, prefix="/match", tags=["match"])
 app.include_router(skills.router, prefix="/skills", tags=["skills"])

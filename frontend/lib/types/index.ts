@@ -325,6 +325,39 @@ export interface CalendarRecommendResponse {
   items: CalendarRecommendItem[];
 }
 
+export type ProgramCalendarRecommendItem = CalendarRecommendItem;
+export type AssistantPreferredIntent = "coach" | "recommend" | "recommend_calendar";
+
+export interface AssistantToolCall {
+  name: "coach_feedback" | "recommend_programs" | "recommend_calendar" | "clarify";
+  summary: string;
+}
+
+export interface AssistantMessageRequest {
+  message: string;
+  session_id?: string;
+  user_id?: string | null;
+  history?: CoachMessage[];
+  activity_description?: string;
+  job_title?: string;
+  section_type?: Activity["type"] | "요약";
+  category?: string;
+  region?: string;
+  top_k?: number;
+  force_refresh?: boolean;
+  include_calendar?: boolean;
+  preferred_intent?: AssistantPreferredIntent;
+}
+
+export interface AssistantMessageResponse {
+  intent: "coach" | "recommend" | "recommend_calendar" | "clarify";
+  reply: string;
+  tool_call: AssistantToolCall;
+  coach_result: CoachFeedbackResponse | null;
+  recommendation_result: ProgramRecommendResponse | null;
+  calendar_result: CalendarRecommendResponse | null;
+}
+
 export interface ProgramRelevanceItem {
   program_id: string;
   relevance_score: number;

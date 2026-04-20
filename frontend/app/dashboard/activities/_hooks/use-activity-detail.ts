@@ -9,14 +9,13 @@ import {
   deleteActivity,
   getActivityDetail,
   invalidateRecommendCache,
-  saveCoachSession,
+  requestActivityCoaching,
   updateActivity,
   uploadActivityImages,
 } from "@/lib/api/app";
 import {
   convertActivity,
   generateActivityIntro,
-  getCoachFeedback,
   getSkillSuggestions,
 } from "@/lib/api/backend";
 import type { Activity, ActivityConvertRequest, CoachMessage } from "@/lib/types";
@@ -177,21 +176,21 @@ export function useActivityDetail(activityId: string, isNewActivity: boolean, in
     if (!activity || !input.trim()) return;
     setSending(true);
     setError(null);
-    const userMessage: CoachMessage = { role: "user", content: input };
+    const trimmedInput = input.trim();
+    const userMessage: CoachMessage = { role: "user", content: trimmedInput };
     const updatedHistory = [...messages, userMessage];
     setMessages(updatedHistory);
     setInput("");
     try {
-      const result = await getCoachFeedback({
+      const result = await requestActivityCoaching({
+        message: trimmedInput,
         session_id: sessionId,
-        activity_description: input,
+        activity_description: descriptionDraft.trim() || buildIntroSourceText() || trimmedInput,
         job_title: jobTitle || "일반",
         section_type: (typeDraft || activity.type) as Activity["type"],
-        history: updatedHistory,
+        history: messages,
       });
-      const assistantMessage: CoachMessage = { role: "assistant", content: result.feedback };
-      setMessages([...updatedHistory, assistantMessage]);
-      await saveCoachSession({ sessionId, activityId: activity.id, messages: [...updatedHistory, assistantMessage] });
+      setMessages(result.updated_history);
     } catch (e) {
       setError(e instanceof Error ? e.message : "코치 피드백 요청에 실패했습니다.");
       setMessages([...updatedHistory, { role: "assistant", content: "오류가 발생했습니다. 다시 시도해주세요." }]);

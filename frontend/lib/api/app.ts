@@ -159,6 +159,12 @@ export async function getRecommendCalendar(
   );
 }
 
+export async function getRecommendedCalendar(
+  params?: RecommendProgramsParams
+): Promise<CalendarRecommendResponse> {
+  return getRecommendCalendar(params);
+}
+
 export async function getProgramCompareRelevance(
   programIds: string[]
 ): Promise<ProgramCompareRelevanceResponse> {
@@ -328,6 +334,7 @@ export async function deleteCoverLetter(id: string): Promise<{ id: string }> {
 }
 
 export async function requestCoverLetterCoaching(payload: {
+  message: string;
   session_id?: string;
   activity_description: string;
   job_title: string;
@@ -346,6 +353,7 @@ export async function requestCoverLetterCoaching(payload: {
 }
 
 export async function requestActivityCoaching(payload: {
+  message: string;
   session_id?: string;
   activity_description: string;
   job_title: string;

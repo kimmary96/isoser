@@ -1523,3 +1523,57 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - risks / follow-ups:
   - preview recommendation uses anonymous recommendations, so personalized dashboard behavior still needs regular-browser verification
   - preview coach does not include signed-in recommendation context because in-app browser login state is intentionally avoided
+
+## 2026-04-20 unified assistant preview and harness follow-up
+
+- changed files:
+  - `backend/main.py`
+  - `backend/routers/assistant.py`
+  - `backend/tests/test_assistant_router.py`
+  - `backend/tests/test_ai_smoke.py`
+  - `backend/tests/test_programs_router.py`
+  - `frontend/app/api/preview/assistant/route.ts`
+  - `frontend/app/preview/page.tsx`
+  - `frontend/app/preview/assistant/page.tsx`
+  - `frontend/app/preview/assistant/assistant-preview-client.tsx`
+  - `frontend/lib/api/app.ts`
+  - `frontend/lib/types/index.ts`
+  - `docs/recommendation/ai-harness-plan.md`
+  - `docs/current-state.md`
+- why:
+  - add one minimal assistant entry point that can reuse the already-shipped coach and recommendation routes instead of introducing a second AI stack
+  - give the chatbot and recommendation work a single local preview URL so implementation and manual QA do not depend on dashboard login
+  - extend the smoke baseline to cover the new assistant route and repair the cached calendar recommendation test setup to match the current route contract
+  - restore the dashboard calendar export aliases needed for a clean frontend production build
+- preserved behaviors:
+  - `/coach/feedback`, `/programs/recommend`, and `/programs/recommend/calendar` keep their existing request and response contracts
+  - the new preview route is additive and stays dev-only
+  - existing signed-in dashboard flows remain unchanged
+- risks / follow-ups:
+  - assistant intent detection is currently keyword-based, so ambiguous prompts can still fall into `clarify` or the wrong tool path
+  - the preview surface is anonymous, so personalized recommendation cache behavior and signed-in coach context still need dashboard-level verification
+  - the real dashboard coach inputs were not yet unified with the assistant entry point in this step
+
+## 2026-04-20 dashboard coach wiring through assistant
+
+- changed files:
+  - `backend/routers/assistant.py`
+  - `backend/tests/test_assistant_router.py`
+  - `frontend/app/api/dashboard/activities/coach/route.ts`
+  - `frontend/app/api/dashboard/cover-letters/coach/route.ts`
+  - `frontend/app/dashboard/activities/_hooks/use-activity-detail.ts`
+  - `frontend/app/dashboard/cover-letter/_hooks/use-cover-letter-detail.ts`
+  - `frontend/lib/api/app.ts`
+  - `frontend/lib/types/index.ts`
+  - `docs/current-state.md`
+- why:
+  - route the real activity and cover-letter coach inputs through `/assistant/message` instead of the older direct coach call path
+  - add `preferred_intent` and safer mixed-prompt handling so dashboard coach surfaces can force coach behavior while the preview assistant remains reusable
+  - keep the dashboard UI response shape unchanged by unwrapping `coach_result` inside the dashboard BFF routes
+- preserved behaviors:
+  - dashboard coach panels still read and render `CoachFeedbackResponse`
+  - coach session continuity still uses the backend coach session contract through `session_id` and `updated_history`
+  - preview assistant behavior and recommendation routes remain additive
+- risks / follow-ups:
+  - there is still no automated browser-level signed-in dashboard run, so this step is verified by backend tests and frontend build rather than a full UI robot
+  - dashboard coach surfaces currently force `preferred_intent="coach"`, so they do not yet expose recommendation or clarify branches inside those panels

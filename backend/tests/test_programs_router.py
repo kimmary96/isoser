@@ -680,6 +680,16 @@ def test_recommend_calendar_sorts_by_final_score_then_deadline_and_excludes_expi
 
     monkeypatch.setattr(programs, "_fetch_program_rows", fake_fetch_program_rows)
     monkeypatch.setattr(programs, "get_current_user_from_authorization", fake_get_current_user_from_authorization)
+    async def fake_fetch_profile_row(user_id: str) -> dict[str, object]:
+        assert user_id == "user-1"
+        return {}
+
+    async def fake_fetch_activity_rows(user_id: str) -> list[dict[str, object]]:
+        assert user_id == "user-1"
+        return []
+
+    monkeypatch.setattr(programs, "_fetch_profile_row", fake_fetch_profile_row)
+    monkeypatch.setattr(programs, "_fetch_activity_rows", fake_fetch_activity_rows)
     monkeypatch.setattr(programs, "_load_cached_recommendations", fake_load_cached_recommendations)
     monkeypatch.setattr(programs, "_fetch_programs_by_ids", fake_fetch_programs_by_ids)
 

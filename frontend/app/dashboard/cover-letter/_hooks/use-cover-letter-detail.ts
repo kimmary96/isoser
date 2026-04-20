@@ -202,6 +202,7 @@ export function useCoverLetterDetail(letterId: string, isNew: boolean) {
     setCoachInput("");
     try {
       const result = await requestCoverLetterCoaching({
+        message: trimmed,
         session_id: coachSessionId,
         activity_description: [
           `자기소개서 문항 코칭 요청`,
@@ -213,7 +214,7 @@ export function useCoverLetterDetail(letterId: string, isNew: boolean) {
         ].join("\n"),
         job_title: coachJobTitle || jobTitle || "일반",
         section_type: "요약",
-        history: nextHistory,
+        history: coachMessages,
       });
 
       setCoachSessionId(result.session_id);
