@@ -314,6 +314,23 @@
 - 유지된 동작:
   - 코드 동작 변경 없음
 
+## 2026-04-20 설정 상태 진단 health endpoint 추가
+
+- 수정 파일:
+  - `frontend/lib/server/env-status.ts`
+  - `frontend/app/api/health/config/route.ts`
+  - `docs/current-state.md`
+  - `docs/refactoring-log.md`
+- 변경 내용:
+  - Supabase, Gemini, Upstash 설정 존재 여부와 backend `/health` 연결 상태를 한 번에 확인할 수 있는 프론트 health endpoint를 추가함
+  - URL, 토큰 같은 민감정보 원문은 그대로 노출하지 않고 설정 여부와 backend host 정도만 보여주도록 제한함
+- 유지된 동작:
+  - 기존 사용자 기능, 로그인, 저장, AI 응답 계약은 바꾸지 않음
+- 검증 메모:
+  - `frontend`: `npm run lint` 통과
+  - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
+  - `frontend`: `npm run build` 통과
+
 ## 2026-04-20 public flow 후속 정리
 
 - 수정 파일:
