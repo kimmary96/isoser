@@ -1,6 +1,6 @@
 from datetime import date, datetime, timedelta, timezone
 import logging
-from typing import Any
+from typing import Any, Literal
 
 import httpx
 from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Query
@@ -129,6 +129,10 @@ class ProgramRelevanceItem(BaseModel):
     relevance_score: float
     skill_match_score: float
     matched_skills: list[str] = Field(default_factory=list)
+    fit_label: Literal["높음", "보통", "낮음"]
+    fit_summary: str
+    readiness_label: Literal["바로 지원 추천", "보완 후 지원", "탐색용 확인"]
+    gap_tags: list[str] = Field(default_factory=list)
 
 
 class ProgramCompareRelevanceResponse(BaseModel):
@@ -721,6 +725,80 @@ def _normalize_text_list(value: Any) -> list[str]:
     return [item.strip() for item in text.split(",") if item.strip()]
 
 
+def _has_meaningful_profile_text(profile: dict[str, Any]) -> bool:
+    for key in ("self_intro", "bio"):
+        value = profile.get(key)
+        if isinstance(value, str) and len(value.strip()) >= 20:
+            return True
+
+    career_items = _normalize_text_list(profile.get("career"))
+    return any(len(item.strip()) >= 8 for item in career_items)
+
+
+def _derive_fit_label(
+    *,
+    relevance_score: float,
+    skill_match_score: float,
+) -> Literal["높음", "보통", "낮음"]:
+    if relevance_score >= 0.7 and skill_match_score >= 0.5:
+        return "높음"
+    if relevance_score >= 0.4 or skill_match_score >= 0.3:
+        return "보통"
+    return "낮음"
+
+
+def _derive_readiness_label(
+    *,
+    fit_label: Literal["높음", "보통", "낮음"],
+    matched_skills_count: int,
+) -> Literal["바로 지원 추천", "보완 후 지원", "탐색용 확인"]:
+    if fit_label == "높음" and matched_skills_count >= 2:
+        return "바로 지원 추천"
+    if fit_label == "낮음":
+        return "탐색용 확인"
+    return "보완 후 지원"
+
+
+def _build_gap_tags(
+    *,
+    profile: dict[str, Any],
+    activities: list[dict[str, Any]],
+    matched_skills: list[str],
+    relevance_score: float,
+) -> list[str]:
+    gap_tags: list[str] = []
+
+    if not _normalize_text_list(profile.get("skills")):
+        gap_tags.append("프로필 기술 정보 부족")
+    if len(activities) < 1:
+        gap_tags.append("활동 근거 부족")
+    if not matched_skills:
+        gap_tags.append("기술 스택 근거 부족")
+    if relevance_score < 0.4:
+        gap_tags.append("직무 연관성 근거 부족")
+    if not _has_meaningful_profile_text(profile):
+        gap_tags.append("프로필 정보 보강 필요")
+
+    return gap_tags[:3]
+
+
+def _build_fit_summary(
+    *,
+    fit_label: Literal["높음", "보통", "낮음"],
+    gap_tags: list[str],
+) -> str:
+    if fit_label == "높음":
+        base = "보유 기술과 활동 이력이 프로그램 내용과 전반적으로 잘 맞습니다."
+    elif fit_label == "보통":
+        base = "일부 기술과 경험은 맞지만, 지원 전에 근거를 조금 더 보강하는 편이 좋습니다."
+    else:
+        base = "현재 프로필 정보만으로는 프로그램과의 직접 연관성이 충분히 확인되지 않습니다."
+
+    if gap_tags:
+        return f"{base} {gap_tags[0]}."
+    return base
+
+
 def _compute_program_relevance_items(
     *,
     profile: dict[str, Any],
@@ -762,12 +840,31 @@ def _compute_program_relevance_items(
         )
         # Prefer explicit skill matches for compare UI, then fall back to weighted keyword matches.
         normalized_matched_skills = matched_skills or matched_keywords[:5]
+        rounded_relevance_score = round(relevance_score, 4)
+        rounded_skill_match_score = round(skill_match_score, 4)
+        fit_label = _derive_fit_label(
+            relevance_score=rounded_relevance_score,
+            skill_match_score=rounded_skill_match_score,
+        )
+        gap_tags = _build_gap_tags(
+            profile=profile,
+            activities=activities,
+            matched_skills=normalized_matched_skills,
+            relevance_score=rounded_relevance_score,
+        )
         items.append(
             ProgramRelevanceItem(
                 program_id=program_id,
-                relevance_score=round(relevance_score, 4),
-                skill_match_score=round(skill_match_score, 4),
+                relevance_score=rounded_relevance_score,
+                skill_match_score=rounded_skill_match_score,
                 matched_skills=normalized_matched_skills,
+                fit_label=fit_label,
+                fit_summary=_build_fit_summary(fit_label=fit_label, gap_tags=gap_tags),
+                readiness_label=_derive_readiness_label(
+                    fit_label=fit_label,
+                    matched_skills_count=len(normalized_matched_skills),
+                ),
+                gap_tags=gap_tags,
             )
         )
 

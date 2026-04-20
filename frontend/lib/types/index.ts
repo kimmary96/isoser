@@ -323,6 +323,10 @@ export interface ProgramRelevanceItem {
   relevance_score: number;
   skill_match_score: number;
   matched_skills: string[];
+  fit_label: "높음" | "보통" | "낮음";
+  fit_summary: string;
+  readiness_label: "바로 지원 추천" | "보완 후 지원" | "탐색용 확인";
+  gap_tags: string[];
 }
 
 export interface ProgramCompareRelevanceResponse {
