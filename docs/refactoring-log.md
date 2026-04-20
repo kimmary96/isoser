@@ -110,6 +110,21 @@
   - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
   - `frontend`: `npm run build` 통과
 
+## 2026-04-20 profile route 중복 로직 정리
+
+- 수정 파일:
+  - `frontend/app/api/dashboard/profile/route.ts`
+  - `docs/refactoring-log.md`
+- 변경 내용:
+  - 프로필 저장용 요청 제한 설정을 `enforceProfileWriteRateLimit()` helper로 묶어 `PATCH`/`PUT`의 중복을 줄임
+  - 레거시 `bio` 컬럼 누락 fallback 판별을 `isMissingBioColumnError()` helper로 묶어 같은 조건식을 한 곳에서 관리하도록 정리함
+- 유지된 동작:
+  - 프로필 조회/저장/업로드 동작, rate limit 임계값, `bio` fallback 동작은 그대로 유지함
+- 검증 메모:
+  - `frontend`: `npm run lint` 통과 (기존 `<img>` warning만 유지)
+  - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
+  - `frontend`: `npm run build` 통과
+
 ## 2026-04-20 public flow 후속 정리
 
 - 수정 파일:

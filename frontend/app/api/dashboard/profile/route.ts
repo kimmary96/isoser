@@ -47,6 +47,23 @@ function normalizeProfile(profileRow: Record<string, unknown> | null): Profile {
   };
 }
 
+function enforceProfileWriteRateLimit(userId: string) {
+  return enforceRateLimit({
+    namespace: "profile-update",
+    key: userId,
+    maxRequests: 20,
+    windowMs: 60_000,
+  });
+}
+
+function isMissingBioColumnError(error: { code?: string; message?: string } | null | undefined): boolean {
+  if (!error) {
+    return false;
+  }
+
+  return error.code === "42703" || error.message?.toLowerCase().includes("bio") === true;
+}
+
 async function getAuthenticatedClient() {
   const supabase = await createServerSupabaseClient();
   const {
@@ -104,12 +121,7 @@ export async function GET() {
 export async function PATCH(request: Request) {
   try {
     const { supabase, user } = await getAuthenticatedClient();
-    const rateLimit = enforceRateLimit({
-      namespace: "profile-update",
-      key: user.id,
-      maxRequests: 20,
-      windowMs: 60_000,
-    });
+    const rateLimit = enforceProfileWriteRateLimit(user.id);
     if (!rateLimit.allowed) {
       return apiRateLimited(
         "프로필 저장 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.",
@@ -137,11 +149,7 @@ export async function PATCH(request: Request) {
       .update(payload)
       .eq("id", user.id);
 
-    if (
-      (updateError?.code === "42703" ||
-        updateError?.message.toLowerCase().includes("bio")) &&
-      "bio" in payload
-    ) {
+    if (isMissingBioColumnError(updateError) && "bio" in payload) {
       const payloadWithoutBio = { ...payload };
       delete payloadWithoutBio.bio;
       const retry = await supabase.from("profiles").update(payloadWithoutBio).eq("id", user.id);
@@ -168,12 +176,7 @@ export async function PATCH(request: Request) {
 export async function PUT(request: Request) {
   try {
     const { supabase, user } = await getAuthenticatedClient();
-    const rateLimit = enforceRateLimit({
-      namespace: "profile-update",
-      key: user.id,
-      maxRequests: 20,
-      windowMs: 60_000,
-    });
+    const rateLimit = enforceProfileWriteRateLimit(user.id);
     if (!rateLimit.allowed) {
       return apiRateLimited(
         "프로필 저장 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.",
@@ -235,7 +238,7 @@ export async function PUT(request: Request) {
       { onConflict: "id" }
     );
 
-    if (upsertError?.code === "42703" || upsertError?.message.toLowerCase().includes("bio")) {
+    if (isMissingBioColumnError(upsertError)) {
       const retry = await supabase.from("profiles").upsert(
         {
           id: user.id,
