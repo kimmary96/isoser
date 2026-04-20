@@ -6,6 +6,7 @@
 
 ## Summary
 - 로컬 구현 자동화는 `watcher.py`가 담당한다.
+- 저장소 루트에는 `main.py` ASGI shim이 있어 `uvicorn main:app --reload --port 8000`를 루트에서도 직접 실행할 수 있다.
 - cowork scratch review와 promotion은 `cowork_watcher.py`가 담당한다.
 - `cowork/packets`는 execution queue가 아니라 review 대상 원본 packet 저장소다.
 - `cowork/reviews`는 packet review 산출물 저장소다.
@@ -109,6 +110,8 @@
 - automation index: [automation/README.md](./automation/README.md)
 - automation overview: [automation/overview.md](./automation/overview.md)
 - local flow: [automation/local-flow.md](./automation/local-flow.md)
+- architecture graph: [automation/agentic-architecture-langgraph.md](./automation/agentic-architecture-langgraph.md)
+- presentation summary: [automation/agentic-flow-presentation.md](./automation/agentic-flow-presentation.md)
 - watcher LangGraph review: [automation/watcher-langgraph.md](./automation/watcher-langgraph.md)
 - task packet contract: [automation/task-packets.md](./automation/task-packets.md)
 - dispatch split: [automation/dispatch-channels.md](./automation/dispatch-channels.md)

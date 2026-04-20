@@ -1,5 +1,17 @@
 # 리팩토링 로그
 
+## 2026-04-20 백업 브랜치 기준 agent 규칙/참조 복원
+
+- 수정 파일:
+  - `AGENTS.md`
+  - `docs/current-state.md`
+- 변경 내용:
+  - 백업 브랜치 `backup_pre_reset_17af772`에만 남아 있던 중복 task 탐지, 부분 구현 재사용, review 시 `fix/update` 판정 규칙을 현재 `AGENTS.md`에 병합함
+  - 현재 저장소에 이미 존재하는 `main.py` ASGI shim과 agentic architecture/presentation 문서 참조가 `docs/current-state.md`에서 누락돼 있어 다시 연결함
+- 유지된 동작:
+  - 현재 watcher / cowork watcher 런타임 구현은 변경하지 않음
+  - `docs/agent-playbook.md` 기반 read order, rule precedence, git completion workflow 같은 최신 규칙은 그대로 유지함
+
 ## 2026-04-20 review-required 종료 처리 규칙 명시
 
 - 수정 파일:
