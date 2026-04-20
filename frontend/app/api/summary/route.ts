@@ -1,9 +1,23 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
-import { apiError, apiOk } from "@/lib/api/route-response";
+import { apiError, apiOk, apiRateLimited } from "@/lib/api/route-response";
+import { buildRateLimitKey, enforceRateLimit } from "@/lib/server/rate-limit";
 
 export async function POST(req: NextRequest) {
   try {
+    const rateLimit = enforceRateLimit({
+      namespace: "summary",
+      key: buildRateLimitKey(req, "summary"),
+      maxRequests: 10,
+      windowMs: 60_000,
+    });
+    if (!rateLimit.allowed) {
+      return apiRateLimited(
+        "요약 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.",
+        rateLimit.retryAfterSeconds
+      );
+    }
+
     const contentType = req.headers.get("content-type") || "";
     if (!contentType.includes("application/json")) {
       return apiError("Invalid content type", 415, "BAD_REQUEST");
@@ -26,6 +40,7 @@ export async function POST(req: NextRequest) {
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
       {
+        signal: AbortSignal.timeout(20_000),
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -46,7 +61,10 @@ export async function POST(req: NextRequest) {
     const summary = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
     return apiOk({ summary });
-  } catch {
+  } catch (error) {
+    if (error instanceof Error && error.name === "TimeoutError") {
+      return apiError("Summary generation timed out", 504, "UPSTREAM_ERROR");
+    }
     return apiError("Summary generation failed", 500, "INTERNAL_ERROR");
   }
 }

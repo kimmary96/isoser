@@ -1,6 +1,9 @@
-import { NextResponse } from "next/server";
-
-import { apiError, apiOk } from "@/lib/api/route-response";
+import { apiError, apiOk, apiRateLimited } from "@/lib/api/route-response";
+import { enforceRateLimit } from "@/lib/server/rate-limit";
+import {
+  MAX_AVATAR_IMAGE_SIZE_BYTES,
+  validateImageFile,
+} from "@/lib/server/upload-validation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Profile } from "@/lib/types";
 
@@ -101,6 +104,19 @@ export async function GET() {
 export async function PATCH(request: Request) {
   try {
     const { supabase, user } = await getAuthenticatedClient();
+    const rateLimit = enforceRateLimit({
+      namespace: "profile-update",
+      key: user.id,
+      maxRequests: 20,
+      windowMs: 60_000,
+    });
+    if (!rateLimit.allowed) {
+      return apiRateLimited(
+        "프로필 저장 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.",
+        rateLimit.retryAfterSeconds
+      );
+    }
+
     const patch = (await request.json()) as Partial<Profile>;
 
     const payload: Record<string, unknown> = {};
@@ -152,6 +168,19 @@ export async function PATCH(request: Request) {
 export async function PUT(request: Request) {
   try {
     const { supabase, user } = await getAuthenticatedClient();
+    const rateLimit = enforceRateLimit({
+      namespace: "profile-update",
+      key: user.id,
+      maxRequests: 20,
+      windowMs: 60_000,
+    });
+    if (!rateLimit.allowed) {
+      return apiRateLimited(
+        "프로필 저장 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.",
+        rateLimit.retryAfterSeconds
+      );
+    }
+
     const formData = await request.formData();
 
     const name = String(formData.get("name") ?? "").trim();
@@ -168,7 +197,15 @@ export async function PUT(request: Request) {
     let nextAvatarUrl = String(formData.get("current_avatar_url") ?? "").trim() || null;
 
     if (avatarFile instanceof File && avatarFile.size > 0) {
-      const extension = avatarFile.name.split(".").pop() ?? "png";
+      const validationError = validateImageFile(avatarFile, {
+        maxSizeBytes: MAX_AVATAR_IMAGE_SIZE_BYTES,
+        label: "프로필 이미지",
+      });
+      if (validationError) {
+        return apiError(validationError, 400, "BAD_REQUEST");
+      }
+
+      const extension = avatarFile.name.split(".").pop()?.trim().toLowerCase() ?? "png";
       const path = `${user.id}/profile/${Date.now()}.${extension}`;
       const fileBuffer = Buffer.from(await avatarFile.arrayBuffer());
 

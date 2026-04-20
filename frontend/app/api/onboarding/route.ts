@@ -60,7 +60,9 @@ export async function POST(request: Request) {
 
     let { error: profileError } = await supabase.from("profiles").upsert(profilePayload);
     if (profileError?.code === "42703" || profileError?.message.toLowerCase().includes("bio")) {
-      const { bio: _bio, ...fallbackPayload } = profilePayload;
+      const fallbackPayload = Object.fromEntries(
+        Object.entries(profilePayload).filter(([key]) => key !== "bio")
+      );
       const retry = await supabase.from("profiles").upsert(fallbackPayload);
       profileError = retry.error;
     }
