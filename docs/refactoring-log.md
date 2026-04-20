@@ -147,6 +147,26 @@
   - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
   - `frontend`: `npm run build` 통과
 
+## 2026-04-20 compare relevance API 보호막 추가
+
+- 수정 파일:
+  - `frontend/app/api/programs/compare-relevance/route.ts`
+  - `docs/current-state.md`
+  - `docs/refactoring-log.md`
+- 변경 내용:
+  - 비교 관련도 계산 API에 로그인 세션 기준 분당 12회 제한을 추가함
+  - 백엔드 compare relevance 호출에 20초 timeout을 추가해 장시간 대기 시 빠르게 실패하도록 정리함
+- 유지된 동작:
+  - 정상적인 비교 관련도 응답 구조와 로그인 요구 조건은 유지함
+  - 프로그램이 없는 경우 빈 배열을 반환하는 기존 동작도 그대로 유지함
+- 한계와 리스크:
+  - 현재 요청 제한 key는 세션 access token 기준이라, 토큰 갱신 시 버킷이 바뀔 수 있다
+  - 메모리 기반 제한이라 다중 인스턴스 전역 제한은 아니다
+- 검증 메모:
+  - `frontend`: `npm run lint` 통과 (기존 `<img>` warning만 유지)
+  - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
+  - `frontend`: `npm run build` 통과
+
 ## 2026-04-20 public flow 후속 정리
 
 - 수정 파일:
