@@ -23,6 +23,7 @@
 - `scripts/summarize_actionable_ledgers.py`는 `blocked`, `drift`, `needs-review`, `replan-required` 같은 즉시 대응이 필요한 상태만 따로 좁혀 보여준다.
 - `scripts/prune_run_ledgers.py`는 active JSONL ledger에서 오래된 이벤트를 archive로 옮겨 장기 운영 시 파일이 과도하게 커지는 문제를 완화한다.
 - `scripts/create_task_packet.py`는 current HEAD와 optional fingerprint field까지 채운 packet 초안을 바로 생성해 planner 쪽 기본값을 강화한다.
+- `watcher.py`와 `cowork_watcher.py`의 `PROJECT_PATH`는 더 이상 특정 Windows 절대경로에 하드코딩되지 않고, 기본값으로 각 스크립트 파일 위치의 저장소 루트를 기준으로 계산된다. 필요하면 `ISOSER_PROJECT_PATH` 환경변수로 override할 수 있다.
 - local `watcher.py`는 알려진 반복 알림에 대해 fingerprint별 self-healing runbook을 먼저 적용한다. 현재는 `origin/main` 자동 반영 스킵을 비차단 `self-healed`로 다운그레이드하고, 이미 `tasks/done/`에 완료본이 있는 중복 packet 런타임 오류를 자동 archive로 정리한다.
 - runbook으로 처리되지 않는 `blocked` / `runtime-error` / `push-failed` 알림은 summary+next_action 기반 fingerprint를 남기고, 같은 root cause가 3회 이상 반복되면 `tasks/inbox/`에 자동 remediation packet을 생성해 루트 원인 수정 작업을 다시 supervisor 플로우로 투입한다.
 - watcher와 cowork watcher는 개별 packet 처리 중 예외가 나도 전체 프로세스를 종료하지 않고 `runtime-error` 기록을 남긴 뒤 다음 루프를 계속 돈다.
@@ -40,11 +41,13 @@
 - `tasks/inbox`에 이미 `running`/`blocked`/`drifted`/`done` 상태가 존재하는 같은 파일명이 다시 들어오면 watcher는 재실행 대신 `tasks/archive/`로 보관하고 중복 inbox packet을 건너뛴다.
 - 실행 중이던 packet이 완료 단계에서 이미 같은 이름의 `tasks/done` 파일과 충돌하면 watcher는 런타임 예외로 죽지 않고 중복 packet만 `tasks/archive/`로 치워 후속 Git/Slack 처리만 계속한다.
 - `cowork_watcher.py`는 이미 `tasks/inbox/` 또는 `tasks/remote/`에 존재하는 packet을 다시 승인받아도 `FileExistsError`로 죽지 않고, 기존 승격본을 재사용한 것으로 기록만 남긴다.
+- `cowork_watcher.py`의 승격 stamp는 packet 전체의 `TODO_CURRENT_HEAD` 문자열을 일괄 치환하지 않고, frontmatter `planned_against_commit` 줄만 현재 `HEAD`로 교체한다.
 - review-ready Slack 메시지는 패킷/리뷰 경로와 승인 방법 안내를 숨기고, `판정`과 번호형 `핵심 확인사항` 중심으로 압축해서 보여준다.
 - Slack approval은 로컬 파일 marker 대신 Supabase `cowork_approvals` 공유 큐에 기록되고, 로컬 `cowork_watcher.py`가 이를 poll해서 `tasks/inbox|remote` 승격과 consumed 처리를 수행한다.
 - shared approval queue row는 가능하면 `id` 기준으로 claim 후 consumed/failed/ignored 상태를 갱신해 중복 poll 상황에서도 같은 승인 요청을 다시 소비하지 않도록 보강됐다.
 - `watcher.py`와 `cowork_watcher.py`는 각각 JSONL run ledger를 남겨 주요 상태 전이를 파일 기반 alert/dispatch 외에도 추적할 수 있다.
 - `scripts/supervise_watcher.ps1`와 `scripts/start_watchers.ps1`는 local watcher와 cowork watcher를 별도 supervisor 프로세스로 감싸 실행하며, 프로세스 종료 시 combined log를 남기고 자동 재시작한다.
+- supervisor는 이미 live lock PID가 있는 동안 run script를 다시 launch하지 않고, 해당 PID가 사라질 때까지 상태만 재확인한다.
 - watcher supervisor 로그는 `dispatch/logs/watcher-supervisor.log`, cowork watcher supervisor 로그는 `cowork/dispatch/logs/cowork-watcher-supervisor.log`에 쌓인다.
 - supervisor combined log는 PowerShell UTF-8 출력 설정과 `Out-File -Encoding utf8` 경로를 사용해 한글 로그가 깨지지 않도록 맞춘다.
 - `.vscode/tasks.json`은 워크스페이스 폴더가 열릴 때 `scripts/start_watchers.ps1`를 자동 실행해, 이미 살아 있는 watcher는 재사용하고 죽어 있으면 supervisor를 다시 띄운다.
@@ -72,6 +75,7 @@
 - `ENABLE_HRD_COLLECTOR=true`여도 `HRD_API_KEY` 또는 `HRDNET_API_KEY`가 없으면 scheduler는 실패 대신 `skipped_missing_config`로 기록한다.
 - 현재 full scheduler smoke 기준 `고용24`와 `K-Startup`은 서울 대상 데이터가 정상 저장되고, HRD는 기본 비활성 상태다.
 - Tier 2 HTML collector는 `SeSAC` 제목에서 상태 chip/D-day/모집 메타를 제거하고, `서울시 50플러스`는 `일자리 참여 신청` 같은 메뉴성 항목을 제외하도록 정제 규칙을 강화했다.
+- `backend/rag/collector/tier4_collectors.py`는 서울 자치구 Tier 4 수집기 6종(도봉창업센터, 구로 청년이룸, 서울청년센터 성동, 노원 청년내일, 도봉구청 일자리경제과, 마포구고용복지지원센터)을 모아 두고, `scheduler.py`는 이를 Tier 4로 등록해 `run_all_collectors(upsert=False)` dry-run 경로에서도 함께 실행한다.
 
 ## End-to-end packet flow
 1. planner가 `cowork/packets/<task-id>.md`에 task packet 원본을 만든다.
@@ -121,4 +125,7 @@
 
 ## Current behavior notes
 - 추천 프로그램 API는 `relevance_score`와 `urgency_score`를 분리해서 반환하며, 카드 UI는 관련도 배지에 `relevance_score`를 사용하고 마감 7일 이내만 별도 마감 칩으로 표시한다.
+- `backend/routers/programs.py`는 기존 `POST /programs/recommend`를 유지한 채 `GET /programs/recommend/calendar`를 추가해 `{ items: [...] }` 계약으로 캘린더 전용 추천을 제공하고, 이 경로에서만 만료 프로그램 제외 + `final_score desc`, `deadline asc` 정렬을 적용한다.
+- recommendation cache read는 저장된 `final_score`를 그대로 신뢰하지 않고 `relevance_score * 0.6 + urgency_score * 0.4`로 재계산하며, component score가 하나라도 없으면 stale cache로 보고 fresh recommendation path로 우회한다.
+- `frontend/app/api/dashboard/recommend-calendar/route.ts`와 `frontend/lib/api/app.ts`는 새 캘린더 추천 BFF/helper를 제공하며, 비로그인 사용자도 `relevance_score = 0`을 유지한 `{ items: CalendarRecommendItem[] }` 응답을 받을 수 있다.
 - 비교 페이지는 로그인 사용자에 한해 `POST /programs/compare-relevance`로 종합 관련도, 기술 스택 일치도, 매칭 스킬 태그를 계산해 표시한다.

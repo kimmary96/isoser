@@ -303,6 +303,21 @@ export interface ProgramRecommendResponse {
   items: ProgramRecommendItem[];
 }
 
+export interface CalendarRecommendItem {
+  program_id: string;
+  relevance_score: number;
+  urgency_score: number;
+  final_score: number;
+  deadline: string | null;
+  d_day_label: string;
+  reason: string;
+  program: Program;
+}
+
+export interface CalendarRecommendResponse {
+  items: CalendarRecommendItem[];
+}
+
 export interface ProgramRelevanceItem {
   program_id: string;
   relevance_score: number;

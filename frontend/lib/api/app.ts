@@ -16,6 +16,7 @@ import type {
   DashboardMeResponse,
   DashboardProfileResponse,
   DocumentsResponse,
+  CalendarRecommendResponse,
   MatchDashboardResponse,
   ProgramListResponse,
   ResumeBuilderResponse,
@@ -137,6 +138,24 @@ export async function invalidateRecommendCache(): Promise<void> {
   } catch {
     // Ignore cache refresh failures so the dashboard can recover on next entry.
   }
+}
+
+export async function getRecommendCalendar(
+  params?: RecommendProgramsParams
+): Promise<CalendarRecommendResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.category) searchParams.set("category", params.category);
+  if (params?.region) searchParams.set("region", params.region);
+  if (params?.forceRefresh) searchParams.set("force_refresh", "true");
+
+  const query = searchParams.toString();
+  const url = `/api/dashboard/recommend-calendar${query ? `?${query}` : ""}`;
+
+  return requestAppJson<CalendarRecommendResponse>(
+    url,
+    { method: "GET" },
+    "캘린더 추천 프로그램을 불러오지 못했습니다."
+  );
 }
 
 export async function getProgramCompareRelevance(

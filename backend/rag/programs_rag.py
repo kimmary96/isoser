@@ -19,6 +19,8 @@ except ImportError:
 
 logger = get_logger(__name__)
 TOKEN_PATTERN = re.compile(r"[0-9A-Za-z가-힣+#]+")
+RECOMMEND_RELEVANCE_WEIGHT = 0.6
+RECOMMEND_URGENCY_WEIGHT = 0.4
 
 PROGRAM_RECOMMEND_PROMPT = """
 너는 사용자의 경력 프로필에 맞는 훈련 과정을 추천하는 커리어 코치다.
@@ -180,6 +182,14 @@ class ProgramsRAG:
         except Exception:
             return 0.0
 
+    def _final_score(self, relevance_score: float | None, urgency_score: float | None) -> float:
+        relevance = float(relevance_score or 0.0)
+        urgency = float(urgency_score or 0.0)
+        return round(
+            relevance * RECOMMEND_RELEVANCE_WEIGHT + urgency * RECOMMEND_URGENCY_WEIGHT,
+            4,
+        )
+
     def _tokenize_text(self, value: Any) -> list[str]:
         if value is None:
             return []
@@ -327,7 +337,7 @@ class ProgramsRAG:
                 days_left = None
             matched_keywords, relevance_score = self._program_match_context(program_record, keywords)
             urgency_score = self._urgency_score(program_record)
-            final_score = round(relevance_score * 0.8 + urgency_score * 0.2, 4)
+            final_score = self._final_score(relevance_score, urgency_score)
             program_record["days_left"] = days_left
             program_record["similarity_score"] = relevance_score
             program_record["relevance_score"] = relevance_score
@@ -451,7 +461,7 @@ class ProgramsRAG:
                 days_left = None
             urgency_score = self._urgency_score(program_record)
             semantic_score = self._semantic_score(result.score)
-            final_score = round(semantic_score * 0.8 + urgency_score * 0.2, 4)
+            final_score = self._final_score(semantic_score, urgency_score)
             program_record["days_left"] = days_left
             program_record["similarity_score"] = semantic_score
             program_record["relevance_score"] = semantic_score

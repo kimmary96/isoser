@@ -1,5 +1,24 @@
 # 리팩토링 로그
 
+## 2026-04-20 watcher 경로 고정값 및 승격 stamp/supervisor 루프 보정
+
+- 수정 파일:
+  - `watcher.py`
+  - `cowork_watcher.py`
+  - `scripts/supervise_watcher.ps1`
+  - `tests/test_cowork_watcher.py`
+  - `docs/current-state.md`
+- 변경 내용:
+  - `watcher.py`, `cowork_watcher.py`의 `PROJECT_PATH`를 예전 Windows 절대경로 하드코딩에서 스크립트 파일 위치 기준 동적 계산으로 바꾸고, 필요 시 `ISOSER_PROJECT_PATH` override를 허용함
+  - `cowork_watcher.py`의 승격 stamp가 packet 전체의 `TODO_CURRENT_HEAD`를 일괄 치환하지 않고 frontmatter의 `planned_against_commit` 줄만 현재 `HEAD`로 교체하도록 좁힘
+  - `scripts/supervise_watcher.ps1`가 live lock PID가 남아 있는 동안 run script를 다시 launch하지 않고 재확인만 하도록 조정해 중복 재시도 로그 루프를 줄임
+  - body 안의 `TODO_CURRENT_HEAD` 텍스트가 보존되는 회귀 테스트를 추가함
+- 유지된 동작:
+  - 테스트와 운영 코드에서 `PROJECT_PATH` monkeypatch/override 방식은 그대로 사용 가능함
+  - 승격 시 `planned_against_commit`이 placeholder일 때 현재 `HEAD`로 stamp하는 기존 기능 자체는 유지됨
+- 후속 메모:
+  - dated audit/report 문서의 절대경로 표기는 계속 오해를 만들 수 있으므로, 운영 문서 전반은 상대경로 또는 workspace-root 기준 표현으로 더 정리할 여지가 있음
+
 ## 2026-04-17 반복 watcher 알림 자동 remediation 큐 추가
 
 - 수정 파일:
@@ -1207,6 +1226,11 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 
 ## 2026-04-16 추가 메모
 
+- 2026-04-20: `backend/rag/programs_rag.py`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/lib/api/app.ts`, `frontend/lib/types/index.ts`
+  - 추천 하이브리드 점수 공식을 `0.6 / 0.4`로 복구하고, cache read 시 저장된 `final_score`를 재사용하지 않도록 stale-cache recovery 규칙을 추가함
+  - `GET /programs/recommend/calendar`와 `/api/dashboard/recommend-calendar`를 추가해 만료 프로그램 제외, `final_score desc + deadline asc` 정렬, `d_day_label` 포함 응답 계약을 캘린더 전용으로 분리함
+  - router regression test에 cache 재계산, stale fallback, 비로그인 캘린더 계약, 캘린더 정렬/만료 제외 회귀를 고정함
+
 - `backend/routers/admin.py`, `backend/tests/test_admin_router.py`
   - 추천 데이터 파이프라인 검증 중 드러난 Supabase `programs` 스키마 hybrid 상태를 흡수하도록 admin sync upsert에 후방 호환 fallback을 추가함
   - `is_certified`, `raw_data`, `support_type`, `teaching_method` 같은 누락 컬럼은 자동으로 제외하고 재시도하며, `programs_unique`/`programs_hrd_id_key` 충돌 시에는 row-by-row merge fallback으로 기존 row를 찾아 upsert하도록 보강함
@@ -1282,3 +1306,6 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-17: `scripts/summarize_run_ledgers.py`, `scripts/summarize_actionable_ledgers.py`, `tests/test_summarize_run_ledgers.py`, `tests/test_summarize_actionable_ledgers.py`, `CLAUDE.md`
   - 운영 요약 스크립트가 현재 queue snapshot도 함께 출력하도록 확장해 `tasks/review-required/` 대기 현황을 ledger 이벤트와 별개로 바로 볼 수 있게 함
   - 상위 프로젝트 문서 `CLAUDE.md`에도 supervisor 3단계와 `tasks/review-required/` 전용 큐 의미를 반영해 운영 용어를 맞춤
+- 2026-04-20: `backend/rag/collector/tier4_collectors.py`, `backend/rag/collector/scheduler.py`
+  - 서울 자치구 Tier 4 HTML collector 6종을 전용 모듈로 분리해 추가하고, scheduler dry-run 경로에 Tier 4 등록을 연결함
+  - 실서비스 HTML 구조 기준으로 HTTP-only 구로, `cntrId=CT00006` 고정 성동, Imweb board 패턴 노원, 메인 기반 마포 제약을 각 collector 내부에 고정해 기존 Tier 1~3 계약은 유지함

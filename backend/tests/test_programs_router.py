@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+from datetime import date, timedelta
+from types import SimpleNamespace
+
+import pytest
+from fastapi.testclient import TestClient
+
 from routers import programs
 
 
@@ -45,3 +51,253 @@ def test_parse_content_range_total_reads_exact_count() -> None:
     assert programs._parse_content_range_total("0-0/57") == 57
     assert programs._parse_content_range_total("*/0") == 0
     assert programs._parse_content_range_total(None) == 0
+
+
+def test_recalculate_final_score_uses_recovered_weights() -> None:
+    assert programs._recalculate_final_score(0.75, 0.25) == 0.55
+
+
+def test_normalize_cached_recommendation_rows_marks_missing_component_scores_stale() -> None:
+    normalized = programs._normalize_cached_recommendation_rows(
+        [
+            {
+                "program_id": "program-1",
+                "relevance_score": 0.8,
+                "urgency_score": None,
+                "final_score": 0.9,
+            }
+        ]
+    )
+
+    assert normalized is None
+
+
+@pytest.mark.asyncio
+async def test_build_cached_recommendation_items_recalculates_final_score(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_fetch_programs_by_ids(program_ids: list[str]) -> dict[str, dict[str, object]]:
+        assert program_ids == ["program-1"]
+        return {
+            "program-1": {
+                "id": "program-1",
+                "title": "AI 부트캠프",
+                "deadline": "2099-05-01",
+            }
+        }
+
+    monkeypatch.setattr(programs, "_fetch_programs_by_ids", fake_fetch_programs_by_ids)
+
+    items = await programs._build_cached_recommendation_items(
+        [
+            {
+                "program_id": "program-1",
+                "similarity_score": 0.8,
+                "relevance_score": 0.4,
+                "urgency_score": 0.5,
+                "final_score": 0.99,
+            }
+        ],
+        top_k=5,
+    )
+
+    assert len(items) == 1
+    assert items[0].score == 0.44
+    assert items[0].program.final_score == 0.44
+    assert items[0].program.relevance_score == 0.4
+    assert items[0].program.urgency_score == 0.5
+
+
+def test_recommend_calendar_anonymous_returns_contract_shape(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    future_deadline = (date.today() + timedelta(days=2)).isoformat()
+
+    async def fake_fetch_program_rows(
+        limit: int = 200,
+        category: str | None = None,
+        region: str | None = None,
+    ) -> list[dict[str, object]]:
+        assert limit >= 50
+        return [
+            {
+                "id": "program-1",
+                "title": "데이터 분석 과정",
+                "deadline": future_deadline,
+                "location": "서울",
+                "is_active": True,
+            }
+        ]
+
+    monkeypatch.setattr(programs, "_fetch_program_rows", fake_fetch_program_rows)
+
+    response = client.get("/programs/recommend/calendar")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert list(payload.keys()) == ["items"]
+    assert len(payload["items"]) == 1
+    item = payload["items"][0]
+    assert item["program_id"] == "program-1"
+    assert item["deadline"] == future_deadline
+    assert item["d_day_label"] == "D-2"
+    assert item["relevance_score"] == 0.0
+    assert item["urgency_score"] > 0
+    assert item["final_score"] == programs._recalculate_final_score(0.0, item["urgency_score"])
+    assert item["reason"]
+    assert item["program"]["id"] == "program-1"
+
+
+def test_recommend_calendar_uses_fresh_path_when_cache_rows_are_stale(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    future_deadline = (date.today() + timedelta(days=5)).isoformat()
+    recommend_called = {"value": False}
+
+    async def fake_fetch_program_rows(
+        limit: int = 200,
+        category: str | None = None,
+        region: str | None = None,
+    ) -> list[dict[str, object]]:
+        return [
+            {
+                "id": "program-1",
+                "title": "AI 서비스 기획",
+                "deadline": future_deadline,
+                "location": "서울",
+                "is_active": True,
+            }
+        ]
+
+    async def fake_get_current_user_from_authorization(_: str) -> SimpleNamespace:
+        return SimpleNamespace(id="user-1")
+
+    async def fake_load_cached_recommendations(_: str) -> list[dict[str, object]]:
+        return [
+            {
+                "program_id": "program-1",
+                "relevance_score": 0.8,
+                "urgency_score": None,
+                "final_score": 0.95,
+            }
+        ]
+
+    async def fake_fetch_profile_row(_: str) -> dict[str, object]:
+        return {"id": "user-1", "skills": ["기획"]}
+
+    async def fake_fetch_activity_rows(_: str, limit: int = 50) -> list[dict[str, object]]:
+        return []
+
+    async def fake_recommend(**_: object) -> list[programs.ProgramRecommendation]:
+        recommend_called["value"] = True
+        return [
+            programs.ProgramRecommendation(
+                program_id="program-1",
+                score=programs._recalculate_final_score(0.7, 0.4),
+                relevance_score=0.7,
+                reason="프로필과 잘 맞는 과정입니다.",
+                fit_keywords=["기획"],
+                program={
+                    "id": "program-1",
+                    "title": "AI 서비스 기획",
+                    "deadline": future_deadline,
+                    "location": "서울",
+                    "relevance_score": 0.7,
+                    "urgency_score": 0.4,
+                    "final_score": programs._recalculate_final_score(0.7, 0.4),
+                },
+            )
+        ]
+
+    async def fake_save_recommendations(_: str, __: list[programs.ProgramRecommendation]) -> None:
+        return None
+
+    monkeypatch.setattr(programs, "_fetch_program_rows", fake_fetch_program_rows)
+    monkeypatch.setattr(programs, "get_current_user_from_authorization", fake_get_current_user_from_authorization)
+    monkeypatch.setattr(programs, "_load_cached_recommendations", fake_load_cached_recommendations)
+    monkeypatch.setattr(programs, "_fetch_profile_row", fake_fetch_profile_row)
+    monkeypatch.setattr(programs, "_fetch_activity_rows", fake_fetch_activity_rows)
+    monkeypatch.setattr(programs.programs_rag, "recommend", fake_recommend)
+    monkeypatch.setattr(programs, "_save_recommendations", fake_save_recommendations)
+
+    response = client.get(
+        "/programs/recommend/calendar",
+        headers={"Authorization": "Bearer token"},
+    )
+
+    assert response.status_code == 200
+    assert recommend_called["value"] is True
+    payload = response.json()
+    assert payload["items"][0]["final_score"] == programs._recalculate_final_score(0.7, 0.4)
+    assert payload["items"][0]["relevance_score"] == 0.7
+
+
+def test_recommend_calendar_sorts_by_final_score_then_deadline_and_excludes_expired(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    earlier_deadline = (date.today() + timedelta(days=3)).isoformat()
+    later_deadline = (date.today() + timedelta(days=9)).isoformat()
+    expired_deadline = (date.today() - timedelta(days=1)).isoformat()
+
+    async def fake_fetch_program_rows(
+        limit: int = 200,
+        category: str | None = None,
+        region: str | None = None,
+    ) -> list[dict[str, object]]:
+        return [
+            {"id": "program-1", "title": "A", "deadline": earlier_deadline, "is_active": True},
+            {"id": "program-2", "title": "B", "deadline": later_deadline, "is_active": True},
+            {"id": "program-3", "title": "C", "deadline": expired_deadline, "is_active": True},
+        ]
+
+    async def fake_get_current_user_from_authorization(_: str) -> SimpleNamespace:
+        return SimpleNamespace(id="user-1")
+
+    async def fake_load_cached_recommendations(_: str) -> list[dict[str, object]]:
+        return [
+            {
+                "program_id": "program-2",
+                "relevance_score": 0.6,
+                "urgency_score": 0.4,
+                "final_score": 0.1,
+            },
+            {
+                "program_id": "program-1",
+                "relevance_score": 0.6,
+                "urgency_score": 0.4,
+                "final_score": 0.9,
+            },
+            {
+                "program_id": "program-3",
+                "relevance_score": 0.95,
+                "urgency_score": 0.95,
+                "final_score": 0.95,
+            },
+        ]
+
+    async def fake_fetch_programs_by_ids(program_ids: list[str]) -> dict[str, dict[str, object]]:
+        assert set(program_ids) == {"program-1", "program-2", "program-3"}
+        return {
+            "program-1": {"id": "program-1", "title": "A", "deadline": earlier_deadline},
+            "program-2": {"id": "program-2", "title": "B", "deadline": later_deadline},
+            "program-3": {"id": "program-3", "title": "C", "deadline": expired_deadline},
+        }
+
+    monkeypatch.setattr(programs, "_fetch_program_rows", fake_fetch_program_rows)
+    monkeypatch.setattr(programs, "get_current_user_from_authorization", fake_get_current_user_from_authorization)
+    monkeypatch.setattr(programs, "_load_cached_recommendations", fake_load_cached_recommendations)
+    monkeypatch.setattr(programs, "_fetch_programs_by_ids", fake_fetch_programs_by_ids)
+
+    response = client.get(
+        "/programs/recommend/calendar",
+        headers={"Authorization": "Bearer token"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert [item["program_id"] for item in payload["items"]] == ["program-1", "program-2"]
+    assert payload["items"][0]["deadline"] == earlier_deadline
+    assert payload["items"][1]["deadline"] == later_deadline
