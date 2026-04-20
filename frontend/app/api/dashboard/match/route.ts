@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 
-import { apiError, apiOk } from "@/lib/api/route-response";
+import { apiError, apiOk, apiRateLimited } from "@/lib/api/route-response";
+import { enforceRateLimit } from "@/lib/server/rate-limit";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { MatchResult } from "@/lib/types";
 
@@ -107,6 +108,19 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const { supabase, user } = await getAuthenticatedClient();
+    const rateLimit = enforceRateLimit({
+      namespace: "match-analysis",
+      key: user.id,
+      maxRequests: 6,
+      windowMs: 60_000,
+    });
+    if (!rateLimit.allowed) {
+      return apiRateLimited(
+        "분석 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.",
+        rateLimit.retryAfterSeconds
+      );
+    }
+
     const body = (await request.json()) as {
       companyName?: string;
       positionName?: string;
@@ -169,6 +183,7 @@ export async function POST(request: NextRequest) {
 
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
     const analyzeResponse = await fetch(`${backendUrl}/match/analyze`, {
+      signal: AbortSignal.timeout(30_000),
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -269,6 +284,9 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
+    if (error instanceof Error && error.name === "TimeoutError") {
+      return apiError("합격률 분석 응답이 지연되고 있습니다. 잠시 후 다시 시도해주세요.", 504, "UPSTREAM_ERROR");
+    }
     const message = error instanceof Error ? error.message : "합격률 분석에 실패했습니다.";
     return apiError(message, 400, "BAD_REQUEST");
   }

@@ -125,6 +125,28 @@
   - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
   - `frontend`: `npm run build` 통과
 
+## 2026-04-20 match / coach API 요청 제한과 timeout 보강
+
+- 수정 파일:
+  - `frontend/app/api/dashboard/match/route.ts`
+  - `frontend/app/api/dashboard/cover-letters/coach/route.ts`
+  - `docs/current-state.md`
+  - `docs/refactoring-log.md`
+- 변경 내용:
+  - 합격률 분석 API에 인증 사용자 기준 분당 6회 요청 제한과 30초 timeout을 추가함
+  - AI 코칭 API에 인증 사용자 기준 분당 8회 요청 제한과 30초 timeout을 추가함
+  - timeout 발생 시 504 성격의 upstream 오류로 사용자에게 빠르게 실패를 알리도록 정리함
+- 유지된 동작:
+  - 정상 분석/코칭 요청의 입력·출력 계약과 저장 흐름은 유지함
+  - 일반적인 사용량에서는 기존과 동일하게 동작함
+- 한계와 리스크:
+  - 현재 제한은 프로세스 메모리 기반이라 다중 인스턴스 환경의 완전한 전역 제한은 아니다
+  - timeout 값은 운영 트래픽과 백엔드 평균 응답 시간을 보며 추후 조정이 필요할 수 있다
+- 검증 메모:
+  - `frontend`: `npm run lint` 통과 (기존 `<img>` warning만 유지)
+  - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
+  - `frontend`: `npm run build` 통과
+
 ## 2026-04-20 public flow 후속 정리
 
 - 수정 파일:
