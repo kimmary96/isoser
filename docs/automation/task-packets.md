@@ -1,5 +1,7 @@
 # Task Packet Contract
 
+For the full repository read order and source-of-truth priority, start with [../agent-playbook.md](../agent-playbook.md).
+
 ## Packet lifecycle
 - `cowork/packets/<task-id>.md`는 기획 원본이자 review 대상 packet이다
 - review 결과는 `cowork/reviews/<task-id>-review.md`에 별도 문서로 남는다
@@ -30,6 +32,7 @@
 - 파일명과 id는 가능하면 `TASK-YYYY-MM-DD-HHMM-short-slug` 형식을 쓴다
 
 ## References
+- agent entrypoint: [../agent-playbook.md](../agent-playbook.md)
 - template: [../rules/task-packet-template.md](../rules/task-packet-template.md)
 - examples: [../rules/task-packet-examples.md](../rules/task-packet-examples.md)
 - execution flow: [./local-flow.md](./local-flow.md)

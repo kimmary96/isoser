@@ -1,5 +1,118 @@
 # 리팩토링 로그
 
+## 2026-04-20 review-required 종료 처리 규칙 명시
+
+- 수정 파일:
+  - `docs/current-state.md`
+  - `docs/automation/local-flow.md`
+  - `docs/automation/overview.md`
+  - `docs/automation/operations.md`
+- 변경 내용:
+  - `tasks/review-required/`를 살아 있는 수동 검토 대기열로만 사용하고, 검토가 끝난 packet은 `tasks/archive/`로 이동하는 운영 규칙을 문서화함
+  - 구현이 이미 반영돼 stale로 닫는 packet도 `review-required/`에 남기지 않고 archive로 정리하며, `reports/*` verification/result/needs-review 문서는 audit trail로 유지한다고 명시함
+- 유지된 동작:
+  - verifier가 `review-required` verdict를 내리면 watcher가 전용 큐와 `needs-review` alert로 분기하는 기존 흐름은 유지함
+  - `reports/*`와 dispatch alert는 계속 판단 근거 저장소로 남음
+
+## 2026-04-20 Agent 규칙 문서 진입점 정리
+
+- 수정 파일:
+  - `AGENTS.md`
+  - `docs/agent-playbook.md`
+  - `docs/automation/task-packets.md`
+  - `docs/current-state.md`
+- 변경 내용:
+  - 새 에이전트가 어디를 먼저 읽고 어떤 문서를 기준으로 판단해야 하는지 명확히 하기 위해 `docs/agent-playbook.md`를 단일 진입 문서로 추가함
+  - `AGENTS.md`에 read order와 rule precedence를 명시해 packet, folder instructions, current-state 사이의 우선순위를 고정함
+  - task packet contract와 current-state 문서에도 새 진입 문서를 링크해, planner / reviewer / implementer가 같은 읽기 순서를 따르도록 정리함
+- 유지된 동작:
+  - 기존 watcher / cowork watcher 흐름과 packet contract 자체는 변경하지 않음
+  - 기존 세부 운영 문서들은 계속 세부 참조 문서로 유지함
+
+## 2026-04-20 Compare AI 적합도 v2 해석 레이어 추가
+
+- 수정 파일:
+  - `backend/routers/programs.py`
+  - `backend/tests/test_programs_router.py`
+  - `frontend/app/(landing)/compare/programs-compare-client.tsx`
+  - `frontend/lib/types/index.ts`
+- 변경 내용:
+  - 기존 `POST /programs/compare-relevance` 계산 흐름은 유지한 채, compare relevance 응답에 `fit_label`, `fit_summary`, `readiness_label`, `gap_tags`를 추가하는 deterministic 해석 레이어를 얹음
+  - compare UI의 `★ 나와의 관련도` 섹션을 `★ AI 적합도`로 재구성하고, 기존 점수/매칭 스킬 행을 유지하면서 적합도 판단, 지원 준비도, AI 한줄 요약, 보완 포인트를 추가함
+  - profile/activity 정보가 약한 경우에도 endpoint가 실패하지 않고 낮은 적합도와 보완 태그를 안정적으로 반환하도록 테스트를 보강함
+- 유지된 동작:
+  - compare relevance endpoint 경로와 기존 점수 필드 계약은 그대로 유지함
+  - 로그인 401 기반 흐름과 compare 페이지의 기존 슬롯/URL state/CTA 구조는 변경하지 않음
+- 후속 메모:
+  - 현재 readiness 문구는 준비도 힌트 수준에 머물러 있으므로, 실제 지원 자격 판단과 혼동되지 않게 copy audit을 별도 진행할 여지가 있음
+
+## 2026-04-20 공개 랜딩/프로그램/비교 화면 정리와 마감 기준 재정렬
+
+- 수정 파일:
+  - `backend/routers/programs.py`
+  - `backend/tests/test_programs_router.py`
+  - `frontend/app/(auth)/login/page.tsx`
+  - `frontend/app/(landing)/landing-a/_components.tsx`
+  - `frontend/app/(landing)/landing-a/_styles.ts`
+  - `frontend/app/(landing)/programs/page.tsx`
+  - `frontend/app/(landing)/compare/programs-compare-client.tsx`
+  - `frontend/app/(landing)/compare/program-select-modal.tsx`
+  - `frontend/lib/api/backend.ts`
+  - `frontend/lib/types/index.ts`
+  - `docs/current-state.md`
+- 변경 내용:
+  - 로그인 페이지와 공개 랜딩/비교 화면을 대시보드와 더 가까운 라이트 톤으로 정리해 대비 문제를 줄이고 공통 제품 인상을 맞춤
+  - 랜딩 메인 카피를 `흩어진 국비 지원 정보, 내 상황에 맞는 것만 골라드립니다` 흐름으로 교체하고, 공개 CTA와 보조 설명을 현재 프로그램 탐색/워크스페이스 구조에 맞게 다듬음
+  - 프로그램 목록은 기본값으로 모집중 공고만 오늘 기준 마감순으로 노출하고, `마감된 활동 보기`를 켰을 때만 최근 3개월 내 마감 공고를 함께 표시하도록 UI와 backend query contract를 같이 변경함
+  - programs router가 더 이상 Supabase `is_active` 값만 신뢰하지 않고 실제 `deadline`을 기준으로 목록/카운트를 재계산해, 메인 랜딩과 프로그램 검색에 마감 공고가 섞이는 문제를 줄임
+  - compare 선택 모달 검색도 기본적으로 모집중 공고와 deadline 정렬을 따르도록 맞춤
+- 유지된 동작:
+  - `/landing-a`, `/programs`, `/compare`, `/login`의 기존 공개 라우트 구조는 유지함
+  - compare 페이지의 3슬롯 URL state, 로그인 사용자 관련도 계산, 추천 프로그램 추가 흐름은 유지함
+  - 프로그램 검색의 카테고리/지역/페이지네이션 구조는 유지함
+- 후속 메모:
+  - `landing-b`가 계속 실험용 경로로 남아 있으므로, 실제 운영에서 더 이상 쓰지 않으면 `/landing-a`로 정리할지 검토할 수 있음
+  - `deadline`이 비어 있는 source에 대해서는 수집기 정규화 품질을 추가로 높이지 않으면 목록 후순위 처리나 제외가 늘어날 수 있음
+
+## 2026-04-20 Tier 4 collector 회귀 테스트 보강
+
+- 수정 파일:
+  - `backend/rag/collector/tier4_collectors.py`
+  - `backend/tests/test_tier4_collectors.py`
+  - `backend/tests/test_scheduler_collectors.py`
+  - `docs/current-state.md`
+- 변경 내용:
+  - Tier 4 collector 6종 각각에 대해 HTML fixture 기반 parser 회귀 테스트를 추가해 링크 조합, raw 보존 필드, 키워드 필터, district 메타데이터를 고정함
+  - scheduler dry-run 테스트를 Tier 4까지 확장해 Tier 1 이후 6개 district source가 모두 `tier=4`, `status=dry_run`으로 포함되는 계약을 고정함
+  - `NowonCollector`의 분류 기본값을 `취업`에서 `기타`로 낮춰, 키워드가 불명확한 공지를 과도하게 취업 카테고리로 몰아넣는 오분류를 줄임
+- 유지된 동작:
+  - 기존 Tier 4 collector 등록 순서와 scheduler tier 정렬 방식은 그대로 유지함
+  - district collector의 수집 대상, source 메타데이터, raw payload 구조는 바꾸지 않음
+- 검증 메모:
+  - `backend\venv\Scripts\python.exe -m pytest backend/tests/test_tier4_collectors.py backend/tests/test_scheduler_collectors.py -q`
+  - 결과: `11 passed`
+- 후속 메모:
+  - 실서비스 HTML 변경 감지는 여전히 live smoke나 운영 수집 로그를 함께 봐야 하므로, 필요하면 이후에 source별 saved HTML fixture를 더 현실적으로 보강할 수 있음
+
+## 2026-04-20 watcher 경로 고정값 및 승격 stamp/supervisor 루프 보정
+
+- 수정 파일:
+  - `watcher.py`
+  - `cowork_watcher.py`
+  - `scripts/supervise_watcher.ps1`
+  - `tests/test_cowork_watcher.py`
+  - `docs/current-state.md`
+- 변경 내용:
+  - `watcher.py`, `cowork_watcher.py`의 `PROJECT_PATH`를 예전 Windows 절대경로 하드코딩에서 스크립트 파일 위치 기준 동적 계산으로 바꾸고, 필요 시 `ISOSER_PROJECT_PATH` override를 허용함
+  - `cowork_watcher.py`의 승격 stamp가 packet 전체의 `TODO_CURRENT_HEAD`를 일괄 치환하지 않고 frontmatter의 `planned_against_commit` 줄만 현재 `HEAD`로 교체하도록 좁힘
+  - `scripts/supervise_watcher.ps1`가 live lock PID가 남아 있는 동안 run script를 다시 launch하지 않고 재확인만 하도록 조정해 중복 재시도 로그 루프를 줄임
+  - body 안의 `TODO_CURRENT_HEAD` 텍스트가 보존되는 회귀 테스트를 추가함
+- 유지된 동작:
+  - 테스트와 운영 코드에서 `PROJECT_PATH` monkeypatch/override 방식은 그대로 사용 가능함
+  - 승격 시 `planned_against_commit`이 placeholder일 때 현재 `HEAD`로 stamp하는 기존 기능 자체는 유지됨
+- 후속 메모:
+  - dated audit/report 문서의 절대경로 표기는 계속 오해를 만들 수 있으므로, 운영 문서 전반은 상대경로 또는 workspace-root 기준 표현으로 더 정리할 여지가 있음
+
 ## 2026-04-17 반복 watcher 알림 자동 remediation 큐 추가
 
 - 수정 파일:
@@ -1207,6 +1320,11 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 
 ## 2026-04-16 추가 메모
 
+- 2026-04-20: `backend/rag/programs_rag.py`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/lib/api/app.ts`, `frontend/lib/types/index.ts`
+  - 추천 하이브리드 점수 공식을 `0.6 / 0.4`로 복구하고, cache read 시 저장된 `final_score`를 재사용하지 않도록 stale-cache recovery 규칙을 추가함
+  - `GET /programs/recommend/calendar`와 `/api/dashboard/recommend-calendar`를 추가해 만료 프로그램 제외, `final_score desc + deadline asc` 정렬, `d_day_label` 포함 응답 계약을 캘린더 전용으로 분리함
+  - router regression test에 cache 재계산, stale fallback, 비로그인 캘린더 계약, 캘린더 정렬/만료 제외 회귀를 고정함
+
 - `backend/routers/admin.py`, `backend/tests/test_admin_router.py`
   - 추천 데이터 파이프라인 검증 중 드러난 Supabase `programs` 스키마 hybrid 상태를 흡수하도록 admin sync upsert에 후방 호환 fallback을 추가함
   - `is_certified`, `raw_data`, `support_type`, `teaching_method` 같은 누락 컬럼은 자동으로 제외하고 재시도하며, `programs_unique`/`programs_hrd_id_key` 충돌 시에는 row-by-row merge fallback으로 기존 row를 찾아 upsert하도록 보강함
@@ -1282,3 +1400,6 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-17: `scripts/summarize_run_ledgers.py`, `scripts/summarize_actionable_ledgers.py`, `tests/test_summarize_run_ledgers.py`, `tests/test_summarize_actionable_ledgers.py`, `CLAUDE.md`
   - 운영 요약 스크립트가 현재 queue snapshot도 함께 출력하도록 확장해 `tasks/review-required/` 대기 현황을 ledger 이벤트와 별개로 바로 볼 수 있게 함
   - 상위 프로젝트 문서 `CLAUDE.md`에도 supervisor 3단계와 `tasks/review-required/` 전용 큐 의미를 반영해 운영 용어를 맞춤
+- 2026-04-20: `backend/rag/collector/tier4_collectors.py`, `backend/rag/collector/scheduler.py`
+  - 서울 자치구 Tier 4 HTML collector 6종을 전용 모듈로 분리해 추가하고, scheduler dry-run 경로에 Tier 4 등록을 연결함
+  - 실서비스 HTML 구조 기준으로 HTTP-only 구로, `cntrId=CT00006` 고정 성동, Imweb board 패턴 노원, 메인 기반 마포 제약을 각 collector 내부에 고정해 기존 Tier 1~3 계약은 유지함

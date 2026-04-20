@@ -52,7 +52,7 @@ COWORK_PACKETS_DIR = "./cowork/packets"
 COWORK_APPROVALS_DIR = "./cowork/approvals"
 WATCHER_LOCK_PATH = "./.watcher.lock"
 WATCHER_ENV_PATH = "./.watcher.env"
-PROJECT_PATH = r"D:\02_2025_AI_Lab\isoser"
+PROJECT_PATH = os.environ.get("ISOSER_PROJECT_PATH", str(Path(__file__).resolve().parent))
 STALE_RUNNING_MINUTES = 20
 RUNNING_HEARTBEAT_SECONDS = 30
 MAX_AUTO_RECOVERY_ATTEMPTS = 2
@@ -335,6 +335,34 @@ def remediation_task_exists(alert_fingerprint: str) -> bool:
         ARCHIVE_DIR,
     ]
     for queue_root in queue_roots:
+        if not os.path.exists(queue_root):
+            continue
+        for packet_path in glob.glob(os.path.join(queue_root, "*.md")):
+            try:
+                body = Path(packet_path).read_text(encoding="utf-8")
+            except OSError:
+                continue
+            if f"auto_remediation_fingerprint: {alert_fingerprint}" in body:
+                return True
+            if fingerprint_prefix in os.path.basename(packet_path):
+                return True
+    return False
+
+
+def active_remediation_task_exists(alert_fingerprint: str) -> bool:
+    if not alert_fingerprint:
+        return False
+
+    fingerprint_prefix = alert_fingerprint[:12]
+    active_queue_roots = [
+        INBOX_DIR,
+        REMOTE_DIR,
+        RUNNING_DIR,
+        BLOCKED_DIR,
+        DRIFTED_DIR,
+        REVIEW_REQUIRED_DIR,
+    ]
+    for queue_root in active_queue_roots:
         if not os.path.exists(queue_root):
             continue
         for packet_path in glob.glob(os.path.join(queue_root, "*.md")):
@@ -640,7 +668,10 @@ def write_alert(
     )
     repeat_count = alert_repeat_count(alert_fingerprint) + 1
     auto_remediation_packet = None
+    slack_notification = "sent"
+    duplicate_alert_suppressed = False
     if not runbook_result:
+        duplicate_alert_suppressed = active_remediation_task_exists(alert_fingerprint)
         auto_remediation_packet = enqueue_auto_remediation_task(
             stage=original_stage,
             alert_fingerprint=alert_fingerprint,
@@ -648,6 +679,8 @@ def write_alert(
             summary=original_summary,
             next_action=original_next_action,
         )
+        if duplicate_alert_suppressed:
+            slack_notification = "suppressed-duplicate"
     severity = {
         "completed": "info",
         "self-healed": "info",
@@ -677,6 +710,7 @@ def write_alert(
         lines.append(f"next_action: {next_action}")
     lines.append(f"alert_fingerprint: `{alert_fingerprint}`")
     lines.append(f"repeat_count: `{repeat_count}`")
+    lines.append(f"slack_notification: `{slack_notification}`")
     if runbook_result:
         lines.append(f"self_heal_runbook: `{runbook_result.get('runbook', '')}`")
         note = str(runbook_result.get("note", "")).strip()
@@ -707,20 +741,22 @@ def write_alert(
             "alert_fingerprint": alert_fingerprint,
             "alert_repeat_count": repeat_count,
             "auto_remediation_packet": auto_remediation_packet,
+            "slack_notification": slack_notification,
             "original_stage": original_stage,
             "original_status": original_status,
             "self_heal_runbook": runbook_result.get("runbook") if runbook_result else None,
         },
     )
-    notify_slack_for_alert(
-        task_id=task_id,
-        stage=stage,
-        status=status,
-        packet_path=packet_path,
-        report_path=report_path,
-        summary=summary,
-        next_action=next_action,
-    )
+    if not duplicate_alert_suppressed:
+        notify_slack_for_alert(
+            task_id=task_id,
+            stage=stage,
+            status=status,
+            packet_path=packet_path,
+            report_path=report_path,
+            summary=summary,
+            next_action=next_action,
+        )
     return alert_path
 
 

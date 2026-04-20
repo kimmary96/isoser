@@ -1,5 +1,45 @@
 # 이소서 (Isoser) — CLAUDE.md
 
+## 에이전트 시작 순서
+
+새 에이전트가 이 저장소에서 작업할 때는 아래 순서로 읽는다.
+
+1. `AGENTS.md`
+2. `docs/agent-playbook.md`
+3. 현재 작업 packet
+   - `cowork/packets/<task-id>.md`
+   - 또는 `tasks/inbox/<task-id>.md`
+4. `docs/current-state.md`
+5. 필요 시 폴더별 추가 규칙
+   - 예: `cowork/FOLDER_INSTRUCTIONS.md`
+6. 관련 `reports/*.md`, `docs/refactoring-log.md`
+
+핵심 원칙:
+
+- packet만 믿고 구현하지 않는다.
+- 현재 코드와 `docs/current-state.md`를 먼저 대조한다.
+- 기존 구현이 있으면 재사용하고, 최소 안전 변경을 우선한다.
+
+## 규칙 우선순위
+
+문서 간 기준이 충돌하면 아래 우선순위를 따른다.
+
+1. `AGENTS.md`
+   - 저장소 전역 개발 규칙
+2. 폴더별 규칙 문서
+   - 예: `cowork/FOLDER_INSTRUCTIONS.md`
+3. 현재 task packet
+   - 이번 작업의 목표, scope, acceptance, constraints
+4. `docs/current-state.md`
+   - 현재 동작 기준의 runtime truth
+5. `reports/*.md`, `docs/refactoring-log.md`
+   - 과거 판단 근거와 변경 이력
+
+참고:
+
+- `docs/agent-playbook.md`는 이 규칙들을 한눈에 보는 단일 진입 문서다.
+- Claude / Codex / watcher 계열 에이전트 모두 같은 read order를 따르는 것을 권장한다.
+
 ## 서비스 정체성 (v2)
 
 > **이소서 = 국가 취업 지원 정보 허브 + AI 코치 기반 이력서 편집**

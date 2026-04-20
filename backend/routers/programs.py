@@ -1,8 +1,7 @@
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 import logging
-from typing import Any
+from typing import Any, Literal
 
-import httpx
 from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Query
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -28,9 +27,7 @@ except ModuleNotFoundError as error:
     from backend.rag.programs_rag import ProgramRecommendation, ProgramsRAG
 
 from utils.supabase_admin import (
-    build_service_headers,
     get_current_user_from_authorization,
-    get_supabase_admin_settings,
     request_supabase,
 )
 
@@ -105,6 +102,21 @@ class ProgramRecommendResponse(BaseModel):
     items: list[ProgramRecommendItem] = Field(default_factory=list)
 
 
+class CalendarRecommendItem(BaseModel):
+    program_id: str
+    relevance_score: float
+    urgency_score: float
+    final_score: float
+    deadline: str | None = None
+    d_day_label: str
+    reason: str
+    program: ProgramListItem
+
+
+class CalendarRecommendResponse(BaseModel):
+    items: list[CalendarRecommendItem] = Field(default_factory=list)
+
+
 class ProgramCompareRelevanceRequest(BaseModel):
     program_ids: list[str] = Field(default_factory=list)
 
@@ -114,6 +126,10 @@ class ProgramRelevanceItem(BaseModel):
     relevance_score: float
     skill_match_score: float
     matched_skills: list[str] = Field(default_factory=list)
+    fit_label: Literal["높음", "보통", "낮음"]
+    fit_summary: str
+    readiness_label: Literal["바로 지원 추천", "보완 후 지원", "탐색용 확인"]
+    gap_tags: list[str] = Field(default_factory=list)
 
 
 class ProgramCompareRelevanceResponse(BaseModel):
@@ -133,6 +149,159 @@ def _serialize_program_recommendation(item: ProgramRecommendation) -> ProgramRec
         fit_keywords=item.fit_keywords,
         program=ProgramListItem.model_validate(item.program),
     )
+
+
+def _coerce_score(value: Any) -> float | None:
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _resolve_program_deadline(program: dict[str, Any]) -> str | None:
+    raw = program.get("deadline") or program.get("end_date")
+    text = str(raw).strip() if raw is not None else ""
+    return text or None
+
+
+def _parse_program_deadline(value: str | None) -> date | None:
+    if not value:
+        return None
+    try:
+        return date.fromisoformat(str(value)[:10])
+    except ValueError:
+        return None
+
+
+def _calculate_days_left(deadline: str | None) -> int | None:
+    parsed = _parse_program_deadline(deadline)
+    if parsed is None:
+        return None
+    return (parsed - date.today()).days
+
+
+def _format_d_day_label(days_left: int | None) -> str:
+    if days_left is None:
+        return "정보 없음"
+    if days_left < 0:
+        return "마감"
+    if days_left == 0:
+        return "D-Day"
+    return f"D-{days_left}"
+
+
+def _recalculate_final_score(relevance_score: float | None, urgency_score: float | None) -> float:
+    return programs_rag._final_score(relevance_score, urgency_score)
+
+
+def _build_recommendation_program_record(
+    program: dict[str, Any],
+    *,
+    relevance_score: float | None,
+    urgency_score: float | None,
+    final_score: float | None,
+    similarity_score: float | None = None,
+) -> dict[str, Any]:
+    program_record = dict(program)
+    deadline = _resolve_program_deadline(program_record)
+    days_left = _calculate_days_left(deadline)
+    program_record["deadline"] = deadline
+    program_record["days_left"] = days_left
+    program_record["similarity_score"] = similarity_score if similarity_score is not None else relevance_score
+    program_record["relevance_score"] = relevance_score
+    program_record["urgency_score"] = urgency_score
+    program_record["final_score"] = final_score
+    return program_record
+
+
+def _is_expired_program(program: dict[str, Any]) -> bool:
+    days_left = _calculate_days_left(_resolve_program_deadline(program))
+    return days_left is not None and days_left < 0
+
+
+def _calendar_sort_key(item: CalendarRecommendItem) -> tuple[float, date]:
+    parsed_deadline = _parse_program_deadline(item.deadline) or date.max
+    return (-item.final_score, parsed_deadline)
+
+
+def _build_calendar_item(
+    *,
+    program_id: str,
+    reason: str,
+    program: dict[str, Any],
+    relevance_score: float,
+    urgency_score: float,
+) -> CalendarRecommendItem | None:
+    deadline = _resolve_program_deadline(program)
+    if _is_expired_program(program):
+        return None
+
+    final_score = _recalculate_final_score(relevance_score, urgency_score)
+    program_record = _build_recommendation_program_record(
+        program,
+        relevance_score=relevance_score,
+        urgency_score=urgency_score,
+        final_score=final_score,
+    )
+    return CalendarRecommendItem(
+        program_id=program_id,
+        relevance_score=relevance_score,
+        urgency_score=urgency_score,
+        final_score=final_score,
+        deadline=deadline,
+        d_day_label=_format_d_day_label(program_record.get("days_left")),
+        reason=reason,
+        program=ProgramListItem.model_validate(program_record),
+    )
+
+
+def _build_calendar_items_from_recommendations(
+    items: list[ProgramRecommendItem],
+    *,
+    top_k: int,
+    anonymous: bool = False,
+) -> list[CalendarRecommendItem]:
+    calendar_items: list[CalendarRecommendItem] = []
+    for item in items:
+        program_id = str(item.program_id or "").strip()
+        if not program_id:
+            continue
+        program_payload = item.program.model_dump()
+        relevance_score = 0.0 if anonymous else (_coerce_score(item.relevance_score) or 0.0)
+        urgency_score = _coerce_score(program_payload.get("urgency_score")) or 0.0
+        calendar_item = _build_calendar_item(
+            program_id=program_id,
+            reason=item.reason,
+            program=program_payload,
+            relevance_score=relevance_score,
+            urgency_score=urgency_score,
+        )
+        if calendar_item is not None:
+            calendar_items.append(calendar_item)
+
+    calendar_items.sort(key=_calendar_sort_key)
+    return calendar_items[:top_k]
+
+
+def _normalize_cached_recommendation_rows(
+    cached_rows: list[dict[str, Any]],
+) -> list[dict[str, Any]] | None:
+    normalized_rows: list[dict[str, Any]] = []
+    for row in cached_rows:
+        relevance_score = _coerce_score(row.get("relevance_score"))
+        urgency_score = _coerce_score(row.get("urgency_score"))
+        if relevance_score is None or urgency_score is None:
+            return None
+        normalized_row = dict(row)
+        normalized_row["relevance_score"] = relevance_score
+        normalized_row["urgency_score"] = urgency_score
+        normalized_row["final_score"] = _recalculate_final_score(relevance_score, urgency_score)
+        normalized_rows.append(normalized_row)
+
+    normalized_rows.sort(key=lambda row: float(row.get("final_score") or 0.0), reverse=True)
+    return normalized_rows
 
 
 def _normalize_regions_param(regions: list[str] | None) -> list[str]:
@@ -192,6 +361,7 @@ def _build_program_query_params(
     regions: list[str] | None = None,
     teaching_methods: list[str] | None = None,
     recruiting_only: bool = False,
+    include_closed_recent: bool = False,
     sort: str = "deadline",
     limit: int | None = None,
     offset: int | None = None,
@@ -214,8 +384,12 @@ def _build_program_query_params(
         params["region_detail"] = f"eq.{region_detail}"
     if q:
         params["title"] = f"ilike.*{q.strip()}*"
-    if recruiting_only or effective_sort == "deadline":
-        params["is_active"] = "eq.true"
+    today_iso = date.today().isoformat()
+    recent_cutoff_iso = (date.today() - timedelta(days=90)).isoformat()
+    if include_closed_recent:
+        params["deadline"] = f"gte.{recent_cutoff_iso}"
+    elif recruiting_only or effective_sort == "deadline":
+        params["deadline"] = f"gte.{today_iso}"
     normalized_teaching_methods = _normalize_teaching_methods_param(teaching_methods)
     if normalized_teaching_methods:
         quoted_values = ",".join(f'"{value}"' for value in normalized_teaching_methods)
@@ -226,6 +400,55 @@ def _build_program_query_params(
         params["or"] = "(" + ",".join(f"location.ilike.*{keyword}*" for keyword in normalized_regions) + ")"
 
     return params
+
+
+def _serialize_program_list_row(program: dict[str, Any]) -> dict[str, Any]:
+    record = dict(program)
+    deadline = _resolve_program_deadline(record)
+    days_left = _calculate_days_left(deadline)
+    record["deadline"] = deadline
+    record["days_left"] = days_left
+    if days_left is not None:
+        record["is_active"] = days_left >= 0
+    return record
+
+
+def _sort_program_list_rows(
+    rows: list[dict[str, Any]],
+    *,
+    sort: str,
+    include_closed_recent: bool,
+) -> list[dict[str, Any]]:
+    if sort != "deadline":
+        return rows
+
+    def sort_key(row: dict[str, Any]) -> tuple[int, int]:
+        parsed_deadline = _parse_program_deadline(str(row.get("deadline") or ""))
+        is_active = bool(row.get("is_active"))
+        if include_closed_recent and not is_active:
+            return (2, -(parsed_deadline.toordinal() if parsed_deadline else date.min.toordinal()))
+        if parsed_deadline is None:
+            return (1, date.max.toordinal())
+        return (0, parsed_deadline.toordinal())
+
+    return sorted(rows, key=sort_key)
+
+
+def _postprocess_program_list_rows(
+    rows: list[dict[str, Any]],
+    *,
+    sort: str,
+    include_closed_recent: bool,
+    limit: int,
+    offset: int,
+) -> list[dict[str, Any]]:
+    serialized_rows = [_serialize_program_list_row(row) for row in rows]
+    sorted_rows = _sort_program_list_rows(
+        serialized_rows,
+        sort=sort,
+        include_closed_recent=include_closed_recent,
+    )
+    return sorted_rows[offset : offset + limit]
 
 
 def _parse_content_range_total(value: str | None) -> int:
@@ -403,19 +626,24 @@ async def _build_cached_recommendation_items(
         if not program:
             continue
 
-        program_record = dict(program)
-        cached_relevance_score = row.get("relevance_score")
-        if cached_relevance_score is None:
-            cached_relevance_score = row.get("final_score")
-        program_record["similarity_score"] = row.get("similarity_score")
-        program_record["relevance_score"] = cached_relevance_score
-        program_record["urgency_score"] = row.get("urgency_score")
-        program_record["final_score"] = row.get("final_score")
+        cached_relevance_score = _coerce_score(row.get("relevance_score")) or 0.0
+        cached_urgency_score = _coerce_score(row.get("urgency_score")) or 0.0
+        cached_final_score = _recalculate_final_score(
+            cached_relevance_score,
+            cached_urgency_score,
+        )
+        program_record = _build_recommendation_program_record(
+            program,
+            similarity_score=_coerce_score(row.get("similarity_score")),
+            relevance_score=cached_relevance_score,
+            urgency_score=cached_urgency_score,
+            final_score=cached_final_score,
+        )
         items.append(
             ProgramRecommendItem(
                 program_id=program_id,
-                score=float(row.get("final_score") or 0),
-                relevance_score=float(cached_relevance_score or 0),
+                score=cached_final_score,
+                relevance_score=cached_relevance_score,
                 reason="최근 생성된 추천 결과를 캐시에서 불러왔습니다.",
                 fit_keywords=[],
                 program=ProgramListItem.model_validate(program_record),
@@ -427,6 +655,32 @@ async def _build_cached_recommendation_items(
     return items
 
 
+def _build_default_calendar_items(
+    programs: list[dict[str, Any]],
+    *,
+    top_k: int,
+    reason: str,
+) -> list[CalendarRecommendItem]:
+    items: list[CalendarRecommendItem] = []
+    for program in programs:
+        program_id = str(program.get("id") or "").strip()
+        if not program_id:
+            continue
+        urgency_score = programs_rag._urgency_score(program)
+        item = _build_calendar_item(
+            program_id=program_id,
+            reason=reason,
+            program=program,
+            relevance_score=0.0,
+            urgency_score=urgency_score,
+        )
+        if item is not None:
+            items.append(item)
+
+    items.sort(key=_calendar_sort_key)
+    return items[:top_k]
+
+
 async def _count_program_rows(
     *,
     category: str | None = None,
@@ -436,10 +690,10 @@ async def _count_program_rows(
     regions: list[str] | None = None,
     teaching_methods: list[str] | None = None,
     recruiting_only: bool = False,
+    include_closed_recent: bool = False,
 ) -> int:
-    settings = get_supabase_admin_settings()
     params = _build_program_query_params(
-        select="id",
+        select="id,deadline,end_date,is_active,created_at",
         category=category,
         scope=scope,
         region_detail=region_detail,
@@ -447,28 +701,18 @@ async def _count_program_rows(
         regions=regions,
         teaching_methods=teaching_methods,
         recruiting_only=recruiting_only,
-        limit=1,
-        offset=0,
+        include_closed_recent=include_closed_recent,
     )
-
-    async with httpx.AsyncClient(timeout=settings.timeout_seconds, trust_env=False) as client:
-        response = await client.get(
-            f"{settings.url}/rest/v1/programs",
-            params=params,
-            headers=build_service_headers(settings.service_role_key, prefer="count=exact"),
+    rows = await request_supabase(method="GET", path="/rest/v1/programs", params=params)
+    if not isinstance(rows, list):
+        return 0
+    return len(
+        _sort_program_list_rows(
+            [_serialize_program_list_row(row) for row in rows],
+            sort="deadline",
+            include_closed_recent=include_closed_recent,
         )
-
-    if not response.is_success:
-        detail = response.text
-        try:
-            body = response.json()
-        except ValueError:
-            body = None
-        if isinstance(body, dict):
-            detail = str(body.get("message") or body.get("hint") or body.get("details") or detail)
-        raise HTTPException(status_code=500, detail=f"Supabase request failed: {detail}")
-
-    return _parse_content_range_total(response.headers.get("content-range"))
+    )
 
 
 async def _fetch_profile_row(user_id: str) -> dict[str, Any]:
@@ -522,6 +766,80 @@ def _normalize_text_list(value: Any) -> list[str]:
     return [item.strip() for item in text.split(",") if item.strip()]
 
 
+def _has_meaningful_profile_text(profile: dict[str, Any]) -> bool:
+    for key in ("self_intro", "bio"):
+        value = profile.get(key)
+        if isinstance(value, str) and len(value.strip()) >= 20:
+            return True
+
+    career_items = _normalize_text_list(profile.get("career"))
+    return any(len(item.strip()) >= 8 for item in career_items)
+
+
+def _derive_fit_label(
+    *,
+    relevance_score: float,
+    skill_match_score: float,
+) -> Literal["높음", "보통", "낮음"]:
+    if relevance_score >= 0.7 and skill_match_score >= 0.5:
+        return "높음"
+    if relevance_score >= 0.4 or skill_match_score >= 0.3:
+        return "보통"
+    return "낮음"
+
+
+def _derive_readiness_label(
+    *,
+    fit_label: Literal["높음", "보통", "낮음"],
+    matched_skills_count: int,
+) -> Literal["바로 지원 추천", "보완 후 지원", "탐색용 확인"]:
+    if fit_label == "높음" and matched_skills_count >= 2:
+        return "바로 지원 추천"
+    if fit_label == "낮음":
+        return "탐색용 확인"
+    return "보완 후 지원"
+
+
+def _build_gap_tags(
+    *,
+    profile: dict[str, Any],
+    activities: list[dict[str, Any]],
+    matched_skills: list[str],
+    relevance_score: float,
+) -> list[str]:
+    gap_tags: list[str] = []
+
+    if not _normalize_text_list(profile.get("skills")):
+        gap_tags.append("프로필 기술 정보 부족")
+    if len(activities) < 1:
+        gap_tags.append("활동 근거 부족")
+    if not matched_skills:
+        gap_tags.append("기술 스택 근거 부족")
+    if relevance_score < 0.4:
+        gap_tags.append("직무 연관성 근거 부족")
+    if not _has_meaningful_profile_text(profile):
+        gap_tags.append("프로필 정보 보강 필요")
+
+    return gap_tags[:3]
+
+
+def _build_fit_summary(
+    *,
+    fit_label: Literal["높음", "보통", "낮음"],
+    gap_tags: list[str],
+) -> str:
+    if fit_label == "높음":
+        base = "보유 기술과 활동 이력이 프로그램 내용과 전반적으로 잘 맞습니다."
+    elif fit_label == "보통":
+        base = "일부 기술과 경험은 맞지만, 지원 전에 근거를 조금 더 보강하는 편이 좋습니다."
+    else:
+        base = "현재 프로필 정보만으로는 프로그램과의 직접 연관성이 충분히 확인되지 않습니다."
+
+    if gap_tags:
+        return f"{base} {gap_tags[0]}."
+    return base
+
+
 def _compute_program_relevance_items(
     *,
     profile: dict[str, Any],
@@ -563,12 +881,31 @@ def _compute_program_relevance_items(
         )
         # Prefer explicit skill matches for compare UI, then fall back to weighted keyword matches.
         normalized_matched_skills = matched_skills or matched_keywords[:5]
+        rounded_relevance_score = round(relevance_score, 4)
+        rounded_skill_match_score = round(skill_match_score, 4)
+        fit_label = _derive_fit_label(
+            relevance_score=rounded_relevance_score,
+            skill_match_score=rounded_skill_match_score,
+        )
+        gap_tags = _build_gap_tags(
+            profile=profile,
+            activities=activities,
+            matched_skills=normalized_matched_skills,
+            relevance_score=rounded_relevance_score,
+        )
         items.append(
             ProgramRelevanceItem(
                 program_id=program_id,
-                relevance_score=round(relevance_score, 4),
-                skill_match_score=round(skill_match_score, 4),
+                relevance_score=rounded_relevance_score,
+                skill_match_score=rounded_skill_match_score,
                 matched_skills=normalized_matched_skills,
+                fit_label=fit_label,
+                fit_summary=_build_fit_summary(fit_label=fit_label, gap_tags=gap_tags),
+                readiness_label=_derive_readiness_label(
+                    fit_label=fit_label,
+                    matched_skills_count=len(normalized_matched_skills),
+                ),
+                gap_tags=gap_tags,
             )
         )
 
@@ -584,6 +921,7 @@ async def list_programs(
     regions: list[str] | None = Query(default=None),
     teaching_methods: list[str] | None = Query(default=None),
     recruiting_only: bool = False,
+    include_closed_recent: bool = False,
     sort: str = Query(default="deadline"),
     limit: int = Query(default=20, ge=1),
     offset: int = Query(default=0, ge=0),
@@ -597,12 +935,19 @@ async def list_programs(
         regions=regions,
         teaching_methods=teaching_methods,
         recruiting_only=recruiting_only,
+        include_closed_recent=include_closed_recent,
         sort=sort,
+    )
+    rows = await request_supabase(method="GET", path="/rest/v1/programs", params=params)
+    if not isinstance(rows, list):
+        return []
+    return _postprocess_program_list_rows(
+        rows,
+        sort=sort,
+        include_closed_recent=include_closed_recent,
         limit=limit,
         offset=offset,
     )
-
-    return await request_supabase(method="GET", path="/rest/v1/programs", params=params)
 
 
 @programs_router.get("/count", response_model=ProgramCountResponse)
@@ -614,6 +959,7 @@ async def count_programs(
     regions: list[str] | None = Query(default=None),
     teaching_methods: list[str] | None = Query(default=None),
     recruiting_only: bool = False,
+    include_closed_recent: bool = False,
 ) -> ProgramCountResponse:
     count = await _count_program_rows(
         category=category,
@@ -623,6 +969,7 @@ async def count_programs(
         regions=regions,
         teaching_methods=teaching_methods,
         recruiting_only=recruiting_only,
+        include_closed_recent=include_closed_recent,
     )
     return ProgramCountResponse(count=count)
 
@@ -688,12 +1035,16 @@ async def recommend_programs(
     if use_cache:
         cached_rows = await _load_cached_recommendations(current_user.id)
         if cached_rows:
-            cached_items = await _build_cached_recommendation_items(
-                cached_rows,
-                top_k=payload.top_k,
-            )
-            if cached_items:
-                return ProgramRecommendResponse(items=cached_items)
+            normalized_cached_rows = _normalize_cached_recommendation_rows(cached_rows)
+            if normalized_cached_rows:
+                cached_items = await _build_cached_recommendation_items(
+                    normalized_cached_rows,
+                    top_k=payload.top_k,
+                )
+                if cached_items:
+                    return ProgramRecommendResponse(items=cached_items)
+            else:
+                log_event(logger, logging.INFO, "recommend_cache_stale_recompute", user_id=current_user.id)
 
     if payload.force_refresh and not payload.category and not payload.region and not payload.job_title:
         await _delete_user_recommendations(current_user.id)
@@ -724,6 +1075,84 @@ async def recommend_programs(
 
     return ProgramRecommendResponse(
         items=[_serialize_program_recommendation(item) for item in recommendations]
+    )
+
+
+@programs_router.get("/recommend/calendar", response_model=CalendarRecommendResponse)
+async def recommend_programs_calendar(
+    authorization: str | None = Header(default=None),
+    top_k: int = Query(default=9, ge=1, le=20),
+    category: str | None = None,
+    region: str | None = None,
+    force_refresh: bool = False,
+) -> CalendarRecommendResponse:
+    programs = await _fetch_program_rows(
+        limit=max(top_k * 10, 50),
+        category=category,
+        region=region,
+    )
+    if not programs:
+        return CalendarRecommendResponse(items=[])
+
+    if not authorization:
+        return CalendarRecommendResponse(
+            items=_build_default_calendar_items(
+                programs,
+                top_k=top_k,
+                reason="최근 마감 일정과 공개 정보 기준으로 우선 노출한 프로그램입니다.",
+            )
+        )
+
+    current_user = await get_current_user_from_authorization(authorization)
+    use_cache = not force_refresh and not category and not region
+
+    if use_cache:
+        cached_rows = await _load_cached_recommendations(current_user.id)
+        if cached_rows:
+            normalized_cached_rows = _normalize_cached_recommendation_rows(cached_rows)
+            if normalized_cached_rows:
+                cached_items = await _build_cached_recommendation_items(
+                    normalized_cached_rows,
+                    top_k=top_k,
+                )
+                if cached_items:
+                    return CalendarRecommendResponse(
+                        items=_build_calendar_items_from_recommendations(cached_items, top_k=top_k)
+                    )
+            else:
+                log_event(logger, logging.INFO, "recommend_calendar_cache_stale_recompute", user_id=current_user.id)
+
+    if force_refresh and not category and not region:
+        await _delete_user_recommendations(current_user.id)
+
+    profile = await _fetch_profile_row(current_user.id)
+    activities = await _fetch_activity_rows(current_user.id)
+    recommendations = await programs_rag.recommend(
+        profile=profile,
+        activities=activities,
+        programs=programs,
+        top_k=top_k,
+        category=category,
+        region=region,
+    )
+
+    if not recommendations:
+        return CalendarRecommendResponse(
+            items=_build_default_calendar_items(
+                programs,
+                top_k=top_k,
+                reason="프로필 기반 추천 데이터가 충분하지 않아 기본 프로그램 목록을 보여줍니다.",
+            )
+        )
+
+    if not category and not region:
+        await _save_recommendations(current_user.id, recommendations)
+
+    return CalendarRecommendResponse(
+        items=_build_calendar_items_from_recommendations(
+            [_serialize_program_recommendation(item) for item in recommendations],
+            top_k=top_k,
+        )
     )
 
 

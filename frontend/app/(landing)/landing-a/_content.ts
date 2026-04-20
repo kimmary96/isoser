@@ -3,74 +3,40 @@ export type TickerItem = {
   text: string;
 };
 
-export type DdayCard = {
-  deadline: string;
+export type TrustPoint = {
   title: string;
-  source: string;
-  tone: "red" | "orange" | "amber";
-  urgent?: boolean;
+  description: string;
 };
 
-export type ProgramCard = {
-  source: string;
-  deadline: string;
-  deadlineTone: "red" | "orange" | "amber" | "green";
+export type WorkspaceStage = {
+  step: string;
   title: string;
-  tags: string[];
-  category: string;
-  subsidy?: string;
-  match: number;
-  borderTone: "urgent" | "warm" | "calm" | "ad";
-  ad?: boolean;
-  primaryLabel: string;
+  description: string;
+  href: string;
+  cta: string;
 };
 
 export type CompareCard = {
   title: string;
-  deadline: string;
-  deadlineTone: "red" | "amber" | "muted";
-  subsidy: string;
-  duration: string;
-  outcome: string;
-  match: number;
-  winner?: boolean;
+  fit: string;
+  timeline: string;
+  support: string;
+  signal: string;
+  tone: "ink" | "blue" | "fire";
 };
 
-export type FlowStep = {
+export type JourneyStep = {
   step: string;
   title: string;
   description: string;
-  tone: "blue" | "amber" | "orange" | "green";
 };
 
 export const tickerItems: TickerItem[] = [
   { tone: "red", text: "D-1 · K-디지털 풀스택 개발자 과정 · HRD넷" },
-  { tone: "orange", text: "D-3 · 청년 AI 데이터 인턴십 2기 · 고용24" },
-  { tone: "amber", text: "D-5 · 내일배움카드 AI 자동화 실무 과정 · HRD넷" },
-  { tone: "amber", text: "D-7 · UX/UI 디자이너 양성과정 · 서울시" },
-  { tone: "green", text: "D-12 · 경영·스타트업 실무 과정 · K-Startup" },
-];
-
-export const heroCards: DdayCard[] = [
-  {
-    deadline: "D-1",
-    title: "K-디지털 풀스택 개발자 과정",
-    source: "HRD넷 · 서울",
-    tone: "red",
-    urgent: true,
-  },
-  {
-    deadline: "D-3",
-    title: "청년 AI 데이터 인턴십",
-    source: "고용24 · 서울",
-    tone: "orange",
-  },
-  {
-    deadline: "D-7",
-    title: "UX/UI 디자이너 양성과정",
-    source: "서울시 · 마포구",
-    tone: "amber",
-  },
+  { tone: "orange", text: "D-3 · 청년 AI 데이터 인턴십 · 고용24" },
+  { tone: "amber", text: "D-5 · 포트폴리오 디자인 트랙 · 서울시" },
+  { tone: "amber", text: "D-7 · 퍼포먼스 마케팅 취업캠프 · 고용24" },
+  { tone: "green", text: "신규 · 온라인 국비 과정 12건 업데이트" },
 ];
 
 export const chipOptions = [
@@ -87,137 +53,92 @@ export const chipOptions = [
   "국비100%",
 ];
 
-export const programCards: ProgramCard[] = [
+export const trustPoints: TrustPoint[] = [
   {
-    source: "HRD넷 · 서울 · 강남",
-    deadline: "D-1",
-    deadlineTone: "red",
-    title: "K-디지털 풀스택 개발자 과정 6기",
-    tags: ["6개월", "취업연계"],
-    category: "IT·개발",
-    subsidy: "국비 100%",
-    match: 87,
-    borderTone: "urgent",
-    primaryLabel: "지원하기",
+    title: "흩어진 공고를 한 흐름으로",
+    description: "고용24, HRD, K-Startup, 지자체 공고를 같은 기준으로 읽을 수 있게 정리합니다.",
   },
   {
-    source: "고용24 · 서울",
-    deadline: "D-3",
-    deadlineTone: "orange",
-    title: "청년 AI 데이터 분석 인턴십 2기",
-    tags: ["3개월"],
-    category: "AI·데이터",
-    subsidy: "월 200만원 지원",
-    match: 72,
-    borderTone: "warm",
-    primaryLabel: "지원하기",
+    title: "탐색에서 서류까지 연결",
+    description: "프로그램 탐색만 끝나는 게 아니라, 로그인 후 이력서·자소서·매치 분석까지 이어집니다.",
   },
   {
-    source: "코드잇 스프린트 · 서울",
-    deadline: "상시",
-    deadlineTone: "green",
-    title: "코드잇 스프린트 프론트엔드 6기",
-    tags: ["5개월", "멘토링 포함"],
-    category: "IT·개발",
-    subsidy: "국비 80%",
-    match: 65,
-    borderTone: "ad",
-    ad: true,
-    primaryLabel: "자세히 보기",
+    title: "대시보드와 같은 언어",
+    description: "랜딩에서 본 프로그램 탐색 경험이 그대로 대시보드 워크스페이스로 이어지도록 설계했습니다.",
+  },
+];
+
+export const workspaceStages: WorkspaceStage[] = [
+  {
+    step: "01",
+    title: "지금 필요한 지원사업 찾기",
+    description: "비로그인 상태에서도 마감 임박 공고, 카테고리, 지역 조건을 빠르게 훑습니다.",
+    href: "/programs",
+    cta: "프로그램 둘러보기",
   },
   {
-    source: "서울시 · 온라인",
-    deadline: "D-6",
-    deadlineTone: "amber",
-    title: "브랜드 디자이너 취업 연계 트랙",
-    tags: ["포트폴리오", "온라인"],
-    category: "디자인",
-    subsidy: "국비 100%",
-    match: 69,
-    borderTone: "calm",
-    primaryLabel: "지원하기",
+    step: "02",
+    title: "로그인 후 프로필 연결",
+    description: "관심 분야와 활동 이력을 연결해 AI 추천이 단순 검색이 아니라 개인화 흐름이 되게 만듭니다.",
+    href: "/login",
+    cta: "무료로 시작하기",
   },
   {
-    source: "K-Startup · 경기",
-    deadline: "D-4",
-    deadlineTone: "orange",
-    title: "예비창업자 성장캠프 실전 과정",
-    tags: ["8주", "멘토링"],
-    category: "창업",
-    subsidy: "국비 100%",
-    match: 74,
-    borderTone: "warm",
-    primaryLabel: "지원하기",
-  },
-  {
-    source: "고용24 · 하이브리드",
-    deadline: "D-7",
-    deadlineTone: "amber",
-    title: "퍼포먼스 마케팅 취업 캠프",
-    tags: ["12주", "실무 프로젝트"],
-    category: "경영",
-    subsidy: "국비 100%",
-    match: 68,
-    borderTone: "calm",
-    primaryLabel: "지원하기",
+    step: "03",
+    title: "대시보드에서 바로 실행",
+    description: "추천 캘린더, 문서 생성, 공고 매치 분석까지 같은 워크스페이스에서 이어서 수행합니다.",
+    href: "/dashboard",
+    cta: "대시보드 보기",
   },
 ];
 
 export const compareCards: CompareCard[] = [
   {
-    title: "K-디지털 풀스택 개발자 과정",
-    deadline: "D-1 · 내일 마감",
-    deadlineTone: "red",
-    subsidy: "100% 전액",
-    duration: "6개월",
-    outcome: "취업연계",
-    match: 87,
-    winner: true,
+    title: "빠른 취업 전환형",
+    fit: "마감 임박 공고를 우선 보고 바로 지원하고 싶은 경우",
+    timeline: "D-day, 모집 상태, 지원 링크를 한 번에 확인",
+    support: "공고 탐색 → 비교 → 지원",
+    signal: "즉시성 중심",
+    tone: "fire",
   },
   {
-    title: "코드잇 스프린트 프론트엔드",
-    deadline: "상시 모집",
-    deadlineTone: "muted",
-    subsidy: "80%",
-    duration: "5개월",
-    outcome: "멘토링 포함",
-    match: 65,
-  },
-  {
-    title: "패스트캠퍼스 데이터 부트캠프",
-    deadline: "D-12",
-    deadlineTone: "amber",
-    subsidy: "70%",
-    duration: "4개월",
-    outcome: "기업 프로젝트",
-    match: 71,
-  },
-];
-
-export const flowSteps: FlowStep[] = [
-  {
-    step: "01",
-    title: "정보 탐색",
-    description: "국비 교육, 청년 인턴십, 취창업 지원 사업을 한 화면에서 탐색합니다.",
+    title: "탐색 + 개인화 추천형",
+    fit: "관심 분야는 있지만 어떤 프로그램이 맞는지 판단이 필요한 경우",
+    timeline: "프로필 연결 후 관련도 기준으로 정렬",
+    support: "탐색 → 로그인 → 추천 캘린더",
+    signal: "개인화 중심",
     tone: "blue",
   },
   {
-    step: "02",
-    title: "AI 맞춤 추천",
-    description: "내 프로필과 관심 분야를 기반으로 관련도 높은 순서로 정렬합니다.",
-    tone: "amber",
+    title: "서류 준비 동반형",
+    fit: "좋은 프로그램을 찾은 뒤 이력서와 자기소개서까지 이어서 준비해야 하는 경우",
+    timeline: "추천 결과를 문서 워크플로우와 연결",
+    support: "추천 → 이력서/자소서 → 매치 분석",
+    signal: "실행 중심",
+    tone: "ink",
+  },
+];
+
+export const journeySteps: JourneyStep[] = [
+  {
+    step: "A",
+    title: "탐색",
+    description: "지원 가능 공고를 공공기관별 원문 대신 공통된 구조로 확인합니다.",
   },
   {
-    step: "03",
-    title: "서류 즉시 생성",
-    description: "이력서와 포트폴리오 초안을 바로 생성해 제출 준비를 줄입니다.",
-    tone: "orange",
+    step: "B",
+    title: "판단",
+    description: "비교 화면과 관련도 정보로 지금 지원할 공고를 줄여갑니다.",
   },
   {
-    step: "04",
-    title: "바로 지원",
-    description: "마감 전 필요한 서류를 정리하고 바로 지원 흐름으로 연결합니다.",
-    tone: "green",
+    step: "C",
+    title: "준비",
+    description: "로그인 후 프로필과 성과저장소를 연결해 서류 초안과 맞춤 추천을 받습니다.",
+  },
+  {
+    step: "D",
+    title: "실행",
+    description: "대시보드에서 매치 분석과 문서 편집을 마치고 지원으로 넘어갑니다.",
   },
 ];
 

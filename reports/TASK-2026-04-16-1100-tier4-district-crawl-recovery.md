@@ -1,31 +1,56 @@
 ## Recovery Report
 
 - task id: `TASK-2026-04-16-1100-tier4-district-crawl`
-- checked at: `2026-04-16`
-- current HEAD: `469cd3f06a5e9e73cefddcf7181afa014948de69`
-- recovery action: `not applied`
+- checked at: `2026-04-20`
+- current HEAD: `b994efe8e9ba084b7a73e601bec0a3e7a8b7872f`
+- recovery decision: `safe_to_retry`
 
-## Why Automatic Recovery Was Not Safe
+## Changed Files
 
-The failure reason from the drift report is still active in the current worktree, and it still affects the exact implementation area this Tier 4 task would modify:
+- `tasks/drifted/TASK-2026-04-16-1100-tier4-district-crawl.md`
+- `reports/TASK-2026-04-16-1100-tier4-district-crawl-recovery.md`
 
-- `backend/rag/collector/scheduler.py` is still dirty (`MM`) and already contains uncommitted Tier 3 registration and `run_all_collectors(upsert=False)` changes.
-- `backend/tests/test_scheduler_collectors.py` is still dirty (`MM`) with uncommitted Tier 3 scheduler coverage.
-- `backend/rag/collector/tier3_collectors.py` is still untracked (`??`), so the scheduler baseline this task depends on is not yet stabilized.
+## Why Changes Were Made
 
-Because this Tier 4 packet is supposed to add more collectors into the same scheduler path, automatically refreshing the packet to target the current worktree would bake in an unresolved dependency on unfinished Tier 3 work. That is not a safe retry condition for a watcher run.
+The original drift report blocked execution because Tier 3 scheduler work was present only as overlapping uncommitted changes in the local worktree. That overlap is no longer present in the relevant implementation area:
 
-## Packet Decision
+- `backend/rag/collector/scheduler.py` already contains committed Tier 3 registration and the `run_all_collectors(upsert=False)` dry-run path
+- `backend/rag/collector/tier3_collectors.py` is now a committed tracked module
+- `backend/tests/test_scheduler_collectors.py` already covers the Tier 3 scheduler dry-run path
 
-`tasks/drifted/TASK-2026-04-16-1100-tier4-district-crawl.md` was left unchanged.
+Because the conflicting scheduler-area changes have been absorbed into `HEAD`, the packet could be refreshed safely instead of staying drift-blocked.
 
-## What Needs To Happen First
+## Packet Updates
 
-- Commit, discard, or otherwise stabilize the current Tier 3 scheduler-related changes.
-- Re-run drift/recovery once `backend/rag/collector/scheduler.py` and its adjacent test/module state represent a clean baseline.
+- kept the original task intent and required frontmatter
+- updated `planned_against_commit` to current `HEAD`
+- set `auto_recovery_attempts` to `1`
+- retained `status: queued`
+- narrowed stale scheduler assumptions so the packet now explicitly targets adding Tier 4 on top of the existing Tier 1-3 scheduler baseline
+- replaced the stale transport note that required `469cd3f` with the validated current baseline commit
+- refreshed the first open question so it no longer assumes Tier 3 file layout is undecided
+
+## Preserved Behaviors
+
+- Tier 4 still targets the same 6 district collectors and the same scheduler integration goal
+- existing Tier 1, Tier 2, and Tier 3 scheduler behavior remains out of scope to change
+- the task still requires minimal safe changes and collector-level failure isolation
+
+## Why Retry Is Now Safe
+
+Retry is safe without new human input because the prior failure reason was repository drift in the touched scheduler area, not a missing credential, missing approval, or unresolved product decision. The currently relevant files are aligned to a committed baseline, and the packet now points at that baseline instead of the outdated pre-Tier-3 commit.
+
+## Risks / Possible Regressions
+
+- The task still depends on live district site HTML remaining compatible with the validated selectors in the packet
+- Tier 4 implementation will still touch the shared scheduler path, so a future recovery should re-check that file if new uncommitted collector work appears
+
+## Follow-up Refactoring Candidates
+
+- After implementation, consider whether Tier 4 collectors deserve a dedicated module to keep scheduler imports and collector grouping readable
 
 ## Run Metadata
 
-- generated_at: `2026-04-16T13:14:41`
+- generated_at: `2026-04-20T15:14:34`
 - watcher_exit_code: `0`
-- codex_tokens_used: `46,000`
+- codex_tokens_used: `65,793`

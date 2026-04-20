@@ -4,30 +4,33 @@ import {
   LandingAComparisonSection,
   LandingAFilterBar,
   LandingAFooter,
-  LandingAFlowSection,
   LandingAHeroSection,
+  LandingAJourneySection,
   LandingANavBar,
   LandingAProgramsSection,
+  LandingAStyleTag,
   LandingATickerBar,
+  LandingATrustSection,
+  LandingAWorkspaceSection,
 } from "./_components";
 import { chipOptions } from "./_content";
-import { landingAStyles, landingAThemeVars } from "./_styles";
+import { landingAThemeVars } from "./_styles";
 import AdSlot from "@/components/AdSlot";
 import { getProgramCount, listPrograms } from "@/lib/api/backend";
 import { getSiteUrl } from "@/lib/seo";
 import type { Program, ProgramListParams } from "@/lib/types";
 
 export const metadata: Metadata = {
-  title: "이소서 - 국가 취업 지원 정보 허브",
+  title: "이소서 - 취업 지원 탐색부터 서류 준비까지 연결하는 커리어 SaaS",
   description:
-    "국비 교육과 취업 지원 프로그램을 탐색하고, 비교와 AI 코치 도구로 다음 지원 행동까지 이어지는 이소서 메인 랜딩 페이지.",
+    "공공 취업 지원 프로그램 탐색, 비교, 맞춤 추천, 문서 준비를 하나의 흐름으로 연결하는 이소서 메인 랜딩 페이지.",
   alternates: {
     canonical: "/landing-a",
   },
   openGraph: {
-    title: "이소서 - 국가 취업 지원 정보 허브",
+    title: "이소서 - 취업 지원 탐색부터 서류 준비까지 연결하는 커리어 SaaS",
     description:
-      "국비 교육과 취업 지원 프로그램을 탐색하고, 비교와 AI 코치 도구로 다음 지원 행동까지 이어지는 이소서 메인 랜딩 페이지.",
+      "공공 취업 지원 프로그램 탐색, 비교, 맞춤 추천, 문서 준비를 하나의 흐름으로 연결하는 이소서 메인 랜딩 페이지.",
     type: "website",
     url: getSiteUrl("/landing-a"),
   },
@@ -129,6 +132,7 @@ export default async function LandingAPage({ searchParams }: LandingAPageProps) 
       <LandingATickerBar />
       <LandingANavBar />
       <LandingAHeroSection featuredPrograms={programs.slice(0, 3)} totalCount={totalCount} />
+      <LandingATrustSection />
       <LandingAFilterBar activeChip={activeChip} keyword={keyword} />
       <LandingAProgramsSection
         programs={programs}
@@ -137,8 +141,9 @@ export default async function LandingAPage({ searchParams }: LandingAPageProps) 
         keyword={keyword}
         error={error}
       />
+      <LandingAWorkspaceSection />
       <LandingAComparisonSection />
-      <LandingAFlowSection />
+      <LandingAJourneySection />
       <LandingACtaSection />
       <div className="px-5 pb-12 sm:px-8 lg:px-12">
         <AdSlot
@@ -147,8 +152,7 @@ export default async function LandingAPage({ searchParams }: LandingAPageProps) 
         />
       </div>
       <LandingAFooter />
-
-      <style jsx>{landingAStyles}</style>
+      <LandingAStyleTag />
     </main>
   );
 }

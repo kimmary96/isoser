@@ -281,6 +281,7 @@ export interface ProgramListParams {
   regions?: string[];
   teaching_methods?: string[];
   recruiting_only?: boolean;
+  include_closed_recent?: boolean;
   sort?: ProgramSort;
   limit?: number;
   offset?: number;
@@ -303,11 +304,30 @@ export interface ProgramRecommendResponse {
   items: ProgramRecommendItem[];
 }
 
+export interface CalendarRecommendItem {
+  program_id: string;
+  relevance_score: number;
+  urgency_score: number;
+  final_score: number;
+  deadline: string | null;
+  d_day_label: string;
+  reason: string;
+  program: Program;
+}
+
+export interface CalendarRecommendResponse {
+  items: CalendarRecommendItem[];
+}
+
 export interface ProgramRelevanceItem {
   program_id: string;
   relevance_score: number;
   skill_match_score: number;
   matched_skills: string[];
+  fit_label: "높음" | "보통" | "낮음";
+  fit_summary: string;
+  readiness_label: "바로 지원 추천" | "보완 후 지원" | "탐색용 확인";
+  gap_tags: string[];
 }
 
 export interface ProgramCompareRelevanceResponse {

@@ -25,6 +25,7 @@
   - `tasks/inbox/*.md` -> `tasks/running/` -> `tasks/done/|tasks/drifted/|tasks/blocked/|tasks/review-required/`
   - `tasks/drifted/*.md|tasks/blocked/*.md` -> auto recovery -> `tasks/inbox/` (가능할 때만)
   - `tasks/review-required/*.md` -> manual review / cowork approval path
+  - reviewed-and-closed `tasks/review-required/*.md` -> `tasks/archive/*.md`
   - reports: `reports/*.md`
   - terminal alerts: `dispatch/alerts/*.md`
   - LangGraph spec/review: `docs/automation/watcher-langgraph.md`, `scripts/watcher_langgraph.py`
@@ -36,6 +37,8 @@
 - `cowork/packets`는 draft/review workspace이고 `tasks/`만 execution queue다
 - `cowork/reviews`는 review 산출물 저장소이며, 승인 후에도 그대로 남는다
 - `tasks/inbox`에는 review markdown이 아니라 승인된 최신 packet 사본이 들어간다
+- `tasks/review-required`에는 아직 사람이 판단해야 하는 살아 있는 packet만 남기고, 검토가 끝난 stale/closed packet은 `tasks/archive`로 이동한다
+- `reports/*`의 verification/result/needs-review 문서는 packet archive 이후에도 audit trail로 유지한다
 - 성공 task는 watcher가 task-scoped git automation을 시도한다
 - drift와 blocked는 terminal alert와 report를 둘 다 남긴다
 - drifted와 blocked task는 watcher가 recovery report를 바탕으로 자동 재큐잉을 한 번 더 시도할 수 있다

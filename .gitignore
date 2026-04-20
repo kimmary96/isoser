@@ -56,5 +56,7 @@ Thumbs.db
 /output/
 /backend/*.log
 /frontend/*.log
+cowork/dispatch/logs/*.log
+dispatch/logs/*.log
 
 # Local AI scratch space may be kept in the repo when explicitly used

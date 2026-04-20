@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { listPrograms } from "@/lib/api/backend";
 import { getDashboardBookmarks } from "@/lib/api/app";
@@ -117,6 +118,7 @@ export default function ProgramSelectModal({
   onClose,
   onSelectProgram,
 }: ProgramSelectModalProps) {
+  const [isMounted, setIsMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<ModalTab>("bookmarks");
   const [query, setQuery] = useState("");
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
@@ -127,6 +129,13 @@ export default function ProgramSelectModal({
   const [searchError, setSearchError] = useState<string | null>(null);
   const [bookmarksLoaded, setBookmarksLoaded] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+    return () => {
+      setIsMounted(false);
+    };
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -210,7 +219,8 @@ export default function ProgramSelectModal({
         const programs = await listPrograms({
           q: query.trim() || undefined,
           limit: 20,
-          sort: "latest",
+          sort: "deadline",
+          recruiting_only: true,
         });
         if (cancelled) return;
         setSearchResults(normalizePrograms(programs));
@@ -233,14 +243,14 @@ export default function ProgramSelectModal({
     };
   }, [activeTab, open, query]);
 
-  if (!open || slotIndex === null) return null;
+  if (!isMounted || !open || slotIndex === null) return null;
 
   const bookmarkedPrograms = bookmarks
     .map((item) => item.program)
     .filter((program): program is Program => Boolean(program))
     .filter((program): program is Program => Boolean(getProgramId(program)));
 
-  return (
+  return createPortal(
     <>
       <div
         className="fixed inset-0 z-50 bg-[rgba(10,15,30,0.55)] backdrop-blur-[4px]"
@@ -405,6 +415,7 @@ export default function ProgramSelectModal({
           }
         }
       `}</style>
-    </>
+    </>,
+    document.body
   );
 }

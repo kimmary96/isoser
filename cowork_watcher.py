@@ -14,6 +14,7 @@ import subprocess
 import time
 import traceback
 from datetime import datetime
+from pathlib import Path
 from shutil import which
 from typing import Optional
 from urllib import error as urllib_error
@@ -46,7 +47,7 @@ RUN_LEDGER_PATH = "./cowork/dispatch/run-ledger.jsonl"
 TASKS_INBOX_DIR = "./tasks/inbox"
 TASKS_REMOTE_DIR = "./tasks/remote"
 COWORK_WATCHER_LOCK_PATH = "./.cowork_watcher.lock"
-PROJECT_PATH = r"D:\02_2025_AI_Lab\isoser"
+PROJECT_PATH = os.environ.get("ISOSER_PROJECT_PATH", str(Path(__file__).resolve().parent))
 SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL", "").strip()
 POLL_INTERVAL_SECONDS = 10
 MOVE_RETRY_ATTEMPTS = 5
@@ -851,15 +852,37 @@ def promoted_dispatch_path_for(task_id: str) -> str:
 
 
 def stamp_commit_placeholder(file_path: str) -> bool:
-    """승격된 packet의 TODO_CURRENT_HEAD를 실제 HEAD SHA로 치환한다."""
+    """승격된 packet frontmatter의 planned_against_commit placeholder만 치환한다."""
     try:
         content = read_markdown(file_path)
-        if "TODO_CURRENT_HEAD" not in content:
+        if "planned_against_commit: TODO_CURRENT_HEAD" not in content:
             return False
         head = current_head()
         if not head:
             return False
-        write_markdown(file_path, content.replace("TODO_CURRENT_HEAD", head))
+        lines = content.splitlines(keepends=True)
+        if not lines or lines[0].strip() != "---":
+            return False
+
+        replaced = False
+        for index in range(1, len(lines)):
+            if lines[index].strip() == "---":
+                break
+            stripped = lines[index].strip()
+            if stripped == "planned_against_commit: TODO_CURRENT_HEAD":
+                line_ending = ""
+                if lines[index].endswith("\r\n"):
+                    line_ending = "\r\n"
+                elif lines[index].endswith("\n"):
+                    line_ending = "\n"
+                lines[index] = f"planned_against_commit: {head}{line_ending}"
+                replaced = True
+                break
+
+        if not replaced:
+            return False
+
+        write_markdown(file_path, "".join(lines))
         return True
     except Exception:
         return False
@@ -882,6 +905,63 @@ def packet_needs_review(packet_path: str, review_path: str) -> bool:
     if not os.path.exists(review_path):
         return True
     return os.path.getmtime(packet_path) > os.path.getmtime(review_path)
+
+
+def extract_review_recommendation_text(review_text: str) -> str:
+    lines = review_text.splitlines()
+    capture = False
+    captured: list[str] = []
+    for raw_line in lines:
+        line = raw_line.strip()
+        if not line:
+            if capture and captured:
+                break
+            continue
+        if re.match(r"^#+\s+recommendation\b", line, flags=re.IGNORECASE):
+            capture = True
+            continue
+        if capture and line.startswith("#"):
+            break
+        if capture:
+            captured.append(line)
+    return "\n".join(captured).strip()
+
+
+def classify_review_outcome(review_path: str) -> tuple[str, str, str | None]:
+    review_text = Path(review_path).read_text(encoding="utf-8")
+    recommendation_text = extract_review_recommendation_text(review_text)
+    scopes = [scope for scope in [recommendation_text, review_text] if scope]
+
+    not_ready_markers = (
+        "not ready for promotion yet",
+        "not ready for promotion",
+        "아직 승격 준비가 되지 않았습니다",
+        "승격 불가",
+    )
+    ready_markers = (
+        "ready for promotion",
+        "promote as-is",
+        "promotable with minor changes only",
+        "promotable with minor or no changes",
+        "promotable with minor changes",
+    )
+
+    for scope in scopes:
+        normalized = scope.casefold()
+        if any(marker in normalized for marker in not_ready_markers):
+            return (
+                "review-failed",
+                "action-required",
+                "review states the packet is not ready for promotion",
+            )
+        if any(marker in normalized for marker in ready_markers):
+            return ("review-ready", "pending-approval", None)
+
+    return (
+        "review-ready",
+        "pending-approval",
+        "review outcome markers were not found explicitly, so watcher defaulted to review-ready",
+    )
 
 
 def handle_packet_review(packet_path: str) -> None:
@@ -1009,20 +1089,27 @@ def handle_packet_review(packet_path: str) -> None:
     if os.path.exists(review_path):
         append_review_metadata(review_path, exit_code=exit_code, token_count=token_count)
         reset_stale_promotion_state(task_id)
+        review_stage, review_status, review_note = classify_review_outcome(review_path)
+        dispatch_lines = [
+            f"# Dispatch: {task_id}",
+            "",
+            f"stage: {review_stage}",
+            f"status: {review_status}",
+            f"packet: `cowork/packets/{filename}`",
+            f"review: `cowork/reviews/{task_id}-review.md`",
+            f"created_at: `{datetime.now().isoformat(timespec='seconds')}`",
+            "- freshness: review is aligned with the current packet contents",
+        ]
+        if review_stage == "review-ready":
+            dispatch_lines.append(
+                "- next_step: reviewer approves in Slack and the shared approval queue is consumed by the local cowork watcher"
+            )
+        elif review_note:
+            dispatch_lines.append(f"- note: {review_note}")
         write_dispatch(
             task_id,
-            "review-ready",
-            [
-                f"# Dispatch: {task_id}",
-                "",
-                "stage: review-ready",
-                "status: pending-approval",
-                f"packet: `cowork/packets/{filename}`",
-                f"review: `cowork/reviews/{task_id}-review.md`",
-                f"created_at: `{datetime.now().isoformat(timespec='seconds')}`",
-                "- freshness: review is aligned with the current packet contents",
-                "- next_step: reviewer approves in Slack and the shared approval queue is consumed by the local cowork watcher",
-            ],
+            review_stage,
+            dispatch_lines,
         )
         print(f"review 완료: {filename}")
         return
