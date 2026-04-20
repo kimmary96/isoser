@@ -33,6 +33,7 @@ from scripts.watcher_shared import (
     release_lock_file,
     resolve_cli_command,
     sanitize_task_id,
+    validate_task_packet_metadata,
     worktree_fingerprint_details,
     write_lock_file,
 )
@@ -567,8 +568,10 @@ def release_watcher_lock(lock_handle: Optional[int]) -> None:
     release_lock_file(lock_handle, WATCHER_LOCK_PATH)
 
 
-def read_task_metadata(task_path: str) -> tuple[dict[str, str], list[str]]:
-    return shared_read_task_metadata(task_path, REQUIRED_FIELDS)
+def read_task_metadata(task_path: str) -> tuple[dict[str, str], list[str], list[str]]:
+    metadata, _ = shared_read_task_metadata(task_path, REQUIRED_FIELDS)
+    missing_fields, validation_errors = validate_task_packet_metadata(metadata, REQUIRED_FIELDS)
+    return metadata, missing_fields, validation_errors
 
 
 def current_head() -> str:
@@ -1120,7 +1123,7 @@ def packet_needs_recovery(task_path: str, failure_report_path: str, task_recover
 
 
 def auto_recovery_attempts(task_path: str) -> int:
-    metadata, _ = read_task_metadata(task_path)
+    metadata, _, _ = read_task_metadata(task_path)
     raw_value = metadata.get("auto_recovery_attempts", "").strip()
     if not raw_value:
         return 0
@@ -2004,13 +2007,19 @@ def handle_recovery(task_path: str, *, failure_stage: str) -> None:
         print(f"복구 실패: {filename} (exit_code={exit_code})")
         return
 
-    metadata, missing_fields = read_task_metadata(task_path)
+    metadata, missing_fields, validation_errors = read_task_metadata(task_path)
     planned_commit = metadata.get("planned_against_commit", "")
     status = metadata.get("status", "").strip().lower()
     updated_retry_count = auto_recovery_attempts(task_path)
     head_commit = current_head()
 
-    if missing_fields or planned_commit != head_commit or status != "queued" or updated_retry_count <= retry_count:
+    if (
+        missing_fields
+        or validation_errors
+        or planned_commit != head_commit
+        or status != "queued"
+        or updated_retry_count <= retry_count
+    ):
         escalate_task_for_manual_review(
             task_path,
             failure_stage=failure_stage,
@@ -2062,7 +2071,7 @@ def handle_task(task_path: str) -> None:
     if duplicate_stage is not None:
         if os.path.exists(task_path):
             try:
-                metadata, _ = read_task_metadata(task_path)
+                metadata, _, _ = read_task_metadata(task_path)
                 task_id = sanitize_task_id(metadata.get("id", task_id))
             except OSError:
                 pass
@@ -2085,7 +2094,7 @@ def handle_task(task_path: str) -> None:
     except (PermissionError, FileExistsError) as error:
         if os.path.exists(task_path):
             try:
-                metadata, _ = read_task_metadata(task_path)
+                metadata, _, _ = read_task_metadata(task_path)
                 task_id = sanitize_task_id(metadata.get("id", task_id))
             except OSError:
                 pass
@@ -2120,7 +2129,7 @@ def handle_task(task_path: str) -> None:
 
     print(f"실행 시작: {filename}")
 
-    metadata, missing_fields = read_task_metadata(running_path)
+    metadata, missing_fields, validation_errors = read_task_metadata(running_path)
     task_id = sanitize_task_id(metadata.get("id", filename.removesuffix(".md")))
     append_run_ledger(
         task_id,
@@ -2131,7 +2140,9 @@ def handle_task(task_path: str) -> None:
     planned_commit = metadata.get("planned_against_commit", "")
     task_type = metadata.get("type", "").strip().lower()
 
-    if missing_fields:
+    if missing_fields or validation_errors:
+        issue_lines = [f"- missing_fields: {', '.join(missing_fields)}"] if missing_fields else []
+        issue_lines.extend(f"- validation_error: {error}" for error in validation_errors)
         write_report(
             task_id,
             "blocked",
@@ -2139,10 +2150,10 @@ def handle_task(task_path: str) -> None:
                 [
                     f"# Blocked: {task_id}",
                     "",
-                    "Task packet is missing required frontmatter fields.",
+                    "Task packet failed watcher validation before execution.",
                     "",
                     f"- file: `tasks/running/{filename}`",
-                    f"- missing_fields: {', '.join(missing_fields)}",
+                    *issue_lines,
                 ]
             ),
         )
@@ -2152,12 +2163,12 @@ def handle_task(task_path: str) -> None:
             status="action-required",
             packet_path=f"tasks/running/{filename}",
             report_path=f"reports/{task_id}-blocked.md",
-            summary="Task packet is missing required frontmatter fields.",
-            next_action="Fill the missing frontmatter fields and resubmit the task packet.",
+            summary="Task packet failed watcher validation before execution.",
+            next_action="Fix the packet validation issues, regenerate approval if needed, and resubmit the task packet.",
         )
         blocked_path = os.path.join(BLOCKED_DIR, filename)
         move_task_file(running_path, blocked_path)
-        print(f"차단됨: {filename} (frontmatter 누락)")
+        print(f"차단됨: {filename} (packet validation 실패)")
         return
 
     head_commit = current_head()

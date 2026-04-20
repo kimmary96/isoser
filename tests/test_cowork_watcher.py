@@ -511,6 +511,85 @@ def test_handle_packet_review_marks_not_ready_review_as_review_failed(tmp_path: 
     assert not (dispatch_dir / "TASK-TEST-REVIEW-NOT-READY-review-ready.md").exists()
 
 
+def test_handle_packet_review_fails_invalid_supervisor_spec_before_codex(tmp_path: Path, monkeypatch) -> None:
+    packets_dir = tmp_path / "packets"
+    reviews_dir = tmp_path / "reviews"
+    dispatch_dir = tmp_path / "dispatch"
+    approvals_dir = tmp_path / "approvals"
+    inbox_dir = tmp_path / "inbox"
+    remote_dir = tmp_path / "remote"
+
+    for directory in [packets_dir, reviews_dir, dispatch_dir, approvals_dir, inbox_dir, remote_dir]:
+        directory.mkdir(parents=True, exist_ok=True)
+
+    packet = packets_dir / "TASK-TEST-SUPERVISOR-SPEC-REVIEW.md"
+    packet.write_text(
+        "\n".join(
+            [
+                "---",
+                "id: TASK-TEST-SUPERVISOR-SPEC-REVIEW",
+                "status: queued",
+                "type: ops",
+                "title: Invalid supervisor spec review",
+                "planned_at: 2026-04-20T21:30:00+09:00",
+                "planned_against_commit: abc123",
+                "spec_version: 2.0",
+                "request_id: REQ-TEST-SUPERVISOR-SPEC-REVIEW",
+                "created_by: claude",
+                "goal: Validate packet before promotion",
+                "background: test",
+                "scope_in: watcher",
+                "scope_out: product",
+                "constraints: minimal-safe-change-only",
+                "non_goals: none",
+                "acceptance_criteria: see-body",
+                "risk_level: medium",
+                "execution_path: local",
+                "allowed_paths: watcher.py, docs/current-state.md",
+                "blocked_paths: docs/current-state.md",
+                "prechecks: read-current-state",
+                "implementation_steps: inspect, implement, verify",
+                "tests: targeted-tests",
+                "artifacts: reports/TASK-TEST-SUPERVISOR-SPEC-REVIEW-result.md",
+                "fallback_plan: stop-and-report",
+                "rollback_plan: revert-last-task-scope",
+                "dedupe_key: TASK-TEST-SUPERVISOR-SPEC-REVIEW",
+                "report_format: planner-supervisor-implementer-qa",
+                "---",
+                "",
+                "# Goal",
+                "",
+                "Block contradictory packet metadata before promotion.",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(cowork_watcher, "COWORK_PACKETS_DIR", str(packets_dir))
+    monkeypatch.setattr(cowork_watcher, "COWORK_REVIEWS_DIR", str(reviews_dir))
+    monkeypatch.setattr(cowork_watcher, "COWORK_DISPATCH_DIR", str(dispatch_dir))
+    monkeypatch.setattr(cowork_watcher, "COWORK_APPROVALS_DIR", str(approvals_dir))
+    monkeypatch.setattr(cowork_watcher, "TASKS_INBOX_DIR", str(inbox_dir))
+    monkeypatch.setattr(cowork_watcher, "TASKS_REMOTE_DIR", str(remote_dir))
+    monkeypatch.setattr(cowork_watcher, "current_head", lambda: "abc123")
+    monkeypatch.setattr(
+        cowork_watcher,
+        "run_codex_review",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("codex review should not run")),
+    )
+    monkeypatch.setattr(cowork_watcher, "notify_slack_for_dispatch", lambda **kwargs: None)
+
+    cowork_watcher.handle_packet_review(str(packet))
+
+    dispatch_path = dispatch_dir / "TASK-TEST-SUPERVISOR-SPEC-REVIEW-review-failed.md"
+    review_path = reviews_dir / "TASK-TEST-SUPERVISOR-SPEC-REVIEW-review.md"
+    assert dispatch_path.exists()
+    assert review_path.exists()
+    assert "supervisor spec frontmatter validation failed before promotion" in dispatch_path.read_text(encoding="utf-8")
+    assert "allowed_paths and blocked_paths overlap: docs/current-state.md" in review_path.read_text(encoding="utf-8")
+
+
 def test_handle_packet_review_marks_ready_review_as_review_ready(tmp_path: Path, monkeypatch) -> None:
     packets_dir = tmp_path / "packets"
     reviews_dir = tmp_path / "reviews"

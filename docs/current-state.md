@@ -22,11 +22,12 @@
 - local `watcher.py`의 execution path는 supervisor 단계로 한 번 더 나뉘어, inspector handoff(`reports/<task-id>-supervisor-inspection.md`) 이후 implementer가 코드 수정과 result report를 만들고 verifier가 최종 검증(`reports/<task-id>-supervisor-verification.md`)을 수행한다. verifier가 `review-required` verdict를 내리면 일반 blocked 알림 대신 `tasks/review-required/`와 `needs-review` 공식 경로로 분기한다.
 - `tasks/review-required/`는 살아 있는 수동 검토 대기열로만 사용한다. 사람이 검토를 마쳐 재실행이 아니라 종결/보류/대체로 처리하기로 결정한 packet은 `tasks/archive/`로 이동하고 `reports/*` 판단 근거는 그대로 유지한다.
 - task packet은 선택적으로 `planned_files`와 `planned_worktree_fingerprint`를 담아, 같은 `HEAD` 안에서도 계획 당시 worktree 상태가 달라졌는지 더 엄격하게 검증할 수 있다.
+- task packet frontmatter에 `spec_version`이 있으면 watcher와 cowork watcher는 Supervisor 표준 spec으로 간주하고 `request_id`, `execution_path`, `allowed_paths`, `fallback_plan`, `rollback_plan`, `dedupe_key` 같은 추가 필드를 함께 검증한다. 이때 `allowed_paths`와 `blocked_paths`가 겹치면 실행 전에 차단한다.
 - `scripts/compute_task_fingerprint.py`는 planner가 `planned_files` 기준 fingerprint frontmatter 줄을 바로 생성할 수 있게 돕는다.
 - `scripts/summarize_run_ledgers.py`는 local/cowork watcher ledger를 읽어 최근 상태와 stage 집계를 빠르게 확인하게 해준다.
 - `scripts/summarize_actionable_ledgers.py`는 `blocked`, `drift`, `needs-review`, `replan-required` 같은 즉시 대응이 필요한 상태만 따로 좁혀 보여준다.
 - `scripts/prune_run_ledgers.py`는 active JSONL ledger에서 오래된 이벤트를 archive로 옮겨 장기 운영 시 파일이 과도하게 커지는 문제를 완화한다.
-- `scripts/create_task_packet.py`는 current HEAD와 optional fingerprint field까지 채운 packet 초안을 바로 생성해 planner 쪽 기본값을 강화한다.
+- `scripts/create_task_packet.py`는 current HEAD와 optional fingerprint field까지 채운 packet 초안을 바로 생성해 planner 쪽 기본값을 강화한다. `--supervisor-spec` 옵션을 주면 Supervisor 표준 frontmatter도 함께 채운다.
 - `watcher.py`와 `cowork_watcher.py`의 `PROJECT_PATH`는 더 이상 특정 Windows 절대경로에 하드코딩되지 않고, 기본값으로 각 스크립트 파일 위치의 저장소 루트를 기준으로 계산된다. 필요하면 `ISOSER_PROJECT_PATH` 환경변수로 override할 수 있다.
 - local `watcher.py`는 알려진 반복 알림에 대해 fingerprint별 self-healing runbook을 먼저 적용한다. 현재는 `origin/main` 자동 반영 스킵을 비차단 `self-healed`로 다운그레이드하고, 이미 `tasks/done/`에 완료본이 있는 중복 packet 런타임 오류를 자동 archive로 정리한다.
 - runbook으로 처리되지 않는 `blocked` / `runtime-error` / `push-failed` 알림은 summary+next_action 기반 fingerprint를 남기고, 같은 root cause가 3회 이상 반복되면 `tasks/inbox/`에 자동 remediation packet을 생성해 루트 원인 수정 작업을 다시 supervisor 플로우로 투입한다.

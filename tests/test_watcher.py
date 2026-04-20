@@ -105,6 +105,83 @@ def test_handle_task_writes_blocked_report_when_move_to_running_fails(tmp_path, 
     assert "type: watcher-alert" in alert_path.read_text(encoding="utf-8")
 
 
+def test_handle_task_blocks_invalid_supervisor_spec_before_execution(tmp_path, monkeypatch) -> None:
+    inbox_dir = tmp_path / "tasks" / "inbox"
+    running_dir = tmp_path / "tasks" / "running"
+    blocked_dir = tmp_path / "tasks" / "blocked"
+    reports_dir = tmp_path / "reports"
+    alerts_dir = tmp_path / "dispatch" / "alerts"
+    for directory in [inbox_dir, running_dir, blocked_dir, reports_dir, alerts_dir]:
+        directory.mkdir(parents=True, exist_ok=True)
+
+    task_path = inbox_dir / "TASK-TEST-SUPERVISOR-SPEC.md"
+    task_path.write_text(
+        "\n".join(
+            [
+                "---",
+                "id: TASK-TEST-SUPERVISOR-SPEC",
+                "status: queued",
+                "type: ops",
+                "title: Invalid supervisor spec",
+                "planned_at: 2026-04-20T21:30:00+09:00",
+                "planned_against_commit: abc123",
+                "spec_version: 2.0",
+                "request_id: REQ-TEST-SUPERVISOR-SPEC",
+                "created_by: claude",
+                "goal: Validate packet before execution",
+                "background: test",
+                "scope_in: watcher",
+                "scope_out: product",
+                "constraints: minimal-safe-change-only",
+                "non_goals: none",
+                "acceptance_criteria: see-body",
+                "risk_level: medium",
+                "execution_path: github",
+                "allowed_paths: watcher.py, docs/current-state.md",
+                "blocked_paths: docs/current-state.md",
+                "prechecks: read-current-state",
+                "implementation_steps: inspect, implement, verify",
+                "tests: targeted-tests",
+                "artifacts: reports/TASK-TEST-SUPERVISOR-SPEC-result.md",
+                "fallback_plan: stop-and-report",
+                "rollback_plan: revert-last-task-scope",
+                "dedupe_key: TASK-TEST-SUPERVISOR-SPEC",
+                "report_format: planner-supervisor-implementer-qa",
+                "---",
+                "# Goal",
+                "",
+                "Block contradictory packet metadata before execution.",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(watcher, "INBOX_DIR", str(inbox_dir))
+    monkeypatch.setattr(watcher, "RUNNING_DIR", str(running_dir))
+    monkeypatch.setattr(watcher, "BLOCKED_DIR", str(blocked_dir))
+    monkeypatch.setattr(watcher, "REPORTS_DIR", str(reports_dir))
+    monkeypatch.setattr(watcher, "ALERTS_DIR", str(alerts_dir))
+    monkeypatch.setattr(watcher, "PROJECT_PATH", str(tmp_path))
+    monkeypatch.setattr(watcher, "current_head", lambda: "abc123")
+    monkeypatch.setattr(
+        watcher,
+        "run_supervisor_workflow",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("supervisor should not run")),
+    )
+    monkeypatch.setattr(watcher, "notify_slack_for_alert", lambda **kwargs: None)
+
+    watcher.handle_task(str(task_path))
+
+    blocked_path = blocked_dir / "TASK-TEST-SUPERVISOR-SPEC.md"
+    report_path = reports_dir / "TASK-TEST-SUPERVISOR-SPEC-blocked.md"
+    assert blocked_path.exists()
+    assert report_path.exists()
+    body = report_path.read_text(encoding="utf-8")
+    assert "Task packet failed watcher validation before execution." in body
+    assert "allowed_paths and blocked_paths overlap: docs/current-state.md" in body
+
+
 def test_handle_task_routes_verifier_review_required_to_needs_review(tmp_path, monkeypatch) -> None:
     inbox_dir = tmp_path / "tasks" / "inbox"
     running_dir = tmp_path / "tasks" / "running"

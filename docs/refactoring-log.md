@@ -2009,3 +2009,7 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-20: `backend/rag/collector/tier4_collectors.py`, `backend/rag/collector/scheduler.py`
   - 서울 자치구 Tier 4 HTML collector 6종을 전용 모듈로 분리해 추가하고, scheduler dry-run 경로에 Tier 4 등록을 연결함
   - 실서비스 HTML 구조 기준으로 HTTP-only 구로, `cntrId=CT00006` 고정 성동, Imweb board 패턴 노원, 메인 기반 마포 제약을 각 collector 내부에 고정해 기존 Tier 1~3 계약은 유지함
+- 2026-04-20: `scripts/watcher_shared.py`, `watcher.py`, `cowork_watcher.py`, `scripts/create_task_packet.py`, `docs/automation/task-packets.md`, `docs/rules/task-packet-template.md`, `docs/current-state.md`
+  - `spec_version`이 있는 packet을 Supervisor 표준 spec으로 간주하고 `request_id`, `execution_path`, `allowed_paths`, `blocked_paths`, `fallback_plan`, `rollback_plan`, `dedupe_key` 등을 watcher/cowork watcher가 실행 전에 검증하도록 보강함
+  - `allowed_paths`와 `blocked_paths` 중복, 허용되지 않은 `execution_path`/`risk_level` 같은 모순 frontmatter를 cowork review 단계와 local execution 단계에서 조기 차단하도록 정리함
+  - `scripts/create_task_packet.py --supervisor-spec` 옵션을 추가해 확장 frontmatter를 가진 안전한 packet 초안을 더 쉽게 만들 수 있게 했고, 관련 운영 문서를 현재 런타임 규칙에 맞춰 갱신함

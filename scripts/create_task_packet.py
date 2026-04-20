@@ -30,6 +30,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--type", default="feature")
     parser.add_argument("--priority", default="medium")
     parser.add_argument("--planned-by", default="claude")
+    parser.add_argument("--created-by", default="claude")
+    parser.add_argument("--execution-path", default="local", choices=["local", "github", "manual-blocked"])
+    parser.add_argument("--supervisor-spec", action="store_true")
     parser.add_argument("--output", help="Write packet to this path instead of stdout.")
     parser.add_argument("--files", nargs="*", default=[])
     return parser
@@ -43,9 +46,14 @@ def build_packet(
     task_type: str,
     priority: str,
     planned_by: str,
+    created_by: str,
+    execution_path: str,
+    supervisor_spec: bool,
     files: list[str],
 ) -> str:
     head = current_head(project_path)
+    normalized_files = [item.strip().replace("\\", "/") for item in files if item.strip()]
+    allowed_paths = ", ".join(normalized_files) if normalized_files else "TBD"
     lines = [
         "---",
         f"id: {task_id}",
@@ -57,7 +65,33 @@ def build_packet(
         f"planned_at: {datetime.now().astimezone().isoformat(timespec='seconds')}",
         f"planned_against_commit: {head}",
     ]
-    normalized_files = [item.strip().replace("\\", "/") for item in files if item.strip()]
+    if supervisor_spec:
+        lines.extend(
+            [
+                "spec_version: 2.0",
+                f"request_id: {task_id}",
+                f"created_by: {created_by}",
+                f"goal: {title}",
+                "background: TBD",
+                "scope_in: TBD",
+                "scope_out: TBD",
+                "constraints: minimal-safe-change-only",
+                "non_goals: none",
+                "acceptance_criteria: see-body",
+                "risk_level: medium",
+                f"execution_path: {execution_path}",
+                f"allowed_paths: {allowed_paths}",
+                "blocked_paths: backend/.env, frontend/.env.local, supabase/migrations",
+                "prechecks: read-current-state, inspect-touched-area",
+                "implementation_steps: inspect, implement, verify",
+                "tests: targeted-tests",
+                f"artifacts: reports/{task_id}-result.md",
+                "fallback_plan: stop-and-report",
+                "rollback_plan: revert-last-task-scope",
+                f"dedupe_key: {task_id}",
+                "report_format: planner-supervisor-implementer-qa",
+            ]
+        )
     if normalized_files:
         lines.append(f"planned_files: {', '.join(normalized_files)}")
         lines.append(
@@ -103,6 +137,9 @@ def main() -> int:
         task_type=args.type,
         priority=args.priority,
         planned_by=args.planned_by,
+        created_by=args.created_by,
+        execution_path=args.execution_path,
+        supervisor_spec=args.supervisor_spec,
         files=args.files,
     )
     if args.output:

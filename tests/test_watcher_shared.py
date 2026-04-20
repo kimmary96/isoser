@@ -107,6 +107,47 @@ def test_worktree_fingerprint_details_returns_match_status(tmp_path: Path) -> No
     assert details["matches"] is True
 
 
+def test_validate_task_packet_metadata_checks_supervisor_spec_constraints() -> None:
+    missing_fields, validation_errors = watcher_shared.validate_task_packet_metadata(
+        {
+            "id": "TASK-TEST",
+            "status": "queued",
+            "type": "ops",
+            "title": "Supervisor spec validation",
+            "planned_at": "2026-04-20T21:00:00+09:00",
+            "planned_against_commit": "abc123",
+            "spec_version": "2.0",
+            "request_id": "REQ-1",
+            "created_by": "claude",
+            "goal": "Validate packet",
+            "background": "test",
+            "scope_in": "watcher",
+            "scope_out": "product",
+            "constraints": "minimal-safe-change-only",
+            "non_goals": "none",
+            "acceptance_criteria": "see-body",
+            "risk_level": "severe",
+            "execution_path": "remote",
+            "allowed_paths": "watcher.py, docs/current-state.md",
+            "blocked_paths": "docs/current-state.md",
+            "prechecks": "read-current-state",
+            "implementation_steps": "inspect, implement, verify",
+            "tests": "targeted-tests",
+            "artifacts": "reports/TASK-TEST-result.md",
+            "fallback_plan": "stop-and-report",
+            "rollback_plan": "revert-last-task-scope",
+            "dedupe_key": "TASK-TEST",
+            "report_format": "planner-supervisor-implementer-qa",
+        },
+        ("id", "status", "type", "title", "planned_at", "planned_against_commit"),
+    )
+
+    assert missing_fields == []
+    assert "execution_path must be one of: local, github, manual-blocked" in validation_errors
+    assert "risk_level must be one of: low, medium, high, critical" in validation_errors
+    assert "allowed_paths and blocked_paths overlap: docs/current-state.md" in validation_errors
+
+
 def test_append_jsonl_record_writes_one_json_object_per_line(tmp_path: Path) -> None:
     ledger_path = tmp_path / "dispatch" / "run-ledger.jsonl"
 

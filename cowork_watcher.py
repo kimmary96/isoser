@@ -34,6 +34,7 @@ from scripts.watcher_shared import (
     release_lock_file,
     resolve_cli_command,
     sanitize_task_id,
+    validate_task_packet_metadata,
     worktree_fingerprint_details,
     write_lock_file,
     write_markdown,
@@ -189,8 +190,10 @@ def resolve_codex_command() -> str:
     return resolve_cli_command(CODEX_CANDIDATES)
 
 
-def read_task_metadata(task_path: str) -> tuple[dict[str, str], list[str]]:
-    return shared_read_task_metadata(task_path, REQUIRED_FIELDS)
+def read_task_metadata(task_path: str) -> tuple[dict[str, str], list[str], list[str]]:
+    metadata, _ = shared_read_task_metadata(task_path, REQUIRED_FIELDS)
+    missing_fields, validation_errors = validate_task_packet_metadata(metadata, REQUIRED_FIELDS)
+    return metadata, missing_fields, validation_errors
 
 
 def move_file(src: str, dst: str) -> None:
@@ -475,7 +478,7 @@ def packet_title_for(task_id: str) -> Optional[str]:
     packet_path = os.path.join(COWORK_PACKETS_DIR, f"{task_id}.md")
     if not os.path.exists(packet_path):
         return None
-    metadata, _ = read_task_metadata(packet_path)
+    metadata, _, _ = read_task_metadata(packet_path)
     title = metadata.get("title", "").strip()
     return title or None
 
@@ -966,7 +969,7 @@ def classify_review_outcome(review_path: str) -> tuple[str, str, str | None]:
 
 def handle_packet_review(packet_path: str) -> None:
     filename = os.path.basename(packet_path)
-    metadata, missing_fields = read_task_metadata(packet_path)
+    metadata, missing_fields, validation_errors = read_task_metadata(packet_path)
     task_id = sanitize_task_id(metadata.get("id", filename.removesuffix(".md")))
     review_path = review_path_for(task_id)
 
@@ -1012,6 +1015,45 @@ def handle_packet_review(packet_path: str) -> None:
             ],
         )
         print(f"review 생성: {filename} (frontmatter 누락)")
+        return
+
+    if validation_errors:
+        reset_stale_promotion_state(task_id)
+        write_markdown(
+            review_path,
+            "\n".join(
+                [
+                    f"# Review: {task_id}",
+                    "",
+                    "## Overall assessment",
+                    "",
+                    "아직 승격 준비가 되지 않았습니다.",
+                    "",
+                    "## Findings",
+                    "",
+                    *[f"- {error}" for error in validation_errors],
+                    "",
+                    "## Recommendation",
+                    "",
+                    "Supervisor 표준 spec의 frontmatter 값을 수정한 뒤 review를 다시 생성하세요.",
+                ]
+            ),
+        )
+        write_dispatch(
+            task_id,
+            "review-failed",
+            [
+                f"# Dispatch: {task_id}",
+                "",
+                "stage: review-failed",
+                "status: action-required",
+                f"packet: `cowork/packets/{filename}`",
+                f"review: `cowork/reviews/{task_id}-review.md`",
+                f"created_at: `{datetime.now().isoformat(timespec='seconds')}`",
+                "- note: supervisor spec frontmatter validation failed before promotion",
+            ],
+        )
+        print(f"review 실패: {filename} (supervisor spec validation)")
         return
 
     planned_commit = metadata.get("planned_against_commit", "")
@@ -1133,7 +1175,7 @@ def handle_packet_review(packet_path: str) -> None:
 
 def handle_approval(packet_path: str) -> None:
     filename = os.path.basename(packet_path)
-    metadata, _ = read_task_metadata(packet_path)
+    metadata, _, _ = read_task_metadata(packet_path)
     task_id = sanitize_task_id(metadata.get("id", filename.removesuffix(".md")))
     approval_path = approval_path_for(task_id)
     review_path = review_path_for(task_id)
