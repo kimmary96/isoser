@@ -3,8 +3,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import MiniCalendar from "@/components/MiniCalendar";
-import { getDashboardMe, getRecommendedPrograms } from "@/lib/api/app";
+import {
+  getCalendarSelections,
+  getDashboardMe,
+  getRecommendCalendar,
+  saveCalendarSelections,
+} from "@/lib/api/app";
 import type { Program } from "@/lib/types";
+
+const APPLIED_CALENDAR_PROGRAMS_KEY = "isoser:applied-calendar-programs";
 
 const CATEGORY_OPTIONS = [
   { label: "전체", value: null },
@@ -163,9 +170,13 @@ function SkeletonCard() {
 function ProgramCard({
   program,
   cardId,
+  isApplied,
+  onApplyToCalendar,
 }: {
   program: Program;
   cardId?: string;
+  isApplied: boolean;
+  onApplyToCalendar: (program: Program) => void;
 }) {
   const trainingPeriodLabel = formatTrainingPeriod(program.start_date, program.end_date);
   const deadlineLabel = formatDeadline(program.deadline);
@@ -219,7 +230,18 @@ function ProgramCard({
         <p className="mb-6 line-clamp-2 text-sm text-slate-600">{recommendedReason}</p>
       ) : null}
 
-      <div className="mt-auto">
+      <div className="mt-auto flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={() => onApplyToCalendar(program)}
+          className={`inline-flex items-center rounded-full px-3 py-1.5 text-sm font-semibold transition ${
+            isApplied
+              ? "bg-emerald-50 text-emerald-700"
+              : "bg-blue-600 text-white hover:bg-blue-700"
+          }`}
+        >
+          {isApplied ? "캘린더 적용됨" : "캘린더에 적용"}
+        </button>
         {programLink ? (
           <a
             href={programLink}
@@ -240,11 +262,13 @@ function ProgramCard({
 export default function DashboardPage() {
   const [userName, setUserName] = useState("사용자");
   const [programs, setPrograms] = useState<Program[]>([]);
+  const [appliedCalendarPrograms, setAppliedCalendarPrograms] = useState<Program[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [calendarSaveStatus, setCalendarSaveStatus] = useState<string | null>(null);
 
   const handleDateClick = (date: string) => {
     setSelectedDate((current) => (current === date ? null : date));
@@ -261,17 +285,66 @@ export default function DashboardPage() {
     });
   }, [programs, selectedDate]);
 
+  const calendarPrograms = appliedCalendarPrograms.length > 0 ? appliedCalendarPrograms : programs;
+  const appliedProgramIds = useMemo(
+    () => new Set(appliedCalendarPrograms.map((program) => String(program.id ?? ""))),
+    [appliedCalendarPrograms]
+  );
+
+  const handleApplyToCalendar = (program: Program) => {
+    const programId = String(program.id ?? "");
+    if (!programId) return;
+
+    setAppliedCalendarPrograms((current) => {
+      const next = [
+        program,
+        ...current.filter((item) => String(item.id ?? "") !== programId),
+      ].slice(0, 3);
+
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(APPLIED_CALENDAR_PROGRAMS_KEY, JSON.stringify(next));
+      }
+
+      void saveCalendarSelections(next.map((item) => String(item.id ?? "")).filter(Boolean))
+        .then(() => setCalendarSaveStatus("서버에 저장되었습니다."))
+        .catch(() => setCalendarSaveStatus("서버 저장에 실패해 이 브라우저에만 유지됩니다."));
+
+      return next;
+    });
+  };
+
+  const clearAppliedCalendarPrograms = () => {
+    setAppliedCalendarPrograms([]);
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(APPLIED_CALENDAR_PROGRAMS_KEY);
+    }
+    void saveCalendarSelections([])
+      .then(() => setCalendarSaveStatus("적용 일정이 초기화되었습니다."))
+      .catch(() => setCalendarSaveStatus("서버 초기화에 실패했습니다."));
+  };
+
   const loadPrograms = useCallback(
     async (options?: { category?: string | null; region?: string | null }) => {
       setLoading(true);
       setError(null);
 
       try {
-        const result = await getRecommendedPrograms({
+        const result = await getRecommendCalendar({
           category: options?.category ?? undefined,
           region: options?.region ?? undefined,
         });
-        setPrograms(result.programs);
+        setPrograms(
+          result.items.map((item) => ({
+            ...item.program,
+            deadline: item.deadline ?? item.program.deadline,
+            _reason: item.reason,
+            _score: item.final_score,
+            _relevance_score: item.relevance_score,
+            final_score: item.final_score,
+            relevance_score: item.relevance_score,
+            urgency_score: item.urgency_score,
+          }))
+        );
       } catch (e) {
         setPrograms([]);
         setError(e instanceof Error ? e.message : "추천 프로그램을 불러오지 못했습니다.");
@@ -304,6 +377,48 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const raw = window.localStorage.getItem(APPLIED_CALENDAR_PROGRAMS_KEY);
+    if (!raw) return;
+
+    try {
+      const parsed = JSON.parse(raw) as Program[];
+      if (Array.isArray(parsed)) {
+        setAppliedCalendarPrograms(parsed.filter((program) => program && program.id).slice(0, 3));
+      }
+    } catch {
+      window.localStorage.removeItem(APPLIED_CALENDAR_PROGRAMS_KEY);
+    }
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadSelections = async () => {
+      try {
+        const result = await getCalendarSelections();
+        if (!mounted || result.programs.length === 0) return;
+        setAppliedCalendarPrograms(result.programs.slice(0, 3));
+        window.localStorage.setItem(
+          APPLIED_CALENDAR_PROGRAMS_KEY,
+          JSON.stringify(result.programs.slice(0, 3))
+        );
+      } catch {
+        if (mounted) {
+          setCalendarSaveStatus("서버 저장 일정을 불러오지 못해 이 브라우저의 선택 상태를 사용합니다.");
+        }
+      }
+    };
+
+    void loadSelections();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
     void loadPrograms({ category: selectedCategory, region: selectedRegion });
   }, [loadPrograms, selectedCategory, selectedRegion]);
 
@@ -326,7 +441,7 @@ export default function DashboardPage() {
         </header>
 
         <MiniCalendar
-          programs={programs.map((program) => ({
+          programs={calendarPrograms.map((program) => ({
             title: program.title || "제목 없음",
             end_date: program.end_date || undefined,
           }))}
@@ -339,7 +454,40 @@ export default function DashboardPage() {
             <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
               AI 맞춤 취업 지원 캘린더
             </h2>
+            <p className="mt-2 text-sm text-slate-500">
+              {appliedCalendarPrograms.length > 0
+                ? "선택한 부트캠프 일정이 이번 달 마감 일정에 적용되었습니다."
+                : "추천 부트캠프에서 캘린더에 적용할 일정을 선택하세요."}
+            </p>
           </div>
+
+          {appliedCalendarPrograms.length > 0 ? (
+            <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-emerald-800">적용된 부트캠프 일정</p>
+                  <div className="mt-3 space-y-2">
+                    {appliedCalendarPrograms.map((program) => (
+                      <p key={String(program.id)} className="text-sm text-emerald-900">
+                        {program.title || "제목 없음"} · {formatTrainingPeriod(program.start_date, program.end_date)}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={clearAppliedCalendarPrograms}
+                  className="rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-sm font-semibold text-emerald-700"
+                >
+                  초기화
+                </button>
+              </div>
+            </div>
+          ) : null}
+
+          {calendarSaveStatus ? (
+            <p className="mb-6 text-sm text-slate-500">{calendarSaveStatus}</p>
+          ) : null}
 
           <div className="mb-6 space-y-4">
             <div>
@@ -411,6 +559,8 @@ export default function DashboardPage() {
                     key={`${program.link ?? program.title ?? "program"}-${index}`}
                     cardId={dateKey ? `card-${dateKey}` : undefined}
                     program={program}
+                    isApplied={appliedProgramIds.has(String(program.id ?? ""))}
+                    onApplyToCalendar={handleApplyToCalendar}
                   />
                 );
               })}

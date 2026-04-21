@@ -95,6 +95,7 @@
 - `frontend/middleware.ts`는 레거시 `/programs/compare` 접근을 `/compare`로 리다이렉트해서 새 랜딩 축 라우트 구조로 정리한다.
 - `frontend/app/auth/callback/route.ts`의 `GET()`는 기존 사용자 로그인 완료 후 기본 진입점을 `/landing-a`로 돌리고, 신규 사용자는 계속 `/onboarding`으로 보낸다.
 - `frontend/app/(landing)/landing-a/_components.tsx`의 `LandingANavBar()`는 상단 헤더에서 `프로그램 탐색`, `비교`, `워크스페이스` 링크와 로그인 사용자 표시를 공통 네비게이션으로 사용한다.
+- `frontend/app/(landing)/landing-a`는 티커/네브바, 이력 기반 추천 히어로, D-Day 요약, 검색/칩 필터, 프로그램 카드, 문제/해결 비교, 6단계 지원 준비 흐름, 기능 미리보기 카드, 추천 정확도 설명, KPI 뼈대, CTA/푸터 순서의 공개 랜딩 A 구조를 렌더링한다.
 - `frontend/app/(landing)` 아래 공개 랜딩 축 라우트는 `landing-a`, `landing-b`, `programs`, `compare`로 정리되어 있다. 이 중 `landing-b`는 현재 기본 진입이나 공통 네비게이션에는 연결하지 않는 A/B 테스트 보존 경로다.
 - `frontend/app/dashboard/layout.tsx`는 landing-a 헤더를 유지한 채 대시보드 사이드바와 본문을 렌더링한다.
 - Supabase 인증 설정 문서는 `docs/auth/supabase-auth-local.md`, `docs/auth/supabase-auth-production.md`로 로컬/운영을 분리해 관리한다.
@@ -170,6 +171,8 @@
 - `backend/routers/programs.py`는 기존 `POST /programs/recommend`를 유지한 채 `GET /programs/recommend/calendar`를 추가해 `{ items: [...] }` 계약으로 캘린더 전용 추천을 제공하고, 이 경로에서만 만료 프로그램 제외 + `final_score desc`, `deadline asc` 정렬을 적용한다.
 - recommendation cache read는 저장된 `final_score`를 그대로 신뢰하지 않고 `relevance_score * 0.6 + urgency_score * 0.4`로 재계산하며, component score가 하나라도 없으면 stale cache로 보고 fresh recommendation path로 우회한다.
 - `frontend/app/api/dashboard/recommend-calendar/route.ts`와 `frontend/lib/api/app.ts`는 새 캘린더 추천 BFF/helper를 제공하며, 비로그인 사용자도 `relevance_score = 0`을 유지한 `{ items: CalendarRecommendItem[] }` 응답을 받을 수 있다.
+- `frontend/app/dashboard/page.tsx`는 캘린더 전용 추천 BFF를 사용하고, 추천 카드의 `캘린더에 적용` 버튼으로 선택한 부트캠프 일정을 dashboard calendar에 반영한다. 적용된 일정은 `calendar_program_selections` 서버 테이블에 최대 3개까지 저장하고, 실패 시 기존 브라우저 `localStorage` 선택 상태로 fallback한다.
+- `frontend/app/dashboard/portfolio/page.tsx`는 세션스토리지에 남은 포트폴리오 변환 결과가 있으면 기존 미리보기를 보여주고, 없으면 성과 저장소 활동 목록에서 활동을 선택해 `/activities/convert` 기반 포트폴리오 초안을 직접 생성할 수 있다. 생성 결과는 `portfolios.portfolio_payload`에 저장되어 재진입 시 저장된 초안을 다시 열 수 있다.
 - 비교 페이지는 현재 운영 적재 컬럼 기준으로 기본 정보, 운영 정보, 프로그램 개요만 비교하고, `compare_meta`는 더 이상 표 본문의 기본 의존성이 아니다. 운영 메타 성격의 빈 값은 `데이터 미수집`, 실사용 컬럼의 빈 값은 `정보 없음`으로 구분해 표시한다.
 - 비교 페이지는 로그인 사용자에 한해 `POST /programs/compare-relevance`로 종합 관련도, 기술 스택 일치도, 매칭 스킬 태그를 계산해 표시한다.
 - compare relevance 응답은 기존 점수 필드 외에 `fit_label`, `fit_summary`, `readiness_label`, `gap_tags`를 함께 반환하고, compare UI는 이를 `★ AI 적합도` 섹션에서 적합도 판단, 지원 준비도, 한줄 요약, 보완 포인트로 해석해 보여준다.

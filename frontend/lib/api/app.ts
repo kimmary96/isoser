@@ -21,6 +21,7 @@ import type {
   ProgramListResponse,
   ResumeBuilderResponse,
   ResumeExportResponse,
+  SavedPortfolio,
   SavedMatchAnalysis,
 } from "@/lib/types";
 
@@ -163,6 +164,28 @@ export async function getRecommendCalendar(
   );
 }
 
+export async function getCalendarSelections(): Promise<{ programs: Program[] }> {
+  return requestAppJson<{ programs: Program[] }>(
+    "/api/dashboard/calendar-selections",
+    { method: "GET" },
+    "캘린더 적용 일정을 불러오지 못했습니다."
+  );
+}
+
+export async function saveCalendarSelections(
+  programIds: string[]
+): Promise<{ programIds: string[] }> {
+  return requestAppJson<{ programIds: string[] }>(
+    "/api/dashboard/calendar-selections",
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ programIds }),
+    },
+    "캘린더 적용 일정 저장에 실패했습니다."
+  );
+}
+
 export async function getProgramCompareRelevance(
   programIds: string[]
 ): Promise<ProgramCompareRelevanceResponse> {
@@ -259,6 +282,30 @@ export async function getDocuments(): Promise<{ documents: Resume[] }> {
     "/api/dashboard/documents",
     { method: "GET" },
     "문서 목록을 불러오지 못했습니다."
+  );
+}
+
+export async function listSavedPortfolios(): Promise<{ portfolios: SavedPortfolio[] }> {
+  return requestAppJson<{ portfolios: SavedPortfolio[] }>(
+    "/api/dashboard/portfolios",
+    { method: "GET" },
+    "포트폴리오 목록을 불러오지 못했습니다."
+  );
+}
+
+export async function savePortfolioDocument(payload: {
+  title: string;
+  sourceActivityId: string;
+  portfolio: NonNullable<SavedPortfolio["portfolio"]>;
+}): Promise<{ id: string }> {
+  return requestAppJson<{ id: string }>(
+    "/api/dashboard/portfolios",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+    "포트폴리오 저장에 실패했습니다."
   );
 }
 

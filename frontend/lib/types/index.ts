@@ -435,6 +435,16 @@ export interface PortfolioConversionResponse {
   review_tags: string[];
 }
 
+export interface SavedPortfolio {
+  id: string;
+  title: string;
+  sourceActivityId: string | null;
+  selectedActivityIds: string[];
+  portfolio: PortfolioConversionResponse | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ActivityConvertResponse {
   target: "star" | "portfolio" | "both";
   star: StarConversionResponse | null;

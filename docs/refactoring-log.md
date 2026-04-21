@@ -2039,3 +2039,15 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - `spec_version`이 있는 packet을 Supervisor 표준 spec으로 간주하고 `request_id`, `execution_path`, `allowed_paths`, `blocked_paths`, `fallback_plan`, `rollback_plan`, `dedupe_key` 등을 watcher/cowork watcher가 실행 전에 검증하도록 보강함
   - `allowed_paths`와 `blocked_paths` 중복, 허용되지 않은 `execution_path`/`risk_level` 같은 모순 frontmatter를 cowork review 단계와 local execution 단계에서 조기 차단하도록 정리함
   - `scripts/create_task_packet.py --supervisor-spec` 옵션을 추가해 확장 frontmatter를 가진 안전한 packet 초안을 더 쉽게 만들 수 있게 했고, 관련 운영 문서를 현재 런타임 규칙에 맞춰 갱신함
+- 2026-04-21: `frontend/app/dashboard/page.tsx`, `frontend/app/dashboard/portfolio/page.tsx`, `docs/presentation/2026-04-21-demo-assets-sheet.md`, `docs/current-state.md`
+  - 발표 전 P0 기준으로 캘린더 일정 적용과 포트폴리오 생성 구현 여부를 확인하고, 퍼널을 끊는 두 지점만 최소 변경으로 보강함
+  - 대시보드는 캘린더 전용 추천 BFF를 사용하고 추천 카드에서 `캘린더에 적용` CTA를 제공하며, 적용된 일정은 최대 3개까지 로컬 저장해 재진입 시 유지함
+  - 포트폴리오 페이지는 직접 진입 시 준비중 문구에서 멈추지 않고 성과 저장소 활동을 선택해 포트폴리오 초안을 생성할 수 있게 함
+- 2026-04-21: `supabase/migrations/20260421160000_add_calendar_and_portfolio_persistence.sql`, `frontend/app/api/dashboard/calendar-selections/route.ts`, `frontend/app/api/dashboard/portfolios/route.ts`, `frontend/lib/api/app.ts`, `frontend/lib/types/index.ts`
+  - 캘린더 적용 상태를 서버에 저장하기 위해 `calendar_program_selections` 테이블과 dashboard BFF를 추가함
+  - 포트폴리오 생성 결과를 기존 `portfolios` 테이블의 `portfolio_payload` JSONB 컬럼에 저장하고 `/dashboard/portfolio`에서 저장 초안을 다시 열 수 있게 함
+  - 랜딩 A 타입 오류는 현재 신규 섹션을 보존한 채 누락된 `compareCards` import를 복구해 타입체크 통과 상태로 정리함
+- 2026-04-21: `TASK-2026-04-21-0649-landing-a-visual-revamp`
+  - `frontend/app/(landing)/landing-a` 내부에서 랜딩 A 카피와 섹션 순서를 이력 기반 추천/지원 준비 플랫폼 프레이밍으로 재배치함
+  - 기능 맛보기 4개 카드는 `frontend/public/landing-a/` placeholder SVG 파일을 참조하도록 구성해 추후 같은 파일명 교체만으로 실제 캡처 전환이 가능하게 함
+  - 기존 `listPrograms`/`getProgramCount`, 검색/칩 필터, 프로그램 카드, 로그인 네브바, 푸터/광고 슬롯 동작은 유지함
