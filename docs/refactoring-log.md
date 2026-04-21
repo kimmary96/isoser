@@ -1,5 +1,20 @@
 # 리팩토링 로그
 
+## 2026-04-20 docs fast-path lightweight verification
+
+- 수정 파일:
+  - `watcher.py`
+  - `tests/test_watcher.py`
+  - `docs/current-state.md`
+- 변경 내용:
+  - docs 계열 task는 inspector와 implementer까지만 Codex를 실행하고, verifier 단계는 watcher가 경량 verification report를 직접 기록하도록 줄였다.
+  - 코드 task의 기존 3단계 supervisor 흐름은 그대로 유지했다.
+- 유지된 동작:
+  - `reports/<task-id>-supervisor-inspection.md`, `reports/<task-id>-result.md`, `reports/<task-id>-supervisor-verification.md` artifact 구조는 유지된다.
+  - `review-required` 분기와 코드 task 검증 강도는 유지된다.
+- 검증 메모:
+  - `tests/test_watcher.py`에 docs fast-path 전용 회귀 테스트를 추가했다.
+
 ## 2026-04-20 검증 체계 복구와 저위험 안정화
 
 - 수정 파일:

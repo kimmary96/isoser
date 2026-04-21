@@ -20,6 +20,7 @@
 - watcher는 `tasks/drifted/`와 `tasks/blocked/`를 다시 검사해 자동 복구 가능한 packet은 `tasks/inbox/`로 재투입한다.
 - watcher는 Codex 실행 중 `tasks/running/<task>.md` heartbeat를 주기적으로 갱신해, stdout이 잠잠한 장기 실행에서도 stale timeout으로 오판되는 일을 줄인다.
 - local `watcher.py`의 execution path는 supervisor 단계로 한 번 더 나뉘어, inspector handoff(`reports/<task-id>-supervisor-inspection.md`) 이후 implementer가 코드 수정과 result report를 만들고 verifier가 최종 검증(`reports/<task-id>-supervisor-verification.md`)을 수행한다. verifier가 `review-required` verdict를 내리면 일반 blocked 알림 대신 `tasks/review-required/`와 `needs-review` 공식 경로로 분기한다.
+- 다만 `type: docs|doc|documentation` task는 저위험 fast-path를 써서 inspector + implementer까지만 Codex를 실행하고, 마지막 verification artifact는 watcher가 경량 리포트로 직접 기록한다.
 - `tasks/review-required/`는 살아 있는 수동 검토 대기열로만 사용한다. 사람이 검토를 마쳐 재실행이 아니라 종결/보류/대체로 처리하기로 결정한 packet은 `tasks/archive/`로 이동하고 `reports/*` 판단 근거는 그대로 유지한다.
 - task packet은 선택적으로 `planned_files`와 `planned_worktree_fingerprint`를 담아, 같은 `HEAD` 안에서도 계획 당시 worktree 상태가 달라졌는지 더 엄격하게 검증할 수 있다.
 - task packet frontmatter에 `spec_version`이 있으면 watcher와 cowork watcher는 Supervisor 표준 spec으로 간주하고 `request_id`, `execution_path`, `allowed_paths`, `fallback_plan`, `rollback_plan`, `dedupe_key` 같은 추가 필드를 함께 검증한다. 이때 `allowed_paths`와 `blocked_paths`가 겹치면 실행 전에 차단한다.
@@ -119,7 +120,7 @@
 4. packet이 바뀌면 cowork watcher는 최신 packet 기준으로 review를 다시 생성하거나 stale review를 막는다.
 5. 승인되면 cowork watcher는 `cowork/packets/<task-id>.md` 최신본을 `tasks/inbox/` 또는 `tasks/remote/`로 복사한다.
 6. local path라면 `watcher.py`가 `tasks/inbox/`에서 packet을 집어 `tasks/running/`으로 옮기고 Codex를 실행한다.
-7. local watcher supervisor는 inspector handoff를 먼저 만들고, 이어서 implementer가 구현과 result report를 만들며 verifier가 최종 검증 artifact를 남긴다.
+7. local watcher supervisor는 inspector handoff를 먼저 만들고, 이어서 implementer가 구현과 result report를 만든다. 일반 코드 task는 verifier가 최종 검증 artifact를 남기고, docs task는 watcher가 경량 verification artifact를 대신 남긴다.
 8. watcher는 실행 결과에 따라 packet을 `tasks/done/`, `tasks/drifted/`, `tasks/blocked/`, `tasks/review-required/`로 이동한다.
 9. `tasks/drifted/`와 `tasks/blocked/`는 자동 복구가 가능하면 `tasks/inbox/`로 재큐잉되고, 아니면 다시 `cowork/packets/` review 흐름으로 에스컬레이션된다. `tasks/review-required/`는 verifier가 수동 검토를 요청한 전용 큐이며, 검토가 끝난 packet은 그 큐에 남기지 않고 `tasks/archive/` 또는 후속 execution queue로 정리한다.
 
