@@ -1,31 +1,31 @@
 # Overall assessment
 
-Promotable with minor changes.
+Not ready for promotion as an execution packet.
 
-The packet has complete required frontmatter: `id`, `status`, `type`, `title`, `planned_at`, and `planned_against_commit` are present. Optional `planned_files` and `planned_worktree_fingerprint` metadata are not present, so there is no optional fingerprint to verify.
+The required frontmatter is complete: `id`, `status`, `type`, `title`, `planned_at`, and `planned_against_commit` are present. Optional `planned_files` and `planned_worktree_fingerprint` metadata are not present, so there is no optional fingerprint to verify.
 
-Repository path accuracy is good. `frontend/app/(landing)/landing-a/` exists with `page.tsx`, `_components.tsx`, `_content.ts`, and `_styles.ts`. `frontend/public/landing-a/` does not exist yet, but the packet explicitly allows adding that directory only for placeholder assets, so this is not a scope conflict.
-
-Drift risk is low for the requested touched area. Current `HEAD` is `b17fe67`, while `planned_against_commit` resolves to `336e800`, but `git diff 336e800..HEAD -- frontend/app/(landing)/landing-a frontend/public/landing-a` is empty and there are no current worktree changes under those target paths. The broader worktree has unrelated dirty files, mostly backend/docs/cowork automation state, but they do not overlap the packet scope.
+The repository paths in the packet are valid. `frontend/app/(landing)/landing-a/` exists, and `frontend/public/landing-a/` now exists with four preview SVG assets. However, the packet is no longer aligned with the current repository state. The current worktree already contains landing-a changes for this task, a result report, and a supervisor verification report with `verdict: review-required`. Promoting the packet as-is would risk duplicate execution against already-modified files.
 
 # Findings
 
-1. Acceptance clarity is mostly sufficient. The packet now consistently describes 11 render roles/sections, keeps `/landing-a` as the target, and explicitly says the D-Day summary can be satisfied by the existing `LandingATickerBar` or hero live board if already rendered.
+1. Drift risk is high. `planned_against_commit` is `336e800`, while current `HEAD` is `24754c9d47fcdd8a92c4b6d4810f4c67208f48c2`, and the worktree has uncommitted changes in the packet's touched area: `frontend/app/(landing)/landing-a/_components.tsx`, `_content.ts`, and `page.tsx`. `git diff 336e800 -- frontend/app/(landing)/landing-a frontend/public/landing-a` shows the landing-a implementation has already changed since the planned commit.
 
-2. The static asset requirement is executable but would be more deterministic with planned filenames. The packet requires four replaceable image slots under `frontend/public/landing-a/`, but does not name the files. This is not blocking, because an implementer can choose stable names, but promotion quality would improve if the packet listed filenames such as `recommend-calendar-preview.*`, `star-coach-preview.*`, `resume-portfolio-preview.*`, and `match-score-preview.*`.
+2. The packet appears to be a recovery/requeue draft, but its `Auto Recovery Context` references missing files: `tasks/blocked/TASK-2026-04-21-0649-landing-a-visual-revamp.md`, `reports/TASK-2026-04-21-0649-landing-a-visual-revamp-blocked.md`, and `reports/TASK-2026-04-21-0649-landing-a-visual-revamp-recovery.md` are not present. The existing evidence is instead `reports/TASK-2026-04-21-0649-landing-a-visual-revamp-result.md`, `reports/TASK-2026-04-21-0649-landing-a-visual-revamp-supervisor-verification.md`, and `tasks/review-required/TASK-2026-04-21-0649-landing-a-visual-revamp.md`.
 
-3. The title/goal wording still says "이미지 슬라이드", while the UI requirements explicitly say not to build carousel behavior and to use a responsive card grid. This is minor because the detailed requirement and acceptance criteria are clear, but changing the title wording to "이미지 카드 기반" would reduce execution variance.
+3. Duplicate execution risk is material. The current implementation already includes the requested feature preview card data, local `/landing-a/*.svg` preview paths, KPI skeleton labels, and the requested copy replacements/removals under the landing-a route. A new implementation pass should not be promoted until the packet is reframed around the remaining verifier gaps.
 
-4. Missing reference risk is acceptable. The packet does not cite exact current component names beyond `LandingATickerBar`, but the relevant landing-a files are small enough and directly scoped. Current code also contains the listed residual phrases, so the copy-removal acceptance criteria are grounded in the actual implementation.
+4. Acceptance clarity is sufficient for the original visual revamp, but not for the current review-required state. The supervisor verification says `npm --prefix frontend run build` did not pass because of `spawn EPERM`, mobile 375px no-horizontal-overflow verification is not evidenced, and the post-hero `LandingATrustSection` may not clearly satisfy the intended D-Day/deadline summary role.
+
+5. The broader worktree is mixed. There are unrelated modified files outside the packet scope, including dashboard, API helper, migration, docs, watcher state, and task queue files. That increases promotion and commit-scope risk if automation treats the repository as a clean task workspace.
 
 # Recommendation
 
-Promote is acceptable as-is, with low drift risk.
+Do not promote this packet as-is.
 
-Before promotion, the only recommended minor cleanup is to specify the four placeholder asset filenames and optionally replace "이미지 슬라이드" in the title/goal with "이미지 카드" or "미리보기 카드". These are quality improvements, not blockers.
+Before promotion, either archive/close this draft as superseded by the existing `tasks/review-required` execution, or rewrite it as a narrow follow-up packet against the current state. The revised packet should update `planned_against_commit` after the current task state is stabilized, add `planned_files` and `planned_worktree_fingerprint` for the exact touched files, replace the missing recovery references with the existing result and supervisor verification reports, and scope acceptance to the remaining issues: build verification, mobile overflow/browser evidence, and the D-Day/deadline summary section ambiguity.
 
 ## Review Run Metadata
 
-- generated_at: `2026-04-21T16:20:05`
+- generated_at: `2026-04-21T16:40:38`
 - watcher_exit_code: `0`
-- codex_tokens_used: `78,460`
+- codex_tokens_used: `85,700`

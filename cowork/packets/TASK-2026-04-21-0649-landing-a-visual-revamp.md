@@ -99,3 +99,11 @@ planned_by: claude-pm
 - KPI 뼈대 값은 "집계 준비 중" 텍스트로 통일한다.
 - 기능 맛보기 섹션에는 카드별 CTA를 두지 않고, 섹션 하단 또는 하단 CTA 영역의 기존 CTA로 통합한다.
 - 추천 정확도 설명 섹션의 4요소 도식은 텍스트 카드 4개로 구현하고, 별도 다이어그램 라이브러리나 복잡한 관계도는 추가하지 않는다.
+
+## Auto Recovery Context
+
+- source_task: `tasks/blocked/TASK-2026-04-21-0649-landing-a-visual-revamp.md`
+- failure_stage: `blocked`
+- failure_report: `reports/TASK-2026-04-21-0649-landing-a-visual-revamp-blocked.md`
+- recovery_report: `reports/TASK-2026-04-21-0649-landing-a-visual-revamp-recovery.md`
+- reviewer_action: review the verification findings, tighten the packet if needed, and only then approve requeueing
