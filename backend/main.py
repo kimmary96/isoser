@@ -1,5 +1,6 @@
 # FastAPI 앱 진입점 - CORS 설정, 라우터 등록, 서버 시작 시 ChromaDB 초기화
 from contextlib import asynccontextmanager
+import os
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,7 +21,8 @@ from rag.chroma_client import get_chroma_health_summary, init_chroma
 async def lifespan(app: FastAPI):
     """서버 시작/종료 생명주기 관리."""
     # 시작 시: ChromaDB 초기화
-    init_chroma()
+    if os.getenv("ISOSER_SKIP_CHROMA_INIT", "").strip().lower() not in {"1", "true", "yes"}:
+        init_chroma()
     yield
     # 종료 시: 정리 작업 (필요 시 추가)
 
