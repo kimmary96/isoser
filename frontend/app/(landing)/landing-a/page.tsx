@@ -5,9 +5,11 @@ import {
   LandingAFilterBar,
   LandingAFooter,
   LandingAHeroSection,
-  LandingAJourneySection,
+  LandingAKpiSection,
   LandingANavBar,
+  LandingAPreviewSection,
   LandingAProgramsSection,
+  LandingARecommendationSection,
   LandingAStyleTag,
   LandingATickerBar,
   LandingATrustSection,
@@ -143,7 +145,9 @@ export default async function LandingAPage({ searchParams }: LandingAPageProps) 
       />
       <LandingAWorkspaceSection />
       <LandingAComparisonSection />
-      <LandingAJourneySection />
+      <LandingAPreviewSection />
+      <LandingARecommendationSection />
+      <LandingAKpiSection />
       <LandingACtaSection />
       <div className="px-5 pb-12 sm:px-8 lg:px-12">
         <AdSlot

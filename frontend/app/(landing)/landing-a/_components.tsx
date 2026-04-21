@@ -9,9 +9,13 @@ import { getDashboardMe } from "@/lib/api/app";
 import type { Program } from "@/lib/types";
 
 import {
+  accuracyFactors,
   chipOptions,
   compareCards,
+  comparisonColumns,
+  featurePreviews,
   journeySteps,
+  kpiSkeletons,
   tickerLoop,
   toneClassMap,
   trustPoints,
@@ -221,28 +225,28 @@ export function LandingAHeroSection({ featuredPrograms, totalCount }: LandingAHe
             Public Support Programs
           </p>
           <h1 className="mt-6 text-4xl font-extrabold leading-[1.08] tracking-[-0.07em] text-[var(--ink)] sm:text-5xl lg:text-[4.7rem]">
-            흩어진 국비 지원 정보,
+            흩어진 국비·지역 프로그램을
             <br />
-            <span className="hero-wordmark">내 상황에 맞는 것만 골라드립니다</span>
+            <span className="hero-wordmark">내 이력 기반으로 추천받고 바로 지원하세요</span>
           </h1>
           <p className="mt-6 max-w-xl text-base leading-7 text-[var(--sub)] sm:text-lg">
-            각종 부트캠프, K-디지털, 서울시 일자리까지 한곳에 모았습니다.
+            이력과 활동을 등록하면 나에게 맞는 프로그램을 추천하고,
             <br />
-            3가지 조건만 알려주시면 마감 임박순으로 정렬해드립니다.
+            지원에 필요한 이력서·포트폴리오까지 바로 준비합니다.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
-              href="/programs?sort=deadline"
-              className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3.5 text-sm font-bold text-[var(--ink)] transition hover:-translate-y-0.5"
+              href="/login"
+              className="inline-flex items-center justify-center rounded-full bg-[var(--fire)] px-6 py-3.5 text-sm font-bold text-white shadow-[0_12px_32px_rgba(249,115,22,0.24)] transition hover:-translate-y-0.5 hover:bg-[var(--fire-lo)]"
             >
-              지금 지원 가능한 프로그램 보기
+              내게 맞는 프로그램 추천받기
             </Link>
             <Link
-              href="/login"
+              href="/programs?sort=deadline"
               className="inline-flex items-center justify-center rounded-full border border-[var(--border)] bg-white px-6 py-3.5 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--blue)] hover:text-[var(--blue)]"
             >
-              로그인 후 AI 추천 받기
+              프로그램 둘러보기
             </Link>
           </div>
 
@@ -302,10 +306,9 @@ export function LandingAHeroSection({ featuredPrograms, totalCount }: LandingAHe
           </div>
 
           <div className="mt-5 rounded-[24px] border border-dashed border-[var(--border)] bg-[var(--surface)] p-4">
-            <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">Next after login</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">Next step</p>
             <p className="mt-2 text-sm leading-6 text-[var(--sub)]">
-              프로필을 연결하면 랜딩에서 본 프로그램을 대시보드 추천 캘린더와 문서 생성 흐름으로 이어서 관리할 수
-              있습니다.
+              이력 데이터를 연결하면 추천 정확도와 지원 준비 속도를 함께 높일 수 있습니다.
             </p>
           </div>
         </div>
@@ -416,12 +419,9 @@ export function LandingAProgramsSection({
           <div className="max-w-2xl">
             <p className="text-xs uppercase tracking-[0.24em] text-[var(--blue)]">Opportunity feed</p>
             <h2 className="mt-3 text-3xl font-bold tracking-[-0.05em] text-[var(--ink)]">
-              지금 탐색할 프로그램을 빠르게 고릅니다
+              지금 프로그램을 빠르게 탐색해 보세요
             </h2>
-            <p className="mt-3 text-sm leading-7 text-[var(--sub)]">
-              비로그인 상태에서는 우선 공고를 탐색하고, 로그인 후에는 이 결과를 그대로 추천 캘린더와 문서 워크플로우로
-              이어 붙입니다.
-            </p>
+            <p className="mt-3 text-sm leading-7 text-[var(--sub)]">마감, 지역, 분야를 기준으로 먼저 확인할 프로그램을 좁혀보세요.</p>
           </div>
           <div className="flex flex-wrap gap-3 text-sm">
             <Link
@@ -557,73 +557,30 @@ export function LandingAProgramsSection({
 export function LandingAWorkspaceSection() {
   return (
     <section className="px-5 pb-14 sm:px-8 lg:px-12">
-      <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[0.94fr_1.06fr]">
-        <div className="section-shell soft-panel rounded-[32px] px-6 py-8 sm:px-8">
-          <p className="text-xs uppercase tracking-[0.24em] text-[var(--blue)]">Funnel</p>
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-6 max-w-2xl">
+          <p className="text-xs uppercase tracking-[0.24em] text-[var(--blue)]">Problem to workflow</p>
           <h2 className="mt-3 text-3xl font-bold tracking-[-0.05em] text-[var(--ink)]">
-            랜딩에서 끝나지 않고, 대시보드로 넘깁니다
+            흩어진 탐색을 지원 준비 흐름으로 바꿉니다
           </h2>
-          <p className="mt-4 text-sm leading-7 text-[var(--sub)]">
-            이 랜딩의 역할은 공고를 보여주는 데서 끝나지 않습니다. 비로그인 사용자는 공고를 탐색하고, 로그인 후에는
-            이소서 대시보드에서 추천 캘린더와 문서 워크플로우로 자연스럽게 이어집니다.
-          </p>
-
-          <div className="mt-8 space-y-4">
-            {workspaceStages.map((stage) => (
-              <div key={stage.step} className="rounded-[24px] border border-[var(--border)] bg-white px-5 py-5">
-                <div className="flex items-center justify-between gap-4">
-                  <span className="text-xs font-bold tracking-[0.18em] text-[var(--muted)]">{stage.step}</span>
-                  <Link href={stage.href} className="text-sm font-semibold text-[var(--blue)]">
-                    {stage.cta} →
-                  </Link>
-                </div>
-                <h3 className="mt-3 text-lg font-bold tracking-[-0.03em] text-[var(--ink)]">{stage.title}</h3>
-                <p className="mt-2 text-sm leading-7 text-[var(--sub)]">{stage.description}</p>
-              </div>
-            ))}
-          </div>
         </div>
 
-        <div className="compare-shell overflow-hidden rounded-[32px] px-6 py-8 text-[var(--ink)] sm:px-8">
-          <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">After login</p>
-          <h2 className="mt-3 text-3xl font-bold tracking-[-0.05em] text-[var(--ink)]">
-            기존 대시보드와 단절되지 않는 워크스페이스
-          </h2>
-          <p className="mt-4 max-w-xl text-sm leading-7 text-[var(--sub)]">
-            로그인 이후에는 추천 프로그램 캘린더, 성과저장소, 자기소개서, 이력서, 공고 매치 분석이 같은 언어로 연결됩니다.
-          </p>
-
-          <div className="mt-8 grid gap-3">
-            <div className="rounded-[24px] border border-[var(--border)] bg-white px-5 py-5">
-              <p className="text-xs uppercase tracking-[0.16em] text-[var(--muted)]">Dashboard</p>
-              <div className="mt-3 flex items-end justify-between gap-4">
-                <div>
-                  <h3 className="text-xl font-bold tracking-[-0.04em] text-[var(--ink)]">추천 캘린더</h3>
-                  <p className="mt-2 text-sm leading-6 text-[var(--sub)]">
-                    마감 일정과 맞춤 추천을 한 화면에서 관리합니다.
-                  </p>
-                </div>
-                <span className="rounded-full bg-[var(--surface-strong)] px-3 py-1 text-xs font-semibold text-[var(--blue)]">추천</span>
+        <div className="grid gap-5 lg:grid-cols-2">
+          {comparisonColumns.map((column) => (
+            <div key={column.title} className="section-shell soft-panel rounded-[32px] px-6 py-8 sm:px-8">
+              <h3 className="text-2xl font-bold tracking-[-0.04em] text-[var(--ink)]">{column.title}</h3>
+              <div className="mt-6 space-y-3">
+                {column.items.map((item) => (
+                  <div
+                    key={item}
+                    className="rounded-[22px] border border-[var(--border)] bg-white px-5 py-4 text-sm font-semibold text-[var(--ink)]"
+                  >
+                    {item}
+                  </div>
+                ))}
               </div>
             </div>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-[24px] border border-[var(--border)] bg-white px-5 py-5">
-                <p className="text-xs uppercase tracking-[0.16em] text-[var(--muted)]">Documents</p>
-                <h3 className="mt-3 text-lg font-bold tracking-[-0.03em] text-[var(--ink)]">이력서 · 자기소개서</h3>
-                <p className="mt-2 text-sm leading-6 text-[var(--sub)]">
-                  공고 탐색 후 바로 서류 초안을 이어서 다듬습니다.
-                </p>
-              </div>
-              <div className="rounded-[24px] border border-[var(--border)] bg-white px-5 py-5">
-                <p className="text-xs uppercase tracking-[0.16em] text-[var(--muted)]">Match</p>
-                <h3 className="mt-3 text-lg font-bold tracking-[-0.03em] text-[var(--ink)]">공고 매치 분석</h3>
-                <p className="mt-2 text-sm leading-6 text-[var(--sub)]">
-                  관심 공고와 내 이력을 기준으로 실행 우선순위를 정합니다.
-                </p>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </section>
@@ -633,48 +590,24 @@ export function LandingAWorkspaceSection() {
 export function LandingAComparisonSection() {
   return (
     <section className="px-5 pb-14 sm:px-8 lg:px-12">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-6 max-w-2xl">
-          <p className="text-xs uppercase tracking-[0.24em] text-[var(--blue)]">Decision support</p>
+      <div className="section-shell soft-panel mx-auto max-w-6xl rounded-[32px] px-6 py-8 sm:px-8">
+        <div className="max-w-2xl">
+          <p className="text-xs uppercase tracking-[0.24em] text-[var(--blue)]">Circular flow</p>
           <h2 className="mt-3 text-3xl font-bold tracking-[-0.05em] text-[var(--ink)]">
-            공고 비교도 결국 전환 퍼널의 일부입니다
+            탐색한 프로그램은 다음 지원 준비로 이어집니다
           </h2>
-          <p className="mt-3 text-sm leading-7 text-[var(--sub)]">
-            어떤 사용자는 바로 지원하고, 어떤 사용자는 비교가 필요하고, 어떤 사용자는 서류 준비까지 이어져야 합니다.
-            랜딩은 이 세 경로를 같은 제품 안에서 다룰 수 있어야 합니다.
-          </p>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-3">
-          {compareCards.map((card) => {
-            const toneClass =
-              card.tone === "fire"
-                ? "border-[rgba(249,115,22,0.28)] bg-[rgba(255,247,237,0.92)]"
-                : card.tone === "blue"
-                  ? "border-[rgba(43,111,242,0.22)] bg-[rgba(239,246,255,0.92)]"
-                  : "border-[rgba(216,227,242,0.95)] bg-white";
-
-            return (
-              <article key={card.title} className={`rounded-[28px] border p-6 ${toneClass}`}>
-                <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">{card.signal}</p>
-                <h3 className="mt-3 text-xl font-bold tracking-[-0.04em] text-[var(--ink)]">{card.title}</h3>
-                <div className="mt-5 space-y-4 text-sm leading-6 text-[var(--sub)]">
-                  <div>
-                    <span className="font-semibold text-[var(--ink)]">적합한 상황</span>
-                    <p className="mt-1">{card.fit}</p>
-                  </div>
-                  <div>
-                    <span className="font-semibold text-[var(--ink)]">핵심 판단 요소</span>
-                    <p className="mt-1">{card.timeline}</p>
-                  </div>
-                  <div>
-                    <span className="font-semibold text-[var(--ink)]">이소서 연결 방식</span>
-                    <p className="mt-1">{card.support}</p>
-                  </div>
-                </div>
-              </article>
-            );
-          })}
+        <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-6">
+          {workspaceStages.map((stage) => (
+            <div key={stage.step} className="rounded-[24px] border border-[var(--border)] bg-white px-4 py-5">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--ink)] text-xs font-bold text-white">
+                {stage.step}
+              </span>
+              <h3 className="mt-4 text-base font-bold tracking-[-0.03em] text-[var(--ink)]">{stage.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-[var(--sub)]">{stage.description}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -688,12 +621,9 @@ export function LandingAJourneySection() {
         <div className="max-w-2xl">
           <p className="text-xs uppercase tracking-[0.24em] text-[var(--blue)]">Journey</p>
           <h2 className="mt-3 text-3xl font-bold tracking-[-0.05em] text-[var(--ink)]">
-            로그인 이후 연결 흐름도 랜딩에서 미리 설명합니다
+            추천에 반영되는 기준
           </h2>
-          <p className="mt-3 text-sm leading-7 text-[var(--sub)]">
-            탐색만 가능한 제품처럼 보이면 로그인 동기가 약해집니다. 그래서 랜딩 본문에서부터 로그인 후 워크플로우를
-            명시적으로 보여줍니다.
-          </p>
+          <p className="mt-3 text-sm leading-7 text-[var(--sub)]">프로그램 추천은 단순 키워드가 아니라 내 이력과 상황을 함께 봅니다.</p>
         </div>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-4">
@@ -712,6 +642,100 @@ export function LandingAJourneySection() {
   );
 }
 
+export function LandingAPreviewSection() {
+  return (
+    <section className="px-5 pb-14 sm:px-8 lg:px-12">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-6 max-w-2xl">
+          <p className="text-xs uppercase tracking-[0.24em] text-[var(--blue)]">Product preview</p>
+          <h2 className="mt-3 text-3xl font-bold tracking-[-0.05em] text-[var(--ink)]">
+            AI를 통해 이력서를 준비하고, 공고 매칭과 출력까지
+          </h2>
+          <p className="mt-3 text-sm leading-7 text-[var(--sub)]">
+            대시보드에서 이어질 핵심 기능을 미리 확인할 수 있습니다.
+          </p>
+        </div>
+
+        <div className="grid gap-5 lg:grid-cols-2">
+          {featurePreviews.map((preview) => (
+            <article
+              key={preview.title}
+              className="overflow-hidden rounded-[28px] border border-[var(--border)] bg-white shadow-[0_16px_44px_rgba(10,19,37,0.05)]"
+            >
+              <div className="relative aspect-[16/10] bg-[var(--surface)]">
+                <Image
+                  src={preview.imageSrc}
+                  alt={preview.imageAlt}
+                  fill
+                  sizes="(min-width: 1024px) 50vw, 100vw"
+                  className="object-cover"
+                />
+              </div>
+              <div className="px-6 py-5">
+                <h3 className="text-xl font-bold tracking-[-0.04em] text-[var(--ink)]">{preview.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-[var(--sub)]">{preview.description}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function LandingARecommendationSection() {
+  return (
+    <section className="px-5 pb-14 sm:px-8 lg:px-12">
+      <div className="compare-shell mx-auto max-w-6xl overflow-hidden rounded-[32px] px-6 py-8 text-[var(--ink)] sm:px-8">
+        <div className="max-w-2xl">
+          <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Recommendation logic</p>
+          <h2 className="mt-3 text-3xl font-bold tracking-[-0.05em] text-[var(--ink)]">
+            추천 정확도는 이력 데이터가 쌓일수록 좋아집니다
+          </h2>
+          <p className="mt-3 text-sm leading-7 text-[var(--sub)]">
+            네 가지 신호를 함께 보고 지금 지원할 프로그램의 우선순위를 정합니다.
+          </p>
+        </div>
+
+        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {accuracyFactors.map((factor) => (
+            <div key={factor.title} className="rounded-[24px] border border-[var(--border)] bg-white px-5 py-5">
+              <h3 className="text-lg font-bold tracking-[-0.03em] text-[var(--ink)]">{factor.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-[var(--sub)]">{factor.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function LandingAKpiSection() {
+  return (
+    <section className="px-5 pb-14 sm:px-8 lg:px-12">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-6 max-w-2xl">
+          <p className="text-xs uppercase tracking-[0.24em] text-[var(--blue)]">Proof board</p>
+          <h2 className="mt-3 text-3xl font-bold tracking-[-0.05em] text-[var(--ink)]">성과 증명 보드</h2>
+          <p className="mt-3 text-sm leading-7 text-[var(--sub)]">실제 수치와 후기는 집계 준비 후 연결합니다.</p>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+          {kpiSkeletons.map((kpi) => (
+            <div
+              key={kpi.label}
+              className="rounded-[28px] border border-[var(--border)] bg-white p-5 shadow-[0_16px_44px_rgba(10,19,37,0.05)]"
+            >
+              <p className="text-sm font-semibold leading-6 text-[var(--ink)]">{kpi.label}</p>
+              <p className="mt-5 text-sm font-bold text-[var(--muted)]">집계 준비 중</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function LandingACtaSection() {
   return (
     <section className="px-5 pb-14 sm:px-8 lg:px-12">
@@ -719,12 +743,12 @@ export function LandingACtaSection() {
         <div className="max-w-2xl">
           <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Final CTA</p>
           <h2 className="mt-3 text-3xl font-bold leading-tight tracking-[-0.05em] text-[var(--ink)] sm:text-4xl">
-            프로그램을 찾았다면,
+            준비가 되었다면
             <br />
-            이제 지원 준비를 같은 흐름으로 이어가면 됩니다
+            이력서를 준비해 보세요.
           </h2>
           <p className="mt-4 text-sm leading-7 text-[var(--sub)]">
-            로그인 후에는 추천 프로그램 캘린더, 성과저장소, 이력서, 자기소개서, 매치 분석이 같은 제품 안에서 이어집니다.
+            흩어진 경력 한 번에 정리하고, 원하는 공고에 맞춰 작성해 보세요
           </p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row">
