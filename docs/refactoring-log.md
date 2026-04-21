@@ -2066,3 +2066,15 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-21: `frontend/app/api/dashboard/calendar-selections/route.ts`, `docs/current-state.md`
   - 발표 전 P0 안정화로 캘린더 적용 저장 API가 쿠키 세션으로 사용자를 확인한 뒤 서버 쪽 service role client를 사용해 `calendar_program_selections`를 저장/조회하도록 보강함
   - 로컬 발표 환경에서는 service role key가 `frontend/.env.local`에 없고 `backend/.env`에만 있어도 서버 route가 해당 값을 읽어 저장을 이어가도록 처리함
+- 2026-04-21: `frontend/app/(landing)/landing-c/page.tsx`, `docs/current-state.md`
+  - 제공된 `이소서 Landing.html` reference를 신규 `/landing-c` Next.js 페이지로 이식함
+  - 원본의 스플릿 히어로, 프로그램 피드, 기능 미리보기, 로그인 이후 여정, 최종 CTA 구조를 유지하면서 실제 `/programs`, `/compare`, `/login`, `/dashboard#recommend-calendar`, `/programs/[id]` 라우트로 액션을 연결함
+  - 기존 landing-a/b 기본 진입과 공통 라우트 동작은 변경하지 않고, 프로그램 목록은 기존 `listPrograms`/`getProgramCount` backend helper를 재사용함
+- 2026-04-21: `frontend/app/(landing)/landing-a/_components.tsx`, `frontend/app/(landing)/landing-a/_navigation.tsx`, `frontend/app/(landing)/landing-a/_hero.tsx`, `frontend/app/(landing)/landing-a/_program-feed.tsx`, `frontend/app/(landing)/landing-a/_support-sections.tsx`, `frontend/app/(landing)/landing-a/_auth.ts`, `frontend/app/(landing)/landing-a/_shared.ts`, `frontend/app/(landing)/landing-a/_style-tag.tsx`, `docs/current-state.md`
+  - landing-a의 비대해진 `_components.tsx`를 기존 import 호환용 export 허브로 축소하고, 헤더/네비게이션, 히어로, 검색·프로그램 피드, 하단 지원 섹션, 스타일 태그를 섹션 단위 파일로 분리함
+  - 프로그램 deadline/score/link helper는 `_shared.ts`로, 헤더/히어로의 로그인 상태 조회는 `useLandingAUser()` hook으로 분리해 중복 인증 조회 로직을 줄임
+  - 페이지 조립 순서, 공개 링크, 검색/칩 필터, 프로그램 카드, CTA/푸터 렌더링은 유지함
+- 2026-04-21: `frontend/app/(landing)/landing-a/_program-feed.tsx`, `frontend/app/(landing)/landing-a/_navigation.tsx`, `docs/current-state.md`
+  - `LandingAProgramsSection` 내부의 프로그램 카드 렌더를 `ProgramCard`로 분리해 feed 섹션의 조건 렌더링과 카드 UI 책임을 나눔
+  - `LandingANavBar`와 `LandingAHeader`의 브랜드 마크, 프로필/로그인 액션, 랜딩 A 헤더 링크 패턴을 `BrandMark`, `AuthAction`, `UserAvatar`, `landingAHeaderLinks`로 정리해 중복 JSX를 줄임
+  - 기존 링크 목적지, 모바일 라벨, 로그인/프로필 분기, 프로그램 카드 버튼 동작은 유지함
