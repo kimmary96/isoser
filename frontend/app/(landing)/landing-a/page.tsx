@@ -4,16 +4,11 @@ import {
   LandingAComparisonSection,
   LandingAFilterBar,
   LandingAFooter,
+  LandingAHeader,
   LandingAHeroSection,
-  LandingAKpiSection,
-  LandingANavBar,
   LandingAPreviewSection,
   LandingAProgramsSection,
-  LandingARecommendationSection,
   LandingAStyleTag,
-  LandingATickerBar,
-  LandingATrustSection,
-  LandingAWorkspaceSection,
 } from "./_components";
 import { chipOptions } from "./_content";
 import { landingAThemeVars } from "./_styles";
@@ -131,10 +126,8 @@ export default async function LandingAPage({ searchParams }: LandingAPageProps) 
 
   return (
     <main className="min-h-screen bg-[var(--surface)] text-[var(--ink)]" style={landingAThemeVars}>
-      <LandingATickerBar />
-      <LandingANavBar />
+      <LandingAHeader />
       <LandingAHeroSection featuredPrograms={programs.slice(0, 3)} totalCount={totalCount} />
-      <LandingATrustSection />
       <LandingAFilterBar activeChip={activeChip} keyword={keyword} />
       <LandingAProgramsSection
         programs={programs}
@@ -143,11 +136,8 @@ export default async function LandingAPage({ searchParams }: LandingAPageProps) 
         keyword={keyword}
         error={error}
       />
-      <LandingAWorkspaceSection />
       <LandingAComparisonSection />
       <LandingAPreviewSection />
-      <LandingARecommendationSection />
-      <LandingAKpiSection />
       <LandingACtaSection />
       <div className="px-5 pb-12 sm:px-8 lg:px-12">
         <AdSlot

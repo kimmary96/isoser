@@ -440,14 +440,18 @@ export default function DashboardPage() {
           </h1>
         </header>
 
-        <MiniCalendar
-          programs={calendarPrograms.map((program) => ({
-            title: program.title || "제목 없음",
-            end_date: program.end_date || undefined,
-          }))}
-          selectedDate={selectedDate}
-          onDateClick={handleDateClick}
-        />
+        <section id="recommend-calendar" className="scroll-mt-6">
+          <MiniCalendar
+            programs={calendarPrograms.map((program) => ({
+              title: program.title || "제목 없음",
+              end_date: program.end_date || undefined,
+              isApplied: appliedProgramIds.has(String(program.id ?? "")),
+            }))}
+            selectedDate={selectedDate}
+            onDateClick={handleDateClick}
+            focusDate={appliedCalendarPrograms[0]?.end_date ?? null}
+          />
+        </section>
 
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="mb-6">

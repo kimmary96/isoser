@@ -102,6 +102,11 @@ export default function PortfolioPage() {
     setPortfolioPreview(null);
   };
 
+  const handleSavePdf = () => {
+    if (typeof window === "undefined") return;
+    window.print();
+  };
+
   const handleGeneratePortfolio = async (activity: Activity) => {
     setGeneratingActivityId(activity.id);
     setError(null);
@@ -263,6 +268,13 @@ export default function PortfolioPage() {
               className="rounded-2xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-50"
             >
               미리보기 닫기
+            </button>
+            <button
+              type="button"
+              onClick={handleSavePdf}
+              className="rounded-2xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 print:hidden"
+            >
+              PDF로 저장
             </button>
           </div>
 

@@ -1,18 +1,56 @@
 import { apiError, apiOk } from "@/lib/api/route-response";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import type { Program } from "@/lib/types";
 
+function readLocalBackendEnv(name: string): string | null {
+  const candidates = [
+    join(process.cwd(), "..", "backend", ".env"),
+    join(process.cwd(), "backend", ".env"),
+  ];
+
+  for (const path of candidates) {
+    if (!existsSync(path)) continue;
+    const lines = readFileSync(path, "utf8").split(/\r?\n/);
+    const line = lines.find((item) => item.startsWith(`${name}=`));
+    if (!line) continue;
+    return line.slice(name.length + 1).trim().replace(/^"|"$/g, "") || null;
+  }
+
+  return null;
+}
+
+function createCalendarDbClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ?? readLocalBackendEnv("SUPABASE_SERVICE_ROLE_KEY");
+
+  if (supabaseUrl && serviceRoleKey) {
+    return createClient(supabaseUrl, serviceRoleKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
+  }
+
+  return createServerSupabaseClient();
+}
+
 async function getAuthenticatedClient() {
-  const supabase = await createServerSupabaseClient();
+  const authClient = await createServerSupabaseClient();
   const {
     data: { user },
     error,
-  } = await supabase.auth.getUser();
+  } = await authClient.auth.getUser();
 
   if (error || !user) {
     throw new Error("로그인이 필요합니다.");
   }
 
+  const supabase = await createCalendarDbClient();
   return { supabase, user };
 }
 

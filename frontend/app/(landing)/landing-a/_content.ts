@@ -3,16 +3,6 @@ export type TickerItem = {
   text: string;
 };
 
-export type TrustPoint = {
-  title: string;
-  description: string;
-};
-
-export type ComparisonColumn = {
-  title: string;
-  items: string[];
-};
-
 export type WorkspaceStage = {
   step: string;
   title: string;
@@ -21,35 +11,11 @@ export type WorkspaceStage = {
   cta: string;
 };
 
-export type CompareCard = {
-  title: string;
-  fit: string;
-  timeline: string;
-  support: string;
-  signal: string;
-  tone: "ink" | "blue" | "fire";
-};
-
-export type JourneyStep = {
-  step: string;
-  title: string;
-  description: string;
-};
-
 export type FeaturePreview = {
   title: string;
   description: string;
   imageSrc: string;
   imageAlt: string;
-};
-
-export type AccuracyFactor = {
-  title: string;
-  description: string;
-};
-
-export type KpiSkeleton = {
-  label: string;
 };
 
 export const tickerItems: TickerItem[] = [
@@ -72,32 +38,6 @@ export const chipOptions = [
   "경기",
   "온라인",
   "국비100%",
-];
-
-export const trustPoints: TrustPoint[] = [
-  {
-    title: "마감 임박 공고",
-    description: "D-Day와 모집 상태를 먼저 확인하고 지원 우선순위를 잡습니다.",
-  },
-  {
-    title: "추천 연결 준비",
-    description: "탐색한 프로그램은 로그인 후 추천 캘린더와 지원 준비 흐름으로 이어집니다.",
-  },
-  {
-    title: "지원 준비까지",
-    description: "이력과 활동을 등록하면 공고에 맞춘 문서 작성 흐름을 바로 시작할 수 있습니다.",
-  },
-];
-
-export const comparisonColumns: ComparisonColumn[] = [
-  {
-    title: "겪고 있는 문제",
-    items: ["여기저기 흩어진 프로그램 정보", "내 상황과 안 맞는 추천", "지원 때마다 문서 다시 작성"],
-  },
-  {
-    title: "이소서 해결 방식",
-    items: ["한곳에 모은 공공 지원 프로그램", "이력 기반 개인화 추천", "같은 흐름에서 지원 문서 생성"],
-  },
 ];
 
 export const workspaceStages: WorkspaceStage[] = [
@@ -145,56 +85,6 @@ export const workspaceStages: WorkspaceStage[] = [
   },
 ];
 
-export const compareCards: CompareCard[] = [
-  {
-    title: "빠른 취업 전환형",
-    fit: "마감 임박 공고를 우선 보고 바로 지원하고 싶은 경우",
-    timeline: "D-day, 모집 상태, 지원 링크를 한 번에 확인",
-    support: "공고 탐색 → 비교 → 지원",
-    signal: "즉시성 중심",
-    tone: "fire",
-  },
-  {
-    title: "탐색 + 개인화 추천형",
-    fit: "관심 분야는 있지만 어떤 프로그램이 맞는지 판단이 필요한 경우",
-    timeline: "프로필 연결 후 관련도 기준으로 정렬",
-    support: "탐색 → 로그인 → 추천 캘린더",
-    signal: "개인화 중심",
-    tone: "blue",
-  },
-  {
-    title: "서류 준비 동반형",
-    fit: "좋은 프로그램을 찾은 뒤 이력서와 자기소개서까지 이어서 준비해야 하는 경우",
-    timeline: "추천 결과를 문서 워크플로우와 연결",
-    support: "추천 → 이력서/자소서 → 매치 분석",
-    signal: "실행 중심",
-    tone: "ink",
-  },
-];
-
-export const journeySteps: JourneyStep[] = [
-  {
-    step: "01",
-    title: "프로필",
-    description: "학력, 경력, 보유 역량을 추천의 기본 신호로 사용합니다.",
-  },
-  {
-    step: "02",
-    title: "활동",
-    description: "프로젝트, 교육, 수상, 경험 기록을 공고 적합도에 반영합니다.",
-  },
-  {
-    step: "03",
-    title: "관심 분야",
-    description: "직무와 기술 관심사를 기준으로 프로그램 후보를 좁힙니다.",
-  },
-  {
-    step: "04",
-    title: "지역·상황",
-    description: "거주 지역, 온라인 가능 여부, 일정 조건을 함께 계산합니다.",
-  },
-];
-
 export const featurePreviews: FeaturePreview[] = [
   {
     title: "프로그램 추천 캘린더",
@@ -220,33 +110,6 @@ export const featurePreviews: FeaturePreview[] = [
     imageSrc: "/landing-a/job-matching-score.svg",
     imageAlt: "공고 매칭 점수 화면 미리보기",
   },
-];
-
-export const accuracyFactors: AccuracyFactor[] = [
-  {
-    title: "프로필",
-    description: "기본 이력과 희망 직무",
-  },
-  {
-    title: "활동",
-    description: "프로젝트와 성과 기록",
-  },
-  {
-    title: "관심 분야",
-    description: "기술 스택과 학습 목표",
-  },
-  {
-    title: "지역·상황",
-    description: "거주지, 일정, 참여 방식",
-  },
-];
-
-export const kpiSkeletons: KpiSkeleton[] = [
-  { label: "누적 추천 프로그램 조회 수" },
-  { label: "이력 기반 추천 생성 수" },
-  { label: "프로그램 지원용 문서 생성 수" },
-  { label: "프로그램 참여 후기 수" },
-  { label: "프로그램 이후 취업/면접 후기 수" },
 ];
 
 export const tickerLoop = [...tickerItems, ...tickerItems];

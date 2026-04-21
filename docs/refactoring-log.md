@@ -2051,3 +2051,18 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - `frontend/app/(landing)/landing-a` 내부에서 랜딩 A 카피와 섹션 순서를 이력 기반 추천/지원 준비 플랫폼 프레이밍으로 재배치함
   - 기능 맛보기 4개 카드는 `frontend/public/landing-a/` placeholder SVG 파일을 참조하도록 구성해 추후 같은 파일명 교체만으로 실제 캡처 전환이 가능하게 함
   - 기존 `listPrograms`/`getProgramCount`, 검색/칩 필터, 프로그램 카드, 로그인 네브바, 푸터/광고 슬롯 동작은 유지함
+  - review-required 후속 조치로 히어로 직후 요약 섹션을 `LandingADeadlineSummarySection`으로 명확히 하고 `D-Day 요약`/`모집 상태`/`다음 액션` 라벨을 추가해 packet의 D-Day/마감 요약 역할과 실제 렌더링을 맞춤
+  - 수동 리뷰 피드백 반영으로 landing-a 렌더링에서 상단 티커/네브바, D-Day 요약, 문제/해결 비교, 추천 정확도, KPI 뼈대 섹션을 제거하고, 6단계 지원 준비 흐름은 유지한 채 온보딩 톤의 네이비 히어로와 컴팩트 live board 중심 구조로 축소함
+  - 히어로 주 CTA는 로그인 확인 전 `/login`, 로그인 확인 후 `/dashboard#recommend-calendar`로 이동하도록 바꾸고, 대시보드 캘린더 위치에 `recommend-calendar` 앵커를 추가함
+  - 후속 수동 리뷰 피드백으로 landing-a 전용 헤더를 복구해 `프로그램 상세`(`/programs`), `비교`(`/compare`), `대시보드`(`/dashboard#recommend-calendar`), 로그인/프로필 이동을 제공하고, 로그인된 사용자 프로필 버튼은 `/dashboard/profile`로 바로 이동하게 함
+- 2026-04-21: `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/app/dashboard/portfolio/page.tsx`, `docs/current-state.md`, `docs/presentation/2026-04-21-demo-assets-sheet.md`
+  - 발표 전 P0 안정화로 캘린더 추천 응답이 빈 배열이거나 백엔드 fetch가 실패할 때 공개 프로그램 마감순 fallback을 Supabase에서 직접 적용해 `/dashboard`가 `추천 프로그램이 없습니다` 또는 `fetch failed`에서 멈추지 않게 함
+  - 포트폴리오 초안 미리보기 화면에 브라우저 인쇄 기반 `PDF로 저장` 버튼을 추가해 발표용 최소 PDF 저장 흐름을 확보함
+  - Supabase OAuth 설정에 맞춰 로컬 프론트 검증 포트를 `localhost:3000` 기준으로 재고정함
+- 2026-04-21: `frontend/components/MiniCalendar.tsx`, `frontend/app/dashboard/page.tsx`, `docs/current-state.md`
+  - 발표 전 P0 안정화로 `캘린더에 적용` 클릭 결과가 텍스트 목록에만 남지 않도록, 적용된 프로그램을 해당 마감 날짜 셀 안에 녹색 `적용` 라벨과 프로그램명으로 직접 표시함
+  - 달력 상단에 `YYYY년 M월` 중앙 라벨과 이전/다음 월 이동 버튼을 추가하고, 적용된 프로그램의 마감월로 자동 이동하게 함
+  - 기존 날짜 클릭 필터와 추천 카드 목록 동작은 유지함
+- 2026-04-21: `frontend/app/api/dashboard/calendar-selections/route.ts`, `docs/current-state.md`
+  - 발표 전 P0 안정화로 캘린더 적용 저장 API가 쿠키 세션으로 사용자를 확인한 뒤 서버 쪽 service role client를 사용해 `calendar_program_selections`를 저장/조회하도록 보강함
+  - 로컬 발표 환경에서는 service role key가 `frontend/.env.local`에 없고 `backend/.env`에만 있어도 서버 route가 해당 값을 읽어 저장을 이어가도록 처리함

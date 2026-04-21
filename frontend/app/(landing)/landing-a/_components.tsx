@@ -9,16 +9,10 @@ import { getDashboardMe } from "@/lib/api/app";
 import type { Program } from "@/lib/types";
 
 import {
-  accuracyFactors,
   chipOptions,
-  compareCards,
-  comparisonColumns,
   featurePreviews,
-  journeySteps,
-  kpiSkeletons,
   tickerLoop,
   toneClassMap,
-  trustPoints,
   workspaceStages,
 } from "./_content";
 import { landingAStyles } from "./_styles";
@@ -210,94 +204,243 @@ export function LandingANavBar() {
   );
 }
 
+export function LandingAHeader() {
+  const [user, setUser] = useState<HeaderUser>(null);
+  const [authChecked, setAuthChecked] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadUser = async () => {
+      try {
+        const result = await getDashboardMe();
+        if (!mounted) return;
+        setUser(
+          result.user
+            ? {
+                displayName: result.user.displayName,
+                avatarUrl: result.user.avatarUrl,
+              }
+            : null
+        );
+      } catch {
+        if (!mounted) return;
+        setUser(null);
+      } finally {
+        if (mounted) {
+          setAuthChecked(true);
+        }
+      }
+    };
+
+    void loadUser();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  return (
+    <header className="sticky top-0 z-[230] border-b border-[var(--border)] bg-white/92 px-3 py-3 backdrop-blur-xl sm:px-8 lg:px-12">
+      <div className="mx-auto flex max-w-6xl items-center gap-2 sm:gap-4">
+        <Link href="/landing-a" className="shrink-0 text-xl font-extrabold tracking-[-0.04em] text-[var(--ink)]">
+          이소<span className="text-[var(--sky)]">서</span>
+        </Link>
+
+        <nav aria-label="랜딩 A 주요 이동" className="ml-auto hidden items-center gap-6 text-sm font-semibold text-[var(--sub)] md:flex">
+          <Link href="/programs" className="transition hover:text-[var(--ink)]">
+            프로그램 상세
+          </Link>
+          <Link href="/compare" className="transition hover:text-[var(--ink)]">
+            비교
+          </Link>
+          <Link href="/dashboard#recommend-calendar" className="transition hover:text-[var(--ink)]">
+            대시보드
+          </Link>
+        </nav>
+
+        <div className="ml-auto flex min-w-0 items-center gap-1.5 sm:gap-2 md:ml-0">
+          <Link
+            href="/programs"
+            className="rounded-full border border-[var(--border)] bg-white px-2.5 py-2 text-xs font-semibold text-[var(--sub)] transition hover:border-[var(--blue)] hover:text-[var(--blue)] sm:px-3 md:hidden"
+          >
+            상세
+          </Link>
+          <Link
+            href="/compare"
+            className="rounded-full border border-[var(--border)] bg-white px-2.5 py-2 text-xs font-semibold text-[var(--sub)] transition hover:border-[var(--blue)] hover:text-[var(--blue)] sm:px-3 md:hidden"
+          >
+            비교
+          </Link>
+          <Link
+            href="/dashboard#recommend-calendar"
+            className="rounded-full border border-[var(--border)] bg-white px-2.5 py-2 text-xs font-semibold text-[var(--sub)] transition hover:border-[var(--blue)] hover:text-[var(--blue)] sm:px-3 md:hidden"
+          >
+            대시보드
+          </Link>
+
+          {authChecked && user ? (
+            <Link
+              href="/dashboard/profile"
+              className="inline-flex min-w-0 items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 text-xs font-semibold text-[var(--ink)] transition hover:bg-white sm:px-3 sm:py-2 sm:text-sm"
+            >
+              {user.avatarUrl ? (
+                <Image
+                  src={user.avatarUrl}
+                  alt={`${user.displayName} 프로필 이미지`}
+                  width={28}
+                  height={28}
+                  sizes="28px"
+                  className="h-7 w-7 shrink-0 rounded-full object-cover"
+                />
+              ) : (
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--ink)] text-xs font-bold text-white">
+                  {getHeaderInitial(user.displayName)}
+                </span>
+              )}
+              <span className="hidden max-w-24 truncate sm:inline">{user.displayName}</span>
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              className="rounded-full bg-[var(--fire)] px-3 py-2 text-xs font-bold text-white shadow-[0_12px_32px_rgba(249,115,22,0.18)] transition hover:bg-[var(--fire-lo)] sm:px-4 sm:text-sm"
+            >
+              로그인
+            </Link>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+}
+
 type LandingAHeroSectionProps = {
   featuredPrograms: Program[];
   totalCount: number;
 };
 
 export function LandingAHeroSection({ featuredPrograms, totalCount }: LandingAHeroSectionProps) {
+  const [user, setUser] = useState<HeaderUser>(null);
+  const [authChecked, setAuthChecked] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadUser = async () => {
+      try {
+        const result = await getDashboardMe();
+        if (!mounted) return;
+        setUser(
+          result.user
+            ? {
+                displayName: result.user.displayName,
+                avatarUrl: result.user.avatarUrl,
+              }
+            : null
+        );
+      } catch {
+        if (!mounted) return;
+        setUser(null);
+      } finally {
+        if (mounted) {
+          setAuthChecked(true);
+        }
+      }
+    };
+
+    void loadUser();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const ctaHref = authChecked && user ? "/dashboard#recommend-calendar" : "/login";
+  const compactPrograms = featuredPrograms.slice(0, 2);
+
   return (
-    <section className="landing-hero hero-grid relative overflow-hidden px-5 pb-16 pt-14 sm:px-8 sm:pb-20 lg:px-12 lg:pt-18">
-      <div className="relative z-10 mx-auto grid max-w-6xl gap-10 lg:grid-cols-[minmax(0,1.1fr)_460px] lg:items-end">
-        <div className="max-w-2xl">
-          <p className="inline-flex items-center gap-2 rounded-full border border-[rgba(43,111,242,0.18)] bg-[rgba(43,111,242,0.06)] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--blue)]">
-            <span className="h-2 w-2 rounded-full bg-[var(--fire)]" />
+    <section className="landing-hero relative overflow-hidden px-5 py-10 sm:px-8 sm:py-14 lg:px-12">
+      <div className="relative z-10 mx-auto grid max-w-6xl gap-6 lg:grid-cols-[minmax(0,0.95fr)_360px] lg:items-center">
+        <div className="rounded-[2rem] bg-[#071a36] p-7 text-white shadow-xl shadow-slate-900/10 sm:p-9">
+          <div className="flex items-center justify-between gap-4">
+            <Link href="/landing-a" className="text-xl font-extrabold tracking-[-0.04em] text-white">
+              이소<span className="text-[var(--sky)]">서</span>
+            </Link>
+            <p className="hidden text-xs font-semibold uppercase tracking-[0.22em] text-sky-200 sm:block">
+              Program Finder
+            </p>
+          </div>
+          <p className="mt-8 text-sm font-semibold uppercase tracking-[0.22em] text-sky-200">
             Public Support Programs
           </p>
-          <h1 className="mt-6 text-4xl font-extrabold leading-[1.08] tracking-[-0.07em] text-[var(--ink)] sm:text-5xl lg:text-[4.7rem]">
+          <h1 className="mt-4 max-w-3xl text-[1.75rem] font-semibold leading-tight tracking-[-0.04em] text-white sm:text-4xl lg:text-[3.1rem]">
             흩어진 국비·지역 프로그램을
             <br />
-            <span className="hero-wordmark">내 이력 기반으로 추천받고 바로 지원하세요</span>
+            내 이력 기반으로 추천받고 바로 지원하세요
           </h1>
-          <p className="mt-6 max-w-xl text-base leading-7 text-[var(--sub)] sm:text-lg">
+          <p className="mt-5 max-w-xl text-sm leading-7 text-slate-300 sm:text-base">
             이력과 활동을 등록하면 나에게 맞는 프로그램을 추천하고,
             <br />
             지원에 필요한 이력서·포트폴리오까지 바로 준비합니다.
           </p>
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-7">
             <Link
-              href="/login"
-              className="inline-flex items-center justify-center rounded-full bg-[var(--fire)] px-6 py-3.5 text-sm font-bold text-white shadow-[0_12px_32px_rgba(249,115,22,0.24)] transition hover:-translate-y-0.5 hover:bg-[var(--fire-lo)]"
+              href={ctaHref}
+              className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
             >
               내게 맞는 프로그램 추천받기
             </Link>
-            <Link
-              href="/programs?sort=deadline"
-              className="inline-flex items-center justify-center rounded-full border border-[var(--border)] bg-white px-6 py-3.5 text-sm font-semibold text-[var(--ink)] transition hover:border-[var(--blue)] hover:text-[var(--blue)]"
-            >
-              프로그램 둘러보기
-            </Link>
           </div>
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-3">
-            <div className="border-l border-[var(--border)] pl-4">
-              <div className="text-3xl font-extrabold tracking-[-0.05em] text-[var(--ink)]">{totalCount}</div>
-              <p className="mt-1 text-sm text-[var(--sub)]">현재 탐색 가능한 프로그램 수</p>
+          <div className="mt-8 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-2xl border border-white/10 bg-white/6 p-4">
+              <div className="text-2xl font-semibold tracking-[-0.04em] text-white">{totalCount}</div>
+              <p className="mt-1 text-xs leading-5 text-slate-300">탐색 가능한 프로그램</p>
             </div>
-            <div className="border-l border-[var(--border)] pl-4">
-              <div className="text-3xl font-extrabold tracking-[-0.05em] text-[var(--ink)]">3가지</div>
-              <p className="mt-1 text-sm text-[var(--sub)]">상황, 수업 방식, 관심 분야</p>
+            <div className="rounded-2xl border border-white/10 bg-white/6 p-4">
+              <div className="text-2xl font-semibold tracking-[-0.04em] text-white">D-Day</div>
+              <p className="mt-1 text-xs leading-5 text-slate-300">마감 우선 탐색</p>
             </div>
-            <div className="border-l border-[var(--border)] pl-4">
-              <div className="text-3xl font-extrabold tracking-[-0.05em] text-[var(--ink)]">1곳</div>
-              <p className="mt-1 text-sm text-[var(--sub)]">탐색, 비교, 추천 워크스페이스</p>
+            <div className="rounded-2xl border border-white/10 bg-white/6 p-4">
+              <div className="text-2xl font-semibold tracking-[-0.04em] text-white">추천</div>
+              <p className="mt-1 text-xs leading-5 text-slate-300">로그인 후 캘린더 연결</p>
             </div>
           </div>
         </div>
 
-        <div className="glass-panel relative overflow-hidden rounded-[32px] border border-[var(--border)] p-5 text-[var(--ink)]">
-          <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
+        <div className="relative overflow-hidden rounded-[2rem] bg-white p-5 text-slate-950 shadow-xl shadow-slate-900/5">
+          <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-4">
             <div>
-              <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Live board</p>
-              <h2 className="mt-2 text-2xl font-bold tracking-[-0.04em] text-[var(--ink)]">이번 주 우선 확인</h2>
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-700">Live board</p>
+              <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-950">이번 주 우선 확인</h2>
             </div>
-            <Link href="/dashboard" className="text-sm font-semibold text-[var(--sky)]">
-              워크스페이스 →
+            <Link href="/dashboard#recommend-calendar" className="shrink-0 text-sm font-semibold text-blue-700">
+              캘린더 →
             </Link>
           </div>
 
-          <div className="mt-5 space-y-3">
-            {featuredPrograms.map((program) => (
+          <div className="mt-4 space-y-2.5">
+            {compactPrograms.map((program) => (
               <div
                 key={`${program.id}-${program.title}`}
-                className="rounded-[24px] border border-[var(--border)] bg-white p-4 transition hover:border-[var(--blue)]"
+                className="rounded-2xl border border-slate-200 bg-slate-50 p-3"
               >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
                       {[program.source, program.location].filter(Boolean).join(" · ") || "Program signal"}
                     </p>
-                    <h3 className="mt-2 text-base font-semibold leading-6 text-[var(--ink)]">
+                    <h3 className="mt-2 line-clamp-2 text-sm font-semibold leading-5 text-slate-950">
                       {program.title || "제목 미정"}
                     </h3>
                   </div>
-                  <div className={`text-xl font-extrabold tracking-[-0.04em] ${getProgramDeadlineTone(program)}`}>
+                  <div className={`shrink-0 text-base font-semibold tracking-[-0.03em] ${getProgramDeadlineTone(program)}`}>
                     {getProgramDeadline(program)}
                   </div>
                 </div>
 
-                <div className="mt-4 flex items-center justify-between text-sm text-[var(--sub)]">
+                <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
                   <span>{program.category || "카테고리 미분류"}</span>
                   <span>관련도 {Math.max(getProgramScore(program), 0)}%</span>
                 </div>
@@ -305,29 +448,13 @@ export function LandingAHeroSection({ featuredPrograms, totalCount }: LandingAHe
             ))}
           </div>
 
-          <div className="mt-5 rounded-[24px] border border-dashed border-[var(--border)] bg-[var(--surface)] p-4">
-            <p className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">Next step</p>
-            <p className="mt-2 text-sm leading-6 text-[var(--sub)]">
-              이력 데이터를 연결하면 추천 정확도와 지원 준비 속도를 함께 높일 수 있습니다.
+          <div className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-white p-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Next step</p>
+            <p className="mt-2 text-xs leading-5 text-slate-500">
+              로그인하면 추천 캘린더에서 마감 일정과 우선순위를 이어서 확인합니다.
             </p>
           </div>
         </div>
-      </div>
-    </section>
-  );
-}
-
-export function LandingATrustSection() {
-  return (
-    <section className="px-5 py-10 sm:px-8 lg:px-12">
-      <div className="section-shell soft-panel mx-auto grid max-w-6xl gap-6 rounded-[32px] px-6 py-8 lg:grid-cols-3 lg:px-8">
-        {trustPoints.map((point, index) => (
-          <div key={point.title} className={index < trustPoints.length - 1 ? "lg:pr-6" : ""}>
-            <div className="trust-divider h-px w-16" />
-            <h2 className="mt-4 text-xl font-bold tracking-[-0.03em] text-[var(--ink)]">{point.title}</h2>
-            <p className="mt-3 text-sm leading-7 text-[var(--sub)]">{point.description}</p>
-          </div>
-        ))}
       </div>
     </section>
   );
@@ -340,7 +467,7 @@ type FilterBarProps = {
 
 export function LandingAFilterBar({ activeChip, keyword }: FilterBarProps) {
   return (
-    <section className="sticky top-[100px] z-[160] border-b border-[var(--border)] bg-white/92 px-5 py-4 backdrop-blur sm:px-8 lg:px-12">
+    <section className="sticky top-[61px] z-[160] border-b border-[var(--border)] bg-white/92 px-5 py-4 backdrop-blur sm:px-8 lg:px-12">
       <form method="GET" action="/landing-a" className="mx-auto flex max-w-6xl flex-col gap-3 lg:flex-row lg:items-center">
         <div className="flex items-center gap-3 rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-3 lg:w-[360px]">
           <label htmlFor="landing-a-keyword" className="text-sm text-[var(--muted)]">
@@ -554,39 +681,6 @@ export function LandingAProgramsSection({
   );
 }
 
-export function LandingAWorkspaceSection() {
-  return (
-    <section className="px-5 pb-14 sm:px-8 lg:px-12">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-6 max-w-2xl">
-          <p className="text-xs uppercase tracking-[0.24em] text-[var(--blue)]">Problem to workflow</p>
-          <h2 className="mt-3 text-3xl font-bold tracking-[-0.05em] text-[var(--ink)]">
-            흩어진 탐색을 지원 준비 흐름으로 바꿉니다
-          </h2>
-        </div>
-
-        <div className="grid gap-5 lg:grid-cols-2">
-          {comparisonColumns.map((column) => (
-            <div key={column.title} className="section-shell soft-panel rounded-[32px] px-6 py-8 sm:px-8">
-              <h3 className="text-2xl font-bold tracking-[-0.04em] text-[var(--ink)]">{column.title}</h3>
-              <div className="mt-6 space-y-3">
-                {column.items.map((item) => (
-                  <div
-                    key={item}
-                    className="rounded-[22px] border border-[var(--border)] bg-white px-5 py-4 text-sm font-semibold text-[var(--ink)]"
-                  >
-                    {item}
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export function LandingAComparisonSection() {
   return (
     <section className="px-5 pb-14 sm:px-8 lg:px-12">
@@ -606,34 +700,6 @@ export function LandingAComparisonSection() {
               </span>
               <h3 className="mt-4 text-base font-bold tracking-[-0.03em] text-[var(--ink)]">{stage.title}</h3>
               <p className="mt-2 text-sm leading-6 text-[var(--sub)]">{stage.description}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-export function LandingAJourneySection() {
-  return (
-    <section className="px-5 pb-14 sm:px-8 lg:px-12">
-      <div className="section-shell soft-panel mx-auto max-w-6xl rounded-[32px] px-6 py-8 sm:px-8">
-        <div className="max-w-2xl">
-          <p className="text-xs uppercase tracking-[0.24em] text-[var(--blue)]">Journey</p>
-          <h2 className="mt-3 text-3xl font-bold tracking-[-0.05em] text-[var(--ink)]">
-            추천에 반영되는 기준
-          </h2>
-          <p className="mt-3 text-sm leading-7 text-[var(--sub)]">프로그램 추천은 단순 키워드가 아니라 내 이력과 상황을 함께 봅니다.</p>
-        </div>
-
-        <div className="mt-8 grid gap-6 lg:grid-cols-4">
-          {journeySteps.map((step, index) => (
-            <div key={step.step} className={`journey-line relative ${index === journeySteps.length - 1 ? "" : ""}`}>
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--ink)] text-sm font-bold text-white">
-                {step.step}
-              </div>
-              <h3 className="mt-4 text-lg font-bold tracking-[-0.03em] text-[var(--ink)]">{step.title}</h3>
-              <p className="mt-2 text-sm leading-7 text-[var(--sub)]">{step.description}</p>
             </div>
           ))}
         </div>
@@ -676,59 +742,6 @@ export function LandingAPreviewSection() {
                 <p className="mt-2 text-sm leading-6 text-[var(--sub)]">{preview.description}</p>
               </div>
             </article>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-export function LandingARecommendationSection() {
-  return (
-    <section className="px-5 pb-14 sm:px-8 lg:px-12">
-      <div className="compare-shell mx-auto max-w-6xl overflow-hidden rounded-[32px] px-6 py-8 text-[var(--ink)] sm:px-8">
-        <div className="max-w-2xl">
-          <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">Recommendation logic</p>
-          <h2 className="mt-3 text-3xl font-bold tracking-[-0.05em] text-[var(--ink)]">
-            추천 정확도는 이력 데이터가 쌓일수록 좋아집니다
-          </h2>
-          <p className="mt-3 text-sm leading-7 text-[var(--sub)]">
-            네 가지 신호를 함께 보고 지금 지원할 프로그램의 우선순위를 정합니다.
-          </p>
-        </div>
-
-        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {accuracyFactors.map((factor) => (
-            <div key={factor.title} className="rounded-[24px] border border-[var(--border)] bg-white px-5 py-5">
-              <h3 className="text-lg font-bold tracking-[-0.03em] text-[var(--ink)]">{factor.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-[var(--sub)]">{factor.description}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-export function LandingAKpiSection() {
-  return (
-    <section className="px-5 pb-14 sm:px-8 lg:px-12">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-6 max-w-2xl">
-          <p className="text-xs uppercase tracking-[0.24em] text-[var(--blue)]">Proof board</p>
-          <h2 className="mt-3 text-3xl font-bold tracking-[-0.05em] text-[var(--ink)]">성과 증명 보드</h2>
-          <p className="mt-3 text-sm leading-7 text-[var(--sub)]">실제 수치와 후기는 집계 준비 후 연결합니다.</p>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-          {kpiSkeletons.map((kpi) => (
-            <div
-              key={kpi.label}
-              className="rounded-[28px] border border-[var(--border)] bg-white p-5 shadow-[0_16px_44px_rgba(10,19,37,0.05)]"
-            >
-              <p className="text-sm font-semibold leading-6 text-[var(--ink)]">{kpi.label}</p>
-              <p className="mt-5 text-sm font-bold text-[var(--muted)]">집계 준비 중</p>
-            </div>
           ))}
         </div>
       </div>
