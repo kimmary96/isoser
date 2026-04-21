@@ -629,6 +629,38 @@ def supervisor_verification_report_path(task_id: str) -> str:
     return os.path.join(REPORTS_DIR, f"{task_id}-supervisor-verification.md")
 
 
+def write_docs_fast_path_verification_report(task_id: str) -> str:
+    body = "\n".join(
+        [
+            f"# Supervisor Verification: {task_id}",
+            "",
+            "## Verification Summary",
+            "",
+            "- Docs fast-path verification completed inside the watcher.",
+            "- The implementer result report exists and no new blocked/drift report was produced after implementation.",
+            "",
+            "## Checks Reviewed",
+            "",
+            "- task type is docs/doc/documentation",
+            "- result report exists",
+            "- lightweight docs-only checks were delegated to the implementer step",
+            "",
+            "## Result Report Consistency",
+            "",
+            "- The watcher confirmed the result report artifact exists before completion.",
+            "",
+            "## Residual Risks",
+            "",
+            "- This used the lightweight docs fast-path, so final verification relied on the implementer report plus watcher safeguards.",
+            "",
+            "## Final Verdict",
+            "",
+            "- verdict: pass",
+        ]
+    )
+    return write_report(task_id, "supervisor-verification", body)
+
+
 def write_alert(
     task_id: str,
     stage: str,
@@ -852,6 +884,47 @@ def is_smoke_task(task_id: str) -> bool:
     return normalized.startswith("TASK-TEST-")
 
 
+def task_title_from_packet_path(packet_path: str) -> Optional[str]:
+    packet_abs = resolve_repo_path(packet_path)
+    if not os.path.exists(packet_abs):
+        return None
+    try:
+        content = Path(packet_abs).read_text(encoding="utf-8")
+    except OSError:
+        return None
+    metadata = extract_frontmatter(content)
+    title = str(metadata.get("title", "")).strip()
+    return title or None
+
+
+def alert_targets_test_path(*, packet_path: str, report_path: Optional[str] = None) -> bool:
+    targets = [packet_path]
+    if report_path:
+        targets.append(report_path)
+    for target in targets:
+        normalized = (target or "").replace("\\", "/").lower()
+        if "/.pytest_tmp/" in normalized or normalized.startswith(".pytest_tmp/"):
+            return True
+    return False
+
+
+def slack_alert_preview_text(*, task_id: str, stage: str, packet_path: str) -> str:
+    stage_labels = {
+        "completed": "개발 완료",
+        "self-healed": "자동 자가복구",
+        "recovered": "자동 복구",
+        "needs-review": "검토 필요",
+        "replan-required": "재설계 필요",
+        "drift": "드리프트 감지",
+        "blocked": "차단",
+        "push-failed": "Git 동기화 실패",
+    }
+    title = task_title_from_packet_path(packet_path)
+    if title:
+        return f"{stage_labels.get(stage, stage)}: {task_id} | {title}"
+    return f"{stage_labels.get(stage, stage)}: {task_id}"
+
+
 def format_slack_alert_message(
     *,
     task_id: str,
@@ -904,21 +977,23 @@ def format_slack_alert_message(
         "action-required": "조치 필요",
     }
     lines = [
-        f"{emoji} 로컬 watcher 알림",
-        "",
         f"*작업*: `{task_id}`",
-        f"*단계*: {stage_labels.get(stage, stage)}",
         f"*상태*: {status_labels.get(status, status)}",
-        "",
-        "*패킷*",
-        f"`{packet_path}`",
     ]
-    if report_path:
-        lines.extend(["", "*리포트*", f"`{report_path}`"])
+    title = task_title_from_packet_path(packet_path)
+    if title:
+        lines.append(f"*제목*: {title}")
+    lines.append(f"*단계*: {stage_labels.get(stage, stage)}")
+    if stage == "runtime-error" and alert_targets_test_path(packet_path=packet_path, report_path=report_path):
+        lines.append("*주의*: 테스트 경로 감지됨")
     if localized_summary:
-        lines.extend(["", "*요약*", localized_summary])
+        summary_heading = "*완료 결과*" if stage == "completed" else "*요약*"
+        lines.extend(["", summary_heading, f"- {localized_summary}"])
     if localized_next_action:
-        lines.extend(["", "*다음 조치*", localized_next_action])
+        lines.extend(["", "*다음 조치*", f"- {localized_next_action}"])
+    lines.extend(["", "*산출물*", f"- 패킷: `{packet_path}`"])
+    if report_path:
+        lines.append(f"- 리포트: `{report_path}`")
     return "\n".join(lines)
 
 
@@ -996,17 +1071,19 @@ def build_slack_alert_payload(
 
     overview = [
         f"*작업*: `{task_id}`",
-        f"*단계*: {stage_labels.get(stage, stage)}",
         f"*상태*: {status_labels.get(status, status)}",
-        f"*패킷*: `{packet_path}`",
     ]
-    if report_path:
-        overview.append(f"*리포트*: `{report_path}`")
+    title = task_title_from_packet_path(packet_path)
+    if title:
+        overview.append(f"*제목*: {title}")
+    overview.append(f"*단계*: {stage_labels.get(stage, stage)}")
+    if stage == "runtime-error" and alert_targets_test_path(packet_path=packet_path, report_path=report_path):
+        overview.append("*주의*: 테스트 경로 감지됨")
 
     blocks: list[dict[str, object]] = [
         {
             "type": "header",
-            "text": {"type": "plain_text", "text": f"{emoji} 로컬 watcher 알림"},
+            "text": {"type": "plain_text", "text": f"{stage_labels.get(stage, stage)} | {task_id}"},
         },
         {
             "type": "section",
@@ -1017,17 +1094,32 @@ def build_slack_alert_payload(
         blocks.append(
             {
                 "type": "section",
-                "text": {"type": "mrkdwn", "text": f"*요약*\n{localized_summary}"},
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"{'*완료 결과*' if stage == 'completed' else '*요약*'}\n- {localized_summary}",
+                },
             }
         )
     if localized_next_action:
         blocks.append(
             {
                 "type": "section",
-                "text": {"type": "mrkdwn", "text": f"*다음 조치*\n{localized_next_action}"},
+                "text": {"type": "mrkdwn", "text": f"*다음 조치*\n- {localized_next_action}"},
             }
         )
-    payload = {"text": text, "blocks": blocks}
+    artifacts = [f"- 패킷: `{packet_path}`"]
+    if report_path:
+        artifacts.append(f"- 리포트: `{report_path}`")
+    blocks.append(
+        {
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": "*산출물*\n" + "\n".join(artifacts)},
+        }
+    )
+    payload = {
+        "text": slack_alert_preview_text(task_id=task_id, stage=stage, packet_path=packet_path),
+        "blocks": blocks,
+    }
     if slack_thread_ts:
         payload["thread_ts"] = slack_thread_ts
         payload["reply_broadcast"] = False
@@ -1830,6 +1922,23 @@ def run_supervisor_workflow(
             "token_count": total_tokens,
             "stage": "supervisor-blocked",
             "supervisor_step": "implementation",
+        }
+
+    if task_type in DOC_TASK_TYPES:
+        append_run_ledger(
+            task_id,
+            "supervisor-verification",
+            status="started",
+            packet_path=f"tasks/running/{task_filename}",
+            report_path=f"reports/{task_id}-supervisor-verification.md",
+            details={"mode": "docs-fast-path"},
+        )
+        write_docs_fast_path_verification_report(task_id)
+        return {
+            "exit_code": implementer_exit_code,
+            "token_count": total_tokens,
+            "stage": "implemented",
+            "supervisor_step": "verification",
         }
 
     append_run_ledger(

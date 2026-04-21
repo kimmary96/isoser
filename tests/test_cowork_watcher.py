@@ -682,11 +682,12 @@ def test_format_slack_dispatch_message_contains_core_fields(monkeypatch) -> None
         ],
     )
 
-    assert "cowork 검토 알림" in message
     assert "*작업*: `TASK-TEST`" in message
     assert "*단계*: 검토 준비" in message
     assert "*제목*: 테스트 비교 페이지" in message
     assert "*상태*: 승인 대기" in message
+    assert "📝 승인 요청" not in message
+    assert "*검토 상태*" not in message
     assert "*판정*" in message
     assert "아직 승격 준비가 되지 않았습니다." in message
     assert "*핵심 확인사항*" in message
@@ -732,9 +733,11 @@ def test_build_slack_dispatch_payload_adds_buttons_for_review_ready() -> None:
     )
 
     assert "blocks" in payload
+    assert payload["text"] == "승인 요청: TASK-TEST"
     blocks = payload["blocks"]
     assert isinstance(blocks, list)
     assert len(blocks) == 3
+    assert blocks[0]["text"]["text"] == "승인 요청 | TASK-TEST"
     actions = blocks[2]["elements"]
     action_ids = [element["action_id"] for element in actions]
     assert action_ids == ["cowork_approve_inbox", "cowork_approve_remote", "cowork_reject"]
