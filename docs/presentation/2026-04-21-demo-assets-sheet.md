@@ -24,12 +24,12 @@
 
 ### 메인 계정
 
-- [ ] 로그인 성공
-- [ ] 온보딩 진입 가능
+- [X] 로그인 성공
+- [X] 온보딩 진입 가능
 - [ ] 추천 대시보드 결과 확인
 - [ ] 캘린더 반영 시연 가능
-- [ ] PDF 이력서 추출 시연 가능
-- [ ] 성과 수정 가능
+- [X] PDF 이력서 추출 시연 가능
+- [X] 성과 수정 가능
 - [ ] 이력서 생성 가능
 - [ ] 포트폴리오 생성 가능
 
@@ -49,10 +49,10 @@
 
 ### PDF 검증 체크
 
-- [ ] 업로드 가능한 형식인지 확인
-- [ ] 파일 열림 이상 없는지 확인
-- [ ] 필요한 정보가 실제로 추출되는지 확인
-- [ ] 실패 시 대체 PDF가 있는지 확인
+- [X] 업로드 가능한 형식인지 확인
+- [X] 파일 열림 이상 없는지 확인
+- [X] 필요한 정보가 실제로 추출되는지 확인
+- [X] 실패 시 대체 PDF가 있는지 확인
 
 ## 4. 발표용 프로그램 세트
 
@@ -95,12 +95,12 @@
 
 ## 7. 발표 직전 최종 확인
 
-- [ ] 메인 계정 준비 완료
-- [ ] fallback 계정 준비 완료
-- [ ] 샘플 PDF 준비 완료
-- [ ] 프로그램 URL 3개 확정
-- [ ] 고정 URL 목록 확정
-- [ ] 전체 퍼널 1회 이상 성공
+- [X] 메인 계정 준비 완료
+- [X] fallback 계정 준비 완료
+- [X] 샘플 PDF 준비 완료
+- [X] 프로그램 URL 3개 확정
+- [X] 고정 URL 목록 확정
+- [X] 전체 퍼널 1회 이상 성공
 - [ ] fallback 시나리오 1회 이상 점검
 
 ## 8. 업데이트 기록
@@ -111,19 +111,19 @@
 
 ### 지금 바로 채울 1순위
 
-1. 메인 계정
-2. fallback 계정
-3. 샘플 PDF 1
-4. 프로그램 A
-5. 프로그램 B
+1. 메인 계정: kimgone125@gmail.com
+2. fallback 계정 : kjw960911@gmail.com
+3. 샘플 PDF : D:\02_2025_AI_Lab\isoser\docs\presentation\이소서_시연용_이력서_김호준_v2.pdf
+4. 프로그램 A :**AI 파트너와 함께하는 실전 서비스 개발 페어 프로그래밍** [https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl1.do?tracseId=AIG20250000540065&amp;[…]e=C0105&amp;trainstCstmrId=500037441563&amp;tracseReqstsCd=&amp;focusId=](https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl1.do?tracseId=AIG20250000540065&tracseTme=15&cstmConsTme=&crseTracseSe=C0105&trainstCstmrId=500037441563&tracseReqstsCd=&focusId=)
+5. 프로그램 B : **(디지털컨버전스)Java Full-Stack 개발자를 위한 AWS 기반 Docker 컨테이너 구축 양성과정(C)**[https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000532710&amp;&t[…]e=C0061&amp;&trainstCstmrId=500020052430&amp;&tracseReqstsCd=&amp;&amp;focusId=](https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000532710&tracseTme=1&cstmConsTme=&crseTracseSe=C0061&trainstCstmrId=500020052430&tracseReqstsCd=&focusId=)
 
 ### 그 다음 채울 2순위
 
-1. 프로그램 C
-2. 비교용 고정 URL
-3. 프로그램 상세 고정 URL
-4. 포트폴리오 생성 경로
-5. fallback 시나리오별 담당자
+1. 프로그램 C : **(K-DIGITAL)기업요구 생성형 AI를 활용한 개발자 양성 과정**[https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20240000459116&amp;&t[…]e=C0061&amp;&trainstCstmrId=500020047973&amp;&tracseReqstsCd=&amp;&amp;focusId=](https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20240000459116&tracseTme=40&cstmConsTme=&crseTracseSe=C0061&trainstCstmrId=500020047973&tracseReqstsCd=&focusId=)
+2. 프로그램 상세 고정 URL: /programs/{프로그램A_ID}
+3. 비교용 고정 URL: /compare?ids={프로그램A_ID},{프로그램B_ID},{프로그램C_ID}
+4. 포트폴리오 생성 경로 D:\02_2025_AI_Lab\isoser\frontend\app\dashboard\portfolio\page.tsx
+5. fallback 시나리오별 담당자 : 발표자 본인
 
 ### 마지막 점검용 3순위
 
@@ -135,27 +135,27 @@
 
 ### Step 1. 계정
 
-- [ ] 메인 계정 식별자 입력
-- [ ] fallback 계정 식별자 입력
-- [ ] 각 계정 담당자 입력
+- [X] 메인 계정 식별자 입력
+- [X] fallback 계정 식별자 입력
+- [X] 각 계정 담당자 입력
 
 ### Step 2. PDF
 
-- [ ] 샘플 PDF 1 저장 위치 입력
-- [ ] 샘플 PDF 1 기대 추출 항목 입력
-- [ ] fallback PDF 필요 여부 결정
+- [X] 샘플 PDF 1 저장 위치 입력
+- [X] 샘플 PDF 1 기대 추출 항목 입력
+- [X] fallback PDF 필요 여부 결정
 
 ### Step 3. 프로그램
 
-- [ ] 프로그램 A 이름과 URL 입력
-- [ ] 프로그램 B 이름과 URL 입력
-- [ ] 프로그램 C 필요 여부 결정
+- [X] 프로그램 A 이름과 URL 입력
+- [X] 프로그램 B 이름과 URL 입력
+- [X] 프로그램 C 필요 여부 결정
 
 ### Step 4. 경로
 
-- [ ] 프로그램 상세 고정 URL 입력
-- [ ] 비교 고정 URL 입력
-- [ ] 포트폴리오 생성 실제 경로 입력
+- [X] 프로그램 상세 고정 URL 입력
+- [X] 비교 고정 URL 입력
+- [X] 포트폴리오 생성 실제 경로 입력
 
 ### Step 5. fallback
 
