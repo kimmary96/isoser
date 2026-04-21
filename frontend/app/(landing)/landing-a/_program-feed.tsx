@@ -19,6 +19,25 @@ type FilterBarProps = {
   keyword: string;
 };
 
+function getChipButtonClass(chip: string, activeChip: string): string {
+  const active = chip === activeChip;
+  const urgencyChip = chip === "마감임박";
+
+  if (active && urgencyChip) {
+    return "border-[var(--fire)] bg-[var(--fire)] text-white";
+  }
+
+  if (active) {
+    return "border-[var(--ink)] bg-[var(--ink)] text-white";
+  }
+
+  if (urgencyChip) {
+    return "border-[rgba(249,115,22,0.35)] bg-[rgba(249,115,22,0.05)] text-[var(--fire)]";
+  }
+
+  return "border-[var(--border)] bg-white text-[var(--sub)] hover:border-[var(--blue)] hover:text-[var(--blue)]";
+}
+
 export function LandingAFilterBar({ activeChip, keyword }: FilterBarProps) {
   return (
     <section className="sticky top-[61px] z-[160] border-b border-[var(--border)] bg-white/92 px-5 py-4 backdrop-blur sm:px-8 lg:px-12">
@@ -47,30 +66,17 @@ export function LandingAFilterBar({ activeChip, keyword }: FilterBarProps) {
         </div>
         <div className="-mx-1 overflow-x-auto px-1 no-scrollbar">
           <div className="flex min-w-max gap-2">
-            {chipOptions.map((chip) => {
-              const active = chip === activeChip;
-              const urgencyChip = chip === "마감임박";
-
-              return (
-                <button
-                  key={chip}
-                  type="submit"
-                  name="chip"
-                  value={chip}
-                  className={`rounded-full border px-4 py-2 text-xs font-semibold transition ${
-                    active
-                      ? urgencyChip
-                        ? "border-[var(--fire)] bg-[var(--fire)] text-white"
-                        : "border-[var(--ink)] bg-[var(--ink)] text-white"
-                      : urgencyChip
-                        ? "border-[rgba(249,115,22,0.35)] bg-[rgba(249,115,22,0.05)] text-[var(--fire)]"
-                        : "border-[var(--border)] bg-white text-[var(--sub)] hover:border-[var(--blue)] hover:text-[var(--blue)]"
-                  }`}
-                >
-                  {chip}
-                </button>
-              );
-            })}
+            {chipOptions.map((chip) => (
+              <button
+                key={chip}
+                type="submit"
+                name="chip"
+                value={chip}
+                className={`rounded-full border px-4 py-2 text-xs font-semibold transition ${getChipButtonClass(chip, activeChip)}`}
+              >
+                {chip}
+              </button>
+            ))}
           </div>
         </div>
       </form>

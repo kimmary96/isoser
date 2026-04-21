@@ -2078,3 +2078,7 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - `LandingAProgramsSection` 내부의 프로그램 카드 렌더를 `ProgramCard`로 분리해 feed 섹션의 조건 렌더링과 카드 UI 책임을 나눔
   - `LandingANavBar`와 `LandingAHeader`의 브랜드 마크, 프로필/로그인 액션, 랜딩 A 헤더 링크 패턴을 `BrandMark`, `AuthAction`, `UserAvatar`, `landingAHeaderLinks`로 정리해 중복 JSX를 줄임
   - 기존 링크 목적지, 모바일 라벨, 로그인/프로필 분기, 프로그램 카드 버튼 동작은 유지함
+- 2026-04-21: `frontend/app/(landing)/landing-a/_hero.tsx`, `frontend/app/(landing)/landing-a/_program-feed.tsx`, `docs/current-state.md`
+  - `LandingAFilterBar`의 칩 버튼 상태별 class 분기를 `getChipButtonClass()`로 분리해 필터 렌더링 map 내부 조건식을 단순화함
+  - `LandingAHeroSection`의 live board 프로그램 카드 렌더를 `HeroProgramSignalCard`로 분리하고, 히어로 통계 3개는 `heroStats` 배열 기반 렌더링으로 정리함
+  - 기존 히어로 CTA, 캘린더 링크, live board 텍스트, 검색/칩 필터 동작은 유지함

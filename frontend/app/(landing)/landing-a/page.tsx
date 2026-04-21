@@ -43,10 +43,10 @@ type LandingAPageProps = {
 };
 
 const CHIP_CATEGORY_MAP: Record<string, string> = {
-  "AI·데이터": "AI·데이터",
-  "IT·개발": "IT·개발",
+  "AI·데이터": "AI",
+  "IT·개발": "IT",
   디자인: "디자인",
-  경영: "경영·마케팅",
+  경영: "경영",
   창업: "창업",
 };
 

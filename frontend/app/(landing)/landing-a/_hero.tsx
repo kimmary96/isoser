@@ -12,10 +12,49 @@ type LandingAHeroSectionProps = {
   totalCount: number;
 };
 
+type HeroStat = {
+  value: string | number;
+  label: string;
+};
+
+type HeroProgramSignalCardProps = {
+  program: Program;
+};
+
+function HeroProgramSignalCard({ program }: HeroProgramSignalCardProps) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+            {[program.source, program.location].filter(Boolean).join(" · ") || "Program signal"}
+          </p>
+          <h3 className="mt-2 line-clamp-2 text-sm font-semibold leading-5 text-slate-950">
+            {program.title || "제목 미정"}
+          </h3>
+        </div>
+        <div className={`shrink-0 text-base font-semibold tracking-[-0.03em] ${getProgramDeadlineTone(program)}`}>
+          {getProgramDeadline(program)}
+        </div>
+      </div>
+
+      <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
+        <span>{program.category || "카테고리 미분류"}</span>
+        <span>관련도 {Math.max(getProgramScore(program), 0)}%</span>
+      </div>
+    </div>
+  );
+}
+
 export function LandingAHeroSection({ featuredPrograms, totalCount }: LandingAHeroSectionProps) {
   const { user, authChecked } = useLandingAUser();
   const ctaHref = authChecked && user ? "/dashboard#recommend-calendar" : "/login";
   const compactPrograms = featuredPrograms.slice(0, 2);
+  const heroStats: HeroStat[] = [
+    { value: totalCount, label: "탐색 가능한 프로그램" },
+    { value: "D-Day", label: "마감 우선 탐색" },
+    { value: "추천", label: "로그인 후 캘린더 연결" },
+  ];
 
   return (
     <section className="landing-hero relative overflow-hidden px-5 py-10 sm:px-8 sm:py-14 lg:px-12">
@@ -53,18 +92,12 @@ export function LandingAHeroSection({ featuredPrograms, totalCount }: LandingAHe
           </div>
 
           <div className="mt-8 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border border-white/10 bg-white/6 p-4">
-              <div className="text-2xl font-semibold tracking-[-0.04em] text-white">{totalCount}</div>
-              <p className="mt-1 text-xs leading-5 text-slate-300">탐색 가능한 프로그램</p>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-white/6 p-4">
-              <div className="text-2xl font-semibold tracking-[-0.04em] text-white">D-Day</div>
-              <p className="mt-1 text-xs leading-5 text-slate-300">마감 우선 탐색</p>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-white/6 p-4">
-              <div className="text-2xl font-semibold tracking-[-0.04em] text-white">추천</div>
-              <p className="mt-1 text-xs leading-5 text-slate-300">로그인 후 캘린더 연결</p>
-            </div>
+            {heroStats.map((stat) => (
+              <div key={stat.label} className="rounded-2xl border border-white/10 bg-white/6 p-4">
+                <div className="text-2xl font-semibold tracking-[-0.04em] text-white">{stat.value}</div>
+                <p className="mt-1 text-xs leading-5 text-slate-300">{stat.label}</p>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -81,29 +114,7 @@ export function LandingAHeroSection({ featuredPrograms, totalCount }: LandingAHe
 
           <div className="mt-4 space-y-2.5">
             {compactPrograms.map((program) => (
-              <div
-                key={`${program.id}-${program.title}`}
-                className="rounded-2xl border border-slate-200 bg-slate-50 p-3"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                      {[program.source, program.location].filter(Boolean).join(" · ") || "Program signal"}
-                    </p>
-                    <h3 className="mt-2 line-clamp-2 text-sm font-semibold leading-5 text-slate-950">
-                      {program.title || "제목 미정"}
-                    </h3>
-                  </div>
-                  <div className={`shrink-0 text-base font-semibold tracking-[-0.03em] ${getProgramDeadlineTone(program)}`}>
-                    {getProgramDeadline(program)}
-                  </div>
-                </div>
-
-                <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
-                  <span>{program.category || "카테고리 미분류"}</span>
-                  <span>관련도 {Math.max(getProgramScore(program), 0)}%</span>
-                </div>
-              </div>
+              <HeroProgramSignalCard key={`${program.id}-${program.title}`} program={program} />
             ))}
           </div>
 

@@ -55,7 +55,7 @@ const themeVars = {
   "--green": "#22C55E",
 } as CSSProperties;
 
-const chips = ["전체", "마감임박", "AI·데이터", "IT·개발", "디자인", "경영", "창업", "서울", "온라인", "국비100%"];
+const chips = ["전체", "마감임박", "AI·데이터", "IT·개발", "디자인", "경영", "창업", "서울", "경기", "온라인", "국비100%"];
 
 const chipCategoryMap: Record<string, string> = {
   "AI·데이터": "AI·데이터",
@@ -67,6 +67,7 @@ const chipCategoryMap: Record<string, string> = {
 
 const chipRegionMap: Record<string, string[]> = {
   서울: ["서울"],
+  경기: ["경기"],
   온라인: ["온라인"],
 };
 
@@ -79,14 +80,14 @@ const tickerItems = [
 
 const workflowCards = [
   {
-    title: "성과 저장소",
-    body: "내 활동을 역할, 기간, 성과 중심으로 저장하고 자기소개서와 이력서 재료로 다시 꺼냅니다.",
-    preview: "activity",
+    title: "PDF에서 바로 시작",
+    body: "기존 이력서 PDF를 올리면 이름, 연락처, 경력, 프로젝트를 한 번에 정리합니다.",
+    preview: "pdf",
   },
   {
-    title: "AI 자기소개서 코치",
-    body: "활동 기록을 기반으로 문장 구조, 근거, 직무 연결성을 점검합니다.",
-    preview: "coach",
+    title: "성과 저장소로 자산화",
+    body: "회사경력, 프로젝트, 대외활동을 흩어지지 않게 보관하고 필요할 때 다시 조합합니다.",
+    preview: "activity",
   },
   {
     title: "공고 매칭 분석",
@@ -216,6 +217,25 @@ function ProgramCard({ program }: { program: Program }) {
 }
 
 function FeaturePreview({ type }: { type: (typeof workflowCards)[number]["preview"] }) {
+  if (type === "pdf") {
+    return (
+      <div className="rounded-[22px] bg-[var(--surface)] p-4">
+        <div className="rounded-2xl border border-dashed border-[var(--border)] bg-white p-5 text-center">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--surface-strong)] text-xl font-black text-[var(--indigo)]">
+            PDF
+          </div>
+          <div className="mt-4 text-sm font-black text-[var(--ink)]">김이소_이력서.pdf</div>
+          <div className="mt-2 text-xs font-bold text-[var(--muted)]">프로필 · 경력 · 프로젝트 추출</div>
+          <div className="mt-5 space-y-2">
+            {[88, 74, 92].map((width) => (
+              <div key={width} className="mx-auto h-2 rounded bg-[var(--surface-strong)]" style={{ width: `${width}%` }} />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (type === "match") {
     return (
       <div className="rounded-2xl bg-[var(--surface)] p-5">
@@ -269,7 +289,7 @@ function FeaturePreview({ type }: { type: (typeof workflowCards)[number]["previe
             <div className="mt-2 h-2 w-24 rounded bg-[var(--surface-strong)]" />
           </div>
           <span className="rounded-full bg-[rgba(56,189,248,0.13)] px-3 py-1 text-[10px] font-black text-[var(--indigo)]">
-            {type === "coach" ? "AI 코칭 완료" : "저장 완료"}
+            저장 완료
           </span>
         </div>
         <div className="mt-5 space-y-2">
@@ -279,6 +299,86 @@ function FeaturePreview({ type }: { type: (typeof workflowCards)[number]["previe
         </div>
       </div>
     </div>
+  );
+}
+
+function BackupHeroSection() {
+  const proofItems = [
+    "활동 상세 AI 코치 피드백",
+    "공고 매칭 분석 저장/조회",
+    "문서 저장소와 PDF 내보내기",
+    "게스트 모드와 직접 입력 시작",
+  ];
+
+  return (
+    <section className="relative overflow-hidden bg-[#071a36] px-5 py-16 text-white sm:px-8 lg:px-12 lg:py-20">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(43,111,242,0.32),transparent_32%),linear-gradient(120deg,#071a36_0%,#0a2146_48%,#0f172a_100%)]" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[28%] bg-white/5 lg:block" />
+      <div className="relative mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1fr_460px] lg:items-center">
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-sky-200/90">Career Asset Workspace</p>
+          <h2 className="mt-5 text-4xl font-bold leading-[1.08] tracking-[-0.04em] sm:text-5xl">
+            흩어진 경력을 한 번 정리하면,<br />공고마다 다시 꺼내 쓸 수 있습니다.
+          </h2>
+          <p className="mt-5 max-w-xl text-[15.5px] leading-8 text-slate-200/90">
+            이소서는 AI가 대신 써주는 서비스가 아니라, 내 경험을 저장하고 다듬고 조합할 수 있게 만드는 이력서 작업 공간입니다.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href="/dashboard/profile" className="rounded-full bg-white px-6 py-3 text-sm font-bold text-[#0a1325] transition hover:opacity-90">
+              PDF 업로드로 시작하기
+            </Link>
+            <Link href="/onboarding" className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
+              온보딩 먼저 보기
+            </Link>
+          </div>
+          <div className="mt-7 grid gap-3 sm:grid-cols-2">
+            {proofItems.map((item) => (
+              <div key={item} className="flex items-center gap-3 text-sm text-slate-200/85">
+                <span className="h-2 w-2 shrink-0 rounded-full bg-blue-300" />
+                {item}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-[32px] border border-white/10 bg-white/10 p-4 shadow-[0_32px_80px_rgba(0,0,0,0.35)] backdrop-blur">
+          <div className="rounded-[24px] bg-[#f6f8fc] p-5 text-[#0a1325]">
+            <div className="flex items-start justify-between gap-3 border-b border-slate-200 pb-4">
+              <div>
+                <div className="text-[9.5px] font-bold uppercase tracking-[0.22em] text-slate-400">Resume Pipeline</div>
+                <div className="mt-1 text-lg font-bold">업로드 후 바로 이어지는 흐름</div>
+              </div>
+              <span className="rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-bold text-emerald-800">Live</span>
+            </div>
+            <div className="mt-3 rounded-[18px] bg-white p-4">
+              <div className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-slate-400">Step 1</div>
+              <div className="mt-2 text-[15px] font-bold">PDF에서 프로필과 활동 추출</div>
+              <p className="mt-1 text-sm leading-6 text-slate-500">이름, 연락처, 경력, 프로젝트를 자동 정리</p>
+            </div>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-[18px] bg-[#0d4fd7] p-4 text-white">
+                <div className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-sky-100/80">Step 2</div>
+                <div className="mt-2 text-[15px] font-bold">성과 저장소</div>
+                <p className="mt-1 text-sm leading-6 text-blue-100">회사경력과 프로젝트를 한 화면에서 관리</p>
+              </div>
+              <div className="rounded-[18px] bg-slate-900 p-4 text-white">
+                <div className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-slate-500">Step 3</div>
+                <div className="mt-2 text-[15px] font-bold">공고 매칭 분석</div>
+                <p className="mt-1 text-sm leading-6 text-slate-300">강점과 부족 키워드를 바로 확인</p>
+              </div>
+            </div>
+            <div className="mt-3 flex items-center justify-between gap-3 rounded-[18px] border border-slate-200 bg-slate-50 p-4">
+              <div>
+                <div className="text-[9.5px] uppercase tracking-[0.18em] text-slate-400">Final</div>
+                <div className="mt-1 text-sm font-bold">문서 저장소</div>
+                <p className="mt-1 text-sm text-slate-500">생성한 이력서를 저장하고 PDF로 다시 출력</p>
+              </div>
+              <div className="text-base font-bold">Ready to send</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -306,7 +406,7 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
     error = cause instanceof Error ? cause.message : "프로그램 정보를 불러오지 못했습니다.";
   }
 
-  const heroPrograms = programs.slice(0, 2);
+  const heroPrograms = programs.slice(0, 3);
 
   return (
     <main className="min-h-screen bg-[var(--surface)] text-[var(--ink)]" style={themeVars}>
@@ -325,12 +425,15 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
       <header className="sticky top-9 z-[230] border-b border-[var(--border)] bg-white/94 px-5 py-4 backdrop-blur-xl sm:px-8 lg:px-12">
         <div className="mx-auto flex max-w-6xl items-center gap-4">
           <Link href="/landing-c" className="text-xl font-black tracking-[-0.05em]">
-            이소<span className="text-[var(--indigo)]">서</span>
+            <span>이소<span className="text-[var(--teal)]">서</span></span>
+            <span className="hidden text-[9px] font-bold uppercase tracking-[0.28em] text-[var(--muted)] sm:block">
+              Public Program Finder
+            </span>
           </Link>
           <nav aria-label="랜딩 C 주요 이동" className="ml-auto hidden items-center gap-7 text-sm font-bold text-[var(--sub)] md:flex">
             <Link href="/programs" className="transition hover:text-[var(--ink)]">프로그램 탐색</Link>
             <Link href="/compare" className="transition hover:text-[var(--ink)]">비교</Link>
-            <Link href="/dashboard#recommend-calendar" className="transition hover:text-[var(--ink)]">대시보드</Link>
+            <Link href="/dashboard#recommend-calendar" className="transition hover:text-[var(--ink)]">워크스페이스</Link>
           </nav>
           <Link href="/login" className="ml-auto rounded-full bg-[var(--indigo)] px-4 py-2 text-sm font-black text-white transition hover:bg-[var(--indigo-hi)] md:ml-0">
             무료로 시작하기
@@ -342,14 +445,17 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
         <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_420px] lg:items-center">
           <div>
             <div className="inline-flex rounded-lg bg-[var(--surface-strong)] px-4 py-2 text-sm font-extrabold text-[var(--indigo)]">
-              공공 취업 지원 탐색부터 서류 준비까지
+              <span className="mr-2 mt-1.5 h-1.5 w-1.5 rounded-full bg-[var(--teal)]" />
+              PUBLIC SUPPORT PROGRAMS
             </div>
             <h1 className="mt-6 max-w-3xl text-5xl font-black leading-[1.04] tracking-[-0.06em] text-[var(--ink)] sm:text-6xl">
               흩어진 국비 지원 정보,<br />
-              이제 한 흐름에서 고릅니다
+              <span className="bg-[linear-gradient(90deg,var(--indigo),var(--teal))] bg-clip-text text-transparent">
+                내 상황에 맞는 것만<br />골라드립니다
+              </span>
             </h1>
             <p className="mt-6 max-w-xl text-base leading-8 text-[var(--sub)]">
-              이소서는 지원 가능한 프로그램을 찾고, 비교하고, 로그인 후 추천 캘린더와 문서 준비까지 이어주는 커리어 워크스페이스입니다.
+              각종 부트캠프, K-디지털, 서울 일자리까지 한곳에 모았습니다. 3가지 조건만 알려주시면 마감 임박순으로 정렬해드립니다.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/programs" className="rounded-full bg-[var(--indigo)] px-6 py-3 text-sm font-black text-white transition hover:bg-[var(--indigo-hi)]">
@@ -361,16 +467,16 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
             </div>
             <div className="mt-9 grid max-w-2xl grid-cols-2 gap-4 sm:grid-cols-3">
               <div className="rounded-2xl bg-[var(--surface-strong)] px-5 py-4">
-                <div className="text-3xl font-black tracking-[-0.05em]">{totalCount || 247}</div>
+                <div className="text-3xl font-black tracking-[-0.05em]">247<span className="text-lg font-bold">개</span></div>
                 <div className="mt-1 text-xs font-bold text-[var(--sub)]">현재 탐색 가능한 프로그램 수</div>
               </div>
               <div className="rounded-2xl bg-[var(--surface-strong)] px-5 py-4">
-                <div className="text-3xl font-black tracking-[-0.05em]">4</div>
-                <div className="mt-1 text-xs font-bold text-[var(--sub)]">탐색, 비교, 추천, 문서</div>
+                <div className="text-3xl font-black tracking-[-0.05em]">3<span className="text-lg font-bold">가지</span></div>
+                <div className="mt-1 text-xs font-bold text-[var(--sub)]">상황, 수업 방식, 관심 분야</div>
               </div>
               <div className="col-span-2 rounded-2xl bg-[var(--surface-strong)] px-5 py-4 sm:col-span-1">
-                <div className="text-3xl font-black tracking-[-0.05em]">D-1</div>
-                <div className="mt-1 text-xs font-bold text-[var(--sub)]">마감 임박 공고 우선 확인</div>
+                <div className="text-3xl font-black tracking-[-0.05em]">1<span className="text-lg font-bold">곳</span></div>
+                <div className="mt-1 text-xs font-bold text-[var(--sub)]">탐색, 비교, 추천 워크스페이스</div>
               </div>
             </div>
           </div>
@@ -378,20 +484,21 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
           <aside className="rounded-[28px] border border-[var(--border)] bg-white p-5 shadow-[0_26px_80px_rgba(10,19,37,0.1)]">
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <div className="text-sm font-black text-[var(--ink)]">오늘 먼저 볼 프로그램</div>
-                <div className="mt-1 text-xs font-bold text-[var(--muted)]">마감 임박순 자동 정렬</div>
+                <div className="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--muted)]">Live Board</div>
+                <div className="mt-1 text-xl font-black tracking-[-0.04em] text-[var(--ink)]">이번 주 2건 확인</div>
               </div>
               <Link href="/compare" className="rounded-full bg-[var(--surface)] px-3 py-1.5 text-xs font-black text-[var(--indigo)]">
-                비교
+                워크스페이스 →
               </Link>
             </div>
-            <div className="space-y-3">
-              {(heroPrograms.length ? heroPrograms : programs).slice(0, 2).map((program) => (
+            <div className="space-y-3 border-t border-[var(--border)] pt-3">
+              {(heroPrograms.length ? heroPrograms : programs).slice(0, 3).map((program) => (
                 <Link key={`${program.id}-${program.title}`} href={getProgramDetailHref(program)} className="block rounded-[18px] border border-[var(--border)] bg-[var(--surface)] p-4 transition hover:border-[var(--indigo)]">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <div className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--muted)]">{sourceLabel(program)}</div>
                       <div className="mt-2 text-sm font-black leading-6 text-[var(--ink)]">{program.title || "추천 프로그램"}</div>
+                      <div className="mt-2 text-xs font-bold text-[var(--sub)]">{program.category || "카테고리 미분류"}</div>
                     </div>
                     <div className={`text-lg font-black ${getProgramDeadlineTone(program)}`}>{getProgramDeadline(program)}</div>
                   </div>
@@ -404,7 +511,8 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
               )}
             </div>
             <div className="mt-5 rounded-2xl bg-[rgba(56,189,248,0.1)] p-4 text-sm leading-7 text-[var(--sub)]">
-              프로필을 연결하면 탐색한 프로그램을 대시보드 추천 캘린더와 문서 생성 흐름으로 이어서 관리할 수 있습니다.
+              <div className="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--muted)]">Next after login</div>
+              <div className="mt-2">프로필을 연결하면 탐색한 프로그램을 대시보드 추천 캘린더와 문서 생성 흐름으로 이어서 관리할 수 있습니다.</div>
             </div>
           </aside>
         </div>
@@ -481,12 +589,16 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
         </div>
       </section>
 
-      <section className="bg-white px-5 py-16 sm:px-8 lg:px-12">
+      <BackupHeroSection />
+
+      <section className="border-t border-[var(--border)] bg-white px-5 py-16 sm:px-8 lg:px-12">
         <div className="mx-auto max-w-6xl">
-          <p className="text-xs font-black uppercase tracking-[0.24em] text-[var(--indigo)]">Workspace</p>
-          <h2 className="mt-3 text-3xl font-black tracking-[-0.05em]">탐색 이후의 지원 준비 기능까지 연결합니다</h2>
+          <p className="text-[10.5px] font-bold uppercase tracking-[0.24em] text-[var(--teal)]">What Works Today</p>
+          <h2 className="mt-3 max-w-2xl text-3xl font-black leading-tight tracking-[-0.04em]">
+            이미 구현된 흐름을 첫 화면에서 바로 이해할 수 있어야 합니다.
+          </h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--sub)]">
-            이소서는 AI가 대신 써주는 서비스가 아니라, 내 경험을 저장하고 다듬고 조합할 수 있게 만드는 이력서 작업 공간입니다.
+            지금 제품의 설득 포인트는 미래 기능이 아니라, 이미 연결된 작업 흐름입니다.
           </p>
 
           <div className="mt-9 grid gap-5 lg:grid-cols-2">
@@ -522,8 +634,9 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
         </div>
       </section>
 
-      <section className="bg-[var(--indigo)] px-5 py-16 text-white sm:px-8 lg:px-12">
-        <div className="mx-auto flex max-w-6xl flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+      <section className="px-5 pb-14 sm:px-8 lg:px-12">
+        <div className="relative mx-auto flex max-w-6xl flex-col gap-8 overflow-hidden rounded-[28px] bg-[var(--indigo)] px-6 py-10 text-white sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-10">
+          <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/10" />
           <div>
             <p className="text-xs font-black uppercase tracking-[0.24em] text-white/60">Final CTA</p>
             <h2 className="mt-4 text-3xl font-black leading-tight tracking-[-0.05em] sm:text-4xl">
@@ -540,15 +653,15 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
         </div>
       </section>
 
-      <footer className="bg-[#071a36] px-5 py-10 text-white sm:px-8 lg:px-12">
+      <footer className="border-t border-[var(--border)] bg-white px-5 py-10 text-[var(--ink)] sm:px-8 lg:px-12">
         <div className="mx-auto flex max-w-6xl flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="text-2xl font-black tracking-[-0.05em]">이소<span className="text-[var(--teal)]">서</span></div>
-            <p className="mt-3 max-w-xl text-sm leading-7 text-white/62">
+            <p className="mt-3 max-w-xl text-sm leading-7 text-[var(--sub)]">
               공공 취업 지원 탐색을 시작점으로, 개인화 추천과 문서 워크플로우까지 연결하는 커리어 SaaS.
             </p>
           </div>
-          <div className="text-xs font-bold text-white/42">© 2026 Isoser. Career support workspace.</div>
+          <div className="text-xs font-bold text-[var(--muted)]">© 2026 Isoser. Career support workspace.</div>
         </div>
       </footer>
 
@@ -564,4 +677,3 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
     </main>
   );
 }
-
