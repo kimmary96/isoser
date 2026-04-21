@@ -1941,6 +1941,17 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 
 ## 2026-04-16 추가 메모
 
+- 2026-04-21: `backend/chains/pdf_parse_utils.py`, `backend/chains/pdf_sentence_scorer.py`, `backend/tests/test_pdf_chain.py`, `backend/tests/test_pdf_sentence_scorer.py`
+  - 박준호 시연용 이력서 템플릿 검증 중 `프로젝트` 섹션이 프로필 경력으로 이어 붙는 문제를 발견해, 경력 섹션 종료 헤더에 `project/projects/프로젝트`를 추가함
+  - `(5인 팀: PM 1 / ...)` 팀 구성 표기를 `(5인: ...)`와 동일하게 인식하도록 역할/팀 정규식을 확장함
+  - `기능 개발` 같은 개발형 문장은 기여내용으로 분류하되, `백엔드 개발자` 같은 역할명 단독 줄은 기여내용에서 제외하도록 scorer 기준을 보강함
+  - scorer를 `classify_activity_sentence()` 점수 기반 분류 함수와 호환 래퍼(`looks_like_intro_line`, `looks_like_contribution_line`)로 재구성해 기준 조정과 테스트 추가가 쉬운 구조로 리팩토링함
+  - `backend/chains/pdf_parser_rules.py`를 추가해 활동 타입 alias, 경력/비경력/종료 섹션 헤더, 소개/기여/역할명 rule table을 한 곳에서 관리하도록 분리함
+  - `SentenceScoreWeights`와 `SENTENCE_SCORE_WEIGHTS`를 추가해 scorer 점수값과 metric 패턴도 rule table에서 관리하도록 후속 리팩토링함
+  - 박준호 백엔드/김지원 PM 포트폴리오 원문을 `backend/tests/fixtures/pdf_texts/` fixture로 분리하고, role-only 직무명 사전과 scorer reason을 `metric_signal`/`keyword_signal`/`role_only` 등으로 세분화함
+  - `ISOSER_PDF_PARSE_DEBUG_SCORER=1` 옵션을 추가해 실제 파싱 중 문장 분류 kind/score/reason을 debug log로 남길 수 있게 하고, PDF expected snapshot fixture를 `backend/tests/fixtures/pdf_expected/`에 추가해 템플릿별 회귀 테스트를 parameterize함
+  - 박준호 실제 PDF를 `backend/tests/fixtures/pdf_files/park_backend_resume.pdf`에 추가하고, PyMuPDF 텍스트 추출부터 source fallback 파싱, expected snapshot 비교까지 e2e 회귀 테스트로 고정함
+
 - 2026-04-20: `backend/rag/programs_rag.py`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/lib/api/app.ts`, `frontend/lib/types/index.ts`
   - 추천 하이브리드 점수 공식을 `0.6 / 0.4`로 복구하고, cache read 시 저장된 `final_score`를 재사용하지 않도록 stale-cache recovery 규칙을 추가함
   - `GET /programs/recommend/calendar`와 `/api/dashboard/recommend-calendar`를 추가해 만료 프로그램 제외, `final_score desc + deadline asc` 정렬, `d_day_label` 포함 응답 계약을 캘린더 전용으로 분리함

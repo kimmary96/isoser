@@ -164,6 +164,8 @@
   - `docs/worklogs/`: 날짜별 작업 기록
 
 ## Current behavior notes
+- PDF 이력서 파서는 Gemini 호출 실패/쿼터 초과 시 원문 기반 fallback 파싱을 수행하며, `경력` 섹션은 `프로젝트` 헤더에서 종료해 프로젝트가 프로필 경력으로 섞이지 않도록 처리한다.
+- 활동 역할/팀 구성 파싱은 `백엔드 개발자 (5인: ...)`와 `백엔드 개발자 (5인 팀: ...)` 표기를 모두 지원하며, scorer가 소개형/성과형/무시 문장을 점수 기반으로 분류한다. PDF parser rule table과 scorer weight는 `backend/chains/pdf_parser_rules.py`에 모아 두고, 역할명 단독 줄은 기여내용에서 제외하고 구현/개발/성과 문장은 기여내용으로 분류한다. scorer classification은 `metric_signal`, `keyword_signal`, `role_only` 같은 세분화된 reason을 반환하며, `ISOSER_PDF_PARSE_DEBUG_SCORER=1`일 때 실제 파싱 중 debug log로 남긴다. PDF 원문 회귀 케이스는 `backend/tests/fixtures/pdf_texts/`, expected snapshot은 `backend/tests/fixtures/pdf_expected/`, 실제 PDF e2e fixture는 `backend/tests/fixtures/pdf_files/`로 관리한다.
 - 추천 프로그램 API는 `relevance_score`와 `urgency_score`를 분리해서 반환하며, 카드 UI는 관련도 배지에 `relevance_score`를 사용하고 마감 7일 이내만 별도 마감 칩으로 표시한다.
 - `backend/routers/programs.py`는 기존 `POST /programs/recommend`를 유지한 채 `GET /programs/recommend/calendar`를 추가해 `{ items: [...] }` 계약으로 캘린더 전용 추천을 제공하고, 이 경로에서만 만료 프로그램 제외 + `final_score desc`, `deadline asc` 정렬을 적용한다.
 - recommendation cache read는 저장된 `final_score`를 그대로 신뢰하지 않고 `relevance_score * 0.6 + urgency_score * 0.4`로 재계산하며, component score가 하나라도 없으면 stale cache로 보고 fresh recommendation path로 우회한다.

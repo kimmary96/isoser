@@ -1,0 +1,61 @@
+{
+  "profile": {
+    "career": [
+      "긱블 | Game Designer/PM | 2024.09 | 2025.12",
+      "롯데건설 | 공사기사 | 2021.09 | 2022.08"
+    ]
+  },
+  "activities": [
+    {
+      "type": "회사경력",
+      "title": "긱블",
+      "period": "2024.09 ~ 2025.12",
+      "role": "Game Designer/PM",
+      "team_size": null,
+      "team_composition": "",
+      "description": "",
+      "contributions": [
+        "게임개발 부서의 Game Designer/PM 으",
+        "모바일 게임 개발"
+      ]
+    },
+    {
+      "type": "회사경력",
+      "title": "롯데건설",
+      "period": "2021.09 ~ 2022.08",
+      "role": "공사기사",
+      "team_size": null,
+      "team_composition": "",
+      "description": "",
+      "contributions": [
+        "의정부 중앙2 주택재개발 현장에서",
+        "로 근무하며 현장 시공 및 품질, 안전, 협력사 관리를 수행했습니다."
+      ]
+    },
+    {
+      "type": "프로젝트",
+      "title": "냥생점프",
+      "period": "2023.11 ~ 2024.04",
+      "role": "기획1",
+      "team_size": 1,
+      "team_composition": "개발1",
+      "description": "",
+      "contributions": [
+        "게임 시장 분석에 따라 하이브리드 캐주얼 게임 기획",
+        "컨셉 및 코어 게임 디자인, 발판 생성 및 스테이지 시스템 기획, 씬 및 UI 구현, 프로젝트 일정 관리"
+      ]
+    },
+    {
+      "type": "프로젝트",
+      "title": "Color Blaster",
+      "period": "2024.10 ~ 진행중",
+      "role": "기획1",
+      "team_size": 2,
+      "team_composition": "개발1 / 아트1",
+      "description": "",
+      "contributions": [
+        "게임 내 콘텐츠 기획, 몬스터 및 보스 스탯 설정, 스테이지 밸런싱 기획"
+      ]
+    }
+  ]
+}
