@@ -100,7 +100,7 @@
 - [X] 목록에서 실제로 보이는지 확인
 - [X] 상세 페이지 정보가 충분한지 확인
 - [X] 비교 화면에 무리 없이 들어가는지 확인
-- [X] 로그인 이후 설명 흐름과 연결되는지 확인
+- [ ] 로그인 이후 설명 흐름과 연결되는지 확인
 
 ## 5. 발표 퍼널별 고정 URL
 
@@ -121,22 +121,49 @@
 검증 기준:
 
 - 로컬 실행 기준: `http://localhost:3001`
-- 백엔드 상태: `http://localhost:8000/programs/count` 응답 200 확인
-- 브라우저 검증: `npx.cmd playwright screenshot --browser=chromium --timeout=30000 --wait-for-selector=body`
+- 백엔드 상태: `http://localhost:8000/programs/count` 응답 200, count `614`
 - HTTP 검증: `Invoke-WebRequest -UseBasicParsing`
-- 주의: `localhost:3000`에는 오래된 Next 서버가 남아 있어 `/landing-a`가 20초 안에 응답하지 않았다. 발표 리허설 전에는 `3000` 서버를 재시작하거나 이번 smoke 기준인 `3001` 사용을 고정한다.
+- 보호 라우트 리다이렉트 검증: `Invoke-WebRequest -MaximumRedirection 0`
+- 참고: `agent-browser` CLI는 현재 PATH에 없어 사용하지 못함
+- 참고: Playwright CLI는 설치되어 있으나 Node 모듈 import는 불가해 이번 기록은 HTTP smoke test 기준으로 남긴다.
+- 주의: `localhost:3000`에는 오래된 Next 서버가 남아 있어 `/landing-a`가 30초 안에 응답하지 않았다. 발표 리허설 전에는 `3000` 서버를 재시작하거나 이번 smoke 기준인 `3001` 사용을 고정한다.
 
-| 단계 | URL | HTTP | 브라우저 렌더 | 판정 | 비고 |
-|---|---|---:|---|---|---|
-| 랜딩 | `/landing-a` | 200 | 성공 | 통과 | 랜딩 hero와 live board 렌더 확인 |
-| 프로그램 목록 | `/programs` | 200 | 성공 | 통과 | 목록 허브와 결과 수 렌더 확인 |
-| 프로그램 상세 | `/programs/3446285d-ac73-4c10-97fd-0ff7d42676e0` | 200 | 성공 | 통과 | 내부 A 상세명 렌더 확인 |
-| 비교 | `/compare?ids=3446285d-ac73-4c10-97fd-0ff7d42676e0,45fcd5e0-e8c9-4fa5-84a8-8c7c8498b747,24ebb6ab-e300-46e8-be35-bac64cc6372e` | 200 | 성공 | 통과 | 내부 A/B/C 3개 비교 진입 확인 |
-| 로그인 | `/login` | 200 | 성공 | 통과 | Google 로그인 게이트 렌더 확인 |
-| 온보딩 | `/onboarding` | 200 | 성공 | 통과 | 비로그인 상태에서는 로그인 게이트로 보호됨 |
-| 추천 대시보드 | `/dashboard` | 200 | 성공 | 통과 | 비로그인 상태에서는 로그인 게이트로 보호됨 |
-| 이력서 생성 | `/dashboard/resume` | 200 | 성공 | 통과 | 비로그인 상태에서는 로그인 게이트로 보호됨 |
-| 포트폴리오 생성 | `/dashboard/portfolio` | 200 | 성공 | 통과 | 비로그인 상태에서는 로그인 게이트로 보호됨 |
+| 단계 | URL | HTTP | 판정 | 확인 내용 |
+|---|---|---:|---|---|
+| 랜딩 | `/landing-a` | 200 | 통과 | title 확인 |
+| 프로그램 목록 | `/programs` | 200 | 통과 | 목록 title 확인 |
+| 프로그램 상세 | `/programs/3446285d-ac73-4c10-97fd-0ff7d42676e0` | 200 | 통과 | 내부 A 제목/기관/일정/지원 관련 텍스트 확인 |
+| 비교 | `/compare?ids=3446285d-ac73-4c10-97fd-0ff7d42676e0,45fcd5e0-e8c9-4fa5-84a8-8c7c8498b747,24ebb6ab-e300-46e8-be35-bac64cc6372e` | 200 | 통과 | 내부 A/B/C 제목 3개 모두 확인 |
+| 로그인 | `/login` | 200 | 통과 | 로그인 페이지 title/본문 확인 |
+| 온보딩 | `/onboarding` | 307 | 인증 필요 | 비로그인 상태에서 `/login?redirectedFrom=%2Fonboarding`로 이동 |
+| 추천 대시보드 | `/dashboard` | 307 | 인증 필요 | 비로그인 상태에서 `/login?redirectedFrom=%2Fdashboard`로 이동 |
+| 이력서 생성 | `/dashboard/resume` | 307 | 인증 필요 | 비로그인 상태에서 `/login?redirectedFrom=%2Fdashboard%2Fresume`로 이동 |
+| 포트폴리오 생성 | `/dashboard/portfolio` | 307 | 인증 필요 | 비로그인 상태에서 `/login?redirectedFrom=%2Fdashboard%2Fportfolio`로 이동 |
+
+### 2026-04-21 실계정 E2E 검증 시도
+
+검증 기준:
+
+- 로컬 실행 기준: `http://localhost:3001`
+- 백엔드 상태: `http://localhost:8000/programs/count` 응답 200, count `614`
+- 현재 포트 상태: `3001` 프론트 서버와 `8000` 백엔드 서버 실행 중
+- 주의: `3000` 프론트 서버도 별도 프로세스로 실행 중이므로 발표 리허설 전 사용할 포트를 하나로 고정해야 한다.
+
+확인 결과:
+
+| 항목 | 결과 | 판단 |
+|---|---|---|
+| 비인증 `/dashboard` 직접 접근 | `/login?redirectedFrom=%2Fdashboard`로 리다이렉트 | 인증 보호 정상 |
+| Chrome DevTools remote debugging port | `9222`, `9223`, `9224`, `9333` 모두 미개방 | 기존 브라우저 세션 자동 재사용 불가 |
+| 로그인 방식 | `/login`은 Google OAuth 진입만 제공 | 에이전트 단독 실계정 로그인 검증 불가 |
+| 프론트 로그 근거 | 인증 세션으로 `/dashboard`, `/dashboard/resume`, 활동 수정 API 200 기록 존재 | 과거 세션 기준 일부 통과 흔적 있음 |
+| 추가 로그 리스크 | `/login?redirectedFrom=%2Fonboarding` 500 기록 존재 | 실제 화면 기준 재확인 필요 |
+
+결론:
+
+- 실계정 로그인 이후 `/onboarding`, `/dashboard`, `/dashboard/resume`, `/dashboard/portfolio` 실제 E2E는 아직 완료로 처리하지 않는다.
+- 완료 조건은 발표용 브라우저에서 Google 로그인 후 4개 보호 경로를 직접 열어 화면/생성 흐름을 확인하는 것이다.
+- 현재 코드 수정 대상 P0 blocker로 확정된 항목은 없으며, 인증 세션 접근 불가로 인해 수동 검증 대기 상태다.
 
 P0 blocker 분류:
 
