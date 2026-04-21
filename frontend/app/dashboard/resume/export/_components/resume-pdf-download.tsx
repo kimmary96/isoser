@@ -11,6 +11,7 @@ import {
 } from "@react-pdf/renderer";
 
 import type { Activity, Resume } from "@/lib/types";
+import { getActivityMetaItems, getActivityResumeLines } from "@/lib/activity-display";
 
 Font.register({
   family: "NotoSansKR",
@@ -89,7 +90,16 @@ function ResumePdfDocument({
               <Text style={styles.itemMeta}>
                 {activity.type} | {activity.period ?? "기간 미입력"} | {activity.role ?? "역할 미입력"}
               </Text>
-              <Text style={styles.itemBody}>{activity.description ?? ""}</Text>
+              {getActivityMetaItems(activity).length > 0 && (
+                <Text style={styles.itemMeta}>{getActivityMetaItems(activity).join(" · ")}</Text>
+              )}
+              {getActivityResumeLines(activity)
+                .slice(getActivityMetaItems(activity).length > 0 ? 1 : 0)
+                .map((line, index) => (
+                  <Text key={`${activity.id}-pdf-line-${index}`} style={styles.itemBody}>
+                    - {line}
+                  </Text>
+                ))}
             </View>
           ))}
         </View>

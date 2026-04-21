@@ -4,6 +4,7 @@
 import { useResumeBuilder } from "./_hooks/use-resume-builder";
 import { ResumeAssistantSidebar } from "./_components/resume-assistant-sidebar";
 import { ResumePreviewPane } from "./_components/resume-preview-pane";
+import { getActivityPreviewText } from "@/lib/activity-display";
 
 export default function ResumePage() {
   const {
@@ -234,9 +235,9 @@ export default function ResumePage() {
                           {activity.period && (
                             <p className="text-[10px] text-gray-400 mt-0.5">{activity.period}</p>
                           )}
-                          {activity.description && (
+                          {getActivityPreviewText(activity) && (
                             <p className="text-[10px] text-gray-500 mt-1 line-clamp-2">
-                              {activity.description}
+                              {getActivityPreviewText(activity)}
                             </p>
                           )}
                           {Array.isArray(activity.skills) && activity.skills.length > 0 && (

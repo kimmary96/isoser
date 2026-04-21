@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { useResumeExport } from "./_hooks/use-resume-export";
+import { getActivityMetaItems, getActivityResumeLines } from "@/lib/activity-display";
 
 const ResumePdfDownload = dynamic(
   () => import("./_components/resume-pdf-download").then((mod) => mod.ResumePdfDownload),
@@ -49,9 +50,20 @@ function ResumeExportContent() {
                       <p className="text-xs text-gray-500 mt-1">
                         {activity.type} | {activity.period ?? "기간 미입력"}
                       </p>
-                      <p className="text-sm text-gray-700 mt-2 whitespace-pre-wrap">
-                        {activity.description || "설명 없음"}
-                      </p>
+                      {getActivityMetaItems(activity).length > 0 && (
+                        <p className="text-xs text-gray-500 mt-2">
+                          {getActivityMetaItems(activity).join(" · ")}
+                        </p>
+                      )}
+                      <div className="mt-2 space-y-1">
+                        {getActivityResumeLines(activity)
+                          .slice(getActivityMetaItems(activity).length > 0 ? 1 : 0)
+                          .map((line, index) => (
+                            <p key={`${activity.id}-export-preview-${index}`} className="text-sm text-gray-700">
+                              - {line}
+                            </p>
+                          ))}
+                      </div>
                     </div>
                   ))}
                 </div>

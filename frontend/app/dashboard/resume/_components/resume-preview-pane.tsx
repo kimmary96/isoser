@@ -1,4 +1,5 @@
 import type { Activity } from "@/lib/types";
+import { getActivityMetaItems, getActivityResumeLines } from "@/lib/activity-display";
 
 type ResumeProfile = {
   name: string;
@@ -123,10 +124,21 @@ export function ResumePreviewPane({
                           {activity.period}
                         </span>
                       </div>
-                      {activity.description && (
-                        <p className="text-xs leading-relaxed text-gray-600">
-                          {activity.description}
+                      {getActivityMetaItems(activity).length > 0 && (
+                        <p className="mb-1 text-[10px] leading-relaxed text-gray-400">
+                          {getActivityMetaItems(activity).join(" · ")}
                         </p>
+                      )}
+                      {getActivityResumeLines(activity).slice(getActivityMetaItems(activity).length > 0 ? 1 : 0).length > 0 && (
+                        <ul className="space-y-1">
+                          {getActivityResumeLines(activity)
+                            .slice(getActivityMetaItems(activity).length > 0 ? 1 : 0)
+                            .map((line, lineIndex) => (
+                              <li key={`${activity.id}-career-line-${lineIndex}`} className="text-xs leading-relaxed text-gray-600">
+                                - {line}
+                              </li>
+                            ))}
+                        </ul>
                       )}
                     </div>
                   </div>
@@ -155,10 +167,21 @@ export function ResumePreviewPane({
                           {activity.period}
                         </span>
                       </div>
-                      {activity.description && (
-                        <p className="text-xs leading-relaxed text-gray-600">
-                          {activity.description}
+                      {getActivityMetaItems(activity).length > 0 && (
+                        <p className="mb-1 text-[10px] leading-relaxed text-gray-400">
+                          {getActivityMetaItems(activity).join(" · ")}
                         </p>
+                      )}
+                      {getActivityResumeLines(activity).slice(getActivityMetaItems(activity).length > 0 ? 1 : 0).length > 0 && (
+                        <ul className="space-y-1">
+                          {getActivityResumeLines(activity)
+                            .slice(getActivityMetaItems(activity).length > 0 ? 1 : 0)
+                            .map((line, lineIndex) => (
+                              <li key={`${activity.id}-project-line-${lineIndex}`} className="text-xs leading-relaxed text-gray-600">
+                                - {line}
+                              </li>
+                            ))}
+                        </ul>
                       )}
                       {Array.isArray(activity.skills) && activity.skills.length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-1.5">

@@ -1,6 +1,7 @@
 "use client";
 
 import { PencilButton, ReadonlyListSection } from "./profile-section-editors";
+import { getActivityPreviewText } from "@/lib/activity-display";
 import type { CareerCard } from "../_lib/profile-page";
 
 type ProfileCareerCardSectionProps = {
@@ -32,9 +33,14 @@ export function ProfileCareerCardSection({
             </div>
             <div className="mt-2 space-y-1 rounded-2xl border border-slate-200 bg-slate-50 p-3">
               {card.activities.map((activity, activityIndex) => (
-                <p key={`${activity.title}-${activityIndex}`} className="text-xs text-slate-600">
-                  - {activity.title}
-                </p>
+                <div key={`${activity.title}-${activityIndex}`} className="text-xs text-slate-600">
+                  <p>- {activity.title}</p>
+                  {getActivityPreviewText(activity) && (
+                    <p className="mt-0.5 line-clamp-2 pl-2 text-slate-500">
+                      {getActivityPreviewText(activity)}
+                    </p>
+                  )}
+                </div>
               ))}
             </div>
           </div>
