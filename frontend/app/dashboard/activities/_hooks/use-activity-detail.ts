@@ -126,7 +126,7 @@ export function useActivityDetail(activityId: string, isNewActivity: boolean, in
         setImageUrls(loaded.image_urls || []);
         setTitleDraft(loaded.title || "");
         setTypeDraft(loaded.type || "");
-        const parts = (loaded.period || "").split("~");
+        const parts = (loaded.period || "").split(/\s*(?:~|–|—|-)\s*/);
         setPeriodStart(parts[0]?.trim() || "");
         setPeriodEnd(parts[1]?.trim() || "");
         setSkillsDraft(Array.isArray(loaded.skills) ? loaded.skills : []);

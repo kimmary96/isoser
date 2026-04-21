@@ -42,6 +42,11 @@ type OnboardingPayload = {
   activities: Array<{
     type: Activity["type"];
     title: string;
+    organization?: string | null;
+    team_size?: number | null;
+    team_composition?: string | null;
+    my_role?: string | null;
+    contributions?: string[];
     period: string;
     role: string;
     skills: string[];

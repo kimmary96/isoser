@@ -13,6 +13,7 @@ _PARSE_PROMPT = """
 다음은 이력서 텍스트입니다. 아래 JSON 형식으로 구조화해서 반환하세요.
 코드 블록 없이 순수 JSON만 반환하세요.
 activities[].type은 반드시 아래 4개 중 하나만 사용하세요: 회사경력, 프로젝트, 대외활동, 학생활동
+activities[]에는 가능한 경우 organization, team_size, team_composition, my_role, contributions도 채우세요.
 
 중요 규칙:
 1. CAREER, WORK EXPERIENCE, EXPERIENCE, PROFESSIONAL EXPERIENCE 섹션은 모두 회사경력으로 해석하세요.
@@ -40,9 +41,14 @@ activities[].type은 반드시 아래 4개 중 하나만 사용하세요: 회사
     {{
       "type": "회사경력 | 프로젝트 | 대외활동 | 학생활동",
       "title": "활동명",
+      "organization": "소속 조직 또는 프로젝트/회사명",
       "period": "기간 (예: 2024.01 ~ 2024.06)",
       "role": "역할",
+      "team_size": 5,
+      "team_composition": "PM 1 / 백엔드 2 / 프론트 1",
+      "my_role": "담당 역할",
       "skills": ["기술1", "기술2"],
+      "contributions": ["기여 내용1", "기여 내용2"],
       "description": "상세 설명"
     }}
   ]
@@ -113,6 +119,10 @@ _DATE_RANGE_RE = re.compile(
 _CAREER_LINE_RE = re.compile(
     r"^(?P<company>.+?)\s+(?P<start>\d{4}[./-]\d{1,2})\s*(?:~|–|—|-)\s*(?P<end>\d{4}[./-]\d{1,2}|현재|present|Present|PRESENT)$"
 )
+_ACTIVITY_HEADER_RE = re.compile(
+    r"^(?P<title>.+?)\s+(?P<start>\d{4}[./-]\d{1,2})\s*(?:~|–|—|-)\s*(?P<end>\d{4}[./-]\d{1,2}|현재|present|Present|PRESENT)$"
+)
+_ROLE_TEAM_RE = re.compile(r"^(?P<role>.+?)\s*\((?P<size>\d+)\s*인\s*:\s*(?P<composition>.+)\)$")
 
 
 async def parse_resume_pdf(pdf_bytes: bytes) -> dict:
@@ -209,19 +219,29 @@ def _parse_and_normalize_result(raw_content: Any, source_text: str = "") -> dict
             normalized_activities.append(
                 {
                     "type": _normalize_activity_type(item.get("type")),
-                    "title": str(item.get("title", "")).strip(),
-                    "period": str(item.get("period", "")).strip(),
-                    "role": str(item.get("role", "")).strip(),
+                    "title": _normalize_text_field(item.get("title")),
+                    "organization": _normalize_text_field(item.get("organization")),
+                    "period": _normalize_period(str(item.get("period", "")).strip()),
+                    "role": _normalize_text_field(item.get("role")),
+                    "team_size": _normalize_optional_int(item.get("team_size")),
+                    "team_composition": _normalize_text_field(item.get("team_composition")),
+                    "my_role": _normalize_text_field(item.get("my_role")),
                     "skills": _normalize_skills(item.get("skills")),
-                    "description": str(item.get("description", "")).strip(),
+                    "contributions": _normalize_string_list(item.get("contributions")),
+                    "description": _normalize_text_field(item.get("description")),
                 }
             )
 
     extracted_careers = _extract_career_entries_from_text(source_text)
+    extracted_activity_details = _extract_activity_details_from_text(source_text)
     normalized_profile, normalized_activities = _postprocess_career_entries(
         normalized_profile=normalized_profile,
         normalized_activities=normalized_activities,
         extracted_careers=extracted_careers,
+    )
+    normalized_activities = _postprocess_activity_details(
+        normalized_activities=normalized_activities,
+        extracted_activity_details=extracted_activity_details,
     )
 
     return {
@@ -331,6 +351,34 @@ def _normalize_string_list(value: Any) -> list[str]:
     return []
 
 
+def _normalize_text_field(value: Any) -> str:
+    text = str(value or "").strip()
+    if text.lower() in {"none", "null", "n/a", "na", "-"}:
+        return ""
+    return text
+
+
+def _normalize_optional_int(value: Any) -> int | None:
+    if isinstance(value, bool) or value is None:
+        return None
+    if isinstance(value, int):
+        return value
+    text = str(value).strip()
+    if not text:
+        return None
+    match = re.search(r"\d+", text)
+    if not match:
+        return None
+    return int(match.group(0))
+
+
+def _normalize_period(period: str) -> str:
+    match = _DATE_RANGE_RE.search(period)
+    if not match:
+        return period.strip()
+    return _format_period(match.group("start"), match.group("end"))
+
+
 def _extract_career_entries_from_text(text: str) -> list[dict[str, str]]:
     if not text.strip():
         return []
@@ -357,11 +405,21 @@ def _extract_career_entries_from_text(text: str) -> list[dict[str, str]]:
             continue
 
         match = _CAREER_LINE_RE.match(line)
-        if match:
-            company = match.group("company").strip(" -|:")
-            start = match.group("start").strip()
-            end = match.group("end").strip()
-            role = _extract_following_role(lines, idx + 1)
+        split_period = None if match else _extract_split_period(lines, idx)
+        if match or split_period:
+            if match:
+                company = match.group("company").strip(" -|:")
+                start = match.group("start").strip()
+                end = match.group("end").strip()
+                role_start_idx = idx + 1
+            else:
+                company = line.strip(" -|:")
+                start, end = split_period or ("", "")
+                role_start_idx = idx + 2
+            if _looks_like_project_line(company):
+                idx += 1
+                continue
+            role = _extract_following_role(lines, role_start_idx)
             entries.append(
                 {
                     "company": company,
@@ -391,7 +449,7 @@ def _postprocess_career_entries(
     for entry in extracted_careers:
         cleaned_career.append(_serialize_career_entry(entry))
 
-    normalized_profile["career"] = _dedupe_string_list(cleaned_career)
+    normalized_profile["career"] = _dedupe_career_strings(cleaned_career)
 
     if carry_into_intro:
         intro_parts = [normalized_profile.get("self_intro", "").strip(), " ".join(carry_into_intro).strip()]
@@ -422,6 +480,281 @@ def _postprocess_career_entries(
             )
 
     return normalized_profile, normalized_activities
+
+
+def _extract_activity_details_from_text(text: str) -> list[dict[str, Any]]:
+    if not text.strip():
+        return []
+
+    lines = [line.strip(" \t•-") for line in text.splitlines() if line.strip()]
+    details: list[dict[str, Any]] = []
+
+    for idx, line in enumerate(lines):
+        if _normalize_section_header(line) in _CAREER_SECTION_HEADERS | _NON_CAREER_SECTION_HEADERS:
+            continue
+        match = _ACTIVITY_HEADER_RE.match(line)
+        split_period = None if match else _extract_split_period(lines, idx)
+        if not match and not split_period:
+            continue
+
+        if match:
+            title = match.group("title").strip()
+            period = _format_period(match.group("start"), match.group("end"))
+            role_idx = idx + 1
+            bullet_idx = idx + 2
+        else:
+            title = line.strip()
+            start, end = split_period or ("", "")
+            period = _format_period(start, end)
+            role_idx = idx + 2
+            bullet_idx = idx + 3
+
+        role = ""
+        team_size = None
+        team_composition = ""
+        if role_idx < len(lines):
+            role_line = lines[role_idx].strip()
+            role_match = _ROLE_TEAM_RE.match(role_line)
+            if role_match:
+                role = role_match.group("role").strip()
+                team_size = int(role_match.group("size"))
+                team_composition = role_match.group("composition").strip()
+            elif role_line and not _ACTIVITY_HEADER_RE.match(role_line):
+                role = role_line
+
+        details.append(
+            {
+                "title": title,
+                "organization": _extract_organization_from_title(title),
+                "period": period,
+                "role": role,
+                "team_size": team_size,
+                "team_composition": team_composition,
+                **_split_following_activity_bullets(lines, bullet_idx),
+            }
+        )
+
+    return details
+
+
+def _postprocess_activity_details(
+    normalized_activities: list[dict[str, Any]],
+    extracted_activity_details: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    for detail in extracted_activity_details:
+        matched = _find_matching_activity(normalized_activities, detail["title"])
+        if matched is None:
+            continue
+
+        _absorb_fragment_activities(matched, normalized_activities, detail)
+        matched["period"] = _normalize_period(str(matched.get("period") or detail["period"]))
+        if not matched.get("organization") or _is_generic_organization(str(matched.get("organization", ""))):
+            matched["organization"] = detail["organization"]
+        if not matched.get("role"):
+            matched["role"] = detail["role"]
+        if not matched.get("my_role"):
+            matched["my_role"] = matched.get("role") or detail["role"]
+        if not matched.get("team_size"):
+            matched["team_size"] = detail["team_size"]
+        if not matched.get("team_composition"):
+            matched["team_composition"] = detail["team_composition"]
+        if detail["contributions"]:
+            matched["contributions"] = detail["contributions"]
+        current_description = _normalize_text_field(matched.get("description"))
+        contribution_keys = {normalize(item) for item in _normalize_string_list(matched.get("contributions"))}
+        if detail["description"] or normalize(current_description) in contribution_keys:
+            matched["description"] = detail["description"]
+
+    for activity in normalized_activities:
+        activity["description"] = _normalize_text_field(activity.get("description"))
+        activity["period"] = _normalize_period(str(activity.get("period", "")))
+        if not activity.get("my_role"):
+            activity["my_role"] = str(activity.get("role", "")).strip()
+        if not activity.get("organization"):
+            activity["organization"] = _extract_organization_from_title(str(activity.get("title", "")))
+        if activity.get("team_size") is not None:
+            activity["team_size"] = _normalize_optional_int(activity.get("team_size"))
+
+    return normalized_activities
+
+
+def _absorb_fragment_activities(
+    matched: dict[str, Any],
+    activities: list[dict[str, Any]],
+    detail: dict[str, Any],
+) -> None:
+    fragment_lines = _dedupe_string_list(
+        [
+            *detail.get("contributions", []),
+            *[line.strip() for line in str(detail.get("description", "")).split(".") if line.strip()],
+        ]
+    )
+    fragment_keys = {normalize(line) for line in fragment_lines if line}
+    if not fragment_keys:
+        return
+
+    retained: list[dict[str, Any]] = []
+    absorbed_contributions = _normalize_string_list(matched.get("contributions"))
+    absorbed_description = str(matched.get("description", "")).strip()
+
+    for activity in activities:
+        if activity is matched:
+            retained.append(activity)
+            continue
+
+        title_key = normalize(str(activity.get("title", "")))
+        description_key = normalize(str(activity.get("description", "")))
+        is_fragment = title_key in fragment_keys or description_key in fragment_keys
+
+        if not is_fragment:
+            retained.append(activity)
+            continue
+
+        title = str(activity.get("title", "")).strip()
+        description = str(activity.get("description", "")).strip()
+        if _looks_like_contribution_line(title):
+            absorbed_contributions.append(title)
+        elif title and not absorbed_description:
+            absorbed_description = title
+        if _looks_like_contribution_line(description):
+            absorbed_contributions.append(description)
+        elif description and not absorbed_description:
+            absorbed_description = description
+
+    activities[:] = retained
+    matched["contributions"] = _dedupe_string_list(absorbed_contributions)
+    matched["description"] = absorbed_description
+
+
+def _find_matching_activity(
+    activities: list[dict[str, Any]],
+    title: str,
+) -> dict[str, Any] | None:
+    normalized_title = normalize(title)
+    for activity in activities:
+        candidate = normalize(str(activity.get("title", "")))
+        if candidate == normalized_title or candidate in normalized_title or normalized_title in candidate:
+            return activity
+    return None
+
+
+def _extract_organization_from_title(title: str) -> str:
+    for separator in ("—", "–", "-", "|", ":"):
+        if separator in title:
+            return title.split(separator, 1)[0].strip()
+    return title.strip()
+
+
+def _is_generic_organization(value: str) -> bool:
+    return normalize(value) in {"팀프로젝트", "개인프로젝트", "프로젝트"}
+
+
+def _extract_split_period(lines: list[str], idx: int) -> tuple[str, str] | None:
+    if idx + 1 >= len(lines):
+        return None
+    if _DATE_TOKEN_RE.search(lines[idx]):
+        return None
+    match = _DATE_RANGE_RE.search(lines[idx + 1])
+    if not match:
+        return None
+    return match.group("start"), match.group("end")
+
+
+def _extract_following_contributions(lines: list[str], start_idx: int) -> list[str]:
+    contributions: list[str] = []
+    idx = start_idx
+    while idx < len(lines):
+        candidate = lines[idx].strip(" \t•-")
+        if not candidate:
+            idx += 1
+            continue
+        if _normalize_section_header(candidate) in _CAREER_SECTION_HEADERS | _NON_CAREER_SECTION_HEADERS:
+            break
+        if _is_activity_header_at(lines, idx):
+            break
+        if candidate.startswith("성과:"):
+            contributions.append(candidate)
+            idx += 1
+            continue
+        if _looks_like_contribution_line(candidate):
+            contributions.append(candidate)
+        idx += 1
+    return _dedupe_string_list(contributions)
+
+
+def _split_following_activity_bullets(lines: list[str], start_idx: int) -> dict[str, Any]:
+    intro_lines: list[str] = []
+    contributions: list[str] = []
+    idx = start_idx
+
+    while idx < len(lines):
+        candidate = lines[idx].strip(" \t•-")
+        if not candidate:
+            idx += 1
+            continue
+        if _normalize_section_header(candidate) in _CAREER_SECTION_HEADERS | _NON_CAREER_SECTION_HEADERS:
+            break
+        if _is_activity_header_at(lines, idx):
+            break
+
+        if _looks_like_intro_line(candidate):
+            intro_lines.append(candidate)
+        elif _looks_like_contribution_line(candidate):
+            contributions.append(candidate)
+        idx += 1
+
+    return {
+        "description": " ".join(_dedupe_string_list(intro_lines)),
+        "contributions": _dedupe_string_list(contributions),
+    }
+
+
+def _is_activity_header_at(lines: list[str], idx: int) -> bool:
+    if idx >= len(lines):
+        return False
+    candidate = lines[idx].strip(" \t•-")
+    return bool(_ACTIVITY_HEADER_RE.match(candidate) or _extract_split_period(lines, idx))
+
+
+def _looks_like_intro_line(line: str) -> bool:
+    lowered = line.lower()
+    return (
+        "폐업" in line
+        or "권고사직" in line
+        or "계약종료" in line
+        or "유지보수" in line
+        or "maintenance" in lowered
+    )
+
+
+def _looks_like_contribution_line(line: str) -> bool:
+    lowered = line.lower()
+    metric_patterns = (
+        r"\d+\s*%",
+        r"\d+\s*(?:건|명|시간|분|초|배|회|개|원|만원|억원)",
+        r"\d+[,.]?\d*\s*(?:k|m|ms|s)\b",
+    )
+    if any(re.search(pattern, lowered) for pattern in metric_patterns):
+        return True
+
+    contribution_keywords = (
+        "단축",
+        "절감",
+        "개선",
+        "최적화",
+        "튜닝",
+        "성과:",
+        "구축",
+        "설계",
+        "자동화",
+        "파이프라인",
+        "동기화",
+        "api 개발",
+        "처리",
+        "완료율",
+        "장애",
+    )
+    return any(keyword in line or keyword in lowered for keyword in contribution_keywords)
 
 
 def _normalize_section_header(line: str) -> str:
@@ -545,6 +878,52 @@ def _dedupe_career_entries(entries: list[dict[str, str]]) -> list[dict[str, str]
         seen.add(key)
         result.append(entry)
     return result
+
+
+def _dedupe_career_strings(items: list[str]) -> list[str]:
+    result: list[str] = []
+    for item in items:
+        normalized = item.strip()
+        if not normalized:
+            continue
+
+        duplicate_idx = _find_duplicate_career_string_index(result, normalized)
+        if duplicate_idx is None:
+            result.append(normalized)
+            continue
+
+        if len(normalized) > len(result[duplicate_idx]):
+            result[duplicate_idx] = normalized
+
+    return result
+
+
+def _find_duplicate_career_string_index(items: list[str], candidate: str) -> int | None:
+    candidate_parts = [part.strip() for part in candidate.split("|")]
+    if len(candidate_parts) < 4:
+        return None
+
+    candidate_company, candidate_position, candidate_start, candidate_end = candidate_parts[:4]
+    for idx, item in enumerate(items):
+        parts = [part.strip() for part in item.split("|")]
+        if len(parts) < 4:
+            continue
+
+        company, position, start, end = parts[:4]
+        same_timeline = (
+            normalize(position) == normalize(candidate_position)
+            and start == candidate_start
+            and end == candidate_end
+        )
+        same_company = (
+            normalize(company) == normalize(candidate_company)
+            or normalize(company) in normalize(candidate_company)
+            or normalize(candidate_company) in normalize(company)
+        )
+        if same_timeline and same_company:
+            return idx
+
+    return None
 
 
 def _dedupe_string_list(items: list[str]) -> list[str]:

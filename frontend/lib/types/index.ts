@@ -133,6 +133,11 @@ export interface ParsedProfile {
 export interface ParsedActivity {
   type: Activity["type"];
   title: string;
+  organization?: string;
+  team_size?: number | null;
+  team_composition?: string;
+  my_role?: string;
+  contributions?: string[];
   period: string;
   role: string;
   skills: string[];
