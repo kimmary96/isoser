@@ -335,6 +335,10 @@ export interface ProgramDetail {
   ai_matching_summary: string | null;
 }
 
+export interface ProgramDetailBatchResponse {
+  items: ProgramDetail[];
+}
+
 export type ProgramSort = "deadline" | "latest";
 
 export interface ProgramListParams {
@@ -390,7 +394,9 @@ export interface ProgramRelevanceItem {
   program_id: string;
   relevance_score: number;
   skill_match_score: number;
+  region_match_score: number;
   matched_skills: string[];
+  matched_regions: string[];
   fit_label: "높음" | "보통" | "낮음";
   fit_summary: string;
   readiness_label: "바로 지원 추천" | "보완 후 지원" | "탐색용 확인";

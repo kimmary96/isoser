@@ -10,6 +10,7 @@ import type { Program, ProgramRelevanceItem } from "@/lib/types";
 import { CompareRelevanceSection } from "./compare-relevance-section";
 import {
   CompareSectionHeader,
+  type CompareProgram,
   ValueCell,
   compareSections,
   getDeadlineLabel,
@@ -20,7 +21,7 @@ import {
 import ProgramSelectModal from "./program-select-modal";
 
 type ProgramsCompareClientProps = {
-  initialSlots: Array<Program | null>;
+  initialSlots: Array<CompareProgram | null>;
   canonicalIds: string[];
   needsNormalization: boolean;
   suggestions: Program[];
@@ -28,7 +29,7 @@ type ProgramsCompareClientProps = {
   isLoggedIn: boolean;
 };
 
-function getWinnerIndex(slots: Array<Program | null>): number {
+function getWinnerIndex(slots: Array<CompareProgram | null>): number {
   let winnerIndex = -1;
   let winnerDaysLeft = Number.POSITIVE_INFINITY;
 
@@ -44,7 +45,7 @@ function getWinnerIndex(slots: Array<Program | null>): number {
 }
 
 function getRelevanceWinnerIndex(
-  slots: Array<Program | null>,
+  slots: Array<CompareProgram | null>,
   relevanceItems: Record<string, ProgramRelevanceItem>
 ): number {
   let winnerIndex = -1;
@@ -220,7 +221,7 @@ export default function ProgramsCompareClient({
         <div className="mx-auto max-w-7xl px-6 py-10">
           <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">프로그램 비교 분석</h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
-            최대 3개 프로그램을 나란히 놓고 기본 정보, 운영 방식, 프로그램 개요를 현재 수집되는 데이터 기준으로 비교하세요.
+            최대 3개 프로그램을 나란히 놓고 일정, 비용, 지원 대상, 문의 정보를 현재 수집되는 데이터 기준으로 비교하세요.
           </p>
           <div className="mt-5 flex flex-wrap gap-2 text-xs font-semibold">
             <span className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-slate-700">현재 운영 데이터 기준 비교</span>
@@ -250,7 +251,11 @@ export default function ProgramsCompareClient({
             {slots.map((program, index) => {
               const isWinner = winnerIndex === index;
               const programId = typeof program?.id === "string" ? program.id : "";
-              const tags = [getDeadlineLabel(program?.days_left), program?.teaching_method || null, program?.support_type || null]
+              const tags = [
+                getDeadlineLabel(program?.days_left),
+                program?.detail?.support_type || program?.support_type || null,
+                program?.detail?.location || program?.location || null,
+              ]
                 .filter((item): item is string => Boolean(item && item !== "정보 없음"));
 
               if (!program) {

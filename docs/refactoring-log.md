@@ -2275,3 +2275,17 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - `CHROMA_MODE=ephemeral` 로컬 개발 모드에서는 기본 startup seed를 생략해 서버 기동이 Gemini embedding quota 초과 재시도에 묶이지 않도록 조정함
   - Gemini embedding 429를 한 번 감지하면 같은 프로세스의 이후 embedding function도 즉시 local deterministic fallback을 사용하도록 전역 fallback 플래그를 추가함
   - 필요 시 `ISOSER_CHROMA_SEED_ON_STARTUP=true`, `ISOSER_EMBEDDING_LOCAL_FALLBACK=true`로 운영/개발 동작을 명시 override할 수 있게 함
+- 2026-04-23: `frontend/app/(landing)/compare/page.tsx`, `frontend/app/(landing)/compare/programs-compare-client.tsx`, `frontend/app/(landing)/compare/compare-table-sections.tsx`, `frontend/app/(landing)/compare/compare-relevance-section.tsx`, `docs/current-state.md`, `reports/compare-page-detail-fields-result.md`
+  - 비교 페이지가 목록용 `Program`만 쓰던 구조에서 상세 API `ProgramDetail`을 함께 조회해 비용, 지원금, 지원 대상, 정원, 만족도, 문의 같은 공통 상세 필드를 표에 반영하도록 개선함
+  - 비교 표를 기본 정보, 일정, 비용·지원, 대상·모집, 소개로 재구성하고, 상세 API 실패 시 기존 목록 필드 fallback으로 화면이 유지되도록 함
+  - `programs.skills`가 운영 DB에서 비어 있을 수 있는 현실을 반영해 AI 적합도와 표 라벨을 기술 스택/스킬 확정 표현 대신 프로필 키워드/수집 키워드 중심으로 완화함
+- 2026-04-23: `backend/routers/programs.py`, `backend/rag/collector/program_field_mapping.py`, `backend/rag/collector/normalizer.py`, `frontend/lib/api/backend.ts`, `frontend/lib/types/index.ts`, `frontend/app/(landing)/compare/page.tsx`, `frontend/app/(landing)/compare/compare-relevance-section.tsx`, `backend/tests/conftest.py`, `backend/tests/test_programs_router.py`, `backend/tests/test_work24_kstartup_field_mapping.py`, `docs/current-state.md`
+  - 비교 페이지 상세 호출 리스크를 줄이기 위해 `POST /programs/details/batch`를 추가하고, 프론트 비교 페이지는 상세 정보를 슬롯별 단건 호출 대신 batch로 조회하도록 변경함
+  - compare relevance 응답에 `region_match_score`, `matched_regions`를 추가해 주소/지역 기반 신호를 기술 키워드와 분리해 표시함
+  - 고용24/K-Startup mapping과 normalizer에 보수적인 `skills` 추출/저장 흐름을 추가해 `programs.skills`가 계속 비어 남는 문제를 줄임
+- 2026-04-23: `backend/rag/collector/program_field_mapping.py`, `backend/rag/collector/normalizer.py`, `backend/tests/test_work24_kstartup_field_mapping.py`
+  - 고용24/K-Startup mapping에서 제목, 설명, 대상, NCS 코드 기반의 보수적 skill keyword 후보를 추출해 `programs.skills`가 항상 비어 있지 않도록 보강함
+  - normalizer가 `skills` 입력을 중복 제거된 문자열 배열로 정리하도록 추가하고, Work24/K-Startup mapping 테스트로 기대 skill 후보를 고정함
+- 2026-04-23: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/lib/types/index.ts`
+  - compare relevance 응답에 `region_match_score`, `matched_regions`를 추가하고, 프로필 지역 정보가 있을 때만 지역 일치 신호를 관련도에 보수적으로 반영하도록 함
+  - 프로필 지역 정보가 없는 기존 사용자의 관련도 점수는 기존 계산값을 유지하도록 회귀 테스트로 고정함

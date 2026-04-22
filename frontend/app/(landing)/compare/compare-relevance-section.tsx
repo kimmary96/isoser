@@ -1,13 +1,13 @@
 import type { ReactNode } from "react";
 
-import type { Program, ProgramRelevanceItem } from "@/lib/types";
+import type { ProgramRelevanceItem } from "@/lib/types";
 
-import { CompareSectionHeader, ValueCell } from "./compare-table-sections";
+import { CompareSectionHeader, type CompareProgram, ValueCell } from "./compare-table-sections";
 
 type RelevanceState = "empty" | "login" | "loading" | "error" | "ready";
 
 type CompareRelevanceSectionProps = {
-  slots: Array<Program | null>;
+  slots: Array<CompareProgram | null>;
   winnerIndex: number;
   isLoggedIn: boolean;
   relevanceLoading: boolean;
@@ -18,7 +18,7 @@ type CompareRelevanceSectionProps = {
 type RelevanceDetailRow = {
   label: string;
   extraClassName?: string;
-  empty?: (item: ProgramRelevanceItem | null, program: Program | null, isLoggedIn: boolean) => boolean;
+  empty?: (item: ProgramRelevanceItem | null, program: CompareProgram | null, isLoggedIn: boolean) => boolean;
   render: (item: ProgramRelevanceItem | null) => ReactNode;
 };
 
@@ -43,7 +43,7 @@ function ScoreBar({ score }: { score: number | null | undefined }) {
 }
 
 function getRelevanceValueState(
-  program: Program | null,
+  program: CompareProgram | null,
   isLoggedIn: boolean,
   relevanceLoading: boolean,
   relevanceError: string | null
@@ -132,7 +132,8 @@ export function CompareRelevanceSection({
 
       {[
         { label: "종합 관련도", scoreKey: "relevance_score" as const },
-        { label: "기술 스택 일치도", scoreKey: "skill_match_score" as const },
+        { label: "프로필 키워드 일치도", scoreKey: "skill_match_score" as const },
+        { label: "지역 일치도", scoreKey: "region_match_score" as const },
       ].map(({ label, scoreKey }) => (
         <div key={label} className="row contents">
           <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">{label}</div>
@@ -151,7 +152,7 @@ export function CompareRelevanceSection({
       ))}
 
       <div className="row contents">
-        <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">매칭된 스킬</div>
+        <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">매칭된 프로필 키워드</div>
         {slots.map((program, index) => {
           const programId = typeof program?.id === "string" ? program.id : "";
           const item = programId ? relevanceItems[programId] : null;
@@ -172,7 +173,35 @@ export function CompareRelevanceSection({
                         {skill}
                       </span>
                     ))
-                  : "매칭된 스킬 없음"}
+                  : "매칭 키워드 없음"}
+            </ValueCell>
+          );
+        })}
+      </div>
+
+      <div className="row contents">
+        <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">매칭된 지역</div>
+        {slots.map((program, index) => {
+          const programId = typeof program?.id === "string" ? program.id : "";
+          const item = programId ? relevanceItems[programId] : null;
+          const matchedRegions = item?.matched_regions ?? [];
+          const state = getRelevanceValueState(program, isLoggedIn, relevanceLoading, relevanceError);
+          return (
+            <ValueCell
+              key={`matched-regions-${program?.id ?? index}`}
+              winner={winnerIndex === index}
+              empty={!program || (!isLoggedIn && matchedRegions.length === 0)}
+              extraClassName="flex flex-wrap gap-2"
+            >
+              {state !== "ready"
+                ? renderRelevanceFallback(state)
+                : matchedRegions.length > 0
+                  ? matchedRegions.map((region) => (
+                      <span key={`${programId}-${region}`} className="rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
+                        {region}
+                      </span>
+                    ))
+                  : "지역 매칭 없음"}
             </ValueCell>
           );
         })}

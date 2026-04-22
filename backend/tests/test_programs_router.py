@@ -368,6 +368,43 @@ def test_build_program_detail_response_maps_work24_dates_as_program_period() -> 
     assert detail.phone == "02-722-2111"
 
 
+@pytest.mark.asyncio
+async def test_get_program_details_batch_reuses_detail_mapping(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_fetch_programs_by_ids(program_ids: list[str]) -> dict[str, dict[str, object]]:
+        assert program_ids == ["program-1", "program-2"]
+        return {
+            "program-1": {
+                "id": "program-1",
+                "source": "고용24",
+                "title": "Python 과정",
+                "provider": "훈련기관",
+                "location": "서울",
+                "start_date": "2026-05-01",
+                "end_date": "2026-06-01",
+            },
+            "program-2": {
+                "id": "program-2",
+                "source": "K-Startup",
+                "title": "창업 멘토링",
+                "provider": "창업진흥원",
+                "start_date": "2026-05-10",
+                "end_date": "2026-05-20",
+            },
+        }
+
+    monkeypatch.setattr(programs, "_fetch_programs_by_ids", fake_fetch_programs_by_ids)
+
+    response = await programs.get_program_details_batch(
+        programs.ProgramDetailBatchRequest(program_ids=["program-1", "program-2", "program-1"])
+    )
+
+    assert [item.id for item in response.items] == ["program-1", "program-2"]
+    assert response.items[0].program_start_date == "2026-05-01"
+    assert response.items[1].application_end_date == "2026-05-20"
+
+
 def test_normalize_cached_recommendation_rows_marks_missing_component_scores_stale() -> None:
     normalized = programs._normalize_cached_recommendation_rows(
         [
@@ -580,6 +617,51 @@ def test_compute_program_relevance_items_adds_fit_interpretation_fields(
     assert item.readiness_label == "바로 지원 추천"
     assert "전반적으로 잘 맞습니다." in item.fit_summary
     assert item.gap_tags == []
+
+
+def test_compute_program_relevance_items_adds_region_signal(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        programs.programs_rag,
+        "_profile_keywords",
+        lambda profile, activities: ["ai"],
+    )
+    monkeypatch.setattr(
+        programs.programs_rag,
+        "_program_match_context",
+        lambda program, profile_keywords: (["AI"], 0.5),
+    )
+    monkeypatch.setattr(
+        programs.programs_rag,
+        "_tokenize_text",
+        lambda value: [token.lower() for token in str(value).replace(",", " ").split() if token.strip()],
+    )
+
+    items = programs._compute_program_relevance_items(
+        profile={
+            "skills": ["AI"],
+            "region": "서울",
+            "region_detail": "서울 강남구",
+            "self_intro": "AI 프로젝트 경험을 바탕으로 교육 과정을 찾고 있습니다.",
+            "career": ["AI 서비스 개발"],
+        },
+        activities=[{"id": "act-1", "title": "AI 프로젝트", "skills": ["AI"]}],
+        programs_by_id={
+            "program-1": {
+                "id": "program-1",
+                "title": "AI 부트캠프",
+                "skills": ["AI"],
+                "location": "서울 강남구",
+            }
+        },
+        program_ids=["program-1"],
+    )
+
+    item = items[0]
+    assert item.region_match_score == 1.0
+    assert item.matched_regions == ["서울 강남구", "서울"]
+    assert item.relevance_score == 0.575
 
 
 def test_compute_program_relevance_items_handles_sparse_profile_without_failure(

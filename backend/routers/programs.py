@@ -151,11 +151,17 @@ class ProgramCompareRelevanceRequest(BaseModel):
     program_ids: list[str] = Field(default_factory=list)
 
 
+class ProgramDetailBatchRequest(BaseModel):
+    program_ids: list[str] = Field(default_factory=list, max_length=20)
+
+
 class ProgramRelevanceItem(BaseModel):
     program_id: str
     relevance_score: float
     skill_match_score: float
+    region_match_score: float = 0.0
     matched_skills: list[str] = Field(default_factory=list)
+    matched_regions: list[str] = Field(default_factory=list)
     fit_label: Literal["높음", "보통", "낮음"]
     fit_summary: str
     readiness_label: Literal["바로 지원 추천", "보완 후 지원", "탐색용 확인"]
@@ -211,6 +217,10 @@ class ProgramDetailResponse(BaseModel):
     career_support: list[str] = Field(default_factory=list)
     event_banner: str | None = None
     ai_matching_summary: str | None = None
+
+
+class ProgramDetailBatchResponse(BaseModel):
+    items: list[ProgramDetailResponse] = Field(default_factory=list)
 
 
 def _serialize_program_recommendation(item: ProgramRecommendation) -> ProgramRecommendItem:
@@ -1310,6 +1320,40 @@ def _build_fit_summary(
     return base
 
 
+def _compute_region_match(
+    *,
+    profile_region: str | None,
+    profile_region_detail: str | None,
+    program: dict[str, Any],
+) -> tuple[list[str], float]:
+    profile_candidates = _compact_text_list(profile_region_detail, profile_region)
+    if not profile_candidates:
+        return [], 0.0
+
+    program_text = " ".join(
+        item
+        for item in _compact_text_list(
+            program.get("location"),
+            program.get("region_detail"),
+            program.get("region"),
+            program.get("summary"),
+            program.get("description"),
+        )
+    )
+    if not program_text:
+        return [], 0.0
+
+    matched: list[str] = []
+    for candidate in profile_candidates:
+        if candidate and candidate in program_text:
+            matched.append(candidate)
+
+    if matched:
+        return matched[:3], 1.0 if profile_region_detail and profile_region_detail in matched else 0.7
+
+    return [], 0.0
+
+
 def _compute_program_relevance_items(
     *,
     profile: dict[str, Any],
@@ -1319,6 +1363,8 @@ def _compute_program_relevance_items(
 ) -> list[ProgramRelevanceItem]:
     profile_keywords = programs_rag._profile_keywords(profile, activities)
     raw_profile_skills = _normalize_text_list(profile.get("skills"))
+    profile_region = _first_text(profile.get("region"))
+    profile_region_detail = _first_text(profile.get("region_detail"), profile.get("address"))
     skill_tokens = {
         skill: set(programs_rag._tokenize_text(skill))
         for skill in raw_profile_skills
@@ -1344,6 +1390,11 @@ def _compute_program_relevance_items(
             for skill, tokens in skill_tokens.items()
             if tokens and program_token_set.intersection(tokens)
         ][:5]
+        matched_regions, region_match_score = _compute_region_match(
+            profile_region=profile_region,
+            profile_region_detail=profile_region_detail,
+            program=program,
+        )
         skill_match_score = (
             min(1.0, len(matched_skills) / max(1, min(len(skill_tokens), 5)))
             if skill_tokens
@@ -1351,8 +1402,14 @@ def _compute_program_relevance_items(
         )
         # Prefer explicit skill matches for compare UI, then fall back to weighted keyword matches.
         normalized_matched_skills = matched_skills or matched_keywords[:5]
-        rounded_relevance_score = round(relevance_score, 4)
+        adjusted_relevance_score = (
+            min(1.0, relevance_score * 0.85 + region_match_score * 0.15)
+            if profile_region or profile_region_detail
+            else relevance_score
+        )
+        rounded_relevance_score = round(adjusted_relevance_score, 4)
         rounded_skill_match_score = round(skill_match_score, 4)
+        rounded_region_match_score = round(region_match_score, 4)
         fit_label = _derive_fit_label(
             relevance_score=rounded_relevance_score,
             skill_match_score=rounded_skill_match_score,
@@ -1368,7 +1425,9 @@ def _compute_program_relevance_items(
                 program_id=program_id,
                 relevance_score=rounded_relevance_score,
                 skill_match_score=rounded_skill_match_score,
+                region_match_score=rounded_region_match_score,
                 matched_skills=normalized_matched_skills,
+                matched_regions=matched_regions,
                 fit_label=fit_label,
                 fit_summary=_build_fit_summary(fit_label=fit_label, gap_tags=gap_tags),
                 readiness_label=_derive_readiness_label(
@@ -1466,6 +1525,27 @@ async def list_popular_programs() -> Any:
             "order": "deadline.asc.nullslast",
             "limit": "10",
         },
+    )
+
+
+@programs_router.post("/details/batch", response_model=ProgramDetailBatchResponse)
+async def get_program_details_batch(payload: ProgramDetailBatchRequest) -> ProgramDetailBatchResponse:
+    deduped_program_ids: list[str] = []
+    seen_program_ids: set[str] = set()
+    for program_id in payload.program_ids:
+        normalized = str(program_id or "").strip()
+        if not normalized or normalized in seen_program_ids:
+            continue
+        seen_program_ids.add(normalized)
+        deduped_program_ids.append(normalized)
+
+    programs_by_id = await _fetch_programs_by_ids(deduped_program_ids)
+    return ProgramDetailBatchResponse(
+        items=[
+            _build_program_detail_response(programs_by_id[program_id])
+            for program_id in deduped_program_ids
+            if program_id in programs_by_id
+        ]
     )
 
 

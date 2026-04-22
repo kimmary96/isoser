@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { LandingHeader } from "@/components/landing/LandingHeader";
-import { getProgram, listPrograms } from "@/lib/api/backend";
+import { getProgram, getProgramDetails, listPrograms } from "@/lib/api/backend";
 import { getSiteUrl } from "@/lib/seo";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Program } from "@/lib/types";
 
 import ProgramsCompareClient from "./programs-compare-client";
+import type { CompareProgram } from "./compare-table-sections";
 
 export const metadata: Metadata = {
   title: "취업 지원 프로그램 비교 | 이소서",
@@ -76,7 +77,7 @@ function parseRequestedIds(value?: string | string[]) {
   };
 }
 
-async function getOptionalProgram(programId: string | null): Promise<Program | null> {
+async function getOptionalProgram(programId: string | null): Promise<CompareProgram | null> {
   if (!programId) {
     return null;
   }
@@ -93,11 +94,26 @@ export default async function ProgramsComparePage({ searchParams }: ProgramsComp
   const { slotIds, needsNormalization: parsedNeedsNormalization } = parseRequestedIds(resolvedSearchParams.ids);
 
   const slotPrograms = await Promise.all(slotIds.map((programId) => getOptionalProgram(programId)));
-  const activePrograms = slotPrograms.filter((program): program is Program => program !== null);
+  const activePrograms = slotPrograms.filter((program): program is CompareProgram => program !== null);
   const canonicalIds = activePrograms
     .map((program) => (typeof program.id === "string" ? program.id : null))
     .filter((programId): programId is string => Boolean(programId));
   const needsNormalization = parsedNeedsNormalization || canonicalIds.length !== slotIds.filter(Boolean).length;
+  const detailsById = new Map<string, CompareProgram["detail"]>();
+  if (canonicalIds.length > 0) {
+    try {
+      const detailItems = await getProgramDetails(canonicalIds);
+      detailItems.forEach((detail) => {
+        if (typeof detail.id === "string") detailsById.set(detail.id, detail);
+      });
+    } catch {
+      // Detail fields are additive for compare; keep the page renderable with list data.
+    }
+  }
+  const enrichedSlotPrograms = slotPrograms.map((program) => {
+    if (!program || typeof program.id !== "string") return program;
+    return { ...program, detail: detailsById.get(program.id) ?? null };
+  });
 
   let suggestions: Program[] = [];
   let suggestionsError: string | null = null;
@@ -130,7 +146,7 @@ export default async function ProgramsComparePage({ searchParams }: ProgramsComp
     <>
       <LandingHeader />
       <ProgramsCompareClient
-        initialSlots={slotPrograms}
+        initialSlots={enrichedSlotPrograms}
         canonicalIds={canonicalIds}
         needsNormalization={needsNormalization}
         suggestions={suggestions}

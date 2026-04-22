@@ -16,6 +16,7 @@ import type {
   Program,
   ProgramCountResponse,
   ProgramDetail,
+  ProgramDetailBatchResponse,
   ProgramListParams,
   ProgramRecommendResponse,
   SkillSuggestResponse,
@@ -313,6 +314,21 @@ export async function getProgramDetail(programId: string): Promise<ProgramDetail
     },
     "Failed to load the program detail."
   );
+}
+
+export async function getProgramDetails(programIds: string[]): Promise<ProgramDetail[]> {
+  const response = await requestJson<ProgramDetailBatchResponse>(
+    "/programs/details/batch",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ program_ids: programIds }),
+    },
+    "Failed to load program details."
+  );
+  return response.items;
 }
 
 export async function recommendPrograms(
