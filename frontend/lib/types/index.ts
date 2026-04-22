@@ -282,6 +282,10 @@ export interface Program {
   rating_display?: string | null;
   review_count?: number | null;
   relevance_score?: number | null;
+  relevance_reasons?: string[] | null;
+  score_breakdown?: RelevanceScoreBreakdown | null;
+  relevance_grade?: RelevanceGrade | null;
+  relevance_badge?: string | null;
   final_score?: number | null;
   urgency_score?: number | null;
   days_left?: number | null;
@@ -339,7 +343,23 @@ export interface ProgramDetailBatchResponse {
   items: ProgramDetail[];
 }
 
+export interface ProgramBatchResponse {
+  items: Program[];
+}
+
 export type ProgramSort = "deadline" | "latest";
+
+export type RelevanceGrade = "high" | "medium" | "low" | "none";
+
+export interface RelevanceScoreBreakdown {
+  target_job?: number;
+  skills?: number;
+  experience?: number;
+  region?: number;
+  readiness?: number;
+  behavior?: number;
+  [key: string]: number | undefined;
+}
 
 export interface ProgramListParams {
   q?: string;
@@ -348,9 +368,13 @@ export interface ProgramListParams {
   scope?: string;
   region_detail?: string;
   regions?: string[];
+  sources?: string[];
   teaching_methods?: string[];
   cost_types?: string[];
   participation_times?: string[];
+  targets?: string[];
+  selection_processes?: string[];
+  employment_links?: string[];
   recruiting_only?: boolean;
   include_closed_recent?: boolean;
   sort?: ProgramSort;
@@ -368,6 +392,10 @@ export interface ProgramRecommendItem {
   relevance_score: number | null;
   reason: string;
   fit_keywords: string[];
+  relevance_reasons: string[];
+  score_breakdown: RelevanceScoreBreakdown;
+  relevance_grade: RelevanceGrade;
+  relevance_badge: string | null;
   program: Program;
 }
 
@@ -397,6 +425,10 @@ export interface ProgramRelevanceItem {
   region_match_score: number;
   matched_skills: string[];
   matched_regions: string[];
+  relevance_reasons: string[];
+  score_breakdown: RelevanceScoreBreakdown;
+  relevance_grade: RelevanceGrade;
+  relevance_badge: string | null;
   fit_label: "높음" | "보통" | "낮음";
   fit_summary: string;
   readiness_label: "바로 지원 추천" | "보완 후 지원" | "탐색용 확인";

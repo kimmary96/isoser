@@ -51,6 +51,11 @@ export async function GET(request: Request) {
           _fit_keywords: item.fit_keywords ?? null,
           _score: item.score ?? null,
           _relevance_score: item.relevance_score ?? item.program.relevance_score ?? null,
+          relevance_score: item.relevance_score ?? item.program.relevance_score ?? null,
+          relevance_reasons: item.relevance_reasons ?? [],
+          score_breakdown: item.score_breakdown ?? {},
+          relevance_grade: item.relevance_grade ?? "none",
+          relevance_badge: item.relevance_badge ?? null,
         };
       })
       .filter((program): program is NonNullable<typeof program> => Boolean(program))

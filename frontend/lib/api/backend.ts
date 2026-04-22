@@ -14,6 +14,7 @@ import type {
   MatchResult,
   ParsePdfResponse,
   Program,
+  ProgramBatchResponse,
   ProgramCountResponse,
   ProgramDetail,
   ProgramDetailBatchResponse,
@@ -238,6 +239,9 @@ export async function listPrograms(params?: ProgramListParams): Promise<Program[
   if (params?.regions?.length) {
     params.regions.forEach((region) => searchParams.append("regions", region));
   }
+  if (params?.sources?.length) {
+    params.sources.forEach((source) => searchParams.append("sources", source));
+  }
   if (params?.teaching_methods?.length) {
     params.teaching_methods.forEach((method) => searchParams.append("teaching_methods", method));
   }
@@ -246,6 +250,15 @@ export async function listPrograms(params?: ProgramListParams): Promise<Program[
   }
   if (params?.participation_times?.length) {
     params.participation_times.forEach((time) => searchParams.append("participation_times", time));
+  }
+  if (params?.targets?.length) {
+    params.targets.forEach((target) => searchParams.append("targets", target));
+  }
+  if (params?.selection_processes?.length) {
+    params.selection_processes.forEach((process) => searchParams.append("selection_processes", process));
+  }
+  if (params?.employment_links?.length) {
+    params.employment_links.forEach((link) => searchParams.append("employment_links", link));
   }
   if (params?.recruiting_only) searchParams.set("recruiting_only", "true");
   if (params?.include_closed_recent) searchParams.set("include_closed_recent", "true");
@@ -273,6 +286,9 @@ export async function getProgramCount(params?: ProgramListParams): Promise<numbe
   if (params?.regions?.length) {
     params.regions.forEach((region) => searchParams.append("regions", region));
   }
+  if (params?.sources?.length) {
+    params.sources.forEach((source) => searchParams.append("sources", source));
+  }
   if (params?.teaching_methods?.length) {
     params.teaching_methods.forEach((method) => searchParams.append("teaching_methods", method));
   }
@@ -281,6 +297,15 @@ export async function getProgramCount(params?: ProgramListParams): Promise<numbe
   }
   if (params?.participation_times?.length) {
     params.participation_times.forEach((time) => searchParams.append("participation_times", time));
+  }
+  if (params?.targets?.length) {
+    params.targets.forEach((target) => searchParams.append("targets", target));
+  }
+  if (params?.selection_processes?.length) {
+    params.selection_processes.forEach((process) => searchParams.append("selection_processes", process));
+  }
+  if (params?.employment_links?.length) {
+    params.employment_links.forEach((link) => searchParams.append("employment_links", link));
   }
   if (params?.recruiting_only) searchParams.set("recruiting_only", "true");
   if (params?.include_closed_recent) searchParams.set("include_closed_recent", "true");
@@ -304,6 +329,21 @@ export async function getProgram(programId: string): Promise<Program> {
     },
     "Failed to load the program."
   );
+}
+
+export async function getPrograms(programIds: string[]): Promise<Program[]> {
+  const response = await requestJson<ProgramBatchResponse>(
+    "/programs/batch",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ program_ids: programIds }),
+    },
+    "Failed to load programs."
+  );
+  return response.items;
 }
 
 export async function getProgramDetail(programId: string): Promise<ProgramDetail> {

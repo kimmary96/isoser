@@ -6,91 +6,14 @@ import { useEffect, useState } from "react";
 import { getRecommendedPrograms } from "@/lib/api/app";
 import type { Program } from "@/lib/types";
 
+import ProgramCard, { isDisplayableProgram } from "./program-card";
+
 type RecommendedProgramsSectionProps = {
   isLoggedIn: boolean;
+  loginHref?: string;
+  previewPrograms?: Program[];
+  bookmarkedProgramIds?: string[];
 };
-
-function formatScore(score: number | null | undefined): string {
-  if (typeof score !== "number" || Number.isNaN(score)) {
-    return "관련도 정보 없음";
-  }
-
-  const percent = score <= 1 ? Math.round(score * 100) : Math.round(score);
-  return `관련도 ${percent}%`;
-}
-
-function getRecommendedReason(value: string | null | undefined): string | null {
-  const trimmed = value?.trim();
-  return trimmed || null;
-}
-
-function formatDateRange(program: Program): string {
-  if (!program.start_date && !program.end_date) {
-    return "일정 추후 공지";
-  }
-
-  const start = program.start_date ? new Date(program.start_date) : null;
-  const end = program.end_date ? new Date(program.end_date) : null;
-
-  const formatPart = (value: Date | null, raw: string | null | undefined) => {
-    if (!value || Number.isNaN(value.getTime())) {
-      return raw || "정보 없음";
-    }
-
-    return value.toLocaleDateString("ko-KR", { month: "long", day: "numeric" });
-  };
-
-  return `${formatPart(start, program.start_date)} - ${formatPart(end, program.end_date)}`;
-}
-
-function RecommendedProgramCard({ program }: { program: Program }) {
-  const recommendedReason = getRecommendedReason(program._reason);
-  const scoreLabel = formatScore(
-    program._relevance_score ?? program.relevance_score ?? program._score ?? program.final_score
-  );
-  const detailHref =
-    typeof program.id === "string" || typeof program.id === "number"
-      ? `/programs/${encodeURIComponent(String(program.id))}`
-      : "/programs";
-
-  return (
-    <Link
-      href={detailHref}
-      className="group flex h-full flex-col rounded-3xl border border-sky-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-md"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-500">For You</p>
-          <h3 className="mt-2 line-clamp-2 text-lg font-semibold tracking-tight text-slate-950">
-            {program.title || "제목 미정"}
-          </h3>
-        </div>
-        <span className="shrink-0 rounded-full bg-sky-50 px-2.5 py-1 text-xs font-semibold text-sky-700">
-          {scoreLabel}
-        </span>
-      </div>
-
-      <div className="mt-4 flex flex-wrap gap-2 text-sm text-slate-600">
-        <span className="rounded-full bg-slate-50 px-3 py-1">{program.category || "미분류"}</span>
-        <span className="rounded-full bg-slate-50 px-3 py-1">{program.location || "지역 정보 없음"}</span>
-      </div>
-
-      <p className="mt-4 text-sm font-medium text-slate-700">{formatDateRange(program)}</p>
-
-      <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-600">
-        {program.summary || program.description || "프로그램 소개가 아직 등록되지 않았습니다."}
-      </p>
-
-      <p className="mt-4 line-clamp-1 rounded-2xl bg-sky-50 px-3 py-2 text-sm text-sky-900">
-        {recommendedReason || "내 프로필과 활동 정보를 바탕으로 추천된 프로그램입니다."}
-      </p>
-
-      <span className="mt-5 text-sm font-medium text-sky-700 transition group-hover:text-sky-800">
-        상세 페이지로 이동
-      </span>
-    </Link>
-  );
-}
 
 function RecommendationSkeleton() {
   return (
@@ -116,6 +39,9 @@ function RecommendationSkeleton() {
 
 export default function RecommendedProgramsSection({
   isLoggedIn,
+  loginHref = "/login",
+  previewPrograms = [],
+  bookmarkedProgramIds = [],
 }: RecommendedProgramsSectionProps) {
   const [programs, setPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(isLoggedIn);
@@ -138,7 +64,16 @@ export default function RecommendedProgramsSection({
       try {
         const result = await getRecommendedPrograms();
         if (!mounted) return;
-        setPrograms(result.programs.slice(0, 4));
+        setPrograms(
+          result.programs
+            .filter(isDisplayableProgram)
+            .filter((program) => {
+              const score = program._relevance_score ?? program.relevance_score ?? program._score ?? program.final_score;
+              if (typeof score !== "number" || Number.isNaN(score)) return false;
+              return score <= 1 ? score >= 0.4 : score >= 40;
+            })
+            .slice(0, 4)
+        );
       } catch (error) {
         console.error("Failed to load recommended programs", error);
         if (!mounted) return;
@@ -163,27 +98,30 @@ export default function RecommendedProgramsSection({
 
   if (!isLoggedIn) {
     return (
-      <section className="rounded-3xl border border-slate-200 bg-gradient-to-r from-slate-950 to-slate-800 p-6 text-white shadow-sm">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-200">Personalized Picks</p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight">로그인하면 맞춤 프로그램을 추천해드립니다</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-300">
-              프로필과 활동 정보를 바탕으로 지금 지원하기 좋은 프로그램을 바로 보여드립니다.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-3">
+      <section className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex flex-col gap-2 border-b border-slate-100 pb-5">
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-600">Personalized Picks</p>
+          <h2 className="text-2xl font-semibold tracking-tight text-slate-950">내 맞춤 추천 프로그램</h2>
+        </div>
+        <div className="mt-6 grid grid-cols-1 gap-4 blur-sm md:grid-cols-3">
+          {(previewPrograms.length ? previewPrograms : []).slice(0, 3).map((program) => (
+            <ProgramCard key={String(program.id)} program={program} isLoggedIn={false} />
+          ))}
+          {previewPrograms.length === 0
+            ? Array.from({ length: 3 }).map((_, index) => (
+                <div key={index} className="h-56 rounded-2xl border border-slate-200 bg-slate-50" />
+              ))
+            : null}
+        </div>
+        <div className="absolute inset-0 flex items-center justify-center bg-white/55 px-6">
+          <div className="max-w-md rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-lg">
+            <h3 className="text-xl font-semibold tracking-tight text-slate-950">로그인하고 내 맞춤 추천 받기</h3>
+            <p className="mt-2 text-sm leading-6 text-slate-600">프로필과 활동 정보를 바탕으로 관련도 높은 프로그램을 보여드립니다.</p>
             <Link
-              href="/login"
-              className="inline-flex items-center justify-center rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
+              href={loginHref}
+              className="mt-5 inline-flex items-center justify-center rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
             >
               로그인하기
-            </Link>
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center justify-center rounded-xl border border-white/20 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/10"
-            >
-              대시보드 보기
             </Link>
           </div>
         </div>
@@ -228,9 +166,11 @@ export default function RecommendedProgramsSection({
       ) : (
         <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
           {programs.map((program, index) => (
-            <RecommendedProgramCard
+            <ProgramCard
               key={`${typeof program.id === "string" || typeof program.id === "number" ? program.id : program.title || index}`}
               program={program}
+              isLoggedIn={isLoggedIn}
+              initialBookmarked={bookmarkedProgramIds.includes(String(program.id ?? ""))}
             />
           ))}
         </div>

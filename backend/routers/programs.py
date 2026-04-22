@@ -41,6 +41,9 @@ PROGRAM_SORT_OPTIONS = {"deadline", "latest"}
 PROGRAM_TEACHING_METHODS = {"온라인", "오프라인", "혼합"}
 PROGRAM_COST_TYPES = {"naeil-card", "free-no-card", "paid"}
 PROGRAM_PARTICIPATION_TIMES = {"part-time", "full-time"}
+PROGRAM_TARGETS = {"청년", "여성", "중장년", "창업", "재직자", "구직자", "대학생"}
+PROGRAM_SELECTION_PROCESSES = {"서류", "면접", "테스트", "선착순", "추첨"}
+PROGRAM_EMPLOYMENT_LINKS = {"채용연계", "인턴십", "취업지원", "멘토링"}
 PROGRAM_SEARCH_SCAN_LIMIT = 10000
 PROGRAM_SEARCH_SCAN_PAGE_SIZE = 1000
 PROGRAM_SEARCH_INDEX_COLUMN = "search_text"
@@ -68,6 +71,31 @@ REGION_QUERY_ALIASES: dict[str, tuple[str, ...]] = {
     "대구·경북": ("대구", "경북"),
     "온라인": ("온라인", "비대면", "원격"),
 }
+REGION_ALIASES: dict[str, tuple[str, ...]] = {
+    **REGION_QUERY_ALIASES,
+    "서울": ("서울", "서울특별시", "서울시"),
+    "경기": ("경기", "경기도"),
+    "인천": ("인천", "인천광역시", "인천시"),
+    "부산": ("부산", "부산광역시", "부산시"),
+    "대구": ("대구", "대구광역시", "대구시"),
+    "광주": ("광주", "광주광역시", "광주시"),
+    "대전": ("대전", "대전광역시", "대전시"),
+    "울산": ("울산", "울산광역시", "울산시"),
+    "세종": ("세종", "세종특별자치시", "세종시"),
+    "강원": ("강원", "강원도", "강원특별자치도"),
+    "전북": ("전북", "전라북도", "전북특별자치도"),
+    "제주": ("제주", "제주도", "제주특별자치도"),
+}
+REGION_GROUPS = (
+    {"서울", "경기", "인천"},
+    {"대전", "세종", "충북", "충남"},
+    {"부산", "울산", "경남"},
+    {"대구", "경북"},
+    {"광주", "전북", "전남"},
+)
+ONLINE_KEYWORDS = ("온라인", "비대면", "원격")
+HYBRID_KEYWORDS = ("혼합", "블렌디드", "온오프", "온·오프")
+OFFLINE_KEYWORDS = ("오프라인", "대면", "현장")
 
 
 class ProgramListItem(BaseModel):
@@ -125,6 +153,10 @@ class ProgramRecommendItem(BaseModel):
     relevance_score: float | None = None
     reason: str
     fit_keywords: list[str] = Field(default_factory=list)
+    relevance_reasons: list[str] = Field(default_factory=list)
+    score_breakdown: dict[str, int] = Field(default_factory=dict)
+    relevance_grade: Literal["high", "medium", "low", "none"] = "none"
+    relevance_badge: str | None = None
     program: ProgramListItem
 
 
@@ -155,6 +187,10 @@ class ProgramDetailBatchRequest(BaseModel):
     program_ids: list[str] = Field(default_factory=list, max_length=20)
 
 
+class ProgramBatchResponse(BaseModel):
+    items: list[ProgramListItem] = Field(default_factory=list)
+
+
 class ProgramRelevanceItem(BaseModel):
     program_id: str
     relevance_score: float
@@ -162,6 +198,10 @@ class ProgramRelevanceItem(BaseModel):
     region_match_score: float = 0.0
     matched_skills: list[str] = Field(default_factory=list)
     matched_regions: list[str] = Field(default_factory=list)
+    relevance_reasons: list[str] = Field(default_factory=list)
+    score_breakdown: dict[str, int] = Field(default_factory=dict)
+    relevance_grade: Literal["high", "medium", "low", "none"] = "none"
+    relevance_badge: str | None = None
     fit_label: Literal["높음", "보통", "낮음"]
     fit_summary: str
     readiness_label: Literal["바로 지원 추천", "보완 후 지원", "탐색용 확인"]
@@ -224,14 +264,67 @@ class ProgramDetailBatchResponse(BaseModel):
 
 
 def _serialize_program_recommendation(item: ProgramRecommendation) -> ProgramRecommendItem:
+    relevance_score = item.relevance_score
+    score_percent = _score_to_percent(relevance_score)
     return ProgramRecommendItem(
         program_id=item.program_id,
         score=item.score,
-        relevance_score=item.relevance_score,
+        relevance_score=relevance_score,
         reason=item.reason,
         fit_keywords=item.fit_keywords,
+        relevance_reasons=_recommendation_reasons(item),
+        score_breakdown=_default_score_breakdown(score_percent),
+        relevance_grade=_relevance_grade(score_percent),
+        relevance_badge=_relevance_badge(score_percent),
         program=ProgramListItem.model_validate(item.program),
     )
+
+
+def _score_to_percent(value: float | None) -> int:
+    if value is None:
+        return 0
+    score = value * 100 if value <= 1 else value
+    return max(0, min(100, round(score)))
+
+
+def _relevance_grade(score_percent: int) -> Literal["high", "medium", "low", "none"]:
+    if score_percent >= 80:
+        return "high"
+    if score_percent >= 60:
+        return "medium"
+    if score_percent >= 40:
+        return "low"
+    return "none"
+
+
+def _relevance_badge(score_percent: int) -> str | None:
+    if score_percent >= 80:
+        return "딱 맞아요"
+    if score_percent >= 60:
+        return "추천"
+    if score_percent >= 40:
+        return "조건 일치"
+    return None
+
+
+def _default_score_breakdown(score_percent: int) -> dict[str, int]:
+    return {
+        "target_job": 0,
+        "skills": 0,
+        "experience": 0,
+        "region": 0,
+        "readiness": min(10, round(score_percent * 0.1)),
+        "behavior": 0,
+    }
+
+
+def _recommendation_reasons(item: ProgramRecommendation) -> list[str]:
+    reasons: list[str] = []
+    if item.fit_keywords:
+        reasons.append(f"{', '.join(item.fit_keywords[:3])} 키워드와 연관")
+    if item.reason:
+        reasons.append(item.reason)
+    return reasons[:3]
 
 
 def _coerce_score(value: Any) -> float | None:
@@ -468,6 +561,7 @@ def _build_program_query_params(
     region_detail: str | None = None,
     q: str | None = None,
     regions: list[str] | None = None,
+    sources: list[str] | None = None,
     teaching_methods: list[str] | None = None,
     recruiting_only: bool = False,
     include_closed_recent: bool = False,
@@ -509,6 +603,11 @@ def _build_program_query_params(
     normalized_regions = _expand_region_keywords(_normalize_regions_param(regions))
     if normalized_regions:
         params["or"] = "(" + ",".join(f"location.ilike.*{keyword}*" for keyword in normalized_regions) + ")"
+
+    normalized_sources = [source.strip() for source in (sources or []) if source.strip()]
+    if normalized_sources:
+        quoted_sources = ",".join(f'"{source}"' for source in normalized_sources)
+        params["source"] = f"in.({quoted_sources})"
 
     search_filter = _program_search_index_filter(q)
     if search_filter:
@@ -672,10 +771,22 @@ def _filter_program_rows_by_extra_filters(
     *,
     cost_types: list[str] | None = None,
     participation_times: list[str] | None = None,
+    targets: list[str] | None = None,
+    selection_processes: list[str] | None = None,
+    employment_links: list[str] | None = None,
 ) -> list[dict[str, Any]]:
     normalized_cost_types = set(_normalize_option_param(cost_types, PROGRAM_COST_TYPES))
     normalized_participation_times = set(_normalize_option_param(participation_times, PROGRAM_PARTICIPATION_TIMES))
-    if not normalized_cost_types and not normalized_participation_times:
+    normalized_targets = set(_normalize_option_param(targets, PROGRAM_TARGETS))
+    normalized_selection_processes = set(_normalize_option_param(selection_processes, PROGRAM_SELECTION_PROCESSES))
+    normalized_employment_links = set(_normalize_option_param(employment_links, PROGRAM_EMPLOYMENT_LINKS))
+    if (
+        not normalized_cost_types
+        and not normalized_participation_times
+        and not normalized_targets
+        and not normalized_selection_processes
+        and not normalized_employment_links
+    ):
         return rows
 
     filtered_rows: list[dict[str, Any]] = []
@@ -684,8 +795,24 @@ def _filter_program_rows_by_extra_filters(
             continue
         if normalized_participation_times and _program_participation_time(row) not in normalized_participation_times:
             continue
+        if normalized_targets and not _program_matches_targets(row, normalized_targets):
+            continue
+        if normalized_selection_processes and not _program_matches_any(row, normalized_selection_processes):
+            continue
+        if normalized_employment_links and not _program_matches_any(row, normalized_employment_links):
+            continue
         filtered_rows.append(row)
     return filtered_rows
+
+
+def _program_matches_targets(row: dict[str, Any], targets: set[str]) -> bool:
+    text = _program_text_blob(row) + " " + " ".join(_flatten_search_values(row.get("target")))
+    return any(target.casefold() in text.casefold() for target in targets)
+
+
+def _program_matches_any(row: dict[str, Any], keywords: set[str]) -> bool:
+    text = _program_text_blob(row)
+    return any(keyword.casefold() in text.casefold() for keyword in keywords)
 
 
 def _serialize_program_list_row(program: dict[str, Any]) -> dict[str, Any]:
@@ -728,6 +855,9 @@ def _postprocess_program_list_rows(
     q: str | None = None,
     cost_types: list[str] | None = None,
     participation_times: list[str] | None = None,
+    targets: list[str] | None = None,
+    selection_processes: list[str] | None = None,
+    employment_links: list[str] | None = None,
     sort: str,
     include_closed_recent: bool,
     limit: int,
@@ -740,6 +870,9 @@ def _postprocess_program_list_rows(
         ),
         cost_types=cost_types,
         participation_times=participation_times,
+        targets=targets,
+        selection_processes=selection_processes,
+        employment_links=employment_links,
     )
     if _normalize_search_text(q):
         sorted_rows = sorted(
@@ -996,15 +1129,22 @@ async def _count_program_rows(
     region_detail: str | None = None,
     q: str | None = None,
     regions: list[str] | None = None,
+    sources: list[str] | None = None,
     teaching_methods: list[str] | None = None,
     cost_types: list[str] | None = None,
     participation_times: list[str] | None = None,
+    targets: list[str] | None = None,
+    selection_processes: list[str] | None = None,
+    employment_links: list[str] | None = None,
     recruiting_only: bool = False,
     include_closed_recent: bool = False,
 ) -> int:
     has_extra_filters = bool(
         _normalize_option_param(cost_types, PROGRAM_COST_TYPES)
         or _normalize_option_param(participation_times, PROGRAM_PARTICIPATION_TIMES)
+        or _normalize_option_param(targets, PROGRAM_TARGETS)
+        or _normalize_option_param(selection_processes, PROGRAM_SELECTION_PROCESSES)
+        or _normalize_option_param(employment_links, PROGRAM_EMPLOYMENT_LINKS)
     )
     params = _build_program_query_params(
         select="*" if _normalize_search_text(q) or has_extra_filters else "id,deadline,end_date,is_active,created_at",
@@ -1014,6 +1154,7 @@ async def _count_program_rows(
         region_detail=region_detail,
         q=q,
         regions=regions,
+        sources=sources,
         teaching_methods=teaching_methods,
         recruiting_only=recruiting_only,
         include_closed_recent=include_closed_recent,
@@ -1025,6 +1166,9 @@ async def _count_program_rows(
                 _filter_program_rows_by_query([_serialize_program_list_row(row) for row in rows], q),
                 cost_types=cost_types,
                 participation_times=participation_times,
+                targets=targets,
+                selection_processes=selection_processes,
+                employment_links=employment_links,
             ),
             sort="deadline",
             include_closed_recent=include_closed_recent,
@@ -1326,32 +1470,145 @@ def _compute_region_match(
     profile_region_detail: str | None,
     program: dict[str, Any],
 ) -> tuple[list[str], float]:
-    profile_candidates = _compact_text_list(profile_region_detail, profile_region)
-    if not profile_candidates:
+    normalized_profile_region = _normalize_region_name(profile_region_detail) or _normalize_region_name(profile_region)
+    if not normalized_profile_region:
         return [], 0.0
 
-    program_text = " ".join(
-        item
-        for item in _compact_text_list(
+    compare_meta = program.get("compare_meta") if isinstance(program.get("compare_meta"), dict) else {}
+    explicit_method_text = " ".join(
+        _compact_text_list(
+            program.get("teaching_method"),
+            compare_meta.get("teaching_method"),
+            compare_meta.get("method"),
+            compare_meta.get("delivery_method"),
+        )
+    )
+    explicit_delivery = _classify_delivery_region_signal(explicit_method_text)
+    if explicit_delivery == "hybrid":
+        return ["혼합"], 0.6667
+    if explicit_delivery == "online":
+        return ["온라인"], 0.8
+
+    program_region = _normalize_region_name(
+        program.get("region"),
+        program.get("location"),
+        program.get("region_detail"),
+        compare_meta.get("region"),
+        compare_meta.get("location"),
+        compare_meta.get("address"),
+    )
+
+    fallback_text = " ".join(
+        _compact_text_list(
+            program.get("title"),
+            program.get("summary"),
+            program.get("description"),
             program.get("location"),
             program.get("region_detail"),
             program.get("region"),
-            program.get("summary"),
-            program.get("description"),
+            compare_meta,
         )
     )
-    if not program_text:
+    fallback_delivery = _classify_delivery_region_signal(fallback_text)
+    if fallback_delivery == "hybrid":
+        return ["혼합"], 0.6667
+    if fallback_delivery == "online":
+        return ["온라인"], 0.8
+
+    if not program_region:
         return [], 0.0
 
-    matched: list[str] = []
-    for candidate in profile_candidates:
-        if candidate and candidate in program_text:
-            matched.append(candidate)
+    if program_region == normalized_profile_region:
+        return [normalized_profile_region], 1.0
 
-    if matched:
-        return matched[:3], 1.0 if profile_region_detail and profile_region_detail in matched else 0.7
+    if _are_adjacent_regions(normalized_profile_region, program_region):
+        return [program_region], 0.6667
 
     return [], 0.0
+
+
+def _classify_delivery_region_signal(value: str) -> Literal["online", "hybrid"] | None:
+    if not value:
+        return None
+    has_online = _contains_any(value, ONLINE_KEYWORDS)
+    has_offline = _contains_any(value, OFFLINE_KEYWORDS)
+    has_hybrid = _contains_any(value, HYBRID_KEYWORDS)
+    normalized_region = _normalize_region_name(value)
+    has_region = normalized_region is not None and normalized_region not in {"온라인", "해외"}
+    if has_hybrid or (has_online and (has_offline or has_region)):
+        return "hybrid"
+    if has_online:
+        return "online"
+    return None
+
+
+def _contains_any(value: str, keywords: tuple[str, ...]) -> bool:
+    return any(keyword.casefold() in value.casefold() for keyword in keywords)
+
+
+def _normalize_region_name(*values: Any) -> str | None:
+    text = " ".join(_compact_text_list(*values)).replace(" ", "")
+    if not text:
+        return None
+    for region, aliases in REGION_ALIASES.items():
+        if any(alias.replace(" ", "") in text for alias in aliases):
+            return region
+    return None
+
+
+def _are_adjacent_regions(left: str, right: str) -> bool:
+    return any(left in group and right in group for group in REGION_GROUPS)
+
+
+def _build_compare_score_breakdown(
+    *,
+    profile: dict[str, Any],
+    activities: list[dict[str, Any]],
+    skill_match_score: float,
+    region_match_score: float,
+    has_profile_region: bool,
+) -> dict[str, int]:
+    weights = (
+        {"target_job": 30, "skills": 25, "experience": 15, "region": 15, "readiness": 10, "behavior": 5}
+        if has_profile_region
+        else {"target_job": 35, "skills": 30, "experience": 20, "region": 0, "readiness": 10, "behavior": 5}
+    )
+    target_job = weights["target_job"] if _first_text(profile.get("target_job"), profile.get("desired_job"), profile.get("job_title")) else 0
+    skills = round(skill_match_score * weights["skills"])
+    experience = weights["experience"] if activities else 0
+    region = round(region_match_score * 15)
+    readiness = weights["readiness"] if _has_meaningful_profile_text(profile) else 0
+    behavior = weights["behavior"] if activities and _normalize_text_list(profile.get("skills")) else 0
+    return {
+        "target_job": target_job,
+        "skills": skills,
+        "experience": experience,
+        "region": region,
+        "readiness": readiness,
+        "behavior": behavior,
+    }
+
+
+def _build_relevance_reasons(
+    *,
+    matched_skills: list[str],
+    matched_regions: list[str],
+    score_breakdown: dict[str, int],
+) -> list[str]:
+    candidates = [
+        ("target_job", score_breakdown.get("target_job", 0), "희망 직무 정보와 연관"),
+        ("skills", score_breakdown.get("skills", 0), f"{', '.join(matched_skills[:3])} 키워드 매칭" if matched_skills else ""),
+        ("experience", score_breakdown.get("experience", 0), "활동 이력 기반 경험 신호 보유"),
+        ("region", score_breakdown.get("region", 0), f"{matched_regions[0]} 지역 조건과 일치" if matched_regions else ""),
+        ("readiness", score_breakdown.get("readiness", 0), "프로필 소개와 경력 정보 보유"),
+        ("behavior", score_breakdown.get("behavior", 0), "프로필과 활동 정보가 함께 입력됨"),
+    ]
+    priority = {key: index for index, key in enumerate(["target_job", "skills", "experience", "region", "readiness", "behavior"])}
+    return [
+        label
+        for key, score, label in sorted(candidates, key=lambda item: (-item[1], priority[item[0]]))
+        if score >= 8 and label
+    ][:3]
 
 
 def _compute_program_relevance_items(
@@ -1410,6 +1667,19 @@ def _compute_program_relevance_items(
         rounded_relevance_score = round(adjusted_relevance_score, 4)
         rounded_skill_match_score = round(skill_match_score, 4)
         rounded_region_match_score = round(region_match_score, 4)
+        score_breakdown = _build_compare_score_breakdown(
+            profile=profile,
+            activities=activities,
+            skill_match_score=rounded_skill_match_score,
+            region_match_score=rounded_region_match_score,
+            has_profile_region=bool(profile_region or profile_region_detail),
+        )
+        relevance_reasons = _build_relevance_reasons(
+            matched_skills=normalized_matched_skills,
+            matched_regions=matched_regions,
+            score_breakdown=score_breakdown,
+        )
+        score_percent = _score_to_percent(rounded_relevance_score)
         fit_label = _derive_fit_label(
             relevance_score=rounded_relevance_score,
             skill_match_score=rounded_skill_match_score,
@@ -1428,6 +1698,10 @@ def _compute_program_relevance_items(
                 region_match_score=rounded_region_match_score,
                 matched_skills=normalized_matched_skills,
                 matched_regions=matched_regions,
+                relevance_reasons=relevance_reasons,
+                score_breakdown=score_breakdown,
+                relevance_grade=_relevance_grade(score_percent),
+                relevance_badge=_relevance_badge(score_percent),
                 fit_label=fit_label,
                 fit_summary=_build_fit_summary(fit_label=fit_label, gap_tags=gap_tags),
                 readiness_label=_derive_readiness_label(
@@ -1449,9 +1723,13 @@ async def list_programs(
     region_detail: str | None = None,
     q: str | None = None,
     regions: list[str] | None = Query(default=None),
+    sources: list[str] | None = Query(default=None),
     teaching_methods: list[str] | None = Query(default=None),
     cost_types: list[str] | None = Query(default=None),
     participation_times: list[str] | None = Query(default=None),
+    targets: list[str] | None = Query(default=None),
+    selection_processes: list[str] | None = Query(default=None),
+    employment_links: list[str] | None = Query(default=None),
     recruiting_only: bool = False,
     include_closed_recent: bool = False,
     sort: str = Query(default="deadline"),
@@ -1466,6 +1744,7 @@ async def list_programs(
         region_detail=region_detail,
         q=q,
         regions=regions,
+        sources=sources,
         teaching_methods=teaching_methods,
         recruiting_only=recruiting_only,
         include_closed_recent=include_closed_recent,
@@ -1477,6 +1756,9 @@ async def list_programs(
         q=q,
         cost_types=cost_types,
         participation_times=participation_times,
+        targets=targets,
+        selection_processes=selection_processes,
+        employment_links=employment_links,
         sort=sort,
         include_closed_recent=include_closed_recent,
         limit=limit,
@@ -1492,9 +1774,13 @@ async def count_programs(
     region_detail: str | None = None,
     q: str | None = None,
     regions: list[str] | None = Query(default=None),
+    sources: list[str] | None = Query(default=None),
     teaching_methods: list[str] | None = Query(default=None),
     cost_types: list[str] | None = Query(default=None),
     participation_times: list[str] | None = Query(default=None),
+    targets: list[str] | None = Query(default=None),
+    selection_processes: list[str] | None = Query(default=None),
+    employment_links: list[str] | None = Query(default=None),
     recruiting_only: bool = False,
     include_closed_recent: bool = False,
 ) -> ProgramCountResponse:
@@ -1505,9 +1791,13 @@ async def count_programs(
         region_detail=region_detail,
         q=q,
         regions=regions,
+        sources=sources,
         teaching_methods=teaching_methods,
         cost_types=cost_types,
         participation_times=participation_times,
+        targets=targets,
+        selection_processes=selection_processes,
+        employment_links=employment_links,
         recruiting_only=recruiting_only,
         include_closed_recent=include_closed_recent,
     )
@@ -1543,6 +1833,27 @@ async def get_program_details_batch(payload: ProgramDetailBatchRequest) -> Progr
     return ProgramDetailBatchResponse(
         items=[
             _build_program_detail_response(programs_by_id[program_id])
+            for program_id in deduped_program_ids
+            if program_id in programs_by_id
+        ]
+    )
+
+
+@programs_router.post("/batch", response_model=ProgramBatchResponse)
+async def get_programs_batch(payload: ProgramDetailBatchRequest) -> ProgramBatchResponse:
+    deduped_program_ids: list[str] = []
+    seen_program_ids: set[str] = set()
+    for program_id in payload.program_ids:
+        normalized = str(program_id or "").strip()
+        if not normalized or normalized in seen_program_ids:
+            continue
+        seen_program_ids.add(normalized)
+        deduped_program_ids.append(normalized)
+
+    programs_by_id = await _fetch_programs_by_ids(deduped_program_ids)
+    return ProgramBatchResponse(
+        items=[
+            ProgramListItem.model_validate(_serialize_program_list_row(programs_by_id[program_id]))
             for program_id in deduped_program_ids
             if program_id in programs_by_id
         ]

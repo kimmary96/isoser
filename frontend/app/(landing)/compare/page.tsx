@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { LandingHeader } from "@/components/landing/LandingHeader";
-import { getProgram, getProgramDetails, listPrograms } from "@/lib/api/backend";
+import { getProgramDetails, getPrograms, listPrograms } from "@/lib/api/backend";
 import { getSiteUrl } from "@/lib/seo";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Program } from "@/lib/types";
@@ -77,23 +77,23 @@ function parseRequestedIds(value?: string | string[]) {
   };
 }
 
-async function getOptionalProgram(programId: string | null): Promise<CompareProgram | null> {
-  if (!programId) {
-    return null;
-  }
-
-  try {
-    return await getProgram(programId);
-  } catch {
-    return null;
-  }
-}
-
 export default async function ProgramsComparePage({ searchParams }: ProgramsComparePageProps) {
   const resolvedSearchParams = await searchParams;
   const { slotIds, needsNormalization: parsedNeedsNormalization } = parseRequestedIds(resolvedSearchParams.ids);
 
-  const slotPrograms = await Promise.all(slotIds.map((programId) => getOptionalProgram(programId)));
+  const requestedProgramIds = slotIds.filter((programId): programId is string => Boolean(programId));
+  const programsById = new Map<string, CompareProgram>();
+  if (requestedProgramIds.length > 0) {
+    try {
+      const items = await getPrograms(requestedProgramIds);
+      items.forEach((program) => {
+        if (typeof program.id === "string") programsById.set(program.id, program);
+      });
+    } catch {
+      // Keep invalid or unavailable slots empty.
+    }
+  }
+  const slotPrograms = slotIds.map((programId) => (programId ? programsById.get(programId) ?? null : null));
   const activePrograms = slotPrograms.filter((program): program is CompareProgram => program !== null);
   const canonicalIds = activePrograms
     .map((program) => (typeof program.id === "string" ? program.id : null))

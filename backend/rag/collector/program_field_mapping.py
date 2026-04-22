@@ -5,12 +5,16 @@ from urllib.parse import parse_qs, urlparse
 
 SKILL_KEYWORDS = {
     "AI": ["AI", "인공지능", "머신러닝", "딥러닝", "LLM", "ChatGPT", "생성형 AI"],
-    "데이터": ["데이터", "빅데이터", "분석", "SQL", "Python", "파이썬"],
+    "데이터": ["데이터", "빅데이터", "분석", "SQL", "Python", "파이썬", "R", "Tableau", "Power BI"],
     "프론트엔드": ["프론트엔드", "React", "Next.js", "Vue", "JavaScript", "TypeScript"],
-    "백엔드": ["백엔드", "Java", "Spring", "Node.js", "Django", "FastAPI"],
-    "클라우드": ["클라우드", "AWS", "Azure", "GCP", "DevOps", "Docker", "Kubernetes"],
+    "백엔드": ["백엔드", "Java", "Spring", "Node.js", "Django", "FastAPI", "서버", "API"],
+    "클라우드": ["클라우드", "AWS", "Azure", "GCP", "DevOps", "Docker", "Kubernetes", "쿠버네티스"],
+    "보안": ["보안", "정보보안", "침해대응", "모의해킹", "보안관제"],
+    "모바일": ["모바일", "Android", "안드로이드", "iOS", "Swift", "Kotlin", "Flutter"],
+    "게임": ["게임", "Unity", "유니티", "Unreal", "언리얼"],
     "디자인": ["디자인", "UX", "UI", "Figma", "콘텐츠", "영상"],
     "마케팅": ["마케팅", "브랜딩", "SNS", "광고", "SEO", "커머스"],
+    "반도체": ["반도체", "임베디드", "IoT", "펌웨어", "회로"],
     "창업": ["창업", "스타트업", "사업계획", "IR", "투자", "멘토링"],
 }
 

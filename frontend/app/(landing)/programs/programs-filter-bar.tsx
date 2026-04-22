@@ -25,6 +25,10 @@ type ProgramsFilterBarProps = {
   selectedTeachingMethods: string[];
   selectedCostTypes: string[];
   selectedParticipationTimes: string[];
+  selectedSources: string[];
+  selectedTargets: string[];
+  selectedSelectionProcesses: string[];
+  selectedEmploymentLinks: string[];
   showClosedRecent: boolean;
   sort: ProgramSort;
   activeFilters: ProgramsFilterChip[];
@@ -32,6 +36,10 @@ type ProgramsFilterBarProps = {
   teachingMethodOptions: readonly string[];
   costTypeOptions: readonly NamedFilterOption[];
   participationTimeOptions: readonly NamedFilterOption[];
+  sourceOptions: readonly NamedFilterOption[];
+  targetOptions: readonly NamedFilterOption[];
+  selectionProcessOptions: readonly NamedFilterOption[];
+  employmentLinkOptions: readonly NamedFilterOption[];
 };
 
 type FilterMenuOption = {
@@ -219,6 +227,10 @@ export function ProgramsFilterBar({
   selectedTeachingMethods,
   selectedCostTypes,
   selectedParticipationTimes,
+  selectedSources,
+  selectedTargets,
+  selectedSelectionProcesses,
+  selectedEmploymentLinks,
   showClosedRecent,
   sort,
   activeFilters,
@@ -226,12 +238,20 @@ export function ProgramsFilterBar({
   teachingMethodOptions,
   costTypeOptions,
   participationTimeOptions,
+  sourceOptions,
+  targetOptions,
+  selectionProcessOptions,
+  employmentLinkOptions,
 }: ProgramsFilterBarProps) {
   const [pendingCategoryId, setPendingCategoryId] = useState(selectedCategoryId);
   const [pendingTeachingMethod, setPendingTeachingMethod] = useState(selectedTeachingMethods[0] || "");
   const [pendingRegions, setPendingRegions] = useState<string[]>(selectedRegions);
   const [pendingCostTypes, setPendingCostTypes] = useState<string[]>(selectedCostTypes);
   const [pendingParticipationTimes, setPendingParticipationTimes] = useState<string[]>(selectedParticipationTimes);
+  const [pendingSources, setPendingSources] = useState<string[]>(selectedSources);
+  const [pendingTargets, setPendingTargets] = useState<string[]>(selectedTargets);
+  const [pendingSelectionProcesses, setPendingSelectionProcesses] = useState<string[]>(selectedSelectionProcesses);
+  const [pendingEmploymentLinks, setPendingEmploymentLinks] = useState<string[]>(selectedEmploymentLinks);
   const [pendingSort, setPendingSort] = useState<ProgramSort>(sort);
 
   useEffect(() => {
@@ -240,6 +260,10 @@ export function ProgramsFilterBar({
     setPendingRegions(selectedRegions);
     setPendingCostTypes(selectedCostTypes);
     setPendingParticipationTimes(selectedParticipationTimes);
+    setPendingSources(selectedSources);
+    setPendingTargets(selectedTargets);
+    setPendingSelectionProcesses(selectedSelectionProcesses);
+    setPendingEmploymentLinks(selectedEmploymentLinks);
     setPendingSort(sort);
   }, [
     selectedCategoryId,
@@ -247,6 +271,10 @@ export function ProgramsFilterBar({
     selectedRegions,
     selectedCostTypes,
     selectedParticipationTimes,
+    selectedSources,
+    selectedTargets,
+    selectedSelectionProcesses,
+    selectedEmploymentLinks,
     sort,
   ]);
 
@@ -287,7 +315,7 @@ export function ProgramsFilterBar({
       </div>
 
       <form method="GET" action="/programs" className="mt-6">
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(240px,1.5fr)_repeat(6,minmax(116px,0.74fr))_auto]">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(240px,1.5fr)_repeat(10,minmax(116px,0.74fr))_auto]">
           <label className="block">
             <span className="sr-only">검색</span>
             <input
@@ -350,6 +378,50 @@ export function ProgramsFilterBar({
             options={participationTimeOptions}
             placeholder="참여 시간 전체"
             onChange={setPendingParticipationTimes}
+          />
+
+          {pendingSources.map((source) => (
+            <input key={source} type="hidden" name="sources" value={source} />
+          ))}
+          <MultiFilterMenu
+            label="운영 기관"
+            values={pendingSources}
+            options={sourceOptions}
+            placeholder="기관 전체"
+            onChange={setPendingSources}
+          />
+
+          {pendingTargets.map((target) => (
+            <input key={target} type="hidden" name="targets" value={target} />
+          ))}
+          <MultiFilterMenu
+            label="추천 대상"
+            values={pendingTargets}
+            options={targetOptions}
+            placeholder="대상 전체"
+            onChange={setPendingTargets}
+          />
+
+          {pendingSelectionProcesses.map((process) => (
+            <input key={process} type="hidden" name="selection_processes" value={process} />
+          ))}
+          <MultiFilterMenu
+            label="선발 절차"
+            values={pendingSelectionProcesses}
+            options={selectionProcessOptions}
+            placeholder="절차 전체"
+            onChange={setPendingSelectionProcesses}
+          />
+
+          {pendingEmploymentLinks.map((link) => (
+            <input key={link} type="hidden" name="employment_links" value={link} />
+          ))}
+          <MultiFilterMenu
+            label="채용 연계"
+            values={pendingEmploymentLinks}
+            options={employmentLinkOptions}
+            placeholder="연계 전체"
+            onChange={setPendingEmploymentLinks}
           />
 
           <input type="hidden" name="sort" value={pendingSort} />

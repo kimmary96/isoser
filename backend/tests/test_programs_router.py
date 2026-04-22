@@ -405,6 +405,26 @@ async def test_get_program_details_batch_reuses_detail_mapping(
     assert response.items[1].application_end_date == "2026-05-20"
 
 
+@pytest.mark.asyncio
+async def test_get_programs_batch_preserves_requested_order(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_fetch_programs_by_ids(program_ids: list[str]) -> dict[str, dict[str, object]]:
+        assert program_ids == ["program-2", "program-1"]
+        return {
+            "program-1": {"id": "program-1", "title": "첫 번째", "deadline": "2026-06-01", "source": "고용24"},
+            "program-2": {"id": "program-2", "title": "두 번째", "deadline": "2026-05-01", "source": "K-Startup"},
+        }
+
+    monkeypatch.setattr(programs, "_fetch_programs_by_ids", fake_fetch_programs_by_ids)
+
+    response = await programs.get_programs_batch(
+        programs.ProgramDetailBatchRequest(program_ids=["program-2", "program-1", "program-2"])
+    )
+
+    assert [item.id for item in response.items] == ["program-2", "program-1"]
+
+
 def test_normalize_cached_recommendation_rows_marks_missing_component_scores_stale() -> None:
     normalized = programs._normalize_cached_recommendation_rows(
         [
@@ -617,6 +637,9 @@ def test_compute_program_relevance_items_adds_fit_interpretation_fields(
     assert item.readiness_label == "바로 지원 추천"
     assert "전반적으로 잘 맞습니다." in item.fit_summary
     assert item.gap_tags == []
+    assert item.score_breakdown["region"] == 0
+    assert item.score_breakdown["skills"] == 20
+    assert item.score_breakdown["experience"] == 20
 
 
 def test_compute_program_relevance_items_adds_region_signal(
@@ -660,8 +683,44 @@ def test_compute_program_relevance_items_adds_region_signal(
 
     item = items[0]
     assert item.region_match_score == 1.0
-    assert item.matched_regions == ["서울 강남구", "서울"]
+    assert item.matched_regions == ["서울"]
     assert item.relevance_score == 0.575
+    assert item.score_breakdown["region"] == 15
+    assert item.score_breakdown["skills"] == 25
+    assert item.score_breakdown["experience"] == 15
+
+
+def test_compute_region_match_scores_adjacent_and_online_programs() -> None:
+    assert programs._compute_region_match(
+        profile_region="서울",
+        profile_region_detail=None,
+        program={"location": "경기 성남시"},
+    ) == (["경기"], 0.6667)
+    assert programs._compute_region_match(
+        profile_region="전북",
+        profile_region_detail=None,
+        program={"teaching_method": "온라인"},
+    ) == (["온라인"], 0.8)
+    assert programs._compute_region_match(
+        profile_region="전북",
+        profile_region_detail=None,
+        program={"teaching_method": "온라인/오프라인 병행"},
+    ) == (["혼합"], 0.6667)
+    assert programs._compute_region_match(
+        profile_region="전북",
+        profile_region_detail=None,
+        program={"teaching_method": "온라인", "summary": "혼합형 실습 과정"},
+    ) == (["온라인"], 0.8)
+    assert programs._compute_region_match(
+        profile_region="서울",
+        profile_region_detail=None,
+        program={"title": "온라인 AI 과정", "location": "서울 강남구"},
+    ) == (["혼합"], 0.6667)
+    assert programs._compute_region_match(
+        profile_region="충북",
+        profile_region_detail=None,
+        program={"compare_meta": {"region": "충청북도 청주시"}},
+    ) == (["충북"], 1.0)
 
 
 def test_compute_program_relevance_items_handles_sparse_profile_without_failure(
