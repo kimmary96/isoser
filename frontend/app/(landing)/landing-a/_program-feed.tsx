@@ -2,9 +2,6 @@
 
 import Link from "next/link";
 
-import type { Program } from "@/lib/types";
-
-import { chipOptions } from "./_content";
 import {
   getProgramCompareHref,
   getProgramDeadline,
@@ -12,7 +9,10 @@ import {
   getProgramDetailHref,
   getProgramScore,
   normalizeTextList,
-} from "./_shared";
+} from "@/components/landing/program-card-helpers";
+import type { Program } from "@/lib/types";
+
+import { chipOptions } from "./_content";
 
 type FilterBarProps = {
   activeChip: string;

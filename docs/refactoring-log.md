@@ -2095,3 +2095,7 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - 랜딩 A/C 칩 목록과 카테고리/지역 API 매핑을 `frontend/lib/program-filters.ts`로 공통화함
   - 로그인 redirect가 `/dashboard#recommend-calendar` 같은 hash target을 `redirectedFrom`/OAuth `next`로 보존하도록 하고, landing-c의 추천 CTA를 해당 helper로 연결함
   - landing-c 상단 헤더를 landing-a 기존 헤더 컴포넌트로 교체해 공개 랜딩 헤더 UI를 통일함
+- 2026-04-22: `frontend/components/landing/LandingHeader.tsx`, `frontend/components/landing/program-card-helpers.ts`, `frontend/app/(landing)/landing-a/_navigation.tsx`, `frontend/app/(landing)/landing-a/_program-feed.tsx`, `frontend/app/(landing)/landing-a/_shared.ts`, `frontend/app/(landing)/landing-c/page.tsx`, `frontend/lib/routes.test.ts`, `frontend/lib/program-filters.test.ts`, `frontend/package.json`, `frontend/package-lock.json`, `docs/current-state.md`
+  - 공개 랜딩 헤더 구현을 `frontend/components/landing/LandingHeader.tsx`로 이동해 landing-a/c가 같은 헤더 UI와 인증 CTA 로직을 사용하도록 정리함
+  - 랜딩 A/C 프로그램 카드에서 공유하는 deadline, href, score, tag normalization helper를 `frontend/components/landing/program-card-helpers.ts`로 분리함
+  - Vitest를 dev dependency와 `npm test` 스크립트로 추가하고, `routes.ts`와 `program-filters.ts`의 기본 랜딩, 내부 경로 검증, hash target 보존, 칩 매핑 단위 테스트를 추가함

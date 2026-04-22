@@ -3,12 +3,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { getProgramCount, listPrograms } from "@/lib/api/backend";
-import { PROGRAM_FILTER_CHIPS, buildProgramFilterParams } from "@/lib/program-filters";
-import { DASHBOARD_RECOMMEND_CALENDAR, getLoginHref } from "@/lib/routes";
-import { getSiteUrl } from "@/lib/seo";
-import type { Program } from "@/lib/types";
-
-import { LandingAHeader } from "../landing-a/_components";
 import {
   getProgramCompareHref,
   getProgramDeadline,
@@ -16,7 +10,13 @@ import {
   getProgramDetailHref,
   getProgramScore,
   normalizeTextList,
-} from "../landing-a/_shared";
+} from "@/components/landing/program-card-helpers";
+import { PROGRAM_FILTER_CHIPS, buildProgramFilterParams } from "@/lib/program-filters";
+import { DASHBOARD_RECOMMEND_CALENDAR, getLoginHref } from "@/lib/routes";
+import { getSiteUrl } from "@/lib/seo";
+import type { Program } from "@/lib/types";
+
+import { LandingHeader } from "@/components/landing/LandingHeader";
 
 export const metadata: Metadata = {
   title: "이소서 - 취업 지원 탐색부터 서류 준비까지",
@@ -365,7 +365,7 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
 
   return (
     <main className="min-h-screen bg-[var(--surface)] text-[var(--ink)]" style={themeVars}>
-      <LandingAHeader />
+      <LandingHeader />
 
       <section className="bg-white px-5 py-14 sm:px-8 lg:px-12 lg:py-20">
         <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_420px] lg:items-center">
