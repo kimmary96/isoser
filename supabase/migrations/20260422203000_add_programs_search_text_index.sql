@@ -1,6 +1,18 @@
 create extension if not exists pg_trgm;
 
 alter table public.programs
+add column if not exists provider text,
+add column if not exists summary text,
+add column if not exists description text,
+add column if not exists location text,
+add column if not exists region text,
+add column if not exists region_detail text,
+add column if not exists tags text[] default '{}'::text[],
+add column if not exists skills text[] default '{}'::text[],
+add column if not exists target text[] default '{}'::text[],
+add column if not exists compare_meta jsonb;
+
+alter table public.programs
 add column if not exists search_text text generated always as (
   regexp_replace(
     lower(
