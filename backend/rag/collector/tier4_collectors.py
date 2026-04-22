@@ -102,6 +102,8 @@ class DistrictHtmlCollector(BaseHtmlCollector):
     def collect_items(self) -> List[Dict]:
         items: List[Dict] = []
         request_errors: List[str] = []
+        parsed_empty_count = 0
+        successful_request_count = 0
 
         for url in self.list_urls:
             try:
@@ -110,20 +112,39 @@ class DistrictHtmlCollector(BaseHtmlCollector):
                 request_errors.append(f"{url}: {exc}")
                 print(f"[{self.__class__.__name__}] request failed: {url}: {exc}")
                 continue
-            items.extend(self.parse_html(html, base_url=url))
+            successful_request_count += 1
+            parsed_items = self.parse_html(html, base_url=url)
+            if not parsed_items:
+                parsed_empty_count += 1
+                print(f"[{self.__class__.__name__}] parsed 0 items: {url}")
+            items.extend(parsed_items)
 
         if items:
             self.last_collect_status = "success"
-            self.last_collect_message = f"{self.source_name} collected {len(items)} items"
-            print(f"[{self.__class__.__name__}] collected={len(items)} failed={len(request_errors)}")
+            self.last_collect_message = (
+                f"{self.source_name} collected {len(items)} items "
+                f"from {successful_request_count}/{len(self.list_urls)} urls; "
+                f"request_failed={len(request_errors)}; parse_empty={parsed_empty_count}"
+            )
+            print(
+                f"[{self.__class__.__name__}] collected={len(items)} "
+                f"urls={successful_request_count}/{len(self.list_urls)} "
+                f"request_failed={len(request_errors)} parse_empty={parsed_empty_count}"
+            )
             return items
 
-        if request_errors:
+        if request_errors and successful_request_count == 0:
             self.last_collect_status = "request_failed"
-            self.last_collect_message = "; ".join(request_errors[:2])
+            self.last_collect_message = (
+                f"all requests failed ({len(request_errors)}/{len(self.list_urls)}): "
+                + "; ".join(request_errors[:2])
+            )
         else:
             self.last_collect_status = "parsing_failed"
-            self.last_collect_message = self.empty_message
+            self.last_collect_message = (
+                f"{self.empty_message}; urls={successful_request_count}/{len(self.list_urls)}; "
+                f"request_failed={len(request_errors)}; parse_empty={parsed_empty_count}"
+            )
         print(f"[{self.__class__.__name__}] {self.last_collect_message}")
         return []
 

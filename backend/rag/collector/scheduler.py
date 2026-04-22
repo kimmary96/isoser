@@ -147,6 +147,16 @@ def _deduplicate_rows(rows: List[Dict]) -> List[Dict]:
     return list(deduped.values())
 
 
+def _format_dry_run_message(raw_count: int, normalized_count: int, source_message: str) -> str:
+    message = (
+        f"Collected {normalized_count} rows; upsert skipped "
+        f"(raw_items={raw_count}, deduped_rows={normalized_count})"
+    )
+    if source_message:
+        message = f"{message}; collector_message={source_message}"
+    return message
+
+
 def run_all_collectors(*, upsert: bool = True) -> Dict:
     saved_count = 0
     failed_count = 0
@@ -254,9 +264,15 @@ def run_all_collectors(*, upsert: bool = True) -> Dict:
             continue
 
         if not upsert:
+            dry_run_message = _format_dry_run_message(
+                len(raw_items),
+                len(normalized_rows),
+                source_message,
+            )
             print(
                 f"[scheduler] source={collector.source_name} tier={collector.tier} "
-                f"collected={len(normalized_rows)} failed={source_failed} status=dry_run"
+                f"collected={len(normalized_rows)} raw={len(raw_items)} "
+                f"failed={source_failed} status=dry_run"
             )
             source_results.append(
                 {
@@ -265,7 +281,7 @@ def run_all_collectors(*, upsert: bool = True) -> Dict:
                     "saved": 0,
                     "failed": source_failed,
                     "status": "dry_run",
-                    "message": f"Collected {len(normalized_rows)} rows; upsert skipped",
+                    "message": dry_run_message,
                 }
             )
             continue

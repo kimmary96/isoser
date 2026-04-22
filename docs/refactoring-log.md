@@ -1,5 +1,24 @@
 # 리팩토링 로그
 
+## 2026-04-22 Tier 4 crawler diagnostics follow-up
+
+- 수정 파일:
+  - `backend/rag/collector/tier4_collectors.py`
+  - `backend/rag/collector/scheduler.py`
+  - `backend/tests/test_tier4_collectors.py`
+  - `backend/tests/test_scheduler_collectors.py`
+  - `docs/current-state.md`
+- 변경 내용:
+  - Tier 4 district collector가 URL별 요청 성공 수, 요청 실패 수, parse-empty 수를 `last_collect_message`에 남기도록 보강함
+  - scheduler dry-run 결과 메시지에 raw item 수, dedupe 후 row 수, collector 진단 메시지를 포함해 운영자가 0건/중복 제거/selector 의심을 더 빨리 구분할 수 있게 함
+  - Tier 4 collector 진단 메시지와 scheduler dry-run 메시지 계약을 테스트로 고정함
+- 유지된 동작:
+  - collector `.collect()` 반환 형식, normalize 계약, Tier 1~4 정렬, upsert 동작은 변경하지 않음
+  - Tier 4 수집 대상과 selector 자체는 변경하지 않음
+- 검증 메모:
+  - `backend\venv\Scripts\python.exe -m pytest backend/tests/test_tier4_collectors.py backend/tests/test_scheduler_collectors.py -q`
+  - Tier 4 collector 6종 live dry-run 확인: 6종 모두 `status=dry_run`, `failed_count=0`
+
 ## 2026-04-20 docs fast-path lightweight verification
 
 - 수정 파일:
