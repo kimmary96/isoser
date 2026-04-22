@@ -2283,9 +2283,24 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - 비교 페이지 상세 호출 리스크를 줄이기 위해 `POST /programs/details/batch`를 추가하고, 프론트 비교 페이지는 상세 정보를 슬롯별 단건 호출 대신 batch로 조회하도록 변경함
   - compare relevance 응답에 `region_match_score`, `matched_regions`를 추가해 주소/지역 기반 신호를 기술 키워드와 분리해 표시함
   - 고용24/K-Startup mapping과 normalizer에 보수적인 `skills` 추출/저장 흐름을 추가해 `programs.skills`가 계속 비어 남는 문제를 줄임
+- 2026-04-23: `backend/routers/programs.py`, `backend/rag/collector/regional_html_collectors.py`, `frontend/app/(landing)/compare/page.tsx`, `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/program-card.tsx`, `frontend/app/(landing)/programs/programs-filter-bar.tsx`, `frontend/app/(landing)/programs/recommended-programs-section.tsx`, `frontend/app/api/dashboard/bookmarks/[programId]/route.ts`, `frontend/app/api/dashboard/recommended-programs/route.ts`, `frontend/lib/api/backend.ts`, `frontend/lib/types/index.ts`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `reports/compare-page-detail-fields-result.md`
+  - 비교 페이지 기본 프로그램 조회도 `POST /programs/batch`로 통합해 상세/기본 조회 모두 batch 경로를 사용하도록 정리함
+  - 지역 매칭을 문자열 포함 수준에서 시/도 정규화, 인접권역, 온라인/혼합형 판정으로 보강하고 `score_breakdown`, `relevance_reasons`, `relevance_grade`, `relevance_badge`를 relevance/recommend 응답에 추가함
+  - `/programs`를 맞춤 추천, 마감 임박, 전체 프로그램 섹션으로 나누고, 목록 카드는 상세 이동 본문과 BFF 경유 찜 버튼만 남기는 구조로 조정함
+  - 후속으로 선발 절차/채용 연계 필터를 텍스트 fallback 기반으로 추가하고, 스킬 키워드 사전을 보안/모바일/게임/반도체 등으로 확장함
+  - 목록/추천 카드 초기 렌더링 시 기존 `program_bookmarks`를 서버에서 읽어 찜 별 상태가 비어 보이지 않도록 prefetch를 추가함
 - 2026-04-23: `backend/rag/collector/program_field_mapping.py`, `backend/rag/collector/normalizer.py`, `backend/tests/test_work24_kstartup_field_mapping.py`
   - 고용24/K-Startup mapping에서 제목, 설명, 대상, NCS 코드 기반의 보수적 skill keyword 후보를 추출해 `programs.skills`가 항상 비어 있지 않도록 보강함
   - normalizer가 `skills` 입력을 중복 제거된 문자열 배열로 정리하도록 추가하고, Work24/K-Startup mapping 테스트로 기대 skill 후보를 고정함
 - 2026-04-23: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/lib/types/index.ts`
   - compare relevance 응답에 `region_match_score`, `matched_regions`를 추가하고, 프로필 지역 정보가 있을 때만 지역 일치 신호를 관련도에 보수적으로 반영하도록 함
   - 프로필 지역 정보가 없는 기존 사용자의 관련도 점수는 기존 계산값을 유지하도록 회귀 테스트로 고정함
+- 2026-04-23: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `reports/TASK-2026-04-23-0556-address-field-and-region-matching-result.md`
+  - 지역 매칭에서 명시 `teaching_method`를 먼저 판정하고, 온라인+오프라인/지역명 조합은 혼합형으로 분류하도록 보강함
+  - 주소 미입력 프로필의 `score_breakdown`은 지역 가중치를 제외한 임시 가중치로 계산하고, 주소가 있는 프로필은 최종 지역 가중치를 유지하도록 테스트 기대값을 추가함
+- 2026-04-23: `frontend/app/(landing)/programs/bookmark-state-provider.tsx`, `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/program-card.tsx`, `docs/current-state.md`, `reports/compare-page-detail-fields-result.md`
+  - `/programs` 화면에 program id 기준 bookmark state provider를 추가해 맞춤 추천, 마감 임박, 전체 프로그램에 같은 카드가 중복 노출될 때 찜 상태가 즉시 동기화되도록 함
+  - `ProgramCard`는 provider가 없는 위치에서는 기존 `initialBookmarked` 기반 로컬 상태로 계속 동작하게 해 재사용 범위의 기존 동작을 유지함
+- 2026-04-23: `frontend/app/(landing)/programs/page.tsx`, `reports/TASK-2026-04-23-0557-programs-listing-page-restructure-result.md`
+  - 프로그램 목록의 비용 active filter chip 제거 URL이 운영 기관, 추천 대상, 선발 절차, 채용 연계 필터를 함께 보존하도록 보완함
+  - `/programs` 구조 개편 잔여 보완 결과와 검증 결과를 task result report로 기록함

@@ -14,7 +14,9 @@ import {
   type ProgramCategoryMenuOption,
   type ProgramsFilterChip,
 } from "./programs-filter-bar";
+import { ProgramBookmarkStateProvider } from "./bookmark-state-provider";
 import RecommendedProgramsSection from "./recommended-programs-section";
+import ProgramCard, { isDisplayableProgram } from "./program-card";
 
 export const metadata: Metadata = {
   title: "국비 교육·취업 지원 프로그램 목록 | 이소서",
@@ -64,6 +66,33 @@ const PARTICIPATION_TIME_OPTIONS: readonly NamedFilterOption[] = [
   { value: "part-time", label: "파트타임" },
   { value: "full-time", label: "풀타임" },
 ];
+const SOURCE_OPTIONS: readonly NamedFilterOption[] = [
+  { value: "고용24", label: "고용24" },
+  { value: "kstartup", label: "K-Startup" },
+  { value: "sesac", label: "SeSAC" },
+];
+const TARGET_OPTIONS: readonly NamedFilterOption[] = [
+  { value: "청년", label: "청년" },
+  { value: "여성", label: "여성" },
+  { value: "중장년", label: "중장년" },
+  { value: "창업", label: "창업" },
+  { value: "재직자", label: "재직자" },
+  { value: "구직자", label: "구직자" },
+  { value: "대학생", label: "대학생" },
+];
+const SELECTION_PROCESS_OPTIONS: readonly NamedFilterOption[] = [
+  { value: "서류", label: "서류" },
+  { value: "면접", label: "면접" },
+  { value: "테스트", label: "테스트" },
+  { value: "선착순", label: "선착순" },
+  { value: "추첨", label: "추첨" },
+];
+const EMPLOYMENT_LINK_OPTIONS: readonly NamedFilterOption[] = [
+  { value: "채용연계", label: "채용 연계" },
+  { value: "인턴십", label: "인턴십" },
+  { value: "취업지원", label: "취업 지원" },
+  { value: "멘토링", label: "멘토링" },
+];
 const PROGRAM_CATEGORY_OPTIONS: readonly ProgramCategoryMenuOption[] = [
   { id: "all", label: "전체", category: "전체", dotClassName: "bg-slate-400" },
   { id: "web-development", label: "웹개발", category: "IT", dotClassName: "bg-violet-500" },
@@ -89,6 +118,10 @@ type ProgramsPageSearchParams = {
   teaching_methods?: string | string[];
   cost_types?: string | string[];
   participation_times?: string | string[];
+  sources?: string | string[];
+  targets?: string | string[];
+  selection_processes?: string | string[];
+  employment_links?: string | string[];
   closed?: string | string[];
   sort?: string | string[];
   page?: string | string[];
@@ -100,21 +133,6 @@ type ProgramsPageProps = {
 
 function takeFirst(value?: string | string[]): string | undefined {
   return Array.isArray(value) ? value[0] : value;
-}
-
-function normalizeTextList(value: string[] | string | null | undefined): string[] {
-  if (Array.isArray(value)) {
-    return value.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
-  }
-
-  if (typeof value === "string" && value.trim()) {
-    return value
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
-  }
-
-  return [];
 }
 
 function normalizeSelectedCategoryOption(value?: string | string[]): ProgramCategoryMenuOption {
@@ -197,6 +215,10 @@ function buildProgramsHref(params: {
   teachingMethods?: string[];
   costTypes?: string[];
   participationTimes?: string[];
+  sources?: string[];
+  targets?: string[];
+  selectionProcesses?: string[];
+  employmentLinks?: string[];
   closed?: boolean;
   sort?: ProgramSort;
   page?: number;
@@ -217,49 +239,24 @@ function buildProgramsHref(params: {
   if (params.participationTimes?.length) {
     params.participationTimes.forEach((time) => searchParams.append("participation_times", time));
   }
+  if (params.sources?.length) {
+    params.sources.forEach((source) => searchParams.append("sources", source));
+  }
+  if (params.targets?.length) {
+    params.targets.forEach((target) => searchParams.append("targets", target));
+  }
+  if (params.selectionProcesses?.length) {
+    params.selectionProcesses.forEach((process) => searchParams.append("selection_processes", process));
+  }
+  if (params.employmentLinks?.length) {
+    params.employmentLinks.forEach((link) => searchParams.append("employment_links", link));
+  }
   if (params.closed) searchParams.set("closed", "true");
   if (params.sort && params.sort !== DEFAULT_SORT) searchParams.set("sort", params.sort);
   if (params.page && params.page > 1) searchParams.set("page", String(params.page));
 
   const query = searchParams.toString();
   return query ? `/programs?${query}` : "/programs";
-}
-
-function formatDateLabel(value: string | null | undefined): string {
-  if (!value) return "일정 추후 공지";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString("ko-KR", { month: "long", day: "numeric" });
-}
-
-function getDeadlineBadge(program: Program): { label: string; tone: string } | null {
-  const rawDate = program.deadline;
-  if (!rawDate) return null;
-
-  const deadlineDate = new Date(rawDate);
-  if (Number.isNaN(deadlineDate.getTime())) {
-    return { label: formatDateLabel(rawDate), tone: "bg-slate-100 text-slate-600" };
-  }
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  deadlineDate.setHours(0, 0, 0, 0);
-
-  const daysLeft = Math.floor((deadlineDate.getTime() - today.getTime()) / 86400000);
-  if (daysLeft < 0) {
-    return { label: `마감 · ${formatDateLabel(rawDate)}`, tone: "bg-slate-200 text-slate-700" };
-  }
-  if (daysLeft === 0) {
-    return { label: "D-Day", tone: "bg-rose-100 text-rose-700" };
-  }
-  if (daysLeft <= 3) {
-    return { label: `D-${daysLeft}`, tone: "bg-rose-100 text-rose-700" };
-  }
-  if (daysLeft <= 7) {
-    return { label: `D-${daysLeft}`, tone: "bg-amber-100 text-amber-700" };
-  }
-
-  return { label: `D-${daysLeft}`, tone: "bg-emerald-100 text-emerald-700" };
 }
 
 function renderActiveFilters(params: {
@@ -270,6 +267,10 @@ function renderActiveFilters(params: {
   teachingMethods: string[];
   costTypes: string[];
   participationTimes: string[];
+  sources: string[];
+  targets: string[];
+  selectionProcesses: string[];
+  employmentLinks: string[];
   showClosed: boolean;
   sort: ProgramSort;
 }) {
@@ -284,6 +285,10 @@ function renderActiveFilters(params: {
         teachingMethods: params.teachingMethods,
         costTypes: params.costTypes,
         participationTimes: params.participationTimes,
+        sources: params.sources,
+        targets: params.targets,
+        selectionProcesses: params.selectionProcesses,
+        employmentLinks: params.employmentLinks,
         closed: params.showClosed,
         sort: params.sort,
       }),
@@ -299,6 +304,10 @@ function renderActiveFilters(params: {
         teachingMethods: params.teachingMethods,
         costTypes: params.costTypes,
         participationTimes: params.participationTimes,
+        sources: params.sources,
+        targets: params.targets,
+        selectionProcesses: params.selectionProcesses,
+        employmentLinks: params.employmentLinks,
         closed: params.showClosed,
         sort: params.sort,
       }),
@@ -315,6 +324,10 @@ function renderActiveFilters(params: {
         teachingMethods: params.teachingMethods,
         costTypes: params.costTypes,
         participationTimes: params.participationTimes,
+        sources: params.sources,
+        targets: params.targets,
+        selectionProcesses: params.selectionProcesses,
+        employmentLinks: params.employmentLinks,
         closed: params.showClosed,
         sort: params.sort,
       }),
@@ -331,6 +344,10 @@ function renderActiveFilters(params: {
         teachingMethods: params.teachingMethods.filter((item) => item !== method),
         costTypes: params.costTypes,
         participationTimes: params.participationTimes,
+        sources: params.sources,
+        targets: params.targets,
+        selectionProcesses: params.selectionProcesses,
+        employmentLinks: params.employmentLinks,
         closed: params.showClosed,
         sort: params.sort,
       }),
@@ -347,6 +364,10 @@ function renderActiveFilters(params: {
         teachingMethods: params.teachingMethods,
         costTypes: params.costTypes.filter((item) => item !== costType),
         participationTimes: params.participationTimes,
+        sources: params.sources,
+        targets: params.targets,
+        selectionProcesses: params.selectionProcesses,
+        employmentLinks: params.employmentLinks,
         closed: params.showClosed,
         sort: params.sort,
       }),
@@ -363,6 +384,90 @@ function renderActiveFilters(params: {
         teachingMethods: params.teachingMethods,
         costTypes: params.costTypes,
         participationTimes: params.participationTimes.filter((item) => item !== time),
+        sources: params.sources,
+        targets: params.targets,
+        selectionProcesses: params.selectionProcesses,
+        employmentLinks: params.employmentLinks,
+        closed: params.showClosed,
+        sort: params.sort,
+      }),
+    });
+  });
+
+  params.sources.forEach((source) => {
+    chips.push({
+      label: `운영 기관: ${findOptionLabel(SOURCE_OPTIONS, source)}`,
+      href: buildProgramsHref({
+        q: params.q,
+        categoryId: params.categoryId,
+        regions: params.regions,
+        teachingMethods: params.teachingMethods,
+        costTypes: params.costTypes,
+        participationTimes: params.participationTimes,
+        sources: params.sources.filter((item) => item !== source),
+        targets: params.targets,
+        selectionProcesses: params.selectionProcesses,
+        employmentLinks: params.employmentLinks,
+        closed: params.showClosed,
+        sort: params.sort,
+      }),
+    });
+  });
+
+  params.targets.forEach((target) => {
+    chips.push({
+      label: `추천 대상: ${findOptionLabel(TARGET_OPTIONS, target)}`,
+      href: buildProgramsHref({
+        q: params.q,
+        categoryId: params.categoryId,
+        regions: params.regions,
+        teachingMethods: params.teachingMethods,
+        costTypes: params.costTypes,
+        participationTimes: params.participationTimes,
+        sources: params.sources,
+        targets: params.targets.filter((item) => item !== target),
+        selectionProcesses: params.selectionProcesses,
+        employmentLinks: params.employmentLinks,
+        closed: params.showClosed,
+        sort: params.sort,
+      }),
+    });
+  });
+
+  params.selectionProcesses.forEach((process) => {
+    chips.push({
+      label: `선발 절차: ${findOptionLabel(SELECTION_PROCESS_OPTIONS, process)}`,
+      href: buildProgramsHref({
+        q: params.q,
+        categoryId: params.categoryId,
+        regions: params.regions,
+        teachingMethods: params.teachingMethods,
+        costTypes: params.costTypes,
+        participationTimes: params.participationTimes,
+        sources: params.sources,
+        targets: params.targets,
+        selectionProcesses: params.selectionProcesses.filter((item) => item !== process),
+        employmentLinks: params.employmentLinks,
+        closed: params.showClosed,
+        sort: params.sort,
+      }),
+    });
+  });
+
+  params.employmentLinks.forEach((link) => {
+    chips.push({
+      label: `채용 연계: ${findOptionLabel(EMPLOYMENT_LINK_OPTIONS, link)}`,
+      href: buildProgramsHref({
+        q: params.q,
+        categoryId: params.categoryId,
+        regions: params.regions,
+        teachingMethods: params.teachingMethods,
+        costTypes: params.costTypes,
+        participationTimes: params.participationTimes,
+        sources: params.sources,
+        targets: params.targets,
+        selectionProcesses: params.selectionProcesses,
+        employmentLinks: params.employmentLinks.filter((item) => item !== link),
         closed: params.showClosed,
         sort: params.sort,
       }),
@@ -379,6 +484,10 @@ function renderActiveFilters(params: {
         teachingMethods: params.teachingMethods,
         costTypes: params.costTypes,
         participationTimes: params.participationTimes,
+        sources: params.sources,
+        targets: params.targets,
+        selectionProcesses: params.selectionProcesses,
+        employmentLinks: params.employmentLinks,
         sort: params.sort,
       }),
     });
@@ -394,6 +503,10 @@ function renderActiveFilters(params: {
         teachingMethods: params.teachingMethods,
         costTypes: params.costTypes,
         participationTimes: params.participationTimes,
+        sources: params.sources,
+        targets: params.targets,
+        selectionProcesses: params.selectionProcesses,
+        employmentLinks: params.employmentLinks,
         closed: params.showClosed,
       }),
     });
@@ -415,6 +528,13 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
     resolvedSearchParams.participation_times,
     PARTICIPATION_TIME_OPTIONS
   );
+  const selectedSources = normalizeNamedOptions(resolvedSearchParams.sources, SOURCE_OPTIONS);
+  const selectedTargets = normalizeNamedOptions(resolvedSearchParams.targets, TARGET_OPTIONS);
+  const selectedSelectionProcesses = normalizeNamedOptions(
+    resolvedSearchParams.selection_processes,
+    SELECTION_PROCESS_OPTIONS
+  );
+  const selectedEmploymentLinks = normalizeNamedOptions(resolvedSearchParams.employment_links, EMPLOYMENT_LINK_OPTIONS);
   const showClosedRecent = normalizeShowClosed(resolvedSearchParams.closed);
   const recruitingOnly = !showClosedRecent;
   const sort = normalizeSort(resolvedSearchParams.sort);
@@ -428,14 +548,20 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
     teachingMethods: selectedTeachingMethods,
     costTypes: selectedCostTypes,
     participationTimes: selectedParticipationTimes,
+    sources: selectedSources,
+    targets: selectedTargets,
+    selectionProcesses: selectedSelectionProcesses,
+    employmentLinks: selectedEmploymentLinks,
     showClosed: showClosedRecent,
     sort,
   });
 
   let programs: Program[] = [];
+  let urgentPrograms: Program[] = [];
   let totalCount = 0;
   let error: string | null = null;
   let isLoggedIn = false;
+  let bookmarkedProgramIds: string[] = [];
 
   try {
     const supabase = await createServerSupabaseClient();
@@ -443,34 +569,69 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
       data: { session },
     } = await supabase.auth.getSession();
     isLoggedIn = Boolean(session);
+    if (session?.user?.id) {
+      const { data } = await supabase
+        .from("program_bookmarks")
+        .select("program_id")
+        .eq("user_id", session.user.id);
+      bookmarkedProgramIds = (data ?? [])
+        .map((row) => String(row.program_id ?? "").trim())
+        .filter(Boolean);
+    }
   } catch {
     isLoggedIn = false;
+    bookmarkedProgramIds = [];
   }
 
   try {
-    [programs, totalCount] = await Promise.all([
+    [programs, urgentPrograms, totalCount] = await Promise.all([
       listPrograms({
         q: q || undefined,
         category: selectedCategory.category !== "전체" ? selectedCategory.category : undefined,
         category_detail: selectedCategory.id !== "all" ? selectedCategory.id : undefined,
         regions: selectedRegions,
+        sources: selectedSources,
         teaching_methods: selectedTeachingMethods,
         cost_types: selectedCostTypes,
         participation_times: selectedParticipationTimes,
+        targets: selectedTargets,
+        selection_processes: selectedSelectionProcesses,
+        employment_links: selectedEmploymentLinks,
         recruiting_only: recruitingOnly,
         include_closed_recent: showClosedRecent,
         sort,
         limit: PAGE_SIZE,
         offset,
       }),
+      listPrograms({
+        q: q || undefined,
+        category: selectedCategory.category !== "전체" ? selectedCategory.category : undefined,
+        category_detail: selectedCategory.id !== "all" ? selectedCategory.id : undefined,
+        regions: selectedRegions,
+        sources: selectedSources,
+        teaching_methods: selectedTeachingMethods,
+        cost_types: selectedCostTypes,
+        participation_times: selectedParticipationTimes,
+        targets: selectedTargets,
+        selection_processes: selectedSelectionProcesses,
+        employment_links: selectedEmploymentLinks,
+        recruiting_only: true,
+        sort: "deadline",
+        limit: 12,
+        offset: 0,
+      }),
       getProgramCount({
         q: q || undefined,
         category: selectedCategory.category !== "전체" ? selectedCategory.category : undefined,
         category_detail: selectedCategory.id !== "all" ? selectedCategory.id : undefined,
         regions: selectedRegions,
+        sources: selectedSources,
         teaching_methods: selectedTeachingMethods,
         cost_types: selectedCostTypes,
         participation_times: selectedParticipationTimes,
+        targets: selectedTargets,
+        selection_processes: selectedSelectionProcesses,
+        employment_links: selectedEmploymentLinks,
         recruiting_only: recruitingOnly,
         include_closed_recent: showClosedRecent,
       }),
@@ -480,6 +641,28 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
   }
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const displayPrograms = programs.filter(isDisplayableProgram);
+  const displayUrgentPrograms = urgentPrograms
+    .filter(isDisplayableProgram)
+    .filter((program) => typeof program.days_left === "number" && program.days_left >= 0 && program.days_left <= 7)
+    .slice(0, 6);
+  const previewPrograms = displayPrograms.slice(0, 3);
+  const currentProgramsPath = buildProgramsHref({
+    q,
+    categoryId: selectedCategory.id,
+    regions: selectedRegions,
+    teachingMethods: selectedTeachingMethods,
+    costTypes: selectedCostTypes,
+    participationTimes: selectedParticipationTimes,
+    sources: selectedSources,
+    targets: selectedTargets,
+    selectionProcesses: selectedSelectionProcesses,
+    employmentLinks: selectedEmploymentLinks,
+    closed: showClosedRecent,
+    sort,
+    page,
+  });
+  const loginHref = `/login?redirectedFrom=${encodeURIComponent(currentProgramsPath)}`;
   const safePage = Math.min(page, totalPages);
   const visiblePages = Array.from({ length: totalPages }, (_, index) => index + 1).filter(
     (pageNumber) => pageNumber >= Math.max(1, safePage - 2) && pageNumber <= Math.min(totalPages, safePage + 2)
@@ -491,6 +674,10 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
       selectedTeachingMethods.length ||
       selectedCostTypes.length ||
       selectedParticipationTimes.length ||
+      selectedSources.length ||
+      selectedTargets.length ||
+      selectedSelectionProcesses.length ||
+      selectedEmploymentLinks.length ||
       showClosedRecent ||
       sort !== DEFAULT_SORT
   );
@@ -508,6 +695,10 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
             selectedTeachingMethods={selectedTeachingMethods}
             selectedCostTypes={selectedCostTypes}
             selectedParticipationTimes={selectedParticipationTimes}
+            selectedSources={selectedSources}
+            selectedTargets={selectedTargets}
+            selectedSelectionProcesses={selectedSelectionProcesses}
+            selectedEmploymentLinks={selectedEmploymentLinks}
             showClosedRecent={showClosedRecent}
             sort={sort}
             activeFilters={activeFilters}
@@ -515,11 +706,43 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
             teachingMethodOptions={TEACHING_METHOD_OPTIONS}
             costTypeOptions={COST_TYPE_OPTIONS}
             participationTimeOptions={PARTICIPATION_TIME_OPTIONS}
+            sourceOptions={SOURCE_OPTIONS}
+            targetOptions={TARGET_OPTIONS}
+            selectionProcessOptions={SELECTION_PROCESS_OPTIONS}
+            employmentLinkOptions={EMPLOYMENT_LINK_OPTIONS}
           />
 
-          <RecommendedProgramsSection isLoggedIn={isLoggedIn} />
+          <ProgramBookmarkStateProvider initialBookmarkedProgramIds={bookmarkedProgramIds}>
+            <RecommendedProgramsSection
+              isLoggedIn={isLoggedIn}
+              loginHref={loginHref}
+              previewPrograms={previewPrograms}
+              bookmarkedProgramIds={bookmarkedProgramIds}
+            />
 
-          <section className="min-w-0">
+            {displayUrgentPrograms.length > 0 ? (
+              <section className="rounded-3xl border border-amber-100 bg-amber-50/60 p-6 shadow-sm">
+                <div className="flex flex-col gap-2 border-b border-amber-100 pb-5 md:flex-row md:items-end md:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold uppercase tracking-[0.24em] text-amber-700">Closing Soon</p>
+                    <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">마감 임박 프로그램</h2>
+                    <p className="mt-2 text-sm text-slate-600">현재 조건에서 7일 이내 마감되는 프로그램 {displayUrgentPrograms.length}개입니다.</p>
+                  </div>
+                </div>
+                <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+                  {displayUrgentPrograms.map((program) => (
+                    <ProgramCard
+                      key={String(program.id)}
+                      program={program}
+                      isLoggedIn={isLoggedIn}
+                      initialBookmarked={bookmarkedProgramIds.includes(String(program.id ?? ""))}
+                    />
+                  ))}
+                </div>
+              </section>
+            ) : null}
+
+            <section className="min-w-0">
               <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                 <AdSlot
                   slotId="programs-results-top-banner"
@@ -528,7 +751,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                 <div className="flex flex-col gap-4 border-b border-slate-100 pb-5 md:flex-row md:items-center md:justify-between">
                   <div>
                     <p className="text-sm font-semibold text-slate-900">
-                      {error ? "프로그램을 불러오지 못했습니다" : `결과 ${totalCount}개`}
+                      {error ? "프로그램을 불러오지 못했습니다" : `전체 프로그램 ${totalCount}개`}
                     </p>
                     <p className="mt-1 text-sm text-slate-500">
                       {selectedCategory.id === "all" ? "전체 카테고리" : selectedCategory.label}
@@ -555,7 +778,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                   <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 px-6 py-12 text-center text-sm text-rose-700">
                     {error}
                   </div>
-                ) : programs.length === 0 ? (
+                ) : displayPrograms.length === 0 ? (
                   <div className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-16 text-center">
                     <p className="text-base font-semibold text-slate-900">
                       {hasAnyFilter ? "조건에 맞는 프로그램이 없습니다" : "현재 등록된 프로그램이 없습니다"}
@@ -579,99 +802,14 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                 ) : (
                   <>
                     <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-                      {programs.map((program) => {
-                        const tags = normalizeTextList(program.tags);
-                        const skills = normalizeTextList(program.skills);
-                        const chips = [...tags, ...skills].slice(0, 4);
-                        const deadlineBadge = getDeadlineBadge(program);
-                        const externalLink = program.application_url || program.link || program.source_url;
-                        const compareHref =
-                          typeof program.id === "string" || typeof program.id === "number"
-                            ? `/compare?ids=${encodeURIComponent(String(program.id))}`
-                            : "/compare";
-
-                        return (
-                          <article
-                            key={program.id}
-                            className="flex h-full flex-col rounded-3xl border border-slate-200 bg-slate-50 p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
-                          >
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="min-w-0">
-                                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                                  {program.source || "출처 미상"}
-                                </p>
-                                <h2 className="mt-2 line-clamp-2 text-xl font-semibold tracking-tight text-slate-950">
-                                  {program.title || "제목 미정"}
-                                </h2>
-                              </div>
-                              {deadlineBadge ? (
-                                <span
-                                  className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${deadlineBadge.tone}`}
-                                >
-                                  {deadlineBadge.label}
-                                </span>
-                              ) : null}
-                            </div>
-
-                            <div className="mt-4 flex flex-wrap gap-2 text-sm text-slate-600">
-                              <span className="rounded-full bg-white px-3 py-1">{program.category || "미분류"}</span>
-                              <span className="rounded-full bg-white px-3 py-1">{program.provider || "기관 정보 없음"}</span>
-                              <span className="rounded-full bg-white px-3 py-1">{program.location || "지역 정보 없음"}</span>
-                              {program.is_active === false ? (
-                                <span className="rounded-full bg-rose-50 px-3 py-1 text-rose-700">최근 마감</span>
-                              ) : null}
-                            </div>
-
-                            <p className="mt-4 text-sm font-medium text-slate-700">
-                              일정 {formatDateLabel(program.start_date)} - {formatDateLabel(program.end_date)}
-                            </p>
-
-                            <p className="mt-4 line-clamp-4 text-sm leading-6 text-slate-600">
-                              {program.summary || program.description || "프로그램 소개가 아직 등록되지 않았습니다."}
-                            </p>
-
-                            <div className="mt-5 flex flex-wrap gap-2">
-                              {chips.length > 0 ? (
-                                chips.map((chip) => (
-                                  <span
-                                    key={`${program.id}-${chip}`}
-                                    className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600"
-                                  >
-                                    #{chip}
-                                  </span>
-                                ))
-                              ) : (
-                                <span className="text-xs text-slate-400">태그 정보 없음</span>
-                              )}
-                            </div>
-
-                            <div className="mt-6 flex flex-wrap gap-2">
-                              <Link
-                                href={`/programs/${program.id}`}
-                                className="inline-flex rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
-                              >
-                                상세 보기
-                              </Link>
-                              <Link
-                                href={compareHref}
-                                className="inline-flex rounded-xl border border-orange-200 bg-orange-50 px-4 py-2.5 text-sm font-medium text-orange-700 transition hover:bg-orange-100"
-                              >
-                                비교에 추가
-                              </Link>
-                              {externalLink ? (
-                                <a
-                                  href={externalLink}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="inline-flex rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
-                                >
-                                  지원 링크
-                                </a>
-                              ) : null}
-                            </div>
-                          </article>
-                        );
-                      })}
+                      {displayPrograms.map((program) => (
+                        <ProgramCard
+                          key={String(program.id)}
+                          program={program}
+                          isLoggedIn={isLoggedIn}
+                          initialBookmarked={bookmarkedProgramIds.includes(String(program.id ?? ""))}
+                        />
+                      ))}
                     </div>
 
                     {totalPages > 1 ? (
@@ -684,6 +822,10 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                             teachingMethods: selectedTeachingMethods,
                             costTypes: selectedCostTypes,
                             participationTimes: selectedParticipationTimes,
+                            sources: selectedSources,
+                            targets: selectedTargets,
+                            selectionProcesses: selectedSelectionProcesses,
+                            employmentLinks: selectedEmploymentLinks,
                             closed: showClosedRecent,
                             sort,
                             page: Math.max(1, safePage - 1),
@@ -706,6 +848,10 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                               teachingMethods: selectedTeachingMethods,
                               costTypes: selectedCostTypes,
                               participationTimes: selectedParticipationTimes,
+                              sources: selectedSources,
+                              targets: selectedTargets,
+                              selectionProcesses: selectedSelectionProcesses,
+                              employmentLinks: selectedEmploymentLinks,
                               closed: showClosedRecent,
                               sort,
                               page: pageNumber,
@@ -727,6 +873,10 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                             teachingMethods: selectedTeachingMethods,
                             costTypes: selectedCostTypes,
                             participationTimes: selectedParticipationTimes,
+                            sources: selectedSources,
+                            targets: selectedTargets,
+                            selectionProcesses: selectedSelectionProcesses,
+                            employmentLinks: selectedEmploymentLinks,
                             closed: showClosedRecent,
                             sort,
                             page: Math.min(totalPages, safePage + 1),
@@ -744,7 +894,8 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                   </>
                 )}
               </div>
-          </section>
+            </section>
+          </ProgramBookmarkStateProvider>
         </div>
       </main>
     </>
