@@ -2086,3 +2086,12 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - landing-a 칩 `AI·데이터`, `IT·개발`, `경영`이 백엔드 저장 카테고리와 다른 문자열을 exact match로 요청해 0건이 되는 문제를 확인함
   - 사용자 노출 라벨은 유지하되 API 요청 카테고리를 각각 `AI`, `IT`, `경영`으로 매핑해 기존 프로그램 목록/count endpoint와 일치시킴
   - `AI·데이터`와 `IT·개발` 필터 URL에서 hero count/live board가 정상 표시되는 것을 로컬 화면으로 확인함
+- 2026-04-22: `frontend/app/page.tsx`, `frontend/middleware.ts`, `frontend/app/auth/callback/route.ts`, `frontend/app/(auth)/login/page.tsx`, `frontend/app/(landing)/landing-c/page.tsx`, `docs/current-state.md`, `docs/auth/supabase-auth-local.md`, `docs/auth/supabase-auth-production.md`
+  - 메인 랜딩 기본 진입점을 `/landing-a`에서 `/landing-c`로 전환하고, 루트 OAuth 유입과 로그인 완료 기본 복귀도 `/landing-c` 기준으로 맞춤
+  - landing-c의 AI/IT/경영 칩 필터를 백엔드 저장 카테고리(`AI`, `IT`, `경영`)로 매핑해 필터 결과가 끊기지 않도록 보정함
+  - landing-c의 시작/추천 CTA를 `/login?redirectedFrom=/dashboard` 또는 `/dashboard#recommend-calendar` 흐름으로 연결하고, 워크스페이스 버튼의 목적지를 라벨과 일치시킴
+- 2026-04-22: `frontend/lib/routes.ts`, `frontend/lib/program-filters.ts`, `frontend/app/page.tsx`, `frontend/middleware.ts`, `frontend/app/api/auth/google/route.ts`, `frontend/app/auth/callback/route.ts`, `frontend/app/(auth)/login/page.tsx`, `frontend/app/(landing)/landing-a/page.tsx`, `frontend/app/(landing)/landing-a/_content.ts`, `frontend/app/(landing)/landing-a/_navigation.tsx`, `frontend/app/(landing)/landing-c/page.tsx`, `docs/current-state.md`, `docs/auth/supabase-auth-local.md`, `docs/auth/supabase-auth-production.md`
+  - `DEFAULT_PUBLIC_LANDING`, 추천 캘린더 경로, 로그인/OAuth href helper를 `frontend/lib/routes.ts`로 공통화해 landing-c 기본 진입과 인증 복귀 경로 drift를 줄임
+  - 랜딩 A/C 칩 목록과 카테고리/지역 API 매핑을 `frontend/lib/program-filters.ts`로 공통화함
+  - 로그인 redirect가 `/dashboard#recommend-calendar` 같은 hash target을 `redirectedFrom`/OAuth `next`로 보존하도록 하고, landing-c의 추천 CTA를 해당 helper로 연결함
+  - landing-c 상단 헤더를 landing-a 기존 헤더 컴포넌트로 교체해 공개 랜딩 헤더 UI를 통일함

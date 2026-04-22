@@ -14,8 +14,9 @@ import { chipOptions } from "./_content";
 import { landingAThemeVars } from "./_styles";
 import AdSlot from "@/components/AdSlot";
 import { getProgramCount, listPrograms } from "@/lib/api/backend";
+import { buildProgramFilterParams } from "@/lib/program-filters";
 import { getSiteUrl } from "@/lib/seo";
-import type { Program, ProgramListParams } from "@/lib/types";
+import type { Program } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "이소서 - 취업 지원 탐색부터 서류 준비까지 연결하는 커리어 SaaS",
@@ -42,20 +43,6 @@ type LandingAPageProps = {
   searchParams: Promise<LandingASearchParams>;
 };
 
-const CHIP_CATEGORY_MAP: Record<string, string> = {
-  "AI·데이터": "AI",
-  "IT·개발": "IT",
-  디자인: "디자인",
-  경영: "경영",
-  창업: "창업",
-};
-
-const CHIP_REGION_MAP: Record<string, string[]> = {
-  서울: ["서울"],
-  경기: ["경기"],
-  온라인: ["온라인"],
-};
-
 function takeFirst(value?: string | string[]): string {
   return Array.isArray(value) ? value[0] ?? "" : value ?? "";
 }
@@ -69,42 +56,11 @@ function normalizeKeyword(value?: string | string[]): string {
   return takeFirst(value).trim();
 }
 
-function buildLandingAParams(activeChip: string, keyword: string): ProgramListParams {
-  const params: ProgramListParams = {
-    q: keyword || undefined,
-    sort: "deadline",
-    limit: 6,
-  };
-
-  if (activeChip === "마감임박") {
-    params.recruiting_only = true;
-    return params;
-  }
-
-  const category = CHIP_CATEGORY_MAP[activeChip];
-  if (category) {
-    params.category = category;
-    return params;
-  }
-
-  const regions = CHIP_REGION_MAP[activeChip];
-  if (regions) {
-    params.regions = regions;
-    return params;
-  }
-
-  if (activeChip === "국비100%") {
-    params.q = keyword ? `${keyword} 국비 100%` : "국비 100%";
-  }
-
-  return params;
-}
-
 export default async function LandingAPage({ searchParams }: LandingAPageProps) {
   const resolvedSearchParams = await searchParams;
   const activeChip = normalizeChip(resolvedSearchParams.chip);
   const keyword = normalizeKeyword(resolvedSearchParams.q);
-  const programParams = buildLandingAParams(activeChip, keyword);
+  const programParams = buildProgramFilterParams(activeChip, keyword);
 
   let programs: Program[] = [];
   let totalCount = 0;

@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { DEFAULT_PUBLIC_LANDING, getLoginHref } from "@/lib/routes";
+
 import { tickerLoop, toneClassMap } from "./_content";
 import { getHeaderInitial, type HeaderUser, useLandingAUser } from "./_auth";
 
@@ -19,6 +21,7 @@ type AuthActionProps = {
   authenticatedHref: string;
   authenticatedLabel?: string;
   unauthenticatedLabel: string;
+  unauthenticatedHref?: string;
   compact?: boolean;
 };
 
@@ -36,7 +39,7 @@ const landingAHeaderLinks: HeaderLink[] = [
 
 function BrandMark({ compact = false, className = "", subtitle }: BrandMarkProps) {
   return (
-    <Link href="/landing-a" className={className}>
+    <Link href={DEFAULT_PUBLIC_LANDING} className={className}>
       <div>
         <div className={`${compact ? "text-xl tracking-[-0.04em]" : "text-xl tracking-[-0.05em]"} font-extrabold text-[var(--ink)]`}>
           이소<span className="text-[var(--sky)]">서</span>
@@ -78,6 +81,7 @@ function AuthAction({
   authenticatedHref,
   authenticatedLabel,
   unauthenticatedLabel,
+  unauthenticatedHref = "/login",
   compact = false,
 }: AuthActionProps) {
   if (authChecked && user) {
@@ -99,7 +103,7 @@ function AuthAction({
 
   return (
     <Link
-      href="/login"
+      href={unauthenticatedHref}
       className={
         compact
           ? "rounded-full bg-[var(--fire)] px-3 py-2 text-xs font-bold text-white shadow-[0_12px_32px_rgba(249,115,22,0.18)] transition hover:bg-[var(--fire-lo)] sm:px-4 sm:text-sm"
@@ -157,6 +161,7 @@ export function LandingANavBar() {
           authChecked={authChecked}
           authenticatedHref="/dashboard"
           authenticatedLabel="워크스페이스"
+          unauthenticatedHref={getLoginHref("/dashboard")}
           unauthenticatedLabel="무료로 시작하기"
         />
       </div>
@@ -195,6 +200,7 @@ export function LandingAHeader() {
             user={user}
             authChecked={authChecked}
             authenticatedHref="/dashboard/profile"
+            unauthenticatedHref={getLoginHref("/dashboard#recommend-calendar")}
             unauthenticatedLabel="로그인"
             compact
           />

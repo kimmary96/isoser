@@ -4,6 +4,7 @@ import { apiRateLimited } from "@/lib/api/route-response";
 import { buildRateLimitKey, enforceRateLimit } from "@/lib/server/rate-limit";
 import { logRouteError } from "@/lib/server/route-logging";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { resolveInternalPath } from "@/lib/routes";
 
 export async function GET(request: Request) {
   try {
@@ -24,7 +25,7 @@ export async function GET(request: Request) {
     const requestUrl = new URL(request.url);
     const origin = requestUrl.origin;
     const requestedNext = requestUrl.searchParams.get("next");
-    const next = requestedNext && requestedNext.startsWith("/") ? requestedNext : "/landing-a";
+    const next = resolveInternalPath(requestedNext);
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {

@@ -3,9 +3,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { getProgramCount, listPrograms } from "@/lib/api/backend";
+import { PROGRAM_FILTER_CHIPS, buildProgramFilterParams } from "@/lib/program-filters";
+import { DASHBOARD_RECOMMEND_CALENDAR, getLoginHref } from "@/lib/routes";
 import { getSiteUrl } from "@/lib/seo";
-import type { Program, ProgramListParams } from "@/lib/types";
+import type { Program } from "@/lib/types";
 
+import { LandingAHeader } from "../landing-a/_components";
 import {
   getProgramCompareHref,
   getProgramDeadline,
@@ -47,6 +50,10 @@ const themeVars = {
   "--indigo": "oklch(0.38 0.14 265)",
   "--indigo-hi": "oklch(0.44 0.14 265)",
   "--teal": "oklch(0.52 0.10 196)",
+  "--blue": "#2B6FF2",
+  "--sky": "#8FC2FF",
+  "--fire": "#F97316",
+  "--fire-lo": "#EA580C",
   "--surface": "#F4F7FB",
   "--surface-strong": "#E8EEF8",
   "--border": "#D8E3F2",
@@ -55,28 +62,7 @@ const themeVars = {
   "--green": "#22C55E",
 } as CSSProperties;
 
-const chips = ["전체", "마감임박", "AI·데이터", "IT·개발", "디자인", "경영", "창업", "서울", "경기", "온라인", "국비100%"];
-
-const chipCategoryMap: Record<string, string> = {
-  "AI·데이터": "AI·데이터",
-  "IT·개발": "IT·개발",
-  디자인: "디자인",
-  경영: "경영·마케팅",
-  창업: "창업",
-};
-
-const chipRegionMap: Record<string, string[]> = {
-  서울: ["서울"],
-  경기: ["경기"],
-  온라인: ["온라인"],
-};
-
-const tickerItems = [
-  "D-1 · K-디지털 풀스택 개발자 과정 · HRD넷",
-  "D-3 · 청년 AI 데이터 인턴십 · 고용24",
-  "D-5 · 포트폴리오 디자인 트랙 · 서울시",
-  "D-7 · 퍼포먼스 마케팅 취업캠프 · 고용24",
-];
+const chips = PROGRAM_FILTER_CHIPS;
 
 const workflowCards = [
   {
@@ -119,37 +105,6 @@ function normalizeChip(value?: string | string[]): string {
 
 function normalizeKeyword(value?: string | string[]): string {
   return takeFirst(value).trim();
-}
-
-function buildProgramParams(activeChip: string, keyword: string): ProgramListParams {
-  const params: ProgramListParams = {
-    q: keyword || undefined,
-    sort: "deadline",
-    limit: 6,
-  };
-
-  if (activeChip === "마감임박") {
-    params.recruiting_only = true;
-    return params;
-  }
-
-  const category = chipCategoryMap[activeChip];
-  if (category) {
-    params.category = category;
-    return params;
-  }
-
-  const regions = chipRegionMap[activeChip];
-  if (regions) {
-    params.regions = regions;
-    return params;
-  }
-
-  if (activeChip === "국비100%") {
-    params.q = keyword ? `${keyword} 국비 100%` : "국비 100%";
-  }
-
-  return params;
 }
 
 function sourceLabel(program: Program): string {
@@ -327,8 +282,8 @@ function BackupHeroSection() {
             <Link href="/dashboard/profile" className="rounded-full bg-white px-6 py-3 text-sm font-bold text-[#0a1325] transition hover:opacity-90">
               PDF 업로드로 시작하기
             </Link>
-            <Link href="/onboarding" className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
-              온보딩 먼저 보기
+            <Link href={DASHBOARD_RECOMMEND_CALENDAR} className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
+              추천 캘린더 보기
             </Link>
           </div>
           <div className="mt-7 grid gap-3 sm:grid-cols-2">
@@ -386,7 +341,7 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
   const resolvedSearchParams = await searchParams;
   const activeChip = normalizeChip(resolvedSearchParams.chip);
   const keyword = normalizeKeyword(resolvedSearchParams.q);
-  const programParams = buildProgramParams(activeChip, keyword);
+  const programParams = buildProgramFilterParams(activeChip, keyword);
 
   let programs: Program[] = [];
   let totalCount = 0;
@@ -410,36 +365,7 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
 
   return (
     <main className="min-h-screen bg-[var(--surface)] text-[var(--ink)]" style={themeVars}>
-      <div className="sticky top-0 z-[240] h-9 overflow-hidden bg-[var(--indigo)] text-white">
-        <div className="landing-c-ticker flex h-full min-w-max items-center">
-          {[...tickerItems, ...tickerItems].map((item, index) => (
-            <div key={`${item}-${index}`} className="inline-flex items-center gap-3 px-6 text-xs font-extrabold">
-              <span className="h-2 w-2 rounded-full bg-[var(--amber)]" />
-              {item}
-              <span className="opacity-45">|</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <header className="sticky top-9 z-[230] border-b border-[var(--border)] bg-white/94 px-5 py-4 backdrop-blur-xl sm:px-8 lg:px-12">
-        <div className="mx-auto flex max-w-6xl items-center gap-4">
-          <Link href="/landing-c" className="text-xl font-black tracking-[-0.05em]">
-            <span>이소<span className="text-[var(--teal)]">서</span></span>
-            <span className="hidden text-[9px] font-bold uppercase tracking-[0.28em] text-[var(--muted)] sm:block">
-              Public Program Finder
-            </span>
-          </Link>
-          <nav aria-label="랜딩 C 주요 이동" className="ml-auto hidden items-center gap-7 text-sm font-bold text-[var(--sub)] md:flex">
-            <Link href="/programs" className="transition hover:text-[var(--ink)]">프로그램 탐색</Link>
-            <Link href="/compare" className="transition hover:text-[var(--ink)]">비교</Link>
-            <Link href="/dashboard#recommend-calendar" className="transition hover:text-[var(--ink)]">워크스페이스</Link>
-          </nav>
-          <Link href="/login" className="ml-auto rounded-full bg-[var(--indigo)] px-4 py-2 text-sm font-black text-white transition hover:bg-[var(--indigo-hi)] md:ml-0">
-            무료로 시작하기
-          </Link>
-        </div>
-      </header>
+      <LandingAHeader />
 
       <section className="bg-white px-5 py-14 sm:px-8 lg:px-12 lg:py-20">
         <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_420px] lg:items-center">
@@ -461,13 +387,13 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
               <Link href="/programs" className="rounded-full bg-[var(--indigo)] px-6 py-3 text-sm font-black text-white transition hover:bg-[var(--indigo-hi)]">
                 지금 지원 가능한 프로그램 보기
               </Link>
-              <Link href="/login" className="rounded-full border border-[var(--border)] bg-white px-6 py-3 text-sm font-black text-[var(--ink)] transition hover:border-[var(--indigo)] hover:text-[var(--indigo)]">
+              <Link href={getLoginHref(DASHBOARD_RECOMMEND_CALENDAR)} className="rounded-full border border-[var(--border)] bg-white px-6 py-3 text-sm font-black text-[var(--ink)] transition hover:border-[var(--indigo)] hover:text-[var(--indigo)]">
                 로그인 후 AI 추천 받기
               </Link>
             </div>
             <div className="mt-9 grid max-w-2xl grid-cols-2 gap-4 sm:grid-cols-3">
               <div className="rounded-2xl bg-[var(--surface-strong)] px-5 py-4">
-                <div className="text-3xl font-black tracking-[-0.05em]">247<span className="text-lg font-bold">개</span></div>
+                <div className="text-3xl font-black tracking-[-0.05em]">{totalCount}<span className="text-lg font-bold">개</span></div>
                 <div className="mt-1 text-xs font-bold text-[var(--sub)]">현재 탐색 가능한 프로그램 수</div>
               </div>
               <div className="rounded-2xl bg-[var(--surface-strong)] px-5 py-4">
@@ -485,9 +411,9 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <div className="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--muted)]">Live Board</div>
-                <div className="mt-1 text-xl font-black tracking-[-0.04em] text-[var(--ink)]">이번 주 2건 확인</div>
+                <div className="mt-1 text-xl font-black tracking-[-0.04em] text-[var(--ink)]">이번 주 {heroPrograms.length}건 확인</div>
               </div>
-              <Link href="/compare" className="rounded-full bg-[var(--surface)] px-3 py-1.5 text-xs font-black text-[var(--indigo)]">
+              <Link href={DASHBOARD_RECOMMEND_CALENDAR} className="rounded-full bg-[var(--surface)] px-3 py-1.5 text-xs font-black text-[var(--indigo)]">
                 워크스페이스 →
               </Link>
             </div>
@@ -530,7 +456,7 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
             </div>
             <div className="flex flex-wrap gap-3">
               <Link href="/programs" className="rounded-full border border-[var(--border)] bg-white px-4 py-2 text-sm font-black text-[var(--ink)]">전체 프로그램 보기</Link>
-              <Link href="/login" className="rounded-full bg-[var(--indigo)] px-4 py-2 text-sm font-black text-white">로그인 후 추천 연결</Link>
+              <Link href={getLoginHref(DASHBOARD_RECOMMEND_CALENDAR)} className="rounded-full bg-[var(--indigo)] px-4 py-2 text-sm font-black text-white">로그인 후 추천 연결</Link>
             </div>
           </div>
 
@@ -647,8 +573,8 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link href="/login" className="rounded-full bg-white px-6 py-3 text-sm font-black text-[var(--indigo)]">무료로 시작하기</Link>
-            <Link href="/dashboard#recommend-calendar" className="rounded-full border border-white/30 px-6 py-3 text-sm font-black text-white">대시보드 미리 보기</Link>
+            <Link href={getLoginHref(DASHBOARD_RECOMMEND_CALENDAR)} className="rounded-full bg-white px-6 py-3 text-sm font-black text-[var(--indigo)]">무료로 시작하기</Link>
+            <Link href={DASHBOARD_RECOMMEND_CALENDAR} className="rounded-full border border-white/30 px-6 py-3 text-sm font-black text-white">대시보드 미리 보기</Link>
           </div>
         </div>
       </section>
@@ -664,16 +590,6 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
           <div className="text-xs font-bold text-[var(--muted)]">© 2026 Isoser. Career support workspace.</div>
         </div>
       </footer>
-
-      <style>{`
-        .landing-c-ticker {
-          animation: landing-c-ticker 28s linear infinite;
-        }
-        @keyframes landing-c-ticker {
-          from { transform: translateX(0); }
-          to { transform: translateX(-50%); }
-        }
-      `}</style>
     </main>
   );
 }

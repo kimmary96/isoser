@@ -90,17 +90,18 @@
 - `frontend/app/api/summary/route.ts`는 Gemini summary 호출에 20초 timeout을 적용해 상류 AI 응답이 장시간 멈출 때 504 형태의 upstream 오류로 빠르게 실패한다.
 - `backend/tests/test_know_survey.py`는 저장소에 포함되지 않은 KNOW 원본 코드북/원자료가 없을 때 관련 테스트만 skip하고, 전체 pytest 수집을 중단시키지 않는다.
 - `backend/chains/job_posting_rewrite_chain.py`의 Gemini rewrite 호출은 timeout 시 task cancel/cleanup까지 정리해 fallback 테스트에서 `coroutine was never awaited` 경고를 다시 만들지 않는다.
-- `frontend/app/page.tsx`는 루트 접근을 `/landing-a`로 리다이렉트해서 landing-a를 메인 랜딩 허브로 고정한다.
-- `frontend/middleware.ts`는 루트 `/?code=...` OAuth 유입을 `/auth/callback?next=/landing-a`로 정규화해서 로그인 후 landing-a 주소를 깨끗하게 유지한다.
+- `frontend/app/page.tsx`는 루트 접근을 `/landing-c`로 리다이렉트해서 landing-c를 메인 랜딩 허브로 고정한다.
+- `frontend/lib/routes.ts`는 `DEFAULT_PUBLIC_LANDING = "/landing-c"`와 dashboard 추천 캘린더 경로, 로그인/OAuth href helper, 내부 경로 검증 helper를 제공해 메인 랜딩과 인증 복귀 기본값을 한곳에서 관리한다.
+- `frontend/middleware.ts`는 루트 `/?code=...` OAuth 유입을 `/auth/callback?next=/landing-c`로 정규화해서 로그인 후 landing-c 주소를 깨끗하게 유지한다.
 - `frontend/middleware.ts`는 레거시 `/programs/compare` 접근을 `/compare`로 리다이렉트해서 새 랜딩 축 라우트 구조로 정리한다.
-- `frontend/app/auth/callback/route.ts`의 `GET()`는 기존 사용자 로그인 완료 후 기본 진입점을 `/landing-a`로 돌리고, 신규 사용자는 계속 `/onboarding`으로 보낸다.
+- `frontend/app/auth/callback/route.ts`의 `GET()`는 기존 사용자 로그인 완료 후 기본 진입점을 `/landing-c`로 돌리고, 신규 사용자는 계속 `/onboarding`으로 보낸다.
 - `frontend/app/(landing)/landing-a`는 상단에 랜딩 A 전용 헤더를 렌더링하며, 헤더는 `프로그램 상세`(`/programs`), `비교`(`/compare`), `대시보드`(`/dashboard#recommend-calendar`), 로그인/프로필 버튼을 제공한다. 로그인 확인 후 헤더 인증 버튼은 `/dashboard/profile`로 이동하고, 히어로 주 CTA는 `/dashboard#recommend-calendar`로 이동한다.
 - `frontend/app/(landing)/landing-a`는 상단 티커 없이 온보딩 톤의 네이비 히어로와 컴팩트 live board를 먼저 렌더링하며, 비로그인 히어로 주 CTA는 `/login`으로 이동한다.
 - `frontend/app/(landing)/landing-a`는 검색/칩 필터, 프로그램 카드, 6단계 지원 준비 흐름, 기능 미리보기 카드, CTA/푸터 순서의 공개 랜딩 A 구조를 렌더링한다. D-Day 요약, 문제/해결 비교, 추천 정확도 설명, KPI 뼈대 섹션은 현재 랜딩 A 렌더링에서 제외되어 있다.
-- `frontend/app/(landing)/landing-a/page.tsx`의 칩 라벨은 사용자에게 `AI·데이터`, `IT·개발`처럼 표시하지만, 백엔드 `programs.category` 저장값은 `AI`, `IT`, `경영`이므로 API 요청 시 해당 저장 카테고리로 매핑한다.
+- `frontend/lib/program-filters.ts`는 랜딩 A/C 공통 프로그램 칩 목록과 API filter mapping을 제공한다. 칩 라벨은 사용자에게 `AI·데이터`, `IT·개발`처럼 표시하지만, 백엔드 `programs.category` 저장값은 `AI`, `IT`, `경영`이므로 API 요청 시 해당 저장 카테고리로 매핑한다.
 - `frontend/app/(landing)/landing-a/_components.tsx`는 기존 import 호환을 위한 export 허브이며, 실제 섹션 구현은 `_navigation.tsx`, `_hero.tsx`, `_program-feed.tsx`, `_support-sections.tsx`, `_style-tag.tsx`, 공통 유틸/인증 hook은 `_shared.ts`, `_auth.ts`로 분리되어 있다. `_program-feed.tsx`는 칩 버튼 class 계산과 프로그램 카드 렌더를 각각 `getChipButtonClass`, `ProgramCard`로 분리하고, `_hero.tsx`는 live board 카드와 hero stats 렌더를 `HeroProgramSignalCard`와 배열 map으로 관리한다. `_navigation.tsx`는 브랜드/프로필 액션/랜딩 A 헤더 링크 패턴을 공유 컴포넌트와 링크 배열로 관리한다.
-- `frontend/app/(landing)/landing-c`는 제공된 standalone HTML reference를 Next.js 페이지로 이식한 공개 랜딩 C 경로이며, 스플릿 히어로, 프로그램 검색/칩 필터, 프로그램 카드, 기능 미리보기, 로그인 이후 여정, 최종 CTA를 렌더링한다. CTA와 카드 액션은 `/programs`, `/compare`, `/login`, `/dashboard#recommend-calendar`, `/programs/[id]` 실제 라우트로 연결되어 있다.
-- `frontend/app/(landing)` 아래 공개 랜딩 축 라우트는 `landing-a`, `landing-b`, `landing-c`, `programs`, `compare`로 정리되어 있다. 이 중 `landing-b`와 `landing-c`는 현재 기본 진입이나 공통 네비게이션에는 연결하지 않는 A/B 테스트 보존 경로다.
+- `frontend/app/(landing)/landing-c`는 제공된 standalone HTML reference를 Next.js 페이지로 이식한 공개 랜딩 C 경로이며, 스플릿 히어로, 프로그램 검색/칩 필터, 프로그램 카드, 기능 미리보기, 로그인 이후 여정, 최종 CTA를 렌더링한다. CTA와 카드 액션은 `/programs`, `/compare`, `/login?redirectedFrom=%2Fdashboard%23recommend-calendar`, `/dashboard#recommend-calendar`, `/programs/[id]` 실제 라우트로 연결되어 있고, 상단 헤더는 landing-a의 기존 공통 헤더 UI를 재사용한다.
+- `frontend/app/(landing)` 아래 공개 랜딩 축 라우트는 `landing-a`, `landing-b`, `landing-c`, `programs`, `compare`로 정리되어 있다. 이 중 `landing-c`가 현재 기본 진입이며, `landing-a`와 `landing-b`는 A/B 테스트 보존 경로다.
 - `frontend/app/dashboard/layout.tsx`는 landing-a 헤더를 유지한 채 대시보드 사이드바와 본문을 렌더링한다.
 - Supabase 인증 설정 문서는 `docs/auth/supabase-auth-local.md`, `docs/auth/supabase-auth-production.md`로 로컬/운영을 분리해 관리한다.
 - `backend/routers/programs.py`는 `/programs/count`와 확장된 목록 query(`q`, `regions`, `recruiting_only`, `include_closed_recent`, `sort`)를 지원하고, 목록/카운트 모두 Supabase의 `is_active` 값만 신뢰하지 않고 실제 `deadline` 기준으로 오늘 이후 모집중 공고만 기본 노출한다.

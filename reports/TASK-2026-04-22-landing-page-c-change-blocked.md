@@ -1,0 +1,22 @@
+# Blocked: TASK-2026-04-22-landing-page-c-change
+
+- request: `새션시작 랜딩페이지 c 변경`
+- blocked_at: 2026-04-22
+- reason: required task packet and concrete change scope are missing
+- required_frontmatter: `id`, `status`, `type`, `title`, `planned_at`, `planned_against_commit`
+- inspected:
+  - `docs/agent-playbook.md`
+  - `docs/rules/session-start-template.md`
+  - `docs/current-state.md`
+  - `reports/TASK-2026-04-21-landing-page-c-blocked.md`
+  - `reports/TASK-2026-04-21-landing-page-c-result.md`
+  - `frontend/app/page.tsx`
+  - `frontend/middleware.ts`
+  - `frontend/app/(landing)/landing-c/page.tsx`
+- finding:
+  - `/landing-c` already exists as a public landing route.
+  - The root route currently redirects to `/landing-a`.
+  - The request does not specify whether to modify landing C content, switch the root/default landing route to C, or make another scoped change.
+- current_head: `ecea30966251089ba799137fbf66bc491f08c8c3`
+- next_action: provide or create an approved task packet with the exact landing C change scope, then rerun duplicate/drift checks before implementation.
+- resolution_note: user clarified the exact scope as "make landing C the main landing and connect broken buttons/features"; implementation continued in `reports/TASK-2026-04-22-landing-page-c-change-result.md`.
