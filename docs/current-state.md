@@ -104,7 +104,7 @@
 - `frontend/components/landing/LandingHeader.tsx`는 landing-a/c가 함께 쓰는 공개 랜딩 헤더이며, 브랜드 링크는 `DEFAULT_PUBLIC_LANDING`, 추천 CTA는 `getLoginHref(DASHBOARD_RECOMMEND_CALENDAR)`를 사용한다.
 - `frontend/components/landing/program-card-helpers.ts`는 landing-a/c 프로그램 카드 공통 deadline, deadline tone, detail/compare href, score, tag normalization helper를 제공한다.
 - `frontend/app/(landing)/landing-a/_components.tsx`는 기존 import 호환을 위한 export 허브이며, 실제 섹션 구현은 `_navigation.tsx`, `_hero.tsx`, `_program-feed.tsx`, `_support-sections.tsx`, `_style-tag.tsx`로 분리되어 있다. `_program-feed.tsx`는 공통 프로그램 카드 helper를 사용하고, `_hero.tsx`는 live board 카드와 hero stats 렌더를 `HeroProgramSignalCard`와 배열 map으로 관리한다. `_navigation.tsx`는 레거시 nav/ticker export를 유지하고 `LandingAHeader`는 공통 `LandingHeader`를 re-export한다.
-- `frontend/app/(landing)/landing-c`는 제공된 standalone HTML reference를 Next.js 페이지로 이식한 공개 랜딩 C 경로이며, 스플릿 히어로, 프로그램 검색/칩 필터, 정보형 프로그램 카드, 기능 미리보기, 로그인 이후 여정, 최종 CTA를 렌더링한다. CTA와 카드 액션은 `/programs`, `/compare`, `/login?redirectedFrom=%2Fdashboard%23recommend-calendar`, `/dashboard#recommend-calendar`, `/programs/[id]` 실제 라우트로 연결되어 있고, 상단 헤더는 공통 `LandingHeader`를 사용한다. landing-c 프로그램 카드는 요약/태그/관련도 바 대신 제목, 운영기관, 마감, 지원 혜택, 운영 방식, 출처, `과정 보기` 액션 중심으로 정보를 보여준다.
+- `frontend/app/(landing)/landing-c`는 제공된 standalone HTML reference를 Next.js 페이지로 이식한 공개 랜딩 C 경로이며, 스플릿 히어로, 프로그램 검색/칩 필터, 정보형 프로그램 카드, 기능 미리보기, 로그인 이후 여정, 최종 CTA를 렌더링한다. CTA와 카드 액션은 `/programs`, `/compare`, `/login?redirectedFrom=%2Fdashboard%23recommend-calendar`, `/dashboard#recommend-calendar`, `/programs/[id]` 실제 라우트로 연결되어 있고, 상단 헤더는 공통 `LandingHeader`를 사용한다. landing-c 프로그램 카드는 요약/태그/관련도 바 대신 제목, 운영기관, 마감, 지원 혜택, 운영 방식, `과정 보기` 액션 중심으로 정보를 보여준다.
 - `frontend/app/(landing)` 아래 공개 랜딩 축 라우트는 `landing-a`, `landing-b`, `landing-c`, `programs`, `compare`로 정리되어 있다. 이 중 `landing-c`가 현재 기본 진입이며, `landing-a`와 `landing-b`는 A/B 테스트 보존 경로다.
 - `frontend/app/dashboard/layout.tsx`는 landing-a 헤더를 유지한 채 대시보드 사이드바와 본문을 렌더링한다.
 - Supabase 인증 설정 문서는 `docs/auth/supabase-auth-local.md`, `docs/auth/supabase-auth-production.md`로 로컬/운영을 분리해 관리한다.
@@ -115,6 +115,8 @@
 - `programs.compare_meta` JSONB 컬럼이 migration으로 추가되어 비교 화면의 대상/허들/커리큘럼 메타데이터를 저장할 수 있다.
 - `backend/rag/collector/scheduler.py`는 source별 `status`/`message`를 함께 반환해 `0건 수집(empty)`과 `설정/요청/저장 실패`를 구분해 기록한다.
 - Tier 1 collector 중 `고용24`는 현재 유효한 국민내일배움카드 훈련과정 OpenAPI(`callOpenApiSvcInfo310L01.do`)를 사용하고, `K-Startup`은 현재 운영 중인 `nidapi.k-startup.go.kr` 조회서비스로 수집한다.
+- 고용24와 K-Startup Tier 1 collector는 API raw에 포함된 기관명, 지역, 설명, 시작/종료일, 원본 링크, 주요 추적 메타를 공통 normalizer row까지 보존한다. 상세/비교 화면이 이미 참조하는 `provider`, `location`, `description`, `start_date`, `end_date`, `source_url`은 값이 있을 때 저장 payload에 포함되며, source별 부가 추적값은 기존 `compare_meta` JSONB에 보존한다.
+- source별 프로그램 field mapping은 `backend/rag/collector/program_field_mapping.py`에 중앙화되어 있고, `scripts/program_source_diff.py`는 프로그램 UUID 기준으로 live raw 후보, normalized row, DB row, backend API row, UI 표시 스냅샷을 비교하는 진단 CLI를 제공한다.
 - scheduler의 Supabase upsert는 `(title, source)` 기준으로 source별 중복을 먼저 제거하고 100건 배치로 나눠 저장해, 대량 payload에서 PostgREST conflict 오류가 전체 source를 실패시키는 문제를 줄였다.
 - `HRDCollector`는 optional source로 전환되어 기본값 `ENABLE_HRD_COLLECTOR=false` 상태에서는 scheduler가 `skipped_disabled`로 기록하고 실행하지 않는다.
 - `ENABLE_HRD_COLLECTOR=true`여도 `HRD_API_KEY` 또는 `HRDNET_API_KEY`가 없으면 scheduler는 실패 대신 `skipped_missing_config`로 기록한다.

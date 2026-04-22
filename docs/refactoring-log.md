@@ -1,5 +1,38 @@
 # 리팩토링 로그
 
+# 2026-04-22 고용24/K-Startup 수집 필드 매핑 보강
+
+- 변경 파일
+  - `backend/rag/collector/work24_collector.py`
+  - `backend/rag/collector/kstartup_collector.py`
+  - `backend/rag/collector/program_field_mapping.py`
+  - `backend/rag/collector/normalizer.py`
+  - `backend/tests/test_work24_kstartup_field_mapping.py`
+  - `backend/tests/test_program_source_diff_cli.py`
+  - `scripts/program_source_diff.py`
+  - `cowork/packets/TASK-2026-04-22-1800-program-source-field-mapping.md`
+  - `cowork/packets/TASK-2026-04-22-1810-program-schema-backfill.md`
+  - `reports/TASK-2026-04-22-1800-program-source-field-mapping-result.md`
+  - `reports/TASK-2026-04-22-1810-program-schema-backfill-plan.md`
+- 변경 내용
+  - 고용24와 K-Startup API raw에 있던 기관명, 지역, 설명, 시작/종료일, 원본 링크, 비용/지원금 일부, 전화/분류/대상 상세 같은 값을 공통 normalizer row까지 보존하도록 collector mapping을 보강함
+  - source별 field mapping을 `program_field_mapping.py`로 중앙화함
+  - 운영 DB에 없을 수 있는 컬럼은 scheduler payload에 직접 추가하지 않고, 추적용 부가 정보는 기존 `compare_meta` JSONB에 저장하도록 제한함
+  - 프로그램 ID 기준 raw → normalized → DB → API → UI 표시값 diff CLI를 추가함
+  - 운영 DB schema check 결과 `raw_data`, `support_type`, `teaching_method`, `is_certified` 누락을 확인하고 별도 backfill task로 분리함
+  - 고용24/K-Startup 필드 보존 회귀 테스트를 추가함
+- 보존한 동작
+  - 기존 source fetch, normalize, scheduler 상태 반환, `(title, source)` dedupe/upsert 흐름은 유지함
+  - 기존 상세/비교 UI 계약은 바꾸지 않고 이미 참조 중인 `provider`, `location`, `description`, `start_date`, `end_date`, `source_url` 필드를 채우는 방향으로 처리함
+- 검증
+  - `backend\venv\Scripts\python.exe -m pytest backend/tests/test_work24_kstartup_field_mapping.py -q`
+  - `backend\venv\Scripts\python.exe -m pytest backend/tests/test_program_source_diff_cli.py -q`
+  - `backend\venv\Scripts\python.exe -m pytest backend/tests/test_scheduler_collectors.py -q`
+  - 실제 API dry-run 1건씩으로 normalized row에 상세 필드가 남는지 확인함
+- 추가 리팩토링 후보
+  - 운영 DB 스키마 보강 및 기존 row backfill task 실행
+  - 상세/비교 UI의 `정보 없음`/`데이터 미수집`/`매핑 누락` 표시 기준 source trace 기반 분리
+
 ## 2026-04-22 Tier 4 crawler diagnostics follow-up
 
 - 수정 파일:
@@ -2122,5 +2155,5 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - 리스크 관리 후속으로 Next.js와 `eslint-config-next`를 `15.5.15`로 업그레이드해 `npm audit --omit=dev` 기준 production 취약점 0건 상태로 정리함
   - `npm test`, `npm run lint`, `npx tsc -p tsconfig.codex-check.json --noEmit`, `npm run build`를 모두 통과해 패치 업그레이드의 기본 회귀 위험을 확인함
 - 2026-04-22: `frontend/app/(landing)/landing-c/page.tsx`, `docs/current-state.md`, `reports/TASK-2026-04-22-landing-page-c-change-result.md`
-  - landing-c 프로그램 카드를 요약/태그/이소서 관련도 중심에서 제목, 운영기관, 마감, 지원 혜택, 운영 방식, 출처, `과정 보기` CTA 중심의 정보형 카드로 재구성함
+  - landing-c 프로그램 카드를 요약/태그/이소서 관련도 중심에서 제목, 운영기관, 마감, 지원 혜택, 운영 방식, `과정 보기` CTA 중심의 정보형 카드로 재구성함
   - 상단 이미지 영역은 추가하지 않고 기존 검색/칩 필터, 프로그램 상세 이동, 공통 랜딩 헤더 동작은 유지함
