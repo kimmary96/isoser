@@ -115,7 +115,8 @@
 - `scripts/program_backfill.py`는 고용24와 K-Startup 기존 `programs` row를 원본 고유 식별자 기준으로 보강하는 dry-run/apply CLI다. 기본 정책은 `fill-null-only`이며, K-Startup은 `announcement_id`/`pbancSn`, 고용24는 `hrd_id` 또는 `tracseId`/`tracseTme`/`trainstCstmrId` URL 조합으로 매칭한다.
 - `scripts/program_backfill.py --work24-deadline-audit`는 운영 DB에서 고용24 `deadline`이 훈련 종료일 `end_date`와 같은 의심 row를 dry-run으로 식별한다.
 - `backend/routers/admin.py`의 `POST /admin/sync/programs`는 운영 Supabase `programs` 스키마가 일부 뒤처진 경우에도 누락 컬럼을 제외하고, hybrid unique constraint 충돌 시 row-by-row fallback으로 upsert를 이어가도록 보강됐다.
-- `backend/rag/chroma_client.py`는 Gemini embedding quota 초과(429) 시 재시도 후 local deterministic embedding fallback으로 전환해, Chroma sync/search가 완전히 멈추지 않도록 보강됐다.
+- `backend/main.py`는 `CHROMA_MODE=ephemeral` 로컬 개발 모드에서 기본적으로 startup seed를 생략해 서버 기동이 Gemini embedding quota 상태에 묶이지 않게 한다. `ISOSER_CHROMA_SEED_ON_STARTUP=true`를 주면 기존처럼 startup seed를 강제할 수 있다.
+- `backend/rag/chroma_client.py`는 Gemini embedding quota 초과(429) 시 재시도 후 local deterministic embedding fallback으로 전환해, Chroma sync/search가 완전히 멈추지 않도록 보강됐다. 한 프로세스에서 429를 감지하면 이후 새 embedding function도 즉시 local fallback을 사용하며, 개발/장애 대응 시 `ISOSER_EMBEDDING_LOCAL_FALLBACK=true`로 원격 embedding 호출을 우회할 수 있다.
 - `programs.compare_meta` JSONB 컬럼이 migration으로 추가되어 비교 화면의 대상/허들/커리큘럼 메타데이터를 저장할 수 있다.
 - `backend/rag/collector/scheduler.py`는 source별 `status`/`message`를 함께 반환해 `0건 수집(empty)`과 `설정/요청/저장 실패`를 구분해 기록한다.
 - Tier 1 collector 중 `고용24`는 현재 유효한 국민내일배움카드 훈련과정 OpenAPI(`callOpenApiSvcInfo310L01.do`)를 사용하고, 첫 응답의 `scn_cnt`와 `pageSize`로 전체 페이지 수를 계산해 수집 범위 밖 데이터가 검색에서 빠지지 않도록 full sync한다. `K-Startup`은 현재 운영 중인 `nidapi.k-startup.go.kr` 조회서비스로 수집한다.

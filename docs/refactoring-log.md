@@ -2249,3 +2249,7 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - 고용24 `traEndDate`를 `raw_deadline`으로 넘기지 않고 `end_date`와 `compare_meta.training_end_date`로만 보존하도록 분리함
   - 관리자 sync도 별도 `deadline`/`close_date`가 없으면 고용24 `deadline=end_date`를 저장하지 않도록 수정함
   - 운영 DB의 기존 의심 row를 직접 수정하지 않고 `scripts/program_backfill.py --work24-deadline-audit` dry-run 리포트로 먼저 식별하도록 추가함
+- 2026-04-22: `backend/main.py`, `backend/rag/chroma_client.py`, `backend/tests/test_chroma_client.py`, `backend/tests/test_main_chroma_startup.py`, `docs/current-state.md`, `reports/backend-startup-chroma-quota-result.md`
+  - `CHROMA_MODE=ephemeral` 로컬 개발 모드에서는 기본 startup seed를 생략해 서버 기동이 Gemini embedding quota 초과 재시도에 묶이지 않도록 조정함
+  - Gemini embedding 429를 한 번 감지하면 같은 프로세스의 이후 embedding function도 즉시 local deterministic fallback을 사용하도록 전역 fallback 플래그를 추가함
+  - 필요 시 `ISOSER_CHROMA_SEED_ON_STARTUP=true`, `ISOSER_EMBEDDING_LOCAL_FALLBACK=true`로 운영/개발 동작을 명시 override할 수 있게 함

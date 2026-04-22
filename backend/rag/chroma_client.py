@@ -62,6 +62,11 @@ EMBED_BATCH_SIZE = 5
 EMBED_MAX_RETRIES = 4
 EMBED_RETRY_DELAY_SECONDS = 2.0
 EMBED_FALLBACK_DIMENSION = 3072
+TRUE_ENV_VALUES = {"1", "true", "yes", "on"}
+
+
+def _is_env_enabled(name: str) -> bool:
+    return os.getenv(name, "").strip().lower() in TRUE_ENV_VALUES
 
 
 def _gemini_http_options() -> genai_types.HttpOptions:
@@ -76,17 +81,24 @@ def _gemini_http_options() -> genai_types.HttpOptions:
 class GeminiEmbeddingFunction(EmbeddingFunction):
     """Custom Gemini embedding function using google-genai SDK."""
 
+    _global_force_local_fallback: ClassVar[bool] = False
+
     def __init__(self, api_key: str):
         self.client = genai.Client(
             api_key=api_key,
             http_options=_gemini_http_options(),
         )
-        self._force_local_fallback = False
+        self._force_local_fallback = self._should_use_local_fallback()
+
+    @classmethod
+    def _should_use_local_fallback(cls) -> bool:
+        return cls._global_force_local_fallback or _is_env_enabled("ISOSER_EMBEDDING_LOCAL_FALLBACK")
 
     def __call__(self, input: list[str]) -> Embeddings:
         if not input:
             return []
-        if self._force_local_fallback:
+        if self._should_use_local_fallback():
+            self._force_local_fallback = True
             return [self._local_fallback_embedding(text) for text in input]
         embeddings: list[list[float]] = []
 
@@ -135,6 +147,7 @@ class GeminiEmbeddingFunction(EmbeddingFunction):
                     time.sleep(delay)
                     continue
                 if is_rate_limited or sdk_apierror_bug:
+                    type(self)._global_force_local_fallback = True
                     self._force_local_fallback = True
                     log_event(
                         logger,
@@ -541,10 +554,10 @@ def get_chroma_manager() -> ChromaManager:
     return ChromaManager()
 
 
-def init_chroma() -> None:
+def init_chroma(*, seed_data: bool = True) -> None:
     """Initialize the Chroma client, collections, and in-process seed data."""
 
-    get_chroma_manager().initialize(seed_data=True, force=True)
+    get_chroma_manager().initialize(seed_data=seed_data, force=True)
 
 
 def get_collection(collection_name: str) -> chromadb.Collection | None:
