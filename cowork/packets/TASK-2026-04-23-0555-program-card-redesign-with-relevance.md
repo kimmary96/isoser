@@ -7,6 +7,7 @@ priority: P1
 planned_by: Claude (planning session)
 planned_at: 2026-04-23T05:55:00+09:00
 planned_against_commit: eb7a6d7e2828c76abf682fe0f478c538d3cd397e
+planned_files: backend/routers/programs.py, backend/rag/programs_rag.py, frontend/app/api/programs/compare-relevance/route.ts, frontend/app/(landing)/programs/page.tsx, frontend/app/(landing)/programs/recommended-programs-section.tsx, frontend/app/(landing)/programs/programs-filter-bar.tsx, frontend/lib/types/index.ts, frontend/lib/api/app.ts
 depends_on: []
 ---
 
@@ -14,7 +15,7 @@ depends_on: []
 
 프로그램 목록 카드의 액션 버튼을 제거하고 찜 버튼만 남깁니다. 관련도 점수를 숫자와 자연어 근거 최대 3줄로 노출합니다. `compare-relevance`와 `/programs/recommend` 응답에는 근거 문구 생성에 필요한 `relevance_reasons`, `score_breakdown`, `relevance_grade`, `relevance_badge`를 추가합니다.
 
-이번 task는 Task 2보다 먼저 진행되는 선행 작업입니다. 주소 필드와 지역 매칭은 아직 사용하지 않고, 주소 필드 추가 전 임시 가중치를 사용합니다.
+이번 task는 Task 2보다 먼저 진행되는 선행 작업입니다. 현재 worktree에는 주소/프로필 관련 미커밋 변경이 있을 수 있으나, 이 task에서는 주소 필드를 읽거나 지역 점수를 활성화하지 않습니다. 지역 점수는 `0` 또는 비활성 상태로 유지하고, Task 2에서만 주소 기반 지역 매칭을 다룹니다.
 
 # Dependencies
 
@@ -33,8 +34,13 @@ depends_on: []
 
 # UI Requirements
 
-- 카드 우측 상단에는 별 버튼만 유지합니다.
-- 기존 카드 액션인 `상세 보기`, `비교에 추가`, `지원 링크` 버튼은 목록 카드에서 제거합니다.
+- 범위 안 카드:
+  - 공개 프로그램 목록 카드: `frontend/app/(landing)/programs/page.tsx`
+  - 공개 맞춤 추천 섹션 카드: `frontend/app/(landing)/programs/recommended-programs-section.tsx`
+- 범위 밖 카드:
+  - 대시보드 캘린더 추천 카드와 프로그램 상세 페이지 카드는 이번 task에서 변경하지 않습니다.
+- 범위 안 카드 우측 상단에는 별 버튼만 유지합니다.
+- 기존 카드 액션인 `상세 보기`, `비교에 추가`, `지원 링크` 버튼은 범위 안 목록 카드에서 제거합니다.
 - 별 버튼은 카드 클릭 이벤트와 분리하고 이벤트 버블링을 차단합니다.
 - 카드 본문 영역은 상세 페이지로 이동하는 클릭 영역으로 동작합니다.
 - 관련도 뱃지는 아래 기준으로 표시합니다.
@@ -50,6 +56,14 @@ depends_on: []
 - 필수 필드인 제목, 마감일, 출처가 누락된 프로그램은 카드로 노출하지 않습니다.
 
 # Relevance Requirements
+
+점수 단위:
+
+- API 응답의 `relevance_score`는 기존 호환성을 위해 현재 코드의 단위를 유지합니다.
+- 현재 코드가 `0..1` float을 반환하는 경로에서는 필터 임계값을 `0.4`, `0.6`, `0.8`로 적용합니다.
+- 현재 코드가 `0..100` number를 반환하는 경로에서는 필터 임계값을 `40`, `60`, `80`으로 적용합니다.
+- 프론트 표시는 항상 퍼센트로 정규화합니다. `value <= 1`이면 `value * 100`, 그 외에는 그대로 퍼센트로 간주합니다.
+- 신규 `score_breakdown`은 `0..100` 기준 기여 점수로 반환합니다. UI는 기본적으로 breakdown을 직접 노출하지 않습니다.
 
 주소 필드 추가 전 임시 가중치를 사용합니다.
 
@@ -80,13 +94,15 @@ depends_on: []
 3. 별 버튼 클릭은 카드 상세 이동을 트리거하지 않습니다.
 4. 카드 본문 클릭 시 프로그램 상세 페이지로 이동합니다.
 5. `compare-relevance` 응답에 `relevance_reasons`, `score_breakdown`, `relevance_grade`, `relevance_badge`가 포함됩니다.
-6. 기존 응답 필드인 `relevance_score`, `matched_skills` 등은 유지됩니다.
+6. 기존 응답 필드인 `relevance_score`, `matched_skills`, `fit_label`, `fit_summary`, `readiness_label`, `gap_tags` 등은 유지됩니다.
 7. `/programs/recommend` 응답에도 동일한 관련도 확장 필드가 포함됩니다.
 8. 관련도 40점 미만 프로그램은 맞춤 추천 섹션에 노출되지 않습니다.
 9. 프로필과 활동이 모두 비어있는 유저는 맞춤 추천 카드 대신 CTA 안내를 봅니다.
 10. 빈 상태 placeholder 문구가 목록 카드에 노출되지 않습니다.
 11. 제목, 마감일, 출처 중 하나라도 누락된 프로그램은 목록 카드에서 제외됩니다.
 12. 기존 비교 페이지의 `compare-relevance` 사용처가 깨지지 않습니다.
+13. 추천 캐시 또는 fallback/default 추천 경로에서도 신규 관련도 필드는 누락되지 않거나 안전한 기본값으로 채워집니다.
+14. 북마크 토글은 기존 backend `POST /bookmarks/{program_id}` / `DELETE /bookmarks/{program_id}`를 직접 브라우저에서 호출하지 않고, 프론트 BFF 경유 방식이 있으면 재사용하고 없으면 최소 BFF mutation route를 추가합니다.
 
 # Constraints
 
@@ -94,10 +110,15 @@ depends_on: []
 - 이번 task에서는 주소 필드를 새로 도입하지 않습니다.
 - 지역 매칭 점수는 0점으로 두고 임시 가중치를 사용합니다.
 - 기존 API 응답 필드는 제거하거나 이름을 바꾸지 않습니다.
+- 신규 필드는 기존 `fit_label`, `fit_summary`, `readiness_label`, `gap_tags`를 대체하지 않고 병행 제공하는 호환 확장입니다.
 - 관련도 근거 문구는 템플릿 기반으로 생성합니다.
 - 카드 전체 클릭 영역화 시 별 버튼 영역은 이벤트 버블링을 차단합니다.
 - `programs.skills`가 운영 데이터에서 비어있는 현실을 고려해 `title`, `summary`, `description`, `compare_meta` 텍스트 토큰 fallback을 유지하거나 활용합니다.
 - 현재 `docs/current-state.md`에는 `compare-relevance`가 이미 `fit_label`, `fit_summary`, `readiness_label`, `gap_tags`를 반환한다고 기록되어 있습니다. 구현 전 기존 응답을 확인하고 중복 필드 생성 대신 호환 확장을 우선합니다.
+- 카드 노출 자격의 필수 필드는 아래처럼 정의합니다.
+  - 제목: `title`이 비어있지 않아야 합니다.
+  - 마감일: 모집 마감일 기준의 `deadline` 또는 이미 정규화된 `close_date`가 있어야 합니다. 고용24 훈련 종료일 성격의 `end_date`만 있는 경우 마감일로 간주하지 않습니다.
+  - 출처: `source`가 비어있지 않아야 합니다. `provider`는 표시 보조값이며 source 대체 필수값으로 보지 않습니다.
 
 # Non-goals
 

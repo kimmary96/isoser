@@ -7,6 +7,7 @@ priority: P2
 planned_by: Claude (planning session)
 planned_at: 2026-04-23T05:56:00+09:00
 planned_against_commit: eb7a6d7e2828c76abf682fe0f478c538d3cd397e
+planned_files: supabase/migrations, frontend/app/api/dashboard/profile/route.ts, frontend/app/dashboard/profile/_components/profile-edit-modal.tsx, frontend/app/dashboard/profile/_components/profile-hero-section.tsx, frontend/app/dashboard/profile/_hooks/use-profile-page.ts, frontend/app/dashboard/profile/page.tsx, frontend/lib/types/index.ts, backend/routers/programs.py, backend/rag/programs_rag.py
 depends_on:
   - TASK-2026-04-23-0555-program-card-redesign-with-relevance
 ---
@@ -24,9 +25,9 @@ depends_on:
 
 # Current-State Caution
 
-`docs/current-state.md`에는 이미 `profiles`가 주소 원문(`address`)과 추천/매칭용 지역 정규화값(`region`, `region_detail`)을 저장할 수 있다고 기록되어 있습니다. 또한 현재 worktree에는 주소 관련 migration과 프로필 UI/API 변경 파일이 미커밋 상태로 존재합니다.
+`docs/current-state.md`에는 이미 `profiles`가 주소 원문(`address`)과 추천/매칭용 지역 정규화값(`region`, `region_detail`)을 저장할 수 있다고 기록되어 있습니다. 또한 현재 worktree에는 주소 관련 migration과 프로필 UI/API 변경 파일이 미커밋 상태로 존재할 수 있습니다.
 
-따라서 구현자는 이 task를 새 구현으로 단정하지 말고, 먼저 현재 코드와 DB migration을 확인해야 합니다. 이미 구현된 부분이 있으면 duplicate 또는 partial duplicate로 분류하고, 남은 gap만 fix/update 범위로 좁혀야 합니다.
+따라서 이 task는 새 구현 task가 아니라 기존/미커밋 주소 구현을 기준으로 한 fix/update task로 취급합니다. 구현자는 먼저 현재 코드와 DB migration을 확인하고, 이미 만족한 항목은 재구현하지 않으며, 남은 gap만 보완합니다.
 
 # User Flow
 
@@ -70,6 +71,33 @@ Task 1의 임시 가중치를 아래 최종 가중치로 전환합니다.
 | 원격지 오프라인 | 0 |
 | 유저 주소 미입력 | 지역 요소 제외 후 재가중 |
 
+프로그램 지역 필드 우선순위:
+
+1. 정규화된 `region`
+2. 표시용 `location`
+3. `compare_meta.region`, `compare_meta.location`, `compare_meta.address`
+4. 위 값이 모두 없으면 지역 매칭 불가
+
+온라인/혼합형 판정:
+
+1. 명시 필드 `teaching_method` 또는 동등 필드에 `온라인`이 있으면 온라인으로 판정합니다.
+2. `온라인`과 `오프라인` 또는 지역명이 함께 있으면 혼합형으로 판정합니다.
+3. 명시 필드가 없으면 `title`, `summary`, `description`, `compare_meta` 텍스트에서 `온라인`, `비대면`, `혼합`, `블렌디드`, `오프라인` 키워드를 보수적으로 확인합니다.
+
+인접 시/도 1차 규칙:
+
+- 수도권: 서울, 경기, 인천은 서로 인접으로 봅니다.
+- 충청권: 대전, 세종, 충북, 충남은 서로 인접으로 봅니다.
+- 동남권: 부산, 울산, 경남은 서로 인접으로 봅니다.
+- 대구·경북권: 대구, 경북은 서로 인접으로 봅니다.
+- 광주·전라권: 광주, 전북, 전남은 서로 인접으로 봅니다.
+- 강원과 제주는 1차 구현에서는 완전 일치만 인정합니다.
+
+주소 미입력 재가중:
+
+- 지역 요소를 제외하고 Task 1 임시 가중치와 동일하게 직무 35, 스킬 30, 경험 20, 준비도 10, 행동 5로 계산합니다.
+- breakdown은 정수 반올림 기준으로 합계가 UI 표시 점수와 크게 어긋나지 않게 조정합니다.
+
 # Acceptance Criteria
 
 1. `profiles` 테이블에 주소 원문과 추천/매칭용 정규화 지역을 저장할 수 있습니다.
@@ -86,6 +114,7 @@ Task 1의 임시 가중치를 아래 최종 가중치로 전환합니다.
 12. 혼합형 프로그램은 10점을 적용합니다.
 13. 근거 문구에는 시/도 단위까지만 노출되고 구/동 단위는 노출되지 않습니다.
 14. 이미 주소 필드와 정규화 로직이 구현되어 있다면 중복 구현하지 않고 누락된 acceptance만 보완합니다.
+15. 최소 검증은 profile 주소 저장/표시, 주소 정규화, 주소 미입력 fallback, 온라인/혼합형 지역 점수, 상세 주소 비노출을 포함합니다.
 
 # Constraints
 
@@ -93,7 +122,7 @@ Task 1의 임시 가중치를 아래 최종 가중치로 전환합니다.
 - 근거 문구에서 상세 주소, 구/동, 도로명, 지번은 노출하지 않습니다.
 - 기존 migration 파일은 수정하지 않습니다.
 - `@supabase/ssr` 기반 쿠키 세션 흐름을 유지합니다.
-- Task 1의 관련도 응답 필드와 호환되어야 합니다.
+- Task 1의 관련도 응답 필드와 호환되어야 합니다. Task 1이 아직 승인 또는 구현되지 않았다면 이 task는 promotion하지 않습니다.
 - 주소 정규화 사전은 국내 17개 시/도 기준으로 시작합니다.
 - 프로그램 측 지역 데이터가 불완전할 수 있으므로 지역 매칭 실패가 전체 추천 실패로 이어지면 안 됩니다.
 - 현재 worktree에 주소 관련 미커밋 변경이 있으므로, 구현 전 `git status`, migration, 프로필 API, 프로필 UI를 반드시 확인합니다.
@@ -120,8 +149,6 @@ Task 1의 임시 가중치를 아래 최종 가중치로 전환합니다.
 
 # Open Questions
 
-- 주소 필드 최종 스키마는 구현 전 실제 migration과 타입을 확인해야 합니다. 권장 형태는 원문 주소와 정규화 시/도 값을 분리하는 방식입니다.
+- 주소 필드 최종 스키마는 구현 전 실제 migration과 타입을 확인해야 합니다. 기준 스키마는 `address`, `region`, `region_detail`입니다. 이미 다른 이름으로 구현된 경우 migration과 타입을 먼저 대조합니다.
 - 프로필 UI는 자유 입력과 시/도 드롭다운 중 어떤 방식이 현재 UX에 더 맞는지 확인이 필요합니다.
-- 프로그램 측 지역 필드가 `region`, `location`, `compare_meta` 중 어디를 우선해야 하는지 현재 API 모델 기준으로 결정해야 합니다.
-- 인접 시/도 정의를 수도권만 적용할지, 충청권/동남권 등 광역권 전체로 확장할지 결정이 필요합니다.
 - 현재 worktree의 주소 관련 변경이 이미 이 task를 대부분 만족한다면 result는 duplicate 또는 fix/update로 처리해야 합니다.
