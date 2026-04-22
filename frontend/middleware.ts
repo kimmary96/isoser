@@ -54,6 +54,14 @@ export async function middleware(request: NextRequest) {
   const requiresAuth =
     pathname === "/onboarding" || pathname.startsWith("/dashboard");
 
+  if (user && pathname === "/login") {
+    const redirectUrl = request.nextUrl.clone();
+    const redirectedFrom = redirectUrl.searchParams.get("redirectedFrom");
+    redirectUrl.pathname = redirectedFrom && redirectedFrom.startsWith("/") ? redirectedFrom : "/landing-a";
+    redirectUrl.search = "";
+    return NextResponse.redirect(redirectUrl);
+  }
+
   if (requiresAuth && !user) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";

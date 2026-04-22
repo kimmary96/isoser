@@ -17,17 +17,21 @@ declare global {
 }
 
 export default function AdSlot({ slotId, format = "auto", className }: AdSlotProps) {
-  if (!ADSENSE_CLIENT) {
-    return null;
-  }
-
   useEffect(() => {
+    if (!ADSENSE_CLIENT) {
+      return;
+    }
+
     try {
       (window.adsbygoogle = window.adsbygoogle || []).push({});
     } catch {
       // Ad blockers or unapproved inventories can noop here without breaking layout.
     }
   }, []);
+
+  if (!ADSENSE_CLIENT) {
+    return null;
+  }
 
   // Future extension point: return null for premium users once is_premium is available here.
   return (

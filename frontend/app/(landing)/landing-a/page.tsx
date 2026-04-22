@@ -4,14 +4,11 @@ import {
   LandingAComparisonSection,
   LandingAFilterBar,
   LandingAFooter,
+  LandingAHeader,
   LandingAHeroSection,
-  LandingAJourneySection,
-  LandingANavBar,
+  LandingAPreviewSection,
   LandingAProgramsSection,
   LandingAStyleTag,
-  LandingATickerBar,
-  LandingATrustSection,
-  LandingAWorkspaceSection,
 } from "./_components";
 import { chipOptions } from "./_content";
 import { landingAThemeVars } from "./_styles";
@@ -46,10 +43,10 @@ type LandingAPageProps = {
 };
 
 const CHIP_CATEGORY_MAP: Record<string, string> = {
-  "AI·데이터": "AI·데이터",
-  "IT·개발": "IT·개발",
+  "AI·데이터": "AI",
+  "IT·개발": "IT",
   디자인: "디자인",
-  경영: "경영·마케팅",
+  경영: "경영",
   창업: "창업",
 };
 
@@ -129,10 +126,8 @@ export default async function LandingAPage({ searchParams }: LandingAPageProps) 
 
   return (
     <main className="min-h-screen bg-[var(--surface)] text-[var(--ink)]" style={landingAThemeVars}>
-      <LandingATickerBar />
-      <LandingANavBar />
+      <LandingAHeader />
       <LandingAHeroSection featuredPrograms={programs.slice(0, 3)} totalCount={totalCount} />
-      <LandingATrustSection />
       <LandingAFilterBar activeChip={activeChip} keyword={keyword} />
       <LandingAProgramsSection
         programs={programs}
@@ -141,9 +136,8 @@ export default async function LandingAPage({ searchParams }: LandingAPageProps) 
         keyword={keyword}
         error={error}
       />
-      <LandingAWorkspaceSection />
       <LandingAComparisonSection />
-      <LandingAJourneySection />
+      <LandingAPreviewSection />
       <LandingACtaSection />
       <div className="px-5 pb-12 sm:px-8 lg:px-12">
         <AdSlot

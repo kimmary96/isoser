@@ -1,6 +1,10 @@
-import { NextResponse } from "next/server";
-
-import { apiError, apiOk } from "@/lib/api/route-response";
+import { apiError, apiOk, apiRateLimited } from "@/lib/api/route-response";
+import { enforceRateLimit } from "@/lib/server/rate-limit";
+import {
+  MAX_AVATAR_IMAGE_SIZE_BYTES,
+  validateImageFile,
+} from "@/lib/server/upload-validation";
+import { logRouteError } from "@/lib/server/route-logging";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Profile } from "@/lib/types";
 
@@ -42,6 +46,23 @@ function normalizeProfile(profileRow: Record<string, unknown> | null): Profile {
     bio: (profileRow?.["bio"] as string | null) ?? "",
     portfolio_url: (profileRow?.["portfolio_url"] as string | null) ?? "",
   };
+}
+
+function enforceProfileWriteRateLimit(userId: string) {
+  return enforceRateLimit({
+    namespace: "profile-update",
+    key: userId,
+    maxRequests: 20,
+    windowMs: 60_000,
+  });
+}
+
+function isMissingBioColumnError(error: { code?: string; message?: string } | null | undefined): boolean {
+  if (!error) {
+    return false;
+  }
+
+  return error.code === "42703" || error.message?.toLowerCase().includes("bio") === true;
 }
 
 async function getAuthenticatedClient() {
@@ -92,6 +113,15 @@ export async function GET() {
       matchAnalyses: matchRows ?? [],
     });
   } catch (error) {
+    logRouteError(
+      {
+        route: "/api/dashboard/profile",
+        method: "GET",
+        category: "profile",
+        status: 400,
+      },
+      error
+    );
     const message =
       error instanceof Error ? error.message : "프로필 데이터를 불러오지 못했습니다.";
     return apiError(message, 400, "BAD_REQUEST");
@@ -101,6 +131,14 @@ export async function GET() {
 export async function PATCH(request: Request) {
   try {
     const { supabase, user } = await getAuthenticatedClient();
+    const rateLimit = await enforceProfileWriteRateLimit(user.id);
+    if (!rateLimit.allowed) {
+      return apiRateLimited(
+        "프로필 저장 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.",
+        rateLimit.retryAfterSeconds
+      );
+    }
+
     const patch = (await request.json()) as Partial<Profile>;
 
     const payload: Record<string, unknown> = {};
@@ -121,11 +159,7 @@ export async function PATCH(request: Request) {
       .update(payload)
       .eq("id", user.id);
 
-    if (
-      (updateError?.code === "42703" ||
-        updateError?.message.toLowerCase().includes("bio")) &&
-      "bio" in payload
-    ) {
+    if (isMissingBioColumnError(updateError) && "bio" in payload) {
       const payloadWithoutBio = { ...payload };
       delete payloadWithoutBio.bio;
       const retry = await supabase.from("profiles").update(payloadWithoutBio).eq("id", user.id);
@@ -144,6 +178,15 @@ export async function PATCH(request: Request) {
 
     return apiOk({ profile: normalizeProfile((profileRow as Record<string, unknown> | null) ?? null) });
   } catch (error) {
+    logRouteError(
+      {
+        route: "/api/dashboard/profile",
+        method: "PATCH",
+        category: "profile",
+        status: 400,
+      },
+      error
+    );
     const message = error instanceof Error ? error.message : "프로필 저장에 실패했습니다.";
     return apiError(message, 400, "BAD_REQUEST");
   }
@@ -152,6 +195,14 @@ export async function PATCH(request: Request) {
 export async function PUT(request: Request) {
   try {
     const { supabase, user } = await getAuthenticatedClient();
+    const rateLimit = await enforceProfileWriteRateLimit(user.id);
+    if (!rateLimit.allowed) {
+      return apiRateLimited(
+        "프로필 저장 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.",
+        rateLimit.retryAfterSeconds
+      );
+    }
+
     const formData = await request.formData();
 
     const name = String(formData.get("name") ?? "").trim();
@@ -168,7 +219,15 @@ export async function PUT(request: Request) {
     let nextAvatarUrl = String(formData.get("current_avatar_url") ?? "").trim() || null;
 
     if (avatarFile instanceof File && avatarFile.size > 0) {
-      const extension = avatarFile.name.split(".").pop() ?? "png";
+      const validationError = await validateImageFile(avatarFile, {
+        maxSizeBytes: MAX_AVATAR_IMAGE_SIZE_BYTES,
+        label: "프로필 이미지",
+      });
+      if (validationError) {
+        return apiError(validationError, 400, "BAD_REQUEST");
+      }
+
+      const extension = avatarFile.name.split(".").pop()?.trim().toLowerCase() ?? "png";
       const path = `${user.id}/profile/${Date.now()}.${extension}`;
       const fileBuffer = Buffer.from(await avatarFile.arrayBuffer());
 
@@ -198,7 +257,7 @@ export async function PUT(request: Request) {
       { onConflict: "id" }
     );
 
-    if (upsertError?.code === "42703" || upsertError?.message.toLowerCase().includes("bio")) {
+    if (isMissingBioColumnError(upsertError)) {
       const retry = await supabase.from("profiles").upsert(
         {
           id: user.id,
@@ -227,6 +286,15 @@ export async function PUT(request: Request) {
       profile: normalizeProfile((profileRow as Record<string, unknown> | null) ?? null),
     });
   } catch (error) {
+    logRouteError(
+      {
+        route: "/api/dashboard/profile",
+        method: "PUT",
+        category: "profile",
+        status: 400,
+      },
+      error
+    );
     const message = error instanceof Error ? error.message : "프로필 저장에 실패했습니다.";
     return apiError(message, 400, "BAD_REQUEST");
   }

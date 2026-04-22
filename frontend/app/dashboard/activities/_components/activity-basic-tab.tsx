@@ -1,6 +1,7 @@
+import Image from "next/image";
 import type { ChangeEvent, KeyboardEvent } from "react";
 
-import type { Activity, ActivityConvertRequest } from "@/lib/types";
+import type { Activity } from "@/lib/types";
 
 type ActivityBasicTabProps = {
   activity: Activity;
@@ -50,7 +51,6 @@ type ActivityBasicTabProps = {
 };
 
 export function ActivityBasicTab({
-  activity,
   isNewActivity,
   typeDraft,
   onTypeDraftChange,
@@ -421,10 +421,12 @@ export function ActivityBasicTab({
           <div className="flex gap-3 flex-wrap mb-3">
             {imageUrls.map((url, i) => (
               <div key={i} className="relative w-24 h-24">
-                <img
+                <Image
                   src={url}
                   alt={`activity-${i}`}
-                  className="w-24 h-24 object-cover rounded-xl border border-gray-200"
+                  fill
+                  sizes="96px"
+                  className="rounded-xl border border-gray-200 object-cover"
                 />
                 <button
                   onClick={() => onImageRemove(i)}

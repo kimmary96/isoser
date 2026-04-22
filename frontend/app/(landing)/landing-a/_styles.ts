@@ -73,10 +73,6 @@ export const landingAStyles = `
     pointer-events: none;
   }
 
-  .trust-divider {
-    background: linear-gradient(90deg, rgba(43, 111, 242, 0.28), rgba(249, 115, 22, 0.12));
-  }
-
   .soft-panel {
     background:
       linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 247, 251, 0.94));
@@ -102,16 +98,6 @@ export const landingAStyles = `
     box-shadow: 0 22px 60px rgba(10, 19, 37, 0.08);
   }
 
-  .journey-line::before {
-    content: "";
-    position: absolute;
-    left: 22px;
-    top: 52px;
-    bottom: -28px;
-    width: 1px;
-    background: linear-gradient(180deg, rgba(43, 111, 242, 0.34), rgba(216, 227, 242, 0.2));
-  }
-
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -119,12 +105,6 @@ export const landingAStyles = `
 
   .no-scrollbar::-webkit-scrollbar {
     display: none;
-  }
-
-  @media (max-width: 1023px) {
-    .journey-line::before {
-      display: none;
-    }
   }
 
   @keyframes ticker {

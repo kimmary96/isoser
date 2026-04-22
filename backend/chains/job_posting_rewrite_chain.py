@@ -6,6 +6,7 @@ import json
 import logging
 import re
 import asyncio
+import contextlib
 from collections import Counter
 from typing import Any
 
@@ -554,6 +555,23 @@ def _llm_timeout_seconds() -> float:
         return 20.0
 
 
+async def _ainvoke_with_timeout(
+    llm: ChatGoogleGenerativeAI,
+    messages: list[SystemMessage | HumanMessage],
+) -> Any:
+    """LLM 호출을 task로 감싸 timeout 시 정리 누락 경고를 방지합니다."""
+
+    task = asyncio.create_task(llm.ainvoke(messages))
+    try:
+        return await asyncio.wait_for(task, timeout=_llm_timeout_seconds())
+    except Exception:
+        if not task.done():
+            task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await task
+        raise
+
+
 async def _generate_activity_rewrite(
     *,
     activity: dict[str, Any],
@@ -610,14 +628,12 @@ async def _generate_activity_rewrite(
 
     try:
         llm = _get_llm()
-        response = await asyncio.wait_for(
-            llm.ainvoke(
-                [
-                    SystemMessage(content=SYSTEM_PROMPT),
-                    HumanMessage(content=prompt),
-                ]
-            ),
-            timeout=_llm_timeout_seconds(),
+        response = await _ainvoke_with_timeout(
+            llm,
+            [
+                SystemMessage(content=SYSTEM_PROMPT),
+                HumanMessage(content=prompt),
+            ],
         )
         payload = json.loads(_extract_json_text(_response_content_to_text(response.content)))
         suggestions = _normalize_match_rewrite_suggestions(payload.get("rewrite_suggestions"))

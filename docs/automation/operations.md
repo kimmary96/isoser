@@ -20,6 +20,8 @@
 - `SLACK_WEBHOOK_URL`이 있으면 terminal alert를 Slack에도 전송한다
 - `cowork_watcher.py`도 `review-ready`, `review-failed`, `approval-blocked-stale-review`, `promoted` 상태를 Slack으로 미러링한다
 - local watcher의 `needs-review` alert는 자동 복구가 막힌 task를 `cowork/packets/`으로 에스컬레이션했다는 뜻이며, 이어서 cowork watcher의 `review-ready` 승인 흐름으로 넘긴다
+- `tasks/review-required/`는 처리 대기열이므로, 수동 검토가 끝난 packet을 그 폴더에 계속 두지 않는다
+- 구현이 이미 반영됐고 packet이 stale라 재실행 대상이 아닌 경우에는 packet을 `tasks/archive/`로 옮기고 `reports/*` 판단 문서는 유지한다
 - 없으면 watcher 시작 시 경고를 출력하고 로컬 dispatch 파일에만 기록한다
 
 ## Slack approval command

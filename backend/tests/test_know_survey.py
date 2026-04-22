@@ -13,8 +13,12 @@ from backend.rag.source_adapters.know_survey import (
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DOCS_DIR = REPO_ROOT / "docs"
-CODEBOOK_PATH = next(DOCS_DIR.glob("*코드북.xlsx"))
-PLACEHOLDER_RAW_PATH = next(DOCS_DIR.glob("*원자료.csv"))
+CODEBOOK_PATH = next(DOCS_DIR.glob("*코드북.xlsx"), None)
+PLACEHOLDER_RAW_PATH = next(DOCS_DIR.glob("*원자료.csv"), None)
+
+
+if CODEBOOK_PATH is None:
+    pytest.skip("KNOW 코드북 원본이 저장소에 없어 관련 테스트를 건너뜁니다.", allow_module_level=True)
 
 
 def test_build_question_labels_payload_reads_codebook() -> None:
@@ -29,6 +33,9 @@ def test_build_question_labels_payload_reads_codebook() -> None:
 
 
 def test_build_skill_weights_payload_raises_for_placeholder_raw_csv() -> None:
+    if PLACEHOLDER_RAW_PATH is None:
+        pytest.skip("KNOW 원자료 placeholder CSV가 저장소에 없어 관련 테스트를 건너뜁니다.")
+
     with pytest.raises(RawSurveyUnavailableError):
         build_skill_weights_payload(PLACEHOLDER_RAW_PATH, CODEBOOK_PATH)
 

@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { listActivities } from "@/lib/api/app";
+import { getActivityIntroLines } from "@/lib/activity-display";
 import type { Activity } from "@/lib/types";
 
 export default function ActivitiesPage() {
@@ -112,61 +113,69 @@ export default function ActivitiesPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredActivities.map((activity) => (
-              <Link
-                key={activity.id}
-                href={`/dashboard/activities/${activity.id}`}
-                className="group block bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all"
-              >
-                <div
-                  className="h-40 flex items-center justify-center relative"
-                  style={{ background: "linear-gradient(135deg, #1e3a5f, #2d5a8e)" }}
-                >
-                  <div className="absolute top-3 left-3">
-                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: "rgba(109,94,0,0.85)", color: "#fef3c7" }}>
-                      {activity.type}
-                    </span>
-                  </div>
-                  <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,0.3)" strokeWidth={1}>
-                    <rect x="3" y="3" width="18" height="18" rx="2" />
-                    <circle cx="8.5" cy="8.5" r="1.5" />
-                    <path d="M21 15l-5-5L5 21" />
-                  </svg>
-                </div>
+            {filteredActivities.map((activity) => {
+              const previewLines = getActivityIntroLines(activity);
 
-                <div className="p-4">
-                  <p className="text-xs text-gray-400 mb-1">{activity.period || ""}</p>
-                  <h3
-                    className="font-bold text-gray-900 text-sm leading-snug mb-2 line-clamp-2"
-                    style={{ fontFamily: "Pretendard, sans-serif" }}
+              return (
+                <Link
+                  key={activity.id}
+                  href={`/dashboard/activities/${activity.id}`}
+                  className="group block bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all"
+                >
+                  <div
+                    className="h-40 flex items-center justify-center relative"
+                    style={{ background: "linear-gradient(135deg, #1e3a5f, #2d5a8e)" }}
                   >
-                    {activity.title}
-                  </h3>
-                  {activity.description && (
-                    <p className="text-xs text-gray-500 line-clamp-2 mb-3">
-                      {activity.description}
-                    </p>
-                  )}
-                  {Array.isArray(activity.skills) && activity.skills.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5">
-                      {activity.skills.slice(0, 3).map((skill, i) => (
-                        <span
-                          key={i}
-                          className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600"
-                        >
-                          #{skill}
-                        </span>
-                      ))}
+                    <div className="absolute top-3 left-3">
+                      <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: "rgba(109,94,0,0.85)", color: "#fef3c7" }}>
+                        {activity.type}
+                      </span>
                     </div>
-                  )}
-                  <div className="flex justify-end mt-3">
-                    <span className="text-xs text-blue-500 group-hover:underline">
-                      상세보기 →
-                    </span>
+                    <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,0.3)" strokeWidth={1}>
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <path d="M21 15l-5-5L5 21" />
+                    </svg>
                   </div>
-                </div>
-              </Link>
-            ))}
+
+                  <div className="p-4">
+                    <p className="text-xs text-gray-400 mb-1">{activity.period || ""}</p>
+                    <h3
+                      className="font-bold text-gray-900 text-sm leading-snug mb-2 line-clamp-2"
+                      style={{ fontFamily: "Pretendard, sans-serif" }}
+                    >
+                      {activity.title}
+                    </h3>
+                    {previewLines.length > 0 && (
+                      <div className="mb-3 space-y-1">
+                        {previewLines.map((line, index) => (
+                          <p key={`${activity.id}-preview-${index}`} className="text-xs text-gray-500 line-clamp-1">
+                            {index === 0 && activity.description ? line : `- ${line}`}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                    {Array.isArray(activity.skills) && activity.skills.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {activity.skills.slice(0, 3).map((skill, i) => (
+                          <span
+                            key={i}
+                            className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600"
+                          >
+                            #{skill}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex justify-end mt-3">
+                      <span className="text-xs text-blue-500 group-hover:underline">
+                        상세보기 →
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>

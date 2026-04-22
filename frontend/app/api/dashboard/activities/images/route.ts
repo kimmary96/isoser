@@ -1,6 +1,12 @@
-import { NextResponse } from "next/server";
-
-import { apiError, apiOk } from "@/lib/api/route-response";
+import { apiError, apiOk, apiRateLimited } from "@/lib/api/route-response";
+import { enforceRateLimit } from "@/lib/server/rate-limit";
+import {
+  MAX_ACTIVITY_IMAGE_COUNT,
+  MAX_ACTIVITY_IMAGE_SIZE_BYTES,
+  sanitizeStorageSegment,
+  validateImageFile,
+} from "@/lib/server/upload-validation";
+import { logRouteError } from "@/lib/server/route-logging";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 async function getAuthenticatedClient() {
@@ -20,6 +26,19 @@ async function getAuthenticatedClient() {
 export async function POST(request: Request) {
   try {
     const { supabase, user } = await getAuthenticatedClient();
+    const rateLimit = await enforceRateLimit({
+      namespace: "activity-image-upload",
+      key: user.id,
+      maxRequests: 12,
+      windowMs: 60_000,
+    });
+    if (!rateLimit.allowed) {
+      return apiRateLimited(
+        "이미지 업로드 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.",
+        rateLimit.retryAfterSeconds
+      );
+    }
+
     const formData = await request.formData();
     const activityId = String(formData.get("activityId") ?? "").trim() || "temp";
     const files = formData.getAll("files").filter((file): file is File => file instanceof File);
@@ -27,12 +46,24 @@ export async function POST(request: Request) {
     if (files.length === 0) {
       return apiError("업로드할 파일이 없습니다.", 400, "BAD_REQUEST");
     }
+    if (files.length > MAX_ACTIVITY_IMAGE_COUNT) {
+      return apiError("활동 이미지는 한 번에 최대 5개까지 업로드할 수 있습니다.", 400, "BAD_REQUEST");
+    }
 
     const urls: string[] = [];
+    const safeActivityId = sanitizeStorageSegment(activityId);
 
     for (const file of files) {
-      const extension = file.name.split(".").pop() ?? "png";
-      const path = `${user.id}/${activityId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${extension}`;
+      const validationError = await validateImageFile(file, {
+        maxSizeBytes: MAX_ACTIVITY_IMAGE_SIZE_BYTES,
+        label: "활동 이미지",
+      });
+      if (validationError) {
+        return apiError(validationError, 400, "BAD_REQUEST");
+      }
+
+      const extension = file.name.split(".").pop()?.trim().toLowerCase() ?? "png";
+      const path = `${user.id}/${safeActivityId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${extension}`;
       const fileBuffer = Buffer.from(await file.arrayBuffer());
 
       const { error } = await supabase.storage
@@ -49,6 +80,15 @@ export async function POST(request: Request) {
 
     return apiOk({ urls });
   } catch (error) {
+    logRouteError(
+      {
+        route: "/api/dashboard/activities/images",
+        method: "POST",
+        category: "upload",
+        status: 400,
+      },
+      error
+    );
     const message = error instanceof Error ? error.message : "이미지 업로드에 실패했습니다.";
     return apiError(message, 400, "BAD_REQUEST");
   }

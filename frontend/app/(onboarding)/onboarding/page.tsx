@@ -1,7 +1,7 @@
 // 온보딩 페이지 - 기존 이력서 PDF 업로드/분석 후 프로필·활동 분리 확인 및 저장
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 

@@ -60,7 +60,9 @@ export async function POST(request: Request) {
 
     let { error: profileError } = await supabase.from("profiles").upsert(profilePayload);
     if (profileError?.code === "42703" || profileError?.message.toLowerCase().includes("bio")) {
-      const { bio: _bio, ...fallbackPayload } = profilePayload;
+      const fallbackPayload = Object.fromEntries(
+        Object.entries(profilePayload).filter(([key]) => key !== "bio")
+      );
       const retry = await supabase.from("profiles").upsert(fallbackPayload);
       profileError = retry.error;
     }
@@ -71,8 +73,17 @@ export async function POST(request: Request) {
     if (activities.length > 0) {
       const { error: activityError } = await supabase.from("activities").insert(
         activities.map((activity) => ({
-          ...activity,
           type: normalizeType(activity.type),
+          title: activity.title,
+          organization: activity.organization ?? null,
+          team_size: activity.team_size ?? null,
+          team_composition: activity.team_composition ?? null,
+          my_role: activity.my_role ?? activity.role ?? null,
+          contributions: activity.contributions ?? [],
+          period: activity.period,
+          role: activity.role,
+          skills: activity.skills ?? [],
+          description: activity.description,
           user_id: user.id,
         }))
       );

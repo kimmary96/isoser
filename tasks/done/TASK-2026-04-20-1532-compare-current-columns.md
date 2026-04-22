@@ -1,6 +1,6 @@
 ---
 id: TASK-2026-04-20-1532-compare-current-columns
-status: queued
+status: done
 type: fix
 title: Compare 페이지 - 현재 적재 컬럼 기준 비교 항목 재정의
 priority: high

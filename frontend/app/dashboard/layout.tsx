@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -145,9 +146,12 @@ export default function DashboardLayout({
             ) : (
               <div className="flex items-center gap-3">
                 {user?.avatarUrl ? (
-                  <img
+                  <Image
                     src={user.avatarUrl}
                     alt={`${displayName} 프로필 이미지`}
+                    width={32}
+                    height={32}
+                    sizes="32px"
                     className="h-8 w-8 flex-shrink-0 rounded-full object-cover"
                   />
                 ) : (

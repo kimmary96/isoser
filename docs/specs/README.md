@@ -7,4 +7,4 @@
 - [prd.html](./prd.html)
 - [prd.pdf](./prd.pdf)
 - [이력서 완성본 출력 스펙 — Codex 작업용.md](<./이력서 완성본 출력 스펙 — Codex 작업용.md>)
-- [이소서 (Isoser) v2 — 통합 사업계획서.md](<./이소서 (Isoser) v2 — 통합 사업계획서.md>)
+- [이소서 (Isoser) v3 — 통합 사업계획서.md](<./이소서 (Isoser) v3 — 통합 사업계획서.md>)

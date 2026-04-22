@@ -1,13 +1,47 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { PortfolioConversionResponse } from "@/lib/types";
+import { listActivities, listSavedPortfolios, savePortfolioDocument } from "@/lib/api/app";
+import { convertActivity } from "@/lib/api/backend";
+import type {
+  Activity,
+  ActivityConvertRequest,
+  PortfolioConversionResponse,
+  SavedPortfolio,
+} from "@/lib/types";
 
 const PENDING_PORTFOLIO_CONVERSION_KEY = "isoser:pending-portfolio-conversion";
+
+function buildPortfolioConvertPayload(activity: Activity): ActivityConvertRequest["activity"] {
+  return {
+    id: activity.id,
+    type: activity.type,
+    title: activity.title,
+    organization: activity.organization ?? null,
+    team_size: activity.team_size ?? null,
+    team_composition: activity.team_composition ?? null,
+    my_role: activity.my_role ?? activity.role ?? null,
+    contributions: activity.contributions ?? [],
+    period: activity.period,
+    role: activity.role,
+    skills: activity.skills ?? [],
+    description: activity.description,
+    star_situation: activity.star_situation ?? null,
+    star_task: activity.star_task ?? null,
+    star_action: activity.star_action ?? null,
+    star_result: activity.star_result ?? null,
+  };
+}
 
 export default function PortfolioPage() {
   const [portfolioPreview, setPortfolioPreview] =
     useState<PortfolioConversionResponse | null>(null);
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [loadingActivities, setLoadingActivities] = useState(true);
+  const [generatingActivityId, setGeneratingActivityId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [savedPortfolios, setSavedPortfolios] = useState<SavedPortfolio[]>([]);
+  const [saveStatus, setSaveStatus] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -29,6 +63,38 @@ export default function PortfolioPage() {
     }
   }, []);
 
+  useEffect(() => {
+    let mounted = true;
+
+    const loadData = async () => {
+      setLoadingActivities(true);
+      setError(null);
+
+      try {
+        const [activityResult, portfolioResult] = await Promise.all([
+          listActivities(),
+          listSavedPortfolios().catch(() => ({ portfolios: [] })),
+        ]);
+        if (!mounted) return;
+        setActivities(activityResult.activities);
+        setSavedPortfolios(portfolioResult.portfolios);
+      } catch (loadError) {
+        if (!mounted) return;
+        setError(loadError instanceof Error ? loadError.message : "활동 목록을 불러오지 못했습니다.");
+      } finally {
+        if (mounted) {
+          setLoadingActivities(false);
+        }
+      }
+    };
+
+    void loadData();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const clearPreview = () => {
     if (typeof window !== "undefined") {
       window.sessionStorage.removeItem(PENDING_PORTFOLIO_CONVERSION_KEY);
@@ -36,11 +102,143 @@ export default function PortfolioPage() {
     setPortfolioPreview(null);
   };
 
+  const handleSavePdf = () => {
+    if (typeof window === "undefined") return;
+    window.print();
+  };
+
+  const handleGeneratePortfolio = async (activity: Activity) => {
+    setGeneratingActivityId(activity.id);
+    setError(null);
+    setSaveStatus(null);
+
+    try {
+      const result = await convertActivity({
+        target: "portfolio",
+        activity: buildPortfolioConvertPayload(activity),
+      });
+      if (!result.portfolio) {
+        throw new Error("포트폴리오 변환 결과를 받지 못했습니다.");
+      }
+      const portfolio = result.portfolio;
+      if (typeof window !== "undefined") {
+        window.sessionStorage.setItem(
+          PENDING_PORTFOLIO_CONVERSION_KEY,
+          JSON.stringify({ activityId: activity.id, portfolio })
+        );
+      }
+      try {
+        const saved = await savePortfolioDocument({
+          title: portfolio.project_overview.title,
+          sourceActivityId: activity.id,
+          portfolio,
+        });
+        setSavedPortfolios((current) => [
+          {
+            id: saved.id,
+            title: portfolio.project_overview.title,
+            sourceActivityId: activity.id,
+            selectedActivityIds: [activity.id],
+            portfolio,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          ...current.filter((item) => item.id !== saved.id),
+        ]);
+        setSaveStatus("포트폴리오 초안이 서버에 저장되었습니다.");
+      } catch {
+        setSaveStatus("서버 저장에는 실패했지만, 현재 브라우저에서 초안을 확인할 수 있습니다.");
+      }
+      setPortfolioPreview(portfolio);
+    } catch (generateError) {
+      setError(generateError instanceof Error ? generateError.message : "포트폴리오 초안 생성에 실패했습니다.");
+    } finally {
+      setGeneratingActivityId(null);
+    }
+  };
+
   if (!portfolioPreview) {
     return (
-      <div className="p-8 text-gray-400">
-        포트폴리오 기능은 준비 중입니다.
-      </div>
+      <main className="min-h-screen bg-gray-50 px-4 py-8">
+        <div className="mx-auto max-w-5xl space-y-6">
+          <div className="rounded-3xl border border-gray-200 bg-white p-8 shadow-sm">
+            <p className="text-sm font-semibold text-emerald-600">포트폴리오 생성</p>
+            <h1 className="mt-2 text-3xl font-bold text-gray-900">활동 기반 포트폴리오 초안</h1>
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-gray-600">
+              성과 저장소에 있는 활동을 선택하면 발표용 최소 포트폴리오 초안을 바로 생성합니다.
+            </p>
+          </div>
+
+          {error ? (
+            <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+              {error}
+            </div>
+          ) : null}
+
+          {saveStatus ? (
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+              {saveStatus}
+            </div>
+          ) : null}
+
+          {loadingActivities ? (
+            <div className="rounded-3xl border border-gray-200 bg-white p-8 text-sm text-gray-500 shadow-sm">
+              활동 목록을 불러오는 중입니다...
+            </div>
+          ) : (
+            <>
+              {savedPortfolios.length > 0 ? (
+                <section className="rounded-3xl border border-gray-200 bg-white p-8 shadow-sm">
+                  <h2 className="text-xl font-semibold text-gray-900">저장된 포트폴리오 초안</h2>
+                  <div className="mt-5 grid gap-3 md:grid-cols-2">
+                    {savedPortfolios.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => item.portfolio && setPortfolioPreview(item.portfolio)}
+                        className="rounded-2xl border border-gray-200 px-4 py-4 text-left transition hover:border-emerald-300 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60"
+                        disabled={!item.portfolio}
+                      >
+                        <p className="text-sm font-semibold text-gray-900">{item.title}</p>
+                        <p className="mt-1 text-xs text-gray-500">
+                          {new Date(item.updatedAt).toLocaleDateString("ko-KR")} 저장
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
+
+              {activities.length > 0 ? (
+                <div className="grid gap-4 md:grid-cols-2">
+                  {activities.map((activity) => (
+                    <article key={activity.id} className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+                      <p className="text-xs font-semibold text-gray-400">{activity.type}</p>
+                      <h2 className="mt-2 line-clamp-2 text-lg font-semibold text-gray-900">{activity.title}</h2>
+                      <p className="mt-2 text-sm text-gray-500">{activity.period || "기간 미입력"}</p>
+                      <p className="mt-3 line-clamp-3 text-sm leading-6 text-gray-600">
+                        {activity.description || activity.contributions?.join(" ") || "활동 설명을 보완하면 더 좋은 초안을 만들 수 있습니다."}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => void handleGeneratePortfolio(activity)}
+                        disabled={generatingActivityId === activity.id}
+                        className="mt-5 rounded-2xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
+                      >
+                        {generatingActivityId === activity.id ? "초안 생성 중..." : "포트폴리오 초안 생성"}
+                      </button>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-3xl border border-dashed border-gray-200 bg-white p-8 text-sm text-gray-500">
+                  생성할 활동이 없습니다. 먼저 성과 저장소에서 활동을 저장해주세요.
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </main>
     );
   }
 
@@ -70,6 +268,13 @@ export default function PortfolioPage() {
               className="rounded-2xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-50"
             >
               미리보기 닫기
+            </button>
+            <button
+              type="button"
+              onClick={handleSavePdf}
+              className="rounded-2xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 print:hidden"
+            >
+              PDF로 저장
             </button>
           </div>
 

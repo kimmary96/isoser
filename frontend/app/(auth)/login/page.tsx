@@ -1,11 +1,54 @@
-"use client";
-
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
-export default function LoginPage() {
-  const handleGoogleLogin = async () => {
-    window.location.href = "/api/auth/google";
-  };
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+
+type LoginPageProps = {
+  searchParams: Promise<{
+    error?: string | string[];
+    redirectedFrom?: string | string[];
+  }>;
+};
+
+function takeFirst(value?: string | string[]): string {
+  return Array.isArray(value) ? value[0] ?? "" : value ?? "";
+}
+
+function resolveNextPath(value: string): string {
+  return value.startsWith("/") ? value : "/landing-a";
+}
+
+function getLoginErrorMessage(errorCode: string): string | null {
+  if (errorCode === "oauth_start_failed") {
+    return "Google 로그인 시작에 실패했습니다. 잠시 후 다시 시도해주세요.";
+  }
+
+  if (errorCode === "oauth_callback_failed") {
+    return "Google 로그인 완료 처리에 실패했습니다. 다시 로그인해주세요.";
+  }
+
+  return null;
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const resolvedSearchParams = await searchParams;
+  const safeNext = resolveNextPath(takeFirst(resolvedSearchParams.redirectedFrom));
+  const errorMessage = getLoginErrorMessage(takeFirst(resolvedSearchParams.error));
+
+  try {
+    const supabase = await createServerSupabaseClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (user) {
+      redirect(safeNext);
+    }
+  } catch {
+    // 인증 확인 실패 시에는 로그인 화면을 그대로 보여준다.
+  }
+
+  const googleLoginHref = `/api/auth/google?next=${encodeURIComponent(safeNext)}`;
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-950">
@@ -20,17 +63,18 @@ export default function LoginPage() {
             <h1 className="mt-4 text-4xl font-extrabold tracking-[-0.05em] text-slate-950 sm:text-5xl">
               프로그램 탐색과 비교를
               <br />
-              내 워크스페이스로 이어갑니다
+              같은 화면 흐름으로 이어갑니다
             </h1>
             <p className="mt-5 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
-              로그인 후에는 공개 화면에서 보던 프로그램을 추천 캘린더, 이력서, 자기소개서, 공고 매치 분석과 같은 흐름으로 관리할 수 있습니다.
+              로그인 전 공개 화면과 로그인 후 화면이 끊기지 않도록 맞췄습니다. 로그인 후에도 같은 랜딩과 탐색 흐름을
+              유지하면서, 추천과 문서 준비 기능만 자연스럽게 이어집니다.
             </p>
 
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
               {[
                 ["탐색", "오늘 기준 마감순으로 공고를 빠르게 확인"],
                 ["비교", "최대 3개 프로그램을 나란히 검토"],
-                ["추천", "내 프로필 기준 적합도를 이어서 계산"],
+                ["추천", "로그인 후 같은 흐름에서 개인화 기능 확장"],
               ].map(([title, description]) => (
                 <div key={title} className="rounded-2xl bg-slate-50 p-4">
                   <div className="text-sm font-semibold text-slate-950">{title}</div>
@@ -43,14 +87,22 @@ export default function LoginPage() {
           <section className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
             <div className="text-center">
               <h2 className="text-2xl font-bold text-slate-950">Google로 시작하기</h2>
-              <p className="mt-2 text-sm text-slate-500">지금 로그인하면 추천과 문서 준비 흐름을 바로 이어서 사용할 수 있습니다.</p>
+              <p className="mt-2 text-sm text-slate-500">
+                로그인 후에는 다시 예전 랜딩으로 보내지지 않고, 현재 보고 있는 흐름으로 그대로 돌아갑니다.
+              </p>
             </div>
 
-            <button
-              onClick={handleGoogleLogin}
+            {errorMessage ? (
+              <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                {errorMessage}
+              </div>
+            ) : null}
+
+            <a
+              href={googleLoginHref}
               className="mt-8 flex w-full items-center justify-center gap-3 rounded-2xl border border-slate-300 px-4 py-3.5 text-sm font-semibold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
             >
-              <svg className="h-5 w-5" viewBox="0 0 24 24">
+              <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
                 <path
                   fill="#4285F4"
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -69,10 +121,11 @@ export default function LoginPage() {
                 />
               </svg>
               Google로 계속하기
-            </button>
+            </a>
 
             <p className="mt-4 text-center text-xs leading-5 text-slate-500">
-              회원가입 없이도 프로그램 탐색과 비교는 가능하며, 로그인 후에는 추천과 문서 기능이 열립니다.
+              로그인 없이도 프로그램 탐색과 비교는 가능하며, 로그인 후에는 같은 화면 구조 위에 추천과 문서 기능이
+              추가됩니다.
             </p>
           </section>
         </div>

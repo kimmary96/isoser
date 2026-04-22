@@ -133,6 +133,11 @@ export interface ParsedProfile {
 export interface ParsedActivity {
   type: Activity["type"];
   title: string;
+  organization?: string;
+  team_size?: number | null;
+  team_composition?: string;
+  my_role?: string;
+  contributions?: string[];
   period: string;
   role: string;
   skills: string[];
@@ -467,6 +472,16 @@ export interface PortfolioConversionResponse {
   role_clarification: PortfolioTextSectionResponse;
   missing_elements: string[];
   review_tags: string[];
+}
+
+export interface SavedPortfolio {
+  id: string;
+  title: string;
+  sourceActivityId: string | null;
+  selectedActivityIds: string[];
+  portfolio: PortfolioConversionResponse | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ActivityConvertResponse {

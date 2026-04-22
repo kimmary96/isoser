@@ -1,5 +1,3 @@
-import { NextResponse } from "next/server";
-
 import { apiError, apiOk } from "@/lib/api/route-response";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 

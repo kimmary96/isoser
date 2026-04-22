@@ -9,6 +9,33 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Optional
 
+SUPERVISOR_SPEC_REQUIRED_FIELDS: tuple[str, ...] = (
+    "spec_version",
+    "request_id",
+    "created_by",
+    "goal",
+    "background",
+    "scope_in",
+    "scope_out",
+    "constraints",
+    "non_goals",
+    "acceptance_criteria",
+    "risk_level",
+    "execution_path",
+    "allowed_paths",
+    "blocked_paths",
+    "prechecks",
+    "implementation_steps",
+    "tests",
+    "artifacts",
+    "fallback_plan",
+    "rollback_plan",
+    "dedupe_key",
+    "report_format",
+)
+VALID_EXECUTION_PATHS = {"local", "github", "manual-blocked"}
+VALID_RISK_LEVELS = {"low", "medium", "high", "critical"}
+
 
 def ensure_directories_exist(directories: list[str]) -> None:
     for directory in directories:
@@ -138,6 +165,43 @@ def read_task_metadata(task_path: str, required_fields: tuple[str, ...]) -> tupl
     metadata = extract_frontmatter(read_markdown(task_path))
     missing_fields = [field for field in required_fields if not metadata.get(field)]
     return metadata, missing_fields
+
+
+def validate_task_packet_metadata(
+    metadata: dict[str, str],
+    required_fields: tuple[str, ...],
+) -> tuple[list[str], list[str]]:
+    missing_fields = [field for field in required_fields if not metadata.get(field)]
+    validation_errors: list[str] = []
+    spec_version = metadata.get("spec_version", "").strip()
+    if not spec_version:
+        return missing_fields, validation_errors
+
+    for field in SUPERVISOR_SPEC_REQUIRED_FIELDS:
+        if not metadata.get(field) and field not in missing_fields:
+            missing_fields.append(field)
+
+    execution_path = metadata.get("execution_path", "").strip().lower()
+    if execution_path and execution_path not in VALID_EXECUTION_PATHS:
+        validation_errors.append(
+            "execution_path must be one of: local, github, manual-blocked"
+        )
+
+    risk_level = metadata.get("risk_level", "").strip().lower()
+    if risk_level and risk_level not in VALID_RISK_LEVELS:
+        validation_errors.append(
+            "risk_level must be one of: low, medium, high, critical"
+        )
+
+    allowed_paths = set(parse_frontmatter_path_list(metadata.get("allowed_paths", "")))
+    blocked_paths = set(parse_frontmatter_path_list(metadata.get("blocked_paths", "")))
+    overlapping_paths = sorted(allowed_paths & blocked_paths)
+    if overlapping_paths:
+        validation_errors.append(
+            "allowed_paths and blocked_paths overlap: " + ", ".join(overlapping_paths)
+        )
+
+    return missing_fields, validation_errors
 
 
 def sanitize_task_id(raw_value: str) -> str:

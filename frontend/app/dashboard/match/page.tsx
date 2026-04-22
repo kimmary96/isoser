@@ -81,7 +81,7 @@ export default function MatchPage() {
           <div className="rounded-xl border border-gray-200 bg-white p-6 text-sm text-gray-500">저장된 분석을 불러오는 중...</div>
         ) : savedAnalyses.length === 0 ? (
           <div className="rounded-xl border border-gray-200 bg-white p-8 text-sm text-gray-400">
-            아직 저장된 분석이 없습니다. 우측 상단의 "합격률 분석하기" 버튼으로 첫 분석을 시작해보세요.
+            아직 저장된 분석이 없습니다. 우측 상단의 &quot;합격률 분석하기&quot; 버튼으로 첫 분석을 시작해보세요.
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

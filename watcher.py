@@ -33,6 +33,7 @@ from scripts.watcher_shared import (
     release_lock_file,
     resolve_cli_command,
     sanitize_task_id,
+    validate_task_packet_metadata,
     worktree_fingerprint_details,
     write_lock_file,
 )
@@ -567,8 +568,10 @@ def release_watcher_lock(lock_handle: Optional[int]) -> None:
     release_lock_file(lock_handle, WATCHER_LOCK_PATH)
 
 
-def read_task_metadata(task_path: str) -> tuple[dict[str, str], list[str]]:
-    return shared_read_task_metadata(task_path, REQUIRED_FIELDS)
+def read_task_metadata(task_path: str) -> tuple[dict[str, str], list[str], list[str]]:
+    metadata, _ = shared_read_task_metadata(task_path, REQUIRED_FIELDS)
+    missing_fields, validation_errors = validate_task_packet_metadata(metadata, REQUIRED_FIELDS)
+    return metadata, missing_fields, validation_errors
 
 
 def current_head() -> str:
@@ -624,6 +627,38 @@ def supervisor_inspection_report_path(task_id: str) -> str:
 
 def supervisor_verification_report_path(task_id: str) -> str:
     return os.path.join(REPORTS_DIR, f"{task_id}-supervisor-verification.md")
+
+
+def write_docs_fast_path_verification_report(task_id: str) -> str:
+    body = "\n".join(
+        [
+            f"# Supervisor Verification: {task_id}",
+            "",
+            "## Verification Summary",
+            "",
+            "- Docs fast-path verification completed inside the watcher.",
+            "- The implementer result report exists and no new blocked/drift report was produced after implementation.",
+            "",
+            "## Checks Reviewed",
+            "",
+            "- task type is docs/doc/documentation",
+            "- result report exists",
+            "- lightweight docs-only checks were delegated to the implementer step",
+            "",
+            "## Result Report Consistency",
+            "",
+            "- The watcher confirmed the result report artifact exists before completion.",
+            "",
+            "## Residual Risks",
+            "",
+            "- This used the lightweight docs fast-path, so final verification relied on the implementer report plus watcher safeguards.",
+            "",
+            "## Final Verdict",
+            "",
+            "- verdict: pass",
+        ]
+    )
+    return write_report(task_id, "supervisor-verification", body)
 
 
 def write_alert(
@@ -849,6 +884,47 @@ def is_smoke_task(task_id: str) -> bool:
     return normalized.startswith("TASK-TEST-")
 
 
+def task_title_from_packet_path(packet_path: str) -> Optional[str]:
+    packet_abs = resolve_repo_path(packet_path)
+    if not os.path.exists(packet_abs):
+        return None
+    try:
+        content = Path(packet_abs).read_text(encoding="utf-8")
+    except OSError:
+        return None
+    metadata = extract_frontmatter(content)
+    title = str(metadata.get("title", "")).strip()
+    return title or None
+
+
+def alert_targets_test_path(*, packet_path: str, report_path: Optional[str] = None) -> bool:
+    targets = [packet_path]
+    if report_path:
+        targets.append(report_path)
+    for target in targets:
+        normalized = (target or "").replace("\\", "/").lower()
+        if "/.pytest_tmp/" in normalized or normalized.startswith(".pytest_tmp/"):
+            return True
+    return False
+
+
+def slack_alert_preview_text(*, task_id: str, stage: str, packet_path: str) -> str:
+    stage_labels = {
+        "completed": "개발 완료",
+        "self-healed": "자동 자가복구",
+        "recovered": "자동 복구",
+        "needs-review": "검토 필요",
+        "replan-required": "재설계 필요",
+        "drift": "드리프트 감지",
+        "blocked": "차단",
+        "push-failed": "Git 동기화 실패",
+    }
+    title = task_title_from_packet_path(packet_path)
+    if title:
+        return f"{stage_labels.get(stage, stage)}: {task_id} | {title}"
+    return f"{stage_labels.get(stage, stage)}: {task_id}"
+
+
 def format_slack_alert_message(
     *,
     task_id: str,
@@ -901,21 +977,23 @@ def format_slack_alert_message(
         "action-required": "조치 필요",
     }
     lines = [
-        f"{emoji} 로컬 watcher 알림",
-        "",
         f"*작업*: `{task_id}`",
-        f"*단계*: {stage_labels.get(stage, stage)}",
         f"*상태*: {status_labels.get(status, status)}",
-        "",
-        "*패킷*",
-        f"`{packet_path}`",
     ]
-    if report_path:
-        lines.extend(["", "*리포트*", f"`{report_path}`"])
+    title = task_title_from_packet_path(packet_path)
+    if title:
+        lines.append(f"*제목*: {title}")
+    lines.append(f"*단계*: {stage_labels.get(stage, stage)}")
+    if stage == "runtime-error" and alert_targets_test_path(packet_path=packet_path, report_path=report_path):
+        lines.append("*주의*: 테스트 경로 감지됨")
     if localized_summary:
-        lines.extend(["", "*요약*", localized_summary])
+        summary_heading = "*완료 결과*" if stage == "completed" else "*요약*"
+        lines.extend(["", summary_heading, f"- {localized_summary}"])
     if localized_next_action:
-        lines.extend(["", "*다음 조치*", localized_next_action])
+        lines.extend(["", "*다음 조치*", f"- {localized_next_action}"])
+    lines.extend(["", "*산출물*", f"- 패킷: `{packet_path}`"])
+    if report_path:
+        lines.append(f"- 리포트: `{report_path}`")
     return "\n".join(lines)
 
 
@@ -993,17 +1071,19 @@ def build_slack_alert_payload(
 
     overview = [
         f"*작업*: `{task_id}`",
-        f"*단계*: {stage_labels.get(stage, stage)}",
         f"*상태*: {status_labels.get(status, status)}",
-        f"*패킷*: `{packet_path}`",
     ]
-    if report_path:
-        overview.append(f"*리포트*: `{report_path}`")
+    title = task_title_from_packet_path(packet_path)
+    if title:
+        overview.append(f"*제목*: {title}")
+    overview.append(f"*단계*: {stage_labels.get(stage, stage)}")
+    if stage == "runtime-error" and alert_targets_test_path(packet_path=packet_path, report_path=report_path):
+        overview.append("*주의*: 테스트 경로 감지됨")
 
     blocks: list[dict[str, object]] = [
         {
             "type": "header",
-            "text": {"type": "plain_text", "text": f"{emoji} 로컬 watcher 알림"},
+            "text": {"type": "plain_text", "text": f"{stage_labels.get(stage, stage)} | {task_id}"},
         },
         {
             "type": "section",
@@ -1014,17 +1094,32 @@ def build_slack_alert_payload(
         blocks.append(
             {
                 "type": "section",
-                "text": {"type": "mrkdwn", "text": f"*요약*\n{localized_summary}"},
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"{'*완료 결과*' if stage == 'completed' else '*요약*'}\n- {localized_summary}",
+                },
             }
         )
     if localized_next_action:
         blocks.append(
             {
                 "type": "section",
-                "text": {"type": "mrkdwn", "text": f"*다음 조치*\n{localized_next_action}"},
+                "text": {"type": "mrkdwn", "text": f"*다음 조치*\n- {localized_next_action}"},
             }
         )
-    payload = {"text": text, "blocks": blocks}
+    artifacts = [f"- 패킷: `{packet_path}`"]
+    if report_path:
+        artifacts.append(f"- 리포트: `{report_path}`")
+    blocks.append(
+        {
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": "*산출물*\n" + "\n".join(artifacts)},
+        }
+    )
+    payload = {
+        "text": slack_alert_preview_text(task_id=task_id, stage=stage, packet_path=packet_path),
+        "blocks": blocks,
+    }
     if slack_thread_ts:
         payload["thread_ts"] = slack_thread_ts
         payload["reply_broadcast"] = False
@@ -1120,7 +1215,7 @@ def packet_needs_recovery(task_path: str, failure_report_path: str, task_recover
 
 
 def auto_recovery_attempts(task_path: str) -> int:
-    metadata, _ = read_task_metadata(task_path)
+    metadata, _, _ = read_task_metadata(task_path)
     raw_value = metadata.get("auto_recovery_attempts", "").strip()
     if not raw_value:
         return 0
@@ -1829,6 +1924,23 @@ def run_supervisor_workflow(
             "supervisor_step": "implementation",
         }
 
+    if task_type in DOC_TASK_TYPES:
+        append_run_ledger(
+            task_id,
+            "supervisor-verification",
+            status="started",
+            packet_path=f"tasks/running/{task_filename}",
+            report_path=f"reports/{task_id}-supervisor-verification.md",
+            details={"mode": "docs-fast-path"},
+        )
+        write_docs_fast_path_verification_report(task_id)
+        return {
+            "exit_code": implementer_exit_code,
+            "token_count": total_tokens,
+            "stage": "implemented",
+            "supervisor_step": "verification",
+        }
+
     append_run_ledger(
         task_id,
         "supervisor-verification",
@@ -2004,13 +2116,19 @@ def handle_recovery(task_path: str, *, failure_stage: str) -> None:
         print(f"복구 실패: {filename} (exit_code={exit_code})")
         return
 
-    metadata, missing_fields = read_task_metadata(task_path)
+    metadata, missing_fields, validation_errors = read_task_metadata(task_path)
     planned_commit = metadata.get("planned_against_commit", "")
     status = metadata.get("status", "").strip().lower()
     updated_retry_count = auto_recovery_attempts(task_path)
     head_commit = current_head()
 
-    if missing_fields or planned_commit != head_commit or status != "queued" or updated_retry_count <= retry_count:
+    if (
+        missing_fields
+        or validation_errors
+        or planned_commit != head_commit
+        or status != "queued"
+        or updated_retry_count <= retry_count
+    ):
         escalate_task_for_manual_review(
             task_path,
             failure_stage=failure_stage,
@@ -2062,7 +2180,7 @@ def handle_task(task_path: str) -> None:
     if duplicate_stage is not None:
         if os.path.exists(task_path):
             try:
-                metadata, _ = read_task_metadata(task_path)
+                metadata, _, _ = read_task_metadata(task_path)
                 task_id = sanitize_task_id(metadata.get("id", task_id))
             except OSError:
                 pass
@@ -2085,7 +2203,7 @@ def handle_task(task_path: str) -> None:
     except (PermissionError, FileExistsError) as error:
         if os.path.exists(task_path):
             try:
-                metadata, _ = read_task_metadata(task_path)
+                metadata, _, _ = read_task_metadata(task_path)
                 task_id = sanitize_task_id(metadata.get("id", task_id))
             except OSError:
                 pass
@@ -2120,7 +2238,7 @@ def handle_task(task_path: str) -> None:
 
     print(f"실행 시작: {filename}")
 
-    metadata, missing_fields = read_task_metadata(running_path)
+    metadata, missing_fields, validation_errors = read_task_metadata(running_path)
     task_id = sanitize_task_id(metadata.get("id", filename.removesuffix(".md")))
     append_run_ledger(
         task_id,
@@ -2131,7 +2249,9 @@ def handle_task(task_path: str) -> None:
     planned_commit = metadata.get("planned_against_commit", "")
     task_type = metadata.get("type", "").strip().lower()
 
-    if missing_fields:
+    if missing_fields or validation_errors:
+        issue_lines = [f"- missing_fields: {', '.join(missing_fields)}"] if missing_fields else []
+        issue_lines.extend(f"- validation_error: {error}" for error in validation_errors)
         write_report(
             task_id,
             "blocked",
@@ -2139,10 +2259,10 @@ def handle_task(task_path: str) -> None:
                 [
                     f"# Blocked: {task_id}",
                     "",
-                    "Task packet is missing required frontmatter fields.",
+                    "Task packet failed watcher validation before execution.",
                     "",
                     f"- file: `tasks/running/{filename}`",
-                    f"- missing_fields: {', '.join(missing_fields)}",
+                    *issue_lines,
                 ]
             ),
         )
@@ -2152,12 +2272,12 @@ def handle_task(task_path: str) -> None:
             status="action-required",
             packet_path=f"tasks/running/{filename}",
             report_path=f"reports/{task_id}-blocked.md",
-            summary="Task packet is missing required frontmatter fields.",
-            next_action="Fill the missing frontmatter fields and resubmit the task packet.",
+            summary="Task packet failed watcher validation before execution.",
+            next_action="Fix the packet validation issues, regenerate approval if needed, and resubmit the task packet.",
         )
         blocked_path = os.path.join(BLOCKED_DIR, filename)
         move_task_file(running_path, blocked_path)
-        print(f"차단됨: {filename} (frontmatter 누락)")
+        print(f"차단됨: {filename} (packet validation 실패)")
         return
 
     head_commit = current_head()

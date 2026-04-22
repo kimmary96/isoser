@@ -1,5 +1,11 @@
-import { apiError, apiOk } from "@/lib/api/route-response";
-import type { AssistantMessageRequest, AssistantMessageResponse, CoachFeedbackResponse } from "@/lib/types";
+import { apiError, apiOk, apiRateLimited } from "@/lib/api/route-response";
+import { enforceRateLimit } from "@/lib/server/rate-limit";
+import { logRouteError } from "@/lib/server/route-logging";
+import type {
+  AssistantMessageRequest,
+  AssistantMessageResponse,
+  CoachFeedbackResponse,
+} from "@/lib/types";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
@@ -21,9 +27,24 @@ async function getAuthenticatedUserId() {
 export async function POST(request: Request) {
   try {
     const userId = await getAuthenticatedUserId();
+    const rateLimit = await enforceRateLimit({
+      namespace: "coach-feedback",
+      key: userId,
+      maxRequests: 8,
+      windowMs: 60_000,
+    });
+
+    if (!rateLimit.allowed) {
+      return apiRateLimited(
+        "AI 코칭 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.",
+        rateLimit.retryAfterSeconds
+      );
+    }
+
     const body = (await request.json()) as Omit<AssistantMessageRequest, "user_id" | "preferred_intent">;
 
     const response = await fetch(`${BACKEND_URL}/assistant/message`, {
+      signal: AbortSignal.timeout(30_000),
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -49,6 +70,30 @@ export async function POST(request: Request) {
 
     return apiOk<CoachFeedbackResponse>(data.coach_result);
   } catch (error) {
+    if (error instanceof Error && error.name === "TimeoutError") {
+      logRouteError(
+        {
+          route: "/api/dashboard/cover-letters/coach",
+          method: "POST",
+          category: "coach",
+          status: 504,
+          code: "UPSTREAM_ERROR",
+          note: "timeout",
+        },
+        error
+      );
+      return apiError("AI 코칭 응답이 지연되고 있습니다. 잠시 후 다시 시도해주세요.", 504, "UPSTREAM_ERROR");
+    }
+
+    logRouteError(
+      {
+        route: "/api/dashboard/cover-letters/coach",
+        method: "POST",
+        category: "coach",
+        status: 400,
+      },
+      error
+    );
     const message = error instanceof Error ? error.message : "AI 코칭 요청에 실패했습니다.";
     return apiError(message, 400, "BAD_REQUEST");
   }

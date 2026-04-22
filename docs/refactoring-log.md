@@ -1,5 +1,625 @@
 # 리팩토링 로그
 
+## 2026-04-20 docs fast-path lightweight verification
+
+- 수정 파일:
+  - `watcher.py`
+  - `tests/test_watcher.py`
+  - `docs/current-state.md`
+- 변경 내용:
+  - docs 계열 task는 inspector와 implementer까지만 Codex를 실행하고, verifier 단계는 watcher가 경량 verification report를 직접 기록하도록 줄였다.
+  - 코드 task의 기존 3단계 supervisor 흐름은 그대로 유지했다.
+- 유지된 동작:
+  - `reports/<task-id>-supervisor-inspection.md`, `reports/<task-id>-result.md`, `reports/<task-id>-supervisor-verification.md` artifact 구조는 유지된다.
+  - `review-required` 분기와 코드 task 검증 강도는 유지된다.
+- 검증 메모:
+  - `tests/test_watcher.py`에 docs fast-path 전용 회귀 테스트를 추가했다.
+
+## 2026-04-20 검증 체계 복구와 저위험 안정화
+
+- 수정 파일:
+  - `frontend/.eslintrc.json`
+  - `frontend/tsconfig.codex-check.json`
+  - `frontend/components/AdSlot.tsx`
+  - `frontend/app/(onboarding)/onboarding/page.tsx`
+  - `frontend/app/api/auth/signout/route.ts`
+  - `frontend/app/api/dashboard/activities/[id]/route.ts`
+  - `frontend/app/api/dashboard/activities/coach-session/route.ts`
+  - `frontend/app/api/dashboard/activities/images/route.ts`
+  - `frontend/app/api/dashboard/activities/route.ts`
+  - `frontend/app/api/dashboard/documents/route.ts`
+  - `frontend/app/api/dashboard/match/route.ts`
+  - `frontend/app/api/dashboard/profile/route.ts`
+  - `frontend/app/api/dashboard/resume-export/route.ts`
+  - `frontend/app/api/dashboard/resume/route.ts`
+  - `frontend/app/api/onboarding/route.ts`
+  - `frontend/app/api/summary/route.ts`
+  - `frontend/app/dashboard/activities/_components/activity-basic-tab.tsx`
+  - `frontend/app/dashboard/activities/_hooks/use-activity-detail.ts`
+  - `frontend/app/dashboard/match/page.tsx`
+  - `frontend/app/dashboard/profile/page.tsx`
+  - `frontend/app/dashboard/resume/page.tsx`
+  - `backend/tests/test_know_survey.py`
+  - `backend/chains/job_posting_rewrite_chain.py`
+  - `docs/current-state.md`
+- 변경 내용:
+  - 프론트에 실제 ESLint 설정을 추가해 `next lint`가 초기 설정 프롬프트에 빠지지 않고 CI/로컬 모두 비대화형 검증으로 실행되게 정리함
+  - `tsconfig.codex-check.json`에서 `.next/types` 직접 의존을 끊어 stale 생성물 때문에 standalone 타입체크가 거짓 실패하던 문제를 정리함
+  - KNOW 원본 자료가 저장소에 없는 환경에서도 `backend/tests/test_know_survey.py`가 import 시점 `StopIteration`으로 전체 pytest 수집을 중단하지 않게 수정함
+  - `job_posting_rewrite_chain.py`의 Gemini rewrite 호출을 task cancel/cleanup 방식으로 감싸 fallback 테스트에서 `coroutine was never awaited` 경고가 다시 나오지 않게 정리함
+  - 프론트 라우트/페이지에 남아 있던 unused import·unused state·문자열 lint 오류를 제거하고, `AdSlot`의 conditional Hook 호출을 동일 순서 호출로 바꿔 React Hook 규칙 위반을 해소함
+- 유지된 동작:
+  - 공개 랜딩, 대시보드, 활동/문서 API 계약, OAuth 흐름, 이력서/분석 기능의 입력·출력 의미는 바꾸지 않음
+  - 프론트의 `<img>` 사용은 이번 작업에서 동작 변경 위험이 있어 유지했고, lint warning만 남김
+- 검증 메모:
+  - `frontend`: `npm run lint` 통과 (경고만 남음)
+  - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
+  - `frontend`: `npm run build` 통과
+  - 저장소 루트: `backend\venv\Scripts\python.exe -m pytest backend/tests tests -q` 통과 (`218 passed, 1 skipped, 6 warnings`)
+
+## 2026-04-20 업로드 방어와 요약 API timeout 보강
+
+- 수정 파일:
+  - `frontend/lib/server/upload-validation.ts`
+  - `frontend/app/api/dashboard/activities/images/route.ts`
+  - `frontend/app/api/dashboard/profile/route.ts`
+  - `frontend/app/api/summary/route.ts`
+  - `docs/current-state.md`
+- 변경 내용:
+  - 활동 이미지/프로필 이미지 업로드 전에 허용 형식(JPG/PNG/WEBP/GIF)과 최대 크기를 공통 유틸로 검증하도록 정리함
+  - 활동 이미지 업로드는 한 번에 최대 5개까지만 허용하고, storage path에 들어가는 `activityId`를 안전한 문자만 남기도록 정규화함
+  - AI summary API는 Gemini 상류 호출이 장시간 응답하지 않을 때 무한 대기 대신 20초 timeout 후 upstream 오류로 빠르게 실패하도록 보강함
+- 유지된 동작:
+  - 정상 이미지 업로드 흐름, 업로드 후 public URL 반환 계약, 프로필 저장 흐름, summary API 응답 구조는 유지함
+  - 기존 사용자가 올리던 일반적인 JPG/PNG/WEBP/GIF 이미지는 계속 허용됨
+- 검증 메모:
+  - `frontend`: `npm run lint` 통과 (기존 `<img>` warning만 유지)
+  - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
+  - `frontend`: `npm run build` 통과
+
+## 2026-04-20 최소 rate limiting 적용
+
+- 수정 파일:
+  - `frontend/lib/server/rate-limit.ts`
+  - `frontend/lib/api/route-response.ts`
+  - `frontend/app/api/auth/google/route.ts`
+  - `frontend/app/api/dashboard/activities/images/route.ts`
+  - `frontend/app/api/dashboard/profile/route.ts`
+  - `frontend/app/api/summary/route.ts`
+  - `docs/current-state.md`
+- 변경 내용:
+  - 프론트 BFF route에서 재사용할 수 있는 메모리 기반 최소 요청 제한 유틸을 추가함
+  - Google OAuth 시작, 활동 이미지 업로드, 프로필 수정, summary API에만 좁게 적용해 고비용/남용 가능 경로부터 1차 방어를 넣음
+  - 제한 초과 시 공통 `RATE_LIMITED` 오류 코드와 `Retry-After` 헤더를 반환하도록 응답 헬퍼를 확장함
+- 유지된 동작:
+  - 정상 요청의 입력/출력 구조, OAuth redirect 경로, 업로드 결과 형식, summary API 응답 계약은 유지함
+  - 분당 임계값 이내의 일반 사용자 흐름은 기존과 동일하게 동작함
+- 한계와 리스크:
+  - 현재 제한은 프로세스 로컬 메모리 기반이라 다중 인스턴스 환경에서 완전한 전역 제한은 아님
+  - 운영 트래픽 특성에 따라 임계값은 추후 조정이 필요할 수 있음
+- 검증 메모:
+  - `frontend`: `npm run lint` 통과 (기존 `<img>` warning만 유지)
+  - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
+  - `frontend`: `npm run build` 통과
+
+## 2026-04-20 업로드 파일 실체 검사와 토큰 출력 안전장치
+
+- 수정 파일:
+  - `frontend/lib/server/upload-validation.ts`
+  - `frontend/app/api/dashboard/activities/images/route.ts`
+  - `frontend/app/api/dashboard/profile/route.ts`
+  - `frontend/get_token.mjs`
+  - `docs/current-state.md`
+- 변경 내용:
+  - 업로드 이미지 검증이 확장자와 MIME만 보지 않고 파일 헤더(signature, magic number)까지 확인하도록 보강함
+  - 활동 이미지/프로필 이미지 업로드 라우트가 새 비동기 검증 유틸을 사용하도록 조정함
+  - 로컬 개발용 `get_token.mjs`는 기본 실행에서 access token을 출력하지 않고, `--print` 인자가 있을 때만 출력하도록 안전장치를 추가함
+- 유지된 동작:
+  - 정상적인 JPG/PNG/WEBP/GIF 업로드 흐름과 업로드 후 public URL 반환 구조는 유지함
+  - 토큰이 정말 필요한 로컬 디버깅 상황에서는 기존처럼 명시적으로 출력 가능함
+- 한계와 리스크:
+  - 현재 업로드 검증은 파일 헤더 기반 1차 방어이며, 이미지 디코딩 자체의 악성 payload 검사는 아니다
+  - `get_token.mjs`는 여전히 로컬 개발 보조 스크립트이므로 운영 환경 사용 금지 원칙은 유지해야 함
+- 검증 메모:
+  - `frontend`: `npm run lint` 통과 (기존 `<img>` warning만 유지)
+  - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
+  - `frontend`: `npm run build` 통과
+
+## 2026-04-20 profile route 중복 로직 정리
+
+- 수정 파일:
+  - `frontend/app/api/dashboard/profile/route.ts`
+  - `docs/refactoring-log.md`
+- 변경 내용:
+  - 프로필 저장용 요청 제한 설정을 `enforceProfileWriteRateLimit()` helper로 묶어 `PATCH`/`PUT`의 중복을 줄임
+  - 레거시 `bio` 컬럼 누락 fallback 판별을 `isMissingBioColumnError()` helper로 묶어 같은 조건식을 한 곳에서 관리하도록 정리함
+- 유지된 동작:
+  - 프로필 조회/저장/업로드 동작, rate limit 임계값, `bio` fallback 동작은 그대로 유지함
+- 검증 메모:
+  - `frontend`: `npm run lint` 통과 (기존 `<img>` warning만 유지)
+  - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
+  - `frontend`: `npm run build` 통과
+
+## 2026-04-20 match / coach API 요청 제한과 timeout 보강
+
+- 수정 파일:
+  - `frontend/app/api/dashboard/match/route.ts`
+  - `frontend/app/api/dashboard/cover-letters/coach/route.ts`
+  - `docs/current-state.md`
+  - `docs/refactoring-log.md`
+- 변경 내용:
+  - 합격률 분석 API에 인증 사용자 기준 분당 6회 요청 제한과 30초 timeout을 추가함
+  - AI 코칭 API에 인증 사용자 기준 분당 8회 요청 제한과 30초 timeout을 추가함
+  - timeout 발생 시 504 성격의 upstream 오류로 사용자에게 빠르게 실패를 알리도록 정리함
+- 유지된 동작:
+  - 정상 분석/코칭 요청의 입력·출력 계약과 저장 흐름은 유지함
+  - 일반적인 사용량에서는 기존과 동일하게 동작함
+- 한계와 리스크:
+  - 현재 제한은 프로세스 메모리 기반이라 다중 인스턴스 환경의 완전한 전역 제한은 아니다
+  - timeout 값은 운영 트래픽과 백엔드 평균 응답 시간을 보며 추후 조정이 필요할 수 있다
+- 검증 메모:
+  - `frontend`: `npm run lint` 통과 (기존 `<img>` warning만 유지)
+  - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
+  - `frontend`: `npm run build` 통과
+
+## 2026-04-20 compare relevance API 보호막 추가
+
+- 수정 파일:
+  - `frontend/app/api/programs/compare-relevance/route.ts`
+  - `docs/current-state.md`
+  - `docs/refactoring-log.md`
+- 변경 내용:
+  - 비교 관련도 계산 API에 로그인 세션 기준 분당 12회 제한을 추가함
+  - 백엔드 compare relevance 호출에 20초 timeout을 추가해 장시간 대기 시 빠르게 실패하도록 정리함
+- 유지된 동작:
+  - 정상적인 비교 관련도 응답 구조와 로그인 요구 조건은 유지함
+  - 프로그램이 없는 경우 빈 배열을 반환하는 기존 동작도 그대로 유지함
+- 한계와 리스크:
+  - 현재 요청 제한 key는 세션 access token 기준이라, 토큰 갱신 시 버킷이 바뀔 수 있다
+  - 메모리 기반 제한이라 다중 인스턴스 전역 제한은 아니다
+- 검증 메모:
+  - `frontend`: `npm run lint` 통과 (기존 `<img>` warning만 유지)
+  - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
+  - `frontend`: `npm run build` 통과
+
+## 2026-04-20 프론트 BFF 구조화 실패 로그 추가
+
+- 수정 파일:
+  - `frontend/lib/server/route-logging.ts`
+  - `frontend/app/api/auth/google/route.ts`
+  - `frontend/app/api/dashboard/activities/images/route.ts`
+  - `frontend/app/api/dashboard/profile/route.ts`
+  - `frontend/app/api/dashboard/match/route.ts`
+  - `frontend/app/api/dashboard/cover-letters/coach/route.ts`
+  - `frontend/app/api/summary/route.ts`
+  - `frontend/app/api/programs/compare-relevance/route.ts`
+  - `docs/current-state.md`
+  - `docs/refactoring-log.md`
+- 변경 내용:
+  - 주요 프론트 BFF 라우트 실패를 공통 JSON 로그로 남기는 `route-logging` 유틸을 추가함
+  - route, method, category, status, code 중심으로 로그를 남기고, 민감정보가 될 수 있는 토큰/요청 본문 전문은 기록하지 않도록 제한함
+  - timeout 계열 실패는 일반 실패와 구분되게 `note: timeout`을 남기도록 정리함
+- 유지된 동작:
+  - 사용자 응답 구조와 오류 메시지 계약은 유지함
+  - 로그 추가 외에 인증/업로드/분석/요약 동작 자체는 바꾸지 않음
+- 검증 메모:
+  - `frontend`: `npm run lint` 통과 (기존 `<img>` warning만 유지)
+  - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
+  - `frontend`: `npm run build` 통과
+
+## 2026-04-20 Upstash 전역 rate limiting fallback 추가
+
+- 수정 파일:
+  - `frontend/lib/server/rate-limit.ts`
+  - `frontend/app/api/auth/google/route.ts`
+  - `frontend/app/api/dashboard/activities/images/route.ts`
+  - `frontend/app/api/dashboard/profile/route.ts`
+  - `frontend/app/api/dashboard/match/route.ts`
+  - `frontend/app/api/dashboard/cover-letters/coach/route.ts`
+  - `frontend/app/api/summary/route.ts`
+  - `frontend/app/api/programs/compare-relevance/route.ts`
+  - `docs/current-state.md`
+  - `docs/refactoring-log.md`
+- 변경 내용:
+  - `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`이 있으면 Upstash Redis REST 기반 fixed-window 요청 제한을 사용하도록 확장함
+  - Upstash가 없거나 호출 실패 시 기존 메모리 기반 제한으로 자동 fallback 하도록 정리함
+  - 저장 key는 SHA-256 해시 형태로 바꿔 access token이나 user id 원문이 내부 key로 직접 남지 않게 함
+- 유지된 동작:
+  - 기존 요청 제한 임계값과 사용자 응답 계약은 그대로 유지함
+  - Upstash 환경변수가 없는 현재 환경에서도 기존 메모리 기반 제한이 그대로 동작함
+- 한계와 리스크:
+  - 현재 Upstash 구현은 간단한 fixed-window + `INCR`/`PEXPIRE` 조합이라, 더 정교한 sliding window 알고리즘은 아니다
+  - Upstash 장애 시 메모리 fallback으로 내려가므로 완전한 전역 보장은 일시적으로 약해질 수 있다
+- 검증 메모:
+  - `frontend`: `npm run lint` 통과 (기존 `<img>` warning만 유지)
+  - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
+  - `frontend`: `npm run build` 통과
+
+## 2026-04-20 next/image 점진 전환 1차
+
+- 수정 파일:
+  - `frontend/next.config.ts`
+  - `frontend/app/(landing)/landing-a/_components.tsx`
+  - `frontend/app/dashboard/layout.tsx`
+  - `frontend/app/dashboard/profile/_components/profile-hero-section.tsx`
+  - `frontend/app/dashboard/activities/_components/activity-basic-tab.tsx`
+  - `docs/current-state.md`
+  - `docs/refactoring-log.md`
+- 변경 내용:
+  - Supabase storage public URL을 `next/image` remotePatterns로 허용함
+  - 공개 랜딩 헤더 아바타, 대시보드 사이드바 아바타, 프로필 대표 이미지, 활동 이미지 썸네일을 `img`에서 `next/image`로 전환함
+- 유지된 동작:
+  - 기존 이미지 표시 위치와 크기는 유지함
+  - blob preview를 사용하는 프로필 편집 모달 이미지는 안전성을 위해 이번 단계에서 그대로 둠
+- 한계와 리스크:
+  - 외부 blob/object URL을 쓰는 미리보기 이미지는 아직 `img`를 유지하므로 lint warning 1건은 남을 수 있다
+  - remotePatterns는 현재 Supabase storage public URL 기준이며, 다른 외부 이미지 도메인을 추가로 쓰기 시작하면 설정 확장이 필요하다
+- 검증 메모:
+  - `frontend`: `npm run lint` 통과
+  - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
+  - `frontend`: `npm run build` 통과
+
+## 2026-04-20 업로드 이미지 크기 정보 검사 추가
+
+- 수정 파일:
+  - `frontend/lib/server/upload-validation.ts`
+  - `docs/current-state.md`
+  - `docs/refactoring-log.md`
+- 변경 내용:
+  - PNG/GIF/WEBP/JPEG 파일의 width/height를 직접 읽어 정상 이미지 여부를 한 번 더 검증하도록 보강함
+  - 8000px를 넘는 비정상 고해상도 이미지는 업로드를 거부하도록 제한을 추가함
+- 유지된 동작:
+  - 정상적인 일반 이미지 업로드 흐름과 반환 계약은 유지함
+  - 기존 magic number 검사와 파일 크기 제한도 그대로 유지함
+- 한계와 리스크:
+  - 현재 검증은 파일 헤더와 이미지 메타데이터 기반이며, 외부 안티바이러스 엔진 연동은 아니다
+- 검증 메모:
+  - `frontend`: `npm run lint` 통과 (blob preview용 `<img>` warning 1건 유지)
+  - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
+  - `frontend`: `npm run build` 통과
+
+## 2026-04-20 profile edit modal 이미지 경고 정리
+
+- 수정 파일:
+  - `frontend/app/dashboard/profile/_components/profile-edit-modal.tsx`
+  - `docs/current-state.md`
+  - `docs/refactoring-log.md`
+- 변경 내용:
+  - 프로필 편집 모달의 avatar preview를 `img`에서 `next/image`로 전환함
+  - blob URL과 storage URL 모두 안전하게 처리하기 위해 `unoptimized`를 사용함
+- 유지된 동작:
+  - 모달의 미리보기 이미지 표시 방식과 크기는 그대로 유지함
+  - 업로드 전 로컬 미리보기와 기존 저장 이미지 모두 계속 표시 가능함
+
+## 2026-04-20 런칭 smoke test 체크리스트 정리
+
+- 수정 파일:
+  - `docs/launch-smoke-test.md`
+  - `docs/current-state.md`
+  - `docs/refactoring-log.md`
+- 변경 내용:
+  - 공개 진입, 로그인, 대시보드, 활동 저장소, AI 기능, 추천/비교, 운영 로그까지 한 번에 확인할 수 있는 런칭용 smoke test 체크리스트를 문서화함
+  - 현재 의도적 보류 항목(blob preview용 `<img>`, 외부 안티바이러스 미연동)도 같이 적어 운영자가 남은 리스크를 구분할 수 있게 정리함
+- 유지된 동작:
+  - 코드 동작 변경 없음
+
+## 2026-04-20 비개발자용 런칭 체크리스트 추가
+
+- 수정 파일:
+  - `docs/launch-checklist-nontechnical.md`
+  - `docs/current-state.md`
+  - `docs/refactoring-log.md`
+- 변경 내용:
+  - 비개발자도 바로 따라 할 수 있는 10분짜리 배포 직전 체크리스트 문서를 추가함
+  - 로그인, 프로그램 탐색, 저장, AI 기능, PDF export를 중심으로 배포 가능/보류 판단 기준을 쉽게 정리함
+- 유지된 동작:
+  - 코드 동작 변경 없음
+
+## 2026-04-20 운영용 Notion / Slack 배포 템플릿 추가
+
+- 수정 파일:
+  - `docs/launch-checklist-notion.md`
+  - `docs/launch-checklist-slack.md`
+  - `docs/current-state.md`
+  - `docs/refactoring-log.md`
+- 변경 내용:
+  - Notion에 바로 붙여 넣어 쓸 수 있는 체크박스형 배포 체크리스트를 추가함
+  - Slack 운영 채널에 바로 붙여 넣어 쓸 수 있는 배포 점검 결과, 승인 요청, 조건부 배포, 배포 보류, 배포 완료 템플릿을 추가함
+  - 체크 결과가 배포 가능/조건부 배포/배포 보류 판단으로 자연스럽게 이어지도록 문구를 정리함
+- 유지된 동작:
+  - 코드 동작 변경 없음
+
+## 2026-04-20 설정 상태 진단 health endpoint 추가
+
+- 수정 파일:
+  - `frontend/lib/server/env-status.ts`
+  - `frontend/app/api/health/config/route.ts`
+  - `docs/current-state.md`
+  - `docs/refactoring-log.md`
+- 변경 내용:
+  - Supabase, Gemini, Upstash 설정 존재 여부와 backend `/health` 연결 상태를 한 번에 확인할 수 있는 프론트 health endpoint를 추가함
+  - URL, 토큰 같은 민감정보 원문은 그대로 노출하지 않고 설정 여부와 backend host 정도만 보여주도록 제한함
+- 유지된 동작:
+  - 기존 사용자 기능, 로그인, 저장, AI 응답 계약은 바꾸지 않음
+- 검증 메모:
+  - `frontend`: `npm run lint` 통과
+  - `frontend`: `npx tsc -p tsconfig.codex-check.json --noEmit` 통과
+  - `frontend`: `npm run build` 통과
+
+## 2026-04-20 public flow 후속 정리
+
+- 수정 파일:
+  - `frontend/app/(landing)/landing-b/page.tsx`
+  - `frontend/app/(landing)/landing-b/_components.tsx`
+  - `frontend/app/(landing)/landing-b/_content.ts`
+  - `frontend/app/(landing)/landing-b/_styles.ts`
+  - `README.md`
+  - `docs/current-state.md`
+  - `docs/specs/api-contract.md`
+  - `docs/auth/supabase-auth-local.md`
+  - `docs/auth/supabase-auth-production.md`
+- 변경 내용:
+  - `rg` 기준으로 `landing-b` 라우트가 자기 파일군 외부에서 참조되지 않고, 루트/로그인/OAuth/공개 네비게이션 어디에서도 연결되지 않아 실사용 경로가 아니라고 판단해 제거함
+  - 공개 메인 흐름 문서를 현재 코드 기준으로 다시 맞춰 `/landing-a`를 기본 진입점으로 유지하는 로그인/OAuth 동작과 `/onboarding` 신규 사용자 분기를 함수명 기준으로 정리함
+  - Supabase Auth 설정 문서를 로컬/운영으로 분리해 `frontend/app/api/auth/google/route.ts`, `frontend/app/auth/callback/route.ts`, `frontend/middleware.ts`가 요구하는 Redirect URL과 env를 따로 적음
+  - `README.md`와 `docs/specs/api-contract.md`의 오래된 `/dashboard/onboarding`, `/dashboard` 기본 callback 설명을 현재 라우트 기준으로 정정함
+- 유지된 동작:
+  - 루트 `/`는 계속 `/landing-a`로 리다이렉트됨
+  - Google OAuth 시작/콜백 처리 함수와 `/dashboard*`, `/onboarding` 인증 보호 정책은 그대로 유지함
+- 검증 메모:
+  - 로컬 코드 검증은 `frontend`에서 `npm run build`로 수행
+  - 운영 `https://isoser.vercel.app/login`은 200 응답을 확인했지만, `https://isoser.vercel.app/landing-a`와 `/compare`는 이 작업 시점에 60초 timeout이 발생해 헤더 클릭 동작을 배포 환경에서 끝까지 재현하지는 못함
+
+## 2026-04-20 landing-b A/B 테스트 보존 복원
+
+- 수정 파일:
+  - `frontend/app/(landing)/landing-b/page.tsx`
+  - `frontend/app/(landing)/landing-b/_components.tsx`
+  - `frontend/app/(landing)/landing-b/_content.ts`
+  - `frontend/app/(landing)/landing-b/_styles.ts`
+  - `docs/current-state.md`
+  - `docs/refactoring-log.md`
+- 변경 내용:
+  - `landing-b`를 완전 제거하지 않고, A/B 테스트용 실험 랜딩으로 다시 복원함
+  - 현재 공개 기본 진입, 로그인 기본 복귀, 공통 헤더 링크에서는 계속 `landing-a`를 메인으로 유지하고 `landing-b`는 직접 실험 링크/광고/분석 유입용 별도 경로로만 남기도록 정리함
+  - 문서에도 `landing-b`가 현재 운영 메인 라우트가 아니라 보존된 실험 경로라는 점을 명시함
+- 유지된 동작:
+  - 루트 `/`와 로그인 기본 복귀는 계속 `/landing-a`
+  - `landing-b`는 별도 OAuth 기본 진입점이나 공통 네비게이션 링크로 연결하지 않음
+
+## 2026-04-20 공개 랜딩/프로그램/비교/로그인 흐름 정리와 OAuth 콜백 보정
+
+### 작업 목적
+- 로그인 전후 화면의 톤과 흐름을 맞추고, 공개 랜딩과 로그인 이후 진입 흐름의 단절을 줄인다.
+- 프로그램/비교 화면을 로그인 전후 기준으로 일관되게 보이도록 정리한다.
+- 프로그램 데이터 노출 기준을 `오늘 날짜 기준 마감순`으로 통일하고, 기본값은 `모집중 공고만` 보이게 수정한다.
+- 로컬 개발 중 Supabase OAuth가 Vercel 도메인으로 튀는 문제를 확인하고, 로컬 테스트 기준 설정을 정리한다.
+
+### 리팩토링 전 문제점
+- 로그인 전 랜딩과 로그인 후 화면의 시각 언어가 달랐고, 일부 구간은 검은 배경/검은 글씨 조합으로 가독성이 떨어졌다.
+- 로그인 후 사용자가 예전에 만든 랜딩 또는 기대와 다른 화면으로 이동하는 흐름이 있었다.
+- 공개 프로그램/비교 화면과 로그인 이후 화면 간 제품 인상이 일치하지 않았다.
+- 메인 랜딩과 프로그램 검색에서 이미 마감된 공고가 기본 노출되었다.
+- 프로그램 목록의 `모집중만 보기` 필터가 의도대로 동작하지 않았고, 최근 마감 공고와 모집중 공고의 구분도 불명확했다.
+- 공개 비교/프로그램 헤더의 `프로그램 탐색`, `비교` 버튼이 클릭되지 않는 증상이 있었다.
+- 로컬 `localhost:3000/login`에서 Google 로그인 시작 후 Supabase가 `https://isoser.vercel.app/login?error=oauth_callback_failed`로 보내는 문제가 있었다.
+- 백엔드 테스트는 저장소 문제라기보다 잘못된 Python 인터프리터 사용으로 실패했다.
+
+### 실제 변경 사항
+
+#### 1. 공개 랜딩/로그인/비교/프로그램 UI 정리
+- 공개 랜딩을 라이트 톤 기준으로 정리하고, 로그인 화면과 로그인 이후 제품 톤을 더 가깝게 맞춤.
+- 랜딩 메인 카피를 아래 문구로 교체:
+  - `흩어진 국비 지원 정보,`
+  - `내 상황에 맞는 것만 골라드립니다`
+  - `각종 부트캠프, K-디지털, 서울시 일자리까지 한곳에 모았습니다.`
+  - `3가지 조건만 알려주시면 마감 임박순으로 정렬해드립니다`
+- 프로그램/비교 페이지는 새 공개 랜딩 헤더와 톤을 공유하도록 정리.
+- 헤더 네비게이션에 stacking context와 z-index를 보강해 클릭 불가 가능성을 낮춤.
+
+#### 2. 프로그램 데이터 정렬/필터 기준 수정
+- backend 프로그램 목록과 count 계산 로직이 더 이상 Supabase의 `is_active`만 신뢰하지 않고, `deadline` 기준으로 `오늘 날짜`를 다시 계산하도록 수정.
+- 기본값은 `모집중 공고만 + 마감 임박순(deadline asc)` 노출로 통일.
+- `마감된 활동 보기` 체크 시에만 `최근 3개월 내 마감 공고`를 함께 보이도록 변경.
+- compare 검색/선택 모달도 같은 기준으로 모집중 공고 위주 정렬을 따르도록 조정.
+
+#### 3. 로그인/OAuth 복귀 흐름 수정
+- `/api/auth/google`에서 `next` query를 받아 Google OAuth 시작 시 Supabase redirect URL에 포함하도록 수정.
+- `/auth/callback`에서 `next`를 읽어 로그인 완료 후 원래 보던 화면으로 돌아갈 수 있게 수정.
+- 기본 로그인 완료 진입점은 `/landing-a`로 유지.
+- `/login` 페이지는 서버에서 세션을 먼저 확인해 이미 로그인된 사용자는 다시 로그인 화면을 보지 않고 원래 화면 또는 `/landing-a`로 리다이렉트되게 변경.
+- 로그인 페이지에서 Google 로그인 버튼이 `window.location.href` 기반 클라이언트 처리 대신 복귀 경로를 포함한 링크 방식으로 동작하도록 정리.
+
+#### 4. 로컬 개발 환경 확인
+- backend용 Python은 `backend/venv/Scripts/python.exe`의 `Python 3.10.8`이 맞음을 확인.
+- 해당 인터프리터로 `backend/tests/test_programs_router.py` 실행 시 `14 passed` 확인.
+- 로컬 Supabase OAuth 문제는 코드보다 `Supabase URL Configuration` 설정 영향이 더 크다는 점을 확인.
+- 로컬 테스트 기준으로 `Site URL`을 `http://localhost:3000`, Redirect URLs를 `/auth/callback` 기준으로 맞추면 정상 동작함을 확인.
+
+### 파일별 / 컴포넌트별 변경 내용
+
+#### `backend/routers/programs.py`
+- 프로그램 목록과 count의 모집 상태 판단을 `deadline` 기준 현재 날짜 재계산으로 보정.
+- `include_closed_recent=true`일 때 최근 90일 내 마감 공고만 추가 포함.
+- `deadline` 정렬에서 모집중 공고를 우선, 최근 마감 공고는 그 뒤에 최근순으로 재정렬하도록 보강.
+
+#### `backend/tests/test_programs_router.py`
+- 모집중 기본 노출, 최근 마감 포함, deadline 정렬 기준을 회귀 테스트로 고정.
+- Python 3.10 venv 기준 실행 확인.
+
+#### `frontend/app/(landing)/landing-a/_components.tsx`
+- `LandingANavBar`의 라이트 톤/공통 제품 헤더 유지.
+- 메인 랜딩 카피 교체.
+- 헤더 링크 `프로그램 탐색`, `비교`, `워크스페이스`에 `relative z-[1]` 부여.
+- nav에 `z-[230] isolate` 추가해 클릭 불가 가능성 완화.
+- 로그인 CTA, 워크스페이스 링크 스타일 정리.
+
+#### `frontend/app/(landing)/landing-a/page.tsx`
+- 공개 랜딩 허브로 유지.
+- 프로그램 데이터를 불러와 히어로/필터/프로그램 섹션과 연결.
+- 메인 랜딩이 `/landing-a` 기준으로 계속 동작하도록 유지.
+
+#### `frontend/app/(auth)/login/page.tsx`
+- 삭제/불안정 상태였던 로그인 페이지를 복구.
+- 서버 컴포넌트 형태로 세션 확인 후 이미 로그인된 경우 `redirect()`.
+- `searchParams.error`, `searchParams.redirectedFrom` 처리 추가.
+- `Google로 계속하기` 링크가 `/api/auth/google?next=...`를 사용하도록 변경.
+
+#### `frontend/app/api/auth/google/route.ts`
+- `requestedNext`를 읽고 기본값을 `/landing-a`로 설정.
+- `supabase.auth.signInWithOAuth()`의 `options.redirectTo`를 `${origin}/auth/callback?next=...` 형식으로 구성.
+
+#### `frontend/app/auth/callback/route.ts`
+- `code`, `next`를 읽음.
+- `redirectTarget` 기본값을 `/landing-a`로 유지.
+- 기존 사용자(`profiles` row 존재)는 `redirectTarget`으로 보냄.
+- 신규 사용자는 `/onboarding` 유지.
+
+#### `frontend/middleware.ts`
+- 루트 `/?code=...` 유입을 `/auth/callback?next=/landing-a`로 정규화.
+- `/programs/compare` -> `/compare` 리다이렉트 유지.
+- `pathname === "/login"`인데 이미 세션이 있으면 `redirectedFrom` 또는 `/landing-a`로 돌려보내도록 추가.
+- 보호 경로(`/onboarding`, `/dashboard...`) 비로그인 접근 시 `/login?redirectedFrom=...` 유지.
+
+#### `frontend/app/(landing)/programs/page.tsx`
+- 기본값은 모집중만, 정렬은 오늘 기준 마감 임박순.
+- `마감된 활동 보기` 체크 시에만 최근 3개월 마감 공고 포함.
+- 설명 문구와 필터 레이블을 새 정책에 맞게 갱신.
+
+#### `frontend/app/(landing)/compare/programs-compare-client.tsx`
+- compare 페이지가 공개 랜딩 헤더/톤을 공유하도록 유지.
+- 추천/검색 시 모집중 공고 위주 정렬 정책과 맞물리도록 사용.
+
+#### `frontend/app/(landing)/compare/program-select-modal.tsx`
+- compare 선택 모달 검색 결과가 모집중/마감 기준 정책을 따르도록 연계.
+
+#### `frontend/lib/api/backend.ts`
+- 프로그램 목록/count에서 `recruiting_only`, `include_closed_recent`, `sort` 등 query 전달 유지 및 연계.
+
+#### `docs/current-state.md`
+- 현재 공개 랜딩/프로그램/비교/로그인/OAuth 동작 기준을 문서화.
+- `frontend/middleware.ts`, `frontend/app/auth/callback/route.ts`, `frontend/app/api/auth/google/route.ts`, `frontend/app/(auth)/login/page.tsx` 기준 현재 동작을 반영.
+
+#### `docs/refactoring-log.md`
+- 공개 랜딩/프로그램/비교 정리, 로그인 복귀 흐름 보정 내용을 기록.
+
+#### `reports/TASK-2026-04-20-1705-public-ui-deadline-alignment-result.md`
+- 이번 공개 UI/마감 기준 정리 작업 결과를 기록.
+- backend pytest 재검증 결과까지 업데이트.
+
+### 변경 이유
+- 제품 첫 진입과 로그인 이후 경험이 지나치게 달라 사용자가 같은 서비스 안에 있다는 인상을 받기 어려웠다.
+- 마감 공고 기본 노출은 프로그램 탐색의 신뢰도를 떨어뜨렸다.
+- 로컬 개발 중 OAuth가 배포 도메인으로 튀면 빠른 테스트와 문제 재현이 어려워진다.
+- `/auth/callback`을 실제 코드 경로로 쓰면서 Supabase Redirect URL에 `/callback`이 남아 있으면 실패가 반복된다.
+- 로그인 완료 후 복귀 경로(`next`)가 없으면 화면 전환이 사용자가 기대한 흐름과 어긋난다.
+
+### 유지된 기존 동작
+- 신규 사용자는 계속 `/onboarding`으로 진입한다.
+- 공개 라우트 구조 `/landing-a`, `/programs`, `/compare`, `/login`은 유지했다.
+- 보호 라우트 `/dashboard` 계열 구조는 유지했다.
+- compare의 3슬롯 URL state와 로그인 사용자 관련도 계산 구조는 유지했다.
+- 프로그램 검색의 카테고리/지역/페이지네이션 구조는 유지했다.
+- Render 백엔드 자체는 유지하고, 로컬 개발 시에는 프론트가 로컬 백엔드를 보도록 설정만 바꾸는 운영 방식은 유지 가능하다.
+
+### 영향 범위
+- 공개 랜딩 첫 인상
+- 로그인 페이지 UX
+- Google OAuth 시작/콜백 흐름
+- 로그인 후 복귀 경로
+- 프로그램 목록 기본 노출 정책
+- 최근 마감 공고 표시 정책
+- compare 선택/추천 흐름
+- 로컬 개발 환경의 인증 테스트 절차
+
+### 테스트 체크리스트
+
+#### UI / 라우팅
+- [x] `/landing-a` 접속 시 라이트 톤 랜딩 정상 표시
+- [x] 메인 카피가 요청 문구로 반영되었는지 확인
+- [ ] 헤더 `프로그램 탐색`, `비교`, `워크스페이스` 클릭 동작 수동 재확인
+- [ ] 로그인 후 사용자가 기대하는 진입 화면이 `/landing-a` 기준으로 맞는지 재확인
+- [ ] 로그인 전후 화면 톤 일치 여부 수동 점검
+
+#### 프로그램 정책
+- [x] 기본 목록이 모집중 공고만 노출되는 로직 반영
+- [x] `마감된 활동 보기` 체크 시 최근 3개월 마감 공고만 포함되는 로직 반영
+- [x] deadline 정렬이 오늘 기준으로 재계산되는 backend 테스트 통과
+- [ ] 실제 운영 데이터에서 마감 공고가 랜딩/프로그램에 다시 섞이지 않는지 수동 확인
+
+#### OAuth / 인증
+- [x] `/api/auth/google`가 `next`를 붙여 `/auth/callback`으로 보냄
+- [x] `/auth/callback`가 `next`를 받아 복귀 처리
+- [x] 이미 로그인된 사용자가 `/login`에 가면 다시 로그인 화면을 밟지 않음
+- [x] 로컬 Supabase 설정에서 `Site URL=http://localhost:3000` 기준 정상 동작 확인
+- [ ] 운영 Supabase 설정에서 `https://isoser.vercel.app/auth/callback` 기준 재확인
+
+#### 빌드 / 테스트
+- [x] `frontend`: `npm run build` 통과
+- [x] `backend`: `backend\venv\Scripts\python.exe -m pytest backend/tests/test_programs_router.py` 통과 (`14 passed`)
+- [x] backend Python 인터프리터가 `3.10.8`인 것 확인
+
+### 남은 과제
+- `landing-b` 실험 경로는 아직 남아 있음. 실제 운영에서 더 이상 사용하지 않으면 정리 필요.
+- 로그인 후 “정확히 어떤 화면이 기본 진입점이어야 하는지”는 `/landing-a`와 `/dashboard` 사이에서 제품 정책을 최종 확정할 필요가 있음.
+- 헤더 클릭 불가 증상은 z-index 보정으로 완화했지만, 실제 브라우저/배포 환경에서 재현이 완전히 사라졌는지 재확인 필요.
+- Supabase 운영용/로컬용 auth 설정을 수동으로 번갈아 바꾸는 대신, 개발용 Supabase 프로젝트 분리 여부를 검토할 필요가 있음.
+- `NEXT_PUBLIC_BACKEND_URL`의 로컬/배포 환경값을 더 명확히 문서화하거나 실행 스크립트로 보조할 여지가 있음.
+- 공개 랜딩과 대시보드의 정보 구조를 더 일관되게 맞출지 추가 UX 검토가 필요함.
+
+### 불확실한 내용
+- “로그인 후 원래 랜딩이 보인다”는 사용자 보고와 실제 코드 경로 사이에는 시점별 차이가 있었음.
+  - 확인된 최종 코드 기준 기본 복귀는 `/landing-a`
+  - 다만 사용자가 본 실제 배포 동작은 Supabase 설정과 배포 버전 차이의 영향을 받았을 가능성이 큼
+- 헤더 버튼 클릭 불가의 정확한 1차 원인은 레이어 충돌로 추정했으나, 브라우저 DevTools로 완전한 원인 고정까지는 하지 않았음.
+- Vercel/Render/Supabase의 실제 콘솔 값은 이 대화에서 일부는 사용자가 직접 확인했고, 일부는 코드/환경파일 기준으로 추정함.
+
+### 다음 대화에서 바로 이어갈 수 있는 후속 작업 프롬프트
+
+```md
+현재 공개 랜딩/프로그램/비교/로그인 흐름 리팩토링은 반영된 상태다.
+다음 작업을 이어서 진행해줘.
+
+우선순위:
+1. landing-b가 실제로 더 이상 필요 없는지 코드 기준으로 확인
+2. 필요 없으면 관련 라우트/링크/문서 정리
+3. 로그인 후 기본 진입점을 landing-a로 유지할지 dashboard로 바꿀지 비교 정리
+4. 헤더 클릭 불가 이슈가 배포 환경에서도 완전히 해결됐는지 검증
+5. 로컬/운영 Supabase auth 설정을 문서로 분리 정리
+
+반드시 해줄 것:
+- 현재 코드 기준으로만 판단
+- 실제 참조 파일명과 함수명 명시
+- 변경 시 docs/current-state.md와 docs/refactoring-log.md까지 같이 반영
+- 테스트 결과를 함께 정리
+```
+
+## 2026-04-20 백업 브랜치 기준 agent 규칙/참조 복원
+
+- 수정 파일:
+  - `AGENTS.md`
+  - `docs/current-state.md`
+- 변경 내용:
+  - 백업 브랜치 `backup_pre_reset_17af772`에만 남아 있던 중복 task 탐지, 부분 구현 재사용, review 시 `fix/update` 판정 규칙을 현재 `AGENTS.md`에 병합함
+  - 현재 저장소에 이미 존재하는 `main.py` ASGI shim과 agentic architecture/presentation 문서 참조가 `docs/current-state.md`에서 누락돼 있어 다시 연결함
+- 유지된 동작:
+  - 현재 watcher / cowork watcher 런타임 구현은 변경하지 않음
+  - `docs/agent-playbook.md` 기반 read order, rule precedence, git completion workflow 같은 최신 규칙은 그대로 유지함
+
+## 2026-04-20 review-required 종료 처리 규칙 명시
+
+- 수정 파일:
+  - `docs/current-state.md`
+  - `docs/automation/local-flow.md`
+  - `docs/automation/overview.md`
+  - `docs/automation/operations.md`
+- 변경 내용:
+  - `tasks/review-required/`를 살아 있는 수동 검토 대기열로만 사용하고, 검토가 끝난 packet은 `tasks/archive/`로 이동하는 운영 규칙을 문서화함
+  - 구현이 이미 반영돼 stale로 닫는 packet도 `review-required/`에 남기지 않고 archive로 정리하며, `reports/*` verification/result/needs-review 문서는 audit trail로 유지한다고 명시함
+- 유지된 동작:
+  - verifier가 `review-required` verdict를 내리면 watcher가 전용 큐와 `needs-review` alert로 분기하는 기존 흐름은 유지함
+  - `reports/*`와 dispatch alert는 계속 판단 근거 저장소로 남음
+
 ## 2026-04-20 Agent 규칙 문서 진입점 정리
 
 - 수정 파일:
@@ -14,6 +634,21 @@
 - 유지된 동작:
   - 기존 watcher / cowork watcher 흐름과 packet contract 자체는 변경하지 않음
   - 기존 세부 운영 문서들은 계속 세부 참조 문서로 유지함
+
+## 2026-04-20 Compare 현재 적재 컬럼 기준 재정의
+
+- 수정 파일:
+  - `frontend/app/(landing)/compare/programs-compare-client.tsx`
+  - `docs/current-state.md`
+- 변경 내용:
+  - compare 표 본문이 `compare_meta` 부재 때문에 대량 `"정보 없음"`을 노출하던 구조를 정리하고, 현재 운영 적재 컬럼 기준의 기본 정보, 운영 정보, 프로그램 개요 비교로 재구성함
+  - source별 운영 메타처럼 수집 편차가 큰 값은 `"데이터 미수집"`, 실사용 컬럼의 단순 빈 값은 `"정보 없음"`으로 구분해 문구 정책을 분리함
+  - 상단 slot chip과 지원 링크 fallback도 현재 컬럼 기준(`application_url -> source_url -> link`)으로 단순화해 compare_meta 의존을 제거함
+- 유지된 동작:
+  - `/compare` 라우트, 최대 3슬롯, URL `ids` 상태 관리, 추천 프로그램 영역, compare relevance API 흐름은 유지함
+  - `compare_meta` 컬럼과 타입 자체는 삭제하지 않고, UI의 기본 표시 의존성에서만 제외함
+- 후속 메모:
+  - `programs-compare-client.tsx` 한 파일 안에 current-columns와 AI fit v2가 함께 들어 있으므로, 이후 compare row 정의와 relevance section을 분리 컴포넌트/상수로 나누면 scope 경계가 더 선명해질 수 있음
 
 ## 2026-04-20 Compare AI 적합도 v2 해석 레이어 추가
 
@@ -1306,6 +1941,17 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 
 ## 2026-04-16 추가 메모
 
+- 2026-04-21: `backend/chains/pdf_parse_utils.py`, `backend/chains/pdf_sentence_scorer.py`, `backend/tests/test_pdf_chain.py`, `backend/tests/test_pdf_sentence_scorer.py`
+  - 박준호 시연용 이력서 템플릿 검증 중 `프로젝트` 섹션이 프로필 경력으로 이어 붙는 문제를 발견해, 경력 섹션 종료 헤더에 `project/projects/프로젝트`를 추가함
+  - `(5인 팀: PM 1 / ...)` 팀 구성 표기를 `(5인: ...)`와 동일하게 인식하도록 역할/팀 정규식을 확장함
+  - `기능 개발` 같은 개발형 문장은 기여내용으로 분류하되, `백엔드 개발자` 같은 역할명 단독 줄은 기여내용에서 제외하도록 scorer 기준을 보강함
+  - scorer를 `classify_activity_sentence()` 점수 기반 분류 함수와 호환 래퍼(`looks_like_intro_line`, `looks_like_contribution_line`)로 재구성해 기준 조정과 테스트 추가가 쉬운 구조로 리팩토링함
+  - `backend/chains/pdf_parser_rules.py`를 추가해 활동 타입 alias, 경력/비경력/종료 섹션 헤더, 소개/기여/역할명 rule table을 한 곳에서 관리하도록 분리함
+  - `SentenceScoreWeights`와 `SENTENCE_SCORE_WEIGHTS`를 추가해 scorer 점수값과 metric 패턴도 rule table에서 관리하도록 후속 리팩토링함
+  - 박준호 백엔드/김지원 PM 포트폴리오 원문을 `backend/tests/fixtures/pdf_texts/` fixture로 분리하고, role-only 직무명 사전과 scorer reason을 `metric_signal`/`keyword_signal`/`role_only` 등으로 세분화함
+  - `ISOSER_PDF_PARSE_DEBUG_SCORER=1` 옵션을 추가해 실제 파싱 중 문장 분류 kind/score/reason을 debug log로 남길 수 있게 하고, PDF expected snapshot fixture를 `backend/tests/fixtures/pdf_expected/`에 추가해 템플릿별 회귀 테스트를 parameterize함
+  - 박준호 실제 PDF를 `backend/tests/fixtures/pdf_files/park_backend_resume.pdf`에 추가하고, PyMuPDF 텍스트 추출부터 source fallback 파싱, expected snapshot 비교까지 e2e 회귀 테스트로 고정함
+
 - 2026-04-20: `backend/rag/programs_rag.py`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/lib/api/app.ts`, `frontend/lib/types/index.ts`
   - 추천 하이브리드 점수 공식을 `0.6 / 0.4`로 복구하고, cache read 시 저장된 `final_score`를 재사용하지 않도록 stale-cache recovery 규칙을 추가함
   - `GET /programs/recommend/calendar`와 `/api/dashboard/recommend-calendar`를 추가해 만료 프로그램 제외, `final_score desc + deadline asc` 정렬, `d_day_label` 포함 응답 계약을 캘린더 전용으로 분리함
@@ -1577,3 +2223,54 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - risks / follow-ups:
   - there is still no automated browser-level signed-in dashboard run, so this step is verified by backend tests and frontend build rather than a full UI robot
   - dashboard coach surfaces currently force `preferred_intent="coach"`, so they do not yet expose recommendation or clarify branches inside those panels
+- 2026-04-20: `scripts/watcher_shared.py`, `watcher.py`, `cowork_watcher.py`, `scripts/create_task_packet.py`, `docs/automation/task-packets.md`, `docs/rules/task-packet-template.md`, `docs/current-state.md`
+  - `spec_version`이 있는 packet을 Supervisor 표준 spec으로 간주하고 `request_id`, `execution_path`, `allowed_paths`, `blocked_paths`, `fallback_plan`, `rollback_plan`, `dedupe_key` 등을 watcher/cowork watcher가 실행 전에 검증하도록 보강함
+  - `allowed_paths`와 `blocked_paths` 중복, 허용되지 않은 `execution_path`/`risk_level` 같은 모순 frontmatter를 cowork review 단계와 local execution 단계에서 조기 차단하도록 정리함
+  - `scripts/create_task_packet.py --supervisor-spec` 옵션을 추가해 확장 frontmatter를 가진 안전한 packet 초안을 더 쉽게 만들 수 있게 했고, 관련 운영 문서를 현재 런타임 규칙에 맞춰 갱신함
+- 2026-04-21: `frontend/app/dashboard/page.tsx`, `frontend/app/dashboard/portfolio/page.tsx`, `docs/presentation/2026-04-21-demo-assets-sheet.md`, `docs/current-state.md`
+  - 발표 전 P0 기준으로 캘린더 일정 적용과 포트폴리오 생성 구현 여부를 확인하고, 퍼널을 끊는 두 지점만 최소 변경으로 보강함
+  - 대시보드는 캘린더 전용 추천 BFF를 사용하고 추천 카드에서 `캘린더에 적용` CTA를 제공하며, 적용된 일정은 최대 3개까지 로컬 저장해 재진입 시 유지함
+  - 포트폴리오 페이지는 직접 진입 시 준비중 문구에서 멈추지 않고 성과 저장소 활동을 선택해 포트폴리오 초안을 생성할 수 있게 함
+- 2026-04-21: `supabase/migrations/20260421160000_add_calendar_and_portfolio_persistence.sql`, `frontend/app/api/dashboard/calendar-selections/route.ts`, `frontend/app/api/dashboard/portfolios/route.ts`, `frontend/lib/api/app.ts`, `frontend/lib/types/index.ts`
+  - 캘린더 적용 상태를 서버에 저장하기 위해 `calendar_program_selections` 테이블과 dashboard BFF를 추가함
+  - 포트폴리오 생성 결과를 기존 `portfolios` 테이블의 `portfolio_payload` JSONB 컬럼에 저장하고 `/dashboard/portfolio`에서 저장 초안을 다시 열 수 있게 함
+  - 랜딩 A 타입 오류는 현재 신규 섹션을 보존한 채 누락된 `compareCards` import를 복구해 타입체크 통과 상태로 정리함
+- 2026-04-21: `TASK-2026-04-21-0649-landing-a-visual-revamp`
+  - `frontend/app/(landing)/landing-a` 내부에서 랜딩 A 카피와 섹션 순서를 이력 기반 추천/지원 준비 플랫폼 프레이밍으로 재배치함
+  - 기능 맛보기 4개 카드는 `frontend/public/landing-a/` placeholder SVG 파일을 참조하도록 구성해 추후 같은 파일명 교체만으로 실제 캡처 전환이 가능하게 함
+  - 기존 `listPrograms`/`getProgramCount`, 검색/칩 필터, 프로그램 카드, 로그인 네브바, 푸터/광고 슬롯 동작은 유지함
+  - review-required 후속 조치로 히어로 직후 요약 섹션을 `LandingADeadlineSummarySection`으로 명확히 하고 `D-Day 요약`/`모집 상태`/`다음 액션` 라벨을 추가해 packet의 D-Day/마감 요약 역할과 실제 렌더링을 맞춤
+  - 수동 리뷰 피드백 반영으로 landing-a 렌더링에서 상단 티커/네브바, D-Day 요약, 문제/해결 비교, 추천 정확도, KPI 뼈대 섹션을 제거하고, 6단계 지원 준비 흐름은 유지한 채 온보딩 톤의 네이비 히어로와 컴팩트 live board 중심 구조로 축소함
+  - 히어로 주 CTA는 로그인 확인 전 `/login`, 로그인 확인 후 `/dashboard#recommend-calendar`로 이동하도록 바꾸고, 대시보드 캘린더 위치에 `recommend-calendar` 앵커를 추가함
+  - 후속 수동 리뷰 피드백으로 landing-a 전용 헤더를 복구해 `프로그램 상세`(`/programs`), `비교`(`/compare`), `대시보드`(`/dashboard#recommend-calendar`), 로그인/프로필 이동을 제공하고, 로그인된 사용자 프로필 버튼은 `/dashboard/profile`로 바로 이동하게 함
+- 2026-04-21: `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/app/dashboard/portfolio/page.tsx`, `docs/current-state.md`, `docs/presentation/2026-04-21-demo-assets-sheet.md`
+  - 발표 전 P0 안정화로 캘린더 추천 응답이 빈 배열이거나 백엔드 fetch가 실패할 때 공개 프로그램 마감순 fallback을 Supabase에서 직접 적용해 `/dashboard`가 `추천 프로그램이 없습니다` 또는 `fetch failed`에서 멈추지 않게 함
+  - 포트폴리오 초안 미리보기 화면에 브라우저 인쇄 기반 `PDF로 저장` 버튼을 추가해 발표용 최소 PDF 저장 흐름을 확보함
+  - Supabase OAuth 설정에 맞춰 로컬 프론트 검증 포트를 `localhost:3000` 기준으로 재고정함
+- 2026-04-21: `frontend/components/MiniCalendar.tsx`, `frontend/app/dashboard/page.tsx`, `docs/current-state.md`
+  - 발표 전 P0 안정화로 `캘린더에 적용` 클릭 결과가 텍스트 목록에만 남지 않도록, 적용된 프로그램을 해당 마감 날짜 셀 안에 녹색 `적용` 라벨과 프로그램명으로 직접 표시함
+  - 달력 상단에 `YYYY년 M월` 중앙 라벨과 이전/다음 월 이동 버튼을 추가하고, 적용된 프로그램의 마감월로 자동 이동하게 함
+  - 기존 날짜 클릭 필터와 추천 카드 목록 동작은 유지함
+- 2026-04-21: `frontend/app/api/dashboard/calendar-selections/route.ts`, `docs/current-state.md`
+  - 발표 전 P0 안정화로 캘린더 적용 저장 API가 쿠키 세션으로 사용자를 확인한 뒤 서버 쪽 service role client를 사용해 `calendar_program_selections`를 저장/조회하도록 보강함
+  - 로컬 발표 환경에서는 service role key가 `frontend/.env.local`에 없고 `backend/.env`에만 있어도 서버 route가 해당 값을 읽어 저장을 이어가도록 처리함
+- 2026-04-21: `frontend/app/(landing)/landing-c/page.tsx`, `docs/current-state.md`
+  - 제공된 `이소서 Landing.html` reference를 신규 `/landing-c` Next.js 페이지로 이식함
+  - 원본의 스플릿 히어로, 프로그램 피드, 기능 미리보기, 로그인 이후 여정, 최종 CTA 구조를 유지하면서 실제 `/programs`, `/compare`, `/login`, `/dashboard#recommend-calendar`, `/programs/[id]` 라우트로 액션을 연결함
+  - 기존 landing-a/b 기본 진입과 공통 라우트 동작은 변경하지 않고, 프로그램 목록은 기존 `listPrograms`/`getProgramCount` backend helper를 재사용함
+- 2026-04-21: `frontend/app/(landing)/landing-a/_components.tsx`, `frontend/app/(landing)/landing-a/_navigation.tsx`, `frontend/app/(landing)/landing-a/_hero.tsx`, `frontend/app/(landing)/landing-a/_program-feed.tsx`, `frontend/app/(landing)/landing-a/_support-sections.tsx`, `frontend/app/(landing)/landing-a/_auth.ts`, `frontend/app/(landing)/landing-a/_shared.ts`, `frontend/app/(landing)/landing-a/_style-tag.tsx`, `docs/current-state.md`
+  - landing-a의 비대해진 `_components.tsx`를 기존 import 호환용 export 허브로 축소하고, 헤더/네비게이션, 히어로, 검색·프로그램 피드, 하단 지원 섹션, 스타일 태그를 섹션 단위 파일로 분리함
+  - 프로그램 deadline/score/link helper는 `_shared.ts`로, 헤더/히어로의 로그인 상태 조회는 `useLandingAUser()` hook으로 분리해 중복 인증 조회 로직을 줄임
+  - 페이지 조립 순서, 공개 링크, 검색/칩 필터, 프로그램 카드, CTA/푸터 렌더링은 유지함
+- 2026-04-21: `frontend/app/(landing)/landing-a/_program-feed.tsx`, `frontend/app/(landing)/landing-a/_navigation.tsx`, `docs/current-state.md`
+  - `LandingAProgramsSection` 내부의 프로그램 카드 렌더를 `ProgramCard`로 분리해 feed 섹션의 조건 렌더링과 카드 UI 책임을 나눔
+  - `LandingANavBar`와 `LandingAHeader`의 브랜드 마크, 프로필/로그인 액션, 랜딩 A 헤더 링크 패턴을 `BrandMark`, `AuthAction`, `UserAvatar`, `landingAHeaderLinks`로 정리해 중복 JSX를 줄임
+  - 기존 링크 목적지, 모바일 라벨, 로그인/프로필 분기, 프로그램 카드 버튼 동작은 유지함
+- 2026-04-21: `frontend/app/(landing)/landing-a/_hero.tsx`, `frontend/app/(landing)/landing-a/_program-feed.tsx`, `docs/current-state.md`
+  - `LandingAFilterBar`의 칩 버튼 상태별 class 분기를 `getChipButtonClass()`로 분리해 필터 렌더링 map 내부 조건식을 단순화함
+  - `LandingAHeroSection`의 live board 프로그램 카드 렌더를 `HeroProgramSignalCard`로 분리하고, 히어로 통계 3개는 `heroStats` 배열 기반 렌더링으로 정리함
+  - 기존 히어로 CTA, 캘린더 링크, live board 텍스트, 검색/칩 필터 동작은 유지함
+- 2026-04-21: `frontend/app/(landing)/landing-a/page.tsx`, `docs/current-state.md`
+  - landing-a 칩 `AI·데이터`, `IT·개발`, `경영`이 백엔드 저장 카테고리와 다른 문자열을 exact match로 요청해 0건이 되는 문제를 확인함
+  - 사용자 노출 라벨은 유지하되 API 요청 카테고리를 각각 `AI`, `IT`, `경영`으로 매핑해 기존 프로그램 목록/count endpoint와 일치시킴
+  - `AI·데이터`와 `IT·개발` 필터 URL에서 hero count/live board가 정상 표시되는 것을 로컬 화면으로 확인함

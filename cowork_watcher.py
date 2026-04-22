@@ -34,6 +34,7 @@ from scripts.watcher_shared import (
     release_lock_file,
     resolve_cli_command,
     sanitize_task_id,
+    validate_task_packet_metadata,
     worktree_fingerprint_details,
     write_lock_file,
     write_markdown,
@@ -189,8 +190,10 @@ def resolve_codex_command() -> str:
     return resolve_cli_command(CODEX_CANDIDATES)
 
 
-def read_task_metadata(task_path: str) -> tuple[dict[str, str], list[str]]:
-    return shared_read_task_metadata(task_path, REQUIRED_FIELDS)
+def read_task_metadata(task_path: str) -> tuple[dict[str, str], list[str], list[str]]:
+    metadata, _ = shared_read_task_metadata(task_path, REQUIRED_FIELDS)
+    missing_fields, validation_errors = validate_task_packet_metadata(metadata, REQUIRED_FIELDS)
+    return metadata, missing_fields, validation_errors
 
 
 def move_file(src: str, dst: str) -> None:
@@ -475,7 +478,7 @@ def packet_title_for(task_id: str) -> Optional[str]:
     packet_path = os.path.join(COWORK_PACKETS_DIR, f"{task_id}.md")
     if not os.path.exists(packet_path):
         return None
-    metadata, _ = read_task_metadata(packet_path)
+    metadata, _, _ = read_task_metadata(packet_path)
     title = metadata.get("title", "").strip()
     return title or None
 
@@ -519,11 +522,22 @@ def localize_review_snapshot_line(line: str) -> str:
         ("Not ready for promotion yet.", "아직 승격 준비가 되지 않았습니다."),
         ("Not ready for promotion.", "아직 승격 준비가 되지 않았습니다."),
         ("Ready for promotion.", "승격 가능한 상태입니다."),
+        ("Promotable with minor changes.", "작은 수정 후 승인 가능 상태입니다."),
+        ("Promotable with minor changes", "작은 수정 후 승인 가능 상태입니다"),
+        ("Promotable with minor or no changes.", "작은 수정만으로 승인 가능 상태입니다."),
+        ("Promote as-is.", "바로 승인 가능한 상태입니다."),
         ("Frontmatter is complete", "프론트매터는 완전합니다"),
+        ("Frontmatter is complete,", "프론트매터는 완전합니다,"),
+        ("repository paths are mostly accurate,", "저장소 경로도 대체로 정확하고,"),
+        ("repository paths are mostly accurate", "저장소 경로도 대체로 정확합니다"),
+        ("repository paths are valid", "저장소 경로는 유효합니다"),
         ("and the referenced repository paths generally exist,", "참조한 저장소 경로도 대체로 유효합니다."),
         ("and `planned_against_commit`", "그리고 `planned_against_commit`"),
         ("planned_against_commit", "`planned_against_commit`"),
         ("matches current `HEAD`", "현재 `HEAD`와 일치합니다"),
+        ("so drift risk is low.", "따라서 드리프트 위험은 낮습니다."),
+        ("The packet is close, but it is not promotion-ready yet because a few execution-critical behaviors are still ambiguous in the packet itself.", "packet이 거의 준비되긴 했지만, 실행에 중요한 일부 동작이 아직 모호해서 바로 승격하기는 어렵습니다."),
+        ("The packet is close, but it is not promotion-ready yet", "packet이 거의 준비되긴 했지만 아직 바로 승격할 단계는 아닙니다"),
         ("so this is not blocked by packet metadata or general repo drift.", "따라서 packet 메타데이터나 일반적인 저장소 드리프트 때문에 막힌 상태는 아닙니다."),
         ("The packet is still execution-risky because", "다만 이 packet은 실행 관점에서 아직 위험합니다. 이유는"),
         ("its data-shape, category, deduplication, and sync-path assumptions", "데이터 형태, 카테고리, 중복 제거, 동기화 경로 가정이"),
@@ -600,6 +614,19 @@ def summarize_review_snapshot(task_id: str) -> tuple[str, list[str]]:
     return (overall, findings[:4])
 
 
+def dispatch_preview_text(*, task_id: str, stage: str) -> str:
+    title = packet_title_for(task_id)
+    stage_labels = {
+        "review-ready": "승인 요청",
+        "review-failed": "검토 실패",
+        "approval-blocked-stale-review": "승격 보류",
+        "promoted": "승격 완료",
+    }
+    if title:
+        return f"{stage_labels.get(stage, stage)}: {task_id} | {title}"
+    return f"{stage_labels.get(stage, stage)}: {task_id}"
+
+
 def localize_cowork_dispatch_text(text: str) -> str:
     localized = text
     replacements = [
@@ -654,15 +681,15 @@ def format_slack_dispatch_message(*, task_id: str, stage: str, lines: list[str])
         "action-required": "조치 필요",
         "stale-review": "리뷰 재생성 필요",
     }
-    message_lines = [
-        f"{emoji} cowork 검토 알림",
-        "",
-        f"*작업*: `{task_id}`",
-        f"*단계*: {stage_labels.get(stage, stage)}",
-    ]
+    message_lines = [f"*작업*: `{task_id}`"]
     title = packet_title_for(task_id)
     if title:
         message_lines.append(f"*제목*: {title}")
+    message_lines.extend(
+        [
+            f"*단계*: {stage_labels.get(stage, stage)}",
+        ]
+    )
 
     interesting_prefixes = (
         "status:",
@@ -689,34 +716,44 @@ def format_slack_dispatch_message(*, task_id: str, stage: str, lines: list[str])
             message_lines.append(f"*승인 시각*: `{approved_at}`")
         elif stripped.startswith("- freshness:"):
             freshness = localize_cowork_dispatch_text(stripped.removeprefix("- freshness:").strip())
-            message_lines.extend(["", "*검토 상태*", freshness])
+            message_lines.extend(["", "*검토 상태*", f"- {freshness}"])
         elif stripped.startswith("- note:"):
             note = localize_cowork_dispatch_text(stripped.removeprefix("- note:").strip())
-            message_lines.extend(["", "*메모*", note])
+            note_heading = "*승격 메모*" if stage == "promoted" else "*메모*"
+            message_lines.extend(["", note_heading, f"- {note}"])
         elif stripped.startswith("- supersedes_previous_review_ready:"):
             previous_created_at = stripped.removeprefix("- supersedes_previous_review_ready:").strip()
             message_lines.extend(
                 [
                     "",
                     "*최신본 안내*",
-                    f"이 알림은 이전 검토 준비 메시지를 대체합니다. 기준 시각: {previous_created_at}",
+                    f"- 이 알림은 이전 검토 준비 메시지를 대체합니다.",
+                    f"- 기준 시각: {previous_created_at}",
                 ]
             )
 
     if stage == "review-ready":
         overall, findings = summarize_review_snapshot(task_id)
-        message_lines.extend(["", "*판정*", overall])
+        message_lines.extend(["", "*판정*", f"- {overall}"])
         if findings:
             message_lines.extend(["", "*핵심 확인사항*"])
             for index, item in enumerate(findings, start=1):
                 message_lines.append(f"{index}. {item}")
+    elif stage == "promoted":
+        message_lines.extend(
+            [
+                "",
+                "*다음 단계*",
+                "- 이제 local watcher 또는 remote 경로가 이 packet을 실제 실행합니다.",
+            ]
+        )
 
     return "\n".join(message_lines)
 
 
 def build_slack_dispatch_payload(*, task_id: str, stage: str, lines: list[str]) -> dict[str, object]:
     text = format_slack_dispatch_message(task_id=task_id, stage=stage, lines=lines)
-    payload: dict[str, object] = {"text": text}
+    payload: dict[str, object] = {"text": dispatch_preview_text(task_id=task_id, stage=stage)}
     thread_ts = ""
     for line in lines:
         stripped = line.strip()
@@ -729,7 +766,8 @@ def build_slack_dispatch_payload(*, task_id: str, stage: str, lines: list[str]) 
         "approval-blocked-stale-review": "승격 보류",
         "promoted": "승격 완료",
     }
-    header_text = f"{stage_labels.get(stage, stage)} | {task_id}"
+    header_stage = "승인 요청" if stage == "review-ready" else stage_labels.get(stage, stage)
+    header_text = f"{header_stage} | {task_id}"
 
     if stage != "review-ready":
         if thread_ts:
@@ -966,7 +1004,7 @@ def classify_review_outcome(review_path: str) -> tuple[str, str, str | None]:
 
 def handle_packet_review(packet_path: str) -> None:
     filename = os.path.basename(packet_path)
-    metadata, missing_fields = read_task_metadata(packet_path)
+    metadata, missing_fields, validation_errors = read_task_metadata(packet_path)
     task_id = sanitize_task_id(metadata.get("id", filename.removesuffix(".md")))
     review_path = review_path_for(task_id)
 
@@ -1012,6 +1050,45 @@ def handle_packet_review(packet_path: str) -> None:
             ],
         )
         print(f"review 생성: {filename} (frontmatter 누락)")
+        return
+
+    if validation_errors:
+        reset_stale_promotion_state(task_id)
+        write_markdown(
+            review_path,
+            "\n".join(
+                [
+                    f"# Review: {task_id}",
+                    "",
+                    "## Overall assessment",
+                    "",
+                    "아직 승격 준비가 되지 않았습니다.",
+                    "",
+                    "## Findings",
+                    "",
+                    *[f"- {error}" for error in validation_errors],
+                    "",
+                    "## Recommendation",
+                    "",
+                    "Supervisor 표준 spec의 frontmatter 값을 수정한 뒤 review를 다시 생성하세요.",
+                ]
+            ),
+        )
+        write_dispatch(
+            task_id,
+            "review-failed",
+            [
+                f"# Dispatch: {task_id}",
+                "",
+                "stage: review-failed",
+                "status: action-required",
+                f"packet: `cowork/packets/{filename}`",
+                f"review: `cowork/reviews/{task_id}-review.md`",
+                f"created_at: `{datetime.now().isoformat(timespec='seconds')}`",
+                "- note: supervisor spec frontmatter validation failed before promotion",
+            ],
+        )
+        print(f"review 실패: {filename} (supervisor spec validation)")
         return
 
     planned_commit = metadata.get("planned_against_commit", "")
@@ -1133,7 +1210,7 @@ def handle_packet_review(packet_path: str) -> None:
 
 def handle_approval(packet_path: str) -> None:
     filename = os.path.basename(packet_path)
-    metadata, _ = read_task_metadata(packet_path)
+    metadata, _, _ = read_task_metadata(packet_path)
     task_id = sanitize_task_id(metadata.get("id", filename.removesuffix(".md")))
     approval_path = approval_path_for(task_id)
     review_path = review_path_for(task_id)

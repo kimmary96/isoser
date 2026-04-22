@@ -1,6 +1,7 @@
 "use client";
 
 import type { Activity } from "@/lib/types";
+import { getActivityIntroLines } from "@/lib/activity-display";
 
 type ActivityTab = {
   label: string;
@@ -72,27 +73,33 @@ export function ProfileActivityStrip({
       </div>
 
       <div className="flex gap-4 overflow-x-auto pb-2">
-        {tabActivities.map((activity) => (
-          <div
-            key={activity.id}
-            onClick={() => onOpenActivity(activity.id)}
-            className="w-56 flex-shrink-0 cursor-pointer overflow-hidden rounded-3xl border border-slate-200 bg-white transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(15,23,42,0.08)]"
-            style={{ height: "220px" }}
-          >
-            <div className="flex h-28 items-center justify-center bg-[linear-gradient(135deg,#dbeafe,#e2e8f0)]">
-              <span className="text-2xl text-slate-400">🖼</span>
+        {tabActivities.map((activity) => {
+          const previewLines = getActivityIntroLines(activity, 1);
+
+          return (
+            <div
+              key={activity.id}
+              onClick={() => onOpenActivity(activity.id)}
+              className="w-56 flex-shrink-0 cursor-pointer overflow-hidden rounded-3xl border border-slate-200 bg-white transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(15,23,42,0.08)]"
+              style={{ height: "220px" }}
+            >
+              <div className="flex h-28 items-center justify-center bg-[linear-gradient(135deg,#dbeafe,#e2e8f0)]">
+                <span className="text-2xl text-slate-400">🖼</span>
+              </div>
+              <div className="p-3">
+                <p className="mb-1 text-xs text-slate-400">{activity.period}</p>
+                <p className="line-clamp-2 text-sm font-semibold text-slate-900">
+                  {activity.title}
+                </p>
+                {previewLines.length > 0 && (
+                  <p className="mt-1 line-clamp-2 text-xs text-slate-500">
+                    {previewLines.join(" ")}
+                  </p>
+                )}
+              </div>
             </div>
-            <div className="p-3">
-              <p className="mb-1 text-xs text-slate-400">{activity.period}</p>
-              <p className="line-clamp-2 text-sm font-semibold text-slate-900">
-                {activity.title}
-              </p>
-              <p className="mt-1 line-clamp-2 text-xs text-slate-500">
-                {activity.description}
-              </p>
-            </div>
-          </div>
-        ))}
+          );
+        })}
 
         <div
           onClick={onCreateActivity}

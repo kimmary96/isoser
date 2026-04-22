@@ -105,6 +105,83 @@ def test_handle_task_writes_blocked_report_when_move_to_running_fails(tmp_path, 
     assert "type: watcher-alert" in alert_path.read_text(encoding="utf-8")
 
 
+def test_handle_task_blocks_invalid_supervisor_spec_before_execution(tmp_path, monkeypatch) -> None:
+    inbox_dir = tmp_path / "tasks" / "inbox"
+    running_dir = tmp_path / "tasks" / "running"
+    blocked_dir = tmp_path / "tasks" / "blocked"
+    reports_dir = tmp_path / "reports"
+    alerts_dir = tmp_path / "dispatch" / "alerts"
+    for directory in [inbox_dir, running_dir, blocked_dir, reports_dir, alerts_dir]:
+        directory.mkdir(parents=True, exist_ok=True)
+
+    task_path = inbox_dir / "TASK-TEST-SUPERVISOR-SPEC.md"
+    task_path.write_text(
+        "\n".join(
+            [
+                "---",
+                "id: TASK-TEST-SUPERVISOR-SPEC",
+                "status: queued",
+                "type: ops",
+                "title: Invalid supervisor spec",
+                "planned_at: 2026-04-20T21:30:00+09:00",
+                "planned_against_commit: abc123",
+                "spec_version: 2.0",
+                "request_id: REQ-TEST-SUPERVISOR-SPEC",
+                "created_by: claude",
+                "goal: Validate packet before execution",
+                "background: test",
+                "scope_in: watcher",
+                "scope_out: product",
+                "constraints: minimal-safe-change-only",
+                "non_goals: none",
+                "acceptance_criteria: see-body",
+                "risk_level: medium",
+                "execution_path: github",
+                "allowed_paths: watcher.py, docs/current-state.md",
+                "blocked_paths: docs/current-state.md",
+                "prechecks: read-current-state",
+                "implementation_steps: inspect, implement, verify",
+                "tests: targeted-tests",
+                "artifacts: reports/TASK-TEST-SUPERVISOR-SPEC-result.md",
+                "fallback_plan: stop-and-report",
+                "rollback_plan: revert-last-task-scope",
+                "dedupe_key: TASK-TEST-SUPERVISOR-SPEC",
+                "report_format: planner-supervisor-implementer-qa",
+                "---",
+                "# Goal",
+                "",
+                "Block contradictory packet metadata before execution.",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(watcher, "INBOX_DIR", str(inbox_dir))
+    monkeypatch.setattr(watcher, "RUNNING_DIR", str(running_dir))
+    monkeypatch.setattr(watcher, "BLOCKED_DIR", str(blocked_dir))
+    monkeypatch.setattr(watcher, "REPORTS_DIR", str(reports_dir))
+    monkeypatch.setattr(watcher, "ALERTS_DIR", str(alerts_dir))
+    monkeypatch.setattr(watcher, "PROJECT_PATH", str(tmp_path))
+    monkeypatch.setattr(watcher, "current_head", lambda: "abc123")
+    monkeypatch.setattr(
+        watcher,
+        "run_supervisor_workflow",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("supervisor should not run")),
+    )
+    monkeypatch.setattr(watcher, "notify_slack_for_alert", lambda **kwargs: None)
+
+    watcher.handle_task(str(task_path))
+
+    blocked_path = blocked_dir / "TASK-TEST-SUPERVISOR-SPEC.md"
+    report_path = reports_dir / "TASK-TEST-SUPERVISOR-SPEC-blocked.md"
+    assert blocked_path.exists()
+    assert report_path.exists()
+    body = report_path.read_text(encoding="utf-8")
+    assert "Task packet failed watcher validation before execution." in body
+    assert "allowed_paths and blocked_paths overlap: docs/current-state.md" in body
+
+
 def test_handle_task_routes_verifier_review_required_to_needs_review(tmp_path, monkeypatch) -> None:
     inbox_dir = tmp_path / "tasks" / "inbox"
     running_dir = tmp_path / "tasks" / "running"
@@ -364,6 +441,48 @@ def test_run_supervisor_workflow_routes_review_required_verdict_to_manual_review
 
     assert result["stage"] == "manual-review"
     assert result["supervisor_step"] == "verification"
+
+
+def test_run_supervisor_workflow_uses_docs_fast_path_verification(tmp_path, monkeypatch) -> None:
+    reports_dir = tmp_path / "reports"
+    dispatch_dir = tmp_path / "dispatch"
+    reports_dir.mkdir(parents=True)
+    dispatch_dir.mkdir(parents=True)
+
+    monkeypatch.setattr(watcher, "REPORTS_DIR", str(reports_dir))
+    monkeypatch.setattr(watcher, "LEDGER_PATH", str(dispatch_dir / "run-ledger.jsonl"))
+
+    prompts: list[str] = []
+
+    def fake_run_codex_prompt(prompt: str, *, label: str, running_path: str | None = None) -> tuple[int, int]:
+        prompts.append(label)
+        if label == watcher.SUPERVISOR_AGENT_LABELS["inspector"]:
+            (reports_dir / "TASK-DOCS-supervisor-inspection.md").write_text("inspection", encoding="utf-8")
+        elif label == watcher.SUPERVISOR_AGENT_LABELS["implementer"]:
+            (reports_dir / "TASK-DOCS-result.md").write_text("result", encoding="utf-8")
+        else:
+            raise AssertionError("docs fast-path should not invoke the verifier agent")
+        return 0, 7
+
+    monkeypatch.setattr(watcher, "run_codex_prompt", fake_run_codex_prompt)
+
+    result = watcher.run_supervisor_workflow(
+        "TASK-DOCS.md",
+        "TASK-DOCS",
+        "docs",
+        running_path="tasks/running/TASK-DOCS.md",
+    )
+
+    verification_report = reports_dir / "TASK-DOCS-supervisor-verification.md"
+    assert result["stage"] == "implemented"
+    assert result["supervisor_step"] == "verification"
+    assert result["token_count"] == 14
+    assert prompts == [
+        watcher.SUPERVISOR_AGENT_LABELS["inspector"],
+        watcher.SUPERVISOR_AGENT_LABELS["implementer"],
+    ]
+    assert verification_report.exists()
+    assert "- verdict: pass" in verification_report.read_text(encoding="utf-8")
 
 
 def test_parse_changed_files_from_result_report_reads_bullets(tmp_path) -> None:
@@ -868,9 +987,10 @@ def test_format_slack_alert_message_contains_core_fields() -> None:
         next_action="Regenerate the packet.",
     )
 
-    assert "로컬 watcher 알림" in message
     assert "*작업*: `TASK-TEST`" in message
     assert "*단계*: 드리프트 감지" in message
+    assert "*산출물*" in message
+    assert "로컬 watcher 알림" not in message
     assert "`tasks/drifted/TASK-TEST.md`" in message
     assert "`reports/TASK-TEST-drift.md`" in message
     assert "*요약*" in message
@@ -909,6 +1029,7 @@ def test_format_slack_alert_message_surfaces_main_promotion_summary() -> None:
 
     assert "*단계*: 완료" in message
     assert "*상태*: 완료" in message
+    assert "*완료 결과*" in message
     assert "origin/main" in message
     assert "abc123" in message
     assert "자동 반영" in message
@@ -929,6 +1050,20 @@ def test_format_slack_alert_message_for_replan_required() -> None:
     assert "더 강한 재설계가 필요합니다." in message
 
 
+def test_format_slack_alert_message_marks_runtime_error_test_paths() -> None:
+    message = watcher.format_slack_alert_message(
+        task_id="TASK-RUNTIME",
+        stage="runtime-error",
+        status="action-required",
+        packet_path="D:/repo/.pytest_tmp/tasks/inbox/TASK-RUNTIME.md",
+        report_path=None,
+        summary="handle inbox task: RuntimeError: loop crash",
+        next_action="Inspect watcher console output or traceback for the exception details. The watcher kept running.",
+    )
+
+    assert "*주의*: 테스트 경로 감지됨" in message
+
+
 def test_build_slack_alert_payload_adds_structured_blocks() -> None:
     payload = watcher.build_slack_alert_payload(
         task_id="TASK-LIVE",
@@ -942,11 +1077,29 @@ def test_build_slack_alert_payload_adds_structured_blocks() -> None:
 
     assert "text" in payload
     assert "blocks" in payload
+    assert payload["text"] == "Git 동기화 실패: TASK-LIVE"
     blocks = payload["blocks"]
     assert isinstance(blocks, list)
-    assert len(blocks) >= 3
+    assert len(blocks) >= 4
     summary_block = blocks[2]["text"]["text"]
     assert "watcher의 Git 동기화에 실패했습니다." in summary_block
+
+
+def test_build_slack_alert_payload_marks_runtime_error_test_paths() -> None:
+    payload = watcher.build_slack_alert_payload(
+        task_id="TASK-RUNTIME",
+        stage="runtime-error",
+        status="action-required",
+        packet_path="D:/repo/.pytest_tmp/tasks/inbox/TASK-RUNTIME.md",
+        report_path=None,
+        summary="handle inbox task: RuntimeError: loop crash",
+        next_action="Inspect watcher console output or traceback for the exception details. The watcher kept running.",
+    )
+
+    blocks = payload["blocks"]
+    assert isinstance(blocks, list)
+    overview_block = blocks[1]["text"]["text"]
+    assert "*주의*: 테스트 경로 감지됨" in overview_block
 
 
 def test_build_slack_alert_payload_reuses_known_task_thread(monkeypatch) -> None:

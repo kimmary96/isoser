@@ -1,4 +1,6 @@
-// 실행: node get_token.mjs
+// 실행:
+// - 안내만 보기: node get_token.mjs
+// - 실제 토큰 출력: node get_token.mjs --print
 
 import { config as loadEnv } from "dotenv";
 import { createClient } from "@supabase/supabase-js";
@@ -20,6 +22,12 @@ const {
 
 if (!session?.access_token) {
   console.log("세션 없음. 브라우저에서 로그인 후 다시 시도하세요.");
+  process.exit(0);
+}
+
+if (!process.argv.includes("--print")) {
+  console.log("보안상 기본 실행은 access token을 출력하지 않습니다.");
+  console.log("정말 필요할 때만 `node get_token.mjs --print`로 실행하세요.");
   process.exit(0);
 }
 

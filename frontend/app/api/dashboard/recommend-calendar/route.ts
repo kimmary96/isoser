@@ -1,8 +1,43 @@
 import { apiError, apiOk } from "@/lib/api/route-response";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import type { CalendarRecommendResponse } from "@/lib/types";
+import type { CalendarRecommendResponse, Program } from "@/lib/types";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+
+function toFallbackCalendarResponse(programs: Program[], topK: number): CalendarRecommendResponse {
+  return {
+    items: programs
+      .filter((program) => program.id)
+      .slice(0, topK)
+      .map((program) => ({
+        program_id: String(program.id),
+        relevance_score: 0,
+        urgency_score: Number(program.urgency_score ?? 0),
+        final_score: Number(program.urgency_score ?? 0),
+        deadline: program.deadline ?? null,
+        d_day_label: typeof program.days_left === "number" ? `D-${program.days_left}` : "",
+        reason: "추천 데이터가 비어 있어 모집 마감이 가까운 공개 프로그램을 우선 노출합니다.",
+        program,
+      })),
+  };
+}
+
+async function loadSupabaseFallbackPrograms(topK: number): Promise<CalendarRecommendResponse> {
+  const supabase = await createServerSupabaseClient();
+  const today = new Date().toISOString().slice(0, 10);
+  const { data, error } = await supabase
+    .from("programs")
+    .select("*")
+    .gte("deadline", today)
+    .order("deadline", { ascending: true, nullsFirst: false })
+    .limit(topK);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return toFallbackCalendarResponse((data ?? []) as Program[], topK);
+}
 
 export async function GET(request: Request) {
   try {
@@ -48,10 +83,39 @@ export async function GET(request: Request) {
     }
 
     const data = (await response.json()) as CalendarRecommendResponse;
-    return apiOk(data);
+    if (data.items.length > 0) {
+      return apiOk(data);
+    }
+
+    const fallbackLimit = Number(topK || "9") || 9;
+    try {
+      const fallbackResponse = await fetch(
+        `${BACKEND_URL}/programs?recruiting_only=true&sort=deadline&limit=${fallbackLimit}`,
+        { method: "GET" }
+      );
+
+      if (fallbackResponse.ok) {
+        const fallbackPrograms = (await fallbackResponse.json().catch(() => [])) as Program[];
+        return apiOk(toFallbackCalendarResponse(fallbackPrograms, fallbackLimit));
+      }
+    } catch {
+      // Fall through to Supabase direct fallback below.
+    }
+
+    return apiOk(await loadSupabaseFallbackPrograms(fallbackLimit));
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "캘린더 추천 프로그램을 불러오지 못했습니다.";
-    return apiError(message, 400, "BAD_REQUEST");
+    const { searchParams } = new URL(request.url);
+    const topK = Number(searchParams.get("top_k") || "9") || 9;
+    try {
+      return apiOk(await loadSupabaseFallbackPrograms(topK));
+    } catch (fallbackError) {
+      const message =
+        fallbackError instanceof Error
+          ? fallbackError.message
+          : error instanceof Error
+            ? error.message
+            : "캘린더 추천 프로그램을 불러오지 못했습니다.";
+      return apiError(message, 400, "BAD_REQUEST");
+    }
   }
 }

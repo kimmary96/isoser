@@ -1,4 +1,6 @@
-import { apiError, apiOk } from "@/lib/api/route-response";
+import { apiError, apiOk, apiRateLimited } from "@/lib/api/route-response";
+import { enforceRateLimit } from "@/lib/server/rate-limit";
+import { logRouteError } from "@/lib/server/route-logging";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { ProgramCompareRelevanceResponse } from "@/lib/types";
 
@@ -26,7 +28,21 @@ export async function POST(request: Request) {
       return apiError("로그인 후 관련도를 확인할 수 있습니다.", 401, "UNAUTHORIZED");
     }
 
+    const rateLimit = await enforceRateLimit({
+      namespace: "compare-relevance",
+      key: accessToken,
+      maxRequests: 12,
+      windowMs: 60_000,
+    });
+    if (!rateLimit.allowed) {
+      return apiRateLimited(
+        "관련도 비교 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.",
+        rateLimit.retryAfterSeconds
+      );
+    }
+
     const response = await fetch(`${BACKEND_URL}/programs/compare-relevance`, {
+      signal: AbortSignal.timeout(20_000),
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -43,6 +59,29 @@ export async function POST(request: Request) {
     const data = (await response.json()) as ProgramCompareRelevanceResponse;
     return apiOk(data);
   } catch (error) {
+    if (error instanceof Error && error.name === "TimeoutError") {
+      logRouteError(
+        {
+          route: "/api/programs/compare-relevance",
+          method: "POST",
+          category: "compare",
+          status: 504,
+          code: "UPSTREAM_ERROR",
+          note: "timeout",
+        },
+        error
+      );
+      return apiError("관련도 비교 응답이 지연되고 있습니다. 잠시 후 다시 시도해주세요.", 504, "UPSTREAM_ERROR");
+    }
+    logRouteError(
+      {
+        route: "/api/programs/compare-relevance",
+        method: "POST",
+        category: "compare",
+        status: 400,
+      },
+      error
+    );
     const message =
       error instanceof Error ? error.message : "관련도 비교 데이터를 불러오지 못했습니다.";
     return apiError(message, 400, "BAD_REQUEST");

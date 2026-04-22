@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import type { Profile } from "@/lib/types";
 
 type ProfileWithExtras = Profile & {
@@ -55,7 +57,13 @@ export function ProfileHeroSection({
           onClick={onOpenProfileModal}
         >
           {profile.avatar_url ? (
-            <img src={profile.avatar_url} alt="profile" className="h-full w-full object-cover" />
+            <Image
+              src={profile.avatar_url}
+              alt="profile"
+              fill
+              sizes="224px"
+              className="object-cover"
+            />
           ) : (
             <div className="h-full w-full bg-gray-600" />
           )}

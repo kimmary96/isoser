@@ -1,19 +1,30 @@
 # 이소서 (Isoser)
 
-이소서는 기존 이력서 PDF에서 시작해 활동 데이터를 정리하고, AI 코치와 공고 매칭 분석을 통해 이력서와 자기소개서를 다듬는 취업 문서 편집 서비스입니다.
+이소서는 공공 취업 지원 프로그램 탐색과 취업 문서 작성을 한 흐름으로 묶는 서비스입니다. 공개 프로그램 허브에서 관심 프로그램을 찾고, 저장한 활동 데이터와 AI 코치를 이용해 이력서·자기소개서·포트폴리오 초안을 빠르게 정리할 수 있습니다.
 
-## 현재 개발 상태 (2026-04-10 기준)
+## 현재 개발 상태 (2026-04-20 기준)
 
 ### 구현 완료
 - Google OAuth 로그인, Supabase 세션 기반 인증
 - 이력서 PDF 업로드 후 프로필/활동 자동 추출 (`POST /parse/pdf`)
+- 공개 랜딩/탐색 축
+  - 메인 랜딩 `/landing-a`
+  - 프로그램 탐색 `/programs`
+  - 프로그램 비교 `/compare`
 - 대시보드 프로필 편집
   - 이름, 희망 직무(`profiles.bio`), 이메일, 전화번호
   - 프로필 이미지 업로드
   - 포트폴리오 링크 저장(`profiles.portfolio_url`)
+- 프로그램 허브
+  - 검색, 카테고리/지역 필터, 모집중 기본 보기, 최근 마감 포함 토글
+  - 프로그램 상세 조회
+  - 북마크 (`GET/POST/DELETE /bookmarks`)
+  - 추천 API (`POST /programs/recommend`, `GET /programs/recommend/calendar`)
+  - 비교 적합도 API (`POST /programs/compare-relevance`)
 - 활동 저장소
   - 활동 목록/상세/수정/삭제
   - STAR 항목 저장
+  - STAR/포트폴리오 구조 변환 (`POST /activities/convert`)
   - AI 요약 생성 (`frontend/app/api/summary`)
 - AI 코치
   - 활동 설명 기반 멀티턴 피드백 (`POST /coach/feedback`)
@@ -30,22 +41,31 @@
   - PDF 내보내기 (`/dashboard/resume/export`)
 - 자기소개서 저장소
   - 목록 조회, 검색, 상세 편집, 문항(`qa_items`) 저장
+- 포트폴리오
+  - 활동 상세에서 포트폴리오 구조로 변환 후 `/dashboard/portfolio`에서 미리보기
 
 ### 현재 제약
-- 포트폴리오 전용 페이지(`/dashboard/portfolio`)는 아직 준비 중이며, 현재는 프로필의 링크 저장/열기만 지원합니다.
+- 포트폴리오는 변환 결과 미리보기 중심이며, 별도 저장/배포 워크플로우는 아직 약합니다.
 - 이력서 템플릿 선택 UI는 있으나 실제 PDF 출력 포맷은 기본형 중심입니다.
 - 이력서 편집 화면의 우측 AI 어시스턴트와 활동 상세 요약은 프론트 내부 Gemini 호출에 의존합니다.
 - 게스트 모드는 제거되었으며 현재는 로그인 사용자 기준으로만 동작합니다.
+- 광고 수익화, 스폰서드 슬롯, AI 검색 챗봇은 사업계획 단계이며 운영 기능으로는 아직 연결되지 않았습니다.
 - 백엔드는 Python 3.10.x만 허용합니다. (`backend/check_python_version.py`)
 
 ## 주요 화면
 
-- `/dashboard`: 프로필, 경력 카드, 스킬, 활동 요약
-- `/dashboard/onboarding`: PDF 업로드 및 초기 데이터 저장
+- `/landing-a`: 공개 메인 랜딩
+- `/landing-b`: 공개 랜딩 실험 보존 경로
+- `/programs`: 공개 프로그램 탐색
+- `/compare`: 공개 프로그램 비교
+- `/login`: Google OAuth 로그인
+- `/dashboard`: 추천/문서 워크스페이스
+- `/onboarding`: 신규 사용자 초기 데이터 저장
 - `/dashboard/activities`: 활동 저장소
 - `/dashboard/activities/[id]`: 활동 상세, STAR 편집, AI 코치 진입
 - `/dashboard/match`: 공고 분석, 기업 정보 요약, 분석 이력
 - `/dashboard/resume`: 이력서 조립/생성
+- `/dashboard/portfolio`: 활동 기반 포트폴리오 미리보기
 - `/dashboard/documents`: 생성 이력서 목록
 - `/dashboard/resume/export`: PDF 내보내기
 - `/dashboard/cover-letter`: 자기소개서 저장소
@@ -228,7 +248,6 @@ npm run dev
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
-GEMINI_API_KEY=your_gemini_api_key
 ```
 
 ### `backend/.env`
@@ -248,11 +267,22 @@ CHROMA_PERSIST_DIR=./chroma_store_v2
 | POST | `/coach/feedback` | 활동 기반 AI 코치 피드백 |
 | GET | `/coach/sessions` | 사용자 코치 세션 목록 |
 | GET | `/coach/sessions/{session_id}` | 코치 세션 상세 |
+| POST | `/activities/convert` | 활동 STAR/포트폴리오 구조 변환 |
 | POST | `/match/analyze` | 공고 매칭 분석 |
 | POST | `/match/rewrite` | 공고 기반 리라이팅 |
 | POST | `/match/extract-job-image` | 공고 이미지 텍스트 추출 |
 | POST | `/match/extract-job-pdf` | 공고 PDF 텍스트 추출 |
 | POST | `/company/insight` | 기업 정보 요약 |
+| GET | `/programs` | 프로그램 목록 조회 |
+| GET | `/programs/popular` | 랜딩용 인기 프로그램 조회 |
+| GET | `/programs/count` | 조건별 프로그램 수 조회 |
+| GET | `/programs/{program_id}` | 프로그램 상세 조회 |
+| POST | `/programs/recommend` | 사용자 맞춤 추천 |
+| GET | `/programs/recommend/calendar` | 캘린더용 추천 |
+| POST | `/programs/compare-relevance` | 비교 화면용 AI 적합도 계산 |
+| GET | `/bookmarks` | 북마크 목록 |
+| POST | `/bookmarks/{program_id}` | 북마크 추가 |
+| DELETE | `/bookmarks/{program_id}` | 북마크 삭제 |
 
 ## Supabase 스키마
 
@@ -263,6 +293,8 @@ CHROMA_PERSIST_DIR=./chroma_store_v2
 - `coach_sessions`
 - `match_analyses`
 - `cover_letters`
+- `programs`
+- `program_bookmarks`
 - `portfolios`
 
 주요 스토리지 버킷
@@ -278,11 +310,18 @@ CHROMA_PERSIST_DIR=./chroma_store_v2
   - `NEXT_PUBLIC_SUPABASE_URL`
   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
   - `NEXT_PUBLIC_BACKEND_URL`
-  - `GEMINI_API_KEY`
+  - 선택: `NEXT_PUBLIC_SITE_URL`
 
 ### Backend (Render)
 - Root Directory: `backend`
 - 필수 환경변수
   - `GOOGLE_API_KEY`
+  - `SUPABASE_URL`
+  - `SUPABASE_SERVICE_ROLE_KEY`
   - `CHROMA_PERSIST_DIR`
 - 시작 전에 `python rag/seed.py` 실행이 필요합니다.
+
+## 인증 설정 문서
+
+- 로컬 Supabase OAuth/Auth 설정: `docs/auth/supabase-auth-local.md`
+- 운영 Supabase OAuth/Auth 설정: `docs/auth/supabase-auth-production.md`

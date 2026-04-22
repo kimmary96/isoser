@@ -2,12 +2,21 @@
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 
 import { getProgramCompareRelevance } from "@/lib/api/app";
-import type { Program } from "@/lib/types";
-import type { ProgramRelevanceItem } from "@/lib/types";
+import type { Program, ProgramRelevanceItem } from "@/lib/types";
 
+import { CompareRelevanceSection } from "./compare-relevance-section";
+import {
+  CompareSectionHeader,
+  ValueCell,
+  compareSections,
+  getDeadlineLabel,
+  getDeadlineTone,
+  getLinkHref,
+  normalizeTextList,
+} from "./compare-table-sections";
 import ProgramSelectModal from "./program-select-modal";
 
 type ProgramsCompareClientProps = {
@@ -17,101 +26,6 @@ type ProgramsCompareClientProps = {
   suggestions: Program[];
   suggestionsError: string | null;
   isLoggedIn: boolean;
-};
-
-function normalizeTextList(value: string[] | string | null | undefined): string[] {
-  if (Array.isArray(value)) {
-    return value.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
-  }
-
-  if (typeof value === "string" && value.trim()) {
-    return value
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
-  }
-
-  return [];
-}
-
-function formatDateLabel(value: string | null | undefined): string {
-  if (!value) return "정보 없음";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString("ko-KR", { month: "long", day: "numeric" });
-}
-
-function formatDateRange(startDate?: string | null, endDate?: string | null): string {
-  if (startDate && endDate) {
-    return `${formatDateLabel(startDate)} ~ ${formatDateLabel(endDate)}`;
-  }
-  if (startDate) {
-    return `${formatDateLabel(startDate)} 시작`;
-  }
-  if (endDate) {
-    return `${formatDateLabel(endDate)} 종료`;
-  }
-  return "데이터 미수집";
-}
-
-function getText(value: string | null | undefined): string {
-  return typeof value === "string" && value.trim() ? value.trim() : "정보 없음";
-}
-
-function getOperationalText(value: string | null | undefined): string {
-  return typeof value === "string" && value.trim() ? value.trim() : "데이터 미수집";
-}
-
-function getDeadlineLabel(daysLeft?: number | null): string {
-  if (typeof daysLeft !== "number") return "정보 없음";
-  if (daysLeft < 0) return "마감";
-  if (daysLeft === 0) return "D-Day";
-  return `D-${daysLeft}`;
-}
-
-function getDeadlineTone(daysLeft?: number | null): string {
-  if (typeof daysLeft !== "number") return "text-slate-500";
-  if (daysLeft <= 3) return "text-rose-600";
-  if (daysLeft <= 7) return "text-orange-500";
-  if (daysLeft <= 14) return "text-amber-500";
-  return "text-emerald-600";
-}
-
-function formatBooleanLabel(
-  value: boolean | null | undefined,
-  labels: { true: string; false: string; missing: string }
-): string {
-  if (value === true) return labels.true;
-  if (value === false) return labels.false;
-  return labels.missing;
-}
-
-function getProgramSummary(program: Program | null): string {
-  if (!program) return "정보 없음";
-  if (typeof program.summary === "string" && program.summary.trim()) return program.summary.trim();
-  if (typeof program.description === "string" && program.description.trim()) return program.description.trim();
-  return "정보 없음";
-}
-
-function getProgramDescription(program: Program | null): string {
-  if (!program) return "정보 없음";
-  if (typeof program.description === "string" && program.description.trim()) return program.description.trim();
-  return "정보 없음";
-}
-
-function getLinkHref(program: Program | null): string | null {
-  if (!program) return null;
-  const candidates = [program.application_url, program.source_url, program.link];
-  return candidates.find((value): value is string => typeof value === "string" && value.trim().length > 0) ?? null;
-}
-
-function getLinkSummary(program: Program | null): string {
-  return getLinkHref(program) ? "바로가기 가능" : "링크 없음";
-}
-
-type CompareRow = {
-  label: string;
-  formatter: (program: Program | null) => string;
 };
 
 function getWinnerIndex(slots: Array<Program | null>): number {
@@ -147,71 +61,6 @@ function getRelevanceWinnerIndex(
   });
 
   return winnerIndex;
-}
-
-function ValueCell({
-  children,
-  winner,
-  empty = false,
-  extraClassName = "",
-}: {
-  children: React.ReactNode;
-  winner: boolean;
-  empty?: boolean;
-  extraClassName?: string;
-}) {
-  return (
-    <div
-      className={`min-w-0 border-b border-r border-slate-200 px-4 py-3 text-sm ${
-        winner ? "bg-orange-50/60" : "bg-white"
-      } ${empty ? "text-slate-400" : "text-slate-700"} ${extraClassName}`}
-    >
-      {children}
-    </div>
-  );
-}
-
-function formatPercent(score: number | null | undefined): string {
-  if (typeof score !== "number" || Number.isNaN(score)) return "0%";
-  return `${Math.round(score * 100)}%`;
-}
-
-function ScoreBar({ score }: { score: number | null | undefined }) {
-  const width = typeof score === "number" && !Number.isNaN(score) ? Math.max(0, Math.min(100, Math.round(score * 100))) : 0;
-
-  return (
-    <div className="w-full">
-      <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
-        <span>{formatPercent(score)}</span>
-      </div>
-      <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
-        <div className="h-full rounded-full bg-[#F97316]" style={{ width: `${width}%` }} />
-      </div>
-    </div>
-  );
-}
-
-function getRelevanceValueState(
-  program: Program | null,
-  isLoggedIn: boolean,
-  relevanceLoading: boolean,
-  relevanceError: string | null
-): "empty" | "login" | "loading" | "error" | "ready" {
-  if (!program) return "empty";
-  if (!isLoggedIn) return "login";
-  if (relevanceLoading) return "loading";
-  if (relevanceError) return "error";
-  return "ready";
-}
-
-function renderRelevanceFallback(
-  state: "empty" | "login" | "loading" | "error" | "ready"
-): string {
-  if (state === "empty") return "정보 없음";
-  if (state === "login") return "로그인 후 확인";
-  if (state === "loading") return "분석 중";
-  if (state === "error") return "불러오기 실패";
-  return "정보 없음";
 }
 
 export default function ProgramsCompareClient({
@@ -284,9 +133,7 @@ export default function ProgramsCompareClient({
       try {
         const response = await getProgramCompareRelevance(activeProgramIds);
         if (cancelled) return;
-        setRelevanceItems(
-          Object.fromEntries(response.items.map((item) => [item.program_id, item]))
-        );
+        setRelevanceItems(Object.fromEntries(response.items.map((item) => [item.program_id, item])));
       } catch (error) {
         if (cancelled) return;
         setRelevanceItems({});
@@ -348,13 +195,6 @@ export default function ProgramsCompareClient({
     if (slotIndex < 0 || slotIndex > 2 || slotIds[slotIndex]) return;
     setModalSlotIndex(slotIndex);
   }
-
-  const sectionHeader = (label: string, className: string, note?: string) => (
-    <div className={`col-span-4 flex items-center gap-2 border-b border-slate-200 px-5 py-3 text-xs font-semibold ${className}`}>
-      <span>{label}</span>
-      {note ? <span className="text-[11px] font-medium text-rose-500">{note}</span> : null}
-    </div>
-  );
 
   return (
     <main className="min-h-screen bg-slate-100 text-slate-950">
@@ -476,250 +316,35 @@ export default function ProgramsCompareClient({
               );
             })}
 
-            {sectionHeader("기본 정보", "bg-slate-50 text-slate-600")}
-            <div className="row contents">
-              <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">마감일</div>
-              {slots.map((program, index) => (
-                <ValueCell key={`deadline-${program?.id ?? index}`} winner={winnerIndex === index} empty={!program}>
-                  {program ? (
-                    <span className={getDeadlineTone(program.days_left)}>
-                      {getDeadlineLabel(program.days_left)} {program.deadline ? `· ${formatDateLabel(program.deadline)}` : ""}
-                    </span>
-                  ) : (
-                    "정보 없음"
-                  )}
-                </ValueCell>
-              ))}
-            </div>
-            <div className="row contents">
-              <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">과정 기간</div>
-              {slots.map((program, index) => (
-                <ValueCell key={`period-${program?.id ?? index}`} winner={winnerIndex === index} empty={!program}>
-                  {program ? formatDateRange(program.start_date, program.end_date) : "정보 없음"}
-                </ValueCell>
-              ))}
-            </div>
-            {([
-              { label: "운영 기관", formatter: (program: Program | null) => getText(program?.provider) },
-              { label: "지역", formatter: (program: Program | null) => getText(program?.location) },
-              { label: "카테고리", formatter: (program: Program | null) => getText(program?.category) },
-            ] satisfies CompareRow[]).map(({ label, formatter }) => (
-              <div key={label} className="row contents">
-                <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">{label}</div>
-                {slots.map((program, index) => (
-                  <ValueCell key={`${label}-${program?.id ?? index}`} winner={winnerIndex === index} empty={!program}>
-                    {program ? formatter(program) : "정보 없음"}
-                  </ValueCell>
-                ))}
-              </div>
-            ))}
-
-            {sectionHeader("운영 정보", "bg-violet-50 text-violet-700")}
-            {([
-              { label: "지원 유형", formatter: (program: Program | null) => getOperationalText(program?.support_type) },
-              { label: "수업 방식", formatter: (program: Program | null) => getOperationalText(program?.teaching_method) },
-              {
-                label: "인증 여부",
-                formatter: (program: Program | null) =>
-                  formatBooleanLabel(program?.is_certified, { true: "인증", false: "미인증", missing: "데이터 미수집" }),
-              },
-              {
-                label: "모집 상태",
-                formatter: (program: Program | null) =>
-                  formatBooleanLabel(program?.is_active, { true: "모집 중", false: "마감 또는 비활성", missing: "데이터 미수집" }),
-              },
-              { label: "지원 링크", formatter: (program: Program | null) => getLinkSummary(program) },
-            ] satisfies CompareRow[]).map(({ label, formatter }) => (
-              <div key={label} className="row contents">
-                <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">{label}</div>
-                {slots.map((program, index) => (
-                  <ValueCell key={`${label}-${program?.id ?? index}`} winner={winnerIndex === index} empty={!program}>
-                    {program ? formatter(program) : "정보 없음"}
-                  </ValueCell>
-                ))}
-              </div>
-            ))}
-
-            {sectionHeader("프로그램 개요", "bg-blue-50 text-blue-700")}
-            <div className="row contents">
-              <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">한줄 요약</div>
-              {slots.map((program, index) => (
-                <ValueCell key={`summary-${program?.id ?? index}`} winner={winnerIndex === index} empty={!program}>
-                  {program ? (
-                    <span className="line-clamp-2 break-words">{getProgramSummary(program)}</span>
-                  ) : (
-                    "정보 없음"
-                  )}
-                </ValueCell>
-              ))}
-            </div>
-            <div className="row contents">
-              <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">상세 설명</div>
-              {slots.map((program, index) => (
-                <ValueCell key={`description-${program?.id ?? index}`} winner={winnerIndex === index} empty={!program}>
-                  {program ? (
-                    <span className="line-clamp-3 break-words">{getProgramDescription(program)}</span>
-                  ) : (
-                    "정보 없음"
-                  )}
-                </ValueCell>
-              ))}
-            </div>
-            <div className="row contents">
-              <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">주요 기술 스택</div>
-              {slots.map((program, index) => {
-                const skills = normalizeTextList(program?.skills);
-                return (
-                  <ValueCell key={`skills-${program?.id ?? index}`} winner={winnerIndex === index} empty={!program || skills.length === 0} extraClassName="flex flex-wrap gap-2">
-                    {program && skills.length > 0 ? skills.map((skill) => (
-                      <span key={`${program.id}-${skill}`} className="rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-600">
-                        {skill}
-                      </span>
-                    )) : "정보 없음"}
-                  </ValueCell>
-                );
-              })}
-            </div>
-            <div className="row contents">
-              <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">태그</div>
-              {slots.map((program, index) => {
-                const tags = normalizeTextList(program?.tags);
-                return (
-                  <ValueCell key={`tags-${program?.id ?? index}`} winner={winnerIndex === index} empty={!program || tags.length === 0} extraClassName="flex flex-wrap gap-2">
-                    {program && tags.length > 0 ? tags.map((tag) => (
-                      <span key={`${program.id}-tag-${tag}`} className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600">
-                        {tag}
-                      </span>
-                    )) : "정보 없음"}
-                  </ValueCell>
-                );
-              })}
-            </div>
-            <div className="row contents">
-              <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">출처</div>
-              {slots.map((program, index) => (
-                <ValueCell key={`source-${program?.id ?? index}`} winner={winnerIndex === index} empty={!program}>
-                  {program ? getText(program.source) : "정보 없음"}
-                </ValueCell>
-              ))}
-            </div>
-
-            {sectionHeader("★ AI 적합도", "bg-[#0A0F1E] text-white")}
-            <div className="row contents">
-              <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">상태</div>
-              {slots.map((program, index) => {
-                const state = getRelevanceValueState(program, isLoggedIn, relevanceLoading, relevanceError);
-                return (
-                  <ValueCell key={`relevance-state-${program?.id ?? index}`} winner={winnerIndex === index} empty={!program}>
-                    {state === "login" ? (
-                      <span className="inline-flex rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600">
-                        로그인 후 확인
-                      </span>
-                    ) : state === "loading" ? "분석 중" : state === "error" ? "불러오기 실패" : state === "ready" ? "분석 완료" : "정보 없음"}
-                  </ValueCell>
-                );
-              })}
-            </div>
-            {["종합 관련도", "기술 스택 일치도"].map((label) => (
-              <div key={label} className="row contents">
-                <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">{label}</div>
-                {slots.map((program, index) => {
-                  const programId = typeof program?.id === "string" ? program.id : "";
-                  const item = programId ? relevanceItems[programId] : null;
-                  const score = label === "종합 관련도" ? item?.relevance_score : item?.skill_match_score;
-                  const state = getRelevanceValueState(program, isLoggedIn, relevanceLoading, relevanceError);
-                  return (
-                    <ValueCell key={`${label}-${program?.id ?? index}`} winner={winnerIndex === index} empty={!program}>
-                      {state === "ready" && item ? <ScoreBar score={score} /> : renderRelevanceFallback(state)}
-                    </ValueCell>
-                  );
-                })}
-              </div>
-            ))}
-            <div className="row contents">
-              <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">매칭된 스킬</div>
-              {slots.map((program, index) => {
-                const programId = typeof program?.id === "string" ? program.id : "";
-                const item = programId ? relevanceItems[programId] : null;
-                const matchedSkills = item?.matched_skills ?? [];
-                const state = getRelevanceValueState(program, isLoggedIn, relevanceLoading, relevanceError);
-                return (
-                  <ValueCell
-                    key={`matched-skills-${program?.id ?? index}`}
-                    winner={winnerIndex === index}
-                    empty={!program || (!isLoggedIn && matchedSkills.length === 0)}
-                    extraClassName="flex flex-wrap gap-2"
-                  >
-                    {state !== "ready" ? renderRelevanceFallback(state) : matchedSkills.length > 0 ? matchedSkills.map((skill) => (
-                      <span
-                        key={`${programId}-${skill}`}
-                        className="rounded-md border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-medium text-orange-700"
+            {compareSections.map((section) => (
+              <Fragment key={section.label}>
+                <CompareSectionHeader label={section.label} className={section.className} note={section.note} />
+                {section.rows.map((row) => (
+                  <div key={`${section.label}-${row.label}`} className="row contents">
+                    <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">{row.label}</div>
+                    {slots.map((program, index) => (
+                      <ValueCell
+                        key={`${section.label}-${row.label}-${program?.id ?? index}`}
+                        winner={winnerIndex === index}
+                        empty={row.isEmpty ? row.isEmpty(program) : !program}
+                        extraClassName={row.extraClassName ?? ""}
                       >
-                        {skill}
-                      </span>
-                    )) : "매칭된 스킬 없음"}
-                  </ValueCell>
-                );
-              })}
-            </div>
-            {([
-              {
-                label: "적합도 판단",
-                render: (item: ProgramRelevanceItem | null) =>
-                  item ? (
-                    <span className="inline-flex rounded-md border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-semibold text-orange-700">
-                      {item.fit_label}
-                    </span>
-                  ) : null,
-              },
-              {
-                label: "지원 준비도",
-                render: (item: ProgramRelevanceItem | null) =>
-                  item ? (
-                    <span className="inline-flex rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700">
-                      {item.readiness_label}
-                    </span>
-                  ) : null,
-              },
-              {
-                label: "AI 한줄 요약",
-                render: (item: ProgramRelevanceItem | null) =>
-                  item ? <span className="line-clamp-2 break-words">{item.fit_summary}</span> : null,
-              },
-              {
-                label: "보완 포인트",
-                render: (item: ProgramRelevanceItem | null) =>
-                  item ? (
-                    item.gap_tags.length > 0 ? item.gap_tags.map((tag) => (
-                      <span
-                        key={`${item.program_id}-${tag}`}
-                        className="rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700"
-                      >
-                        {tag}
-                      </span>
-                    )) : "보완 포인트 없음"
-                  ) : null,
-              },
-            ] satisfies Array<{ label: string; render: (item: ProgramRelevanceItem | null) => React.ReactNode }>).map(({ label, render }) => (
-              <div key={label} className="row contents">
-                <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">{label}</div>
-                {slots.map((program, index) => {
-                  const programId = typeof program?.id === "string" ? program.id : "";
-                  const item = programId ? relevanceItems[programId] : null;
-                  const state = getRelevanceValueState(program, isLoggedIn, relevanceLoading, relevanceError);
-                  return (
-                    <ValueCell
-                      key={`${label}-${program?.id ?? index}`}
-                      winner={winnerIndex === index}
-                      empty={!program}
-                      extraClassName={label === "보완 포인트" ? "flex flex-wrap gap-2" : ""}
-                    >
-                      {state === "ready" && item ? render(item) : renderRelevanceFallback(state)}
-                    </ValueCell>
-                  );
-                })}
-              </div>
+                        {row.render(program)}
+                      </ValueCell>
+                    ))}
+                  </div>
+                ))}
+              </Fragment>
             ))}
+
+            <CompareRelevanceSection
+              slots={slots}
+              winnerIndex={winnerIndex}
+              isLoggedIn={isLoggedIn}
+              relevanceLoading={relevanceLoading}
+              relevanceError={relevanceError}
+              relevanceItems={relevanceItems}
+            />
 
             <div className="border-r border-slate-200 bg-slate-100 px-4 py-4 text-sm font-medium text-slate-600">결정하셨나요?</div>
             {slots.map((program, index) => (
@@ -730,32 +355,32 @@ export default function ProgramsCompareClient({
                 {program ? (() => {
                   const linkHref = getLinkHref(program);
                   return (
-                  <>
-                    {linkHref ? (
-                      <a
-                        href={linkHref}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center justify-center rounded-xl bg-[#F97316] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600"
+                    <>
+                      {linkHref ? (
+                        <a
+                          href={linkHref}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center justify-center rounded-xl bg-[#F97316] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600"
+                        >
+                          지금 지원하기 →
+                        </a>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled
+                          className="inline-flex items-center justify-center rounded-xl bg-slate-300 px-4 py-2.5 text-sm font-semibold text-white"
+                        >
+                          지금 지원하기 →
+                        </button>
+                      )}
+                      <Link
+                        href={resumeHref}
+                        className="inline-flex items-center justify-center rounded-xl border border-orange-200 bg-orange-50 px-4 py-2.5 text-sm font-semibold text-orange-600 transition hover:bg-orange-100"
                       >
-                        지금 지원하기 →
-                      </a>
-                    ) : (
-                      <button
-                        type="button"
-                        disabled
-                        className="inline-flex items-center justify-center rounded-xl bg-slate-300 px-4 py-2.5 text-sm font-semibold text-white"
-                      >
-                        지금 지원하기 →
-                      </button>
-                    )}
-                    <Link
-                      href={resumeHref}
-                      className="inline-flex items-center justify-center rounded-xl border border-orange-200 bg-orange-50 px-4 py-2.5 text-sm font-semibold text-orange-600 transition hover:bg-orange-100"
-                    >
-                      이력서 즉시 만들기
-                    </Link>
-                  </>
+                        이력서 즉시 만들기
+                      </Link>
+                    </>
                   );
                 })() : (
                   <button

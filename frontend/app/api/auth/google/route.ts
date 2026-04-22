@@ -1,15 +1,34 @@
 import { NextResponse } from "next/server";
 
+import { apiRateLimited } from "@/lib/api/route-response";
+import { buildRateLimitKey, enforceRateLimit } from "@/lib/server/rate-limit";
+import { logRouteError } from "@/lib/server/route-logging";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
   try {
+    const rateLimit = await enforceRateLimit({
+      namespace: "auth-google",
+      key: buildRateLimitKey(request, "auth-google"),
+      maxRequests: 8,
+      windowMs: 60_000,
+    });
+    if (!rateLimit.allowed) {
+      return apiRateLimited(
+        "로그인 시도가 너무 많습니다. 잠시 후 다시 시도해주세요.",
+        rateLimit.retryAfterSeconds
+      );
+    }
+
     const supabase = await createServerSupabaseClient();
-    const origin = new URL(request.url).origin;
+    const requestUrl = new URL(request.url);
+    const origin = requestUrl.origin;
+    const requestedNext = requestUrl.searchParams.get("next");
+    const next = requestedNext && requestedNext.startsWith("/") ? requestedNext : "/landing-a";
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${origin}/auth/callback`,
+        redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(next)}`,
       },
     });
 
@@ -22,7 +41,17 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.redirect(data.url);
-  } catch {
+  } catch (error) {
+    logRouteError(
+      {
+        route: "/api/auth/google",
+        method: "GET",
+        category: "auth",
+        status: 302,
+        code: "oauth_start_failed",
+      },
+      error
+    );
     return NextResponse.redirect(new URL("/login?error=oauth_start_failed", request.url));
   }
 }

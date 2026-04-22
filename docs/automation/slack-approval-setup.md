@@ -146,6 +146,11 @@ powershell -ExecutionPolicy Bypass -File scripts\run_cowork_watcher.ps1
 6. 대상 packet이 `tasks/inbox/` 또는 `tasks/remote/`로 복사되는지 확인한다
 7. 별도로 `/isoser-approve <TASK-ID>` slash command도 동작하는지 확인한다
 
+### direct watcher 알림 확인 메모
+- local watcher의 direct Slack 알림은 위 approval smoke test와 분리해서 확인한다
+- 반복 확인이 필요하면 실제 운영 packet 재실행 대신 작은 docs-only packet 하나를 `tasks/inbox/`에 넣어 `completed` 또는 `blocked` 알림만 안전하게 본다
+- smoke check가 끝나면 Slack 도착 여부와 thread 연결만 확인하고, 생성된 packet/report는 일반 task 정리 규칙대로 archive 또는 done 기준에 맞게 정리한다
+
 ## 운영 메모
 - Slack approval은 `review-ready` 버튼과 `/isoser-approve` slash command를 모두 지원한다
 - button interactivity request URL과 slash command request URL은 다르다
