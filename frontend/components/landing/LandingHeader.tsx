@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
 
 import { getDashboardMe } from "@/lib/api/app";
@@ -23,6 +24,17 @@ const landingHeaderLinks: HeaderLink[] = [
   { href: "/compare", label: "비교" },
   { href: DASHBOARD_RECOMMEND_CALENDAR, label: "대시보드" },
 ];
+
+const headerVars = {
+  "--ink": "#0A1325",
+  "--sub": "#5B6E8A",
+  "--sky": "#8FC2FF",
+  "--blue": "#2B6FF2",
+  "--fire": "#F97316",
+  "--fire-lo": "#EA580C",
+  "--surface": "#F4F7FB",
+  "--border": "#D8E3F2",
+} as CSSProperties;
 
 function getHeaderInitial(name: string | null | undefined) {
   const initial = name?.trim()?.slice(0, 1);
@@ -116,7 +128,7 @@ export function LandingHeader() {
   const { user, authChecked } = useLandingUser();
 
   return (
-    <header className="sticky top-0 z-[230] border-b border-[var(--border)] bg-white/92 px-3 py-3 backdrop-blur-xl sm:px-8 lg:px-12">
+    <header className="sticky top-0 z-[230] border-b border-[var(--border)] bg-white/92 px-3 py-3 backdrop-blur-xl sm:px-8 lg:px-12" style={headerVars}>
       <div className="mx-auto flex max-w-6xl items-center gap-2 sm:gap-4">
         <Link href={DEFAULT_PUBLIC_LANDING} className="shrink-0">
           <div className="text-xl font-extrabold tracking-[-0.04em] text-[var(--ink)]">
@@ -149,4 +161,3 @@ export function LandingHeader() {
     </header>
   );
 }
-

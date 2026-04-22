@@ -3,8 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 
-import { LandingANavBar, LandingATickerBar } from "@/app/(landing)/landing-a/_components";
 import AdSlot from "@/components/AdSlot";
+import { LandingHeader } from "@/components/landing/LandingHeader";
 import { getProgramDetail } from "@/lib/api/backend";
 import { getSiteUrl } from "@/lib/seo";
 import type { ProgramDetail } from "@/lib/types";
@@ -190,8 +190,7 @@ export default async function ProgramDetailPage({ params }: ProgramDetailPagePro
             dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
           />
         ) : null}
-        <LandingATickerBar />
-        <LandingANavBar />
+        <LandingHeader />
         <main className="min-h-screen bg-slate-50 text-slate-950">
           <div className="mx-auto flex max-w-4xl flex-col gap-6 px-6 py-10">
             <Link href="/programs" className="text-sm font-medium text-slate-600 hover:text-slate-900">
@@ -296,8 +295,7 @@ export default async function ProgramDetailPage({ params }: ProgramDetailPagePro
     const message = e instanceof Error ? e.message : "프로그램을 불러오지 못했습니다.";
     return (
       <>
-        <LandingATickerBar />
-        <LandingANavBar />
+        <LandingHeader />
         <main className="flex min-h-screen items-center justify-center bg-slate-50 px-6">
           <div className="rounded-2xl border border-rose-200 bg-white px-8 py-10 text-center shadow-sm">
             <p className="text-base font-medium text-rose-700">{message}</p>

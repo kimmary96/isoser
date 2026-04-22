@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { LandingANavBar, LandingATickerBar } from "@/app/(landing)/landing-a/_components";
+import { LandingHeader } from "@/components/landing/LandingHeader";
 import { getProgram, listPrograms } from "@/lib/api/backend";
 import { getSiteUrl } from "@/lib/seo";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -128,8 +128,7 @@ export default async function ProgramsComparePage({ searchParams }: ProgramsComp
 
   return (
     <>
-      <LandingATickerBar />
-      <LandingANavBar />
+      <LandingHeader />
       <ProgramsCompareClient
         initialSlots={slotPrograms}
         canonicalIds={canonicalIds}

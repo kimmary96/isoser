@@ -2179,6 +2179,10 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-22: `frontend/app/(landing)/landing-c/page.tsx`, `docs/current-state.md`
   - landing-c의 기존 Journey 섹션을 제거하고 Circular flow 섹션을 해당 위치로 이동해 흐름 설명 섹션 중복을 줄임
   - Opportunity feed 다음에는 Career Asset Workspace가 바로 이어지고, 기능 미리보기 뒤에 Circular flow가 노출되도록 section order를 정리함
+- 2026-04-22: `frontend/components/landing/LandingHeader.tsx`, `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/[id]/page.tsx`, `frontend/app/(landing)/compare/page.tsx`, `frontend/app/(landing)/landing-b/page.tsx`, `frontend/app/dashboard/layout.tsx`, `docs/current-state.md`
+  - landing-c에서 쓰는 공통 `LandingHeader`를 프로그램 목록, 프로그램 상세, 비교, landing-b, 대시보드 레이아웃에도 적용해 상단 헤더 UI를 통일함
+  - `LandingHeader`에 자체 CSS 변수 fallback을 추가해 landing-c가 아닌 화면에서도 동일한 색상/보더/CTA 스타일을 유지하도록 보강함
+  - 대시보드 사이드바 sticky offset과 높이 계산을 단일 공통 헤더 높이에 맞춰 조정하고, 구형 `LandingATickerBar`/`LandingANavBar` 직접 렌더링을 제거함
 - 2026-04-22: `backend/rag/collector/work24_detail_parser.py`, `scripts/program_backfill.py`, `backend/tests/test_program_backfill.py`, `docs/current-state.md`
   - `program_backfill.py` 안에 있던 고용24 상세 HTML 파싱 책임을 `work24_detail_parser.py`로 분리함
   - 백필 스크립트는 source URL과 title을 넘겨 상세 필드 dict를 받아 `SourceRecord`로 감싸는 역할만 남겨 책임을 줄임
@@ -2187,6 +2191,8 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - 고용24 collector를 고정 page limit 대신 OpenAPI `scn_cnt` 기반 full sync로 전환해 수집 범위 밖 기관명 검색 누락을 줄임
   - 고용24/K-Startup normalized row에 `source_unique_key`를 추가하고, scheduler는 이 키를 우선 upsert 기준으로 사용하며 migration 미적용 운영 DB에서는 legacy conflict fallback으로 저장을 계속하도록 보강함
   - `/programs?q=` 검색은 Supabase 1,000건 반환 제한을 고려해 후보를 페이지 조회하고, title/provider/description/location/tags/compare_meta 순서로 null-safe 부분 검색 및 정렬하도록 확장함
+- 2026-04-22: `frontend/app/(landing)/programs/[id]/page.tsx`, `frontend/app/(landing)/programs/[id]/program-detail-client.tsx`
+  - 프로그램 상세 페이지를 서버 데이터 fetch와 클라이언트 상세 UI로 분리하고, 실제 `ProgramDetail` 값이 있는 섹션만 Hero, 탭, 본문/사이드바, 빠른 목차, 북마크/공유 UI에 표시하도록 정리함
 - 2026-04-22: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `supabase/migrations/20260422203000_add_programs_search_text_index.sql`, `docs/current-state.md`
   - 프로그램 검색 후속으로 `programs.search_text` generated column과 trigram index migration을 추가해 title/provider/description/location/tags/skills/target/compare_meta 통합 검색 후보를 DB에서 먼저 줄일 수 있게 함
   - 백엔드 `/programs?q=`는 `search_text.ilike`를 우선 사용하되, 아직 migration이 적용되지 않은 환경에서는 기존 1,000건 단위 후보 scan으로 자동 fallback하도록 보강함

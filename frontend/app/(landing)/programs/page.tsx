@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { LandingANavBar, LandingATickerBar } from "@/app/(landing)/landing-a/_components";
 import AdSlot from "@/components/AdSlot";
+import { LandingHeader } from "@/components/landing/LandingHeader";
 import { getProgramCount, listPrograms } from "@/lib/api/backend";
 import { PROGRAM_CATEGORIES } from "@/lib/program-categories";
 import { getSiteUrl } from "@/lib/seo";
@@ -276,8 +276,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
 
   return (
     <>
-      <LandingATickerBar />
-      <LandingANavBar />
+      <LandingHeader />
       <main className="min-h-screen bg-slate-50 text-slate-950">
         <div className="mx-auto flex max-w-7xl flex-col gap-8 px-6 py-10">
           <section className="rounded-3xl bg-slate-950 px-8 py-10 text-white shadow-xl">
