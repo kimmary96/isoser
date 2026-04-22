@@ -1,5 +1,45 @@
 # 리팩토링 로그
 
+## 2026-04-22 programs 상단 필터 바 개편
+
+- 변경 파일
+  - `frontend/app/(landing)/programs/page.tsx`
+  - `frontend/app/(landing)/programs/programs-filter-bar.tsx`
+  - `frontend/lib/api/backend.ts`
+  - `frontend/lib/types/index.ts`
+  - `backend/routers/programs.py`
+  - `backend/tests/test_programs_router.py`
+  - `supabase/migrations/20260422212000_add_programs_category_detail.sql`
+  - `docs/current-state.md`
+  - `reports/programs-filter-bar-redesign-result.md`
+- 변경 내용
+  - `/programs`의 기존 왼쪽 사이드 필터를 상단 검색 중심 필터 바로 재구성함
+  - 카테고리 선택은 기본 select 대신 참고 화면처럼 컬러 점, 선택 강조, 행 단위 항목을 가진 드롭다운 메뉴로 조정함
+  - 카테고리 메뉴는 `웹개발`, `모바일`, `데이터·AI`, `클라우드·보안`, `IoT·임베디드·반도체`, `게임·블록체인`, `기획·마케팅·기타`, `디자인·3D`, `프로젝트·취준·창업` 항목으로 구성하고 현재 API의 큰 분류에 매핑함
+  - 상단 필터 헤더의 `현재 결과` 요약 박스를 제거함
+  - `programs.category_detail` migration과 backend/frontend API 파라미터를 추가해 세부 카테고리를 별도 컬럼으로 필터링할 수 있게 함
+  - 카테고리 메뉴를 클라이언트 컴포넌트 상태로 전환해 항목 클릭 시 선택 표시와 hidden query 값이 즉시 바뀌게 함
+  - 카테고리, 온/오프라인, 지역, 정렬을 같은 커스텀 드롭다운 디자인으로 통일하고 항목 선택 시 메뉴가 즉시 닫히도록 변경함
+  - 운영 DB에 migration이 아직 적용되지 않은 환경에서는 backend가 `category_detail` 필터를 제거하고 큰 카테고리 필터로 fallback하도록 방어함
+  - 검색, 카테고리, 온/오프라인, 지역, 정렬을 1차 필터로 배치하고, 최근 마감 공고 포함은 추가 필터 영역으로 이동함
+  - 기존 백엔드가 지원하는 `teaching_methods`와 `sort=deadline|latest`를 URL query와 목록/count API 호출에 연결함
+  - 활성 필터 chip과 초기화 버튼을 상단 필터 바 안으로 모아 현재 조건이 더 잘 보이게 함
+- 보존한 동작
+  - 프로그램 카드 UI, 상세 보기 `/programs/[id]`, 비교 추가 `/compare?ids=`, 지원 링크 흐름은 유지함
+  - 기본값은 모집중 공고만 마감 임박순으로 노출하는 기존 정책을 유지함
+  - 지원되지 않는 비용순, 고급 추천 대상, 선발 절차 세부 필터는 UI에 추가하지 않음
+- 검증
+  - `frontend`: `npm run lint`
+  - `frontend`: `npx tsc --noEmit -p tsconfig.codex-check.json`
+  - `backend`: `backend\venv\Scripts\python.exe -m pytest backend\tests\test_programs_router.py -q`
+  - `agent-browser`: `http://localhost:3001/programs` 로드, Next 오류 overlay 없음, 필터/카드 주요 요소 렌더 확인
+  - `Invoke-WebRequest`: `http://localhost:3001/programs` 200 응답과 카테고리 메뉴 텍스트 포함 확인
+  - `Invoke-WebRequest`: `http://localhost:3000/programs` 200 응답, `현재 결과` 문구 제거, `웹개발`/`데이터·AI` 카테고리 텍스트 포함 확인
+  - `Invoke-WebRequest`: `http://localhost:3000/programs?category_detail=data-ai` 200 응답과 `카테고리: 데이터·AI` 활성 chip 확인
+- 추가 리팩토링 후보
+  - 운영 데이터에 `cost`, `support_type`, `source` 기반 필터를 안정적으로 쿼리할 수 있게 백엔드 계약을 확장한 뒤 UI에 단계적으로 추가
+  - 프로그램 카드 렌더링을 별도 `ProgramCard` 컴포넌트로 분리해 `page.tsx` 길이를 더 줄이기
+
 # 2026-04-22 고용24/K-Startup 수집 필드 매핑 보강
 
 - 변경 파일
@@ -2201,3 +2241,11 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - 프로그램 카드/상세/대시보드/추천 캘린더의 D-day 기준을 모집 마감일(`close_date` 또는 `deadline`)로 통일하고, 프론트의 `end_date` fallback을 제거함
   - 고용24에서 훈련 종료일이 `deadline`과 같은 값으로 저장된 row는 모집 마감일로 보지 않고 D-day 계산에서 제외하도록 방어함
   - 훈련/운영 기간 표시는 기존대로 `start_date`/`end_date`를 유지하고, backend router 회귀 테스트와 frontend lint/typecheck로 검증함
+- 2026-04-22: `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/programs-filter-bar.tsx`, `frontend/lib/api/backend.ts`, `frontend/lib/types/index.ts`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `supabase/migrations/20260422213000_add_programs_cost_time_filters.sql`, `docs/current-state.md`, `reports/programs-filter-bar-redesign-result.md`
+  - 프로그램 상단 필터에 시·도 지역, 비용, 참여 시간 다중 선택 드롭다운을 추가하고 URL query와 목록/count API 파라미터에 연결함
+  - 비용은 `내일배움카드`, `무료(내배카 X)`, `유료`, 참여 시간은 `파트타임`, `풀타임`으로 분류하며, DB 컬럼이 없는 환경에서도 기존 row의 비용/지원/기간/텍스트 정보를 기준으로 backend에서 보수적으로 필터링하도록 함
+  - 운영 DB 적용용 `cost_type`, `participation_time` migration과 trigger/index를 추가하고, 기존 카드 리스트와 상세 보기 흐름은 유지함
+- 2026-04-22: `backend/rag/collector/program_field_mapping.py`, `backend/routers/admin.py`, `scripts/program_backfill.py`, `backend/tests/test_work24_kstartup_field_mapping.py`, `backend/tests/test_admin_router.py`, `backend/tests/test_program_backfill.py`, `reports/TASK-2026-04-22-1915-work24-deadline-source-separation-result.md`
+  - 고용24 `traEndDate`를 `raw_deadline`으로 넘기지 않고 `end_date`와 `compare_meta.training_end_date`로만 보존하도록 분리함
+  - 관리자 sync도 별도 `deadline`/`close_date`가 없으면 고용24 `deadline=end_date`를 저장하지 않도록 수정함
+  - 운영 DB의 기존 의심 row를 직접 수정하지 않고 `scripts/program_backfill.py --work24-deadline-audit` dry-run 리포트로 먼저 식별하도록 추가함
