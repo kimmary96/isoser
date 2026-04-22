@@ -10,7 +10,7 @@ import {
   getProgramDetailHref,
 } from "@/components/landing/program-card-helpers";
 import { PROGRAM_FILTER_CHIPS, buildProgramFilterParams } from "@/lib/program-filters";
-import { DASHBOARD_RECOMMEND_CALENDAR, getLoginHref } from "@/lib/routes";
+import { DASHBOARD_RECOMMEND_CALENDAR, ONBOARDING_RESUME_IMPORT, getLoginHref } from "@/lib/routes";
 import { getSiteUrl } from "@/lib/seo";
 import type { Program } from "@/lib/types";
 
@@ -61,6 +61,34 @@ const themeVars = {
 } as CSSProperties;
 
 const chips = PROGRAM_FILTER_CHIPS;
+const OPPORTUNITY_FEED_SIZE = 6;
+const SEOUL_DISTRICTS = [
+  "강남",
+  "강동",
+  "강북",
+  "강서",
+  "관악",
+  "광진",
+  "구로",
+  "금천",
+  "노원",
+  "도봉",
+  "동대문",
+  "동작",
+  "마포",
+  "서대문",
+  "서초",
+  "성동",
+  "성북",
+  "송파",
+  "양천",
+  "영등포",
+  "용산",
+  "은평",
+  "종로",
+  "중구",
+  "중랑",
+] as const;
 
 const workflowCards = [
   {
@@ -82,6 +110,39 @@ const workflowCards = [
     title: "문서 저장과 PDF 출력",
     body: "선택한 활동으로 이력서를 만들고 문서 저장소에서 다시 꺼내 PDF로 내보냅니다.",
     preview: "resume",
+  },
+] as const;
+
+const circularFlowSteps = [
+  {
+    step: "01",
+    title: "프로그램 탐색",
+    description: "마감, 지역, 관심 분야를 기준으로 지원 가능한 공고를 확인합니다.",
+  },
+  {
+    step: "02",
+    title: "이력/활동 등록",
+    description: "관심 분야와 활동 이력을 연결해 추천 기준을 만듭니다.",
+  },
+  {
+    step: "03",
+    title: "맞춤 추천",
+    description: "프로필과 일정에 맞는 프로그램을 추천 캘린더로 정리합니다.",
+  },
+  {
+    step: "04",
+    title: "지원 문서 생성",
+    description: "선택한 공고에 맞춰 이력서와 포트폴리오 초안을 준비합니다.",
+  },
+  {
+    step: "05",
+    title: "참여 성과 저장",
+    description: "활동 결과와 STAR 경험을 성과저장소에 남깁니다.",
+  },
+  {
+    step: "06",
+    title: "다음 추천/취업 준비 재사용",
+    description: "쌓인 이력 데이터를 다음 추천과 면접 준비에 다시 씁니다.",
   },
 ] as const;
 
@@ -110,7 +171,19 @@ function sourceLabel(program: Program): string {
 }
 
 function providerLabel(program: Program): string {
-  return program.provider || program.source || "운영 기관 확인 필요";
+  if (program.provider) {
+    return program.provider;
+  }
+
+  const source = program.source?.toLowerCase();
+  if (source === "sesac") {
+    return "청년취업사관학교 SeSAC";
+  }
+  if (source?.includes("work24") || program.source === "고용24") {
+    return "고용24";
+  }
+
+  return program.source || "운영 기관 확인 필요";
 }
 
 function normalizeMetaText(value: string | boolean | null | undefined): string | null {
@@ -122,12 +195,39 @@ function normalizeMetaText(value: string | boolean | null | undefined): string |
   return text ? text : null;
 }
 
-function supportLabel(program: Program): string {
-  return (
-    normalizeMetaText(program.compare_meta?.subsidy_rate) ||
-    normalizeMetaText(program.support_type) ||
-    "훈련비 확인"
-  );
+function formatWon(value: string | number | null | undefined): string | null {
+  const amount = parseMetricNumber(value);
+  if (amount === null) {
+    return null;
+  }
+
+  if (amount === 0) {
+    return "무료";
+  }
+
+  return `${amount.toLocaleString("ko-KR")}원`;
+}
+
+function trainingFeeLabel(program: Program): string {
+  return formatWon(program.cost) || normalizeMetaText(program.compare_meta?.subsidy_rate) || "확인 필요";
+}
+
+function hasTomorrowLearningCardRequirement(program: Program): boolean {
+  const explicit = program.compare_meta?.naeilbaeumcard_required;
+  if (explicit === true || explicit === "pass" || explicit === "block") {
+    return true;
+  }
+
+  const text = [
+    program.support_type,
+    program.description,
+    program.summary,
+    program.compare_meta?.target_group,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  return /내일배움카드|국민내일배움카드|내배카/.test(text);
 }
 
 function trainingPeriodLabel(program: Program): string {
@@ -135,20 +235,54 @@ function trainingPeriodLabel(program: Program): string {
     return [program.start_date || "시작일 미정", program.end_date || "종료일 미정"].join(" ~ ");
   }
 
-  return "훈련 기간 확인";
+  const titlePeriod = extractPeriodFromTitle(program.title);
+  if (titlePeriod) {
+    return titlePeriod;
+  }
+
+  return program.deadline ? `모집 마감 ${program.deadline}` : "일정 확인 필요";
+}
+
+function displayTitle(program: Program): string {
+  const title = program.title || "제목 미정";
+  return title
+    .replace(/\s*모집\s*기간\s*\d{4}[.-]\d{2}[.-]\d{2}\s*-\s*\d{4}[.-]\d{2}[.-]\d{2}\s*\d*\s*$/u, "")
+    .replace(/^모집예정\s+/u, "")
+    .trim() || title;
+}
+
+function extractPeriodFromTitle(title: string | null | undefined): string | null {
+  const match = title?.match(/모집\s*기간\s*(\d{4})[.-](\d{2})[.-](\d{2})\s*-\s*(\d{4})[.-](\d{2})[.-](\d{2})/u);
+  if (!match) {
+    return null;
+  }
+
+  const [, startYear, startMonth, startDay, endYear, endMonth, endDay] = match;
+  return `모집 ${startYear}-${startMonth}-${startDay} ~ ${endYear}-${endMonth}-${endDay}`;
+}
+
+function locationLabel(program: Program): string | null {
+  const location = normalizeMetaText(program.location);
+  if (location) {
+    return location;
+  }
+
+  const title = program.title || "";
+  const district = SEOUL_DISTRICTS.find((name) => title.includes(name));
+  return district ? `서울 ${district}구` : null;
 }
 
 function programTagItems(program: Program): Array<{ label: string; tone: "green" | "blue" | "amber" | "indigo" }> {
   const tags: Array<{ label: string; tone: "green" | "blue" | "amber" | "indigo" }> = [
-    { label: `훈련비 ${supportLabel(program)}`, tone: "green" },
+    { label: `훈련비 ${trainingFeeLabel(program)}`, tone: "green" },
   ];
 
-  const location = normalizeMetaText(program.location);
+  const location = locationLabel(program);
   if (location) {
     tags.push({ label: location, tone: "blue" });
   }
 
-  if (program.compare_meta?.naeilbaeumcard_required) {
+  if (hasTomorrowLearningCardRequirement(program)) {
     tags.push({ label: "내배카 필수", tone: "amber" });
   }
 
@@ -176,6 +310,28 @@ function parseMetricNumber(value: string | number | null | undefined): number | 
 
 function programRating(program: Program): number | null {
   return parseMetricNumber(program.rating) ?? parseMetricNumber(program.compare_meta?.satisfaction_score);
+}
+
+function opportunityCompletenessScore(program: Program): number {
+  let score = 0;
+  if (program.provider) score += 3;
+  if (program.start_date || program.end_date) score += 3;
+  else if (extractPeriodFromTitle(program.title) || program.deadline) score += 1;
+  if (locationLabel(program)) score += 2;
+  if (program.cost !== null && program.cost !== undefined) score += 1;
+  if (programRating(program) !== null) score += 1;
+  return score;
+}
+
+function orderOpportunityPrograms(programs: Program[]): Program[] {
+  return programs
+    .map((program, index) => ({ program, index }))
+    .toSorted((a, b) => {
+      const scoreDiff = opportunityCompletenessScore(b.program) - opportunityCompletenessScore(a.program);
+      return scoreDiff || a.index - b.index;
+    })
+    .map(({ program }) => program)
+    .slice(0, OPPORTUNITY_FEED_SIZE);
 }
 
 const liveBoardSources = [
@@ -228,7 +384,7 @@ function ProgramCard({ program }: { program: Program }) {
       <div>
         <h3 className="line-clamp-2 min-h-[3.5rem] text-xl font-black leading-7 tracking-[-0.04em] text-[var(--ink)]">
           <Link href={getProgramDetailHref(program)} className="transition hover:text-[var(--indigo)]">
-            {program.title || "제목 미정"}
+            {displayTitle(program)}
           </Link>
         </h3>
         <p className="mt-2 line-clamp-1 text-sm font-bold text-[var(--sub)]">{providerLabel(program)}</p>
@@ -438,11 +594,41 @@ function BackupHeroSection() {
   );
 }
 
+function CircularFlowSection() {
+  return (
+    <section className="px-5 pb-14 sm:px-8 lg:px-12">
+      <div className="mx-auto max-w-6xl rounded-[28px] border border-[var(--border)] bg-white px-6 py-8 shadow-[0_22px_64px_rgba(10,19,37,0.06)] sm:px-8">
+        <div className="max-w-2xl">
+          <p className="text-xs font-black uppercase tracking-[0.24em] text-[var(--indigo)]">Circular flow</p>
+          <h2 className="mt-3 text-3xl font-black tracking-[-0.05em] text-[var(--ink)]">
+            탐색한 프로그램은 다음 지원 준비로 이어집니다
+          </h2>
+        </div>
+
+        <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-6">
+          {circularFlowSteps.map((stage) => (
+            <article
+              key={stage.step}
+              className="flex min-h-[188px] flex-col rounded-[20px] border border-[var(--border)] bg-[var(--surface)] px-4 py-5 transition hover:border-[var(--indigo)] hover:bg-white hover:shadow-[0_16px_38px_rgba(10,19,37,0.08)]"
+            >
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--ink)] text-xs font-black text-white">
+                {stage.step}
+              </span>
+              <h3 className="mt-5 text-base font-black tracking-[-0.03em] text-[var(--ink)]">{stage.title}</h3>
+              <p className="mt-3 text-sm leading-6 text-[var(--sub)]">{stage.description}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default async function LandingCPage({ searchParams }: LandingCPageProps) {
   const resolvedSearchParams = await searchParams;
   const activeChip = normalizeChip(resolvedSearchParams.chip);
   const keyword = normalizeKeyword(resolvedSearchParams.q);
-  const programParams = buildProgramFilterParams(activeChip, keyword);
+  const programParams = buildProgramFilterParams(activeChip, keyword, 24);
 
   let programs: Program[] = [];
   let liveBoardPrograms: Program[] = [];
@@ -462,6 +648,7 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
   }
 
   const heroPrograms = getLiveBoardPrograms(liveBoardPrograms);
+  const opportunityPrograms = orderOpportunityPrograms(programs);
 
   return (
     <main className="min-h-screen bg-[var(--surface)] text-[var(--ink)]" style={themeVars}>
@@ -490,6 +677,12 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/programs" className="rounded-full bg-[var(--indigo)] px-6 py-3 text-sm font-black text-white transition hover:bg-[var(--indigo-hi)]">
                 지금 지원 가능한 프로그램 보기
+              </Link>
+              <Link
+                href={getLoginHref(ONBOARDING_RESUME_IMPORT)}
+                className="rounded-full border border-[var(--border)] bg-white px-6 py-3 text-sm font-black text-[var(--ink)] transition hover:border-[var(--indigo)] hover:text-[var(--indigo)]"
+              >
+                내 이력 등록
               </Link>
             </div>
           </div>
@@ -578,19 +771,21 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
 
           {error ? (
             <div className="mt-8 rounded-[24px] border border-rose-200 bg-rose-50 px-6 py-10 text-sm font-bold text-rose-700">{error}</div>
-          ) : programs.length === 0 ? (
+          ) : opportunityPrograms.length === 0 ? (
             <div className="mt-8 rounded-[24px] border border-dashed border-[var(--border)] bg-white px-6 py-10 text-center text-sm font-bold text-[var(--sub)]">
               조건에 맞는 프로그램이 없습니다. 검색어나 필터를 조정해보세요.
             </div>
           ) : (
             <div className="mt-8 grid gap-5 lg:grid-cols-3">
-              {programs.map((program) => (
+              {opportunityPrograms.map((program) => (
                 <ProgramCard key={`${program.id}-${program.title}`} program={program} />
               ))}
             </div>
           )}
         </div>
       </section>
+
+      <CircularFlowSection />
 
       <BackupHeroSection />
 
@@ -643,10 +838,12 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
           <div>
             <p className="text-xs font-black uppercase tracking-[0.24em] text-white/60">Final CTA</p>
             <h2 className="mt-4 text-3xl font-black leading-tight tracking-[-0.05em] sm:text-4xl">
-              프로그램을 찾았다면,<br />이제 지원 준비를 같은 흐름으로 이어가면 됩니다
+              준비가 되었다면
+              <br />
+              이력서를 준비해 보세요.
             </h2>
             <p className="mt-4 max-w-2xl text-sm leading-7 text-white/72">
-              로그인 후에는 추천 프로그램 캘린더, 성과저장소, 이력서, 자기소개서, 매치 분석이 같은 제품 안에서 이어집니다.
+              흩어진 경력 한 번에 정리하고, 원하는 공고에 맞춰 작성해 보세요
             </p>
           </div>
           <div className="flex flex-wrap gap-3">

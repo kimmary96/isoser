@@ -262,6 +262,8 @@ export interface Program {
   deadline?: string | null;
   start_date?: string | null;
   end_date?: string | null;
+  cost?: number | string | null;
+  subsidy_amount?: number | string | null;
   support_type?: string | null;
   teaching_method?: string | null;
   is_certified?: boolean | null;

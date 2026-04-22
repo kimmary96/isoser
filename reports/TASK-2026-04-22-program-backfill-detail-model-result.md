@@ -39,11 +39,15 @@
 ## Verification
 - `backend\venv\Scripts\python.exe -m pytest backend/tests/test_program_backfill.py backend/tests/test_work24_kstartup_field_mapping.py backend/tests/test_scheduler_collectors.py -q`: 15 passed.
 - `backend\venv\Scripts\python.exe -m pytest backend/tests/test_programs_router.py backend/tests/test_program_backfill.py -q`: 22 passed.
+- `backend\venv\Scripts\python.exe -m pytest backend/tests/test_program_backfill.py backend/tests/test_tier2_collectors.py -q`: 20 passed.
 - `npm run lint -- --file "app/(landing)/programs/[id]/page.tsx" --file "lib/api/backend.ts" --file "lib/types/index.ts"`: passed.
 - `npx tsc -p tsconfig.codex-check.json --noEmit`: passed.
 - `scripts/program_backfill.py --limit 120 --max-pages 5 --deadline-from 2026-04-22 --format json`: post-check `patch_count=0`.
 - FastAPI TestClient로 K-Startup 2건, 고용24 3건의 `/programs/{id}/detail` 200 응답과 핵심 필드 반환을 확인했다.
 - 추가 회귀 테스트로 K-Startup은 신청 기간, 고용24는 운영 기간으로 상세 응답 날짜가 분리되는 계약을 고정했다.
+- 확장 백필 `scripts/program_backfill.py --limit 300 --max-pages 20 --deadline-from 2026-04-22 --apply`로 고용24/K-Startup 기존 row 40건을 추가 보강했다.
+- 고용24 상세 HTML fallback + SeSAC backfill 적용 `scripts/program_backfill.py --limit 300 --max-pages 3 --deadline-from 2026-04-22 --apply`로 273건을 추가 보강했다. 적용 결과는 `reports/TASK-2026-04-22-program-backfill-detail-sesac-apply.json`에 저장했다.
+- 적용 후 `/programs/?limit=40&sort=deadline` 기준 첫 40개 row에서 `provider/location/start_date/end_date` 누락 row가 0건임을 확인했다.
 
 ## Blocked Cleanup
 - `reports/TASK-2026-04-22-program-backfill-detail-model-blocked.md`는 이 작업으로 해소되어 삭제 대상이다.

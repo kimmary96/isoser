@@ -1,6 +1,7 @@
 export const DEFAULT_PUBLIC_LANDING = "/landing-c";
 export const DASHBOARD_RECOMMEND_CALENDAR = "/dashboard#recommend-calendar";
 export const DASHBOARD_HOME = "/dashboard";
+export const ONBOARDING_RESUME_IMPORT = "/onboarding";
 
 export function resolveInternalPath(value: string | null | undefined, fallback = DEFAULT_PUBLIC_LANDING): string {
   if (!value) return fallback;

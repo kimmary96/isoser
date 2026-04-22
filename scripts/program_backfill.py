@@ -21,7 +21,9 @@ for path in (REPO_ROOT, BACKEND_ROOT):
 
 from backend.rag.collector.kstartup_collector import KstartupApiCollector  # noqa: E402
 from backend.rag.collector.normalizer import normalize  # noqa: E402
+from backend.rag.collector.regional_html_collectors import SesacCollector  # noqa: E402
 from backend.rag.collector.work24_collector import Work24Collector  # noqa: E402
+from backend.rag.collector.work24_detail_parser import fetch_work24_detail_fields  # noqa: E402
 
 
 BACKFILL_FIELDS = (
@@ -128,6 +130,8 @@ def source_family(row: dict[str, Any]) -> str:
         return "kstartup"
     if "고용24" in source or "work24" in source:
         return "work24"
+    if "sesac" in source or "새싹" in source or "청년취업사관학교" in source:
+        return "sesac"
     return ""
 
 
@@ -137,7 +141,21 @@ def source_key(row: dict[str, Any]) -> str:
         return kstartup_key(row)
     if family == "work24":
         return work24_key(row)
+    if family == "sesac":
+        return sesac_key(row)
     return ""
+
+
+def sesac_key(row: dict[str, Any]) -> str:
+    for link_key in ("source_url", "link"):
+        course_id = query_param(row.get(link_key), "crsSn") or query_param(row.get(link_key), "courseId")
+        if course_id:
+            return f"sesac:course:{course_id}"
+    title = re.sub(r"\s+", " ", str(row.get("title") or "").strip())
+    title = re.sub(r"^(모집중|모집예정|상시모집|마감임박)\s+", "", title)
+    title = re.sub(r"\s+모집\s*기간\s+\d{4}[./-]\d{1,2}[./-]\d{1,2}\s*-\s*\d{4}[./-]\d{1,2}[./-]\d{1,2}.*$", "", title)
+    title = re.sub(r"\s+\d+$", "", title).strip().casefold()
+    return f"sesac:title:{title}" if title else ""
 
 
 def is_blank(value: Any) -> bool:
@@ -210,7 +228,7 @@ def supabase_request(method: str, path: str, *, params: dict[str, str] | None = 
 def fetch_candidate_rows(limit: int, *, deadline_from: str | None = None) -> list[dict[str, Any]]:
     params = {
         "select": "*",
-        "or": "(source.ilike.*고용24*,source.ilike.*work24*,source.ilike.*K-Startup*,source.ilike.*kstartup*)",
+        "or": "(source.ilike.*고용24*,source.ilike.*work24*,source.ilike.*K-Startup*,source.ilike.*kstartup*,source.ilike.*sesac*,source.ilike.*새싹*,source.ilike.*청년취업사관학교*)",
         "order": "deadline.asc.nullslast",
         "limit": str(limit),
     }
@@ -226,9 +244,10 @@ def fetch_candidate_rows(limit: int, *, deadline_from: str | None = None) -> lis
 
 def collect_source_records(max_pages: int) -> dict[str, SourceRecord]:
     records: dict[str, SourceRecord] = {}
-    collectors = [Work24Collector(), KstartupApiCollector()]
+    collectors = [Work24Collector(), KstartupApiCollector(), SesacCollector()]
     for collector in collectors:
-        collector.max_pages = max_pages
+        if hasattr(collector, "max_pages"):
+            collector.max_pages = max_pages
         for mapped in collector.collect():
             normalized = normalize(mapped)
             if not normalized:
@@ -251,7 +270,29 @@ def collect_source_records(max_pages: int) -> dict[str, SourceRecord]:
                 url_key = kstartup_url_key(normalized)
                 if url_key:
                     records[url_key] = record
+            if source_family(normalized) == "sesac":
+                key = sesac_key(normalized)
+                if key:
+                    records[key] = record
     return records
+
+
+def fetch_work24_record_from_detail_url(db_row: dict[str, Any]) -> SourceRecord | None:
+    link = str(db_row.get("link") or db_row.get("source_url") or "").strip()
+    if not link or "work24.go.kr" not in link:
+        return None
+    normalized = fetch_work24_detail_fields(
+        source_url=link,
+        title=str(db_row.get("title") or ""),
+    )
+    if not normalized:
+        return None
+    return SourceRecord(
+        source="고용24 상세페이지",
+        match_key=work24_key(db_row),
+        normalized=normalized,
+        raw={"source_url": link},
+    )
 
 
 def fetch_kstartup_record_by_announcement_id(announcement_id: str) -> SourceRecord | None:
@@ -301,6 +342,8 @@ def build_report(*, limit: int, max_pages: int, overwrite: bool, deadline_from: 
             record = fetch_kstartup_record_by_announcement_id(announcement_id)
             if record is not None:
                 source_records[record.match_key] = record
+        if record is None and source_family(db_row) == "work24":
+            record = fetch_work24_record_from_detail_url(db_row)
         patch = build_patch(db_row, record.normalized, overwrite=overwrite) if record else {}
         items.append(
             {

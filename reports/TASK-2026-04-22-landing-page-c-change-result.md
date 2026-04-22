@@ -36,6 +36,8 @@
 - Landing C program cards were simplified into information-first cards without image slots, summary fallback text, generic tags, compare CTA, or Isoser relevance score.
 - Landing C Live Board now labels the section as recommended postings and selects one active deadline-sorted posting each from 고용24, 창업진흥원/K-Startup, and 새싹/SeSAC independently of the Opportunity feed.
 - Landing C Opportunity feed cards now use title, provider, and training period as the main body; fee, location, 내배카 필수, and satisfaction are rendered as tags, with detail and compare actions at the bottom.
+- Landing C hero now includes a `내 이력 등록` CTA next to the programs CTA and routes unauthenticated users through login back to `/onboarding` for PDF resume parsing.
+- Landing C now includes the landing-A-style six-step circular flow section between Opportunity feed and Career Asset Workspace, restyled to match landing C.
 
 ## Preserved behaviors
 
@@ -49,6 +51,8 @@
 - Landing C program cards now emphasize title, provider, deadline, support/subsidy signal, operating method/location, and a single `과정 보기` action.
 - Landing C Live Board excludes expired postings through the recruiting-only deadline list, so each source slot advances to the next upcoming posting after deadlines pass.
 - Opportunity feed compare actions link to `/compare?ids=<programId>` so the selected program is preloaded on the compare page.
+- The new hero resume CTA uses the shared login redirect helper, so the `/onboarding` target is encoded instead of hardcoded into auth pages.
+- The new circular flow section is static content only and does not change program fetching, filtering, comparison, or onboarding routing behavior.
 
 ## Risks / possible regressions
 
@@ -77,6 +81,9 @@
 - `Invoke-WebRequest http://localhost:3000/ -MaximumRedirection 0` returned `307` with `Location: /landing-c`.
 - `Invoke-WebRequest http://localhost:3000/landing-c` returned `200`.
 - `Invoke-WebRequest "http://localhost:3000/login?redirectedFrom=%2Fdashboard%23recommend-calendar"` rendered a Google OAuth href containing `/api/auth/google?next=%2Fdashboard%23recommend-calendar`.
+- `npm run lint -- --file "app/(landing)/landing-c/page.tsx" --file "lib/routes.ts" --file "lib/routes.test.ts"` passed after adding the onboarding resume CTA.
+- `npm test -- --run lib/routes.test.ts` passed after adding the onboarding redirect expectation.
+- `npm run lint -- --file "app/(landing)/landing-c/page.tsx"` passed after adding the circular flow section.
 
 ## Follow-up refactoring candidates
 

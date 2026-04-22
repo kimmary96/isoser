@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   DASHBOARD_RECOMMEND_CALENDAR,
   DEFAULT_PUBLIC_LANDING,
+  ONBOARDING_RESUME_IMPORT,
   getGoogleAuthHref,
   getLoginHref,
   resolveInternalPath,
@@ -26,9 +27,11 @@ describe("routes", () => {
     expect(getLoginHref(DASHBOARD_RECOMMEND_CALENDAR)).toBe(
       "/login?redirectedFrom=%2Fdashboard%23recommend-calendar"
     );
+    expect(getLoginHref(ONBOARDING_RESUME_IMPORT)).toBe(
+      "/login?redirectedFrom=%2Fonboarding"
+    );
     expect(getGoogleAuthHref(DASHBOARD_RECOMMEND_CALENDAR)).toBe(
       "/api/auth/google?next=%2Fdashboard%23recommend-calendar"
     );
   });
 });
-

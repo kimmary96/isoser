@@ -92,7 +92,7 @@
 - `backend/tests/test_know_survey.py`는 저장소에 포함되지 않은 KNOW 원본 코드북/원자료가 없을 때 관련 테스트만 skip하고, 전체 pytest 수집을 중단시키지 않는다.
 - `backend/chains/job_posting_rewrite_chain.py`의 Gemini rewrite 호출은 timeout 시 task cancel/cleanup까지 정리해 fallback 테스트에서 `coroutine was never awaited` 경고를 다시 만들지 않는다.
 - `frontend/app/page.tsx`는 루트 접근을 `/landing-c`로 리다이렉트해서 landing-c를 메인 랜딩 허브로 고정한다.
-- `frontend/lib/routes.ts`는 `DEFAULT_PUBLIC_LANDING = "/landing-c"`와 dashboard 추천 캘린더 경로, 로그인/OAuth href helper, 내부 경로 검증 helper를 제공해 메인 랜딩과 인증 복귀 기본값을 한곳에서 관리한다.
+- `frontend/lib/routes.ts`는 `DEFAULT_PUBLIC_LANDING = "/landing-c"`, dashboard 추천 캘린더 경로, 온보딩 이력 등록 경로, 로그인/OAuth href helper, 내부 경로 검증 helper를 제공해 메인 랜딩과 인증 복귀 기본값을 한곳에서 관리한다.
 - `frontend/lib/routes.test.ts`와 `frontend/lib/program-filters.test.ts`는 Vitest 기반 단위 테스트로 기본 랜딩 경로, 내부 경로 검증, hash target 보존, 랜딩 프로그램 필터 매핑을 고정한다.
 - `frontend/middleware.ts`는 루트 `/?code=...` OAuth 유입을 `/auth/callback?next=/landing-c`로 정규화해서 로그인 후 landing-c 주소를 깨끗하게 유지한다.
 - `frontend/middleware.ts`는 레거시 `/programs/compare` 접근을 `/compare`로 리다이렉트해서 새 랜딩 축 라우트 구조로 정리한다.
@@ -104,7 +104,7 @@
 - `frontend/components/landing/LandingHeader.tsx`는 landing-a/c가 함께 쓰는 공개 랜딩 헤더이며, 브랜드 링크는 `DEFAULT_PUBLIC_LANDING`, 추천 CTA는 `getLoginHref(DASHBOARD_RECOMMEND_CALENDAR)`를 사용한다.
 - `frontend/components/landing/program-card-helpers.ts`는 landing-a/c 프로그램 카드 공통 deadline, deadline tone, detail/compare href, score, tag normalization helper를 제공한다.
 - `frontend/app/(landing)/landing-a/_components.tsx`는 기존 import 호환을 위한 export 허브이며, 실제 섹션 구현은 `_navigation.tsx`, `_hero.tsx`, `_program-feed.tsx`, `_support-sections.tsx`, `_style-tag.tsx`로 분리되어 있다. `_program-feed.tsx`는 공통 프로그램 카드 helper를 사용하고, `_hero.tsx`는 live board 카드와 hero stats 렌더를 `HeroProgramSignalCard`와 배열 map으로 관리한다. `_navigation.tsx`는 레거시 nav/ticker export를 유지하고 `LandingAHeader`는 공통 `LandingHeader`를 re-export한다.
-- `frontend/app/(landing)/landing-c`는 제공된 standalone HTML reference를 Next.js 페이지로 이식한 공개 랜딩 C 경로이며, 스플릿 히어로, 프로그램 검색/칩 필터, 정보형 프로그램 카드, 기능 미리보기, 로그인 이후 여정, 최종 CTA를 렌더링한다. CTA와 카드 액션은 `/programs`, `/compare`, `/login?redirectedFrom=%2Fdashboard%23recommend-calendar`, `/dashboard#recommend-calendar`, `/programs/[id]` 실제 라우트로 연결되어 있고, 상단 헤더는 공통 `LandingHeader`를 사용한다. landing-c Opportunity feed 프로그램 카드는 제목, 운영기관, 훈련 기간을 본문으로 두고 훈련비, 지역, 내배카 필수, 만족도를 태그로 표시하며, `과정 보기`와 `비교` 액션을 제공한다. Live Board는 Opportunity feed와 별도 모집중 마감순 목록에서 고용24, 창업진흥원/K-Startup, 새싹/SeSAC 공고를 각 1개씩 골라 `추천 공고`로 노출한다.
+- `frontend/app/(landing)/landing-c`는 제공된 standalone HTML reference를 Next.js 페이지로 이식한 공개 랜딩 C 경로이며, 스플릿 히어로, 프로그램 검색/칩 필터, 정보형 프로그램 카드, 탐색 이후 순환 흐름 섹션, 기능 미리보기, 로그인 이후 여정, 최종 CTA를 렌더링한다. CTA와 카드 액션은 `/programs`, `/compare`, `/login?redirectedFrom=%2Fdashboard%23recommend-calendar`, `/login?redirectedFrom=%2Fonboarding`, `/dashboard#recommend-calendar`, `/programs/[id]` 실제 라우트로 연결되어 있고, 상단 헤더는 공통 `LandingHeader`를 사용한다. 히어로의 `내 이력 등록` 버튼은 로그인 후 `/onboarding` PDF 이력 파싱 흐름으로 이어진다. landing-c Opportunity feed 프로그램 카드는 제목, 운영기관, 훈련 기간을 본문으로 두고 훈련비, 지역, 내배카 필수, 만족도를 태그로 표시하며, `과정 보기`와 `비교` 액션을 제공한다. Live Board는 Opportunity feed와 별도 모집중 마감순 목록에서 고용24, 창업진흥원/K-Startup, 새싹/SeSAC 공고를 각 1개씩 골라 `추천 공고`로 노출한다.
 - `frontend/app/(landing)` 아래 공개 랜딩 축 라우트는 `landing-a`, `landing-b`, `landing-c`, `programs`, `compare`로 정리되어 있다. 이 중 `landing-c`가 현재 기본 진입이며, `landing-a`와 `landing-b`는 A/B 테스트 보존 경로다.
 - `frontend/app/dashboard/layout.tsx`는 landing-a 헤더를 유지한 채 대시보드 사이드바와 본문을 렌더링한다.
 - Supabase 인증 설정 문서는 `docs/auth/supabase-auth-local.md`, `docs/auth/supabase-auth-production.md`로 로컬/운영을 분리해 관리한다.
@@ -120,6 +120,7 @@
 - Tier 1 collector 중 `고용24`는 현재 유효한 국민내일배움카드 훈련과정 OpenAPI(`callOpenApiSvcInfo310L01.do`)를 사용하고, `K-Startup`은 현재 운영 중인 `nidapi.k-startup.go.kr` 조회서비스로 수집한다.
 - 고용24와 K-Startup Tier 1 collector는 API raw에 포함된 기관명, 지역, 설명, 시작/종료일, 원본 링크, 주요 추적 메타를 공통 normalizer row까지 보존한다. 상세/비교 화면이 이미 참조하는 `provider`, `location`, `description`, `start_date`, `end_date`, `source_url`은 값이 있을 때 저장 payload에 포함되며, source별 부가 추적값은 기존 `compare_meta` JSONB에 보존한다.
 - source별 프로그램 field mapping은 `backend/rag/collector/program_field_mapping.py`에 중앙화되어 있고, `scripts/program_source_diff.py`는 프로그램 UUID 기준으로 live raw 후보, normalized row, DB row, backend API row, UI 표시 스냅샷을 비교하는 진단 CLI를 제공한다.
+- 고용24 상세 페이지 HTML fallback 파싱은 `backend/rag/collector/work24_detail_parser.py`에 분리되어 있으며, `scripts/program_backfill.py`는 이 파서를 호출해 기존 빈 row의 기관, 주소, 기간, 훈련비, 지원금, 만족도, 연락처 메타를 보강한다.
 - scheduler의 Supabase upsert는 `(title, source)` 기준으로 source별 중복을 먼저 제거하고 100건 배치로 나눠 저장해, 대량 payload에서 PostgREST conflict 오류가 전체 source를 실패시키는 문제를 줄였다.
 - `HRDCollector`는 optional source로 전환되어 기본값 `ENABLE_HRD_COLLECTOR=false` 상태에서는 scheduler가 `skipped_disabled`로 기록하고 실행하지 않는다.
 - `ENABLE_HRD_COLLECTOR=true`여도 `HRD_API_KEY` 또는 `HRDNET_API_KEY`가 없으면 scheduler는 실패 대신 `skipped_missing_config`로 기록한다.

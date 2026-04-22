@@ -248,11 +248,22 @@ class SesacCollector(BaseHtmlCollector):
                 title=self._clean_live_title(title, raw_text),
                 link=self.absolute_url(base_url, href),
                 raw=raw_text,
-                raw_deadline=self.extract_date(raw_text),
+                raw_deadline=self._extract_period(raw_text)[1] or self.extract_date(raw_text),
                 category_hint="교육",
                 target=["청년"],
             )
             if item is not None:
+                start_date, end_date = self._extract_period(raw_text)
+                if start_date:
+                    item["start_date"] = start_date
+                if end_date:
+                    item["end_date"] = end_date
+                location = self._extract_location(title, raw_text)
+                if location:
+                    item["location"] = location
+                item["provider"] = self.source_name
+                item["description"] = self._clean_live_title(title, raw_text)
+                item["cost"] = 0
                 items.append(item)
         return items
 
@@ -265,6 +276,53 @@ class SesacCollector(BaseHtmlCollector):
         if not cleaned or cleaned == title:
             cleaned = re.sub(r"\s+모집\s*기간\s+.*$", "", raw_text)
         return self._clean_text(cleaned)
+
+    def _extract_period(self, text: str) -> tuple[str | None, str | None]:
+        match = re.search(
+            r"모집\s*기간\s+(\d{4})[./-](\d{1,2})[./-](\d{1,2})\s*-\s*(\d{4})[./-](\d{1,2})[./-](\d{1,2})",
+            self._clean_text(text),
+        )
+        if not match:
+            return None, None
+        start_year, start_month, start_day, end_year, end_month, end_day = match.groups()
+        return (
+            f"{start_year}-{int(start_month):02d}-{int(start_day):02d}",
+            f"{end_year}-{int(end_month):02d}-{int(end_day):02d}",
+        )
+
+    def _extract_location(self, title: str, raw_text: str) -> str | None:
+        combined = f"{title} {raw_text}"
+        districts = (
+            "강남",
+            "강동",
+            "강북",
+            "강서",
+            "관악",
+            "광진",
+            "구로",
+            "금천",
+            "노원",
+            "도봉",
+            "동대문",
+            "동작",
+            "마포",
+            "서대문",
+            "서초",
+            "성동",
+            "성북",
+            "송파",
+            "양천",
+            "영등포",
+            "용산",
+            "은평",
+            "종로",
+            "중구",
+            "중랑",
+        )
+        for district in districts:
+            if district in combined:
+                return f"서울 {district}구"
+        return "서울"
 
 
 class Seoul50PlusCollector(BaseHtmlCollector):

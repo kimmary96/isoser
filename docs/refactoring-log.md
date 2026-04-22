@@ -2169,3 +2169,14 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-22: `backend/tests/test_programs_router.py`
   - 상세 응답 계약 회귀 테스트를 추가해 K-Startup의 `start_date/end_date`는 신청 기간으로, 고용24의 `start_date/end_date`는 운영 기간으로 매핑되는 동작을 고정함
   - 원본 링크 우선순위, 지원 대상, 수강료/지원금, 정원 잔여 계산, 연락처 노출 같은 상세페이지 핵심 필드 매핑도 Supabase 호출 없이 검증하도록 보강함
+- 2026-04-22: `frontend/app/(landing)/landing-c/page.tsx`, `frontend/lib/routes.ts`, `frontend/lib/routes.test.ts`, `docs/current-state.md`
+  - landing-c 히어로의 `지금 지원 가능한 프로그램 보기` CTA 옆에 `내 이력 등록` 버튼을 추가함
+  - 온보딩 PDF 이력 등록 경로를 `ONBOARDING_RESUME_IMPORT = "/onboarding"` 상수로 추가하고, 버튼은 `getLoginHref(ONBOARDING_RESUME_IMPORT)`를 사용해 로그인 후 온보딩으로 복귀하도록 연결함
+  - routes 단위 테스트에 온보딩 redirect href 생성을 추가해 인증 복귀 경로 회귀를 고정함
+- 2026-04-22: `frontend/app/(landing)/landing-c/page.tsx`, `docs/current-state.md`
+  - landing-a의 6단계 순환 흐름 섹션을 landing-c의 Opportunity feed와 Career Asset Workspace 사이에 추가함
+  - landing-c의 흰 패널, 얇은 보더, 차분한 surface 카드 톤에 맞춰 시각 스타일을 조정하고 기존 section order와 CTA 동작은 유지함
+- 2026-04-22: `backend/rag/collector/work24_detail_parser.py`, `scripts/program_backfill.py`, `backend/tests/test_program_backfill.py`, `docs/current-state.md`
+  - `program_backfill.py` 안에 있던 고용24 상세 HTML 파싱 책임을 `work24_detail_parser.py`로 분리함
+  - 백필 스크립트는 source URL과 title을 넘겨 상세 필드 dict를 받아 `SourceRecord`로 감싸는 역할만 남겨 책임을 줄임
+  - 기존 고용24 상세 fallback 테스트는 새 파서 모듈의 HTTP mock 경로를 사용하도록 갱신해 동작 유지 여부를 확인함
