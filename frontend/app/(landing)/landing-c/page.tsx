@@ -214,17 +214,6 @@ function ProgramCard({ program }: { program: Program }) {
         ) : null}
       </div>
 
-      <dl className="mt-6 grid gap-3 border-t border-[var(--border)] pt-5 text-sm">
-        <div className="flex items-center justify-between gap-3">
-          <dt className="font-bold text-[var(--muted)]">모집 상태</dt>
-          <dd className={`font-black ${getProgramDeadlineTone(program)}`}>{deadline}</dd>
-        </div>
-        <div className="flex items-center justify-between gap-3">
-          <dt className="font-bold text-[var(--muted)]">출처</dt>
-          <dd className="min-w-0 truncate font-bold text-[var(--sub)]">{sourceLabel(program)}</dd>
-        </div>
-      </dl>
-
       <Link
         href={getProgramDetailHref(program)}
         className="mt-auto rounded-xl bg-[var(--blue)] px-4 py-3 text-center text-sm font-black text-white transition hover:bg-[var(--indigo)]"
@@ -451,9 +440,6 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
               <Link href="/programs" className="rounded-full bg-[var(--indigo)] px-6 py-3 text-sm font-black text-white transition hover:bg-[var(--indigo-hi)]">
                 지금 지원 가능한 프로그램 보기
               </Link>
-              <Link href={getLoginHref(DASHBOARD_RECOMMEND_CALENDAR)} className="rounded-full border border-[var(--border)] bg-white px-6 py-3 text-sm font-black text-[var(--ink)] transition hover:border-[var(--indigo)] hover:text-[var(--indigo)]">
-                로그인 후 AI 추천 받기
-              </Link>
             </div>
             <div className="mt-9 grid max-w-2xl grid-cols-2 gap-4 sm:grid-cols-3">
               <div className="rounded-2xl bg-[var(--surface-strong)] px-5 py-4">
@@ -520,7 +506,6 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
             </div>
             <div className="flex flex-wrap gap-3">
               <Link href="/programs" className="rounded-full border border-[var(--border)] bg-white px-4 py-2 text-sm font-black text-[var(--ink)]">전체 프로그램 보기</Link>
-              <Link href={getLoginHref(DASHBOARD_RECOMMEND_CALENDAR)} className="rounded-full bg-[var(--indigo)] px-4 py-2 text-sm font-black text-white">로그인 후 추천 연결</Link>
             </div>
           </div>
 

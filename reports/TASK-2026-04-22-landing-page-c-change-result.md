@@ -44,7 +44,7 @@
 - Landing A keeps its section order and program feed behavior while using the shared chip filter helper.
 - Landing A/C now share the same public landing header implementation and program card helper functions.
 - Production dependency audit now reports 0 vulnerabilities after the Next.js 15.5.15 upgrade.
-- Landing C program cards now emphasize title, provider, deadline, support/subsidy signal, operating method/location, source, and a single `과정 보기` action.
+- Landing C program cards now emphasize title, provider, deadline, support/subsidy signal, operating method/location, and a single `과정 보기` action.
 
 ## Risks / possible regressions
 
