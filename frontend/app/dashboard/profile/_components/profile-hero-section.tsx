@@ -101,6 +101,12 @@ export function ProfileHeroSection({
         <div className="flex flex-wrap gap-4 px-1 text-sm text-slate-500">
           {profile.phone && <span>📞 {profile.phone}</span>}
           {profile.email && <span>✉️ {profile.email}</span>}
+          {profile.region && (
+            <span>
+              📍 {profile.region}
+              {profile.region_detail ? ` ${profile.region_detail}` : ""}
+            </span>
+          )}
           {profile.portfolio_url && (
             <a
               href={profile.portfolio_url}

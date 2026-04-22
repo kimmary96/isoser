@@ -8,6 +8,9 @@ export interface Profile {
   portfolio_url?: string | null;
   email: string | null;
   phone: string | null;
+  address?: string | null;
+  region?: string | null;
+  region_detail?: string | null;
   education: string | null;
   career: string[] | null;
   education_history: string[] | null;

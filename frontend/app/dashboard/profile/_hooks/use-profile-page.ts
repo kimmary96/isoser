@@ -17,6 +17,9 @@ const EMPTY_PROFILE: Profile = {
   portfolio_url: null,
   email: null,
   phone: null,
+  address: null,
+  region: null,
+  region_detail: null,
   education: null,
   career: [],
   education_history: [],
@@ -42,6 +45,7 @@ export function useProfilePage() {
   const [profileBioInput, setProfileBioInput] = useState("");
   const [profileEmailInput, setProfileEmailInput] = useState("");
   const [profilePhoneInput, setProfilePhoneInput] = useState("");
+  const [profileAddressInput, setProfileAddressInput] = useState("");
   const [profilePortfolioUrlInput, setProfilePortfolioUrlInput] = useState("");
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -75,6 +79,7 @@ export function useProfilePage() {
     setProfileBioInput(profileAny.bio ?? "");
     setProfileEmailInput(profile.email ?? "");
     setProfilePhoneInput(profile.phone ?? "");
+    setProfileAddressInput(profile.address ?? "");
     setProfilePortfolioUrlInput(
       (profile as Profile & { portfolio_url?: string | null }).portfolio_url ?? ""
     );
@@ -129,6 +134,7 @@ export function useProfilePage() {
       payload.set("bio", profileBioInput.trim());
       payload.set("email", profileEmailInput.trim());
       payload.set("phone", profilePhoneInput.trim());
+      payload.set("address", profileAddressInput.trim());
       payload.set("portfolio_url", normalizedPortfolioUrl ?? "");
       payload.set("current_avatar_url", profileAny.avatar_url ?? "");
       if (avatarFile) {
@@ -166,6 +172,8 @@ export function useProfilePage() {
     setProfileEmailInput,
     profilePhoneInput,
     setProfilePhoneInput,
+    profileAddressInput,
+    setProfileAddressInput,
     profilePortfolioUrlInput,
     setProfilePortfolioUrlInput,
     avatarPreviewUrl,

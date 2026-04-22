@@ -1,5 +1,27 @@
 # 리팩토링 로그
 
+## 2026-04-23 프로필 주소 지역 필드 추가
+
+- 변경 파일
+  - `supabase/migrations/20260423100000_add_address_to_profiles.sql`
+  - `frontend/app/api/dashboard/profile/route.ts`
+  - `frontend/app/dashboard/profile/_components/profile-edit-modal.tsx`
+  - `frontend/app/dashboard/profile/_components/profile-hero-section.tsx`
+  - `frontend/app/dashboard/profile/_hooks/use-profile-page.ts`
+  - `frontend/app/dashboard/profile/page.tsx`
+  - `frontend/lib/types/index.ts`
+  - `docs/current-state.md`
+- 변경 내용
+  - `profiles`에 `address`, `region`, `region_detail` 컬럼을 추가하는 migration을 작성함
+  - 프로필 편집 모달에 주소 입력을 추가하고 저장 API에서 주소 텍스트를 시·도와 시·군·구 단위로 정규화해 함께 저장하도록 함
+  - 프로필 헤더에는 개인정보 노출을 줄이기 위해 원문 주소 대신 정규화된 지역 정보만 표시하도록 함
+- 보존한 동작
+  - 기존 이름, 희망 직무, 이메일, 전화번호, 포트폴리오, 프로필 이미지 저장 흐름은 유지함
+  - migration이 적용되지 않은 환경에서는 선택 프로필 컬럼을 제외하고 기존 프로필 저장이 이어지도록 fallback을 유지함
+- 리스크/후속 후보
+  - 주소 파싱은 사전 기반이므로 복잡한 주소나 해외 주소는 `region`이 비어 있을 수 있음
+  - 관련도 점수에 지역 가중치를 반영할 때는 서버 공용 `region_normalizer`로 분리하는 후속 리팩토링이 적합함
+
 ## 2026-04-22 programs 상단 필터 바 개편
 
 - 변경 파일

@@ -49,6 +49,8 @@ export default function DashboardPage() {
     setProfileEmailInput,
     profilePhoneInput,
     setProfilePhoneInput,
+    profileAddressInput,
+    setProfileAddressInput,
     profilePortfolioUrlInput,
     setProfilePortfolioUrlInput,
     avatarPreviewUrl,
@@ -275,6 +277,8 @@ export default function DashboardPage() {
         onProfileEmailInputChange={setProfileEmailInput}
         profilePhoneInput={profilePhoneInput}
         onProfilePhoneInputChange={setProfilePhoneInput}
+        profileAddressInput={profileAddressInput}
+        onProfileAddressInputChange={setProfileAddressInput}
         profilePortfolioUrlInput={profilePortfolioUrlInput}
         onProfilePortfolioUrlInputChange={setProfilePortfolioUrlInput}
         profileModalSaving={profileModalSaving}

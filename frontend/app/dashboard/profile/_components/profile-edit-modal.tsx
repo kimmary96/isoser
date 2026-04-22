@@ -14,6 +14,8 @@ type ProfileEditModalProps = {
   onProfileEmailInputChange: (value: string) => void;
   profilePhoneInput: string;
   onProfilePhoneInputChange: (value: string) => void;
+  profileAddressInput: string;
+  onProfileAddressInputChange: (value: string) => void;
   profilePortfolioUrlInput: string;
   onProfilePortfolioUrlInputChange: (value: string) => void;
   profileModalSaving: boolean;
@@ -34,6 +36,8 @@ export function ProfileEditModal({
   onProfileEmailInputChange,
   profilePhoneInput,
   onProfilePhoneInputChange,
+  profileAddressInput,
+  onProfileAddressInputChange,
   profilePortfolioUrlInput,
   onProfilePortfolioUrlInputChange,
   profileModalSaving,
@@ -123,6 +127,15 @@ export function ProfileEditModal({
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-400 focus:outline-none"
                 />
               </div>
+            </div>
+            <div>
+              <label className="mb-1 block text-xs text-gray-500">주소</label>
+              <input
+                value={profileAddressInput}
+                onChange={(e) => onProfileAddressInputChange(e.target.value)}
+                placeholder="서울특별시 강남구"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-400 focus:outline-none"
+              />
             </div>
             <div>
               <label className="mb-1 block text-xs text-gray-500">포트폴리오 링크</label>

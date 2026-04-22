@@ -75,6 +75,7 @@
 - `frontend/app/api/auth/google/route.ts`는 OAuth 시작 요청에 분당 8회 기준의 최소 요청 제한을 적용해 짧은 시간에 로그인 시작 요청이 과도하게 반복되는 경우 429를 반환한다.
 - `frontend/app/api/dashboard/activities/images/route.ts`는 인증 사용자 기준 분당 12회 업로드 요청 제한을 적용해 이미지 업로드 남용을 1차로 완화한다.
 - `frontend/app/api/dashboard/profile/route.ts`의 `PATCH`/`PUT`는 인증 사용자 기준 분당 20회 프로필 수정 제한을 적용해 반복 저장 남용을 줄인다.
+- `profiles`는 주소 원문(`address`)과 추천/매칭용 지역 정규화값(`region`, `region_detail`)을 저장할 수 있다. 프로필 편집 모달에서 주소를 입력하면 `frontend/app/api/dashboard/profile/route.ts`가 주소 텍스트에서 시·도와 시·군·구 단위 값을 추출해 함께 저장하며, 대시보드 프로필 헤더에는 원문 주소 대신 정규화된 지역만 표시한다.
 - `frontend/app/api/summary/route.ts`는 호출자 IP 기준 분당 10회 요청 제한과 20초 timeout을 함께 적용해 AI summary 상류 호출의 남용과 장시간 대기를 동시에 완화한다.
 - `frontend/app/api/dashboard/match/route.ts`의 `POST`는 인증 사용자 기준 분당 6회 제한과 30초 timeout을 적용해 고비용 합격률 분석 요청의 남용과 장시간 대기를 완화한다.
 - `frontend/app/api/dashboard/cover-letters/coach/route.ts`의 `POST`는 인증 사용자 기준 분당 8회 제한과 30초 timeout을 적용해 AI 코칭 요청의 남용과 무한 대기 가능성을 줄인다.

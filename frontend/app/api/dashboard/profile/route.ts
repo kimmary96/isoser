@@ -15,6 +15,9 @@ const EMPTY_PROFILE: Profile = {
   portfolio_url: null,
   email: null,
   phone: null,
+  address: null,
+  region: null,
+  region_detail: null,
   education: null,
   career: [],
   education_history: [],
@@ -26,6 +29,67 @@ const EMPTY_PROFILE: Profile = {
   created_at: "",
   updated_at: "",
 };
+
+const REGION_ALIASES: Array<{ region: string; aliases: string[] }> = [
+  { region: "서울", aliases: ["서울특별시", "서울시", "서울"] },
+  { region: "경기", aliases: ["경기도", "경기"] },
+  { region: "인천", aliases: ["인천광역시", "인천시", "인천"] },
+  { region: "부산", aliases: ["부산광역시", "부산시", "부산"] },
+  { region: "대구", aliases: ["대구광역시", "대구시", "대구"] },
+  { region: "광주", aliases: ["광주광역시", "광주시", "광주"] },
+  { region: "대전", aliases: ["대전광역시", "대전시", "대전"] },
+  { region: "울산", aliases: ["울산광역시", "울산시", "울산"] },
+  { region: "세종", aliases: ["세종특별자치시", "세종시", "세종"] },
+  { region: "강원", aliases: ["강원특별자치도", "강원도", "강원"] },
+  { region: "충북", aliases: ["충청북도", "충북"] },
+  { region: "충남", aliases: ["충청남도", "충남"] },
+  { region: "전북", aliases: ["전북특별자치도", "전라북도", "전북"] },
+  { region: "전남", aliases: ["전라남도", "전남"] },
+  { region: "경북", aliases: ["경상북도", "경북"] },
+  { region: "경남", aliases: ["경상남도", "경남"] },
+  { region: "제주", aliases: ["제주특별자치도", "제주도", "제주"] },
+];
+
+function normalizeAddressText(value: unknown): string | null {
+  const text = String(value ?? "").replace(/\s+/g, " ").trim();
+  return text || null;
+}
+
+function extractRegionDetail(address: string, region: string | null): string | null {
+  const tokens = address.split(/\s+/).map((token) => token.trim()).filter(Boolean);
+  const regionAliasSet = new Set(
+    REGION_ALIASES.flatMap((entry) => (entry.region === region ? [entry.region, ...entry.aliases] : []))
+  );
+  const detail = tokens.find((token) => {
+    const normalized = token.replace(/[(),]/g, "");
+    return !regionAliasSet.has(normalized) && /(시|군|구)$/.test(normalized) && normalized.length >= 2;
+  });
+
+  return detail?.replace(/[(),]/g, "") ?? null;
+}
+
+function parseProfileAddress(value: unknown): {
+  address: string | null;
+  region: string | null;
+  region_detail: string | null;
+} {
+  const address = normalizeAddressText(value);
+  if (!address) {
+    return { address: null, region: null, region_detail: null };
+  }
+
+  const compactAddress = address.replace(/\s+/g, "");
+  const match = REGION_ALIASES.find((entry) =>
+    entry.aliases.some((alias) => compactAddress.includes(alias.replace(/\s+/g, "")))
+  );
+  const region = match?.region ?? null;
+
+  return {
+    address,
+    region,
+    region_detail: extractRegionDetail(address, region),
+  };
+}
 
 function normalizeProfile(profileRow: Record<string, unknown> | null): Profile {
   const getStringArray = (key: string): string[] => {
@@ -45,6 +109,9 @@ function normalizeProfile(profileRow: Record<string, unknown> | null): Profile {
     self_intro: (profileRow?.["self_intro"] as string | null) ?? "",
     bio: (profileRow?.["bio"] as string | null) ?? "",
     portfolio_url: (profileRow?.["portfolio_url"] as string | null) ?? "",
+    address: (profileRow?.["address"] as string | null) ?? "",
+    region: (profileRow?.["region"] as string | null) ?? "",
+    region_detail: (profileRow?.["region_detail"] as string | null) ?? "",
   };
 }
 
@@ -57,12 +124,29 @@ function enforceProfileWriteRateLimit(userId: string) {
   });
 }
 
-function isMissingBioColumnError(error: { code?: string; message?: string } | null | undefined): boolean {
+function isMissingProfileOptionalColumnError(error: { code?: string; message?: string } | null | undefined): boolean {
   if (!error) {
     return false;
   }
 
-  return error.code === "42703" || error.message?.toLowerCase().includes("bio") === true;
+  const message = error.message?.toLowerCase() ?? "";
+  return (
+    error.code === "42703" ||
+    message.includes("bio") ||
+    message.includes("portfolio_url") ||
+    message.includes("address") ||
+    message.includes("region")
+  );
+}
+
+function withoutOptionalProfileColumns(payload: Record<string, unknown>): Record<string, unknown> {
+  const fallbackPayload = { ...payload };
+  delete fallbackPayload.bio;
+  delete fallbackPayload.portfolio_url;
+  delete fallbackPayload.address;
+  delete fallbackPayload.region;
+  delete fallbackPayload.region_detail;
+  return fallbackPayload;
 }
 
 async function getAuthenticatedClient() {
@@ -153,16 +237,18 @@ export async function PATCH(request: Request) {
     if (patch.email !== undefined) payload.email = patch.email;
     if (patch.phone !== undefined) payload.phone = patch.phone;
     if (patch.portfolio_url !== undefined) payload.portfolio_url = patch.portfolio_url;
+    if (patch.address !== undefined) Object.assign(payload, parseProfileAddress(patch.address));
 
     let { error: updateError } = await supabase
       .from("profiles")
       .update(payload)
       .eq("id", user.id);
 
-    if (isMissingBioColumnError(updateError) && "bio" in payload) {
-      const payloadWithoutBio = { ...payload };
-      delete payloadWithoutBio.bio;
-      const retry = await supabase.from("profiles").update(payloadWithoutBio).eq("id", user.id);
+    if (isMissingProfileOptionalColumnError(updateError)) {
+      const retry = await supabase
+        .from("profiles")
+        .update(withoutOptionalProfileColumns(payload))
+        .eq("id", user.id);
       updateError = retry.error;
     }
 
@@ -214,6 +300,7 @@ export async function PUT(request: Request) {
     const email = String(formData.get("email") ?? "").trim() || null;
     const phone = String(formData.get("phone") ?? "").trim() || null;
     const portfolioUrl = String(formData.get("portfolio_url") ?? "").trim() || null;
+    const addressFields = parseProfileAddress(formData.get("address"));
     const avatarFile = formData.get("avatar");
 
     let nextAvatarUrl = String(formData.get("current_avatar_url") ?? "").trim() || null;
@@ -252,21 +339,24 @@ export async function PUT(request: Request) {
         email,
         phone,
         portfolio_url: portfolioUrl,
+        ...addressFields,
         avatar_url: nextAvatarUrl,
       },
       { onConflict: "id" }
     );
 
-    if (isMissingBioColumnError(upsertError)) {
+    if (isMissingProfileOptionalColumnError(upsertError)) {
       const retry = await supabase.from("profiles").upsert(
-        {
+        withoutOptionalProfileColumns({
           id: user.id,
           name,
+          bio,
           email,
           phone,
           portfolio_url: portfolioUrl,
+          ...addressFields,
           avatar_url: nextAvatarUrl,
-        },
+        }),
         { onConflict: "id" }
       );
       upsertError = retry.error;
