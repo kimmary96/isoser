@@ -23,12 +23,25 @@ def test_build_program_query_params_for_filtered_list() -> None:
 
     assert params["select"] == "*"
     assert params["category"] == "eq.IT"
-    assert params["title"] == "ilike.*부트캠프*"
+    assert "title" not in params
+    assert params["search_text"] == "ilike.*부트캠프*"
+    assert params["limit"] == "20"
     assert params["deadline"] == f"gte.{date.today().isoformat()}"
     assert params["order"] == "created_at.desc.nullslast"
     assert params["limit"] == "20"
     assert params["offset"] == "40"
     assert params["or"] == "(location.ilike.*서울*,location.ilike.*대전*,location.ilike.*충청*,location.ilike.*세종*)"
+
+
+def test_build_program_query_params_expands_scan_limit_for_backend_search() -> None:
+    params = programs._build_program_query_params(
+        select="*",
+        q="패스트캠퍼스",
+    )
+
+    assert params["limit"] == str(programs.PROGRAM_SEARCH_SCAN_LIMIT)
+    assert "title" not in params
+    assert params["search_text"] == "ilike.*패스트캠퍼스*"
 
 
 def test_build_program_query_params_deadline_sort_only_includes_active_programs() -> None:
@@ -230,6 +243,130 @@ def test_postprocess_program_list_rows_keeps_active_first_then_recent_closed() -
     assert [row["id"] for row in rows] == ["active", "closed-recent", "closed-older"]
     assert rows[0]["is_active"] is True
     assert rows[1]["is_active"] is False
+
+
+def test_postprocess_program_list_rows_searches_provider_and_orders_by_match_field() -> None:
+    deadline = (date.today() + timedelta(days=10)).isoformat()
+
+    rows = programs._postprocess_program_list_rows(
+        [
+            {
+                "id": "description-match",
+                "title": "AI 심화 캠프",
+                "provider": "다른 기관",
+                "description": "패스트캠퍼스 연계 과정",
+                "deadline": deadline,
+            },
+            {
+                "id": "provider-match",
+                "title": "Business Analyst Course",
+                "provider": "패스트캠퍼스강남학원",
+                "description": "",
+                "deadline": deadline,
+            },
+            {
+                "id": "title-match",
+                "title": "패스트캠퍼스 데이터 과정",
+                "provider": "다른 기관",
+                "description": "",
+                "deadline": deadline,
+            },
+            {
+                "id": "no-match",
+                "title": "그래픽 디자인",
+                "provider": "다른 기관",
+                "description": "",
+                "deadline": deadline,
+            },
+        ],
+        q="패스트 캠퍼스",
+        sort="deadline",
+        include_closed_recent=False,
+        limit=10,
+        offset=0,
+    )
+
+    assert [row["id"] for row in rows] == ["title-match", "provider-match", "description-match"]
+
+
+def test_postprocess_program_list_rows_searches_compare_meta_values() -> None:
+    deadline = (date.today() + timedelta(days=10)).isoformat()
+
+    rows = programs._postprocess_program_list_rows(
+        [
+            {
+                "id": "meta-match",
+                "title": "AI 심화 캠프",
+                "provider": "다른 기관",
+                "compare_meta": {"training_institution": "패스트캠퍼스강남학원"},
+                "deadline": deadline,
+            },
+            {
+                "id": "no-match",
+                "title": "그래픽 디자인",
+                "provider": "다른 기관",
+                "compare_meta": {"training_institution": "다른 학원"},
+                "deadline": deadline,
+            },
+        ],
+        q="패스트캠퍼스",
+        sort="deadline",
+        include_closed_recent=False,
+        limit=10,
+        offset=0,
+    )
+
+    assert [row["id"] for row in rows] == ["meta-match"]
+
+
+@pytest.mark.asyncio
+async def test_fetch_program_list_rows_paginates_search_candidates(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[dict] = []
+
+    async def fake_request_supabase(*, method: str, path: str, params: dict, **_: object) -> list[dict]:
+        calls.append(dict(params))
+        offset = int(params.get("offset", 0))
+        if offset == 0:
+            return [{"id": f"row-{index}"} for index in range(programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE)]
+        if offset == programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE:
+            return [{"id": "row-last"}]
+        return []
+
+    monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
+
+    rows = await programs._fetch_program_list_rows({"select": "*"}, q="패스트캠퍼스")
+
+    assert len(rows) == programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE + 1
+    assert calls[0]["limit"] == str(programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE)
+    assert calls[0]["offset"] == "0"
+    assert calls[1]["offset"] == str(programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE)
+
+
+@pytest.mark.asyncio
+async def test_fetch_program_list_rows_falls_back_when_search_index_is_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[dict] = []
+
+    async def fake_request_supabase(*, method: str, path: str, params: dict, **_: object) -> list[dict]:
+        calls.append(dict(params))
+        if programs.PROGRAM_SEARCH_INDEX_COLUMN in params:
+            raise RuntimeError("column programs.search_text does not exist")
+        return [{"id": "fallback-row"}]
+
+    monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
+
+    rows = await programs._fetch_program_list_rows(
+        {
+            "select": "*",
+            programs.PROGRAM_SEARCH_INDEX_COLUMN: "ilike.*패스트캠퍼스*",
+        },
+        q="패스트캠퍼스",
+    )
+
+    assert rows == [{"id": "fallback-row"}]
+    assert programs.PROGRAM_SEARCH_INDEX_COLUMN in calls[0]
+    assert programs.PROGRAM_SEARCH_INDEX_COLUMN not in calls[1]
 
 
 def test_compute_program_relevance_items_adds_fit_interpretation_fields(

@@ -55,6 +55,7 @@ def normalize(raw_item: Dict) -> Optional[Dict]:
         "cost": _to_int(raw_item.get("cost")),
         "subsidy_amount": _to_int(raw_item.get("subsidy_amount")),
         "source_url": _clean_optional(raw_item.get("source_url")),
+        "source_unique_key": _clean_optional(raw_item.get("source_unique_key")),
         "compare_meta": _clean_compare_meta(raw_item.get("compare_meta")),
     }
     for key, value in optional_fields.items():

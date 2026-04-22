@@ -2183,3 +2183,11 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - `program_backfill.py` 안에 있던 고용24 상세 HTML 파싱 책임을 `work24_detail_parser.py`로 분리함
   - 백필 스크립트는 source URL과 title을 넘겨 상세 필드 dict를 받아 `SourceRecord`로 감싸는 역할만 남겨 책임을 줄임
   - 기존 고용24 상세 fallback 테스트는 새 파서 모듈의 HTTP mock 경로를 사용하도록 갱신해 동작 유지 여부를 확인함
+- 2026-04-22: `backend/rag/collector/base_api_collector.py`, `backend/rag/collector/work24_collector.py`, `backend/rag/collector/program_field_mapping.py`, `backend/rag/collector/scheduler.py`, `backend/routers/programs.py`, `supabase/migrations/20260422190000_add_programs_source_unique_key.sql`
+  - 고용24 collector를 고정 page limit 대신 OpenAPI `scn_cnt` 기반 full sync로 전환해 수집 범위 밖 기관명 검색 누락을 줄임
+  - 고용24/K-Startup normalized row에 `source_unique_key`를 추가하고, scheduler는 이 키를 우선 upsert 기준으로 사용하며 migration 미적용 운영 DB에서는 legacy conflict fallback으로 저장을 계속하도록 보강함
+  - `/programs?q=` 검색은 Supabase 1,000건 반환 제한을 고려해 후보를 페이지 조회하고, title/provider/description/location/tags/compare_meta 순서로 null-safe 부분 검색 및 정렬하도록 확장함
+- 2026-04-22: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `supabase/migrations/20260422203000_add_programs_search_text_index.sql`, `docs/current-state.md`
+  - 프로그램 검색 후속으로 `programs.search_text` generated column과 trigram index migration을 추가해 title/provider/description/location/tags/skills/target/compare_meta 통합 검색 후보를 DB에서 먼저 줄일 수 있게 함
+  - 백엔드 `/programs?q=`는 `search_text.ilike`를 우선 사용하되, 아직 migration이 적용되지 않은 환경에서는 기존 1,000건 단위 후보 scan으로 자동 fallback하도록 보강함
+  - 기존 검색 결과 우선순위와 null-safe Python 정렬은 유지하고, 검색 인덱스 사용 및 fallback 동작을 `backend/tests/test_programs_router.py`로 고정함

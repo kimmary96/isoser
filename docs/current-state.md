@@ -108,7 +108,7 @@
 - `frontend/app/(landing)` 아래 공개 랜딩 축 라우트는 `landing-a`, `landing-b`, `landing-c`, `programs`, `compare`로 정리되어 있다. 이 중 `landing-c`가 현재 기본 진입이며, `landing-a`와 `landing-b`는 A/B 테스트 보존 경로다.
 - `frontend/app/dashboard/layout.tsx`는 landing-a 헤더를 유지한 채 대시보드 사이드바와 본문을 렌더링한다.
 - Supabase 인증 설정 문서는 `docs/auth/supabase-auth-local.md`, `docs/auth/supabase-auth-production.md`로 로컬/운영을 분리해 관리한다.
-- `backend/routers/programs.py`는 `/programs/count`와 확장된 목록 query(`q`, `regions`, `recruiting_only`, `include_closed_recent`, `sort`)를 지원하고, 목록/카운트 모두 Supabase의 `is_active` 값만 신뢰하지 않고 실제 `deadline` 기준으로 오늘 이후 모집중 공고만 기본 노출한다.
+- `backend/routers/programs.py`는 `/programs/count`와 확장된 목록 query(`q`, `regions`, `recruiting_only`, `include_closed_recent`, `sort`)를 지원하고, 목록/카운트 모두 Supabase의 `is_active` 값만 신뢰하지 않고 실제 `deadline` 기준으로 오늘 이후 모집중 공고만 기본 노출한다. `q` 검색은 Supabase `programs.search_text`가 있으면 해당 검색용 컬럼으로 DB 후보를 먼저 줄이고, 백엔드에서 `title > provider > description/summary > location/region > tags/skills > compare_meta` 순서로 공백 제거/lower 기반 부분 검색 및 정렬을 수행한다. `search_text` 컬럼이 없는 환경에서는 기존 1,000건 단위 후보 scan으로 자동 fallback한다.
 - `backend/routers/programs.py`의 `include_closed_recent=true` 경로는 최근 90일 이내 마감 공고만 추가로 포함하며, `deadline` 정렬에서는 모집중 공고를 먼저 오름차순으로, 최근 마감 공고를 그다음 최근순으로 재정렬한다.
 - `backend/routers/programs.py`는 상세페이지 전용 `GET /programs/{program_id}/detail` 응답을 제공한다. 이 응답은 같은 `programs` row를 읽되 목록/비교와 분리된 detail view model로 기관, 지역, 설명, 신청/운영 일정, 원본 링크, 수강료/지원금, 지원 대상, 선택 운영 정보를 정규화한다.
 - `frontend/app/(landing)/programs/[id]/page.tsx`는 상세 전용 API를 사용하며, 값이 없는 provider/location/description/선택 운영 정보는 한 줄씩 `정보 없음`으로 표시하지 않고 해당 chip 또는 섹션을 숨긴다.
@@ -117,11 +117,11 @@
 - `backend/rag/chroma_client.py`는 Gemini embedding quota 초과(429) 시 재시도 후 local deterministic embedding fallback으로 전환해, Chroma sync/search가 완전히 멈추지 않도록 보강됐다.
 - `programs.compare_meta` JSONB 컬럼이 migration으로 추가되어 비교 화면의 대상/허들/커리큘럼 메타데이터를 저장할 수 있다.
 - `backend/rag/collector/scheduler.py`는 source별 `status`/`message`를 함께 반환해 `0건 수집(empty)`과 `설정/요청/저장 실패`를 구분해 기록한다.
-- Tier 1 collector 중 `고용24`는 현재 유효한 국민내일배움카드 훈련과정 OpenAPI(`callOpenApiSvcInfo310L01.do`)를 사용하고, `K-Startup`은 현재 운영 중인 `nidapi.k-startup.go.kr` 조회서비스로 수집한다.
+- Tier 1 collector 중 `고용24`는 현재 유효한 국민내일배움카드 훈련과정 OpenAPI(`callOpenApiSvcInfo310L01.do`)를 사용하고, 첫 응답의 `scn_cnt`와 `pageSize`로 전체 페이지 수를 계산해 수집 범위 밖 데이터가 검색에서 빠지지 않도록 full sync한다. `K-Startup`은 현재 운영 중인 `nidapi.k-startup.go.kr` 조회서비스로 수집한다.
 - 고용24와 K-Startup Tier 1 collector는 API raw에 포함된 기관명, 지역, 설명, 시작/종료일, 원본 링크, 주요 추적 메타를 공통 normalizer row까지 보존한다. 상세/비교 화면이 이미 참조하는 `provider`, `location`, `description`, `start_date`, `end_date`, `source_url`은 값이 있을 때 저장 payload에 포함되며, source별 부가 추적값은 기존 `compare_meta` JSONB에 보존한다.
 - source별 프로그램 field mapping은 `backend/rag/collector/program_field_mapping.py`에 중앙화되어 있고, `scripts/program_source_diff.py`는 프로그램 UUID 기준으로 live raw 후보, normalized row, DB row, backend API row, UI 표시 스냅샷을 비교하는 진단 CLI를 제공한다.
 - 고용24 상세 페이지 HTML fallback 파싱은 `backend/rag/collector/work24_detail_parser.py`에 분리되어 있으며, `scripts/program_backfill.py`는 이 파서를 호출해 기존 빈 row의 기관, 주소, 기간, 훈련비, 지원금, 만족도, 연락처 메타를 보강한다.
-- scheduler의 Supabase upsert는 `(title, source)` 기준으로 source별 중복을 먼저 제거하고 100건 배치로 나눠 저장해, 대량 payload에서 PostgREST conflict 오류가 전체 source를 실패시키는 문제를 줄였다.
+- scheduler의 Supabase upsert는 `source_unique_key`가 있으면 이를 우선 conflict target으로 사용하고, migration 미적용 또는 conflict index 미정비 환경에서는 `(title, source)` 및 legacy `hrd_id` 충돌 row-level fallback으로 저장을 이어간다. `20260422190000_add_programs_source_unique_key.sql`과 `20260422201000_fix_programs_source_unique_key_conflict_index.sql`은 `programs.source_unique_key`와 Supabase REST upsert가 사용할 수 있는 unique index를 추가해 고용24의 `trprId + trprDegr + trainstCstId` 단위 회차를 안정적으로 구분한다. `20260422203000_add_programs_search_text_index.sql`은 title/provider/description/location/tags/skills/target/compare_meta를 합친 `search_text` generated column과 trigram index를 추가해 `/programs?q=` 후보 조회 비용을 낮춘다.
 - `HRDCollector`는 optional source로 전환되어 기본값 `ENABLE_HRD_COLLECTOR=false` 상태에서는 scheduler가 `skipped_disabled`로 기록하고 실행하지 않는다.
 - `ENABLE_HRD_COLLECTOR=true`여도 `HRD_API_KEY` 또는 `HRDNET_API_KEY`가 없으면 scheduler는 실패 대신 `skipped_missing_config`로 기록한다.
 - 현재 full scheduler smoke 기준 `고용24`와 `K-Startup`은 서울 대상 데이터가 정상 저장되고, HRD는 기본 비활성 상태다.

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import parse_qs, urlparse
 
 
 def clean_text(value: object) -> str:
@@ -25,6 +26,27 @@ def compact_meta(meta: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def query_param(value: str, key: str) -> str:
+    parsed = urlparse(value)
+    values = parse_qs(parsed.query).get(key)
+    return clean_text(values[0]) if values else ""
+
+
+def work24_source_unique_key(item: dict[str, Any], source_url: str) -> str | None:
+    hrd_id = clean_text(item.get("trprId")) or query_param(source_url, "tracseId")
+    degree = clean_text(item.get("trprDegr")) or query_param(source_url, "tracseTme")
+    training_institution_id = (
+        clean_text(item.get("trainstCstId"))
+        or clean_text(item.get("trainstCstmrId"))
+        or query_param(source_url, "trainstCstmrId")
+    )
+    if hrd_id and degree and training_institution_id:
+        return f"work24:{hrd_id}:{degree}:{training_institution_id}"
+    if hrd_id:
+        return f"work24:{hrd_id}"
+    return None
+
+
 def map_work24_training_item(item: dict[str, Any]) -> dict[str, Any]:
     source_url = clean_text(item.get("titleLink"))
     provider_name = clean_text(item.get("subTitle"))
@@ -38,6 +60,7 @@ def map_work24_training_item(item: dict[str, Any]) -> dict[str, Any]:
         "link": source_url,
         "target": [clean_text(item.get("trainTarget"))] if clean_text(item.get("trainTarget")) else None,
         "hrd_id": clean_text(item.get("trprId")) or None,
+        "source_unique_key": work24_source_unique_key(item, source_url),
         "location": clean_text(item.get("address")) or None,
         "provider": provider_name or None,
         "description": description or provider_name or None,
@@ -49,6 +72,13 @@ def map_work24_training_item(item: dict[str, Any]) -> dict[str, Any]:
         "compare_meta": compact_meta(
             {
                 "hrd_id": clean_text(item.get("trprId")) or None,
+                "trpr_degr": clean_text(item.get("trprDegr")) or None,
+                "trainst_cstmr_id": (
+                    clean_text(item.get("trainstCstId"))
+                    or clean_text(item.get("trainstCstmrId"))
+                    or query_param(source_url, "trainstCstmrId")
+                    or None
+                ),
                 "ncs_code": clean_text(item.get("ncsCd")) or None,
                 "certificate": clean_text(item.get("certificate")) or None,
                 "contact_phone": clean_text(item.get("telNo")) or None,
@@ -86,6 +116,7 @@ def map_kstartup_announcement_item(item: dict[str, Any]) -> dict[str, Any]:
         "start_date": clean_text(item.get("pbanc_rcpt_bgng_dt")) or None,
         "end_date": clean_text(item.get("pbanc_rcpt_end_dt")) or None,
         "source_url": detail_url or None,
+        "source_unique_key": f"kstartup:{clean_text(item.get('pbanc_sn'))}" if clean_text(item.get("pbanc_sn")) else None,
         "sponsor_name": clean_text(item.get("biz_prch_dprt_nm")) or clean_text(item.get("sprv_inst")) or None,
         "compare_meta": compact_meta(
             {

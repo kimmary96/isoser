@@ -39,6 +39,9 @@ programs_rag = ProgramsRAG()
 
 PROGRAM_SORT_OPTIONS = {"deadline", "latest"}
 PROGRAM_TEACHING_METHODS = {"온라인", "오프라인", "혼합"}
+PROGRAM_SEARCH_SCAN_LIMIT = 10000
+PROGRAM_SEARCH_SCAN_PAGE_SIZE = 1000
+PROGRAM_SEARCH_INDEX_COLUMN = "search_text"
 RECOMMEND_CACHE_TTL_HOURS = 24
 REGION_QUERY_ALIASES: dict[str, tuple[str, ...]] = {
     "서울": ("서울",),
@@ -422,6 +425,8 @@ def _build_program_query_params(
 
     if limit is not None:
         params["limit"] = str(limit)
+    elif q:
+        params["limit"] = str(PROGRAM_SEARCH_SCAN_LIMIT)
     if offset is not None:
         params["offset"] = str(offset)
     if category:
@@ -430,8 +435,6 @@ def _build_program_query_params(
         params["scope"] = f"eq.{scope}"
     if region_detail:
         params["region_detail"] = f"eq.{region_detail}"
-    if q:
-        params["title"] = f"ilike.*{q.strip()}*"
     today_iso = date.today().isoformat()
     recent_cutoff_iso = (date.today() - timedelta(days=90)).isoformat()
     if include_closed_recent:
@@ -446,6 +449,10 @@ def _build_program_query_params(
     normalized_regions = _expand_region_keywords(_normalize_regions_param(regions))
     if normalized_regions:
         params["or"] = "(" + ",".join(f"location.ilike.*{keyword}*" for keyword in normalized_regions) + ")"
+
+    search_filter = _program_search_index_filter(q)
+    if search_filter:
+        params[PROGRAM_SEARCH_INDEX_COLUMN] = search_filter
 
     return params
 
@@ -476,6 +483,61 @@ def _normalize_rating_fields(value: Any) -> dict[str, str | float | int | None]:
     result["rating_scale"] = 5
     result["rating_display"] = f"{normalized_score:.1f}"
     return result
+
+
+def _normalize_search_text(value: Any) -> str:
+    return re.sub(r"\s+", "", str(value or "").lower())
+
+
+def _program_search_index_filter(q: str | None) -> str | None:
+    needle = _normalize_search_text(q)
+    if not needle:
+        return None
+    return f"ilike.*{needle}*"
+
+
+def _flatten_search_values(value: Any) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, dict):
+        values: list[str] = []
+        for item in value.values():
+            values.extend(_flatten_search_values(item))
+        return values
+    if isinstance(value, list):
+        values = []
+        for item in value:
+            values.extend(_flatten_search_values(item))
+        return values
+    text = str(value).strip()
+    return [text] if text else []
+
+
+def _program_search_groups(row: dict[str, Any]) -> list[tuple[int, list[str]]]:
+    return [
+        (0, _flatten_search_values(row.get("title"))),
+        (1, _flatten_search_values(row.get("provider"))),
+        (2, _flatten_search_values(row.get("description")) + _flatten_search_values(row.get("summary"))),
+        (3, _flatten_search_values(row.get("location")) + _flatten_search_values(row.get("region_detail")) + _flatten_search_values(row.get("region"))),
+        (4, _flatten_search_values(row.get("tags")) + _flatten_search_values(row.get("skills"))),
+        (5, _flatten_search_values(row.get("compare_meta"))),
+    ]
+
+
+def _program_search_match_rank(row: dict[str, Any], q: str | None) -> int | None:
+    needle = _normalize_search_text(q)
+    if not needle:
+        return None
+    for rank, values in _program_search_groups(row):
+        if any(needle in _normalize_search_text(value) for value in values):
+            return rank
+    return None
+
+
+def _filter_program_rows_by_query(rows: list[dict[str, Any]], q: str | None) -> list[dict[str, Any]]:
+    if not _normalize_search_text(q):
+        return rows
+    return [row for row in rows if _program_search_match_rank(row, q) is not None]
 
 
 def _serialize_program_list_row(program: dict[str, Any]) -> dict[str, Any]:
@@ -515,17 +577,30 @@ def _sort_program_list_rows(
 def _postprocess_program_list_rows(
     rows: list[dict[str, Any]],
     *,
+    q: str | None = None,
     sort: str,
     include_closed_recent: bool,
     limit: int,
     offset: int,
 ) -> list[dict[str, Any]]:
-    serialized_rows = [_serialize_program_list_row(row) for row in rows]
-    sorted_rows = _sort_program_list_rows(
-        serialized_rows,
-        sort=sort,
-        include_closed_recent=include_closed_recent,
+    serialized_rows = _filter_program_rows_by_query(
+        [_serialize_program_list_row(row) for row in rows],
+        q,
     )
+    if _normalize_search_text(q):
+        sorted_rows = sorted(
+            serialized_rows,
+            key=lambda row: (
+                _program_search_match_rank(row, q) if _program_search_match_rank(row, q) is not None else 99,
+                (_parse_program_deadline(str(row.get("deadline") or "")) or date.max).toordinal(),
+            ),
+        )
+    else:
+        sorted_rows = _sort_program_list_rows(
+            serialized_rows,
+            sort=sort,
+            include_closed_recent=include_closed_recent,
+        )
     return sorted_rows[offset : offset + limit]
 
 
@@ -771,7 +846,7 @@ async def _count_program_rows(
     include_closed_recent: bool = False,
 ) -> int:
     params = _build_program_query_params(
-        select="id,deadline,end_date,is_active,created_at",
+        select="*" if _normalize_search_text(q) else "id,deadline,end_date,is_active,created_at",
         category=category,
         scope=scope,
         region_detail=region_detail,
@@ -781,16 +856,44 @@ async def _count_program_rows(
         recruiting_only=recruiting_only,
         include_closed_recent=include_closed_recent,
     )
-    rows = await request_supabase(method="GET", path="/rest/v1/programs", params=params)
-    if not isinstance(rows, list):
-        return 0
+    rows = await _fetch_program_list_rows(params, q=q)
     return len(
         _sort_program_list_rows(
-            [_serialize_program_list_row(row) for row in rows],
+            _filter_program_rows_by_query([_serialize_program_list_row(row) for row in rows], q),
             sort="deadline",
             include_closed_recent=include_closed_recent,
         )
     )
+
+
+async def _fetch_program_list_rows(params: dict[str, Any], *, q: str | None) -> list[dict[str, Any]]:
+    if not _normalize_search_text(q):
+        rows = await request_supabase(method="GET", path="/rest/v1/programs", params=params)
+        return rows if isinstance(rows, list) else []
+
+    rows: list[dict[str, Any]] = []
+    offset = 0
+    while offset < PROGRAM_SEARCH_SCAN_LIMIT:
+        page_params = {
+            **params,
+            "limit": str(PROGRAM_SEARCH_SCAN_PAGE_SIZE),
+            "offset": str(offset),
+        }
+        try:
+            page = await request_supabase(method="GET", path="/rest/v1/programs", params=page_params)
+        except Exception:
+            if PROGRAM_SEARCH_INDEX_COLUMN not in page_params:
+                raise
+            fallback_params = dict(params)
+            fallback_params.pop(PROGRAM_SEARCH_INDEX_COLUMN, None)
+            return await _fetch_program_list_rows(fallback_params, q=q)
+        if not isinstance(page, list) or not page:
+            break
+        rows.extend(page)
+        if len(page) < PROGRAM_SEARCH_SCAN_PAGE_SIZE:
+            break
+        offset += PROGRAM_SEARCH_SCAN_PAGE_SIZE
+    return rows[:PROGRAM_SEARCH_SCAN_LIMIT]
 
 
 async def _fetch_profile_row(user_id: str) -> dict[str, Any]:
@@ -1138,11 +1241,10 @@ async def list_programs(
         include_closed_recent=include_closed_recent,
         sort=sort,
     )
-    rows = await request_supabase(method="GET", path="/rest/v1/programs", params=params)
-    if not isinstance(rows, list):
-        return []
+    rows = await _fetch_program_list_rows(params, q=q)
     return _postprocess_program_list_rows(
         rows,
+        q=q,
         sort=sort,
         include_closed_recent=include_closed_recent,
         limit=limit,

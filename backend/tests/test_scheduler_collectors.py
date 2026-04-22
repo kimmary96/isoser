@@ -1,6 +1,8 @@
 from backend.rag.collector.base_collector import BaseCollector
+from backend.rag.collector.base_api_collector import BaseApiCollector
 from backend.rag.collector.hrd_collector import HrdCollector
-from backend.rag.collector.scheduler import run_all_collectors
+from backend.rag.collector.scheduler import _coerce_db_category, run_all_collectors
+from backend.rag.collector.work24_collector import Work24Collector
 from backend.rag.collector.tier3_collectors import KisedCollector, KobiaCollector
 from backend.rag.collector.tier4_collectors import (
     DobongCollector,
@@ -35,6 +37,82 @@ class _FailedCollector(BaseCollector):
         self.last_collect_status = "config_error"
         self.last_collect_message = "HRD_API_KEY is not configured"
         return []
+
+
+class _PagedApiCollector(BaseApiCollector):
+    endpoint = "https://example.com/api"
+    api_key_env = "PAGED_API_KEY"
+    page_size = 2
+    max_pages = None
+
+    def build_params(self, *, api_key: str, page_num: int):
+        return {"api_key": api_key, "page": str(page_num)}
+
+    def extract_items(self, payload: object):
+        return payload.get("items", []) if isinstance(payload, dict) else []
+
+    def extract_total_count(self, payload: object) -> int | None:
+        return int(payload["total"]) if isinstance(payload, dict) and "total" in payload else None
+
+    def map_item(self, item, source_meta):
+        return {"title": item["title"], "source_meta": source_meta}
+
+
+def test_base_api_collector_uses_total_count_for_full_pagination(monkeypatch) -> None:
+    calls: list[int] = []
+
+    class FakeResponse:
+        def __init__(self, page_num: int) -> None:
+            self.page_num = page_num
+
+        def raise_for_status(self) -> None:
+            return None
+
+        def json(self):
+            return {
+                "total": 5,
+                "items": [{"title": f"program-{self.page_num}-{index}"} for index in range(2)],
+            }
+
+    def fake_get(*_, params, **__):
+        page_num = int(params["page"])
+        calls.append(page_num)
+        return FakeResponse(page_num)
+
+    monkeypatch.setenv("PAGED_API_KEY", "test-key")
+    monkeypatch.setattr("backend.rag.collector.base_api_collector.requests.get", fake_get)
+
+    rows = _PagedApiCollector().collect()
+
+    assert calls == [1, 2, 3]
+    assert len(rows) == 6
+
+
+def test_base_api_collector_retries_failed_page(monkeypatch) -> None:
+    calls = 0
+
+    class FakeResponse:
+        def raise_for_status(self) -> None:
+            return None
+
+        def json(self):
+            return {"total": 1, "items": [{"title": "program"}]}
+
+    def fake_get(*_, **__):
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            raise RuntimeError("temporary")
+        return FakeResponse()
+
+    monkeypatch.setenv("PAGED_API_KEY", "test-key")
+    monkeypatch.setattr("backend.rag.collector.base_api_collector.sleep", lambda *_: None)
+    monkeypatch.setattr("backend.rag.collector.base_api_collector.requests.get", fake_get)
+
+    rows = _PagedApiCollector().collect()
+
+    assert calls == 2
+    assert len(rows) == 1
 
 
 def test_scheduler_distinguishes_empty_and_failed_collectors(monkeypatch) -> None:
@@ -111,6 +189,27 @@ def test_scheduler_skips_hrd_when_key_missing(monkeypatch) -> None:
     ]
 
 
+def test_work24_collector_scans_enough_pages_for_provider_search_samples() -> None:
+    assert Work24Collector.max_pages is None
+
+
+def test_scheduler_coerces_categories_to_db_allowed_values() -> None:
+    assert _coerce_db_category({"title": "AI 심화 캠프", "category": "훈련"})["category"] == "AI"
+    assert _coerce_db_category({"title": "재직자 데이터 분석 Course", "category": "훈련"})["category"] == "IT"
+    assert _coerce_db_category({"title": "그래픽 디자인 과정", "category": "교육"})["category"] == "디자인"
+
+
+def test_scheduler_preserves_source_unique_key_for_upsert(monkeypatch) -> None:
+    supabase = _DummySupabase()
+    monkeypatch.setattr("backend.rag.collector.scheduler.COLLECTORS", [_Tier1Collector()])
+    monkeypatch.setattr("backend.rag.collector.scheduler._create_supabase_client", lambda: supabase)
+
+    result = run_all_collectors()
+
+    assert result["saved_count"] == 1
+    assert supabase.rows[0]["source_unique_key"] == "tier1:program:1"
+
+
 class _Tier1Collector(BaseCollector):
     tier = 1
     source_name = "tier1"
@@ -125,6 +224,7 @@ class _Tier1Collector(BaseCollector):
                 "link": "https://example.com/tier1",
                 "raw_deadline": "2026-05-01",
                 "category_hint": "창업",
+                "source_unique_key": "tier1:program:1",
                 "source_meta": self.get_source_meta(),
                 "raw": {"id": 1},
             }
