@@ -13,6 +13,7 @@ def test_build_program_query_params_for_filtered_list() -> None:
     params = programs._build_program_query_params(
         select="*",
         category="IT",
+        category_detail="web-development",
         q="부트캠프",
         regions=["서울", "대전·충청"],
         recruiting_only=True,
@@ -23,6 +24,7 @@ def test_build_program_query_params_for_filtered_list() -> None:
 
     assert params["select"] == "*"
     assert params["category"] == "eq.IT"
+    assert params["category_detail"] == "eq.web-development"
     assert "title" not in params
     assert params["search_text"] == "ilike.*부트캠프*"
     assert params["limit"] == "20"
@@ -68,6 +70,97 @@ def test_normalize_regions_param_splits_csv_values() -> None:
     normalized = programs._normalize_regions_param(["서울,경기", "온라인"])
 
     assert normalized == ["서울", "경기", "온라인"]
+
+
+def test_program_extra_filters_classify_cost_types() -> None:
+    deadline = (date.today() + timedelta(days=10)).isoformat()
+    rows = programs._postprocess_program_list_rows(
+        [
+            {
+                "id": "card",
+                "title": "국민내일배움카드 AI 과정",
+                "cost": 0,
+                "deadline": deadline,
+                "compare_meta": {"naeilbaeumcard_required": True},
+            },
+            {
+                "id": "free",
+                "title": "무료 창업 특강",
+                "cost": 0,
+                "deadline": deadline,
+            },
+            {
+                "id": "paid",
+                "title": "유료 디자인 과정",
+                "cost": 150000,
+                "deadline": deadline,
+            },
+        ],
+        cost_types=["free-no-card"],
+        sort="deadline",
+        include_closed_recent=False,
+        limit=10,
+        offset=0,
+    )
+
+    assert [row["id"] for row in rows] == ["free"]
+
+
+def test_program_extra_filters_classify_participation_times() -> None:
+    deadline = (date.today() + timedelta(days=10)).isoformat()
+    rows = programs._postprocess_program_list_rows(
+        [
+            {
+                "id": "part-time",
+                "title": "주말 데이터 특강",
+                "start_date": "2026-05-01",
+                "end_date": "2026-05-02",
+                "deadline": deadline,
+            },
+            {
+                "id": "full-time",
+                "title": "웹개발 부트캠프",
+                "start_date": "2026-05-01",
+                "end_date": "2026-06-30",
+                "deadline": deadline,
+            },
+        ],
+        participation_times=["full-time"],
+        sort="deadline",
+        include_closed_recent=False,
+        limit=10,
+        offset=0,
+    )
+
+    assert [row["id"] for row in rows] == ["full-time"]
+
+
+@pytest.mark.asyncio
+async def test_fetch_program_list_rows_falls_back_when_category_detail_is_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[dict] = []
+
+    async def fake_request_supabase(*, method: str, path: str, params: dict, **_: object) -> list[dict]:
+        calls.append(dict(params))
+        if "category_detail" in params:
+            raise RuntimeError("column programs.category_detail does not exist")
+        return [{"id": "fallback-row"}]
+
+    monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
+
+    rows = await programs._fetch_program_list_rows(
+        {
+            "select": "*",
+            "category": "eq.IT",
+            "category_detail": "eq.web-development",
+        },
+        q=None,
+    )
+
+    assert rows == [{"id": "fallback-row"}]
+    assert "category_detail" in calls[0]
+    assert "category_detail" not in calls[1]
 
 
 def test_parse_content_range_total_reads_exact_count() -> None:

@@ -56,7 +56,6 @@ def map_work24_training_item(item: dict[str, Any]) -> dict[str, Any]:
 
     return {
         "title": clean_text(item.get("title")),
-        "raw_deadline": end_date,
         "link": source_url,
         "target": [clean_text(item.get("trainTarget"))] if clean_text(item.get("trainTarget")) else None,
         "hrd_id": clean_text(item.get("trprId")) or None,
@@ -83,6 +82,7 @@ def map_work24_training_item(item: dict[str, Any]) -> dict[str, Any]:
                 "certificate": clean_text(item.get("certificate")) or None,
                 "contact_phone": clean_text(item.get("telNo")) or None,
                 "weekend_code": clean_text(item.get("wkendSe")) or None,
+                "training_end_date": end_date or None,
                 "satisfaction_score": clean_text(item.get("stdgScor")) or None,
                 "employment_rate_3m": clean_text(item.get("eiEmplRate3")) or None,
                 "employment_rate_6m": clean_text(item.get("eiEmplRate6")) or None,

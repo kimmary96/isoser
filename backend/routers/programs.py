@@ -39,6 +39,8 @@ programs_rag = ProgramsRAG()
 
 PROGRAM_SORT_OPTIONS = {"deadline", "latest"}
 PROGRAM_TEACHING_METHODS = {"온라인", "오프라인", "혼합"}
+PROGRAM_COST_TYPES = {"naeil-card", "free-no-card", "paid"}
+PROGRAM_PARTICIPATION_TIMES = {"part-time", "full-time"}
 PROGRAM_SEARCH_SCAN_LIMIT = 10000
 PROGRAM_SEARCH_SCAN_PAGE_SIZE = 1000
 PROGRAM_SEARCH_INDEX_COLUMN = "search_text"
@@ -46,7 +48,22 @@ RECOMMEND_CACHE_TTL_HOURS = 24
 REGION_QUERY_ALIASES: dict[str, tuple[str, ...]] = {
     "서울": ("서울",),
     "경기": ("경기",),
+    "제주": ("제주",),
     "부산": ("부산",),
+    "강원": ("강원",),
+    "해외": ("해외", "국외", "글로벌", "global", "online"),
+    "대구": ("대구",),
+    "충북": ("충북", "충청북도"),
+    "인천": ("인천",),
+    "충남": ("충남", "충청남도"),
+    "광주": ("광주",),
+    "전북": ("전북", "전라북도"),
+    "대전": ("대전",),
+    "전남": ("전남", "전라남도"),
+    "울산": ("울산",),
+    "경북": ("경북", "경상북도"),
+    "세종": ("세종",),
+    "경남": ("경남", "경상남도"),
     "대전·충청": ("대전", "충청", "세종"),
     "대구·경북": ("대구", "경북"),
     "온라인": ("온라인", "비대면", "원격"),
@@ -59,6 +76,7 @@ class ProgramListItem(BaseModel):
     id: str | int | None = None
     title: str | None = None
     category: str | None = None
+    category_detail: str | None = None
     location: str | None = None
     provider: str | None = None
     summary: str | None = None
@@ -73,6 +91,10 @@ class ProgramListItem(BaseModel):
     deadline: str | None = None
     start_date: str | None = None
     end_date: str | None = None
+    cost: int | str | None = None
+    cost_type: str | None = None
+    participation_time: str | None = None
+    subsidy_amount: int | str | None = None
     support_type: str | None = None
     teaching_method: str | None = None
     is_certified: bool | None = None
@@ -395,6 +417,21 @@ def _normalize_teaching_methods_param(teaching_methods: list[str] | None) -> lis
     return normalized
 
 
+def _normalize_option_param(values: list[str] | None, allowed_values: set[str]) -> list[str]:
+    if not values:
+        return []
+
+    normalized: list[str] = []
+    for raw in values:
+        if not raw:
+            continue
+        for token in str(raw).split(","):
+            cleaned = token.strip()
+            if cleaned and cleaned in allowed_values and cleaned not in normalized:
+                normalized.append(cleaned)
+    return normalized
+
+
 def _expand_region_keywords(regions: list[str]) -> list[str]:
     keywords: list[str] = []
     seen: set[str] = set()
@@ -416,6 +453,7 @@ def _build_program_query_params(
     *,
     select: str,
     category: str | None = None,
+    category_detail: str | None = None,
     scope: str | None = None,
     region_detail: str | None = None,
     q: str | None = None,
@@ -441,6 +479,8 @@ def _build_program_query_params(
         params["offset"] = str(offset)
     if category:
         params["category"] = f"eq.{category}"
+    if category_detail:
+        params["category_detail"] = f"eq.{category_detail}"
     if scope:
         params["scope"] = f"eq.{scope}"
     if region_detail:
@@ -550,6 +590,94 @@ def _filter_program_rows_by_query(rows: list[dict[str, Any]], q: str | None) -> 
     return [row for row in rows if _program_search_match_rank(row, q) is not None]
 
 
+def _program_text_blob(row: dict[str, Any]) -> str:
+    values = (
+        _flatten_search_values(row.get("title"))
+        + _flatten_search_values(row.get("provider"))
+        + _flatten_search_values(row.get("summary"))
+        + _flatten_search_values(row.get("description"))
+        + _flatten_search_values(row.get("support_type"))
+        + _flatten_search_values(row.get("teaching_method"))
+        + _flatten_search_values(row.get("tags"))
+        + _flatten_search_values(row.get("skills"))
+        + _flatten_search_values(row.get("compare_meta"))
+    )
+    return " ".join(values).casefold()
+
+
+def _program_cost_type(row: dict[str, Any]) -> str | None:
+    explicit_cost_type = str(row.get("cost_type") or "").strip()
+    if explicit_cost_type in PROGRAM_COST_TYPES:
+        return explicit_cost_type
+
+    text = _program_text_blob(row)
+    compare_meta = row.get("compare_meta") if isinstance(row.get("compare_meta"), dict) else {}
+    card_required = compare_meta.get("naeilbaeumcard_required")
+    has_card_keyword = "내일배움" in text or "내배카" in text or "국민내일배움" in text
+    if card_required is True or card_required == "pass" or has_card_keyword:
+        return "naeil-card"
+
+    cost = _int_or_none(row.get("cost"))
+    if cost is not None:
+        return "paid" if cost > 0 else "free-no-card"
+
+    if "무료" in text or "전액 지원" in text or "자부담 0" in text:
+        return "free-no-card"
+    if "유료" in text or "자부담" in text or "수강료" in text:
+        return "paid"
+    return None
+
+
+def _program_duration_days(row: dict[str, Any]) -> int | None:
+    start = _parse_program_deadline(str(row.get("start_date") or ""))
+    end = _parse_program_deadline(str(row.get("end_date") or ""))
+    if start is None or end is None or end < start:
+        return None
+    return (end - start).days + 1
+
+
+def _program_participation_time(row: dict[str, Any]) -> str | None:
+    explicit_participation_time = str(row.get("participation_time") or "").strip()
+    if explicit_participation_time in PROGRAM_PARTICIPATION_TIMES:
+        return explicit_participation_time
+
+    text = _program_text_blob(row)
+    if any(keyword in text for keyword in ("파트타임", "part-time", "야간", "저녁", "주말", "특강", "세미나")):
+        return "part-time"
+    if any(keyword in text for keyword in ("풀타임", "full-time", "전일", "종일")):
+        return "full-time"
+
+    duration_days = _program_duration_days(row)
+    if duration_days is None:
+        return None
+    if duration_days <= 14:
+        return "part-time"
+    if duration_days >= 28:
+        return "full-time"
+    return None
+
+
+def _filter_program_rows_by_extra_filters(
+    rows: list[dict[str, Any]],
+    *,
+    cost_types: list[str] | None = None,
+    participation_times: list[str] | None = None,
+) -> list[dict[str, Any]]:
+    normalized_cost_types = set(_normalize_option_param(cost_types, PROGRAM_COST_TYPES))
+    normalized_participation_times = set(_normalize_option_param(participation_times, PROGRAM_PARTICIPATION_TIMES))
+    if not normalized_cost_types and not normalized_participation_times:
+        return rows
+
+    filtered_rows: list[dict[str, Any]] = []
+    for row in rows:
+        if normalized_cost_types and _program_cost_type(row) not in normalized_cost_types:
+            continue
+        if normalized_participation_times and _program_participation_time(row) not in normalized_participation_times:
+            continue
+        filtered_rows.append(row)
+    return filtered_rows
+
+
 def _serialize_program_list_row(program: dict[str, Any]) -> dict[str, Any]:
     record = dict(program)
     compare_meta = record.get("compare_meta") if isinstance(record.get("compare_meta"), dict) else {}
@@ -588,14 +716,20 @@ def _postprocess_program_list_rows(
     rows: list[dict[str, Any]],
     *,
     q: str | None = None,
+    cost_types: list[str] | None = None,
+    participation_times: list[str] | None = None,
     sort: str,
     include_closed_recent: bool,
     limit: int,
     offset: int,
 ) -> list[dict[str, Any]]:
-    serialized_rows = _filter_program_rows_by_query(
-        [_serialize_program_list_row(row) for row in rows],
-        q,
+    serialized_rows = _filter_program_rows_by_extra_filters(
+        _filter_program_rows_by_query(
+            [_serialize_program_list_row(row) for row in rows],
+            q,
+        ),
+        cost_types=cost_types,
+        participation_times=participation_times,
     )
     if _normalize_search_text(q):
         sorted_rows = sorted(
@@ -847,17 +981,25 @@ def _build_default_calendar_items(
 async def _count_program_rows(
     *,
     category: str | None = None,
+    category_detail: str | None = None,
     scope: str | None = None,
     region_detail: str | None = None,
     q: str | None = None,
     regions: list[str] | None = None,
     teaching_methods: list[str] | None = None,
+    cost_types: list[str] | None = None,
+    participation_times: list[str] | None = None,
     recruiting_only: bool = False,
     include_closed_recent: bool = False,
 ) -> int:
+    has_extra_filters = bool(
+        _normalize_option_param(cost_types, PROGRAM_COST_TYPES)
+        or _normalize_option_param(participation_times, PROGRAM_PARTICIPATION_TIMES)
+    )
     params = _build_program_query_params(
-        select="*" if _normalize_search_text(q) else "id,deadline,end_date,is_active,created_at",
+        select="*" if _normalize_search_text(q) or has_extra_filters else "id,deadline,end_date,is_active,created_at",
         category=category,
+        category_detail=category_detail,
         scope=scope,
         region_detail=region_detail,
         q=q,
@@ -869,7 +1011,11 @@ async def _count_program_rows(
     rows = await _fetch_program_list_rows(params, q=q)
     return len(
         _sort_program_list_rows(
-            _filter_program_rows_by_query([_serialize_program_list_row(row) for row in rows], q),
+            _filter_program_rows_by_extra_filters(
+                _filter_program_rows_by_query([_serialize_program_list_row(row) for row in rows], q),
+                cost_types=cost_types,
+                participation_times=participation_times,
+            ),
             sort="deadline",
             include_closed_recent=include_closed_recent,
         )
@@ -878,7 +1024,14 @@ async def _count_program_rows(
 
 async def _fetch_program_list_rows(params: dict[str, Any], *, q: str | None) -> list[dict[str, Any]]:
     if not _normalize_search_text(q):
-        rows = await request_supabase(method="GET", path="/rest/v1/programs", params=params)
+        try:
+            rows = await request_supabase(method="GET", path="/rest/v1/programs", params=params)
+        except Exception:
+            if "category_detail" not in params:
+                raise
+            fallback_params = dict(params)
+            fallback_params.pop("category_detail", None)
+            rows = await request_supabase(method="GET", path="/rest/v1/programs", params=fallback_params)
         return rows if isinstance(rows, list) else []
 
     rows: list[dict[str, Any]] = []
@@ -893,6 +1046,10 @@ async def _fetch_program_list_rows(params: dict[str, Any], *, q: str | None) -> 
             page = await request_supabase(method="GET", path="/rest/v1/programs", params=page_params)
         except Exception:
             if PROGRAM_SEARCH_INDEX_COLUMN not in page_params:
+                if "category_detail" in page_params:
+                    fallback_params = dict(params)
+                    fallback_params.pop("category_detail", None)
+                    return await _fetch_program_list_rows(fallback_params, q=q)
                 raise
             fallback_params = dict(params)
             fallback_params.pop(PROGRAM_SEARCH_INDEX_COLUMN, None)
@@ -1228,11 +1385,14 @@ def _compute_program_relevance_items(
 @programs_router.get("/")
 async def list_programs(
     category: str | None = None,
+    category_detail: str | None = None,
     scope: str | None = None,
     region_detail: str | None = None,
     q: str | None = None,
     regions: list[str] | None = Query(default=None),
     teaching_methods: list[str] | None = Query(default=None),
+    cost_types: list[str] | None = Query(default=None),
+    participation_times: list[str] | None = Query(default=None),
     recruiting_only: bool = False,
     include_closed_recent: bool = False,
     sort: str = Query(default="deadline"),
@@ -1242,6 +1402,7 @@ async def list_programs(
     params = _build_program_query_params(
         select="*",
         category=category,
+        category_detail=category_detail,
         scope=scope,
         region_detail=region_detail,
         q=q,
@@ -1255,6 +1416,8 @@ async def list_programs(
     return _postprocess_program_list_rows(
         rows,
         q=q,
+        cost_types=cost_types,
+        participation_times=participation_times,
         sort=sort,
         include_closed_recent=include_closed_recent,
         limit=limit,
@@ -1265,21 +1428,27 @@ async def list_programs(
 @programs_router.get("/count", response_model=ProgramCountResponse)
 async def count_programs(
     category: str | None = None,
+    category_detail: str | None = None,
     scope: str | None = None,
     region_detail: str | None = None,
     q: str | None = None,
     regions: list[str] | None = Query(default=None),
     teaching_methods: list[str] | None = Query(default=None),
+    cost_types: list[str] | None = Query(default=None),
+    participation_times: list[str] | None = Query(default=None),
     recruiting_only: bool = False,
     include_closed_recent: bool = False,
 ) -> ProgramCountResponse:
     count = await _count_program_rows(
         category=category,
+        category_detail=category_detail,
         scope=scope,
         region_detail=region_detail,
         q=q,
         regions=regions,
         teaching_methods=teaching_methods,
+        cost_types=cost_types,
+        participation_times=participation_times,
         recruiting_only=recruiting_only,
         include_closed_recent=include_closed_recent,
     )

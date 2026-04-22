@@ -73,6 +73,7 @@ def _normalize_program_row(row: dict[str, Any]) -> dict[str, Any]:
     provider = provider_name or str(row.get("provider") or "").strip() or None
     end_date = str(row.get("end_date") or "").strip() or None
     start_date = str(row.get("start_date") or "").strip() or None
+    deadline = _normalize_program_deadline(row, end_date)
     target_text = str(row.get("target") or "").strip()
     target = [target_text] if target_text else []
     category = str(row.get("category_label") or "").strip() or str(row.get("category") or "").strip()
@@ -93,7 +94,7 @@ def _normalize_program_row(row: dict[str, Any]) -> dict[str, Any]:
         "description": description,
         "start_date": start_date,
         "end_date": end_date,
-        "deadline": end_date,
+        "deadline": deadline,
         "cost": row.get("cost"),
         "subsidy_amount": row.get("subsidy_amount"),
         "target": target or None,
@@ -106,6 +107,18 @@ def _normalize_program_row(row: dict[str, Any]) -> dict[str, Any]:
         "raw_data": raw_data if isinstance(raw_data, dict) else None,
         "is_active": True,
     }
+
+
+def _normalize_program_deadline(row: dict[str, Any], end_date: str | None) -> str | None:
+    raw_deadline = str(row.get("deadline") or row.get("close_date") or "").strip() or None
+    if not raw_deadline:
+        return None
+
+    source_text = str(row.get("source") or "고용24").casefold()
+    is_work24 = "고용24" in source_text or "work24" in source_text
+    if is_work24 and end_date and raw_deadline[:10] == end_date[:10]:
+        return None
+    return raw_deadline
 
 
 def _coerce_program_category(category: str, title: str) -> str:
