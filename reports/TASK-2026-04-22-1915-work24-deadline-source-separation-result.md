@@ -32,6 +32,9 @@
 ## 테스트 결과
 - `backend\venv\Scripts\python.exe -m pytest backend/tests/test_work24_kstartup_field_mapping.py backend/tests/test_admin_router.py backend/tests/test_program_backfill.py`
   - 20 passed
+- `backend\venv\Scripts\python.exe scripts/program_backfill.py --work24-deadline-audit --limit 5 --format json`
+  - dry-run 정상 실행
+  - 후보 5건 중 5건이 `deadline=end_date` 의심 row로 리포트됨
 
 ## 리스크 / 가능한 회귀
 - 새로 수집되는 고용24 row는 별도 모집 마감일을 알 수 없는 경우 `deadline`이 비게 된다. 이는 부정확한 D-day를 막기 위한 의도된 변경이다.
