@@ -66,6 +66,7 @@
 - `frontend/app/(landing)/compare/page.tsx`는 공개 비교 페이지로 동작하며 `?ids=` URL state, 최대 3개 슬롯, 추천 프로그램 추가/제거를 지원한다.
 - `frontend/.eslintrc.json`이 추가되어 `frontend`의 `npm run lint`가 더 이상 초기 대화형 ESLint 설정 프롬프트에 막히지 않고 비대화형 검증으로 동작한다.
 - `frontend/tsconfig.codex-check.json`은 `.next/types`를 직접 포함하지 않아 stale Next.js 생성 파일 때문에 standalone 타입체크가 거짓 실패하지 않는다.
+- `frontend/package.json`은 Next.js와 `eslint-config-next`를 `15.5.15`로 고정해 2026-04-22 기준 `npm audit --omit=dev`의 Next.js production advisory를 0건으로 유지한다.
 - `frontend/lib/server/upload-validation.ts`는 활동 이미지/프로필 이미지 업로드 전에 허용 형식(JPG/PNG/WEBP/GIF), 파일 크기 제한, storage path segment 정규화를 공통으로 적용한다.
 - `frontend/lib/server/upload-validation.ts`는 확장자/MIME뿐 아니라 파일 헤더(signature, magic number)도 함께 검사해 이름만 바꾼 위장 파일 업로드를 1차로 차단한다.
 - `frontend/lib/server/upload-validation.ts`는 PNG/GIF/WEBP/JPEG의 실제 크기 정보(width/height)도 읽어 정상 이미지 여부를 한 번 더 확인하고, 8000px 초과 비정상 고해상도 이미지는 업로드를 거부한다.

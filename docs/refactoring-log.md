@@ -2099,3 +2099,6 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - 공개 랜딩 헤더 구현을 `frontend/components/landing/LandingHeader.tsx`로 이동해 landing-a/c가 같은 헤더 UI와 인증 CTA 로직을 사용하도록 정리함
   - 랜딩 A/C 프로그램 카드에서 공유하는 deadline, href, score, tag normalization helper를 `frontend/components/landing/program-card-helpers.ts`로 분리함
   - Vitest를 dev dependency와 `npm test` 스크립트로 추가하고, `routes.ts`와 `program-filters.ts`의 기본 랜딩, 내부 경로 검증, hash target 보존, 칩 매핑 단위 테스트를 추가함
+- 2026-04-22: `frontend/package.json`, `frontend/package-lock.json`, `docs/current-state.md`, `reports/TASK-2026-04-22-landing-page-c-change-result.md`
+  - 리스크 관리 후속으로 Next.js와 `eslint-config-next`를 `15.5.15`로 업그레이드해 `npm audit --omit=dev` 기준 production 취약점 0건 상태로 정리함
+  - `npm test`, `npm run lint`, `npx tsc -p tsconfig.codex-check.json --noEmit`, `npm run build`를 모두 통과해 패치 업그레이드의 기본 회귀 위험을 확인함

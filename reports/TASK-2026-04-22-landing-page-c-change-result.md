@@ -32,6 +32,7 @@
 - Landing C chip category values for `AI·데이터`, `IT·개발`, and `경영` did not match the backend category values used by the current program API.
 - Follow-up refactoring requested shared defaults, shared chip mappings, hash-preserving login redirects, and common header UI.
 - Follow-up implementation moved the common landing header and program card helpers into `frontend/components/landing/` and added Vitest unit coverage for route/filter helpers.
+- Risk-management follow-up upgraded Next.js and `eslint-config-next` from the vulnerable 15.1.x line to 15.5.15.
 
 ## Preserved behaviors
 
@@ -41,11 +42,14 @@
 - New users without a profile still go to `/onboarding` after OAuth callback.
 - Landing A keeps its section order and program feed behavior while using the shared chip filter helper.
 - Landing A/C now share the same public landing header implementation and program card helper functions.
+- Production dependency audit now reports 0 vulnerabilities after the Next.js 15.5.15 upgrade.
 
 ## Risks / possible regressions
 
 - A browser-typed `/dashboard#recommend-calendar` direct request cannot expose the hash to middleware because URL fragments are not sent to servers; CTA links preserve the hash by putting the encoded target in `redirectedFrom`.
 - `frontend/app/dashboard/layout.tsx` still uses the dashboard shell plus landing-style header pattern; this task only unified public landing headers.
+- `next lint` is deprecated in Next.js 15.5.15 and prints a migration notice toward the ESLint CLI; the command still passes and remains the current repo script.
+- `npm install` reported a Windows cleanup warning for an old SWC binary temp folder, but install completed and all subsequent checks passed.
 
 ## Verification
 
@@ -53,10 +57,13 @@
 - `npm run lint -- --file "app/page.tsx" --file "middleware.ts" --file "app/api/auth/google/route.ts" --file "app/auth/callback/route.ts" --file "app/(auth)/login/page.tsx" --file "app/(landing)/landing-a/page.tsx" --file "app/(landing)/landing-a/_content.ts" --file "app/(landing)/landing-a/_navigation.tsx" --file "app/(landing)/landing-c/page.tsx" --file "lib/routes.ts" --file "lib/program-filters.ts"`
 - `npm --prefix frontend run lint`
 - `npm --prefix frontend test` passed 2 files / 7 tests.
+- `npm audit --omit=dev` returned `found 0 vulnerabilities`.
 - `./node_modules/.bin/tsc --noEmit`
 - `npm --prefix frontend run build`
 - `npm run lint -- --file "components/landing/LandingHeader.tsx" --file "components/landing/program-card-helpers.ts" --file "app/(landing)/landing-a/_navigation.tsx" --file "app/(landing)/landing-a/_program-feed.tsx" --file "app/(landing)/landing-a/_shared.ts" --file "app/(landing)/landing-c/page.tsx" --file "lib/routes.ts" --file "lib/program-filters.ts" --file "lib/routes.test.ts" --file "lib/program-filters.test.ts"`
 - `npx tsc -p tsconfig.codex-check.json --noEmit`
+- `npm run lint` passed after the Next.js 15.5.15 upgrade.
+- `npm run build` passed on Next.js 15.5.15.
 - `Invoke-WebRequest http://localhost:3000/ -MaximumRedirection 0` returned `307` with `Location: /landing-c`.
 - `Invoke-WebRequest http://localhost:3000/landing-c` returned `200`.
 - `Invoke-WebRequest "http://localhost:3000/login?redirectedFrom=%2Fdashboard%23recommend-calendar"` rendered a Google OAuth href containing `/api/auth/google?next=%2Fdashboard%23recommend-calendar`.
