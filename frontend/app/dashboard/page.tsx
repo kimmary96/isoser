@@ -280,7 +280,7 @@ export default function DashboardPage() {
     }
 
     return programs.filter((program) => {
-      const dateKey = program.end_date ? toDateKey(program.end_date) : null;
+      const dateKey = program.deadline ? toDateKey(program.deadline) : null;
       return dateKey === selectedDate;
     });
   }, [programs, selectedDate]);
@@ -444,12 +444,12 @@ export default function DashboardPage() {
           <MiniCalendar
             programs={calendarPrograms.map((program) => ({
               title: program.title || "제목 없음",
-              end_date: program.end_date || undefined,
+              deadline: program.deadline || undefined,
               isApplied: appliedProgramIds.has(String(program.id ?? "")),
             }))}
             selectedDate={selectedDate}
             onDateClick={handleDateClick}
-            focusDate={appliedCalendarPrograms[0]?.end_date ?? null}
+            focusDate={appliedCalendarPrograms[0]?.deadline ?? null}
           />
         </section>
 
@@ -556,7 +556,7 @@ export default function DashboardPage() {
           ) : filteredPrograms.length > 0 ? (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
               {filteredPrograms.map((program, index) => {
-                const dateKey = program.end_date ? toDateKey(program.end_date) : null;
+                const dateKey = program.deadline ? toDateKey(program.deadline) : null;
 
                 return (
                   <ProgramCard

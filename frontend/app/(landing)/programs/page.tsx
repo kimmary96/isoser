@@ -126,7 +126,7 @@ function formatDateLabel(value: string | null | undefined): string {
 }
 
 function getDeadlineBadge(program: Program): { label: string; tone: string } | null {
-  const rawDate = program.deadline || program.end_date;
+  const rawDate = program.deadline;
   if (!rawDate) return null;
 
   const deadlineDate = new Date(rawDate);

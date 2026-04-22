@@ -419,7 +419,7 @@ function isLiveBoardSource(program: Program, matches: readonly string[]): boolea
 }
 
 function parseDeadlineTime(program: Program): number {
-  const timestamp = Date.parse(String(program.deadline || program.end_date || ""));
+  const timestamp = Date.parse(String(program.deadline || ""));
   return Number.isNaN(timestamp) ? Number.MAX_SAFE_INTEGER : timestamp;
 }
 

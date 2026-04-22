@@ -212,9 +212,19 @@ def _coerce_score(value: Any) -> float | None:
 
 
 def _resolve_program_deadline(program: dict[str, Any]) -> str | None:
-    raw = program.get("deadline") or program.get("end_date")
+    close_date = program.get("close_date")
+    raw = close_date or program.get("deadline")
     text = str(raw).strip() if raw is not None else ""
-    return text or None
+    if not text:
+        return None
+
+    source_text = str(program.get("source") or "").casefold()
+    is_work24 = "고용24" in source_text or "work24" in source_text
+    end_date = str(program.get("end_date") or "").strip()
+    if is_work24 and not close_date and end_date and text[:10] == end_date[:10]:
+        return None
+
+    return text
 
 
 def _parse_program_deadline(value: str | None) -> date | None:

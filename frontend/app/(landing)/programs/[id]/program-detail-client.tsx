@@ -161,7 +161,7 @@ export default function ProgramDetailClient({ program }: ProgramDetailClientProp
   const programPeriod = formatDateRange(program.program_start_date, program.program_end_date);
   const feeLabel = formatMoney(program.fee);
   const supportAmountLabel = formatMoney(program.support_amount);
-  const deadlineState = getDeadlineState(program.application_end_date || program.program_end_date);
+  const deadlineState = getDeadlineState(program.application_end_date);
   const externalLink = program.source_url;
 
   const sections = useMemo<DetailSection[]>(() => {

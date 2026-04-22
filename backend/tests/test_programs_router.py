@@ -119,6 +119,73 @@ def test_serialize_program_list_row_adds_normalized_rating_fields() -> None:
     assert row["rating_display"] == "5.0"
 
 
+def test_serialize_program_list_row_uses_deadline_not_training_end_date_for_d_day() -> None:
+    deadline = (date.today() + timedelta(days=4)).isoformat()
+    training_end_date = (date.today() + timedelta(days=30)).isoformat()
+
+    row = programs._serialize_program_list_row(
+        {
+            "id": "program-1",
+            "deadline": deadline,
+            "end_date": training_end_date,
+        }
+    )
+
+    assert row["deadline"] == deadline
+    assert row["days_left"] == 4
+    assert row["end_date"] == training_end_date
+
+
+def test_serialize_program_list_row_does_not_fallback_to_training_end_date_for_d_day() -> None:
+    training_end_date = (date.today() + timedelta(days=30)).isoformat()
+
+    row = programs._serialize_program_list_row(
+        {
+            "id": "program-1",
+            "deadline": None,
+            "end_date": training_end_date,
+        }
+    )
+
+    assert row["deadline"] is None
+    assert row["days_left"] is None
+    assert row["end_date"] == training_end_date
+
+
+def test_serialize_program_list_row_ignores_work24_deadline_copied_from_training_end_date() -> None:
+    training_end_date = (date.today() + timedelta(days=30)).isoformat()
+
+    row = programs._serialize_program_list_row(
+        {
+            "id": "program-1",
+            "source": "고용24",
+            "deadline": training_end_date,
+            "end_date": training_end_date,
+        }
+    )
+
+    assert row["deadline"] is None
+    assert row["days_left"] is None
+    assert row["end_date"] == training_end_date
+
+
+def test_serialize_program_list_row_uses_close_date_when_deadline_is_missing() -> None:
+    close_date = (date.today() + timedelta(days=6)).isoformat()
+    training_end_date = (date.today() + timedelta(days=20)).isoformat()
+
+    row = programs._serialize_program_list_row(
+        {
+            "id": "program-1",
+            "close_date": close_date,
+            "end_date": training_end_date,
+        }
+    )
+
+    assert row["deadline"] == close_date
+    assert row["days_left"] == 6
+    assert row["end_date"] == training_end_date
+
+
 def test_build_program_detail_response_maps_kstartup_dates_as_application_period() -> None:
     detail = programs._build_program_detail_response(
         {

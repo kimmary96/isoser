@@ -2197,3 +2197,7 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - 프로그램 검색 후속으로 `programs.search_text` generated column과 trigram index migration을 추가해 title/provider/description/location/tags/skills/target/compare_meta 통합 검색 후보를 DB에서 먼저 줄일 수 있게 함
   - 백엔드 `/programs?q=`는 `search_text.ilike`를 우선 사용하되, 아직 migration이 적용되지 않은 환경에서는 기존 1,000건 단위 후보 scan으로 자동 fallback하도록 보강함
   - 기존 검색 결과 우선순위와 null-safe Python 정렬은 유지하고, 검색 인덱스 사용 및 fallback 동작을 `backend/tests/test_programs_router.py`로 고정함
+- 2026-04-22: `backend/routers/programs.py`, `backend/rag/programs_rag.py`, `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/[id]/program-detail-client.tsx`, `frontend/app/(landing)/landing-c/page.tsx`, `frontend/app/dashboard/page.tsx`, `frontend/components/MiniCalendar.tsx`, `backend/tests/test_programs_router.py`, `reports/TASK-2026-04-22-1900-program-dday-deadline-result.md`
+  - 프로그램 카드/상세/대시보드/추천 캘린더의 D-day 기준을 모집 마감일(`close_date` 또는 `deadline`)로 통일하고, 프론트의 `end_date` fallback을 제거함
+  - 고용24에서 훈련 종료일이 `deadline`과 같은 값으로 저장된 row는 모집 마감일로 보지 않고 D-day 계산에서 제외하도록 방어함
+  - 훈련/운영 기간 표시는 기존대로 `start_date`/`end_date`를 유지하고, backend router 회귀 테스트와 frontend lint/typecheck로 검증함
