@@ -33,6 +33,7 @@
 - Follow-up refactoring requested shared defaults, shared chip mappings, hash-preserving login redirects, and common header UI.
 - Follow-up implementation moved the common landing header and program card helpers into `frontend/components/landing/` and added Vitest unit coverage for route/filter helpers.
 - Risk-management follow-up upgraded Next.js and `eslint-config-next` from the vulnerable 15.1.x line to 15.5.15.
+- Landing C program cards were simplified into information-first cards without image slots, summary fallback text, generic tags, compare CTA, or Isoser relevance score.
 
 ## Preserved behaviors
 
@@ -43,6 +44,7 @@
 - Landing A keeps its section order and program feed behavior while using the shared chip filter helper.
 - Landing A/C now share the same public landing header implementation and program card helper functions.
 - Production dependency audit now reports 0 vulnerabilities after the Next.js 15.5.15 upgrade.
+- Landing C program cards now emphasize title, provider, deadline, support/subsidy signal, operating method/location, source, and a single `과정 보기` action.
 
 ## Risks / possible regressions
 
@@ -64,6 +66,10 @@
 - `npx tsc -p tsconfig.codex-check.json --noEmit`
 - `npm run lint` passed after the Next.js 15.5.15 upgrade.
 - `npm run build` passed on Next.js 15.5.15.
+- `npm run lint -- --file "app/(landing)/landing-c/page.tsx"` passed after the card redesign.
+- `npx tsc -p tsconfig.codex-check.json --noEmit` passed after the card redesign.
+- `npm run build` passed after the card redesign.
+- Fresh dev server on `http://localhost:3025/landing-c` returned `200`; agent-browser reported no Next.js error overlay and rendered the redesigned `과정 보기` card actions.
 - `Invoke-WebRequest http://localhost:3000/ -MaximumRedirection 0` returned `307` with `Location: /landing-c`.
 - `Invoke-WebRequest http://localhost:3000/landing-c` returned `200`.
 - `Invoke-WebRequest "http://localhost:3000/login?redirectedFrom=%2Fdashboard%23recommend-calendar"` rendered a Google OAuth href containing `/api/auth/google?next=%2Fdashboard%23recommend-calendar`.

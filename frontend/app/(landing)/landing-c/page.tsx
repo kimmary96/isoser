@@ -4,12 +4,9 @@ import Link from "next/link";
 
 import { getProgramCount, listPrograms } from "@/lib/api/backend";
 import {
-  getProgramCompareHref,
   getProgramDeadline,
   getProgramDeadlineTone,
   getProgramDetailHref,
-  getProgramScore,
-  normalizeTextList,
 } from "@/components/landing/program-card-helpers";
 import { PROGRAM_FILTER_CHIPS, buildProgramFilterParams } from "@/lib/program-filters";
 import { DASHBOARD_RECOMMEND_CALENDAR, getLoginHref } from "@/lib/routes";
@@ -111,62 +108,129 @@ function sourceLabel(program: Program): string {
   return [program.source || program.provider, program.location].filter(Boolean).join(" · ") || "프로그램 정보";
 }
 
+function providerLabel(program: Program): string {
+  return program.provider || program.source || "운영 기관 확인 필요";
+}
+
+function normalizeMetaText(value: string | boolean | null | undefined): string | null {
+  if (typeof value === "boolean") {
+    return value ? "필수" : null;
+  }
+
+  const text = value?.trim();
+  return text ? text : null;
+}
+
+function supportLabel(program: Program): string {
+  return (
+    normalizeMetaText(program.compare_meta?.subsidy_rate) ||
+    normalizeMetaText(program.support_type) ||
+    "지원 혜택 확인"
+  );
+}
+
+function cardMethodLabel(program: Program): string {
+  const method = normalizeMetaText(program.teaching_method) || normalizeMetaText(program.compare_meta?.teaching_method);
+  return [method, program.location].filter(Boolean).join(" · ") || "운영 방식 확인";
+}
+
+function requirementChips(program: Program): string[] {
+  const chips: string[] = [];
+
+  if (program.compare_meta?.naeilbaeumcard_required) {
+    chips.push("내배카 필수");
+  }
+
+  const targetGroup = normalizeMetaText(program.compare_meta?.target_group);
+  if (targetGroup) {
+    chips.push(targetGroup);
+  }
+
+  const applicationMethod = normalizeMetaText(program.application_method);
+  if (applicationMethod) {
+    chips.push(applicationMethod);
+  }
+
+  return chips.slice(0, 2);
+}
+
 function ProgramCard({ program }: { program: Program }) {
-  const chips = [...normalizeTextList(program.tags), ...normalizeTextList(program.skills)].slice(0, 3);
-  const score = Math.max(0, Math.min(getProgramScore(program), 100));
   const urgent = typeof program.days_left === "number" && program.days_left <= 3;
+  const deadline = getProgramDeadline(program);
+  const requirementItems = requirementChips(program);
 
   return (
     <article
-      className={`flex min-h-[360px] flex-col rounded-[22px] border bg-white p-6 shadow-[0_18px_46px_rgba(10,19,37,0.06)] transition hover:-translate-y-1 hover:shadow-[0_26px_64px_rgba(10,19,37,0.1)] ${
-        urgent ? "border-[rgba(239,68,68,0.32)]" : "border-[var(--border)]"
+      className={`flex min-h-[300px] flex-col rounded-[18px] border bg-white p-6 shadow-[0_16px_42px_rgba(10,19,37,0.08)] transition hover:-translate-y-1 hover:shadow-[0_24px_58px_rgba(10,19,37,0.12)] ${
+        urgent ? "border-[rgba(239,68,68,0.36)]" : "border-[var(--border)]"
       }`}
     >
-      <div className="flex items-start justify-between gap-5">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--muted)]">{sourceLabel(program)}</p>
-          <h3 className="mt-3 text-lg font-extrabold leading-7 tracking-[-0.03em] text-[var(--ink)]">
+      <div className="flex items-start justify-between gap-4">
+        <span className="rounded-full bg-[var(--surface-strong)] px-3 py-1 text-xs font-extrabold text-[var(--indigo)]">
+          {program.category || "분야 확인"}
+        </span>
+        <span
+          className={`shrink-0 rounded-full px-3 py-1 text-xs font-black ${
+            urgent ? "bg-[var(--red)] text-white" : "bg-[var(--ink)] text-white"
+          }`}
+        >
+          {deadline}
+        </span>
+      </div>
+
+      <div className="mt-6">
+        <h3 className="line-clamp-2 min-h-[3.5rem] text-xl font-black leading-7 tracking-[-0.04em] text-[var(--ink)]">
+          <Link href={getProgramDetailHref(program)} className="transition hover:text-[var(--indigo)]">
             {program.title || "제목 미정"}
-          </h3>
-        </div>
-        <div className={`shrink-0 text-xl font-black tracking-[-0.05em] ${getProgramDeadlineTone(program)}`}>
-          {getProgramDeadline(program)}
-        </div>
+          </Link>
+        </h3>
+        <p className="mt-2 line-clamp-1 text-sm font-bold text-[var(--sub)]">{providerLabel(program)}</p>
       </div>
 
       <div className="mt-5 flex flex-wrap gap-2">
-        <span className="rounded-full bg-[var(--surface-strong)] px-3 py-1 text-xs font-bold text-[var(--indigo)]">
-          {program.category || "카테고리 미분류"}
+        <span className="rounded-full bg-[rgba(16,185,129,0.12)] px-3 py-1.5 text-xs font-extrabold text-emerald-700">
+          {supportLabel(program)}
         </span>
-        {chips.map((chip) => (
-          <span key={`${program.id}-${chip}`} className="rounded-full border border-[var(--border)] px-3 py-1 text-xs font-semibold text-[var(--sub)]">
-            {chip}
+        {program.is_certified ? (
+          <span className="rounded-full bg-[rgba(16,185,129,0.1)] px-3 py-1.5 text-xs font-extrabold text-emerald-700">
+            국비지원
+          </span>
+        ) : null}
+        {requirementItems.map((item) => (
+          <span key={`${program.id}-${item}`} className="rounded-full bg-[rgba(245,158,11,0.12)] px-3 py-1.5 text-xs font-extrabold text-amber-700">
+            {item}
           </span>
         ))}
       </div>
 
-      <p className="mt-5 line-clamp-3 text-sm leading-7 text-[var(--sub)]">
-        {program.summary || program.description || "프로그램 요약이 아직 등록되지 않았습니다."}
-      </p>
-
-      <div className="mt-auto pt-6">
-        <div className="mb-2 flex items-center justify-between text-xs font-bold text-[var(--sub)]">
-          <span>이소서 관련도</span>
-          <span>{score}%</span>
-        </div>
-        <div className="h-2 overflow-hidden rounded-full bg-[var(--surface-strong)]">
-          <div className="h-full rounded-full bg-[linear-gradient(90deg,var(--indigo),var(--teal))]" style={{ width: `${score}%` }} />
-        </div>
-
-        <div className="mt-6 flex gap-2">
-          <Link href={getProgramDetailHref(program)} className="flex-1 rounded-full bg-[var(--ink)] px-4 py-3 text-center text-sm font-extrabold text-white transition hover:bg-[var(--indigo)]">
-            자세히 보기
-          </Link>
-          <Link href={getProgramCompareHref(program)} className="rounded-full border border-[var(--border)] px-5 py-3 text-sm font-extrabold text-[var(--ink)] transition hover:border-[var(--indigo)] hover:text-[var(--indigo)]">
-            비교
-          </Link>
-        </div>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <span className="rounded-full bg-[var(--surface)] px-3 py-1.5 text-xs font-bold text-[var(--sub)]">
+          {cardMethodLabel(program)}
+        </span>
+        {program.start_date || program.end_date ? (
+          <span className="rounded-full bg-[var(--surface)] px-3 py-1.5 text-xs font-bold text-[var(--sub)]">
+            {[program.start_date, program.end_date].filter(Boolean).join(" ~ ")}
+          </span>
+        ) : null}
       </div>
+
+      <dl className="mt-6 grid gap-3 border-t border-[var(--border)] pt-5 text-sm">
+        <div className="flex items-center justify-between gap-3">
+          <dt className="font-bold text-[var(--muted)]">모집 상태</dt>
+          <dd className={`font-black ${getProgramDeadlineTone(program)}`}>{deadline}</dd>
+        </div>
+        <div className="flex items-center justify-between gap-3">
+          <dt className="font-bold text-[var(--muted)]">출처</dt>
+          <dd className="min-w-0 truncate font-bold text-[var(--sub)]">{sourceLabel(program)}</dd>
+        </div>
+      </dl>
+
+      <Link
+        href={getProgramDetailHref(program)}
+        className="mt-auto rounded-xl bg-[var(--blue)] px-4 py-3 text-center text-sm font-black text-white transition hover:bg-[var(--indigo)]"
+      >
+        과정 보기
+      </Link>
     </article>
   );
 }

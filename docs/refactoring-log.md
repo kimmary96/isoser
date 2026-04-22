@@ -2121,3 +2121,6 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-22: `frontend/package.json`, `frontend/package-lock.json`, `docs/current-state.md`, `reports/TASK-2026-04-22-landing-page-c-change-result.md`
   - 리스크 관리 후속으로 Next.js와 `eslint-config-next`를 `15.5.15`로 업그레이드해 `npm audit --omit=dev` 기준 production 취약점 0건 상태로 정리함
   - `npm test`, `npm run lint`, `npx tsc -p tsconfig.codex-check.json --noEmit`, `npm run build`를 모두 통과해 패치 업그레이드의 기본 회귀 위험을 확인함
+- 2026-04-22: `frontend/app/(landing)/landing-c/page.tsx`, `docs/current-state.md`, `reports/TASK-2026-04-22-landing-page-c-change-result.md`
+  - landing-c 프로그램 카드를 요약/태그/이소서 관련도 중심에서 제목, 운영기관, 마감, 지원 혜택, 운영 방식, 출처, `과정 보기` CTA 중심의 정보형 카드로 재구성함
+  - 상단 이미지 영역은 추가하지 않고 기존 검색/칩 필터, 프로그램 상세 이동, 공통 랜딩 헤더 동작은 유지함
