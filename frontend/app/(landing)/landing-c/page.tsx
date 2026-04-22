@@ -146,13 +146,6 @@ const circularFlowSteps = [
   },
 ] as const;
 
-const journeySteps = [
-  ["A", "탐색", "지원 가능 공고를 공공기관별 원문 대신 공통된 구조로 확인합니다."],
-  ["B", "판단", "비교 화면과 관련도 정보로 지금 지원할 공고를 줄여갑니다."],
-  ["C", "준비", "로그인 후 프로필과 성과저장소를 연결해 서류 초안과 맞춤 추천을 받습니다."],
-  ["D", "실행", "대시보드에서 매치 분석과 문서 편집을 마치고 지원으로 넘어갑니다."],
-];
-
 function takeFirst(value?: string | string[]): string {
   return Array.isArray(value) ? value[0] ?? "" : value ?? "";
 }
@@ -167,7 +160,7 @@ function normalizeKeyword(value?: string | string[]): string {
 }
 
 function sourceLabel(program: Program): string {
-  return [program.source || program.provider, program.location].filter(Boolean).join(" · ") || "프로그램 정보";
+  return [program.source || program.provider, locationLabel(program)].filter(Boolean).join(" · ") || "프로그램 정보";
 }
 
 function providerLabel(program: Program): string {
@@ -261,10 +254,29 @@ function extractPeriodFromTitle(title: string | null | undefined): string | null
   return `모집 ${startYear}-${startMonth}-${startDay} ~ ${endYear}-${endMonth}-${endDay}`;
 }
 
+function compactDistrictLocation(location: string): string {
+  const normalized = location.replace(/\([^)]*\)/g, " ").replace(/\s+/g, " ").trim();
+  const attachedDistrict = normalized.match(/^(서울특별시|서울시|서울)\s*([가-힣]+구)/u);
+  if (attachedDistrict) {
+    return `${attachedDistrict[1]} ${attachedDistrict[2]}`;
+  }
+
+  const tokens = normalized.split(" ");
+  const districtIndex = tokens.findIndex((token) => /[가-힣]+(구|군)$/u.test(token));
+  if (districtIndex >= 0) {
+    return tokens.slice(0, districtIndex + 1).join(" ");
+  }
+
+  return normalized;
+}
+
 function locationLabel(program: Program): string | null {
   const location = normalizeMetaText(program.location);
   if (location) {
-    return location;
+    if (/온라인|비대면|원격/i.test(location)) {
+      return null;
+    }
+    return compactDistrictLocation(location);
   }
 
   const title = program.title || "";
@@ -272,10 +284,40 @@ function locationLabel(program: Program): string | null {
   return district ? `서울 ${district}구` : null;
 }
 
+function trainingModeLabel(program: Program): "온라인" | "오프라인" | "온·오프라인" | null {
+  const text = [
+    program.teaching_method,
+    program.compare_meta?.teaching_method,
+    program.application_method,
+    program.location,
+    program.title,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const hasOnline = /온라인|비대면|원격|zoom|줌|인터넷/i.test(text);
+  const hasOffline = /오프라인|대면|집체|현장|방문/i.test(text);
+  if (/혼합|온.?오프|블렌디드/i.test(text) || (hasOnline && hasOffline)) {
+    return "온·오프라인";
+  }
+  if (hasOnline) {
+    return "온라인";
+  }
+  if (hasOffline || locationLabel(program)) {
+    return "오프라인";
+  }
+  return null;
+}
+
 function programTagItems(program: Program): Array<{ label: string; tone: "green" | "blue" | "amber" | "indigo" }> {
   const tags: Array<{ label: string; tone: "green" | "blue" | "amber" | "indigo" }> = [
     { label: `훈련비 ${trainingFeeLabel(program)}`, tone: "green" },
   ];
+
+  const trainingMode = trainingModeLabel(program);
+  if (trainingMode) {
+    tags.push({ label: trainingMode, tone: "indigo" });
+  }
 
   const location = locationLabel(program);
   if (location) {
@@ -286,7 +328,7 @@ function programTagItems(program: Program): Array<{ label: string; tone: "green"
     tags.push({ label: "내배카 필수", tone: "amber" });
   }
 
-  const rating = programRating(program);
+  const rating = programRatingDisplay(program);
   if (rating !== null) {
     tags.push({ label: `만족도 ${rating}`, tone: "indigo" });
   }
@@ -308,8 +350,26 @@ function parseMetricNumber(value: string | number | null | undefined): number | 
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-function programRating(program: Program): number | null {
-  return parseMetricNumber(program.rating) ?? parseMetricNumber(program.compare_meta?.satisfaction_score);
+function normalizeProgramRatingDisplay(value: string | number | null | undefined): string | null {
+  if (typeof value === "string" && /(^|[^\d])\.\d/u.test(value.trim())) {
+    return null;
+  }
+
+  const rating = parseMetricNumber(value);
+  if (rating === null || rating <= 0 || rating > 100) {
+    return null;
+  }
+
+  const normalizedRating = rating <= 5 ? rating : rating / 20;
+  return normalizedRating.toFixed(1);
+}
+
+function programRatingDisplay(program: Program): string | null {
+  return (
+    program.rating_display ||
+    normalizeProgramRatingDisplay(program.rating) ||
+    normalizeProgramRatingDisplay(program.compare_meta?.satisfaction_score)
+  );
 }
 
 function opportunityCompletenessScore(program: Program): number {
@@ -319,7 +379,7 @@ function opportunityCompletenessScore(program: Program): number {
   else if (extractPeriodFromTitle(program.title) || program.deadline) score += 1;
   if (locationLabel(program)) score += 2;
   if (program.cost !== null && program.cost !== undefined) score += 1;
-  if (programRating(program) !== null) score += 1;
+  if (programRatingDisplay(program) !== null) score += 1;
   return score;
 }
 
@@ -706,7 +766,9 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
                       <div className="mt-2 text-sm font-black leading-6 text-[var(--ink)]">{program.title || "추천 프로그램"}</div>
                       <div className="mt-2 text-xs font-bold text-[var(--sub)]">{program.category || "카테고리 미분류"}</div>
                     </div>
-                    <div className={`text-lg font-black ${getProgramDeadlineTone(program)}`}>{getProgramDeadline(program)}</div>
+                    <div className={`min-w-[3.25rem] shrink-0 whitespace-nowrap text-right text-lg font-black ${getProgramDeadlineTone(program)}`}>
+                      {getProgramDeadline(program)}
+                    </div>
                   </div>
                 </Link>
               ))}
@@ -785,8 +847,6 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
         </div>
       </section>
 
-      <CircularFlowSection />
-
       <BackupHeroSection />
 
       <section className="border-t border-[var(--border)] bg-white px-5 py-16 sm:px-8 lg:px-12">
@@ -813,24 +873,7 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
         </div>
       </section>
 
-      <section className="px-5 py-16 sm:px-8 lg:px-12">
-        <div className="mx-auto max-w-6xl rounded-[28px] bg-white px-6 py-10 shadow-[0_22px_60px_rgba(10,19,37,0.06)] sm:px-8">
-          <p className="text-xs font-black uppercase tracking-[0.24em] text-[var(--indigo)]">Journey</p>
-          <h2 className="mt-3 text-3xl font-black tracking-[-0.05em]">로그인 이후 연결 흐름도 랜딩에서 미리 설명합니다</h2>
-          <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--sub)]">
-            탐색만 가능한 제품처럼 보이지 않도록, 랜딩 본문에서부터 로그인 후 워크플로우를 명시적으로 보여줍니다.
-          </p>
-          <div className="mt-10 grid gap-6 md:grid-cols-4">
-            {journeySteps.map(([letter, title, desc]) => (
-              <div key={letter}>
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--indigo)] text-sm font-black text-white">{letter}</div>
-                <div className="mt-4 text-lg font-black tracking-[-0.03em]">{title}</div>
-                <p className="mt-2 text-sm leading-7 text-[var(--sub)]">{desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <CircularFlowSection />
 
       <section className="px-5 pb-14 sm:px-8 lg:px-12">
         <div className="relative mx-auto flex max-w-6xl flex-col gap-8 overflow-hidden rounded-[28px] bg-[var(--indigo)] px-6 py-10 text-white sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-10">

@@ -2176,6 +2176,9 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-22: `frontend/app/(landing)/landing-c/page.tsx`, `docs/current-state.md`
   - landing-a의 6단계 순환 흐름 섹션을 landing-c의 Opportunity feed와 Career Asset Workspace 사이에 추가함
   - landing-c의 흰 패널, 얇은 보더, 차분한 surface 카드 톤에 맞춰 시각 스타일을 조정하고 기존 section order와 CTA 동작은 유지함
+- 2026-04-22: `frontend/app/(landing)/landing-c/page.tsx`, `docs/current-state.md`
+  - landing-c의 기존 Journey 섹션을 제거하고 Circular flow 섹션을 해당 위치로 이동해 흐름 설명 섹션 중복을 줄임
+  - Opportunity feed 다음에는 Career Asset Workspace가 바로 이어지고, 기능 미리보기 뒤에 Circular flow가 노출되도록 section order를 정리함
 - 2026-04-22: `backend/rag/collector/work24_detail_parser.py`, `scripts/program_backfill.py`, `backend/tests/test_program_backfill.py`, `docs/current-state.md`
   - `program_backfill.py` 안에 있던 고용24 상세 HTML 파싱 책임을 `work24_detail_parser.py`로 분리함
   - 백필 스크립트는 source URL과 title을 넘겨 상세 필드 dict를 받아 `SourceRecord`로 감싸는 역할만 남겨 책임을 줄임

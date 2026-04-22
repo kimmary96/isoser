@@ -1,5 +1,6 @@
 from datetime import date, datetime, timedelta, timezone
 import logging
+import re
 from typing import Any, Literal
 
 from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Query
@@ -74,6 +75,10 @@ class ProgramListItem(BaseModel):
     is_certified: bool | None = None
     is_active: bool | None = None
     is_ad: bool | None = None
+    rating_raw: str | None = None
+    rating_normalized: float | None = None
+    rating_scale: int | None = None
+    rating_display: str | None = None
     relevance_score: float | None = None
     final_score: float | None = None
     urgency_score: float | None = None
@@ -159,6 +164,10 @@ class ProgramDetailResponse(BaseModel):
     eligibility: list[str] = Field(default_factory=list)
     schedule_text: str | None = None
     rating: str | None = None
+    rating_raw: str | None = None
+    rating_normalized: float | None = None
+    rating_scale: int | None = None
+    rating_display: str | None = None
     review_count: int | None = None
     job_placement_rate: str | None = None
     capacity_total: int | None = None
@@ -441,8 +450,38 @@ def _build_program_query_params(
     return params
 
 
+def _normalize_rating_fields(value: Any) -> dict[str, str | float | int | None]:
+    raw = None if value is None else str(value).strip()
+    result: dict[str, str | float | int | None] = {
+        "rating_raw": raw or None,
+        "rating_normalized": None,
+        "rating_scale": None,
+        "rating_display": None,
+    }
+    if not raw or raw.startswith("."):
+        return result
+
+    normalized_text = raw.replace(",", "")
+    match = re.search(r"(?<![\d.])\d+(?:\.\d+)?(?![\d.])", normalized_text)
+    if not match:
+        return result
+
+    score = float(match.group(0))
+    if score <= 0 or score > 100:
+        return result
+
+    normalized_score = score if score <= 5 else score / 20
+    normalized_score = round(normalized_score, 1)
+    result["rating_normalized"] = normalized_score
+    result["rating_scale"] = 5
+    result["rating_display"] = f"{normalized_score:.1f}"
+    return result
+
+
 def _serialize_program_list_row(program: dict[str, Any]) -> dict[str, Any]:
     record = dict(program)
+    compare_meta = record.get("compare_meta") if isinstance(record.get("compare_meta"), dict) else {}
+    record.update(_normalize_rating_fields(record.get("rating") or compare_meta.get("satisfaction_score")))
     deadline = _resolve_program_deadline(record)
     days_left = _calculate_days_left(deadline)
     record["deadline"] = deadline
@@ -885,6 +924,8 @@ def _build_program_detail_response(program: dict[str, Any]) -> ProgramDetailResp
         capacity_remaining = max(0, capacity_total - registered_count)
 
     certification = _first_text(compare_meta.get("certificate"))
+    rating_raw = _first_text(compare_meta.get("satisfaction_score"))
+    rating_fields = _normalize_rating_fields(rating_raw)
     return ProgramDetailResponse(
         id=program.get("id"),
         title=_first_text(program.get("title")),
@@ -908,7 +949,11 @@ def _build_program_detail_response(program: dict[str, Any]) -> ProgramDetailResp
             program_start_date=program_start_date,
             program_end_date=program_end_date,
         ),
-        rating=_first_text(compare_meta.get("satisfaction_score")),
+        rating=rating_fields["rating_display"],
+        rating_raw=rating_fields["rating_raw"],
+        rating_normalized=rating_fields["rating_normalized"],
+        rating_scale=rating_fields["rating_scale"],
+        rating_display=rating_fields["rating_display"],
         job_placement_rate=_first_text(compare_meta.get("employment_rate_6m"), compare_meta.get("employment_rate_3m")),
         capacity_total=capacity_total,
         capacity_remaining=capacity_remaining,

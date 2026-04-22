@@ -67,6 +67,45 @@ def test_recalculate_final_score_uses_recovered_weights() -> None:
     assert programs._recalculate_final_score(0.75, 0.25) == 0.55
 
 
+@pytest.mark.parametrize(
+    ("raw_value", "expected_display", "expected_normalized"),
+    [
+        ("4.6", "4.6", 4.6),
+        ("100", "5.0", 5.0),
+        ("90", "4.5", 4.5),
+        ("0", None, None),
+        (None, None, None),
+        (".7", None, None),
+        ("120", None, None),
+    ],
+)
+def test_normalize_rating_fields_uses_five_point_scale(
+    raw_value: object,
+    expected_display: str | None,
+    expected_normalized: float | None,
+) -> None:
+    fields = programs._normalize_rating_fields(raw_value)
+
+    assert fields["rating_display"] == expected_display
+    assert fields["rating_normalized"] == expected_normalized
+    assert fields["rating_scale"] == (5 if expected_display else None)
+
+
+def test_serialize_program_list_row_adds_normalized_rating_fields() -> None:
+    row = programs._serialize_program_list_row(
+        {
+            "id": "program-1",
+            "deadline": (date.today() + timedelta(days=3)).isoformat(),
+            "compare_meta": {"satisfaction_score": "100"},
+        }
+    )
+
+    assert row["rating_raw"] == "100"
+    assert row["rating_normalized"] == 5.0
+    assert row["rating_scale"] == 5
+    assert row["rating_display"] == "5.0"
+
+
 def test_build_program_detail_response_maps_kstartup_dates_as_application_period() -> None:
     detail = programs._build_program_detail_response(
         {
@@ -146,7 +185,11 @@ def test_build_program_detail_response_maps_work24_dates_as_program_period() -> 
     assert detail.source_url == "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20230000419940"
     assert detail.fee == 0
     assert detail.support_amount == 238320
-    assert detail.rating == "91.4"
+    assert detail.rating == "4.6"
+    assert detail.rating_raw == "91.4"
+    assert detail.rating_normalized == 4.6
+    assert detail.rating_scale == 5
+    assert detail.rating_display == "4.6"
     assert detail.capacity_total == 20
     assert detail.capacity_remaining == 17
     assert detail.phone == "02-722-2111"

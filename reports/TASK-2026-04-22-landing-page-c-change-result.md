@@ -38,6 +38,7 @@
 - Landing C Opportunity feed cards now use title, provider, and training period as the main body; fee, location, 내배카 필수, and satisfaction are rendered as tags, with detail and compare actions at the bottom.
 - Landing C hero now includes a `내 이력 등록` CTA next to the programs CTA and routes unauthenticated users through login back to `/onboarding` for PDF resume parsing.
 - Landing C now includes the landing-A-style six-step circular flow section between Opportunity feed and Career Asset Workspace, restyled to match landing C.
+- Landing C removed the separate Journey section and moved Circular flow into that former position after the feature preview section.
 
 ## Preserved behaviors
 
@@ -53,6 +54,7 @@
 - Opportunity feed compare actions link to `/compare?ids=<programId>` so the selected program is preloaded on the compare page.
 - The new hero resume CTA uses the shared login redirect helper, so the `/onboarding` target is encoded instead of hardcoded into auth pages.
 - The new circular flow section is static content only and does not change program fetching, filtering, comparison, or onboarding routing behavior.
+- Removing Journey only changes landing page section order/content density; CTA links and card actions are preserved.
 
 ## Risks / possible regressions
 
@@ -84,6 +86,7 @@
 - `npm run lint -- --file "app/(landing)/landing-c/page.tsx" --file "lib/routes.ts" --file "lib/routes.test.ts"` passed after adding the onboarding resume CTA.
 - `npm test -- --run lib/routes.test.ts` passed after adding the onboarding redirect expectation.
 - `npm run lint -- --file "app/(landing)/landing-c/page.tsx"` passed after adding the circular flow section.
+- `npm run lint -- --file "app/(landing)/landing-c/page.tsx"` passed after moving Circular flow and removing Journey.
 
 ## Follow-up refactoring candidates
 

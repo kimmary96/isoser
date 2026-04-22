@@ -270,6 +270,10 @@ export interface Program {
   is_active?: boolean | null;
   is_ad?: boolean | null;
   rating?: string | number | null;
+  rating_raw?: string | number | null;
+  rating_normalized?: number | null;
+  rating_scale?: number | null;
+  rating_display?: string | null;
   review_count?: number | null;
   relevance_score?: number | null;
   final_score?: number | null;
@@ -301,6 +305,10 @@ export interface ProgramDetail {
   eligibility: string[];
   schedule_text: string | null;
   rating: string | null;
+  rating_raw: string | null;
+  rating_normalized: number | null;
+  rating_scale: number | null;
+  rating_display: string | null;
   review_count: number | null;
   job_placement_rate: string | null;
   capacity_total: number | null;
