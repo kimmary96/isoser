@@ -150,6 +150,26 @@ export default async function ProgramDetailPage({ params }: ProgramDetailPagePro
             dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
           />
         ) : null}
+        <div className="hidden h-8 overflow-hidden bg-indigo-950 text-white md:block">
+          <div className="mx-auto flex h-full max-w-7xl items-center gap-7 px-6 text-[11px] font-bold tracking-[0.04em] text-white/80">
+            <span className="inline-flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              {program.title || "프로그램 상세"}
+            </span>
+            {program.provider ? (
+              <span className="inline-flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-sky-300" />
+                운영 {program.provider}
+              </span>
+            ) : null}
+            {program.location ? (
+              <span className="inline-flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-300" />
+                지역 {program.location}
+              </span>
+            ) : null}
+          </div>
+        </div>
         <LandingHeader />
         <ProgramDetailClient program={program} />
       </>

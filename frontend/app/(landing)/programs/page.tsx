@@ -4,11 +4,16 @@ import Link from "next/link";
 import AdSlot from "@/components/AdSlot";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { getProgramCount, listPrograms } from "@/lib/api/backend";
-import { PROGRAM_CATEGORIES } from "@/lib/program-categories";
 import { getSiteUrl } from "@/lib/seo";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Program, ProgramSort } from "@/lib/types";
 
+import {
+  ProgramsFilterBar,
+  type NamedFilterOption,
+  type ProgramCategoryMenuOption,
+  type ProgramsFilterChip,
+} from "./programs-filter-bar";
 import RecommendedProgramsSection from "./recommended-programs-section";
 
 export const metadata: Metadata = {
@@ -29,13 +34,63 @@ export const metadata: Metadata = {
 
 const PAGE_SIZE = 20;
 const DEFAULT_SORT: ProgramSort = "deadline";
-const REGION_OPTIONS = ["서울", "경기", "부산", "대전·충청", "대구·경북", "온라인"] as const;
+const REGION_OPTIONS = [
+  "서울",
+  "경기",
+  "제주",
+  "부산",
+  "강원",
+  "해외",
+  "대구",
+  "충북",
+  "인천",
+  "충남",
+  "광주",
+  "전북",
+  "대전",
+  "전남",
+  "울산",
+  "경북",
+  "세종",
+  "경남",
+] as const;
+const TEACHING_METHOD_OPTIONS = ["온라인", "오프라인", "혼합"] as const;
+const COST_TYPE_OPTIONS: readonly NamedFilterOption[] = [
+  { value: "naeil-card", label: "내일배움카드" },
+  { value: "free-no-card", label: "무료 (내배카 X)" },
+  { value: "paid", label: "유료" },
+];
+const PARTICIPATION_TIME_OPTIONS: readonly NamedFilterOption[] = [
+  { value: "part-time", label: "파트타임" },
+  { value: "full-time", label: "풀타임" },
+];
+const PROGRAM_CATEGORY_OPTIONS: readonly ProgramCategoryMenuOption[] = [
+  { id: "all", label: "전체", category: "전체", dotClassName: "bg-slate-400" },
+  { id: "web-development", label: "웹개발", category: "IT", dotClassName: "bg-violet-500" },
+  { id: "mobile", label: "모바일", category: "IT", dotClassName: "bg-blue-500" },
+  { id: "data-ai", label: "데이터·AI", category: "AI", dotClassName: "bg-emerald-500" },
+  { id: "cloud-security", label: "클라우드·보안", category: "IT", dotClassName: "bg-sky-500" },
+  { id: "iot-embedded-semiconductor", label: "IoT·임베디드·반도체", category: "IT", dotClassName: "bg-indigo-500" },
+  { id: "game-blockchain", label: "게임·블록체인", category: "IT", dotClassName: "bg-pink-500" },
+  { id: "planning-marketing-other", label: "기획·마케팅·기타", category: "경영", dotClassName: "bg-teal-500" },
+  { id: "design-3d", label: "디자인·3D", category: "디자인", dotClassName: "bg-orange-500" },
+  { id: "project-career-startup", label: "프로젝트·취준·창업", category: "창업", dotClassName: "bg-lime-600" },
+];
+const SORT_LABELS: Record<ProgramSort, string> = {
+  deadline: "마감 임박순",
+  latest: "최신순",
+};
 
 type ProgramsPageSearchParams = {
   q?: string | string[];
   category?: string | string[];
+  category_detail?: string | string[];
   regions?: string | string[];
+  teaching_methods?: string | string[];
+  cost_types?: string | string[];
+  participation_times?: string | string[];
   closed?: string | string[];
+  sort?: string | string[];
   page?: string | string[];
 };
 
@@ -62,13 +117,18 @@ function normalizeTextList(value: string[] | string | null | undefined): string[
   return [];
 }
 
-function normalizeSelectedCategory(value?: string | string[]): string {
-  const category = takeFirst(value);
-  if (!category || category === "전체") {
-    return "전체";
+function normalizeSelectedCategoryOption(value?: string | string[]): ProgramCategoryMenuOption {
+  const rawCategory = takeFirst(value);
+  if (!rawCategory || rawCategory === "전체") {
+    return PROGRAM_CATEGORY_OPTIONS[0];
   }
 
-  return PROGRAM_CATEGORIES.includes(category as (typeof PROGRAM_CATEGORIES)[number]) ? category : "전체";
+  const byId = PROGRAM_CATEGORY_OPTIONS.find((option) => option.id === rawCategory);
+  if (byId) {
+    return byId;
+  }
+
+  return PROGRAM_CATEGORY_OPTIONS.find((option) => option.category === rawCategory) || PROGRAM_CATEGORY_OPTIONS[0];
 }
 
 function normalizeQuery(value?: string | string[]): string {
@@ -87,9 +147,42 @@ function normalizeRegions(value?: string | string[]): string[] {
   return REGION_OPTIONS.filter((region) => normalized.includes(region));
 }
 
+function normalizeTeachingMethods(value?: string | string[]): string[] {
+  const candidates = Array.isArray(value) ? value : value ? [value] : [];
+  const normalized = candidates.flatMap((candidate) =>
+    candidate
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean)
+  );
+
+  return TEACHING_METHOD_OPTIONS.filter((method) => normalized.includes(method));
+}
+
+function normalizeNamedOptions(value: string | string[] | undefined, options: readonly NamedFilterOption[]): string[] {
+  const candidates = Array.isArray(value) ? value : value ? [value] : [];
+  const normalized = candidates.flatMap((candidate) =>
+    candidate
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean)
+  );
+
+  return options.map((option) => option.value).filter((optionValue) => normalized.includes(optionValue));
+}
+
+function findOptionLabel(options: readonly NamedFilterOption[], value: string): string {
+  return options.find((option) => option.value === value)?.label || value;
+}
+
 function normalizeShowClosed(value?: string | string[]): boolean {
   const closed = takeFirst(value);
   return closed === "true" || closed === "1" || closed === "on";
+}
+
+function normalizeSort(value?: string | string[]): ProgramSort {
+  const sort = takeFirst(value);
+  return sort === "latest" ? "latest" : DEFAULT_SORT;
 }
 
 function normalizePage(value?: string | string[]): number {
@@ -99,19 +192,33 @@ function normalizePage(value?: string | string[]): number {
 
 function buildProgramsHref(params: {
   q?: string;
-  category?: string;
+  categoryId?: string;
   regions?: string[];
+  teachingMethods?: string[];
+  costTypes?: string[];
+  participationTimes?: string[];
   closed?: boolean;
+  sort?: ProgramSort;
   page?: number;
 }): string {
   const searchParams = new URLSearchParams();
 
   if (params.q) searchParams.set("q", params.q);
-  if (params.category && params.category !== "전체") searchParams.set("category", params.category);
+  if (params.categoryId && params.categoryId !== "all") searchParams.set("category_detail", params.categoryId);
   if (params.regions?.length) {
     params.regions.forEach((region) => searchParams.append("regions", region));
   }
+  if (params.teachingMethods?.length) {
+    params.teachingMethods.forEach((method) => searchParams.append("teaching_methods", method));
+  }
+  if (params.costTypes?.length) {
+    params.costTypes.forEach((costType) => searchParams.append("cost_types", costType));
+  }
+  if (params.participationTimes?.length) {
+    params.participationTimes.forEach((time) => searchParams.append("participation_times", time));
+  }
   if (params.closed) searchParams.set("closed", "true");
+  if (params.sort && params.sort !== DEFAULT_SORT) searchParams.set("sort", params.sort);
   if (params.page && params.page > 1) searchParams.set("page", String(params.page));
 
   const query = searchParams.toString();
@@ -157,30 +264,43 @@ function getDeadlineBadge(program: Program): { label: string; tone: string } | n
 
 function renderActiveFilters(params: {
   q: string;
-  category: string;
+  categoryId: string;
+  categoryLabel: string;
   regions: string[];
+  teachingMethods: string[];
+  costTypes: string[];
+  participationTimes: string[];
   showClosed: boolean;
+  sort: ProgramSort;
 }) {
-  const chips: { label: string; href: string }[] = [];
+  const chips: ProgramsFilterChip[] = [];
 
   if (params.q) {
     chips.push({
       label: `검색: ${params.q}`,
       href: buildProgramsHref({
-        category: params.category,
+        categoryId: params.categoryId,
         regions: params.regions,
+        teachingMethods: params.teachingMethods,
+        costTypes: params.costTypes,
+        participationTimes: params.participationTimes,
         closed: params.showClosed,
+        sort: params.sort,
       }),
     });
   }
 
-  if (params.category !== "전체") {
+  if (params.categoryId !== "all") {
     chips.push({
-      label: `카테고리: ${params.category}`,
+      label: `카테고리: ${params.categoryLabel}`,
       href: buildProgramsHref({
         q: params.q,
         regions: params.regions,
+        teachingMethods: params.teachingMethods,
+        costTypes: params.costTypes,
+        participationTimes: params.participationTimes,
         closed: params.showClosed,
+        sort: params.sort,
       }),
     });
   }
@@ -190,9 +310,61 @@ function renderActiveFilters(params: {
       label: `지역: ${region}`,
       href: buildProgramsHref({
         q: params.q,
-        category: params.category,
+        categoryId: params.categoryId,
         regions: params.regions.filter((item) => item !== region),
+        teachingMethods: params.teachingMethods,
+        costTypes: params.costTypes,
+        participationTimes: params.participationTimes,
         closed: params.showClosed,
+        sort: params.sort,
+      }),
+    });
+  });
+
+  params.teachingMethods.forEach((method) => {
+    chips.push({
+      label: `수업 방식: ${method}`,
+      href: buildProgramsHref({
+        q: params.q,
+        categoryId: params.categoryId,
+        regions: params.regions,
+        teachingMethods: params.teachingMethods.filter((item) => item !== method),
+        costTypes: params.costTypes,
+        participationTimes: params.participationTimes,
+        closed: params.showClosed,
+        sort: params.sort,
+      }),
+    });
+  });
+
+  params.costTypes.forEach((costType) => {
+    chips.push({
+      label: `비용: ${findOptionLabel(COST_TYPE_OPTIONS, costType)}`,
+      href: buildProgramsHref({
+        q: params.q,
+        categoryId: params.categoryId,
+        regions: params.regions,
+        teachingMethods: params.teachingMethods,
+        costTypes: params.costTypes.filter((item) => item !== costType),
+        participationTimes: params.participationTimes,
+        closed: params.showClosed,
+        sort: params.sort,
+      }),
+    });
+  });
+
+  params.participationTimes.forEach((time) => {
+    chips.push({
+      label: `참여 시간: ${findOptionLabel(PARTICIPATION_TIME_OPTIONS, time)}`,
+      href: buildProgramsHref({
+        q: params.q,
+        categoryId: params.categoryId,
+        regions: params.regions,
+        teachingMethods: params.teachingMethods,
+        costTypes: params.costTypes,
+        participationTimes: params.participationTimes.filter((item) => item !== time),
+        closed: params.showClosed,
+        sort: params.sort,
       }),
     });
   });
@@ -202,8 +374,27 @@ function renderActiveFilters(params: {
       label: "최근 3개월 마감 포함",
       href: buildProgramsHref({
         q: params.q,
-        category: params.category,
+        categoryId: params.categoryId,
         regions: params.regions,
+        teachingMethods: params.teachingMethods,
+        costTypes: params.costTypes,
+        participationTimes: params.participationTimes,
+        sort: params.sort,
+      }),
+    });
+  }
+
+  if (params.sort !== DEFAULT_SORT) {
+    chips.push({
+      label: `정렬: ${SORT_LABELS[params.sort]}`,
+      href: buildProgramsHref({
+        q: params.q,
+        categoryId: params.categoryId,
+        regions: params.regions,
+        teachingMethods: params.teachingMethods,
+        costTypes: params.costTypes,
+        participationTimes: params.participationTimes,
+        closed: params.showClosed,
       }),
     });
   }
@@ -214,18 +405,31 @@ function renderActiveFilters(params: {
 export default async function ProgramsPage({ searchParams }: ProgramsPageProps) {
   const resolvedSearchParams = await searchParams;
   const q = normalizeQuery(resolvedSearchParams.q);
-  const selectedCategory = normalizeSelectedCategory(resolvedSearchParams.category);
+  const selectedCategory = normalizeSelectedCategoryOption(
+    resolvedSearchParams.category_detail || resolvedSearchParams.category
+  );
   const selectedRegions = normalizeRegions(resolvedSearchParams.regions);
+  const selectedTeachingMethods = normalizeTeachingMethods(resolvedSearchParams.teaching_methods);
+  const selectedCostTypes = normalizeNamedOptions(resolvedSearchParams.cost_types, COST_TYPE_OPTIONS);
+  const selectedParticipationTimes = normalizeNamedOptions(
+    resolvedSearchParams.participation_times,
+    PARTICIPATION_TIME_OPTIONS
+  );
   const showClosedRecent = normalizeShowClosed(resolvedSearchParams.closed);
   const recruitingOnly = !showClosedRecent;
-  const sort = DEFAULT_SORT;
+  const sort = normalizeSort(resolvedSearchParams.sort);
   const page = normalizePage(resolvedSearchParams.page);
   const offset = (page - 1) * PAGE_SIZE;
   const activeFilters = renderActiveFilters({
     q,
-    category: selectedCategory,
+    categoryId: selectedCategory.id,
+    categoryLabel: selectedCategory.label,
     regions: selectedRegions,
+    teachingMethods: selectedTeachingMethods,
+    costTypes: selectedCostTypes,
+    participationTimes: selectedParticipationTimes,
     showClosed: showClosedRecent,
+    sort,
   });
 
   let programs: Program[] = [];
@@ -247,8 +451,12 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
     [programs, totalCount] = await Promise.all([
       listPrograms({
         q: q || undefined,
-        category: selectedCategory !== "전체" ? selectedCategory : undefined,
+        category: selectedCategory.category !== "전체" ? selectedCategory.category : undefined,
+        category_detail: selectedCategory.id !== "all" ? selectedCategory.id : undefined,
         regions: selectedRegions,
+        teaching_methods: selectedTeachingMethods,
+        cost_types: selectedCostTypes,
+        participation_times: selectedParticipationTimes,
         recruiting_only: recruitingOnly,
         include_closed_recent: showClosedRecent,
         sort,
@@ -257,8 +465,12 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
       }),
       getProgramCount({
         q: q || undefined,
-        category: selectedCategory !== "전체" ? selectedCategory : undefined,
+        category: selectedCategory.category !== "전체" ? selectedCategory.category : undefined,
+        category_detail: selectedCategory.id !== "all" ? selectedCategory.id : undefined,
         regions: selectedRegions,
+        teaching_methods: selectedTeachingMethods,
+        cost_types: selectedCostTypes,
+        participation_times: selectedParticipationTimes,
         recruiting_only: recruitingOnly,
         include_closed_recent: showClosedRecent,
       }),
@@ -272,144 +484,42 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
   const visiblePages = Array.from({ length: totalPages }, (_, index) => index + 1).filter(
     (pageNumber) => pageNumber >= Math.max(1, safePage - 2) && pageNumber <= Math.min(totalPages, safePage + 2)
   );
-  const hasAnyFilter = Boolean(q || selectedCategory !== "전체" || selectedRegions.length || showClosedRecent);
+  const hasAnyFilter = Boolean(
+    q ||
+      selectedCategory.id !== "all" ||
+      selectedRegions.length ||
+      selectedTeachingMethods.length ||
+      selectedCostTypes.length ||
+      selectedParticipationTimes.length ||
+      showClosedRecent ||
+      sort !== DEFAULT_SORT
+  );
 
   return (
     <>
       <LandingHeader />
       <main className="min-h-screen bg-slate-50 text-slate-950">
         <div className="mx-auto flex max-w-7xl flex-col gap-8 px-6 py-10">
-          <section className="rounded-3xl bg-slate-950 px-8 py-10 text-white shadow-xl">
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-              <div className="max-w-2xl">
-                <p className="text-sm font-medium uppercase tracking-[0.24em] text-sky-200">Programs Hub</p>
-                <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-                  오늘 기준으로 지원 가능한 공고부터 먼저 보여드립니다
-                </h1>
-                <p className="mt-3 text-sm leading-6 text-slate-300 sm:text-base">
-                  기본값은 모집중 공고만 마감 임박순으로 정렬합니다. 체크를 켠 경우에만 최근 3개월 내 마감된 활동을
-                  함께 확인할 수 있습니다.
-                </p>
-              </div>
-              <div className="grid gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200 sm:min-w-64">
-                <div>
-                  <p className="text-slate-400">현재 결과</p>
-                  <p className="mt-1 text-2xl font-semibold text-white">{error ? "-" : `${totalCount}개`}</p>
-                </div>
-                <div>
-                  <p className="text-slate-400">표시 기준</p>
-                  <p className="mt-1 font-medium text-white">오늘 기준 마감순</p>
-                </div>
-              </div>
-            </div>
-          </section>
+          <ProgramsFilterBar
+            q={q}
+            selectedCategoryId={selectedCategory.id}
+            categoryOptions={PROGRAM_CATEGORY_OPTIONS}
+            selectedRegions={selectedRegions}
+            selectedTeachingMethods={selectedTeachingMethods}
+            selectedCostTypes={selectedCostTypes}
+            selectedParticipationTimes={selectedParticipationTimes}
+            showClosedRecent={showClosedRecent}
+            sort={sort}
+            activeFilters={activeFilters}
+            regionOptions={REGION_OPTIONS}
+            teachingMethodOptions={TEACHING_METHOD_OPTIONS}
+            costTypeOptions={COST_TYPE_OPTIONS}
+            participationTimeOptions={PARTICIPATION_TIME_OPTIONS}
+          />
 
           <RecommendedProgramsSection isLoggedIn={isLoggedIn} />
 
-          <section className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
-            <aside className="lg:sticky lg:top-20 lg:self-start">
-              <form
-                method="GET"
-                action="/programs"
-                className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
-              >
-                <div>
-                  <label htmlFor="q" className="text-sm font-semibold text-slate-900">
-                    검색
-                  </label>
-                  <input
-                    id="q"
-                    name="q"
-                    type="search"
-                    defaultValue={q}
-                    placeholder="프로그램명으로 검색"
-                    className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-slate-900"
-                  />
-                </div>
-
-                <div className="mt-6">
-                  <p className="text-sm font-semibold text-slate-900">정렬</p>
-                  <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700">
-                    오늘 기준 마감 임박순
-                  </div>
-                </div>
-
-                <div className="mt-6 rounded-2xl bg-slate-50 p-4">
-                  <label className="flex items-center gap-3 text-sm font-medium text-slate-800">
-                    <input
-                      type="checkbox"
-                      name="closed"
-                      value="true"
-                      defaultChecked={showClosedRecent}
-                      className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900"
-                    />
-                    마감된 활동 보기
-                  </label>
-                  <p className="mt-2 text-xs leading-5 text-slate-500">
-                    기본값은 모집중 공고만 표시합니다. 체크하면 최근 3개월 내 마감된 공고까지 함께 보여줍니다.
-                  </p>
-                </div>
-
-                <fieldset className="mt-6">
-                  <legend className="text-sm font-semibold text-slate-900">카테고리</legend>
-                  <div className="mt-3 grid gap-2">
-                    {PROGRAM_CATEGORIES.map((category) => (
-                      <label
-                        key={category}
-                        className="flex items-center gap-3 rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700"
-                      >
-                        <input
-                          type="radio"
-                          name="category"
-                          value={category}
-                          defaultChecked={selectedCategory === category}
-                          className="h-4 w-4 border-slate-300 text-slate-900 focus:ring-slate-900"
-                        />
-                        {category}
-                      </label>
-                    ))}
-                  </div>
-                </fieldset>
-
-                <fieldset className="mt-6">
-                  <legend className="text-sm font-semibold text-slate-900">지역</legend>
-                  <div className="mt-3 grid gap-2">
-                    {REGION_OPTIONS.map((region) => (
-                      <label
-                        key={region}
-                        className="flex items-center gap-3 rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700"
-                      >
-                        <input
-                          type="checkbox"
-                          name="regions"
-                          value={region}
-                          defaultChecked={selectedRegions.includes(region)}
-                          className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900"
-                        />
-                        {region}
-                      </label>
-                    ))}
-                  </div>
-                </fieldset>
-
-                <div className="mt-6 flex gap-3">
-                  <button
-                    type="submit"
-                    className="inline-flex flex-1 items-center justify-center rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
-                  >
-                    필터 적용
-                  </button>
-                  <Link
-                    href="/programs"
-                    className="inline-flex items-center justify-center rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
-                  >
-                    초기화
-                  </Link>
-                </div>
-              </form>
-            </aside>
-
-            <section className="min-w-0">
+          <section className="min-w-0">
               <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                 <AdSlot
                   slotId="programs-results-top-banner"
@@ -421,29 +531,25 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                       {error ? "프로그램을 불러오지 못했습니다" : `결과 ${totalCount}개`}
                     </p>
                     <p className="mt-1 text-sm text-slate-500">
-                      {selectedCategory === "전체" ? "전체 카테고리" : selectedCategory}
+                      {selectedCategory.id === "all" ? "전체 카테고리" : selectedCategory.label}
                       {selectedRegions.length ? ` · ${selectedRegions.join(", ")}` : ""}
+                      {selectedTeachingMethods.length ? ` · ${selectedTeachingMethods.join(", ")}` : ""}
+                      {selectedCostTypes.length
+                        ? ` · ${selectedCostTypes.map((item) => findOptionLabel(COST_TYPE_OPTIONS, item)).join(", ")}`
+                        : ""}
+                      {selectedParticipationTimes.length
+                        ? ` · ${selectedParticipationTimes
+                            .map((item) => findOptionLabel(PARTICIPATION_TIME_OPTIONS, item))
+                            .join(", ")}`
+                        : ""}
                       {showClosedRecent ? " · 최근 3개월 마감 포함" : " · 모집중만"}
+                      {` · ${SORT_LABELS[sort]}`}
                     </p>
                   </div>
                   <p className="text-sm text-slate-500">
                     페이지 {safePage} / {totalPages}
                   </p>
                 </div>
-
-                {activeFilters.length > 0 ? (
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {activeFilters.map((chip) => (
-                      <Link
-                        key={`${chip.label}-${chip.href}`}
-                        href={chip.href}
-                        className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
-                      >
-                        {chip.label} ×
-                      </Link>
-                    ))}
-                  </div>
-                ) : null}
 
                 {error ? (
                   <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 px-6 py-12 text-center text-sm text-rose-700">
@@ -573,9 +679,13 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                         <Link
                           href={buildProgramsHref({
                             q,
-                            category: selectedCategory,
+                            categoryId: selectedCategory.id,
                             regions: selectedRegions,
+                            teachingMethods: selectedTeachingMethods,
+                            costTypes: selectedCostTypes,
+                            participationTimes: selectedParticipationTimes,
                             closed: showClosedRecent,
+                            sort,
                             page: Math.max(1, safePage - 1),
                           })}
                           className={`rounded-xl border px-3 py-2 text-sm font-medium transition ${
@@ -591,9 +701,13 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                             key={pageNumber}
                             href={buildProgramsHref({
                               q,
-                              category: selectedCategory,
+                              categoryId: selectedCategory.id,
                               regions: selectedRegions,
+                              teachingMethods: selectedTeachingMethods,
+                              costTypes: selectedCostTypes,
+                              participationTimes: selectedParticipationTimes,
                               closed: showClosedRecent,
+                              sort,
                               page: pageNumber,
                             })}
                             className={`rounded-xl px-3 py-2 text-sm font-medium transition ${
@@ -608,9 +722,13 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                         <Link
                           href={buildProgramsHref({
                             q,
-                            category: selectedCategory,
+                            categoryId: selectedCategory.id,
                             regions: selectedRegions,
+                            teachingMethods: selectedTeachingMethods,
+                            costTypes: selectedCostTypes,
+                            participationTimes: selectedParticipationTimes,
                             closed: showClosedRecent,
+                            sort,
                             page: Math.min(totalPages, safePage + 1),
                           })}
                           className={`rounded-xl border px-3 py-2 text-sm font-medium transition ${
@@ -626,7 +744,6 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                   </>
                 )}
               </div>
-            </section>
           </section>
         </div>
       </main>

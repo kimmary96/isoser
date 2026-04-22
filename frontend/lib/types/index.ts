@@ -248,6 +248,7 @@ export interface Program {
   id: string | number | null;
   title: string | null;
   category: string | null;
+  category_detail?: string | null;
   location: string | null;
   provider: string | null;
   summary: string | null;
@@ -263,6 +264,8 @@ export interface Program {
   start_date?: string | null;
   end_date?: string | null;
   cost?: number | string | null;
+  cost_type?: string | null;
+  participation_time?: string | null;
   subsidy_amount?: number | string | null;
   support_type?: string | null;
   teaching_method?: string | null;
@@ -334,10 +337,13 @@ export type ProgramSort = "deadline" | "latest";
 export interface ProgramListParams {
   q?: string;
   category?: string;
+  category_detail?: string;
   scope?: string;
   region_detail?: string;
   regions?: string[];
   teaching_methods?: string[];
+  cost_types?: string[];
+  participation_times?: string[];
   recruiting_only?: boolean;
   include_closed_recent?: boolean;
   sort?: ProgramSort;

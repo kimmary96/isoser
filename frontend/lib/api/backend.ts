@@ -231,6 +231,7 @@ export async function listPrograms(params?: ProgramListParams): Promise<Program[
   const searchParams = new URLSearchParams();
   if (params?.q) searchParams.set("q", params.q);
   if (params?.category) searchParams.set("category", params.category);
+  if (params?.category_detail) searchParams.set("category_detail", params.category_detail);
   if (params?.scope) searchParams.set("scope", params.scope);
   if (params?.region_detail) searchParams.set("region_detail", params.region_detail);
   if (params?.regions?.length) {
@@ -238,6 +239,12 @@ export async function listPrograms(params?: ProgramListParams): Promise<Program[
   }
   if (params?.teaching_methods?.length) {
     params.teaching_methods.forEach((method) => searchParams.append("teaching_methods", method));
+  }
+  if (params?.cost_types?.length) {
+    params.cost_types.forEach((costType) => searchParams.append("cost_types", costType));
+  }
+  if (params?.participation_times?.length) {
+    params.participation_times.forEach((time) => searchParams.append("participation_times", time));
   }
   if (params?.recruiting_only) searchParams.set("recruiting_only", "true");
   if (params?.include_closed_recent) searchParams.set("include_closed_recent", "true");
@@ -259,6 +266,7 @@ export async function getProgramCount(params?: ProgramListParams): Promise<numbe
   const searchParams = new URLSearchParams();
   if (params?.q) searchParams.set("q", params.q);
   if (params?.category) searchParams.set("category", params.category);
+  if (params?.category_detail) searchParams.set("category_detail", params.category_detail);
   if (params?.scope) searchParams.set("scope", params.scope);
   if (params?.region_detail) searchParams.set("region_detail", params.region_detail);
   if (params?.regions?.length) {
@@ -266,6 +274,12 @@ export async function getProgramCount(params?: ProgramListParams): Promise<numbe
   }
   if (params?.teaching_methods?.length) {
     params.teaching_methods.forEach((method) => searchParams.append("teaching_methods", method));
+  }
+  if (params?.cost_types?.length) {
+    params.cost_types.forEach((costType) => searchParams.append("cost_types", costType));
+  }
+  if (params?.participation_times?.length) {
+    params.participation_times.forEach((time) => searchParams.append("participation_times", time));
   }
   if (params?.recruiting_only) searchParams.set("recruiting_only", "true");
   if (params?.include_closed_recent) searchParams.set("include_closed_recent", "true");

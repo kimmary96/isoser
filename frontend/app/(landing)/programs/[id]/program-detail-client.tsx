@@ -71,12 +71,32 @@ function scrollToSection(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+const sectionIconById: Record<string, string> = {
+  "sec-overview": "▣",
+  "sec-org": "한",
+  "sec-schedule": "▦",
+  "sec-target": "◎",
+  "sec-outcomes": "↗",
+  "sec-fee": "₩",
+  "sec-apply": "✓",
+  "sec-career": "◆",
+  "sec-notice": "!",
+  "sec-curriculum": "▤",
+  "sec-reviews": "★",
+  "sec-qna": "?",
+};
+
 function SectionCard({ section }: { section: DetailSection }) {
   return (
-    <section id={section.id} className="scroll-mt-36 rounded-3xl border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-100 px-6 py-5 sm:px-7">
-        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">{section.eyebrow}</p>
-        <h2 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">{section.title}</h2>
+    <section id={section.id} className="scroll-mt-36 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+      <div className="flex items-center gap-4 border-b border-slate-100 px-6 py-5 sm:px-7">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-slate-50 text-sm font-black text-teal-700">
+          {sectionIconById[section.id] || "•"}
+        </span>
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">{section.eyebrow}</p>
+          <h2 className="mt-0.5 text-xl font-semibold tracking-tight text-slate-950">{section.title}</h2>
+        </div>
       </div>
       <div className="px-6 py-6 sm:px-7">{section.body}</div>
     </section>
@@ -441,12 +461,26 @@ export default function ProgramDetailClient({ program }: ProgramDetailClientProp
   return (
     <main className="min-h-screen bg-slate-50 text-slate-950">
       <section className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-7xl px-6 py-4">
-          <Link href="/programs" className="text-sm font-semibold text-slate-500 transition hover:text-slate-950">
+        <div className="border-b border-slate-200 bg-white">
+          <div className="mx-auto flex h-11 max-w-7xl items-center gap-2 px-6 text-xs text-slate-400">
+            <Link href="/" className="font-medium text-slate-500 transition hover:text-slate-950">
+              이소서
+            </Link>
+            <span>/</span>
+            <Link href="/programs" className="font-medium text-slate-500 transition hover:text-slate-950">
+              프로그램 허브
+            </Link>
+            <span>/</span>
+            <span className="truncate font-semibold text-slate-900">{program.title || "프로그램 상세"}</span>
+          </div>
+        </div>
+        <div className="relative overflow-hidden">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_5%_0%,rgba(79,70,229,0.08),transparent_36%),radial-gradient(ellipse_at_95%_20%,rgba(20,184,166,0.08),transparent_32%)]" />
+          <div className="pointer-events-none absolute inset-0 opacity-[0.22] [background-image:linear-gradient(#d8e3f2_0.5px,transparent_0.5px),linear-gradient(90deg,#d8e3f2_0.5px,transparent_0.5px)] [background-size:40px_40px]" />
+          <Link href="/programs" className="relative z-10 mx-auto block max-w-7xl px-6 py-4 text-sm font-semibold text-slate-500 transition hover:text-slate-950">
             프로그램 목록으로
           </Link>
-        </div>
-        <div className="mx-auto grid max-w-7xl gap-8 px-6 pb-0 pt-8 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-start">
+          <div className="relative z-10 mx-auto grid max-w-7xl gap-8 px-6 pb-0 pt-8 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-start">
           <div className="flex aspect-[4/3] items-center justify-center rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-950 via-indigo-900 to-teal-700 text-5xl font-black text-white shadow-xl">
             {getInitials(program)}
           </div>
@@ -478,6 +512,7 @@ export default function ProgramDetailClient({ program }: ProgramDetailClientProp
                 ))}
               </dl>
             ) : null}
+          </div>
           </div>
         </div>
       </section>
@@ -514,7 +549,8 @@ export default function ProgramDetailClient({ program }: ProgramDetailClientProp
 
         <aside className="space-y-4 lg:sticky lg:top-40">
           <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-            <div className="bg-slate-950 px-6 py-5 text-white">
+            <div className="relative overflow-hidden bg-indigo-950 px-6 py-5 text-white">
+              <div className="pointer-events-none absolute -right-12 -top-14 h-40 w-40 rounded-full bg-teal-400/20 blur-2xl" />
               <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${deadlineState.active ? "bg-emerald-400/15 text-emerald-200" : "bg-white/10 text-slate-200"}`}>
                 {deadlineState.active ? "모집 중" : deadlineState.label}
               </span>
@@ -534,7 +570,7 @@ export default function ProgramDetailClient({ program }: ProgramDetailClientProp
                 </dl>
               ) : null}
               {externalLink ? (
-                <a href={externalLink} target="_blank" rel="noreferrer" className="mt-4 inline-flex w-full justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-bold text-white transition hover:bg-slate-800">
+                <a href={externalLink} target="_blank" rel="noreferrer" className="mt-4 inline-flex w-full justify-center rounded-full bg-indigo-950 px-5 py-3 text-sm font-bold text-white transition hover:bg-indigo-900">
                   신청 페이지 바로가기
                 </a>
               ) : null}
@@ -559,30 +595,6 @@ export default function ProgramDetailClient({ program }: ProgramDetailClientProp
             </div>
           </section>
 
-          {sections.length ? (
-            <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-              <div className="border-b border-slate-100 px-5 py-4 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">
-                빠른 목차
-              </div>
-              <div className="py-2">
-                {sections.map((section) => (
-                  <button
-                    key={section.id}
-                    type="button"
-                    onClick={() => scrollToSection(section.id)}
-                    className={`flex w-full items-center gap-3 border-l-2 px-5 py-2.5 text-left text-sm transition ${
-                      activeSectionId === section.id
-                        ? "border-indigo-700 bg-indigo-50 text-indigo-700"
-                        : "border-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-950"
-                    }`}
-                  >
-                    <span className="h-1.5 w-1.5 rounded-full bg-current" />
-                    {section.label}
-                  </button>
-                ))}
-              </div>
-            </section>
-          ) : null}
         </aside>
       </div>
     </main>
