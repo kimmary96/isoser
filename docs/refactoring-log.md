@@ -2082,3 +2082,7 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - `LandingAFilterBar`의 칩 버튼 상태별 class 분기를 `getChipButtonClass()`로 분리해 필터 렌더링 map 내부 조건식을 단순화함
   - `LandingAHeroSection`의 live board 프로그램 카드 렌더를 `HeroProgramSignalCard`로 분리하고, 히어로 통계 3개는 `heroStats` 배열 기반 렌더링으로 정리함
   - 기존 히어로 CTA, 캘린더 링크, live board 텍스트, 검색/칩 필터 동작은 유지함
+- 2026-04-21: `frontend/app/(landing)/landing-a/page.tsx`, `docs/current-state.md`
+  - landing-a 칩 `AI·데이터`, `IT·개발`, `경영`이 백엔드 저장 카테고리와 다른 문자열을 exact match로 요청해 0건이 되는 문제를 확인함
+  - 사용자 노출 라벨은 유지하되 API 요청 카테고리를 각각 `AI`, `IT`, `경영`으로 매핑해 기존 프로그램 목록/count endpoint와 일치시킴
+  - `AI·데이터`와 `IT·개발` 필터 URL에서 hero count/live board가 정상 표시되는 것을 로컬 화면으로 확인함
