@@ -2157,6 +2157,10 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-22: `frontend/app/(landing)/landing-c/page.tsx`, `docs/current-state.md`, `reports/TASK-2026-04-22-landing-page-c-change-result.md`
   - landing-c 프로그램 카드를 요약/태그/이소서 관련도 중심에서 제목, 운영기관, 마감, 지원 혜택, 운영 방식, `과정 보기` CTA 중심의 정보형 카드로 재구성함
   - 상단 이미지 영역은 추가하지 않고 기존 검색/칩 필터, 프로그램 상세 이동, 공통 랜딩 헤더 동작은 유지함
+- 2026-04-22: `frontend/app/(landing)/landing-c/page.tsx`, `frontend/lib/types/index.ts`, `docs/current-state.md`
+  - landing-c Live Board 문구를 `추천 공고 N건`으로 바꾸고, Opportunity feed와 별도 모집중 마감순 목록에서 고용24, 창업진흥원/K-Startup, 새싹/SeSAC 공고를 각 1개씩 고르도록 조정함
+  - 각 소스의 공고는 마감 임박순으로 선택되며 마감일이 지난 공고는 모집중 목록에서 제외되어 다음 후보로 자동 교체되도록 함
+  - Opportunity feed 카드는 제목, 운영기관, 훈련 기간을 본문으로 두고 훈련비, 지역, 내배카 필수, 만족도를 태그로 표시하며, `과정 보기` 옆에 `/compare?ids=` 비교 버튼을 추가함
 - 2026-04-22: `scripts/program_backfill.py`, `backend/routers/programs.py`, `frontend/app/(landing)/programs/[id]/page.tsx`, `frontend/lib/api/backend.ts`, `frontend/lib/types/index.ts`, `backend/tests/test_program_backfill.py`, `docs/current-state.md`
   - 고용24/K-Startup 기존 `programs` row를 source 고유 식별자 기준으로 보강하는 dry-run/apply 백필 CLI를 추가함
   - 상세페이지 전용 `GET /programs/{program_id}/detail` 응답 모델을 추가해 목록/비교와 다른 상세 필드 계약을 분리함

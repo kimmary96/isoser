@@ -2,8 +2,9 @@ import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { getProgramCount, listPrograms } from "@/lib/api/backend";
+import { listPrograms } from "@/lib/api/backend";
 import {
+  getProgramCompareHref,
   getProgramDeadline,
   getProgramDeadlineTone,
   getProgramDetailHref,
@@ -125,101 +126,148 @@ function supportLabel(program: Program): string {
   return (
     normalizeMetaText(program.compare_meta?.subsidy_rate) ||
     normalizeMetaText(program.support_type) ||
-    "지원 혜택 확인"
+    "훈련비 확인"
   );
 }
 
-function cardMethodLabel(program: Program): string {
-  const method = normalizeMetaText(program.teaching_method) || normalizeMetaText(program.compare_meta?.teaching_method);
-  return [method, program.location].filter(Boolean).join(" · ") || "운영 방식 확인";
+function trainingPeriodLabel(program: Program): string {
+  if (program.start_date || program.end_date) {
+    return [program.start_date || "시작일 미정", program.end_date || "종료일 미정"].join(" ~ ");
+  }
+
+  return "훈련 기간 확인";
 }
 
-function requirementChips(program: Program): string[] {
-  const chips: string[] = [];
+function programTagItems(program: Program): Array<{ label: string; tone: "green" | "blue" | "amber" | "indigo" }> {
+  const tags: Array<{ label: string; tone: "green" | "blue" | "amber" | "indigo" }> = [
+    { label: `훈련비 ${supportLabel(program)}`, tone: "green" },
+  ];
+
+  const location = normalizeMetaText(program.location);
+  if (location) {
+    tags.push({ label: location, tone: "blue" });
+  }
 
   if (program.compare_meta?.naeilbaeumcard_required) {
-    chips.push("내배카 필수");
+    tags.push({ label: "내배카 필수", tone: "amber" });
   }
 
-  const targetGroup = normalizeMetaText(program.compare_meta?.target_group);
-  if (targetGroup) {
-    chips.push(targetGroup);
+  const rating = programRating(program);
+  if (rating !== null) {
+    tags.push({ label: `만족도 ${rating}`, tone: "indigo" });
   }
 
-  const applicationMethod = normalizeMetaText(program.application_method);
-  if (applicationMethod) {
-    chips.push(applicationMethod);
+  return tags;
+}
+
+function parseMetricNumber(value: string | number | null | undefined): number | null {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
   }
 
-  return chips.slice(0, 2);
+  const normalized = value?.replace(/,/g, "").match(/\d+(?:\.\d+)?/)?.[0];
+  if (!normalized) {
+    return null;
+  }
+
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function programRating(program: Program): number | null {
+  return parseMetricNumber(program.rating) ?? parseMetricNumber(program.compare_meta?.satisfaction_score);
+}
+
+const liveBoardSources = [
+  {
+    label: "고용24",
+    matches: ["고용24", "work24"],
+  },
+  {
+    label: "창업진흥원",
+    matches: ["창업진흥원", "k-startup", "kstartup"],
+  },
+  {
+    label: "새싹",
+    matches: ["새싹", "sesac", "seoul software academy"],
+  },
+] as const;
+
+function liveBoardSourceText(program: Program): string {
+  return [program.source, program.provider].filter(Boolean).join(" ").toLowerCase();
+}
+
+function isLiveBoardSource(program: Program, matches: readonly string[]): boolean {
+  const sourceText = liveBoardSourceText(program);
+  return matches.some((keyword) => sourceText.includes(keyword.toLowerCase()));
+}
+
+function parseDeadlineTime(program: Program): number {
+  const timestamp = Date.parse(String(program.deadline || program.end_date || ""));
+  return Number.isNaN(timestamp) ? Number.MAX_SAFE_INTEGER : timestamp;
+}
+
+function getLiveBoardPrograms(programs: Program[]): Program[] {
+  return liveBoardSources.flatMap((source) => {
+    const sourcePrograms = programs
+      .filter((program) => isLiveBoardSource(program, source.matches))
+      .filter((program) => typeof program.days_left !== "number" || program.days_left >= 0)
+      .toSorted((a, b) => parseDeadlineTime(a) - parseDeadlineTime(b));
+
+    return sourcePrograms[0] ? [sourcePrograms[0]] : [];
+  });
 }
 
 function ProgramCard({ program }: { program: Program }) {
-  const urgent = typeof program.days_left === "number" && program.days_left <= 3;
-  const deadline = getProgramDeadline(program);
-  const requirementItems = requirementChips(program);
+  const tagItems = programTagItems(program);
 
   return (
     <article
-      className={`flex min-h-[300px] flex-col rounded-[18px] border bg-white p-6 shadow-[0_16px_42px_rgba(10,19,37,0.08)] transition hover:-translate-y-1 hover:shadow-[0_24px_58px_rgba(10,19,37,0.12)] ${
-        urgent ? "border-[rgba(239,68,68,0.36)]" : "border-[var(--border)]"
-      }`}
+      className="flex min-h-[300px] flex-col rounded-[18px] border border-[var(--border)] bg-white p-6 shadow-[0_16px_42px_rgba(10,19,37,0.08)] transition hover:-translate-y-1 hover:shadow-[0_24px_58px_rgba(10,19,37,0.12)]"
     >
-      <div className="flex items-start justify-between gap-4">
-        <span className="rounded-full bg-[var(--surface-strong)] px-3 py-1 text-xs font-extrabold text-[var(--indigo)]">
-          {program.category || "분야 확인"}
-        </span>
-        <span
-          className={`shrink-0 rounded-full px-3 py-1 text-xs font-black ${
-            urgent ? "bg-[var(--red)] text-white" : "bg-[var(--ink)] text-white"
-          }`}
-        >
-          {deadline}
-        </span>
-      </div>
-
-      <div className="mt-6">
+      <div>
         <h3 className="line-clamp-2 min-h-[3.5rem] text-xl font-black leading-7 tracking-[-0.04em] text-[var(--ink)]">
           <Link href={getProgramDetailHref(program)} className="transition hover:text-[var(--indigo)]">
             {program.title || "제목 미정"}
           </Link>
         </h3>
         <p className="mt-2 line-clamp-1 text-sm font-bold text-[var(--sub)]">{providerLabel(program)}</p>
+        <p className="mt-2 line-clamp-1 text-sm font-semibold text-[var(--sub)]">{trainingPeriodLabel(program)}</p>
       </div>
 
       <div className="mt-5 flex flex-wrap gap-2">
-        <span className="rounded-full bg-[rgba(16,185,129,0.12)] px-3 py-1.5 text-xs font-extrabold text-emerald-700">
-          {supportLabel(program)}
-        </span>
-        {program.is_certified ? (
-          <span className="rounded-full bg-[rgba(16,185,129,0.1)] px-3 py-1.5 text-xs font-extrabold text-emerald-700">
-            국비지원
-          </span>
-        ) : null}
-        {requirementItems.map((item) => (
-          <span key={`${program.id}-${item}`} className="rounded-full bg-[rgba(245,158,11,0.12)] px-3 py-1.5 text-xs font-extrabold text-amber-700">
-            {item}
+        {tagItems.map((item) => (
+          <span
+            key={`${program.id}-${item.label}`}
+            className={`rounded-full px-3 py-1.5 text-xs font-extrabold ${
+              item.tone === "green"
+                ? "bg-[rgba(16,185,129,0.12)] text-emerald-700"
+                : item.tone === "amber"
+                  ? "bg-[rgba(245,158,11,0.12)] text-amber-700"
+                  : item.tone === "indigo"
+                    ? "bg-[var(--surface-strong)] text-[var(--indigo)]"
+                    : "bg-[var(--surface)] text-[var(--sub)]"
+            }`}
+          >
+            {item.label}
           </span>
         ))}
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-2">
-        <span className="rounded-full bg-[var(--surface)] px-3 py-1.5 text-xs font-bold text-[var(--sub)]">
-          {cardMethodLabel(program)}
-        </span>
-        {program.start_date || program.end_date ? (
-          <span className="rounded-full bg-[var(--surface)] px-3 py-1.5 text-xs font-bold text-[var(--sub)]">
-            {[program.start_date, program.end_date].filter(Boolean).join(" ~ ")}
-          </span>
-        ) : null}
+      <div className="mt-auto grid grid-cols-[1fr_auto] gap-2 pt-6">
+        <Link
+          href={getProgramDetailHref(program)}
+          className="rounded-xl bg-[var(--blue)] px-4 py-3 text-center text-sm font-black text-white transition hover:bg-[var(--indigo)]"
+        >
+          과정 보기
+        </Link>
+        <Link
+          href={getProgramCompareHref(program)}
+          className="rounded-xl border border-[var(--border)] bg-white px-4 py-3 text-center text-sm font-black text-[var(--ink)] transition hover:border-[var(--indigo)] hover:text-[var(--indigo)]"
+        >
+          비교
+        </Link>
       </div>
-
-      <Link
-        href={getProgramDetailHref(program)}
-        className="mt-auto rounded-xl bg-[var(--blue)] px-4 py-3 text-center text-sm font-black text-white transition hover:bg-[var(--indigo)]"
-      >
-        과정 보기
-      </Link>
     </article>
   );
 }
@@ -397,31 +445,30 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
   const programParams = buildProgramFilterParams(activeChip, keyword);
 
   let programs: Program[] = [];
-  let totalCount = 0;
+  let liveBoardPrograms: Program[] = [];
   let error: string | null = null;
 
   try {
-    [programs, totalCount] = await Promise.all([
+    [programs, liveBoardPrograms] = await Promise.all([
       listPrograms(programParams),
-      getProgramCount({
-        q: programParams.q,
-        category: programParams.category,
-        regions: programParams.regions,
-        recruiting_only: programParams.recruiting_only,
+      listPrograms({
+        sort: "deadline",
+        recruiting_only: true,
+        limit: 100,
       }),
     ]);
   } catch (cause) {
     error = cause instanceof Error ? cause.message : "프로그램 정보를 불러오지 못했습니다.";
   }
 
-  const heroPrograms = programs.slice(0, 3);
+  const heroPrograms = getLiveBoardPrograms(liveBoardPrograms);
 
   return (
     <main className="min-h-screen bg-[var(--surface)] text-[var(--ink)]" style={themeVars}>
       <LandingHeader />
 
       <section className="bg-white px-5 py-14 sm:px-8 lg:px-12 lg:py-20">
-        <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_420px] lg:items-center">
+        <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_504px] lg:items-center">
           <div>
             <div className="inline-flex rounded-lg bg-[var(--surface-strong)] px-4 py-2 text-sm font-extrabold text-[var(--indigo)]">
               <span className="mr-2 mt-1.5 h-1.5 w-1.5 rounded-full bg-[var(--teal)]" />
@@ -434,26 +481,16 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
               </span>
             </h1>
             <p className="mt-6 max-w-xl text-base leading-8 text-[var(--sub)]">
-              각종 부트캠프, K-디지털, 서울 일자리까지 한곳에 모았습니다. 3가지 조건만 알려주시면 마감 임박순으로 정렬해드립니다.
+              고용24, HRD넷, K-디지털, 서울시 일자리까지 한곳에 모았습니다.
+              <br />
+              이력과 활동을 등록하면 나에게 맞는 프로그램을 추천하고,
+              <br />
+              지원에 필요한 이력서·포트폴리오까지 바로 준비합니다.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/programs" className="rounded-full bg-[var(--indigo)] px-6 py-3 text-sm font-black text-white transition hover:bg-[var(--indigo-hi)]">
                 지금 지원 가능한 프로그램 보기
               </Link>
-            </div>
-            <div className="mt-9 grid max-w-2xl grid-cols-2 gap-4 sm:grid-cols-3">
-              <div className="rounded-2xl bg-[var(--surface-strong)] px-5 py-4">
-                <div className="text-3xl font-black tracking-[-0.05em]">{totalCount}<span className="text-lg font-bold">개</span></div>
-                <div className="mt-1 text-xs font-bold text-[var(--sub)]">현재 탐색 가능한 프로그램 수</div>
-              </div>
-              <div className="rounded-2xl bg-[var(--surface-strong)] px-5 py-4">
-                <div className="text-3xl font-black tracking-[-0.05em]">3<span className="text-lg font-bold">가지</span></div>
-                <div className="mt-1 text-xs font-bold text-[var(--sub)]">상황, 수업 방식, 관심 분야</div>
-              </div>
-              <div className="col-span-2 rounded-2xl bg-[var(--surface-strong)] px-5 py-4 sm:col-span-1">
-                <div className="text-3xl font-black tracking-[-0.05em]">1<span className="text-lg font-bold">곳</span></div>
-                <div className="mt-1 text-xs font-bold text-[var(--sub)]">탐색, 비교, 추천 워크스페이스</div>
-              </div>
             </div>
           </div>
 
@@ -461,14 +498,14 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <div className="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--muted)]">Live Board</div>
-                <div className="mt-1 text-xl font-black tracking-[-0.04em] text-[var(--ink)]">이번 주 {heroPrograms.length}건 확인</div>
+                <div className="mt-1 text-xl font-black tracking-[-0.04em] text-[var(--ink)]">추천 공고 {heroPrograms.length}건</div>
               </div>
               <Link href={DASHBOARD_RECOMMEND_CALENDAR} className="rounded-full bg-[var(--surface)] px-3 py-1.5 text-xs font-black text-[var(--indigo)]">
                 워크스페이스 →
               </Link>
             </div>
             <div className="space-y-3 border-t border-[var(--border)] pt-3">
-              {(heroPrograms.length ? heroPrograms : programs).slice(0, 3).map((program) => (
+              {heroPrograms.map((program) => (
                 <Link key={`${program.id}-${program.title}`} href={getProgramDetailHref(program)} className="block rounded-[18px] border border-[var(--border)] bg-[var(--surface)] p-4 transition hover:border-[var(--indigo)]">
                   <div className="flex items-start justify-between gap-4">
                     <div>
@@ -480,15 +517,11 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
                   </div>
                 </Link>
               ))}
-              {programs.length === 0 && (
+              {heroPrograms.length === 0 && (
                 <div className="rounded-[18px] border border-dashed border-[var(--border)] bg-[var(--surface)] p-5 text-sm font-bold text-[var(--sub)]">
-                  프로그램 데이터를 불러오면 이 영역에 마감 임박 공고가 표시됩니다.
+                  고용24, 창업진흥원, 새싹의 모집중 공고가 있으면 이 영역에 표시됩니다.
                 </div>
               )}
-            </div>
-            <div className="mt-5 rounded-2xl bg-[rgba(56,189,248,0.1)] p-4 text-sm leading-7 text-[var(--sub)]">
-              <div className="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--muted)]">Next after login</div>
-              <div className="mt-2">프로필을 연결하면 탐색한 프로그램을 대시보드 추천 캘린더와 문서 생성 흐름으로 이어서 관리할 수 있습니다.</div>
             </div>
           </aside>
         </div>
@@ -542,11 +575,6 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
               ))}
             </div>
           </form>
-
-          <div className="mt-6 flex flex-col gap-2 border-b border-[var(--border)] pb-5 text-sm font-semibold text-[var(--sub)] sm:flex-row sm:items-center sm:justify-between">
-            <span>현재 조건에 맞는 프로그램 {totalCount}개 중 상위 {programs.length}개를 보여드립니다.</span>
-            <span>탐색 후 로그인하면 추천 캘린더와 문서 준비 흐름으로 이어집니다.</span>
-          </div>
 
           {error ? (
             <div className="mt-8 rounded-[24px] border border-rose-200 bg-rose-50 px-6 py-10 text-sm font-bold text-rose-700">{error}</div>

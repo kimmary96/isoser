@@ -34,6 +34,8 @@
 - Follow-up implementation moved the common landing header and program card helpers into `frontend/components/landing/` and added Vitest unit coverage for route/filter helpers.
 - Risk-management follow-up upgraded Next.js and `eslint-config-next` from the vulnerable 15.1.x line to 15.5.15.
 - Landing C program cards were simplified into information-first cards without image slots, summary fallback text, generic tags, compare CTA, or Isoser relevance score.
+- Landing C Live Board now labels the section as recommended postings and selects one active deadline-sorted posting each from 고용24, 창업진흥원/K-Startup, and 새싹/SeSAC independently of the Opportunity feed.
+- Landing C Opportunity feed cards now use title, provider, and training period as the main body; fee, location, 내배카 필수, and satisfaction are rendered as tags, with detail and compare actions at the bottom.
 
 ## Preserved behaviors
 
@@ -45,6 +47,8 @@
 - Landing A/C now share the same public landing header implementation and program card helper functions.
 - Production dependency audit now reports 0 vulnerabilities after the Next.js 15.5.15 upgrade.
 - Landing C program cards now emphasize title, provider, deadline, support/subsidy signal, operating method/location, and a single `과정 보기` action.
+- Landing C Live Board excludes expired postings through the recruiting-only deadline list, so each source slot advances to the next upcoming posting after deadlines pass.
+- Opportunity feed compare actions link to `/compare?ids=<programId>` so the selected program is preloaded on the compare page.
 
 ## Risks / possible regressions
 

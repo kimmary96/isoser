@@ -229,6 +229,8 @@ export interface CompareMeta {
   subsidy_rate?: string | null;
   teaching_method?: string | null;
   employment_connection?: string | null;
+  satisfaction_score?: string | number | null;
+  review_count?: string | number | null;
   target_group?: string | null;
   age_restriction?: string | null;
   education_requirement?: string | null;
@@ -265,6 +267,8 @@ export interface Program {
   is_certified?: boolean | null;
   is_active?: boolean | null;
   is_ad?: boolean | null;
+  rating?: string | number | null;
+  review_count?: number | null;
   relevance_score?: number | null;
   final_score?: number | null;
   urgency_score?: number | null;
