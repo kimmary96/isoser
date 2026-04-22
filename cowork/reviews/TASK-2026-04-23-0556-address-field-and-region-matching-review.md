@@ -1,47 +1,39 @@
 # Overall assessment
 
-Not ready for promotion yet.
+Not ready for promotion as-is.
 
-The packet has the required frontmatter fields: `id`, `status`, `type`, `title`, `planned_at`, and `planned_against_commit`. `planned_against_commit` matches current `HEAD` (`eb7a6d7e2828c76abf682fe0f478c538d3cd397e`).
+The packet has complete required frontmatter, `planned_against_commit` matches current `HEAD` (`7609401e9dc6eca716ca6fc3ea313e03eea0a357`), and all repository paths listed in Execution Scope exist. The acceptance criteria are generally clear enough to execute.
 
-The packet does not include optional `planned_files` or `planned_worktree_fingerprint`, so there is no planned file list or fingerprint metadata to verify. The current worktree is not clean and already contains uncommitted address/profile changes that overlap materially with this packet.
+However, the current repository no longer represents a clean pre-execution state for this packet. The task has already been run through the watcher path and is now in `tasks/review-required/`, with a verifier finding that one acceptance detail is still not proven or not correctly implemented. The cowork packet should be refreshed before any re-promotion.
 
 # Findings
 
-1. Dependency is not promotable yet. The packet depends on `TASK-2026-04-23-0555-program-card-redesign-with-relevance`, but the existing review for that packet says it is not ready for promotion. Since this packet explicitly depends on Task 1 stabilizing `score_breakdown`, `relevance_reasons`, `relevance_grade`, and `relevance_badge`, this packet should not be promoted until Task 1 is corrected and approved.
-
-2. High duplicate/partial-duplicate risk. The current worktree already has uncommitted address work in `frontend/app/api/dashboard/profile/route.ts`, `frontend/app/dashboard/profile/_components/profile-edit-modal.tsx`, `frontend/app/dashboard/profile/_components/profile-hero-section.tsx`, `frontend/app/dashboard/profile/_hooks/use-profile-page.ts`, `frontend/app/dashboard/profile/page.tsx`, `frontend/lib/types/index.ts`, and untracked migration `supabase/migrations/20260423100000_add_address_to_profiles.sql`. These changes already add `address`, `region`, and `region_detail`, a 17-region alias map, profile form address input, save handling, and normalized region display. The packet mentions this risk, but promotion would still hand an implementer a partly completed task without a committed baseline.
-
-3. Runtime documentation already claims the address behavior exists. `docs/current-state.md` and `docs/refactoring-log.md` have uncommitted entries saying profiles can store `address`, `region`, and `region_detail`. That increases drift risk because the packet still frames address work as implementation scope while the local documentation now frames it as current behavior.
-
-4. Repository path accuracy is incomplete for the relevance half. The profile paths are discoverable and accurate, but the packet does not name the actual recommendation/scoring files to inspect or change. Current relevant code is in `backend/routers/programs.py`, `backend/rag/programs_rag.py`, frontend BFF routes under `frontend/app/api/dashboard/recommended-programs/` and `frontend/app/api/dashboard/recommend-calendar/`, and recommendation types in `frontend/lib/types/index.ts`. Promotion should not require the implementer to infer all of these from broad wording.
-
-5. Acceptance depends on response fields that are not present in the current recommendation contract. Current `ProgramRecommendItem` serialization returns `program_id`, `score`, `relevance_score`, `reason`, `fit_keywords`, and `program`; I did not find `score_breakdown`, `relevance_reasons`, `relevance_grade`, or `relevance_badge` in the current recommendation code. This is acceptable only after Task 1 lands, but as written the packet is blocked by that missing prerequisite.
-
-6. Region matching source precedence is still ambiguous. The packet asks the implementer to decide whether program region should come from `region`, `location`, or `compare_meta`. That is an open design decision, not an execution-ready instruction. It should specify the exact field precedence and fallback behavior before promotion.
-
-7. Adjacent-region rules are underspecified. Acceptance requires adjacent 시/도 to score 10, but the packet leaves the adjacency map open. Promotion should include the canonical adjacency table or explicitly limit the first implementation to named pairs.
-
-8. Weight redistribution needs a precise formula. The packet says address-missing users should exclude the region factor and redistribute using Task 1's temporary-weight method. Because Task 1 is not approved and the current code does not expose the new breakdown contract, the packet should define the exact denominator/rounding behavior or reference an approved implementation.
-
-9. Missing test references. The packet has good acceptance criteria, but it does not identify the minimum tests or check targets for profile address parsing, migration safety, region scoring, online/hybrid scoring, and address-missing redistribution. This is risky because the task spans DB schema, frontend profile editing, backend recommendation scoring, and privacy behavior.
+1. Required frontmatter is complete: `id`, `status`, `type`, `title`, `planned_at`, and `planned_against_commit` are present.
+2. Optional `planned_files` and `planned_worktree_fingerprint` are not present, so there is no optional worktree fingerprint to verify against the current dirty worktree.
+3. All referenced Execution Scope paths exist, including the profile address migration, profile API/UI files, frontend types, `backend/routers/programs.py`, and `backend/rag/programs_rag.py`.
+4. Drift risk is material even though `HEAD` matches. Directly relevant files are modified in the current worktree: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, and `frontend/lib/types/index.ts`. Supporting state files `docs/current-state.md` and `docs/refactoring-log.md` are also modified.
+5. The packet's dependency is now satisfied: Task 0555 has `tasks/done/TASK-2026-04-23-0555-program-card-redesign-with-relevance.md`, no matching file remains in `tasks/review-required/`, and its verifier report records manual acceptance.
+6. The packet's Auto Recovery Context is stale as actionable guidance because it still points to older blocked/recovery artifacts from before Task 0555 was accepted.
+7. Current runtime state shows this task already reached review-required: `tasks/review-required/TASK-2026-04-23-0556-address-field-and-region-matching.md` exists, and `reports/TASK-2026-04-23-0556-address-field-and-region-matching-supervisor-verification.md` has `verdict: review-required`.
+8. The verifier's blocking issue is specific: program region source priority is not fully enforced or covered when `region`, `location`, `region_detail`, and `compare_meta` contain conflicting regions. The packet requires priority order `region` -> display `location` -> `compare_meta.region` -> `compare_meta.location` -> `compare_meta.address`.
+9. The packet is mostly clear, but it should now explicitly scope the next run as a fix/update for the verifier gap, not as the original full address-field implementation.
+10. Missing reference before promotion: the packet should cite the current Task 0556 verifier report and identify the remaining source-priority gap as the required follow-up.
 
 # Recommendation
 
-Do not promote this packet yet.
+Do not promote this cowork packet as-is.
 
 Before promotion, update the packet to:
 
-1. Wait for or reference an approved Task 1 packet/result that actually adds the relevance response contract.
-2. Resolve the current address-work overlap by committing, discarding, or explicitly treating the existing uncommitted address implementation as the baseline to inspect.
-3. Add concrete planned files for the profile, migration, recommendation scoring, BFF, type, and test areas.
-4. Specify program region field precedence, the adjacent-region map, online/hybrid detection rules, and score redistribution formula.
-5. Add required verification points for migration compatibility, profile save/display, scoring breakdown, privacy text, and no-address fallback.
+- Replace stale recovery context with the current state: Task 0555 accepted, Task 0556 in `review-required`.
+- Narrow the next execution scope to the verifier gap around program region source priority and its focused regression test.
+- Add `planned_files` / `planned_worktree_fingerprint`, or first stabilize the dirty worktree, because relevant files are already modified at the same `HEAD`.
+- Keep the existing address migration, profile API/UI, type fields, and already implemented scoring behavior as baseline.
 
-After those changes, the packet should be promotable as a fix/update task against the existing address implementation rather than as a fresh implementation.
+After those changes, the packet should be promotable as a narrow fix/update packet.
 
 ## Review Run Metadata
 
-- generated_at: `2026-04-23T06:00:11`
+- generated_at: `2026-04-23T06:52:25`
 - watcher_exit_code: `0`
-- codex_tokens_used: `74,268`
+- codex_tokens_used: `45,561`

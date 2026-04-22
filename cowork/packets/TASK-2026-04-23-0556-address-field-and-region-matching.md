@@ -1,13 +1,12 @@
 ---
 id: TASK-2026-04-23-0556-address-field-and-region-matching
-status: proposed
+status: queued
 type: feature
 title: 주소 필드와 지역 매칭 점수 활성화
 priority: P2
 planned_by: Claude (planning session)
 planned_at: 2026-04-23T05:56:00+09:00
-planned_against_commit: eb7a6d7e2828c76abf682fe0f478c538d3cd397e
-planned_files: supabase/migrations, frontend/app/api/dashboard/profile/route.ts, frontend/app/dashboard/profile/_components/profile-edit-modal.tsx, frontend/app/dashboard/profile/_components/profile-hero-section.tsx, frontend/app/dashboard/profile/_hooks/use-profile-page.ts, frontend/app/dashboard/profile/page.tsx, frontend/lib/types/index.ts, backend/routers/programs.py, backend/rag/programs_rag.py
+planned_against_commit: 7609401e9dc6eca716ca6fc3ea313e03eea0a357
 depends_on:
   - TASK-2026-04-23-0555-program-card-redesign-with-relevance
 ---
@@ -23,11 +22,26 @@ depends_on:
 - 병렬 불가: 이 task는 Task 1 완료 전 구현하지 않습니다.
 - 독립/병렬 관계: Task 3 `TASK-2026-04-23-0557-programs-listing-page-restructure`와는 직접 의존성이 없습니다.
 
+# Execution Scope
+
+우선 확인할 파일:
+
+- `supabase/migrations/20260423100000_add_address_to_profiles.sql`
+- `frontend/app/api/dashboard/profile/route.ts`
+- `frontend/app/dashboard/profile/_components/profile-edit-modal.tsx`
+- `frontend/app/dashboard/profile/_components/profile-hero-section.tsx`
+- `frontend/app/dashboard/profile/_hooks/use-profile-page.ts`
+- `frontend/app/dashboard/profile/page.tsx`
+- `frontend/lib/types/index.ts`
+- `backend/routers/programs.py`
+- `backend/rag/programs_rag.py`
+- 관련 테스트가 있으면 profile route, programs router, recommendation scoring 테스트를 함께 갱신합니다.
+
 # Current-State Caution
 
 `docs/current-state.md`에는 이미 `profiles`가 주소 원문(`address`)과 추천/매칭용 지역 정규화값(`region`, `region_detail`)을 저장할 수 있다고 기록되어 있습니다. 또한 현재 worktree에는 주소 관련 migration과 프로필 UI/API 변경 파일이 미커밋 상태로 존재할 수 있습니다.
 
-따라서 이 task는 새 구현 task가 아니라 기존/미커밋 주소 구현을 기준으로 한 fix/update task로 취급합니다. 구현자는 먼저 현재 코드와 DB migration을 확인하고, 이미 만족한 항목은 재구현하지 않으며, 남은 gap만 보완합니다.
+따라서 이 task는 새 구현 task가 아니라 현재 baseline의 주소/지역 구현을 기준으로 한 fix/update task로 취급합니다. 구현자는 먼저 현재 코드와 DB migration을 확인하고, 이미 만족한 항목은 재구현하지 않으며, 남은 gap만 보완합니다.
 
 # User Flow
 
@@ -122,10 +136,19 @@ Task 1의 임시 가중치를 아래 최종 가중치로 전환합니다.
 - 근거 문구에서 상세 주소, 구/동, 도로명, 지번은 노출하지 않습니다.
 - 기존 migration 파일은 수정하지 않습니다.
 - `@supabase/ssr` 기반 쿠키 세션 흐름을 유지합니다.
-- Task 1의 관련도 응답 필드와 호환되어야 합니다. Task 1이 아직 승인 또는 구현되지 않았다면 이 task는 promotion하지 않습니다.
+- Task 1의 관련도 응답 필드와 호환되어야 합니다. 실행 큐에서는 Task 1이 먼저 처리된다는 전제이며, Task 1 결과가 없으면 구현자는 이 task를 drift로 중단합니다.
 - 주소 정규화 사전은 국내 17개 시/도 기준으로 시작합니다.
 - 프로그램 측 지역 데이터가 불완전할 수 있으므로 지역 매칭 실패가 전체 추천 실패로 이어지면 안 됩니다.
 - 현재 worktree에 주소 관련 미커밋 변경이 있으므로, 구현 전 `git status`, migration, 프로필 API, 프로필 UI를 반드시 확인합니다.
+
+# Verification Targets
+
+- 프로필 주소 저장: `frontend/app/api/dashboard/profile/route.ts`
+- 주소 입력 UI와 저장 flow: `profile-edit-modal.tsx`, `use-profile-page.ts`
+- 정규화 지역 표시: `profile-hero-section.tsx`
+- region breakdown 및 no-address fallback: `backend/routers/programs.py`
+- 온라인/혼합형 점수: programs recommendation 또는 compare relevance 관련 테스트
+- 개인정보 보호: 근거 문구와 UI에 상세 주소가 노출되지 않는지 확인
 
 # Non-goals
 
@@ -152,3 +175,11 @@ Task 1의 임시 가중치를 아래 최종 가중치로 전환합니다.
 - 주소 필드 최종 스키마는 구현 전 실제 migration과 타입을 확인해야 합니다. 기준 스키마는 `address`, `region`, `region_detail`입니다. 이미 다른 이름으로 구현된 경우 migration과 타입을 먼저 대조합니다.
 - 프로필 UI는 자유 입력과 시/도 드롭다운 중 어떤 방식이 현재 UX에 더 맞는지 확인이 필요합니다.
 - 현재 worktree의 주소 관련 변경이 이미 이 task를 대부분 만족한다면 result는 duplicate 또는 fix/update로 처리해야 합니다.
+
+## Auto Recovery Context
+
+- source_task: `tasks/blocked/TASK-2026-04-23-0556-address-field-and-region-matching.md`
+- failure_stage: `blocked`
+- failure_report: `reports/TASK-2026-04-23-0556-address-field-and-region-matching-blocked.md`
+- recovery_report: `reports/TASK-2026-04-23-0556-address-field-and-region-matching-recovery.md`
+- reviewer_action: review the verification findings, tighten the packet if needed, and only then approve requeueing

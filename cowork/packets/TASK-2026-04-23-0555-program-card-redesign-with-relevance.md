@@ -1,13 +1,12 @@
 ---
 id: TASK-2026-04-23-0555-program-card-redesign-with-relevance
-status: proposed
+status: queued
 type: feature
 title: 프로그램 카드 리디자인과 관련도 근거 표시
 priority: P1
 planned_by: Claude (planning session)
 planned_at: 2026-04-23T05:55:00+09:00
-planned_against_commit: eb7a6d7e2828c76abf682fe0f478c538d3cd397e
-planned_files: backend/routers/programs.py, backend/rag/programs_rag.py, frontend/app/api/programs/compare-relevance/route.ts, frontend/app/(landing)/programs/page.tsx, frontend/app/(landing)/programs/recommended-programs-section.tsx, frontend/app/(landing)/programs/programs-filter-bar.tsx, frontend/lib/types/index.ts, frontend/lib/api/app.ts
+planned_against_commit: 7609401e9dc6eca716ca6fc3ea313e03eea0a357
 depends_on: []
 ---
 
@@ -15,13 +14,28 @@ depends_on: []
 
 프로그램 목록 카드의 액션 버튼을 제거하고 찜 버튼만 남깁니다. 관련도 점수를 숫자와 자연어 근거 최대 3줄로 노출합니다. `compare-relevance`와 `/programs/recommend` 응답에는 근거 문구 생성에 필요한 `relevance_reasons`, `score_breakdown`, `relevance_grade`, `relevance_badge`를 추가합니다.
 
-이번 task는 Task 2보다 먼저 진행되는 선행 작업입니다. 현재 worktree에는 주소/프로필 관련 미커밋 변경이 있을 수 있으나, 이 task에서는 주소 필드를 읽거나 지역 점수를 활성화하지 않습니다. 지역 점수는 `0` 또는 비활성 상태로 유지하고, Task 2에서만 주소 기반 지역 매칭을 다룹니다.
+이번 task는 Task 2보다 먼저 진행되는 선행 작업입니다. 현재 baseline에는 주소/지역 관련 in-flight 변경이 포함될 수 있으므로, 구현자는 기존 `region_match_score`, `matched_regions`, 주소 정규화 타입을 제거하지 않습니다. 다만 이 task의 핵심 산출물은 카드 UI와 관련도 설명 필드 안정화이며, 지역 가중치 튜닝과 주소 기반 점수 정책 변경은 Task 2에서 처리합니다.
 
 # Dependencies
 
 - 선행 의존성: 없음
 - 후행 의존성: Task 2 `TASK-2026-04-23-0556-address-field-and-region-matching`는 이 task의 응답 스키마가 안정화된 뒤 진행해야 합니다.
 - 병렬 가능: Task 3 `TASK-2026-04-23-0557-programs-listing-page-restructure`와 병렬 진행 가능합니다. 단, 카드 컴포넌트 충돌 가능성은 review 단계에서 확인해야 합니다.
+
+# Execution Scope
+
+우선 확인할 파일:
+
+- `backend/routers/programs.py`
+- `backend/rag/programs_rag.py`
+- `frontend/app/api/programs/compare-relevance/route.ts`
+- `frontend/app/api/dashboard/recommended-programs/route.ts`
+- `frontend/app/api/dashboard/bookmarks/[programId]/route.ts`
+- `frontend/app/(landing)/programs/page.tsx`
+- `frontend/app/(landing)/programs/recommended-programs-section.tsx`
+- `frontend/app/(landing)/programs/programs-filter-bar.tsx`
+- `frontend/lib/types/index.ts`
+- `frontend/lib/api/app.ts`
 
 # User Flow
 
@@ -102,13 +116,13 @@ depends_on: []
 11. 제목, 마감일, 출처 중 하나라도 누락된 프로그램은 목록 카드에서 제외됩니다.
 12. 기존 비교 페이지의 `compare-relevance` 사용처가 깨지지 않습니다.
 13. 추천 캐시 또는 fallback/default 추천 경로에서도 신규 관련도 필드는 누락되지 않거나 안전한 기본값으로 채워집니다.
-14. 북마크 토글은 기존 backend `POST /bookmarks/{program_id}` / `DELETE /bookmarks/{program_id}`를 직접 브라우저에서 호출하지 않고, 프론트 BFF 경유 방식이 있으면 재사용하고 없으면 최소 BFF mutation route를 추가합니다.
+14. 북마크 토글은 backend `POST /bookmarks/{program_id}` / `DELETE /bookmarks/{program_id}`를 브라우저에서 직접 호출하지 않고, `frontend/app/api/dashboard/bookmarks/[programId]/route.ts` BFF mutation route를 사용합니다. 해당 route가 없거나 불완전하면 이 경로로 최소 구현합니다.
 
 # Constraints
 
 - 기존 동작 유지가 최우선입니다.
 - 이번 task에서는 주소 필드를 새로 도입하지 않습니다.
-- 지역 매칭 점수는 0점으로 두고 임시 가중치를 사용합니다.
+- 이미 baseline에 있는 지역 관련 응답 필드와 타입은 보존합니다. 단, 지역 가중치 정책 변경과 주소 기반 점수 튜닝은 Task 2 범위로 남깁니다.
 - 기존 API 응답 필드는 제거하거나 이름을 바꾸지 않습니다.
 - 신규 필드는 기존 `fit_label`, `fit_summary`, `readiness_label`, `gap_tags`를 대체하지 않고 병행 제공하는 호환 확장입니다.
 - 관련도 근거 문구는 템플릿 기반으로 생성합니다.
@@ -147,3 +161,11 @@ depends_on: []
 - 프론트 카드 컴포넌트 위치는 현재 `/programs` 구조를 확인한 뒤 결정합니다.
 - 기존 `fit_label`, `fit_summary`, `readiness_label`, `gap_tags`와 신규 `relevance_grade`, `relevance_badge`, `relevance_reasons`의 UI 병행 노출 여부를 구현 전 확인해야 합니다.
 - 찜 기반 비교 페이지 연결은 목록 카드에서 버튼을 제거하되, 기존 비교 페이지 진입 경로가 충분한지 확인이 필요합니다.
+
+## Auto Recovery Context
+
+- source_task: `tasks/blocked/TASK-2026-04-23-0555-program-card-redesign-with-relevance.md`
+- failure_stage: `blocked`
+- failure_report: `reports/TASK-2026-04-23-0555-program-card-redesign-with-relevance-blocked.md`
+- recovery_report: `reports/TASK-2026-04-23-0555-program-card-redesign-with-relevance-recovery.md`
+- reviewer_action: review the verification findings, tighten the packet if needed, and only then approve requeueing
