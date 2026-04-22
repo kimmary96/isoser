@@ -110,6 +110,9 @@
 - Supabase 인증 설정 문서는 `docs/auth/supabase-auth-local.md`, `docs/auth/supabase-auth-production.md`로 로컬/운영을 분리해 관리한다.
 - `backend/routers/programs.py`는 `/programs/count`와 확장된 목록 query(`q`, `regions`, `recruiting_only`, `include_closed_recent`, `sort`)를 지원하고, 목록/카운트 모두 Supabase의 `is_active` 값만 신뢰하지 않고 실제 `deadline` 기준으로 오늘 이후 모집중 공고만 기본 노출한다.
 - `backend/routers/programs.py`의 `include_closed_recent=true` 경로는 최근 90일 이내 마감 공고만 추가로 포함하며, `deadline` 정렬에서는 모집중 공고를 먼저 오름차순으로, 최근 마감 공고를 그다음 최근순으로 재정렬한다.
+- `backend/routers/programs.py`는 상세페이지 전용 `GET /programs/{program_id}/detail` 응답을 제공한다. 이 응답은 같은 `programs` row를 읽되 목록/비교와 분리된 detail view model로 기관, 지역, 설명, 신청/운영 일정, 원본 링크, 수강료/지원금, 지원 대상, 선택 운영 정보를 정규화한다.
+- `frontend/app/(landing)/programs/[id]/page.tsx`는 상세 전용 API를 사용하며, 값이 없는 provider/location/description/선택 운영 정보는 한 줄씩 `정보 없음`으로 표시하지 않고 해당 chip 또는 섹션을 숨긴다.
+- `scripts/program_backfill.py`는 고용24와 K-Startup 기존 `programs` row를 원본 고유 식별자 기준으로 보강하는 dry-run/apply CLI다. 기본 정책은 `fill-null-only`이며, K-Startup은 `announcement_id`/`pbancSn`, 고용24는 `hrd_id` 또는 `tracseId`/`tracseTme`/`trainstCstmrId` URL 조합으로 매칭한다.
 - `backend/routers/admin.py`의 `POST /admin/sync/programs`는 운영 Supabase `programs` 스키마가 일부 뒤처진 경우에도 누락 컬럼을 제외하고, hybrid unique constraint 충돌 시 row-by-row fallback으로 upsert를 이어가도록 보강됐다.
 - `backend/rag/chroma_client.py`는 Gemini embedding quota 초과(429) 시 재시도 후 local deterministic embedding fallback으로 전환해, Chroma sync/search가 완전히 멈추지 않도록 보강됐다.
 - `programs.compare_meta` JSONB 컬럼이 migration으로 추가되어 비교 화면의 대상/허들/커리큘럼 메타데이터를 저장할 수 있다.

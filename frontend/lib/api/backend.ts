@@ -15,6 +15,7 @@ import type {
   ParsePdfResponse,
   Program,
   ProgramCountResponse,
+  ProgramDetail,
   ProgramListParams,
   ProgramRecommendResponse,
   SkillSuggestResponse,
@@ -287,6 +288,16 @@ export async function getProgram(programId: string): Promise<Program> {
       method: "GET",
     },
     "Failed to load the program."
+  );
+}
+
+export async function getProgramDetail(programId: string): Promise<ProgramDetail> {
+  return requestJson<ProgramDetail>(
+    `/programs/${programId}/detail`,
+    {
+      method: "GET",
+    },
+    "Failed to load the program detail."
   );
 }
 

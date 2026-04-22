@@ -276,6 +276,45 @@ export interface Program {
   _relevance_score?: number | null;
 }
 
+export interface ProgramDetail {
+  id: string | number | null;
+  title: string | null;
+  provider: string | null;
+  organizer: string | null;
+  location: string | null;
+  description: string | null;
+  application_start_date: string | null;
+  application_end_date: string | null;
+  program_start_date: string | null;
+  program_end_date: string | null;
+  teaching_method: string | null;
+  support_type: string | null;
+  source_url: string | null;
+  fee: number | null;
+  support_amount: number | null;
+  eligibility: string[];
+  schedule_text: string | null;
+  rating: string | null;
+  review_count: number | null;
+  job_placement_rate: string | null;
+  capacity_total: number | null;
+  capacity_remaining: number | null;
+  manager_name: string | null;
+  phone: string | null;
+  email: string | null;
+  certifications: string[];
+  tech_stack: string[];
+  tags: string[];
+  curriculum: string[];
+  faq: Array<{ question: string; answer: string }>;
+  reviews: Array<Record<string, unknown>>;
+  recommended_for: string[];
+  learning_outcomes: string[];
+  career_support: string[];
+  event_banner: string | null;
+  ai_matching_summary: string | null;
+}
+
 export type ProgramSort = "deadline" | "latest";
 
 export interface ProgramListParams {

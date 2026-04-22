@@ -1,0 +1,414 @@
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import re
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+from urllib.parse import parse_qs, urlparse
+
+import requests
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+BACKEND_ROOT = REPO_ROOT / "backend"
+for path in (REPO_ROOT, BACKEND_ROOT):
+    path_text = str(path)
+    if path_text not in sys.path:
+        sys.path.insert(0, path_text)
+
+from backend.rag.collector.kstartup_collector import KstartupApiCollector  # noqa: E402
+from backend.rag.collector.normalizer import normalize  # noqa: E402
+from backend.rag.collector.work24_collector import Work24Collector  # noqa: E402
+
+
+BACKFILL_FIELDS = (
+    "provider",
+    "location",
+    "description",
+    "start_date",
+    "end_date",
+    "source_url",
+    "cost",
+    "subsidy_amount",
+    "compare_meta",
+)
+
+
+@dataclass
+class SourceRecord:
+    source: str
+    match_key: str
+    normalized: dict[str, Any]
+    raw: dict[str, Any]
+
+
+def load_backend_env() -> None:
+    env_path = BACKEND_ROOT / ".env"
+    if not env_path.exists():
+        return
+    for line in env_path.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#") or "=" not in stripped:
+            continue
+        key, value = stripped.split("=", maxsplit=1)
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
+def compact(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {key: compact(entry) for key, entry in value.items() if entry not in (None, "", [], {})}
+    if isinstance(value, list):
+        return [compact(entry) for entry in value if entry not in (None, "", [], {})]
+    return value
+
+
+def nested_text(row: dict[str, Any], paths: tuple[str, ...]) -> str:
+    for path in paths:
+        value: Any = row
+        for part in path.split("."):
+            if not isinstance(value, dict):
+                value = None
+                break
+            value = value.get(part)
+        text = str(value or "").strip()
+        if text:
+            return text
+    return ""
+
+
+def query_param(value: Any, key: str) -> str:
+    text = str(value or "").strip()
+    if not text:
+        return ""
+    parsed = urlparse(text)
+    values = parse_qs(parsed.query).get(key)
+    return str(values[0]).strip() if values else ""
+
+
+def work24_key(row: dict[str, Any]) -> str:
+    hrd_id = nested_text(row, ("hrd_id", "compare_meta.hrd_id"))
+    if hrd_id:
+        return f"work24:hrd:{hrd_id}"
+    return work24_url_key(row)
+
+
+def work24_url_key(row: dict[str, Any]) -> str:
+    for link_key in ("source_url", "link"):
+        link = row.get(link_key)
+        tracse_id = query_param(link, "tracseId")
+        tracse_tme = query_param(link, "tracseTme")
+        customer_id = query_param(link, "trainstCstmrId")
+        if tracse_id:
+            parts = [tracse_id, tracse_tme, customer_id]
+            return "work24:url:" + ":".join(part for part in parts if part)
+    return ""
+
+
+def kstartup_key(row: dict[str, Any]) -> str:
+    announcement_id = nested_text(row, ("compare_meta.announcement_id", "compare_meta.pbanc_sn"))
+    if announcement_id:
+        return f"kstartup:announcement:{announcement_id}"
+    return kstartup_url_key(row)
+
+
+def kstartup_url_key(row: dict[str, Any]) -> str:
+    for link_key in ("source_url", "link"):
+        pbanc_sn = query_param(row.get(link_key), "pbancSn")
+        if pbanc_sn:
+            return f"kstartup:announcement:{pbanc_sn}"
+    return ""
+
+
+def source_family(row: dict[str, Any]) -> str:
+    source = str(row.get("source") or "").casefold()
+    if "k-startup" in source or "kstartup" in source:
+        return "kstartup"
+    if "고용24" in source or "work24" in source:
+        return "work24"
+    return ""
+
+
+def source_key(row: dict[str, Any]) -> str:
+    family = source_family(row)
+    if family == "kstartup":
+        return kstartup_key(row)
+    if family == "work24":
+        return work24_key(row)
+    return ""
+
+
+def is_blank(value: Any) -> bool:
+    return value in (None, "", [], {})
+
+
+def merge_compare_meta(current: Any, incoming: Any, *, overwrite: bool) -> dict[str, Any] | None:
+    if not isinstance(incoming, dict) or not incoming:
+        return current if isinstance(current, dict) and current else None
+    merged = dict(current) if isinstance(current, dict) else {}
+    for key, value in incoming.items():
+        if is_blank(value):
+            continue
+        if overwrite or is_blank(merged.get(key)):
+            merged[key] = value
+    return merged or None
+
+
+def build_patch(db_row: dict[str, Any], normalized: dict[str, Any], *, overwrite: bool) -> dict[str, Any]:
+    patch: dict[str, Any] = {}
+    for field in BACKFILL_FIELDS:
+        incoming = normalized.get(field)
+        if field == "compare_meta":
+            merged = merge_compare_meta(db_row.get(field), incoming, overwrite=overwrite)
+            if merged and merged != db_row.get(field):
+                patch[field] = merged
+            continue
+        if is_blank(incoming):
+            continue
+        current = db_row.get(field)
+        if overwrite or is_blank(current):
+            if incoming != current:
+                patch[field] = incoming
+    return patch
+
+
+def build_diff(db_row: dict[str, Any], patch: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    return {
+        field: {"before": db_row.get(field), "after": value}
+        for field, value in patch.items()
+    }
+
+
+def supabase_request(method: str, path: str, *, params: dict[str, str] | None = None, payload: Any = None) -> Any:
+    supabase_url = os.getenv("SUPABASE_URL", "").rstrip("/")
+    service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
+    if not supabase_url or not service_key:
+        raise RuntimeError("SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY is not configured.")
+    headers = {
+        "apikey": service_key,
+        "Authorization": f"Bearer {service_key}",
+        "Content-Type": "application/json",
+    }
+    if method.upper() in {"POST", "PATCH"}:
+        headers["Prefer"] = "return=representation"
+    response = requests.request(
+        method,
+        f"{supabase_url}{path}",
+        params=params,
+        json=payload,
+        headers=headers,
+        timeout=30,
+    )
+    response.raise_for_status()
+    if not response.content:
+        return None
+    return response.json()
+
+
+def fetch_candidate_rows(limit: int, *, deadline_from: str | None = None) -> list[dict[str, Any]]:
+    params = {
+        "select": "*",
+        "or": "(source.ilike.*고용24*,source.ilike.*work24*,source.ilike.*K-Startup*,source.ilike.*kstartup*)",
+        "order": "deadline.asc.nullslast",
+        "limit": str(limit),
+    }
+    if deadline_from:
+        params["deadline"] = f"gte.{deadline_from}"
+    rows = supabase_request(
+        "GET",
+        "/rest/v1/programs",
+        params=params,
+    )
+    return rows if isinstance(rows, list) else []
+
+
+def collect_source_records(max_pages: int) -> dict[str, SourceRecord]:
+    records: dict[str, SourceRecord] = {}
+    collectors = [Work24Collector(), KstartupApiCollector()]
+    for collector in collectors:
+        collector.max_pages = max_pages
+        for mapped in collector.collect():
+            normalized = normalize(mapped)
+            if not normalized:
+                continue
+            key = source_key(normalized)
+            if not key:
+                continue
+            record = SourceRecord(
+                source=str(normalized.get("source") or ""),
+                match_key=key,
+                normalized=normalized,
+                raw=mapped.get("raw") if isinstance(mapped.get("raw"), dict) else {},
+            )
+            records[key] = record
+            if source_family(normalized) == "work24":
+                url_key = work24_url_key(normalized)
+                if url_key:
+                    records[url_key] = record
+            if source_family(normalized) == "kstartup":
+                url_key = kstartup_url_key(normalized)
+                if url_key:
+                    records[url_key] = record
+    return records
+
+
+def fetch_kstartup_record_by_announcement_id(announcement_id: str) -> SourceRecord | None:
+    api_key = os.getenv("KSTARTUP_API_KEY", "").strip()
+    if not api_key or not announcement_id:
+        return None
+    collector = KstartupApiCollector()
+    response = requests.get(
+        collector.endpoint,
+        params={
+            "serviceKey": api_key,
+            "returnType": "json",
+            "page": "1",
+            "perPage": "5",
+            "cond[pbanc_sn::EQ]": announcement_id,
+        },
+        timeout=collector.timeout_seconds,
+    )
+    response.raise_for_status()
+    items = collector.extract_items(response.json())
+    if not items:
+        return None
+    mapped = collector.map_item(items[0], collector.get_source_meta())
+    normalized = normalize(mapped)
+    if not normalized:
+        return None
+    key = source_key(normalized)
+    if not key:
+        return None
+    return SourceRecord(
+        source=str(normalized.get("source") or ""),
+        match_key=key,
+        normalized=normalized,
+        raw=items[0],
+    )
+
+
+def build_report(*, limit: int, max_pages: int, overwrite: bool, deadline_from: str | None) -> dict[str, Any]:
+    db_rows = fetch_candidate_rows(limit, deadline_from=deadline_from)
+    source_records = collect_source_records(max_pages)
+    items: list[dict[str, Any]] = []
+    for db_row in db_rows:
+        key = source_key(db_row)
+        record = source_records.get(key)
+        if record is None and key.startswith("kstartup:announcement:"):
+            announcement_id = key.rsplit(":", maxsplit=1)[-1]
+            record = fetch_kstartup_record_by_announcement_id(announcement_id)
+            if record is not None:
+                source_records[record.match_key] = record
+        patch = build_patch(db_row, record.normalized, overwrite=overwrite) if record else {}
+        items.append(
+            {
+                "id": db_row.get("id"),
+                "title": db_row.get("title"),
+                "source": db_row.get("source"),
+                "match_key": key,
+                "matched": record is not None,
+                "patch": compact(patch),
+                "diff": compact(build_diff(db_row, patch)),
+            }
+        )
+    return {
+        "mode": "dry-run",
+        "policy": "overwrite" if overwrite else "fill-null-only",
+        "deadline_from": deadline_from,
+        "candidate_count": len(db_rows),
+        "source_record_count": len(source_records),
+        "patch_count": sum(1 for item in items if item["patch"]),
+        "items": items,
+    }
+
+
+def apply_report(report: dict[str, Any]) -> dict[str, Any]:
+    applied: list[dict[str, Any]] = []
+    for item in report.get("items", []):
+        patch = item.get("patch")
+        program_id = str(item.get("id") or "").strip()
+        if not program_id or not patch:
+            continue
+        rows = supabase_request(
+            "PATCH",
+            "/rest/v1/programs",
+            params={"id": f"eq.{program_id}"},
+            payload=patch,
+        )
+        applied.append(
+            {
+                "id": program_id,
+                "title": item.get("title"),
+                "updated_fields": sorted(patch.keys()),
+                "updated": bool(rows),
+            }
+        )
+    return {**report, "mode": "apply", "applied": applied, "applied_count": len(applied)}
+
+
+def print_markdown_table(report: dict[str, Any], *, sample: int) -> None:
+    print("| 프로그램 | source | match key | null -> 값 변경 |")
+    print("|---|---|---|---|")
+    shown = 0
+    for item in report["items"]:
+        if not item["patch"]:
+            continue
+        changes = []
+        for field, diff in item["diff"].items():
+            after = diff.get("after")
+            if isinstance(after, dict):
+                after_text = "JSON 메타 추가"
+            else:
+                after_text = str(after).replace("\n", " ")[:80]
+            changes.append(f"{field}: {after_text}")
+        print(
+            "| "
+            + " | ".join(
+                [
+                    str(item["title"] or "").replace("|", "/")[:60],
+                    str(item["source"] or "").replace("|", "/"),
+                    str(item["match_key"] or "").replace("|", "/"),
+                    "<br>".join(changes).replace("|", "/"),
+                ]
+            )
+            + " |"
+        )
+        shown += 1
+        if shown >= sample:
+            break
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Backfill Work24/K-Startup program detail fields from source APIs.")
+    parser.add_argument("--limit", type=int, default=50, help="DB rows to inspect, ordered by deadline.")
+    parser.add_argument("--max-pages", type=int, default=5, help="Source API pages to scan.")
+    parser.add_argument("--overwrite", action="store_true", help="Overwrite existing values. Default fills blank fields only.")
+    parser.add_argument("--deadline-from", default=None, help="Only inspect DB rows with deadline >= this YYYY-MM-DD value.")
+    parser.add_argument("--apply", action="store_true", help="Apply patches to Supabase. Default is dry-run.")
+    parser.add_argument("--format", choices=("json", "markdown"), default="json")
+    parser.add_argument("--sample", type=int, default=3, help="Rows to print in markdown mode.")
+    return parser
+
+
+def main() -> int:
+    load_backend_env()
+    args = build_parser().parse_args()
+    report = build_report(
+        limit=args.limit,
+        max_pages=args.max_pages,
+        overwrite=args.overwrite,
+        deadline_from=args.deadline_from,
+    )
+    if args.apply:
+        report = apply_report(report)
+    if args.format == "markdown":
+        print_markdown_table(report, sample=args.sample)
+    else:
+        print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

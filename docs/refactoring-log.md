@@ -2157,3 +2157,11 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-22: `frontend/app/(landing)/landing-c/page.tsx`, `docs/current-state.md`, `reports/TASK-2026-04-22-landing-page-c-change-result.md`
   - landing-c 프로그램 카드를 요약/태그/이소서 관련도 중심에서 제목, 운영기관, 마감, 지원 혜택, 운영 방식, `과정 보기` CTA 중심의 정보형 카드로 재구성함
   - 상단 이미지 영역은 추가하지 않고 기존 검색/칩 필터, 프로그램 상세 이동, 공통 랜딩 헤더 동작은 유지함
+- 2026-04-22: `scripts/program_backfill.py`, `backend/routers/programs.py`, `frontend/app/(landing)/programs/[id]/page.tsx`, `frontend/lib/api/backend.ts`, `frontend/lib/types/index.ts`, `backend/tests/test_program_backfill.py`, `docs/current-state.md`
+  - 고용24/K-Startup 기존 `programs` row를 source 고유 식별자 기준으로 보강하는 dry-run/apply 백필 CLI를 추가함
+  - 상세페이지 전용 `GET /programs/{program_id}/detail` 응답 모델을 추가해 목록/비교와 다른 상세 필드 계약을 분리함
+  - 상세페이지는 새 detail 응답을 사용하고, 값이 없는 상세 섹션은 `정보 없음` 문구 남발 대신 섹션 단위로 숨기도록 조정함
+  - 운영 DB 활성 후보에 대해 백필을 적용해 K-Startup/고용24 샘플 row의 기관, 지역, 설명, 일정, 원본 링크가 상세 API와 상세페이지에 노출될 수 있게 함
+- 2026-04-22: `backend/tests/test_programs_router.py`
+  - 상세 응답 계약 회귀 테스트를 추가해 K-Startup의 `start_date/end_date`는 신청 기간으로, 고용24의 `start_date/end_date`는 운영 기간으로 매핑되는 동작을 고정함
+  - 원본 링크 우선순위, 지원 대상, 수강료/지원금, 정원 잔여 계산, 연락처 노출 같은 상세페이지 핵심 필드 매핑도 Supabase 호출 없이 검증하도록 보강함

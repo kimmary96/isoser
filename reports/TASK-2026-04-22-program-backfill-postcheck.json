@@ -1,0 +1,1090 @@
+{
+  "candidate_count": 120,
+  "deadline_from": "2026-04-22",
+  "items": [
+    {
+      "diff": {},
+      "id": "7a2749fc-79bf-4812-9c89-f199e10876af",
+      "match_key": "kstartup:announcement:177074",
+      "matched": true,
+      "patch": {},
+      "source": "K-Startup 창업진흥원",
+      "title": "[서울관광재단] 2026 서울 관광스타트업 창업 아카데미 교육생 모집"
+    },
+    {
+      "diff": {},
+      "id": "71122001-8d86-476e-b494-4fa02f3c79ee",
+      "match_key": "kstartup:announcement:176678",
+      "matched": true,
+      "patch": {},
+      "source": "K-Startup 창업진흥원",
+      "title": "2026년 서울여성 창업아이디어 공모전"
+    },
+    {
+      "diff": {},
+      "id": "ee785561-da86-4851-9339-29b7bc2fbf22",
+      "match_key": "kstartup:announcement:177120",
+      "matched": true,
+      "patch": {},
+      "source": "K-Startup 창업진흥원",
+      "title": "2026년 서경대학교 창업보육센터 입주기업 모집(2차)"
+    },
+    {
+      "diff": {},
+      "id": "5994134d-a169-4592-904c-b75ce00bdcb7",
+      "match_key": "kstartup:announcement:177031",
+      "matched": true,
+      "patch": {},
+      "source": "K-Startup 창업진흥원",
+      "title": "2026 SBA X 메르세데스 벤츠 코리아 게임 산업 상생 플랫폼 활용 게임개발 지원 참가기업 모집"
+    },
+    {
+      "diff": {},
+      "id": "4615a084-2e06-4840-98cd-b2092d8f715b",
+      "match_key": "work24:url:AIG20250000502424:3:500038418203",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "요양보호사(사회복지사자격증소지자)자격 취득과정"
+    },
+    {
+      "diff": {},
+      "id": "2b4b4240-bf26-4888-88b6-3e7d3ca6b450",
+      "match_key": "work24:url:AIG20250000510863:6:500041385185",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "화과자 자격증 (2급) 전문과정"
+    },
+    {
+      "diff": {},
+      "id": "9c622c83-ac1e-4b7c-97dc-096d59ff2f57",
+      "match_key": "kstartup:announcement:177170",
+      "matched": true,
+      "patch": {},
+      "source": "K-Startup 창업진흥원",
+      "title": "[도봉구청년창업센터]  제3차 스케일업 아카데미 : 일상의 아이디어가 AI를 만나 비즈니스가 되는 순간 (모두의 창업)"
+    },
+    {
+      "diff": {},
+      "id": "e929bd62-0c2d-40ce-affb-51a17245dad3",
+      "match_key": "work24:url:AIG20253001128421:2:500020028075",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "(산대특)_AWS 클라우드 보안 실무_육성"
+    },
+    {
+      "diff": {},
+      "id": "df6e693c-0af6-41bf-b937-38ca354f2f25",
+      "match_key": "kstartup:announcement:177093",
+      "matched": true,
+      "patch": {},
+      "source": "K-Startup 창업진흥원",
+      "title": "K-패션 브랜드 글로벌 팝업 지원사업 참여기업 모집"
+    },
+    {
+      "diff": {},
+      "id": "aef92884-de1f-4dae-96f3-469bb265303e",
+      "match_key": "work24:url:AIG20250000520785:5:500034288247",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "HR(인사노무총무) 전문가 양성과정LMS (노동법,급여관리,4대보험,퇴직업무,연말정산 및 HR자격증 취득)"
+    },
+    {
+      "diff": {},
+      "id": "4278f911-f351-45c4-8441-e2cde7bb134f",
+      "match_key": "work24:hrd:AIG20250000522502",
+      "matched": false,
+      "patch": {},
+      "source": "work24_training",
+      "title": "산모·신생아 건강관리사 양성 과정"
+    },
+    {
+      "diff": {},
+      "id": "d019f2dc-bb6c-4fa0-9d5d-ecd7b04e7368",
+      "match_key": "work24:hrd:AIG20250000525618",
+      "matched": false,
+      "patch": {},
+      "source": "work24_training",
+      "title": "실용 인테리어 타일 집수리 실무과정"
+    },
+    {
+      "diff": {},
+      "id": "bf4c9f40-694f-42f5-90fc-65c1de6e9f1e",
+      "match_key": "work24:hrd:AIG20250000527782",
+      "matched": false,
+      "patch": {},
+      "source": "work24_training",
+      "title": "굴착기 자격증 속성반(실기)"
+    },
+    {
+      "diff": {},
+      "id": "4afd469b-9770-49a5-8147-af826a887cba",
+      "match_key": "kstartup:announcement:177111",
+      "matched": true,
+      "patch": {},
+      "source": "K-Startup 창업진흥원",
+      "title": "(서울센터) 2026년 제2회 제대군인 창업 워크숍 개최 안내"
+    },
+    {
+      "diff": {},
+      "id": "e51b5f17-c782-4778-b487-5bf38b5b4639",
+      "match_key": "work24:url:AIG20250000519873:5:500020016875",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "영상 제작 촬영 영상 크리에이터 심화"
+    },
+    {
+      "diff": {},
+      "id": "56c3a2fa-dc08-4dc5-95ef-6a13aea7c2c1",
+      "match_key": "work24:url:AIG20250000506215:12:500040951361",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "라떼아트 집중과정(기초반)"
+    },
+    {
+      "diff": {},
+      "id": "02a62ad8-be19-484b-9b91-64e89d452720",
+      "match_key": "kstartup:announcement:177136",
+      "matched": true,
+      "patch": {},
+      "source": "K-Startup 창업진흥원",
+      "title": "구로구 청년창업지원센터 일반 창업교육(상반기 : 4회차) :  온라인 마케팅 실전 가이드"
+    },
+    {
+      "diff": {},
+      "id": "db49d2cd-d9ee-494e-a1e8-a3b993ce28b5",
+      "match_key": "kstartup:announcement:176945",
+      "matched": true,
+      "patch": {},
+      "source": "K-Startup 창업진흥원",
+      "title": "2026 웨스트버지니아(WV) 거점 북미 진출 지원 프로그램"
+    },
+    {
+      "diff": {},
+      "id": "c7ed169e-cd04-43b0-9be6-470229033fbe",
+      "match_key": "work24:url:AIG20230000421194:3:500020062235",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "『자바스크립트』UI/UX웹퍼블리셔 프론트엔드(JS,JQ,반응형)"
+    },
+    {
+      "diff": {},
+      "id": "d6612e58-fc2a-42a7-9205-5842bc15dab0",
+      "match_key": "work24:url:AIG20250000531611:5:500033330182",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "엑셀神되기 컴퓨터활용능력 2급[컴활 2급(엑셀)]실기 완전정복 클래스"
+    },
+    {
+      "diff": {},
+      "id": "271c42c6-fa2e-45ed-9797-9cbfabcabe10",
+      "match_key": "work24:url:AIG20250000532871:2:500020023578",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "아이돌봄 인력양성 경력자(감면자)"
+    },
+    {
+      "diff": {},
+      "id": "8f9ee144-6705-44fa-a516-e66fc0ba414a",
+      "match_key": "work24:url:AIG20250000531612:5:500033330182",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "엑셀神되기 컴퓨터활용능력 1급[컴활 1급(엑셀, 엑세스)]실기 완전정복 클래스"
+    },
+    {
+      "diff": {},
+      "id": "06830451-ca43-4014-8cf9-a71224ebf437",
+      "match_key": "kstartup:announcement:176996",
+      "matched": true,
+      "patch": {},
+      "source": "K-Startup 창업진흥원",
+      "title": "2026년 서울시 기후테크 시제품 제작지원 사업 참가 모집"
+    },
+    {
+      "diff": {},
+      "id": "ac691e6b-6d3e-4e2e-907c-87b010a8b6a5",
+      "match_key": "kstartup:announcement:176759",
+      "matched": true,
+      "patch": {},
+      "source": "K-Startup 창업진흥원",
+      "title": "2026년 서울시 소셜벤처 투자유치 액셀러레이팅 지원사업 참여기업 모집"
+    },
+    {
+      "diff": {},
+      "id": "54f92601-eb4e-4769-9e2d-b7596a634036",
+      "match_key": "kstartup:announcement:176749",
+      "matched": true,
+      "patch": {},
+      "source": "K-Startup 창업진흥원",
+      "title": "[성동구 관내기업] 2026년도 정부지원사업 및 베트남 현지진출 컨설팅 지원기업 모집"
+    },
+    {
+      "diff": {},
+      "id": "bdfd19a9-5469-46b8-bd6a-348088a0f53a",
+      "match_key": "work24:url:AIG20250000505019:3:500020060396",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "컴퓨터활용능력2급(실기)"
+    },
+    {
+      "diff": {},
+      "id": "d0f84bf5-1441-467f-84ac-c35aa754d9f7",
+      "match_key": "work24:url:AIG20250000503208:2:500020042297",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "미용사(일반) 헤어국가자격증 실기과정(단기속성반)"
+    },
+    {
+      "diff": {},
+      "id": "354c41d4-2564-4c7c-9daf-de01b526e6c7",
+      "match_key": "work24:url:AIG20230000419970:2:500020056026",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "자바(JAVA)풀스택개발자 비전공자 선수과정"
+    },
+    {
+      "diff": {},
+      "id": "1df9c63b-7f18-44cc-8ede-c503bd690d7b",
+      "match_key": "work24:url:AIG20250000516201:3:500034251821",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "초보도 가능한 포토샵 자격증 취득 (GTQ)"
+    },
+    {
+      "diff": {},
+      "id": "0b4f2d1f-9c36-46c5-bd9d-3af75dfc6ab7",
+      "match_key": "work24:url:AIG20250000502457:3:500020029446",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "제빵 실기 과정"
+    },
+    {
+      "diff": {},
+      "id": "6b20d995-398b-431f-a72e-25d96fba3d6a",
+      "match_key": "work24:url:AIG20240000492743:9:500020042738",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "콘텐츠 제작을 위한 영상촬영"
+    },
+    {
+      "diff": {},
+      "id": "d52230ee-68af-4305-b93b-39342f6f8d39",
+      "match_key": "work24:url:AIG20250000519068:2:500020059230",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "쉽게 배우는 컴퓨터 활용 기초과정(윈도우,인터넷,한글,엑셀)"
+    },
+    {
+      "diff": {},
+      "id": "329b3589-79d2-4f55-b21a-ab732a6deb6f",
+      "match_key": "work24:hrd:AIG20230000419940",
+      "matched": true,
+      "patch": {},
+      "source": "고용24",
+      "title": "『파이썬』Python 자료구조&알고리즘 프로그래밍"
+    },
+    {
+      "diff": {},
+      "id": "6b430d60-f777-497e-a74a-93774298891d",
+      "match_key": "work24:url:AIG20250000519536:2:500034242603",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "바리스타2급 자격증 취득과정"
+    },
+    {
+      "diff": {},
+      "id": "9f9b70bc-f37e-4187-b1d1-e54518f43ebd",
+      "match_key": "work24:url:AIG20250000505161:1:500020017030",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "Oracle SQL 기초 이해부터 실무활용 과정(SQL/PL-SQL)"
+    },
+    {
+      "diff": {},
+      "id": "00779dba-35dd-4a27-abe3-01e2187bfe54",
+      "match_key": "work24:url:AIG20250000505047:3:500020017030",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "Spring Boot 실무개발 향상과정"
+    },
+    {
+      "diff": {},
+      "id": "5e4c1360-1579-45ab-ae98-f7c06cbe76bd",
+      "match_key": "work24:url:AIG20250000509716:3:500020028586",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "[초보자 가능] C언어 프로그래밍"
+    },
+    {
+      "diff": {},
+      "id": "3de9346b-d6b7-40cc-acf9-00c05836d242",
+      "match_key": "work24:url:AIG20240000467433:4:500020028586",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "실무적용을 위한 라이노 활용 3D모델링&렌더링"
+    },
+    {
+      "diff": {},
+      "id": "25d18f0a-8f47-4de0-9181-6cb31a9a9f5d",
+      "match_key": "kstartup:announcement:177186",
+      "matched": true,
+      "patch": {},
+      "source": "K-Startup 창업진흥원",
+      "title": "2026년 서울창업허브 창동 스타트업 융복합 콘텐츠 제작 영상 콘텐츠 지원 기업 모집"
+    },
+    {
+      "diff": {},
+      "id": "9e66b3eb-9266-426f-a476-23db0d9b268b",
+      "match_key": "work24:url:AIG20250000517769:2:500034251821",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "초보도 가능한 영상편집 (프리미어)"
+    },
+    {
+      "diff": {},
+      "id": "cea15ee4-2608-40cf-84ea-7d6dc858f849",
+      "match_key": "work24:url:AIG20250000514771:7:500020054992",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "[컴활] 컴퓨터활용능력2급(엑셀) 자격증 실기"
+    },
+    {
+      "diff": {},
+      "id": "b5b764fa-591e-4acb-8830-27ddac850a7e",
+      "match_key": "kstartup:announcement:177039",
+      "matched": true,
+      "patch": {},
+      "source": "K-Startup 창업진흥원",
+      "title": "2026 혁신성장 청년 예비 소상공인 지원 사업 참여자 모집"
+    },
+    {
+      "diff": {},
+      "id": "8a7ed15c-30c8-4f71-826d-1c0301229fe3",
+      "match_key": "work24:hrd:AIG20250000512415",
+      "matched": false,
+      "patch": {},
+      "source": "work24_training",
+      "title": "카페디저트 C(치즈케이크/호두타르트/휘낭시에 외)"
+    },
+    {
+      "diff": {},
+      "id": "16b1b502-8dd6-4680-a08d-908bd92d2776",
+      "match_key": "kstartup:announcement:177117",
+      "matched": true,
+      "patch": {},
+      "source": "K-Startup 창업진흥원",
+      "title": "여성 1인 창조기업 지원세터 신규 입주기업 모집"
+    },
+    {
+      "diff": {},
+      "id": "ac4e6ddc-a8ff-4bc1-a5ae-1814a3a4a6fa",
+      "match_key": "work24:url:AIG20250000503822:17:500042687329",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "SCA국제바리스타자격증취득과정(센서리스킬, 브루잉 lv.1)"
+    },
+    {
+      "diff": {},
+      "id": "4c747189-41fa-49ee-81de-da18616205b2",
+      "match_key": "work24:url:AIG20250000517889:1:500034251821",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "초보도 가능한 모션그래픽 (에프터이펙트)"
+    },
+    {
+      "diff": {},
+      "id": "a55edfcc-7f75-4cd8-a00c-0810ecdafa24",
+      "match_key": "work24:hrd:AIG20250000530464",
+      "matched": false,
+      "patch": {},
+      "source": "work24_training",
+      "title": "[26년 최신과정] Smart Designer – AI와 함께하는 포토샵&일러스트"
+    },
+    {
+      "diff": {},
+      "id": "f3fef1ca-de2f-4dbb-a5a9-1d62106d2f31",
+      "match_key": "work24:hrd:AIG20250000517323",
+      "matched": false,
+      "patch": {},
+      "source": "work24_training",
+      "title": "[2026년 최신기출 유형] 엑셀 실무와 컴활2급 자격증 한번에 취득! 자격증 완벽대비"
+    },
+    {
+      "diff": {},
+      "id": "349e502d-29cb-4ac1-bfc7-e3c31c4261f4",
+      "match_key": "work24:hrd:AIG20250000520086",
+      "matched": false,
+      "patch": {},
+      "source": "work24_training",
+      "title": "지게차자격증실기(오전60A)"
+    },
+    {
+      "diff": {},
+      "id": "9a9af977-f205-4514-8ef6-84838bf87572",
+      "match_key": "work24:hrd:AIG20250000519265",
+      "matched": false,
+      "patch": {},
+      "source": "work24_training",
+      "title": "정리수납전문가 2급 자격과정"
+    },
+    {
+      "diff": {},
+      "id": "ae6acfb1-f500-427c-81c3-079197a1a869",
+      "match_key": "work24:url:AIG20250000511667:2:500020011065",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "유통MD실전과정(상품소싱/상세페이지/마케팅)"
+    },
+    {
+      "diff": {},
+      "id": "6c701d18-2186-4429-9219-2eeff5e8dbfc",
+      "match_key": "work24:url:AIG20250000505467:2:500041385185",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "제대로 배우는 앙금플라워 (초급) 떡 케이크 디자이너 자격증 2급 코스"
+    },
+    {
+      "diff": {},
+      "id": "4ba2b564-d975-441a-9c51-2a012a7c3055",
+      "match_key": "work24:url:AIG20250000523223:3:500020062235",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "[종로인기과정] 컴퓨터활용능력2급 필기/실기 정규반"
+    },
+    {
+      "diff": {},
+      "id": "ca70dd29-08c7-4390-aeca-93bae12d1439",
+      "match_key": "work24:url:AIG20250000525495:5:500034075211",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "인사노무/사무관리직원 취업과정"
+    },
+    {
+      "diff": {},
+      "id": "8244856a-5763-48fd-887a-e76a5f84ac54",
+      "match_key": "work24:url:AIG20250000513049:1:500020022549",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "[한방의 끝!] 전산응용건축제도기능사 실기 자격증"
+    },
+    {
+      "diff": {},
+      "id": "ab2c6a3c-957c-4a82-9602-a13eda76b298",
+      "match_key": "work24:url:AIG20250000510633:1:500020021310",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "[UI/UX] 웹콘텐츠제작(HTML5,CSS3)"
+    },
+    {
+      "diff": {},
+      "id": "c7ee1430-8737-4f68-ba88-82f255ca4d38",
+      "match_key": "work24:url:AIG20230000435094:1:500020021310",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "웹퍼블리셔(자바스크립트,제이쿼리)"
+    },
+    {
+      "diff": {},
+      "id": "cf7536f2-a6c7-411e-a660-c984a115676d",
+      "match_key": "work24:url:AIG20230000434911:1:500020021310",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "웹퍼블리셔(웹코딩 향상,HTML5+CSS3)"
+    },
+    {
+      "diff": {},
+      "id": "b014be9f-f1cf-4fc6-9b62-16569758f76c",
+      "match_key": "work24:hrd:AIG20250000525376",
+      "matched": false,
+      "patch": {},
+      "source": "work24_training",
+      "title": "『낮과정』 컴퓨터활용능력 2급 필기+실기 자격증 취득"
+    },
+    {
+      "diff": {},
+      "id": "4c13ee95-4ac3-42c7-8287-6288fa141fea",
+      "match_key": "work24:url:AIG20240000478535:3:500020046288",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "[오전]컴퓨터활용능력2급_사무OA 필수 자격증 취득과정"
+    },
+    {
+      "diff": {},
+      "id": "c622c153-9aaa-4e7b-91e3-d7cf1a25037f",
+      "match_key": "work24:url:AIG20250000508410:5:500042718541",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "플로리스트 기초과정(입문)"
+    },
+    {
+      "diff": {},
+      "id": "67133b4c-7735-4b38-8cb2-1ab81549235d",
+      "match_key": "work24:url:AIG20250000509750:3:500020028586",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "플러터(Flutter)를 활용한 앱개발 입문"
+    },
+    {
+      "diff": {},
+      "id": "009b83d3-c89f-47bc-a944-b748dcd3fad7",
+      "match_key": "work24:url:AIG20240000467543:3:500020028586",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "쉽게 배우는 데이터베이스 MySQL"
+    },
+    {
+      "diff": {},
+      "id": "6272f733-6b35-4f94-a8d7-a58057661bbd",
+      "match_key": "work24:url:AIG20240000467367:6:500020028586",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "3DMAX (모델링&랜더링)실무 향상 과정"
+    },
+    {
+      "diff": {},
+      "id": "e45fd638-d51a-4054-9648-a225849ac001",
+      "match_key": "work24:url:AIG20250000509761:3:500020028586",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "IOS 앱 제작 SWIFT프로그래밍 입문"
+    },
+    {
+      "diff": {},
+      "id": "faf4f9ce-83f2-4155-a0b9-9af3f7763707",
+      "match_key": "work24:url:AIG20240000468540:4:500020028586",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "쉽게 배우는 앱 제작: Flutter(플러터)로 빠르게 배우기"
+    },
+    {
+      "diff": {},
+      "id": "09a9c98c-5a44-4239-beda-24930eeedd5d",
+      "match_key": "work24:url:AIG20250000509753:3:500020028586",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "플러터(Flutter)를 활용한 앱개발 중급"
+    },
+    {
+      "diff": {},
+      "id": "36acef88-2f1c-44c6-af1f-ab36642910f7",
+      "match_key": "work24:url:AIG20250000524268:1:500020011065",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "글로벌 셀러(해외구매대행)"
+    },
+    {
+      "diff": {},
+      "id": "92a14f28-5d29-4863-ae04-adbfb8909c10",
+      "match_key": "work24:url:AIG20250000524334:2:500020011065",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "실전 스마트스토어"
+    },
+    {
+      "diff": {},
+      "id": "887b0b7f-1ff6-410a-9d92-5f83513c4d7e",
+      "match_key": "work24:url:AIG20250000510056:2:500038997583",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "영국식 플라워 디자인"
+    },
+    {
+      "diff": {},
+      "id": "09269c67-0d42-47c5-a24c-e13cddab3438",
+      "match_key": "work24:url:AIG20240000468578:1:500020028586",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "본격적으로 배우는 마켓출시를 위한 플러터 개발"
+    },
+    {
+      "diff": {},
+      "id": "6fba7755-73b2-4f25-8908-67e9e0a65d4e",
+      "match_key": "work24:url:AIG20250000502305:3:500020042297",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "속눈썹 펌&연장 현장실무"
+    },
+    {
+      "diff": {},
+      "id": "a3035ef4-d18e-45aa-bda6-ec7bd1917e44",
+      "match_key": "work24:url:AIG20240000467536:4:500020028586",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "마케터, 기획자를 위한 실전 데이터 분석(GA)"
+    },
+    {
+      "diff": {},
+      "id": "1971019a-35b9-4516-b556-3b15ff44d037",
+      "match_key": "work24:url:AIG20250000509686:3:500020028586",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "[AI개발] GPT&Python(파이썬)프로그래밍 입문"
+    },
+    {
+      "diff": {},
+      "id": "ad9e54a5-ef6e-46c3-92dd-3ef1a7fdd49d",
+      "match_key": "work24:url:AIG20240000468639:5:500020028586",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "C,C++로 시작하는 기초 프로그래밍"
+    },
+    {
+      "diff": {},
+      "id": "26c646e0-8215-412d-bfe9-ff982e27b703",
+      "match_key": "work24:url:AIG20240000468522:2:500020028586",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "쉽게배우는 자바(Java) 프로그래밍 입문"
+    },
+    {
+      "diff": {},
+      "id": "5afa31f2-b00e-4f35-80a2-5c1864037e97",
+      "match_key": "work24:url:AIG20240000468584:1:500020028586",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "SWIFT로 배우는 IOS 입문"
+    },
+    {
+      "diff": {},
+      "id": "34a0558b-d24a-446b-9917-8e170638736d",
+      "match_key": "work24:url:AIG20250000509740:2:500020028586",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "파이썬 활용 머신러닝 기초"
+    },
+    {
+      "diff": {},
+      "id": "dd6af590-505d-465a-8e79-757f0e821b5d",
+      "match_key": "work24:url:AIG20250000511720:1:500020011065",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "SNS 마케팅(블로그/인스타 최적화)"
+    },
+    {
+      "diff": {},
+      "id": "edec874c-b345-4f6c-8c87-61da1f72fc6b",
+      "match_key": "work24:url:AIG20250000511541:2:500020011065",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "AI를 활용한 마케팅(포지셔닝/상세페이지제작)"
+    },
+    {
+      "diff": {},
+      "id": "05c28019-f57b-421d-8a04-363996d3cdda",
+      "match_key": "work24:url:AIG20250000509746:6:500020028586",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "파이썬(Python)을 활용한 빅데이터분석 실무"
+    },
+    {
+      "diff": {},
+      "id": "42eabbba-7ec3-4128-96cb-933d9598cc98",
+      "match_key": "work24:url:AIG20240000467622:3:500020028586",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "파이썬을 활용한 (Python)데이터 분석 첫걸음"
+    },
+    {
+      "diff": {},
+      "id": "211b3971-3d95-4f77-aa3a-2691220215fa",
+      "match_key": "work24:url:AIG20250000509713:4:500020028586",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "[초보자 가능] 파이썬(Python)프로그래밍"
+    },
+    {
+      "diff": {},
+      "id": "3e820592-b2e5-4bfe-95d8-e7959f51efb8",
+      "match_key": "work24:url:AIG20250000509684:3:500020028586",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "[ChatGPT]를 활용한 자바(JAVA)프로그래밍 입문"
+    },
+    {
+      "diff": {},
+      "id": "95cc00f1-4a92-4fe8-8f5b-a46bc397ab01",
+      "match_key": "work24:hrd:AIG20230000425316",
+      "matched": true,
+      "patch": {},
+      "source": "고용24",
+      "title": "[주말]컴퓨터활용능력2급(필기+실기) 자격증"
+    },
+    {
+      "diff": {},
+      "id": "b7d02a3d-529b-4aba-9999-3bc3af663a44",
+      "match_key": "work24:url:AIG20240000467420:14:500020028586",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "3D프린터 출력을 위한 라이노 3D모델링 입문"
+    },
+    {
+      "diff": {},
+      "id": "3f516180-c1c9-43a5-bc14-4bec70bf7306",
+      "match_key": "work24:url:AIG20230000436106:1:500020062489",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "일러스트 기초부터 GTQi자격증_B"
+    },
+    {
+      "diff": {},
+      "id": "ed9f5c98-bd9e-4b73-b3b3-549b3dd4d0e7",
+      "match_key": "work24:url:AIG20250000512077:2:500020020500",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "승강기(산업)기사 필기특강"
+    },
+    {
+      "diff": {},
+      "id": "ed2e85ed-82c7-4c9e-becf-378daa3398ef",
+      "match_key": "work24:url:AIG20230000426231:4:500020062489",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "포토샵 기초부터 GTQ자격증A"
+    },
+    {
+      "diff": {},
+      "id": "fce4d907-cd0f-4cd8-af58-305620746e1c",
+      "match_key": "work24:hrd:AIG20230000421383",
+      "matched": true,
+      "patch": {},
+      "source": "고용24",
+      "title": "실내건축자격증 실기 (산업)기사 이렇게 쉬웠어?_B"
+    },
+    {
+      "diff": {},
+      "id": "f09156ed-315b-4837-92fb-9c9021eae176",
+      "match_key": "work24:url:AIG20250000523527:1:500020046288",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "『단기속성』핵심만 쏙!쏙! 정보처리산업기사 자격 취득과정(실기)"
+    },
+    {
+      "diff": {},
+      "id": "1baa429b-c418-4f08-9d8b-add99b00b96c",
+      "match_key": "work24:url:AIG20250000517701:7:500034251821",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "초보도 가능한 일러스트 자격증 취득 (GTQ-i)"
+    },
+    {
+      "diff": {},
+      "id": "550e7ec4-3d18-40e4-9486-0562bc8d8dc6",
+      "match_key": "work24:url:AIG20250000519459:3:500020032977",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "바리스타2급자격증(이론+실기)"
+    },
+    {
+      "diff": {},
+      "id": "8d397437-be94-4489-863e-d4cba046fb1a",
+      "match_key": "work24:hrd:AIG20250000519433",
+      "matched": true,
+      "patch": {},
+      "source": "고용24",
+      "title": "포토샵&일러스트 단기 실무활용(디자인로고+명함, 브랜딩)"
+    },
+    {
+      "diff": {},
+      "id": "081f38e1-ab58-47fe-98c9-c76792c15794",
+      "match_key": "work24:url:AIG20250000518688:6:500020044990",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "비전공자를 위한 오토캐드(Auto CAD)_인테리어 시작의 기초"
+    },
+    {
+      "diff": {},
+      "id": "e42a2fcf-51aa-43a2-a498-a992519f65c0",
+      "match_key": "work24:url:AIG20250000509182:1:500020028586",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "입문자를 위한 일러스트(그래픽디자인)"
+    },
+    {
+      "diff": {},
+      "id": "30175282-8261-4e95-98b1-34ea9580f653",
+      "match_key": "work24:url:AIG20250000519331:7:500020032977",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "바리스타2급(이론/실기)"
+    },
+    {
+      "diff": {},
+      "id": "c8e37035-387c-4326-ac0d-d99707aa642f",
+      "match_key": "work24:hrd:AIG20250000522452",
+      "matched": false,
+      "patch": {},
+      "source": "work24_training",
+      "title": "[26년 최신과정/자체시험장] CAT 자격 취득을 위한 AutoCAD 2D 설계 통합과정"
+    },
+    {
+      "diff": {},
+      "id": "4fe708b3-6b6c-49d3-befb-cf07cbd5be81",
+      "match_key": "work24:hrd:AIG20240000482898",
+      "matched": false,
+      "patch": {},
+      "source": "work24_training",
+      "title": "컴퓨터활용능력2급+ITQ(한글,엑셀,파워포인트) 속성대비-자체시험장운영"
+    },
+    {
+      "diff": {},
+      "id": "f942f0c5-01d1-4c7f-ad62-3f91e2a90217",
+      "match_key": "work24:hrd:AIG20250000513924",
+      "matched": false,
+      "patch": {},
+      "source": "work24_training",
+      "title": "『한번에 취득하는』컴퓨터활용능력(컴활) 2급 (필기+실기) 자격증 취득과정 및 사무 취업과정"
+    },
+    {
+      "diff": {},
+      "id": "037c21d7-6387-4b6d-ae85-e74c7359f693",
+      "match_key": "work24:hrd:AVA20253001150516",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "프로직장인을 위한 엑셀 파워포인트2010 종결자 되기!"
+    },
+    {
+      "diff": {},
+      "id": "b90c831f-4c1a-4dfe-9b40-2c44fbabd764",
+      "match_key": "work24:hrd:AVA20253001150525",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "무작정 따라하기 파워포인트 2013과 인포그래픽 활용"
+    },
+    {
+      "diff": {},
+      "id": "fd43057b-85a0-41bb-a770-193654a75d3c",
+      "match_key": "work24:hrd:AVA20253001150537",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "IT를 활용한 프레젠테이션과 파워포인트"
+    },
+    {
+      "diff": {},
+      "id": "0bb6f421-aa81-4c14-8546-646d24467f5c",
+      "match_key": "work24:hrd:AVA20253001130837",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "PhotoShop(포토샵)CC한번에 끝내기"
+    },
+    {
+      "diff": {},
+      "id": "647e2ab2-12f7-4cf7-aadf-f125cd5d8ab6",
+      "match_key": "work24:hrd:AVA20253001130846",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "[OA마스터] ITQ 한글 따라잡기"
+    },
+    {
+      "diff": {},
+      "id": "beee0fcf-e898-4765-b488-d576d8df11cd",
+      "match_key": "work24:hrd:AVA20253001130842",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "쉽게 배우는 시네마4D(영상 3D제작)"
+    },
+    {
+      "diff": {},
+      "id": "9ffe7979-3f7c-4c5c-b2de-9b2f30dc2098",
+      "match_key": "work24:hrd:AVA20253001112841",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "[Adobe CC] 새로움을 창조하는 디자인의 모든 것, 일러스트 & 포토샵"
+    },
+    {
+      "diff": {},
+      "id": "3a874a18-e716-4631-9823-d16a2c444de8",
+      "match_key": "work24:hrd:AVA20253001112907",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "당장 시작해야 하는 영업비밀과 지식재산권"
+    },
+    {
+      "diff": {},
+      "id": "1537e5e1-4ba2-4c0c-8c08-d9a6af82f21d",
+      "match_key": "work24:hrd:AVA20253001130754",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "복잡한 설계는 No! 쉽게 배우는 AutoCAD 2016"
+    },
+    {
+      "diff": {},
+      "id": "af6ba49f-6c63-4144-b0a8-9e91e92fa79b",
+      "match_key": "work24:hrd:AVA20253001130758",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "빅데이터 분석기사 필기, 금손되는 비법!"
+    },
+    {
+      "diff": {},
+      "id": "15d091d8-314c-456e-8880-1ee07ed01eb2",
+      "match_key": "work24:hrd:AVA20253001130766",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "스토리텔링을 활용한 마케팅 성공전략"
+    },
+    {
+      "diff": {},
+      "id": "d967abfd-995e-4d58-b4c1-550752a5223b",
+      "match_key": "work24:hrd:AVA20253001130797",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "한 번에 합격하는 정보처리기사 필기"
+    },
+    {
+      "diff": {},
+      "id": "7d79dc7c-c2da-46c1-86f8-3aae545ff0d6",
+      "match_key": "work24:hrd:AVA20253001150405",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "[원격] 사물인터넷 IoT 지식능력검정 자격대비"
+    },
+    {
+      "diff": {},
+      "id": "9f1acc07-baa6-4029-be2c-965eaeea7fab",
+      "match_key": "work24:hrd:AVA20253001150409",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "[원격] 관리소ERP운영사 2급 필기+실기(공동주택 경리회계 실무)"
+    },
+    {
+      "diff": {},
+      "id": "d6183098-40a9-4d10-8372-86a2d9e27729",
+      "match_key": "work24:hrd:AVA20253001150419",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "IATA공인교육센터 항공사객실승무원(Airline Cabin Crew Training) 자격과정"
+    },
+    {
+      "diff": {},
+      "id": "31e81807-b67f-4023-939f-b5c2409a2f78",
+      "match_key": "work24:hrd:AVA20253001150422",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "인공지능활용능력향상을 위한 데이터 모델링"
+    },
+    {
+      "diff": {},
+      "id": "3eb90d74-5bc2-40f2-8d3d-d5954affbb11",
+      "match_key": "work24:hrd:AVA20253001112924",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "인공지능으로 업그레이드 하는 스마트 마케팅"
+    },
+    {
+      "diff": {},
+      "id": "b232a688-769a-430c-b9c6-58f21cad205b",
+      "match_key": "work24:url:AIG20250000521671:2:500020046288",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "『컴활1급』핵심만 쏙!쏙! 컴퓨터활용능력 1급(실기)자격증 취득"
+    },
+    {
+      "diff": {},
+      "id": "46ad4c43-594d-43fb-a011-3b582f194539",
+      "match_key": "work24:url:AIG20250000521882:1:500020046288",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "『ERP정보관리사』회계2급,인사2급 자격증 취득과정"
+    },
+    {
+      "diff": {},
+      "id": "be5b6f23-eabf-4105-9f6c-7f0d49091128",
+      "match_key": "work24:hrd:AVA20263001248366",
+      "matched": false,
+      "patch": {},
+      "source": "고용24",
+      "title": "[계좌제] [AI 업스킬 시리즈] AI 시대, 디지털 비즈니스 플랫폼 성공 노하우"
+    }
+  ],
+  "mode": "dry-run",
+  "patch_count": 0,
+  "policy": "fill-null-only",
+  "source_record_count": 1415
+}

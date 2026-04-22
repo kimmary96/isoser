@@ -5,9 +5,9 @@ import { cache } from "react";
 
 import { LandingANavBar, LandingATickerBar } from "@/app/(landing)/landing-a/_components";
 import AdSlot from "@/components/AdSlot";
-import { getProgram } from "@/lib/api/backend";
+import { getProgramDetail } from "@/lib/api/backend";
 import { getSiteUrl } from "@/lib/seo";
-import type { Program } from "@/lib/types";
+import type { ProgramDetail } from "@/lib/types";
 
 type ProgramDetailPageProps = {
   params: Promise<{
@@ -15,25 +15,10 @@ type ProgramDetailPageProps = {
   }>;
 };
 
-const getProgramDetail = cache(async (id: string) => getProgram(id));
+const getProgramDetailView = cache(async (id: string) => getProgramDetail(id));
 
-function normalizeTextList(value: string[] | string | null | undefined): string[] {
-  if (Array.isArray(value)) {
-    return value.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
-  }
-
-  if (typeof value === "string" && value.trim()) {
-    return value
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
-  }
-
-  return [];
-}
-
-function formatDateLabel(value: string | null | undefined): string {
-  if (!value) return "정보 없음";
+function formatDateLabel(value: string | null | undefined): string | null {
+  if (!value) return null;
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleDateString("ko-KR");
@@ -48,22 +33,22 @@ function isNotFoundError(error: unknown): boolean {
   return message.includes("404") || message.includes("not found");
 }
 
-function formatProgramPeriod(program: Program): string | undefined {
-  if (!program.start_date && !program.end_date) {
-    return undefined;
+function formatDateRange(startDate: string | null | undefined, endDate: string | null | undefined): string | null {
+  if (!startDate && !endDate) {
+    return null;
   }
 
-  const start = program.start_date ? formatDateLabel(program.start_date) : "시작일 미정";
-  const end = program.end_date ? formatDateLabel(program.end_date) : "종료일 미정";
+  const start = formatDateLabel(startDate) || "시작일 미정";
+  const end = formatDateLabel(endDate) || "종료일 미정";
   return `${start} - ${end}`;
 }
 
-function buildProgramDescription(program: Program): string {
+function buildProgramDescription(program: ProgramDetail): string {
   const summary = [
     program.provider ? `${program.provider}에서 운영하는` : undefined,
-    program.category ? `${program.category} 프로그램.` : "취업 지원 프로그램.",
+    "취업 지원 프로그램.",
     program.location || undefined,
-    formatProgramPeriod(program),
+    program.schedule_text || undefined,
   ].filter(Boolean);
 
   if (summary.length > 0) {
@@ -77,12 +62,12 @@ function omitUndefined<T extends Record<string, unknown>>(value: T): T {
   return Object.fromEntries(Object.entries(value).filter(([, entry]) => entry !== undefined)) as T;
 }
 
-function buildProgramJsonLd(program: Program): Record<string, unknown> | null {
+function buildProgramJsonLd(program: ProgramDetail): Record<string, unknown> | null {
   if (!program.title) {
     return null;
   }
 
-  const description = program.description || program.summary || undefined;
+  const description = program.description || undefined;
   const location = program.location
     ? {
         "@type": "Place",
@@ -99,7 +84,7 @@ function buildProgramJsonLd(program: Program): Record<string, unknown> | null {
     program.support_type || description
       ? omitUndefined({
           "@type": "Offer",
-          price: "0",
+          price: program.fee ?? 0,
           priceCurrency: "KRW",
           description: program.support_type || undefined,
         })
@@ -111,17 +96,16 @@ function buildProgramJsonLd(program: Program): Record<string, unknown> | null {
     name: program.title,
     provider,
     description,
-    educationalLevel: program.category || undefined,
     locationCreated: location,
-    startDate: program.start_date || undefined,
-    endDate: program.end_date || undefined,
+    startDate: program.program_start_date || program.application_start_date || undefined,
+    endDate: program.program_end_date || program.application_end_date || undefined,
     offers,
   });
 }
 
-async function getProgramForPage(id: string): Promise<Program> {
+async function getProgramForPage(id: string): Promise<ProgramDetail> {
   try {
-    return await getProgramDetail(id);
+    return await getProgramDetailView(id);
   } catch (error) {
     if (isNotFoundError(error)) {
       notFound();
@@ -135,7 +119,7 @@ export async function generateMetadata({ params }: ProgramDetailPageProps): Prom
   const { id } = await params;
 
   try {
-    const program = await getProgramDetail(id);
+    const program = await getProgramDetailView(id);
     const title = program.title ? `${program.title} | 이소서` : "프로그램 상세 | 이소서";
     const description = buildProgramDescription(program);
 
@@ -172,9 +156,31 @@ export default async function ProgramDetailPage({ params }: ProgramDetailPagePro
 
   try {
     const program = await getProgramForPage(id);
-    const chips = [...normalizeTextList(program.tags), ...normalizeTextList(program.skills)].slice(0, 10);
-    const externalLink = program.application_url || program.link || program.source_url;
+    const chips = [...program.tags, ...program.tech_stack, ...program.certifications].slice(0, 10);
+    const externalLink = program.source_url;
     const jsonLd = buildProgramJsonLd(program);
+    const applicationPeriod = formatDateRange(program.application_start_date, program.application_end_date);
+    const programPeriod = formatDateRange(program.program_start_date, program.program_end_date);
+    const primaryFacts = [
+      ["운영 기관", program.provider],
+      ["주관/담당", program.organizer],
+      ["지역", program.location],
+      ["신청 기간", applicationPeriod],
+      ["운영 기간", programPeriod],
+      ["운영 방식", program.teaching_method],
+      ["지원 유형", program.support_type],
+      ["수강료", typeof program.fee === "number" ? `${program.fee.toLocaleString("ko-KR")}원` : null],
+      ["지원금", typeof program.support_amount === "number" ? `${program.support_amount.toLocaleString("ko-KR")}원` : null],
+    ].filter(([, value]) => Boolean(value));
+    const optionalFacts = [
+      ["만족도", program.rating],
+      ["취업률", program.job_placement_rate],
+      ["정원", typeof program.capacity_total === "number" ? `${program.capacity_total}명` : null],
+      ["잔여 정원", typeof program.capacity_remaining === "number" ? `${program.capacity_remaining}명` : null],
+      ["담당자", program.manager_name],
+      ["전화", program.phone],
+      ["이메일", program.email],
+    ].filter(([, value]) => Boolean(value));
 
     return (
       <>
@@ -194,19 +200,58 @@ export default async function ProgramDetailPage({ params }: ProgramDetailPagePro
 
             <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-                {program.category || "미분류"}
+                Program Detail
               </p>
               <h1 className="mt-3 text-3xl font-semibold tracking-tight">
                 {program.title || "제목 미정"}
               </h1>
               <div className="mt-5 flex flex-wrap gap-2 text-sm text-slate-600">
-                <span className="rounded-full bg-slate-100 px-3 py-1">{program.provider || "기관 정보 없음"}</span>
-                <span className="rounded-full bg-slate-100 px-3 py-1">{program.location || "지역 정보 없음"}</span>
-                <span className="rounded-full bg-slate-100 px-3 py-1">마감 {formatDateLabel(program.deadline)}</span>
+                {program.provider ? <span className="rounded-full bg-slate-100 px-3 py-1">{program.provider}</span> : null}
+                {program.location ? <span className="rounded-full bg-slate-100 px-3 py-1">{program.location}</span> : null}
+                {program.schedule_text ? <span className="rounded-full bg-slate-100 px-3 py-1">{program.schedule_text}</span> : null}
               </div>
-              <p className="mt-6 whitespace-pre-wrap text-sm leading-7 text-slate-700">
-                {program.description || program.summary || "프로그램 소개가 아직 등록되지 않았습니다."}
-              </p>
+              {program.description ? (
+                <p className="mt-6 whitespace-pre-wrap text-sm leading-7 text-slate-700">{program.description}</p>
+              ) : null}
+
+              {primaryFacts.length > 0 ? (
+                <section className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                  <h2 className="text-base font-semibold text-slate-950">핵심 정보</h2>
+                  <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+                    {primaryFacts.map(([label, value]) => (
+                      <div key={label} className="rounded-xl bg-white px-4 py-3">
+                        <dt className="text-xs font-semibold text-slate-400">{label}</dt>
+                        <dd className="mt-1 text-sm font-medium text-slate-800">{value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </section>
+              ) : null}
+
+              {program.eligibility.length > 0 ? (
+                <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5">
+                  <h2 className="text-base font-semibold text-slate-950">지원 대상</h2>
+                  <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-700">
+                    {program.eligibility.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </section>
+              ) : null}
+
+              {optionalFacts.length > 0 ? (
+                <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5">
+                  <h2 className="text-base font-semibold text-slate-950">추가 운영 정보</h2>
+                  <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+                    {optionalFacts.map(([label, value]) => (
+                      <div key={label}>
+                        <dt className="text-xs font-semibold text-slate-400">{label}</dt>
+                        <dd className="mt-1 text-sm text-slate-700">{value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </section>
+              ) : null}
 
               {chips.length > 0 ? (
                 <div className="mt-6 flex flex-wrap gap-2">
