@@ -4,6 +4,7 @@ from datetime import date, datetime, timedelta, timezone
 import hashlib
 import json
 import logging
+import re
 from typing import Any, Literal, Mapping, Sequence
 
 from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Query
@@ -78,6 +79,10 @@ class ProgramListItem(BaseModel):
     is_certified: bool | None = None
     is_active: bool | None = None
     is_ad: bool | None = None
+    rating_raw: str | None = None
+    rating_normalized: float | None = None
+    rating_scale: int | None = None
+    rating_display: str | None = None
     relevance_score: float | None = None
     final_score: float | None = None
     urgency_score: float | None = None
@@ -142,6 +147,49 @@ class ProgramCompareRelevanceResponse(BaseModel):
 
 class ProgramCountResponse(BaseModel):
     count: int
+
+
+class ProgramDetailResponse(BaseModel):
+    id: str | int | None = None
+    title: str | None = None
+    provider: str | None = None
+    organizer: str | None = None
+    location: str | None = None
+    description: str | None = None
+    application_start_date: str | None = None
+    application_end_date: str | None = None
+    program_start_date: str | None = None
+    program_end_date: str | None = None
+    teaching_method: str | None = None
+    support_type: str | None = None
+    source_url: str | None = None
+    fee: int | None = None
+    support_amount: int | None = None
+    eligibility: list[str] = Field(default_factory=list)
+    schedule_text: str | None = None
+    rating: str | None = None
+    rating_raw: str | None = None
+    rating_normalized: float | None = None
+    rating_scale: int | None = None
+    rating_display: str | None = None
+    review_count: int | None = None
+    job_placement_rate: str | None = None
+    capacity_total: int | None = None
+    capacity_remaining: int | None = None
+    manager_name: str | None = None
+    phone: str | None = None
+    email: str | None = None
+    certifications: list[str] = Field(default_factory=list)
+    tech_stack: list[str] = Field(default_factory=list)
+    tags: list[str] = Field(default_factory=list)
+    curriculum: list[str] = Field(default_factory=list)
+    faq: list[dict[str, str]] = Field(default_factory=list)
+    reviews: list[dict[str, Any]] = Field(default_factory=list)
+    recommended_for: list[str] = Field(default_factory=list)
+    learning_outcomes: list[str] = Field(default_factory=list)
+    career_support: list[str] = Field(default_factory=list)
+    event_banner: str | None = None
+    ai_matching_summary: str | None = None
 
 
 def _serialize_program_recommendation(item: ProgramRecommendation) -> ProgramRecommendItem:
@@ -558,8 +606,38 @@ def _build_program_query_params(
     return params
 
 
+def _normalize_rating_fields(value: Any) -> dict[str, str | float | int | None]:
+    raw = None if value is None else str(value).strip()
+    result: dict[str, str | float | int | None] = {
+        "rating_raw": raw or None,
+        "rating_normalized": None,
+        "rating_scale": None,
+        "rating_display": None,
+    }
+    if not raw or raw.startswith("."):
+        return result
+
+    normalized_text = raw.replace(",", "")
+    match = re.search(r"(?<![\d.])\d+(?:\.\d+)?(?![\d.])", normalized_text)
+    if not match:
+        return result
+
+    score = float(match.group(0))
+    if score <= 0 or score > 100:
+        return result
+
+    normalized_score = score if score <= 5 else score / 20
+    normalized_score = round(normalized_score, 1)
+    result["rating_normalized"] = normalized_score
+    result["rating_scale"] = 5
+    result["rating_display"] = f"{normalized_score:.1f}"
+    return result
+
+
 def _serialize_program_list_row(program: dict[str, Any]) -> dict[str, Any]:
     record = dict(program)
+    compare_meta = record.get("compare_meta") if isinstance(record.get("compare_meta"), dict) else {}
+    record.update(_normalize_rating_fields(record.get("rating") or compare_meta.get("satisfaction_score")))
     deadline = _resolve_program_deadline(record)
     days_left = _calculate_days_left(deadline)
     record["deadline"] = deadline
@@ -1069,6 +1147,128 @@ def _normalize_text_list(value: Any) -> list[str]:
     return [item.strip() for item in text.split(",") if item.strip()]
 
 
+def _first_text(*values: Any) -> str | None:
+    for value in values:
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+        if value not in (None, "", [], {}) and not isinstance(value, (dict, list)):
+            return str(value).strip()
+    return None
+
+
+def _int_or_none(value: Any) -> int | None:
+    if value is None:
+        return None
+    if isinstance(value, int):
+        return value
+    text = "".join(ch for ch in str(value) if ch.isdigit() or ch == "-")
+    if not text:
+        return None
+    try:
+        return int(text)
+    except ValueError:
+        return None
+
+
+def _compact_text_list(*values: Any) -> list[str]:
+    items: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        for item in _normalize_text_list(value):
+            if item not in seen:
+                seen.add(item)
+                items.append(item)
+    return items
+
+
+def _format_detail_schedule_text(
+    *,
+    application_start_date: str | None,
+    application_end_date: str | None,
+    program_start_date: str | None,
+    program_end_date: str | None,
+) -> str | None:
+    if application_start_date or application_end_date:
+        start = application_start_date or "시작일 미정"
+        end = application_end_date or "마감일 미정"
+        return f"신청 {start} ~ {end}"
+    if program_start_date or program_end_date:
+        start = program_start_date or "시작일 미정"
+        end = program_end_date or "종료일 미정"
+        return f"운영 {start} ~ {end}"
+    return None
+
+
+def _build_program_detail_response(program: dict[str, Any]) -> ProgramDetailResponse:
+    compare_meta = program.get("compare_meta") if isinstance(program.get("compare_meta"), dict) else {}
+    source = str(program.get("source") or "").casefold()
+    is_kstartup = "k-startup" in source or "kstartup" in source
+    is_work24 = "고용24" in source or "work24" in source
+
+    application_start_date = _first_text(program.get("reg_start_date"))
+    application_end_date = _first_text(program.get("close_date"), program.get("deadline"))
+    program_start_date = _first_text(program.get("start_date"))
+    program_end_date = _first_text(program.get("end_date"))
+    if is_kstartup:
+        application_start_date = _first_text(program.get("start_date"), program.get("reg_start_date"))
+        application_end_date = _first_text(program.get("end_date"), program.get("deadline"), program.get("close_date"))
+        program_start_date = None
+        program_end_date = None
+    elif is_work24:
+        application_start_date = _first_text(program.get("reg_start_date"))
+        application_end_date = _first_text(program.get("close_date"))
+        program_start_date = _first_text(program.get("start_date"))
+        program_end_date = _first_text(program.get("end_date"))
+
+    capacity_total = _int_or_none(compare_meta.get("capacity"))
+    registered_count = _int_or_none(compare_meta.get("registered_count"))
+    capacity_remaining = None
+    if capacity_total is not None and registered_count is not None:
+        capacity_remaining = max(0, capacity_total - registered_count)
+
+    certification = _first_text(compare_meta.get("certificate"))
+    rating_raw = _first_text(compare_meta.get("satisfaction_score"))
+    rating_fields = _normalize_rating_fields(rating_raw)
+    return ProgramDetailResponse(
+        id=program.get("id"),
+        title=_first_text(program.get("title")),
+        provider=_first_text(program.get("provider")),
+        organizer=_first_text(program.get("sponsor_name"), compare_meta.get("supervising_institution"), compare_meta.get("department")),
+        location=_first_text(program.get("location"), program.get("region_detail"), program.get("region")),
+        description=_first_text(program.get("description"), program.get("summary")),
+        application_start_date=application_start_date,
+        application_end_date=application_end_date,
+        program_start_date=program_start_date,
+        program_end_date=program_end_date,
+        teaching_method=_first_text(program.get("teaching_method"), compare_meta.get("teaching_method")),
+        support_type=_first_text(program.get("support_type"), compare_meta.get("business_type"), compare_meta.get("subsidy_rate")),
+        source_url=_first_text(program.get("application_url"), compare_meta.get("application_url"), program.get("source_url"), program.get("link")),
+        fee=_int_or_none(program.get("cost")),
+        support_amount=_int_or_none(program.get("subsidy_amount")),
+        eligibility=_compact_text_list(program.get("target"), compare_meta.get("target_group"), compare_meta.get("target_detail"), compare_meta.get("target_age")),
+        schedule_text=_format_detail_schedule_text(
+            application_start_date=application_start_date,
+            application_end_date=application_end_date,
+            program_start_date=program_start_date,
+            program_end_date=program_end_date,
+        ),
+        rating=rating_fields["rating_display"],
+        rating_raw=rating_fields["rating_raw"],
+        rating_normalized=rating_fields["rating_normalized"],
+        rating_scale=rating_fields["rating_scale"],
+        rating_display=rating_fields["rating_display"],
+        job_placement_rate=_first_text(compare_meta.get("employment_rate_6m"), compare_meta.get("employment_rate_3m")),
+        capacity_total=capacity_total,
+        capacity_remaining=capacity_remaining,
+        manager_name=_first_text(compare_meta.get("manager_name"), compare_meta.get("department")),
+        phone=_first_text(compare_meta.get("contact_phone")),
+        email=_first_text(compare_meta.get("application_method_email")),
+        certifications=[certification] if certification else [],
+        tech_stack=_compact_text_list(program.get("skills")),
+        tags=_compact_text_list(program.get("tags")),
+    )
+
+
 def _has_meaningful_profile_text(profile: dict[str, Any]) -> bool:
     for key in ("self_intro", "bio"):
         value = profile.get(key)
@@ -1288,6 +1488,22 @@ async def list_popular_programs() -> Any:
             "limit": "10",
         },
     )
+
+
+@programs_router.get("/{program_id}/detail", response_model=ProgramDetailResponse)
+async def get_program_detail(program_id: str) -> ProgramDetailResponse:
+    rows = await request_supabase(
+        method="GET",
+        path="/rest/v1/programs",
+        params={
+            "select": "*",
+            "id": f"eq.{program_id}",
+            "limit": "1",
+        },
+    )
+    if not rows:
+        raise HTTPException(status_code=404, detail="Program not found")
+    return _build_program_detail_response(dict(rows[0]))
 
 
 @programs_router.get("/{program_id}")

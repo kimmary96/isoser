@@ -1,3 +1,5 @@
+import { PROGRAM_FILTER_CHIPS } from "@/lib/program-filters";
+
 export type TickerItem = {
   tone: "red" | "orange" | "amber" | "green";
   text: string;
@@ -26,19 +28,7 @@ export const tickerItems: TickerItem[] = [
   { tone: "green", text: "신규 · 온라인 국비 과정 12건 업데이트" },
 ];
 
-export const chipOptions = [
-  "전체",
-  "마감임박",
-  "AI·데이터",
-  "IT·개발",
-  "디자인",
-  "경영",
-  "창업",
-  "서울",
-  "경기",
-  "온라인",
-  "국비100%",
-];
+export const chipOptions = PROGRAM_FILTER_CHIPS;
 
 export const workspaceStages: WorkspaceStage[] = [
   {

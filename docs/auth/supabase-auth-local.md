@@ -34,23 +34,25 @@ Supabase Auth > URL Configuration에서 아래 값을 로컬 개발 기준으로
 
 주의:
 - 현재 코드에서 콜백 경로는 `/auth/callback`이다. `/callback`이나 `/login/callback`로 등록하면 `frontend/app/auth/callback/route.ts`와 어긋난다.
-- `frontend/middleware.ts`는 루트 `/?code=...` 유입도 `/auth/callback?next=/landing-a`로 다시 정규화한다.
+- `frontend/middleware.ts`는 루트 `/?code=...` 유입도 `/auth/callback?next=/landing-c`로 다시 정규화한다.
 
 ## 로그인 후 이동 규칙
 
 현재 코드 기준 기본 동작:
 - `frontend/app/api/auth/google/route.ts`의 `GET()`:
-  - `next` query가 없으면 `/landing-a`를 기본값으로 사용
+  - `next` query가 없으면 `/landing-c`를 기본값으로 사용
+  - `next` query에 `/dashboard#recommend-calendar`처럼 내부 hash 경로가 들어오면 인코딩된 값 그대로 OAuth callback까지 전달
 - `frontend/app/auth/callback/route.ts`의 `GET()`:
-  - 기존 사용자: `next` 또는 `/landing-a`
+  - 기존 사용자: `next` 또는 `/landing-c`
   - 신규 사용자: `/onboarding`
 - `frontend/middleware.ts`의 `middleware()`:
   - 비로그인 사용자가 `/dashboard*` 또는 `/onboarding`에 접근하면 `/login?redirectedFrom=...`으로 보냄
-  - 이미 로그인된 사용자가 `/login`에 접근하면 `redirectedFrom` 또는 `/landing-a`로 돌려보냄
+  - 이미 로그인된 사용자가 `/login`에 접근하면 `redirectedFrom` 또는 `/landing-c`로 돌려보냄
+  - `redirectedFrom`이 내부 hash 경로를 포함하면 해당 hash까지 보존해 복귀
 
 ## 로컬 점검 항목
 
 1. `/login`에서 `Google로 계속하기` 클릭 시 `/api/auth/google?next=...`가 호출되는지 확인
-2. Google 로그인 후 브라우저 주소가 `/auth/callback`을 거쳐 `/landing-a` 또는 `/onboarding`으로 정리되는지 확인
+2. Google 로그인 후 브라우저 주소가 `/auth/callback`을 거쳐 `/landing-c` 또는 `/onboarding`으로 정리되는지 확인
 3. 비로그인 상태에서 `/dashboard` 접근 시 `/login?redirectedFrom=/dashboard`로 이동하는지 확인
-4. 로그인 상태에서 `/login` 재접속 시 `/landing-a` 또는 `redirectedFrom`으로 복귀하는지 확인
+4. 로그인 상태에서 `/login` 재접속 시 `/landing-c` 또는 `redirectedFrom`으로 복귀하는지 확인

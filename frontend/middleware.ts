@@ -1,6 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+import { DEFAULT_PUBLIC_LANDING, resolveInternalPath } from "@/lib/routes";
+
 type CookieToSet = {
   name: string;
   value: string;
@@ -18,7 +20,7 @@ export async function middleware(request: NextRequest) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/auth/callback";
     if (!redirectUrl.searchParams.get("next")) {
-      redirectUrl.searchParams.set("next", "/landing-a");
+      redirectUrl.searchParams.set("next", DEFAULT_PUBLIC_LANDING);
     }
     return NextResponse.redirect(redirectUrl);
   }
@@ -57,15 +59,20 @@ export async function middleware(request: NextRequest) {
   if (user && pathname === "/login") {
     const redirectUrl = request.nextUrl.clone();
     const redirectedFrom = redirectUrl.searchParams.get("redirectedFrom");
-    redirectUrl.pathname = redirectedFrom && redirectedFrom.startsWith("/") ? redirectedFrom : "/landing-a";
+    const target = resolveInternalPath(redirectedFrom);
+    if (target.includes("?") || target.includes("#")) {
+      return NextResponse.redirect(new URL(target, request.url));
+    }
+    redirectUrl.pathname = target;
     redirectUrl.search = "";
+    redirectUrl.hash = "";
     return NextResponse.redirect(redirectUrl);
   }
 
   if (requiresAuth && !user) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
-    redirectUrl.searchParams.set("redirectedFrom", pathname);
+    redirectUrl.searchParams.set("redirectedFrom", `${pathname}${request.nextUrl.search}`);
     return NextResponse.redirect(redirectUrl);
   }
 

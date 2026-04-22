@@ -1,6 +1,7 @@
 from typing import Dict, List
 
 from .base_api_collector import BaseApiCollector
+from .program_field_mapping import map_work24_training_item
 
 
 class Work24Collector(BaseApiCollector):
@@ -37,10 +38,7 @@ class Work24Collector(BaseApiCollector):
 
     def map_item(self, item: Dict, source_meta: Dict) -> Dict:
         return {
-            "title": str(item.get("title", "")).strip(),
-            "raw_deadline": str(item.get("traEndDate", "")).strip(),
-            "link": str(item.get("titleLink", "")).strip(),
-            "target": [str(item.get("trainTarget", "")).strip()] if str(item.get("trainTarget", "")).strip() else None,
+            **map_work24_training_item(item),
             "source_meta": source_meta,
             "raw": item,
         }

@@ -202,20 +202,25 @@ def test_scheduler_includes_tier4_collectors_in_dry_run(monkeypatch) -> None:
         [_Tier1Collector(), *tier4_collectors],
     )
 
+    def collect_tier4_fixture(self):
+        self.last_collect_status = "success"
+        self.last_collect_message = f"{self.source_name} fixture diagnostics"
+        return [
+            {
+                "title": f"{self.source_name} 테스트 수집",
+                "link": f"https://example.com/{self.source_key}",
+                "raw_deadline": "2026-05-20",
+                "category_hint": "기타",
+                "source_meta": self.get_source_meta(),
+                "raw": {"source": self.source_key},
+            }
+        ]
+
     for collector in tier4_collectors:
         monkeypatch.setattr(
             collector.__class__,
             "collect",
-            lambda self: [
-                {
-                    "title": f"{self.source_name} 테스트 수집",
-                    "link": f"https://example.com/{self.source_key}",
-                    "raw_deadline": "2026-05-20",
-                    "category_hint": "기타",
-                    "source_meta": self.get_source_meta(),
-                    "raw": {"source": self.source_key},
-                }
-            ],
+            collect_tier4_fixture,
         )
 
     result = run_all_collectors(upsert=False)
@@ -233,3 +238,9 @@ def test_scheduler_includes_tier4_collectors_in_dry_run(monkeypatch) -> None:
         "마포구고용복지지원센터",
     ]
     assert all(source["status"] == "dry_run" for source in result["sources"])
+    assert all("raw_items=1" in source["message"] for source in result["sources"])
+    assert all("deduped_rows=1" in source["message"] for source in result["sources"])
+    assert all(
+        "collector_message=" in source["message"]
+        for source in result["sources"][1:]
+    )

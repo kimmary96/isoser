@@ -1,5 +1,57 @@
 # 리팩토링 로그
 
+# 2026-04-22 고용24/K-Startup 수집 필드 매핑 보강
+
+- 변경 파일
+  - `backend/rag/collector/work24_collector.py`
+  - `backend/rag/collector/kstartup_collector.py`
+  - `backend/rag/collector/program_field_mapping.py`
+  - `backend/rag/collector/normalizer.py`
+  - `backend/tests/test_work24_kstartup_field_mapping.py`
+  - `backend/tests/test_program_source_diff_cli.py`
+  - `scripts/program_source_diff.py`
+  - `cowork/packets/TASK-2026-04-22-1800-program-source-field-mapping.md`
+  - `cowork/packets/TASK-2026-04-22-1810-program-schema-backfill.md`
+  - `reports/TASK-2026-04-22-1800-program-source-field-mapping-result.md`
+  - `reports/TASK-2026-04-22-1810-program-schema-backfill-plan.md`
+- 변경 내용
+  - 고용24와 K-Startup API raw에 있던 기관명, 지역, 설명, 시작/종료일, 원본 링크, 비용/지원금 일부, 전화/분류/대상 상세 같은 값을 공통 normalizer row까지 보존하도록 collector mapping을 보강함
+  - source별 field mapping을 `program_field_mapping.py`로 중앙화함
+  - 운영 DB에 없을 수 있는 컬럼은 scheduler payload에 직접 추가하지 않고, 추적용 부가 정보는 기존 `compare_meta` JSONB에 저장하도록 제한함
+  - 프로그램 ID 기준 raw → normalized → DB → API → UI 표시값 diff CLI를 추가함
+  - 운영 DB schema check 결과 `raw_data`, `support_type`, `teaching_method`, `is_certified` 누락을 확인하고 별도 backfill task로 분리함
+  - 고용24/K-Startup 필드 보존 회귀 테스트를 추가함
+- 보존한 동작
+  - 기존 source fetch, normalize, scheduler 상태 반환, `(title, source)` dedupe/upsert 흐름은 유지함
+  - 기존 상세/비교 UI 계약은 바꾸지 않고 이미 참조 중인 `provider`, `location`, `description`, `start_date`, `end_date`, `source_url` 필드를 채우는 방향으로 처리함
+- 검증
+  - `backend\venv\Scripts\python.exe -m pytest backend/tests/test_work24_kstartup_field_mapping.py -q`
+  - `backend\venv\Scripts\python.exe -m pytest backend/tests/test_program_source_diff_cli.py -q`
+  - `backend\venv\Scripts\python.exe -m pytest backend/tests/test_scheduler_collectors.py -q`
+  - 실제 API dry-run 1건씩으로 normalized row에 상세 필드가 남는지 확인함
+- 추가 리팩토링 후보
+  - 운영 DB 스키마 보강 및 기존 row backfill task 실행
+  - 상세/비교 UI의 `정보 없음`/`데이터 미수집`/`매핑 누락` 표시 기준 source trace 기반 분리
+
+## 2026-04-22 Tier 4 crawler diagnostics follow-up
+
+- 수정 파일:
+  - `backend/rag/collector/tier4_collectors.py`
+  - `backend/rag/collector/scheduler.py`
+  - `backend/tests/test_tier4_collectors.py`
+  - `backend/tests/test_scheduler_collectors.py`
+  - `docs/current-state.md`
+- 변경 내용:
+  - Tier 4 district collector가 URL별 요청 성공 수, 요청 실패 수, parse-empty 수를 `last_collect_message`에 남기도록 보강함
+  - scheduler dry-run 결과 메시지에 raw item 수, dedupe 후 row 수, collector 진단 메시지를 포함해 운영자가 0건/중복 제거/selector 의심을 더 빨리 구분할 수 있게 함
+  - Tier 4 collector 진단 메시지와 scheduler dry-run 메시지 계약을 테스트로 고정함
+- 유지된 동작:
+  - collector `.collect()` 반환 형식, normalize 계약, Tier 1~4 정렬, upsert 동작은 변경하지 않음
+  - Tier 4 수집 대상과 selector 자체는 변경하지 않음
+- 검증 메모:
+  - `backend\venv\Scripts\python.exe -m pytest backend/tests/test_tier4_collectors.py backend/tests/test_scheduler_collectors.py -q`
+  - Tier 4 collector 6종 live dry-run 확인: 6종 모두 `status=dry_run`, `failed_count=0`
+
 ## 2026-04-20 docs fast-path lightweight verification
 
 - 수정 파일:
@@ -2274,3 +2326,48 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - landing-a 칩 `AI·데이터`, `IT·개발`, `경영`이 백엔드 저장 카테고리와 다른 문자열을 exact match로 요청해 0건이 되는 문제를 확인함
   - 사용자 노출 라벨은 유지하되 API 요청 카테고리를 각각 `AI`, `IT`, `경영`으로 매핑해 기존 프로그램 목록/count endpoint와 일치시킴
   - `AI·데이터`와 `IT·개발` 필터 URL에서 hero count/live board가 정상 표시되는 것을 로컬 화면으로 확인함
+- 2026-04-22: `frontend/app/page.tsx`, `frontend/middleware.ts`, `frontend/app/auth/callback/route.ts`, `frontend/app/(auth)/login/page.tsx`, `frontend/app/(landing)/landing-c/page.tsx`, `docs/current-state.md`, `docs/auth/supabase-auth-local.md`, `docs/auth/supabase-auth-production.md`
+  - 메인 랜딩 기본 진입점을 `/landing-a`에서 `/landing-c`로 전환하고, 루트 OAuth 유입과 로그인 완료 기본 복귀도 `/landing-c` 기준으로 맞춤
+  - landing-c의 AI/IT/경영 칩 필터를 백엔드 저장 카테고리(`AI`, `IT`, `경영`)로 매핑해 필터 결과가 끊기지 않도록 보정함
+  - landing-c의 시작/추천 CTA를 `/login?redirectedFrom=/dashboard` 또는 `/dashboard#recommend-calendar` 흐름으로 연결하고, 워크스페이스 버튼의 목적지를 라벨과 일치시킴
+- 2026-04-22: `frontend/lib/routes.ts`, `frontend/lib/program-filters.ts`, `frontend/app/page.tsx`, `frontend/middleware.ts`, `frontend/app/api/auth/google/route.ts`, `frontend/app/auth/callback/route.ts`, `frontend/app/(auth)/login/page.tsx`, `frontend/app/(landing)/landing-a/page.tsx`, `frontend/app/(landing)/landing-a/_content.ts`, `frontend/app/(landing)/landing-a/_navigation.tsx`, `frontend/app/(landing)/landing-c/page.tsx`, `docs/current-state.md`, `docs/auth/supabase-auth-local.md`, `docs/auth/supabase-auth-production.md`
+  - `DEFAULT_PUBLIC_LANDING`, 추천 캘린더 경로, 로그인/OAuth href helper를 `frontend/lib/routes.ts`로 공통화해 landing-c 기본 진입과 인증 복귀 경로 drift를 줄임
+  - 랜딩 A/C 칩 목록과 카테고리/지역 API 매핑을 `frontend/lib/program-filters.ts`로 공통화함
+  - 로그인 redirect가 `/dashboard#recommend-calendar` 같은 hash target을 `redirectedFrom`/OAuth `next`로 보존하도록 하고, landing-c의 추천 CTA를 해당 helper로 연결함
+  - landing-c 상단 헤더를 landing-a 기존 헤더 컴포넌트로 교체해 공개 랜딩 헤더 UI를 통일함
+- 2026-04-22: `frontend/components/landing/LandingHeader.tsx`, `frontend/components/landing/program-card-helpers.ts`, `frontend/app/(landing)/landing-a/_navigation.tsx`, `frontend/app/(landing)/landing-a/_program-feed.tsx`, `frontend/app/(landing)/landing-a/_shared.ts`, `frontend/app/(landing)/landing-c/page.tsx`, `frontend/lib/routes.test.ts`, `frontend/lib/program-filters.test.ts`, `frontend/package.json`, `frontend/package-lock.json`, `docs/current-state.md`
+  - 공개 랜딩 헤더 구현을 `frontend/components/landing/LandingHeader.tsx`로 이동해 landing-a/c가 같은 헤더 UI와 인증 CTA 로직을 사용하도록 정리함
+  - 랜딩 A/C 프로그램 카드에서 공유하는 deadline, href, score, tag normalization helper를 `frontend/components/landing/program-card-helpers.ts`로 분리함
+  - Vitest를 dev dependency와 `npm test` 스크립트로 추가하고, `routes.ts`와 `program-filters.ts`의 기본 랜딩, 내부 경로 검증, hash target 보존, 칩 매핑 단위 테스트를 추가함
+- 2026-04-22: `frontend/package.json`, `frontend/package-lock.json`, `docs/current-state.md`, `reports/TASK-2026-04-22-landing-page-c-change-result.md`
+  - 리스크 관리 후속으로 Next.js와 `eslint-config-next`를 `15.5.15`로 업그레이드해 `npm audit --omit=dev` 기준 production 취약점 0건 상태로 정리함
+  - `npm test`, `npm run lint`, `npx tsc -p tsconfig.codex-check.json --noEmit`, `npm run build`를 모두 통과해 패치 업그레이드의 기본 회귀 위험을 확인함
+- 2026-04-22: `frontend/app/(landing)/landing-c/page.tsx`, `docs/current-state.md`, `reports/TASK-2026-04-22-landing-page-c-change-result.md`
+  - landing-c 프로그램 카드를 요약/태그/이소서 관련도 중심에서 제목, 운영기관, 마감, 지원 혜택, 운영 방식, `과정 보기` CTA 중심의 정보형 카드로 재구성함
+  - 상단 이미지 영역은 추가하지 않고 기존 검색/칩 필터, 프로그램 상세 이동, 공통 랜딩 헤더 동작은 유지함
+- 2026-04-22: `frontend/app/(landing)/landing-c/page.tsx`, `frontend/lib/types/index.ts`, `docs/current-state.md`
+  - landing-c Live Board 문구를 `추천 공고 N건`으로 바꾸고, Opportunity feed와 별도 모집중 마감순 목록에서 고용24, 창업진흥원/K-Startup, 새싹/SeSAC 공고를 각 1개씩 고르도록 조정함
+  - 각 소스의 공고는 마감 임박순으로 선택되며 마감일이 지난 공고는 모집중 목록에서 제외되어 다음 후보로 자동 교체되도록 함
+  - Opportunity feed 카드는 제목, 운영기관, 훈련 기간을 본문으로 두고 훈련비, 지역, 내배카 필수, 만족도를 태그로 표시하며, `과정 보기` 옆에 `/compare?ids=` 비교 버튼을 추가함
+- 2026-04-22: `scripts/program_backfill.py`, `backend/routers/programs.py`, `frontend/app/(landing)/programs/[id]/page.tsx`, `frontend/lib/api/backend.ts`, `frontend/lib/types/index.ts`, `backend/tests/test_program_backfill.py`, `docs/current-state.md`
+  - 고용24/K-Startup 기존 `programs` row를 source 고유 식별자 기준으로 보강하는 dry-run/apply 백필 CLI를 추가함
+  - 상세페이지 전용 `GET /programs/{program_id}/detail` 응답 모델을 추가해 목록/비교와 다른 상세 필드 계약을 분리함
+  - 상세페이지는 새 detail 응답을 사용하고, 값이 없는 상세 섹션은 `정보 없음` 문구 남발 대신 섹션 단위로 숨기도록 조정함
+  - 운영 DB 활성 후보에 대해 백필을 적용해 K-Startup/고용24 샘플 row의 기관, 지역, 설명, 일정, 원본 링크가 상세 API와 상세페이지에 노출될 수 있게 함
+- 2026-04-22: `backend/tests/test_programs_router.py`
+  - 상세 응답 계약 회귀 테스트를 추가해 K-Startup의 `start_date/end_date`는 신청 기간으로, 고용24의 `start_date/end_date`는 운영 기간으로 매핑되는 동작을 고정함
+  - 원본 링크 우선순위, 지원 대상, 수강료/지원금, 정원 잔여 계산, 연락처 노출 같은 상세페이지 핵심 필드 매핑도 Supabase 호출 없이 검증하도록 보강함
+- 2026-04-22: `frontend/app/(landing)/landing-c/page.tsx`, `frontend/lib/routes.ts`, `frontend/lib/routes.test.ts`, `docs/current-state.md`
+  - landing-c 히어로의 `지금 지원 가능한 프로그램 보기` CTA 옆에 `내 이력 등록` 버튼을 추가함
+  - 온보딩 PDF 이력 등록 경로를 `ONBOARDING_RESUME_IMPORT = "/onboarding"` 상수로 추가하고, 버튼은 `getLoginHref(ONBOARDING_RESUME_IMPORT)`를 사용해 로그인 후 온보딩으로 복귀하도록 연결함
+  - routes 단위 테스트에 온보딩 redirect href 생성을 추가해 인증 복귀 경로 회귀를 고정함
+- 2026-04-22: `frontend/app/(landing)/landing-c/page.tsx`, `docs/current-state.md`
+  - landing-a의 6단계 순환 흐름 섹션을 landing-c의 Opportunity feed와 Career Asset Workspace 사이에 추가함
+  - landing-c의 흰 패널, 얇은 보더, 차분한 surface 카드 톤에 맞춰 시각 스타일을 조정하고 기존 section order와 CTA 동작은 유지함
+- 2026-04-22: `frontend/app/(landing)/landing-c/page.tsx`, `docs/current-state.md`
+  - landing-c의 기존 Journey 섹션을 제거하고 Circular flow 섹션을 해당 위치로 이동해 흐름 설명 섹션 중복을 줄임
+  - Opportunity feed 다음에는 Career Asset Workspace가 바로 이어지고, 기능 미리보기 뒤에 Circular flow가 노출되도록 section order를 정리함
+- 2026-04-22: `backend/rag/collector/work24_detail_parser.py`, `scripts/program_backfill.py`, `backend/tests/test_program_backfill.py`, `docs/current-state.md`
+  - `program_backfill.py` 안에 있던 고용24 상세 HTML 파싱 책임을 `work24_detail_parser.py`로 분리함
+  - 백필 스크립트는 source URL과 title을 넘겨 상세 필드 dict를 받아 `SourceRecord`로 감싸는 역할만 남겨 책임을 줄임
+  - 기존 고용24 상세 fallback 테스트는 새 파서 모듈의 HTTP mock 경로를 사용하도록 갱신해 동작 유지 여부를 확인함

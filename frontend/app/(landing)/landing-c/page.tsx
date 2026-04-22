@@ -2,18 +2,19 @@ import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { getProgramCount, listPrograms } from "@/lib/api/backend";
-import { getSiteUrl } from "@/lib/seo";
-import type { Program, ProgramListParams } from "@/lib/types";
-
+import { listPrograms } from "@/lib/api/backend";
 import {
   getProgramCompareHref,
   getProgramDeadline,
   getProgramDeadlineTone,
   getProgramDetailHref,
-  getProgramScore,
-  normalizeTextList,
-} from "../landing-a/_shared";
+} from "@/components/landing/program-card-helpers";
+import { PROGRAM_FILTER_CHIPS, buildProgramFilterParams } from "@/lib/program-filters";
+import { DASHBOARD_RECOMMEND_CALENDAR, ONBOARDING_RESUME_IMPORT, getLoginHref } from "@/lib/routes";
+import { getSiteUrl } from "@/lib/seo";
+import type { Program } from "@/lib/types";
+
+import { LandingHeader } from "@/components/landing/LandingHeader";
 
 export const metadata: Metadata = {
   title: "이소서 - 취업 지원 탐색부터 서류 준비까지",
@@ -47,6 +48,10 @@ const themeVars = {
   "--indigo": "oklch(0.38 0.14 265)",
   "--indigo-hi": "oklch(0.44 0.14 265)",
   "--teal": "oklch(0.52 0.10 196)",
+  "--blue": "#2B6FF2",
+  "--sky": "#8FC2FF",
+  "--fire": "#F97316",
+  "--fire-lo": "#EA580C",
   "--surface": "#F4F7FB",
   "--surface-strong": "#E8EEF8",
   "--border": "#D8E3F2",
@@ -55,28 +60,35 @@ const themeVars = {
   "--green": "#22C55E",
 } as CSSProperties;
 
-const chips = ["전체", "마감임박", "AI·데이터", "IT·개발", "디자인", "경영", "창업", "서울", "경기", "온라인", "국비100%"];
-
-const chipCategoryMap: Record<string, string> = {
-  "AI·데이터": "AI·데이터",
-  "IT·개발": "IT·개발",
-  디자인: "디자인",
-  경영: "경영·마케팅",
-  창업: "창업",
-};
-
-const chipRegionMap: Record<string, string[]> = {
-  서울: ["서울"],
-  경기: ["경기"],
-  온라인: ["온라인"],
-};
-
-const tickerItems = [
-  "D-1 · K-디지털 풀스택 개발자 과정 · HRD넷",
-  "D-3 · 청년 AI 데이터 인턴십 · 고용24",
-  "D-5 · 포트폴리오 디자인 트랙 · 서울시",
-  "D-7 · 퍼포먼스 마케팅 취업캠프 · 고용24",
-];
+const chips = PROGRAM_FILTER_CHIPS;
+const OPPORTUNITY_FEED_SIZE = 6;
+const SEOUL_DISTRICTS = [
+  "강남",
+  "강동",
+  "강북",
+  "강서",
+  "관악",
+  "광진",
+  "구로",
+  "금천",
+  "노원",
+  "도봉",
+  "동대문",
+  "동작",
+  "마포",
+  "서대문",
+  "서초",
+  "성동",
+  "성북",
+  "송파",
+  "양천",
+  "영등포",
+  "용산",
+  "은평",
+  "종로",
+  "중구",
+  "중랑",
+] as const;
 
 const workflowCards = [
   {
@@ -101,12 +113,38 @@ const workflowCards = [
   },
 ] as const;
 
-const journeySteps = [
-  ["A", "탐색", "지원 가능 공고를 공공기관별 원문 대신 공통된 구조로 확인합니다."],
-  ["B", "판단", "비교 화면과 관련도 정보로 지금 지원할 공고를 줄여갑니다."],
-  ["C", "준비", "로그인 후 프로필과 성과저장소를 연결해 서류 초안과 맞춤 추천을 받습니다."],
-  ["D", "실행", "대시보드에서 매치 분석과 문서 편집을 마치고 지원으로 넘어갑니다."],
-];
+const circularFlowSteps = [
+  {
+    step: "01",
+    title: "프로그램 탐색",
+    description: "마감, 지역, 관심 분야를 기준으로 지원 가능한 공고를 확인합니다.",
+  },
+  {
+    step: "02",
+    title: "이력/활동 등록",
+    description: "관심 분야와 활동 이력을 연결해 추천 기준을 만듭니다.",
+  },
+  {
+    step: "03",
+    title: "맞춤 추천",
+    description: "프로필과 일정에 맞는 프로그램을 추천 캘린더로 정리합니다.",
+  },
+  {
+    step: "04",
+    title: "지원 문서 생성",
+    description: "선택한 공고에 맞춰 이력서와 포트폴리오 초안을 준비합니다.",
+  },
+  {
+    step: "05",
+    title: "참여 성과 저장",
+    description: "활동 결과와 STAR 경험을 성과저장소에 남깁니다.",
+  },
+  {
+    step: "06",
+    title: "다음 추천/취업 준비 재사용",
+    description: "쌓인 이력 데이터를 다음 추천과 면접 준비에 다시 씁니다.",
+  },
+] as const;
 
 function takeFirst(value?: string | string[]): string {
   return Array.isArray(value) ? value[0] ?? "" : value ?? "";
@@ -121,96 +159,330 @@ function normalizeKeyword(value?: string | string[]): string {
   return takeFirst(value).trim();
 }
 
-function buildProgramParams(activeChip: string, keyword: string): ProgramListParams {
-  const params: ProgramListParams = {
-    q: keyword || undefined,
-    sort: "deadline",
-    limit: 6,
-  };
-
-  if (activeChip === "마감임박") {
-    params.recruiting_only = true;
-    return params;
-  }
-
-  const category = chipCategoryMap[activeChip];
-  if (category) {
-    params.category = category;
-    return params;
-  }
-
-  const regions = chipRegionMap[activeChip];
-  if (regions) {
-    params.regions = regions;
-    return params;
-  }
-
-  if (activeChip === "국비100%") {
-    params.q = keyword ? `${keyword} 국비 100%` : "국비 100%";
-  }
-
-  return params;
+function sourceLabel(program: Program): string {
+  return [program.source || program.provider, locationLabel(program)].filter(Boolean).join(" · ") || "프로그램 정보";
 }
 
-function sourceLabel(program: Program): string {
-  return [program.source || program.provider, program.location].filter(Boolean).join(" · ") || "프로그램 정보";
+function providerLabel(program: Program): string {
+  if (program.provider) {
+    return program.provider;
+  }
+
+  const source = program.source?.toLowerCase();
+  if (source === "sesac") {
+    return "청년취업사관학교 SeSAC";
+  }
+  if (source?.includes("work24") || program.source === "고용24") {
+    return "고용24";
+  }
+
+  return program.source || "운영 기관 확인 필요";
+}
+
+function normalizeMetaText(value: string | boolean | null | undefined): string | null {
+  if (typeof value === "boolean") {
+    return value ? "필수" : null;
+  }
+
+  const text = value?.trim();
+  return text ? text : null;
+}
+
+function formatWon(value: string | number | null | undefined): string | null {
+  const amount = parseMetricNumber(value);
+  if (amount === null) {
+    return null;
+  }
+
+  if (amount === 0) {
+    return "무료";
+  }
+
+  return `${amount.toLocaleString("ko-KR")}원`;
+}
+
+function trainingFeeLabel(program: Program): string {
+  return formatWon(program.cost) || normalizeMetaText(program.compare_meta?.subsidy_rate) || "확인 필요";
+}
+
+function hasTomorrowLearningCardRequirement(program: Program): boolean {
+  const explicit = program.compare_meta?.naeilbaeumcard_required;
+  if (explicit === true || explicit === "pass" || explicit === "block") {
+    return true;
+  }
+
+  const text = [
+    program.support_type,
+    program.description,
+    program.summary,
+    program.compare_meta?.target_group,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  return /내일배움카드|국민내일배움카드|내배카/.test(text);
+}
+
+function trainingPeriodLabel(program: Program): string {
+  if (program.start_date || program.end_date) {
+    return [program.start_date || "시작일 미정", program.end_date || "종료일 미정"].join(" ~ ");
+  }
+
+  const titlePeriod = extractPeriodFromTitle(program.title);
+  if (titlePeriod) {
+    return titlePeriod;
+  }
+
+  return program.deadline ? `모집 마감 ${program.deadline}` : "일정 확인 필요";
+}
+
+function displayTitle(program: Program): string {
+  const title = program.title || "제목 미정";
+  return title
+    .replace(/\s*모집\s*기간\s*\d{4}[.-]\d{2}[.-]\d{2}\s*-\s*\d{4}[.-]\d{2}[.-]\d{2}\s*\d*\s*$/u, "")
+    .replace(/^모집예정\s+/u, "")
+    .trim() || title;
+}
+
+function extractPeriodFromTitle(title: string | null | undefined): string | null {
+  const match = title?.match(/모집\s*기간\s*(\d{4})[.-](\d{2})[.-](\d{2})\s*-\s*(\d{4})[.-](\d{2})[.-](\d{2})/u);
+  if (!match) {
+    return null;
+  }
+
+  const [, startYear, startMonth, startDay, endYear, endMonth, endDay] = match;
+  return `모집 ${startYear}-${startMonth}-${startDay} ~ ${endYear}-${endMonth}-${endDay}`;
+}
+
+function compactDistrictLocation(location: string): string {
+  const normalized = location.replace(/\([^)]*\)/g, " ").replace(/\s+/g, " ").trim();
+  const attachedDistrict = normalized.match(/^(서울특별시|서울시|서울)\s*([가-힣]+구)/u);
+  if (attachedDistrict) {
+    return `${attachedDistrict[1]} ${attachedDistrict[2]}`;
+  }
+
+  const tokens = normalized.split(" ");
+  const districtIndex = tokens.findIndex((token) => /[가-힣]+(구|군)$/u.test(token));
+  if (districtIndex >= 0) {
+    return tokens.slice(0, districtIndex + 1).join(" ");
+  }
+
+  return normalized;
+}
+
+function locationLabel(program: Program): string | null {
+  const location = normalizeMetaText(program.location);
+  if (location) {
+    if (/온라인|비대면|원격/i.test(location)) {
+      return null;
+    }
+    return compactDistrictLocation(location);
+  }
+
+  const title = program.title || "";
+  const district = SEOUL_DISTRICTS.find((name) => title.includes(name));
+  return district ? `서울 ${district}구` : null;
+}
+
+function trainingModeLabel(program: Program): "온라인" | "오프라인" | "온·오프라인" | null {
+  const text = [
+    program.teaching_method,
+    program.compare_meta?.teaching_method,
+    program.application_method,
+    program.location,
+    program.title,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const hasOnline = /온라인|비대면|원격|zoom|줌|인터넷/i.test(text);
+  const hasOffline = /오프라인|대면|집체|현장|방문/i.test(text);
+  if (/혼합|온.?오프|블렌디드/i.test(text) || (hasOnline && hasOffline)) {
+    return "온·오프라인";
+  }
+  if (hasOnline) {
+    return "온라인";
+  }
+  if (hasOffline || locationLabel(program)) {
+    return "오프라인";
+  }
+  return null;
+}
+
+function programTagItems(program: Program): Array<{ label: string; tone: "green" | "blue" | "amber" | "indigo" }> {
+  const tags: Array<{ label: string; tone: "green" | "blue" | "amber" | "indigo" }> = [
+    { label: `훈련비 ${trainingFeeLabel(program)}`, tone: "green" },
+  ];
+
+  const trainingMode = trainingModeLabel(program);
+  if (trainingMode) {
+    tags.push({ label: trainingMode, tone: "indigo" });
+  }
+
+  const location = locationLabel(program);
+  if (location) {
+    tags.push({ label: location, tone: "blue" });
+  }
+
+  if (hasTomorrowLearningCardRequirement(program)) {
+    tags.push({ label: "내배카 필수", tone: "amber" });
+  }
+
+  const rating = programRatingDisplay(program);
+  if (rating !== null) {
+    tags.push({ label: `만족도 ${rating}`, tone: "indigo" });
+  }
+
+  return tags;
+}
+
+function parseMetricNumber(value: string | number | null | undefined): number | null {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
+
+  const normalized = value?.replace(/,/g, "").match(/\d+(?:\.\d+)?/)?.[0];
+  if (!normalized) {
+    return null;
+  }
+
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function normalizeProgramRatingDisplay(value: string | number | null | undefined): string | null {
+  if (typeof value === "string" && /(^|[^\d])\.\d/u.test(value.trim())) {
+    return null;
+  }
+
+  const rating = parseMetricNumber(value);
+  if (rating === null || rating <= 0 || rating > 100) {
+    return null;
+  }
+
+  const normalizedRating = rating <= 5 ? rating : rating / 20;
+  return normalizedRating.toFixed(1);
+}
+
+function programRatingDisplay(program: Program): string | null {
+  return (
+    program.rating_display ||
+    normalizeProgramRatingDisplay(program.rating) ||
+    normalizeProgramRatingDisplay(program.compare_meta?.satisfaction_score)
+  );
+}
+
+function opportunityCompletenessScore(program: Program): number {
+  let score = 0;
+  if (program.provider) score += 3;
+  if (program.start_date || program.end_date) score += 3;
+  else if (extractPeriodFromTitle(program.title) || program.deadline) score += 1;
+  if (locationLabel(program)) score += 2;
+  if (program.cost !== null && program.cost !== undefined) score += 1;
+  if (programRatingDisplay(program) !== null) score += 1;
+  return score;
+}
+
+function orderOpportunityPrograms(programs: Program[]): Program[] {
+  return programs
+    .map((program, index) => ({ program, index }))
+    .toSorted((a, b) => {
+      const scoreDiff = opportunityCompletenessScore(b.program) - opportunityCompletenessScore(a.program);
+      return scoreDiff || a.index - b.index;
+    })
+    .map(({ program }) => program)
+    .slice(0, OPPORTUNITY_FEED_SIZE);
+}
+
+const liveBoardSources = [
+  {
+    label: "고용24",
+    matches: ["고용24", "work24"],
+  },
+  {
+    label: "창업진흥원",
+    matches: ["창업진흥원", "k-startup", "kstartup"],
+  },
+  {
+    label: "새싹",
+    matches: ["새싹", "sesac", "seoul software academy"],
+  },
+] as const;
+
+function liveBoardSourceText(program: Program): string {
+  return [program.source, program.provider].filter(Boolean).join(" ").toLowerCase();
+}
+
+function isLiveBoardSource(program: Program, matches: readonly string[]): boolean {
+  const sourceText = liveBoardSourceText(program);
+  return matches.some((keyword) => sourceText.includes(keyword.toLowerCase()));
+}
+
+function parseDeadlineTime(program: Program): number {
+  const timestamp = Date.parse(String(program.deadline || program.end_date || ""));
+  return Number.isNaN(timestamp) ? Number.MAX_SAFE_INTEGER : timestamp;
+}
+
+function getLiveBoardPrograms(programs: Program[]): Program[] {
+  return liveBoardSources.flatMap((source) => {
+    const sourcePrograms = programs
+      .filter((program) => isLiveBoardSource(program, source.matches))
+      .filter((program) => typeof program.days_left !== "number" || program.days_left >= 0)
+      .toSorted((a, b) => parseDeadlineTime(a) - parseDeadlineTime(b));
+
+    return sourcePrograms[0] ? [sourcePrograms[0]] : [];
+  });
 }
 
 function ProgramCard({ program }: { program: Program }) {
-  const chips = [...normalizeTextList(program.tags), ...normalizeTextList(program.skills)].slice(0, 3);
-  const score = Math.max(0, Math.min(getProgramScore(program), 100));
-  const urgent = typeof program.days_left === "number" && program.days_left <= 3;
+  const tagItems = programTagItems(program);
 
   return (
     <article
-      className={`flex min-h-[360px] flex-col rounded-[22px] border bg-white p-6 shadow-[0_18px_46px_rgba(10,19,37,0.06)] transition hover:-translate-y-1 hover:shadow-[0_26px_64px_rgba(10,19,37,0.1)] ${
-        urgent ? "border-[rgba(239,68,68,0.32)]" : "border-[var(--border)]"
-      }`}
+      className="flex min-h-[300px] flex-col rounded-[18px] border border-[var(--border)] bg-white p-6 shadow-[0_16px_42px_rgba(10,19,37,0.08)] transition hover:-translate-y-1 hover:shadow-[0_24px_58px_rgba(10,19,37,0.12)]"
     >
-      <div className="flex items-start justify-between gap-5">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--muted)]">{sourceLabel(program)}</p>
-          <h3 className="mt-3 text-lg font-extrabold leading-7 tracking-[-0.03em] text-[var(--ink)]">
-            {program.title || "제목 미정"}
-          </h3>
-        </div>
-        <div className={`shrink-0 text-xl font-black tracking-[-0.05em] ${getProgramDeadlineTone(program)}`}>
-          {getProgramDeadline(program)}
-        </div>
+      <div>
+        <h3 className="line-clamp-2 min-h-[3.5rem] text-xl font-black leading-7 tracking-[-0.04em] text-[var(--ink)]">
+          <Link href={getProgramDetailHref(program)} className="transition hover:text-[var(--indigo)]">
+            {displayTitle(program)}
+          </Link>
+        </h3>
+        <p className="mt-2 line-clamp-1 text-sm font-bold text-[var(--sub)]">{providerLabel(program)}</p>
+        <p className="mt-2 line-clamp-1 text-sm font-semibold text-[var(--sub)]">{trainingPeriodLabel(program)}</p>
       </div>
 
       <div className="mt-5 flex flex-wrap gap-2">
-        <span className="rounded-full bg-[var(--surface-strong)] px-3 py-1 text-xs font-bold text-[var(--indigo)]">
-          {program.category || "카테고리 미분류"}
-        </span>
-        {chips.map((chip) => (
-          <span key={`${program.id}-${chip}`} className="rounded-full border border-[var(--border)] px-3 py-1 text-xs font-semibold text-[var(--sub)]">
-            {chip}
+        {tagItems.map((item) => (
+          <span
+            key={`${program.id}-${item.label}`}
+            className={`rounded-full px-3 py-1.5 text-xs font-extrabold ${
+              item.tone === "green"
+                ? "bg-[rgba(16,185,129,0.12)] text-emerald-700"
+                : item.tone === "amber"
+                  ? "bg-[rgba(245,158,11,0.12)] text-amber-700"
+                  : item.tone === "indigo"
+                    ? "bg-[var(--surface-strong)] text-[var(--indigo)]"
+                    : "bg-[var(--surface)] text-[var(--sub)]"
+            }`}
+          >
+            {item.label}
           </span>
         ))}
       </div>
 
-      <p className="mt-5 line-clamp-3 text-sm leading-7 text-[var(--sub)]">
-        {program.summary || program.description || "프로그램 요약이 아직 등록되지 않았습니다."}
-      </p>
-
-      <div className="mt-auto pt-6">
-        <div className="mb-2 flex items-center justify-between text-xs font-bold text-[var(--sub)]">
-          <span>이소서 관련도</span>
-          <span>{score}%</span>
-        </div>
-        <div className="h-2 overflow-hidden rounded-full bg-[var(--surface-strong)]">
-          <div className="h-full rounded-full bg-[linear-gradient(90deg,var(--indigo),var(--teal))]" style={{ width: `${score}%` }} />
-        </div>
-
-        <div className="mt-6 flex gap-2">
-          <Link href={getProgramDetailHref(program)} className="flex-1 rounded-full bg-[var(--ink)] px-4 py-3 text-center text-sm font-extrabold text-white transition hover:bg-[var(--indigo)]">
-            자세히 보기
-          </Link>
-          <Link href={getProgramCompareHref(program)} className="rounded-full border border-[var(--border)] px-5 py-3 text-sm font-extrabold text-[var(--ink)] transition hover:border-[var(--indigo)] hover:text-[var(--indigo)]">
-            비교
-          </Link>
-        </div>
+      <div className="mt-auto grid grid-cols-[1fr_auto] gap-2 pt-6">
+        <Link
+          href={getProgramDetailHref(program)}
+          className="rounded-xl bg-[var(--blue)] px-4 py-3 text-center text-sm font-black text-white transition hover:bg-[var(--indigo)]"
+        >
+          과정 보기
+        </Link>
+        <Link
+          href={getProgramCompareHref(program)}
+          className="rounded-xl border border-[var(--border)] bg-white px-4 py-3 text-center text-sm font-black text-[var(--ink)] transition hover:border-[var(--indigo)] hover:text-[var(--indigo)]"
+        >
+          비교
+        </Link>
       </div>
     </article>
   );
@@ -327,8 +599,8 @@ function BackupHeroSection() {
             <Link href="/dashboard/profile" className="rounded-full bg-white px-6 py-3 text-sm font-bold text-[#0a1325] transition hover:opacity-90">
               PDF 업로드로 시작하기
             </Link>
-            <Link href="/onboarding" className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
-              온보딩 먼저 보기
+            <Link href={DASHBOARD_RECOMMEND_CALENDAR} className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
+              추천 캘린더 보기
             </Link>
           </div>
           <div className="mt-7 grid gap-3 sm:grid-cols-2">
@@ -382,67 +654,68 @@ function BackupHeroSection() {
   );
 }
 
+function CircularFlowSection() {
+  return (
+    <section className="px-5 pb-14 sm:px-8 lg:px-12">
+      <div className="mx-auto max-w-6xl rounded-[28px] border border-[var(--border)] bg-white px-6 py-8 shadow-[0_22px_64px_rgba(10,19,37,0.06)] sm:px-8">
+        <div className="max-w-2xl">
+          <p className="text-xs font-black uppercase tracking-[0.24em] text-[var(--indigo)]">Circular flow</p>
+          <h2 className="mt-3 text-3xl font-black tracking-[-0.05em] text-[var(--ink)]">
+            탐색한 프로그램은 다음 지원 준비로 이어집니다
+          </h2>
+        </div>
+
+        <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-6">
+          {circularFlowSteps.map((stage) => (
+            <article
+              key={stage.step}
+              className="flex min-h-[188px] flex-col rounded-[20px] border border-[var(--border)] bg-[var(--surface)] px-4 py-5 transition hover:border-[var(--indigo)] hover:bg-white hover:shadow-[0_16px_38px_rgba(10,19,37,0.08)]"
+            >
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--ink)] text-xs font-black text-white">
+                {stage.step}
+              </span>
+              <h3 className="mt-5 text-base font-black tracking-[-0.03em] text-[var(--ink)]">{stage.title}</h3>
+              <p className="mt-3 text-sm leading-6 text-[var(--sub)]">{stage.description}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default async function LandingCPage({ searchParams }: LandingCPageProps) {
   const resolvedSearchParams = await searchParams;
   const activeChip = normalizeChip(resolvedSearchParams.chip);
   const keyword = normalizeKeyword(resolvedSearchParams.q);
-  const programParams = buildProgramParams(activeChip, keyword);
+  const programParams = buildProgramFilterParams(activeChip, keyword, 24);
 
   let programs: Program[] = [];
-  let totalCount = 0;
+  let liveBoardPrograms: Program[] = [];
   let error: string | null = null;
 
   try {
-    [programs, totalCount] = await Promise.all([
+    [programs, liveBoardPrograms] = await Promise.all([
       listPrograms(programParams),
-      getProgramCount({
-        q: programParams.q,
-        category: programParams.category,
-        regions: programParams.regions,
-        recruiting_only: programParams.recruiting_only,
+      listPrograms({
+        sort: "deadline",
+        recruiting_only: true,
+        limit: 100,
       }),
     ]);
   } catch (cause) {
     error = cause instanceof Error ? cause.message : "프로그램 정보를 불러오지 못했습니다.";
   }
 
-  const heroPrograms = programs.slice(0, 3);
+  const heroPrograms = getLiveBoardPrograms(liveBoardPrograms);
+  const opportunityPrograms = orderOpportunityPrograms(programs);
 
   return (
     <main className="min-h-screen bg-[var(--surface)] text-[var(--ink)]" style={themeVars}>
-      <div className="sticky top-0 z-[240] h-9 overflow-hidden bg-[var(--indigo)] text-white">
-        <div className="landing-c-ticker flex h-full min-w-max items-center">
-          {[...tickerItems, ...tickerItems].map((item, index) => (
-            <div key={`${item}-${index}`} className="inline-flex items-center gap-3 px-6 text-xs font-extrabold">
-              <span className="h-2 w-2 rounded-full bg-[var(--amber)]" />
-              {item}
-              <span className="opacity-45">|</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <header className="sticky top-9 z-[230] border-b border-[var(--border)] bg-white/94 px-5 py-4 backdrop-blur-xl sm:px-8 lg:px-12">
-        <div className="mx-auto flex max-w-6xl items-center gap-4">
-          <Link href="/landing-c" className="text-xl font-black tracking-[-0.05em]">
-            <span>이소<span className="text-[var(--teal)]">서</span></span>
-            <span className="hidden text-[9px] font-bold uppercase tracking-[0.28em] text-[var(--muted)] sm:block">
-              Public Program Finder
-            </span>
-          </Link>
-          <nav aria-label="랜딩 C 주요 이동" className="ml-auto hidden items-center gap-7 text-sm font-bold text-[var(--sub)] md:flex">
-            <Link href="/programs" className="transition hover:text-[var(--ink)]">프로그램 탐색</Link>
-            <Link href="/compare" className="transition hover:text-[var(--ink)]">비교</Link>
-            <Link href="/dashboard#recommend-calendar" className="transition hover:text-[var(--ink)]">워크스페이스</Link>
-          </nav>
-          <Link href="/login" className="ml-auto rounded-full bg-[var(--indigo)] px-4 py-2 text-sm font-black text-white transition hover:bg-[var(--indigo-hi)] md:ml-0">
-            무료로 시작하기
-          </Link>
-        </div>
-      </header>
+      <LandingHeader />
 
       <section className="bg-white px-5 py-14 sm:px-8 lg:px-12 lg:py-20">
-        <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_420px] lg:items-center">
+        <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_504px] lg:items-center">
           <div>
             <div className="inline-flex rounded-lg bg-[var(--surface-strong)] px-4 py-2 text-sm font-extrabold text-[var(--indigo)]">
               <span className="mr-2 mt-1.5 h-1.5 w-1.5 rounded-full bg-[var(--teal)]" />
@@ -455,29 +728,22 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
               </span>
             </h1>
             <p className="mt-6 max-w-xl text-base leading-8 text-[var(--sub)]">
-              각종 부트캠프, K-디지털, 서울 일자리까지 한곳에 모았습니다. 3가지 조건만 알려주시면 마감 임박순으로 정렬해드립니다.
+              고용24, HRD넷, K-디지털, 서울시 일자리까지 한곳에 모았습니다.
+              <br />
+              이력과 활동을 등록하면 나에게 맞는 프로그램을 추천하고,
+              <br />
+              지원에 필요한 이력서·포트폴리오까지 바로 준비합니다.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/programs" className="rounded-full bg-[var(--indigo)] px-6 py-3 text-sm font-black text-white transition hover:bg-[var(--indigo-hi)]">
                 지금 지원 가능한 프로그램 보기
               </Link>
-              <Link href="/login" className="rounded-full border border-[var(--border)] bg-white px-6 py-3 text-sm font-black text-[var(--ink)] transition hover:border-[var(--indigo)] hover:text-[var(--indigo)]">
-                로그인 후 AI 추천 받기
+              <Link
+                href={getLoginHref(ONBOARDING_RESUME_IMPORT)}
+                className="rounded-full border border-[var(--border)] bg-white px-6 py-3 text-sm font-black text-[var(--ink)] transition hover:border-[var(--indigo)] hover:text-[var(--indigo)]"
+              >
+                내 이력 등록
               </Link>
-            </div>
-            <div className="mt-9 grid max-w-2xl grid-cols-2 gap-4 sm:grid-cols-3">
-              <div className="rounded-2xl bg-[var(--surface-strong)] px-5 py-4">
-                <div className="text-3xl font-black tracking-[-0.05em]">247<span className="text-lg font-bold">개</span></div>
-                <div className="mt-1 text-xs font-bold text-[var(--sub)]">현재 탐색 가능한 프로그램 수</div>
-              </div>
-              <div className="rounded-2xl bg-[var(--surface-strong)] px-5 py-4">
-                <div className="text-3xl font-black tracking-[-0.05em]">3<span className="text-lg font-bold">가지</span></div>
-                <div className="mt-1 text-xs font-bold text-[var(--sub)]">상황, 수업 방식, 관심 분야</div>
-              </div>
-              <div className="col-span-2 rounded-2xl bg-[var(--surface-strong)] px-5 py-4 sm:col-span-1">
-                <div className="text-3xl font-black tracking-[-0.05em]">1<span className="text-lg font-bold">곳</span></div>
-                <div className="mt-1 text-xs font-bold text-[var(--sub)]">탐색, 비교, 추천 워크스페이스</div>
-              </div>
             </div>
           </div>
 
@@ -485,14 +751,14 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <div className="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--muted)]">Live Board</div>
-                <div className="mt-1 text-xl font-black tracking-[-0.04em] text-[var(--ink)]">이번 주 2건 확인</div>
+                <div className="mt-1 text-xl font-black tracking-[-0.04em] text-[var(--ink)]">추천 공고 {heroPrograms.length}건</div>
               </div>
-              <Link href="/compare" className="rounded-full bg-[var(--surface)] px-3 py-1.5 text-xs font-black text-[var(--indigo)]">
+              <Link href={DASHBOARD_RECOMMEND_CALENDAR} className="rounded-full bg-[var(--surface)] px-3 py-1.5 text-xs font-black text-[var(--indigo)]">
                 워크스페이스 →
               </Link>
             </div>
             <div className="space-y-3 border-t border-[var(--border)] pt-3">
-              {(heroPrograms.length ? heroPrograms : programs).slice(0, 3).map((program) => (
+              {heroPrograms.map((program) => (
                 <Link key={`${program.id}-${program.title}`} href={getProgramDetailHref(program)} className="block rounded-[18px] border border-[var(--border)] bg-[var(--surface)] p-4 transition hover:border-[var(--indigo)]">
                   <div className="flex items-start justify-between gap-4">
                     <div>
@@ -500,19 +766,17 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
                       <div className="mt-2 text-sm font-black leading-6 text-[var(--ink)]">{program.title || "추천 프로그램"}</div>
                       <div className="mt-2 text-xs font-bold text-[var(--sub)]">{program.category || "카테고리 미분류"}</div>
                     </div>
-                    <div className={`text-lg font-black ${getProgramDeadlineTone(program)}`}>{getProgramDeadline(program)}</div>
+                    <div className={`min-w-[3.25rem] shrink-0 whitespace-nowrap text-right text-lg font-black ${getProgramDeadlineTone(program)}`}>
+                      {getProgramDeadline(program)}
+                    </div>
                   </div>
                 </Link>
               ))}
-              {programs.length === 0 && (
+              {heroPrograms.length === 0 && (
                 <div className="rounded-[18px] border border-dashed border-[var(--border)] bg-[var(--surface)] p-5 text-sm font-bold text-[var(--sub)]">
-                  프로그램 데이터를 불러오면 이 영역에 마감 임박 공고가 표시됩니다.
+                  고용24, 창업진흥원, 새싹의 모집중 공고가 있으면 이 영역에 표시됩니다.
                 </div>
               )}
-            </div>
-            <div className="mt-5 rounded-2xl bg-[rgba(56,189,248,0.1)] p-4 text-sm leading-7 text-[var(--sub)]">
-              <div className="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--muted)]">Next after login</div>
-              <div className="mt-2">프로필을 연결하면 탐색한 프로그램을 대시보드 추천 캘린더와 문서 생성 흐름으로 이어서 관리할 수 있습니다.</div>
             </div>
           </aside>
         </div>
@@ -530,7 +794,6 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
             </div>
             <div className="flex flex-wrap gap-3">
               <Link href="/programs" className="rounded-full border border-[var(--border)] bg-white px-4 py-2 text-sm font-black text-[var(--ink)]">전체 프로그램 보기</Link>
-              <Link href="/login" className="rounded-full bg-[var(--indigo)] px-4 py-2 text-sm font-black text-white">로그인 후 추천 연결</Link>
             </div>
           </div>
 
@@ -568,20 +831,15 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
             </div>
           </form>
 
-          <div className="mt-6 flex flex-col gap-2 border-b border-[var(--border)] pb-5 text-sm font-semibold text-[var(--sub)] sm:flex-row sm:items-center sm:justify-between">
-            <span>현재 조건에 맞는 프로그램 {totalCount}개 중 상위 {programs.length}개를 보여드립니다.</span>
-            <span>탐색 후 로그인하면 추천 캘린더와 문서 준비 흐름으로 이어집니다.</span>
-          </div>
-
           {error ? (
             <div className="mt-8 rounded-[24px] border border-rose-200 bg-rose-50 px-6 py-10 text-sm font-bold text-rose-700">{error}</div>
-          ) : programs.length === 0 ? (
+          ) : opportunityPrograms.length === 0 ? (
             <div className="mt-8 rounded-[24px] border border-dashed border-[var(--border)] bg-white px-6 py-10 text-center text-sm font-bold text-[var(--sub)]">
               조건에 맞는 프로그램이 없습니다. 검색어나 필터를 조정해보세요.
             </div>
           ) : (
             <div className="mt-8 grid gap-5 lg:grid-cols-3">
-              {programs.map((program) => (
+              {opportunityPrograms.map((program) => (
                 <ProgramCard key={`${program.id}-${program.title}`} program={program} />
               ))}
             </div>
@@ -615,24 +873,7 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
         </div>
       </section>
 
-      <section className="px-5 py-16 sm:px-8 lg:px-12">
-        <div className="mx-auto max-w-6xl rounded-[28px] bg-white px-6 py-10 shadow-[0_22px_60px_rgba(10,19,37,0.06)] sm:px-8">
-          <p className="text-xs font-black uppercase tracking-[0.24em] text-[var(--indigo)]">Journey</p>
-          <h2 className="mt-3 text-3xl font-black tracking-[-0.05em]">로그인 이후 연결 흐름도 랜딩에서 미리 설명합니다</h2>
-          <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--sub)]">
-            탐색만 가능한 제품처럼 보이지 않도록, 랜딩 본문에서부터 로그인 후 워크플로우를 명시적으로 보여줍니다.
-          </p>
-          <div className="mt-10 grid gap-6 md:grid-cols-4">
-            {journeySteps.map(([letter, title, desc]) => (
-              <div key={letter}>
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--indigo)] text-sm font-black text-white">{letter}</div>
-                <div className="mt-4 text-lg font-black tracking-[-0.03em]">{title}</div>
-                <p className="mt-2 text-sm leading-7 text-[var(--sub)]">{desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <CircularFlowSection />
 
       <section className="px-5 pb-14 sm:px-8 lg:px-12">
         <div className="relative mx-auto flex max-w-6xl flex-col gap-8 overflow-hidden rounded-[28px] bg-[var(--indigo)] px-6 py-10 text-white sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-10">
@@ -640,15 +881,17 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
           <div>
             <p className="text-xs font-black uppercase tracking-[0.24em] text-white/60">Final CTA</p>
             <h2 className="mt-4 text-3xl font-black leading-tight tracking-[-0.05em] sm:text-4xl">
-              프로그램을 찾았다면,<br />이제 지원 준비를 같은 흐름으로 이어가면 됩니다
+              준비가 되었다면
+              <br />
+              이력서를 준비해 보세요.
             </h2>
             <p className="mt-4 max-w-2xl text-sm leading-7 text-white/72">
-              로그인 후에는 추천 프로그램 캘린더, 성과저장소, 이력서, 자기소개서, 매치 분석이 같은 제품 안에서 이어집니다.
+              흩어진 경력 한 번에 정리하고, 원하는 공고에 맞춰 작성해 보세요
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link href="/login" className="rounded-full bg-white px-6 py-3 text-sm font-black text-[var(--indigo)]">무료로 시작하기</Link>
-            <Link href="/dashboard#recommend-calendar" className="rounded-full border border-white/30 px-6 py-3 text-sm font-black text-white">대시보드 미리 보기</Link>
+            <Link href={getLoginHref(DASHBOARD_RECOMMEND_CALENDAR)} className="rounded-full bg-white px-6 py-3 text-sm font-black text-[var(--indigo)]">무료로 시작하기</Link>
+            <Link href={DASHBOARD_RECOMMEND_CALENDAR} className="rounded-full border border-white/30 px-6 py-3 text-sm font-black text-white">대시보드 미리 보기</Link>
           </div>
         </div>
       </section>
@@ -664,16 +907,6 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
           <div className="text-xs font-bold text-[var(--muted)]">© 2026 Isoser. Career support workspace.</div>
         </div>
       </footer>
-
-      <style>{`
-        .landing-c-ticker {
-          animation: landing-c-ticker 28s linear infinite;
-        }
-        @keyframes landing-c-ticker {
-          from { transform: translateX(0); }
-          to { transform: translateX(-50%); }
-        }
-      `}</style>
     </main>
   );
 }

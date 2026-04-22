@@ -4,8 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { DEFAULT_PUBLIC_LANDING, getLoginHref } from "@/lib/routes";
+
 import { tickerLoop, toneClassMap } from "./_content";
 import { getHeaderInitial, type HeaderUser, useLandingAUser } from "./_auth";
+import { LandingHeader } from "@/components/landing/LandingHeader";
 
 type BrandMarkProps = {
   compact?: boolean;
@@ -19,24 +22,13 @@ type AuthActionProps = {
   authenticatedHref: string;
   authenticatedLabel?: string;
   unauthenticatedLabel: string;
+  unauthenticatedHref?: string;
   compact?: boolean;
 };
 
-type HeaderLink = {
-  href: string;
-  label: string;
-  mobileLabel?: string;
-};
-
-const landingAHeaderLinks: HeaderLink[] = [
-  { href: "/programs", label: "프로그램 상세", mobileLabel: "상세" },
-  { href: "/compare", label: "비교" },
-  { href: "/dashboard#recommend-calendar", label: "대시보드" },
-];
-
 function BrandMark({ compact = false, className = "", subtitle }: BrandMarkProps) {
   return (
-    <Link href="/landing-a" className={className}>
+    <Link href={DEFAULT_PUBLIC_LANDING} className={className}>
       <div>
         <div className={`${compact ? "text-xl tracking-[-0.04em]" : "text-xl tracking-[-0.05em]"} font-extrabold text-[var(--ink)]`}>
           이소<span className="text-[var(--sky)]">서</span>
@@ -78,6 +70,7 @@ function AuthAction({
   authenticatedHref,
   authenticatedLabel,
   unauthenticatedLabel,
+  unauthenticatedHref = "/login",
   compact = false,
 }: AuthActionProps) {
   if (authChecked && user) {
@@ -99,7 +92,7 @@ function AuthAction({
 
   return (
     <Link
-      href="/login"
+      href={unauthenticatedHref}
       className={
         compact
           ? "rounded-full bg-[var(--fire)] px-3 py-2 text-xs font-bold text-white shadow-[0_12px_32px_rgba(249,115,22,0.18)] transition hover:bg-[var(--fire-lo)] sm:px-4 sm:text-sm"
@@ -157,6 +150,7 @@ export function LandingANavBar() {
           authChecked={authChecked}
           authenticatedHref="/dashboard"
           authenticatedLabel="워크스페이스"
+          unauthenticatedHref={getLoginHref("/dashboard")}
           unauthenticatedLabel="무료로 시작하기"
         />
       </div>
@@ -164,42 +158,4 @@ export function LandingANavBar() {
   );
 }
 
-export function LandingAHeader() {
-  const { user, authChecked } = useLandingAUser();
-
-  return (
-    <header className="sticky top-0 z-[230] border-b border-[var(--border)] bg-white/92 px-3 py-3 backdrop-blur-xl sm:px-8 lg:px-12">
-      <div className="mx-auto flex max-w-6xl items-center gap-2 sm:gap-4">
-        <BrandMark compact className="shrink-0" />
-
-        <nav aria-label="랜딩 A 주요 이동" className="ml-auto hidden items-center gap-6 text-sm font-semibold text-[var(--sub)] md:flex">
-          {landingAHeaderLinks.map((link) => (
-            <Link key={link.href} href={link.href} className="transition hover:text-[var(--ink)]">
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="ml-auto flex min-w-0 items-center gap-1.5 sm:gap-2 md:ml-0">
-          {landingAHeaderLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="rounded-full border border-[var(--border)] bg-white px-2.5 py-2 text-xs font-semibold text-[var(--sub)] transition hover:border-[var(--blue)] hover:text-[var(--blue)] sm:px-3 md:hidden"
-            >
-              {link.mobileLabel ?? link.label}
-            </Link>
-          ))}
-
-          <AuthAction
-            user={user}
-            authChecked={authChecked}
-            authenticatedHref="/dashboard/profile"
-            unauthenticatedLabel="로그인"
-            compact
-          />
-        </div>
-      </div>
-    </header>
-  );
-}
+export const LandingAHeader = LandingHeader;

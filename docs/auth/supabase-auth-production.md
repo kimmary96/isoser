@@ -52,9 +52,10 @@ Google provider를 Supabase에서 사용하는 경우, provider 설정도 같은
 ## 운영 로그인 후 이동 규칙
 
 현재 코드 기준 기본 동작:
-- 기본 진입점은 `/landing-a`
+- 기본 진입점은 `/landing-c`
 - `GET /api/auth/google`가 `next`를 받으면 해당 경로로 복귀
-- `GET /auth/callback`은 기존 사용자만 `next` 또는 `/landing-a`로 보내고, `profiles` row가 없으면 `/onboarding`으로 보냄
+- `next`는 `/dashboard#recommend-calendar` 같은 내부 hash 경로도 보존
+- `GET /auth/callback`은 기존 사용자만 `next` 또는 `/landing-c`로 보내고, `profiles` row가 없으면 `/onboarding`으로 보냄
 - `middleware()`는 `/dashboard*`, `/onboarding`만 인증 보호 대상으로 취급
 
 즉 현재 운영 정책은 "로그인 후 바로 대시보드 강제 진입"이 아니라 "공개 랜딩 흐름 유지 + 워크스페이스는 필요 시 진입"이다.
@@ -62,7 +63,7 @@ Google provider를 Supabase에서 사용하는 경우, provider 설정도 같은
 ## 운영 점검 항목
 
 1. `https://isoser.vercel.app/login`에서 Google 로그인 시작
-2. 로그인 후 `/auth/callback`을 거쳐 `/landing-a` 또는 전달된 `next`로 복귀
+2. 로그인 후 `/auth/callback`을 거쳐 `/landing-c` 또는 전달된 `next`로 복귀
 3. 신규 사용자만 `/onboarding`으로 이동
 4. 비로그인 상태 `/dashboard` 접근 시 `/login?redirectedFrom=/dashboard`로 이동
-5. 로그인 상태 `/login` 재접속 시 `/landing-a` 또는 `redirectedFrom`으로 복귀
+5. 로그인 상태 `/login` 재접속 시 `/landing-c` 또는 `redirectedFrom`으로 복귀

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { getGoogleAuthHref, resolveInternalPath } from "@/lib/routes";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 type LoginPageProps = {
@@ -12,10 +13,6 @@ type LoginPageProps = {
 
 function takeFirst(value?: string | string[]): string {
   return Array.isArray(value) ? value[0] ?? "" : value ?? "";
-}
-
-function resolveNextPath(value: string): string {
-  return value.startsWith("/") ? value : "/landing-a";
 }
 
 function getLoginErrorMessage(errorCode: string): string | null {
@@ -32,7 +29,7 @@ function getLoginErrorMessage(errorCode: string): string | null {
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const resolvedSearchParams = await searchParams;
-  const safeNext = resolveNextPath(takeFirst(resolvedSearchParams.redirectedFrom));
+  const safeNext = resolveInternalPath(takeFirst(resolvedSearchParams.redirectedFrom));
   const errorMessage = getLoginErrorMessage(takeFirst(resolvedSearchParams.error));
 
   try {
@@ -48,12 +45,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     // 인증 확인 실패 시에는 로그인 화면을 그대로 보여준다.
   }
 
-  const googleLoginHref = `/api/auth/google?next=${encodeURIComponent(safeNext)}`;
+  const googleLoginHref = getGoogleAuthHref(safeNext);
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-950">
       <div className="mx-auto flex min-h-screen max-w-6xl flex-col px-6 py-10 lg:justify-center">
-        <Link href="/landing-a" className="text-lg font-extrabold tracking-[-0.04em] text-slate-950">
+        <Link href="/landing-c" className="text-lg font-extrabold tracking-[-0.04em] text-slate-950">
           이소<span className="text-blue-600">서</span>
         </Link>
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from rag.collector.normalizer import normalize
 from rag.collector.tier4_collectors import (
+    DistrictHtmlCollector,
     DobongCollector,
     DobongStartupCollector,
     GuroCollector,
@@ -9,6 +10,46 @@ from rag.collector.tier4_collectors import (
     NowonCollector,
     SeongdongCollector,
 )
+
+
+class _DiagnosticDistrictCollector(DistrictHtmlCollector):
+    source_key = "diagnostic_district"
+    source_name = "진단 구 수집기"
+    region_detail = "테스트구"
+    list_urls = [
+        "https://example.com/empty",
+        "https://example.com/match",
+        "https://example.com/fail",
+    ]
+    empty_message = "진단 목록 0건"
+
+    def fetch_html(self, url: str) -> str:
+        if url.endswith("/fail"):
+            raise RuntimeError("blocked")
+        return url
+
+    def parse_html(self, html: str, *, base_url: str):
+        if base_url.endswith("/empty"):
+            return []
+        return [
+            self.build_item(
+                title="테스트 취업 프로그램",
+                link="https://example.com/program/1",
+                raw={"page_source": "test"},
+                category_hint="취업",
+            )
+        ]
+
+
+class _EmptyDiagnosticDistrictCollector(_DiagnosticDistrictCollector):
+    list_urls = ["https://example.com/empty"]
+
+    def parse_html(self, html: str, *, base_url: str):
+        return []
+
+
+class _RequestFailedDistrictCollector(_DiagnosticDistrictCollector):
+    list_urls = ["https://example.com/fail"]
 
 
 def test_dobong_startup_parses_program_listing_with_stable_ids() -> None:
@@ -40,6 +81,33 @@ def test_dobong_startup_parses_program_listing_with_stable_ids() -> None:
     assert items[0]["target"] == ["청년"]
     assert items[0]["raw"]["pg_id"] == "77"
     assert items[0]["raw"]["page_source"] == "program"
+
+
+def test_district_collector_records_url_level_diagnostics() -> None:
+    collector = _DiagnosticDistrictCollector()
+
+    items = collector.collect_items()
+
+    assert len(items) == 1
+    assert collector.last_collect_status == "success"
+    assert "from 2/3 urls" in collector.last_collect_message
+    assert "request_failed=1" in collector.last_collect_message
+    assert "parse_empty=1" in collector.last_collect_message
+
+
+def test_district_collector_distinguishes_parse_empty_and_request_failure() -> None:
+    empty_collector = _EmptyDiagnosticDistrictCollector()
+    failed_collector = _RequestFailedDistrictCollector()
+
+    assert empty_collector.collect_items() == []
+    assert empty_collector.last_collect_status == "parsing_failed"
+    assert "진단 목록 0건" in empty_collector.last_collect_message
+    assert "parse_empty=1" in empty_collector.last_collect_message
+
+    assert failed_collector.collect_items() == []
+    assert failed_collector.last_collect_status == "request_failed"
+    assert "all requests failed" in failed_collector.last_collect_message
+    assert "blocked" in failed_collector.last_collect_message
 
 
 def test_guro_collector_uses_http_program_listing_and_it_category() -> None:

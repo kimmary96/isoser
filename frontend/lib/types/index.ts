@@ -229,6 +229,8 @@ export interface CompareMeta {
   subsidy_rate?: string | null;
   teaching_method?: string | null;
   employment_connection?: string | null;
+  satisfaction_score?: string | number | null;
+  review_count?: string | number | null;
   target_group?: string | null;
   age_restriction?: string | null;
   education_requirement?: string | null;
@@ -260,11 +262,19 @@ export interface Program {
   deadline?: string | null;
   start_date?: string | null;
   end_date?: string | null;
+  cost?: number | string | null;
+  subsidy_amount?: number | string | null;
   support_type?: string | null;
   teaching_method?: string | null;
   is_certified?: boolean | null;
   is_active?: boolean | null;
   is_ad?: boolean | null;
+  rating?: string | number | null;
+  rating_raw?: string | number | null;
+  rating_normalized?: number | null;
+  rating_scale?: number | null;
+  rating_display?: string | null;
+  review_count?: number | null;
   relevance_score?: number | null;
   final_score?: number | null;
   urgency_score?: number | null;
@@ -280,6 +290,49 @@ export interface RecommendedProgram extends Program {
   reason: string;
   fitKeywords: string[];
   score: number | null;
+}
+
+export interface ProgramDetail {
+  id: string | number | null;
+  title: string | null;
+  provider: string | null;
+  organizer: string | null;
+  location: string | null;
+  description: string | null;
+  application_start_date: string | null;
+  application_end_date: string | null;
+  program_start_date: string | null;
+  program_end_date: string | null;
+  teaching_method: string | null;
+  support_type: string | null;
+  source_url: string | null;
+  fee: number | null;
+  support_amount: number | null;
+  eligibility: string[];
+  schedule_text: string | null;
+  rating: string | null;
+  rating_raw: string | null;
+  rating_normalized: number | null;
+  rating_scale: number | null;
+  rating_display: string | null;
+  review_count: number | null;
+  job_placement_rate: string | null;
+  capacity_total: number | null;
+  capacity_remaining: number | null;
+  manager_name: string | null;
+  phone: string | null;
+  email: string | null;
+  certifications: string[];
+  tech_stack: string[];
+  tags: string[];
+  curriculum: string[];
+  faq: Array<{ question: string; answer: string }>;
+  reviews: Array<Record<string, unknown>>;
+  recommended_for: string[];
+  learning_outcomes: string[];
+  career_support: string[];
+  event_banner: string | null;
+  ai_matching_summary: string | null;
 }
 
 export type ProgramSort = "deadline" | "latest";

@@ -94,6 +94,134 @@ def test_recalculate_final_score_uses_recovered_weights() -> None:
     assert programs._recalculate_final_score(0.75, 0.25) == 0.55
 
 
+@pytest.mark.parametrize(
+    ("raw_value", "expected_display", "expected_normalized"),
+    [
+        ("4.6", "4.6", 4.6),
+        ("100", "5.0", 5.0),
+        ("90", "4.5", 4.5),
+        ("0", None, None),
+        (None, None, None),
+        (".7", None, None),
+        ("120", None, None),
+    ],
+)
+def test_normalize_rating_fields_uses_five_point_scale(
+    raw_value: object,
+    expected_display: str | None,
+    expected_normalized: float | None,
+) -> None:
+    fields = programs._normalize_rating_fields(raw_value)
+
+    assert fields["rating_display"] == expected_display
+    assert fields["rating_normalized"] == expected_normalized
+    assert fields["rating_scale"] == (5 if expected_display else None)
+
+
+def test_serialize_program_list_row_adds_normalized_rating_fields() -> None:
+    row = programs._serialize_program_list_row(
+        {
+            "id": "program-1",
+            "deadline": (date.today() + timedelta(days=3)).isoformat(),
+            "compare_meta": {"satisfaction_score": "100"},
+        }
+    )
+
+    assert row["rating_raw"] == "100"
+    assert row["rating_normalized"] == 5.0
+    assert row["rating_scale"] == 5
+    assert row["rating_display"] == "5.0"
+
+
+def test_build_program_detail_response_maps_kstartup_dates_as_application_period() -> None:
+    detail = programs._build_program_detail_response(
+        {
+            "id": "kstartup-1",
+            "source": "K-Startup 창업진흥원",
+            "title": "2026년 서울여성 창업아이디어 공모전",
+            "provider": "서울시여성능력개발원",
+            "location": "서울",
+            "description": "창업 아이디어 공모전 설명",
+            "start_date": "2026-03-30",
+            "end_date": "2026-04-23",
+            "deadline": "2026-04-23",
+            "source_url": "https://www.k-startup.go.kr/web/contents/bizpbanc-ongoing.do?pbancSn=176678",
+            "cost": 0,
+            "compare_meta": {
+                "application_url": "https://forms.gle/example",
+                "target_detail": "서울 소재 여성 예비창업자",
+                "target_age": "만 20세 이상",
+                "business_type": "행사ㆍ네트워크",
+                "supervising_institution": "민간",
+                "department": "광역새일팀",
+                "contact_phone": "07041481934",
+            },
+        }
+    )
+
+    assert detail.title == "2026년 서울여성 창업아이디어 공모전"
+    assert detail.provider == "서울시여성능력개발원"
+    assert detail.organizer == "민간"
+    assert detail.location == "서울"
+    assert detail.application_start_date == "2026-03-30"
+    assert detail.application_end_date == "2026-04-23"
+    assert detail.program_start_date is None
+    assert detail.program_end_date is None
+    assert detail.schedule_text == "신청 2026-03-30 ~ 2026-04-23"
+    assert detail.source_url == "https://forms.gle/example"
+    assert detail.fee == 0
+    assert detail.support_type == "행사ㆍ네트워크"
+    assert detail.eligibility == ["서울 소재 여성 예비창업자", "만 20세 이상"]
+    assert detail.manager_name == "광역새일팀"
+    assert detail.phone == "07041481934"
+
+
+def test_build_program_detail_response_maps_work24_dates_as_program_period() -> None:
+    detail = programs._build_program_detail_response(
+        {
+            "id": "work24-1",
+            "source": "고용24",
+            "title": "Python 자료구조&알고리즘 프로그래밍",
+            "provider": "그린컴퓨터아트학원",
+            "location": "서울 종로구",
+            "description": "그린컴퓨터아트학원",
+            "start_date": "2026-04-23",
+            "end_date": "2026-05-12",
+            "deadline": "2026-05-01",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20230000419940",
+            "cost": 0,
+            "subsidy_amount": 238320,
+            "compare_meta": {
+                "capacity": "20",
+                "registered_count": "3",
+                "satisfaction_score": "91.4",
+                "contact_phone": "02-722-2111",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20230000419940",
+            },
+        }
+    )
+
+    assert detail.title == "Python 자료구조&알고리즘 프로그래밍"
+    assert detail.provider == "그린컴퓨터아트학원"
+    assert detail.location == "서울 종로구"
+    assert detail.application_start_date is None
+    assert detail.application_end_date is None
+    assert detail.program_start_date == "2026-04-23"
+    assert detail.program_end_date == "2026-05-12"
+    assert detail.schedule_text == "운영 2026-04-23 ~ 2026-05-12"
+    assert detail.source_url == "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20230000419940"
+    assert detail.fee == 0
+    assert detail.support_amount == 238320
+    assert detail.rating == "4.6"
+    assert detail.rating_raw == "91.4"
+    assert detail.rating_normalized == 4.6
+    assert detail.rating_scale == 5
+    assert detail.rating_display == "4.6"
+    assert detail.capacity_total == 20
+    assert detail.capacity_remaining == 17
+    assert detail.phone == "02-722-2111"
+
+
 def test_normalize_cached_recommendation_rows_marks_missing_component_scores_stale() -> None:
     normalized = programs._normalize_cached_recommendation_rows(
         [

@@ -101,6 +101,11 @@ def test_sesac_trims_live_listing_metadata_from_title() -> None:
 
     assert len(items) == 1
     assert items[0]["title"] == "영등포 클라우드 (영등포8기) AWS와 AI를 활용한 MSA 기반 웹 서비스 개발"
+    assert items[0]["provider"] == "청년취업사관학교 SeSAC"
+    assert items[0]["location"] == "서울 영등포구"
+    assert items[0]["start_date"] == "2026-04-03"
+    assert items[0]["end_date"] == "2026-04-30"
+    assert items[0]["cost"] == 0
 
 
 def test_sesac_keeps_course_name_but_strips_status_chip() -> None:

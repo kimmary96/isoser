@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 import re
 
 ALLOWED_CATEGORIES = {
@@ -30,7 +30,7 @@ def normalize(raw_item: Dict) -> Optional[Dict]:
         return None
     category_hint = raw_item.get("category_hint")
 
-    return {
+    row = {
         "source": meta.get("source_key") or meta.get("source_name", ""),
         "source_type": meta.get("source_type", "national_api"),
         "collection_method": meta.get("collection_method", "public_api"),
@@ -45,6 +45,54 @@ def normalize(raw_item: Dict) -> Optional[Dict]:
         "is_ad": False,
         "sponsor_name": raw_item.get("sponsor_name"),
     }
+    optional_fields = {
+        "hrd_id": _clean_optional(raw_item.get("hrd_id")),
+        "location": _clean_optional(raw_item.get("location")),
+        "provider": _clean_optional(raw_item.get("provider")),
+        "description": _clean_optional(raw_item.get("description")),
+        "start_date": _parse_deadline(raw_item.get("start_date", "")),
+        "end_date": _parse_deadline(raw_item.get("end_date", "")),
+        "cost": _to_int(raw_item.get("cost")),
+        "subsidy_amount": _to_int(raw_item.get("subsidy_amount")),
+        "source_url": _clean_optional(raw_item.get("source_url")),
+        "compare_meta": _clean_compare_meta(raw_item.get("compare_meta")),
+    }
+    for key, value in optional_fields.items():
+        if value not in (None, "", {}, []):
+            row[key] = value
+    return row
+
+
+def _clean_optional(value: Any) -> Optional[str]:
+    if value is None:
+        return None
+    text = str(value).strip()
+    return text or None
+
+
+def _to_int(value: Any) -> int | None:
+    if value is None:
+        return None
+    if isinstance(value, int):
+        return value
+    text = re.sub(r"[^\d-]", "", str(value))
+    if not text:
+        return None
+    try:
+        return int(text)
+    except ValueError:
+        return None
+
+
+def _clean_compare_meta(value: Any) -> dict[str, Any] | None:
+    if not isinstance(value, dict):
+        return None
+    cleaned = {
+        str(key): entry
+        for key, entry in value.items()
+        if entry not in (None, "", [], {})
+    }
+    return cleaned or None
 
 
 def _classify_category(title: str) -> str:

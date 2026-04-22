@@ -1,0 +1,451 @@
+{
+  "candidate_count": 40,
+  "deadline_from": "2026-04-22",
+  "items": [
+    {
+      "diff": {},
+      "id": "7a2749fc-79bf-4812-9c89-f199e10876af",
+      "match_key": "kstartup:announcement:177074",
+      "matched": true,
+      "patch": {},
+      "source": "K-Startup 창업진흥원",
+      "title": "[서울관광재단] 2026 서울 관광스타트업 창업 아카데미 교육생 모집"
+    },
+    {
+      "diff": {},
+      "id": "71122001-8d86-476e-b494-4fa02f3c79ee",
+      "match_key": "kstartup:announcement:176678",
+      "matched": true,
+      "patch": {},
+      "source": "K-Startup 창업진흥원",
+      "title": "2026년 서울여성 창업아이디어 공모전"
+    },
+    {
+      "diff": {},
+      "id": "2b4b4240-bf26-4888-88b6-3e7d3ca6b450",
+      "match_key": "work24:hrd:AIG20250000510863",
+      "matched": true,
+      "patch": {},
+      "source": "고용24",
+      "title": "화과자 자격증 (2급) 전문과정"
+    },
+    {
+      "diff": {},
+      "id": "ee785561-da86-4851-9339-29b7bc2fbf22",
+      "match_key": "kstartup:announcement:177120",
+      "matched": true,
+      "patch": {},
+      "source": "K-Startup 창업진흥원",
+      "title": "2026년 서경대학교 창업보육센터 입주기업 모집(2차)"
+    },
+    {
+      "diff": {},
+      "id": "5994134d-a169-4592-904c-b75ce00bdcb7",
+      "match_key": "kstartup:announcement:177031",
+      "matched": true,
+      "patch": {},
+      "source": "K-Startup 창업진흥원",
+      "title": "2026 SBA X 메르세데스 벤츠 코리아 게임 산업 상생 플랫폼 활용 게임개발 지원 참가기업 모집"
+    },
+    {
+      "diff": {},
+      "id": "4615a084-2e06-4840-98cd-b2092d8f715b",
+      "match_key": "work24:hrd:AIG20250000502424",
+      "matched": true,
+      "patch": {},
+      "source": "고용24",
+      "title": "요양보호사(사회복지사자격증소지자)자격 취득과정"
+    },
+    {
+      "diff": {},
+      "id": "e929bd62-0c2d-40ce-affb-51a17245dad3",
+      "match_key": "work24:hrd:AIG20253001128421",
+      "matched": true,
+      "patch": {},
+      "source": "고용24",
+      "title": "(산대특)_AWS 클라우드 보안 실무_육성"
+    },
+    {
+      "diff": {},
+      "id": "9c622c83-ac1e-4b7c-97dc-096d59ff2f57",
+      "match_key": "kstartup:announcement:177170",
+      "matched": true,
+      "patch": {},
+      "source": "K-Startup 창업진흥원",
+      "title": "[도봉구청년창업센터]  제3차 스케일업 아카데미 : 일상의 아이디어가 AI를 만나 비즈니스가 되는 순간 (모두의 창업)"
+    },
+    {
+      "diff": {},
+      "id": "df6e693c-0af6-41bf-b937-38ca354f2f25",
+      "match_key": "kstartup:announcement:177093",
+      "matched": true,
+      "patch": {},
+      "source": "K-Startup 창업진흥원",
+      "title": "K-패션 브랜드 글로벌 팝업 지원사업 참여기업 모집"
+    },
+    {
+      "diff": {},
+      "id": "aef92884-de1f-4dae-96f3-469bb265303e",
+      "match_key": "work24:hrd:AIG20250000520785",
+      "matched": true,
+      "patch": {},
+      "source": "고용24",
+      "title": "HR(인사노무총무) 전문가 양성과정LMS (노동법,급여관리,4대보험,퇴직업무,연말정산 및 HR자격증 취득)"
+    },
+    {
+      "diff": {},
+      "id": "4afd469b-9770-49a5-8147-af826a887cba",
+      "match_key": "kstartup:announcement:177111",
+      "matched": true,
+      "patch": {},
+      "source": "K-Startup 창업진흥원",
+      "title": "(서울센터) 2026년 제2회 제대군인 창업 워크숍 개최 안내"
+    },
+    {
+      "diff": {},
+      "id": "4278f911-f351-45c4-8441-e2cde7bb134f",
+      "match_key": "work24:hrd:AIG20250000522502",
+      "matched": true,
+      "patch": {},
+      "source": "work24_training",
+      "title": "산모·신생아 건강관리사 양성 과정"
+    },
+    {
+      "diff": {},
+      "id": "d019f2dc-bb6c-4fa0-9d5d-ecd7b04e7368",
+      "match_key": "work24:hrd:AIG20250000525618",
+      "matched": true,
+      "patch": {},
+      "source": "work24_training",
+      "title": "실용 인테리어 타일 집수리 실무과정"
+    },
+    {
+      "diff": {},
+      "id": "bf4c9f40-694f-42f5-90fc-65c1de6e9f1e",
+      "match_key": "work24:hrd:AIG20250000527782",
+      "matched": true,
+      "patch": {},
+      "source": "work24_training",
+      "title": "굴착기 자격증 속성반(실기)"
+    },
+    {
+      "diff": {},
+      "id": "e51b5f17-c782-4778-b487-5bf38b5b4639",
+      "match_key": "work24:hrd:AIG20250000519873",
+      "matched": true,
+      "patch": {},
+      "source": "고용24",
+      "title": "영상 제작 촬영 영상 크리에이터 심화"
+    },
+    {
+      "diff": {},
+      "id": "56c3a2fa-dc08-4dc5-95ef-6a13aea7c2c1",
+      "match_key": "work24:hrd:AIG20250000506215",
+      "matched": true,
+      "patch": {},
+      "source": "고용24",
+      "title": "라떼아트 집중과정(기초반)"
+    },
+    {
+      "diff": {},
+      "id": "02a62ad8-be19-484b-9b91-64e89d452720",
+      "match_key": "kstartup:announcement:177136",
+      "matched": true,
+      "patch": {},
+      "source": "K-Startup 창업진흥원",
+      "title": "구로구 청년창업지원센터 일반 창업교육(상반기 : 4회차) :  온라인 마케팅 실전 가이드"
+    },
+    {
+      "diff": {},
+      "id": "182b3100-3ab4-4d0f-9468-1382a84d3d57",
+      "match_key": "sesac:course:1237",
+      "matched": true,
+      "patch": {},
+      "source": "sesac",
+      "title": "모집예정 금천 보안 (금천6기) AI 활용 보안 엔지니어 양성 과정 모집 기간 2026.04.29 - 2026.05.26 1"
+    },
+    {
+      "diff": {},
+      "id": "d6612e58-fc2a-42a7-9205-5842bc15dab0",
+      "match_key": "work24:hrd:AIG20250000531611",
+      "matched": true,
+      "patch": {},
+      "source": "고용24",
+      "title": "엑셀神되기 컴퓨터활용능력 2급[컴활 2급(엑셀)]실기 완전정복 클래스"
+    },
+    {
+      "diff": {},
+      "id": "271c42c6-fa2e-45ed-9797-9cbfabcabe10",
+      "match_key": "work24:hrd:AIG20250000532871",
+      "matched": true,
+      "patch": {},
+      "source": "고용24",
+      "title": "아이돌봄 인력양성 경력자(감면자)"
+    },
+    {
+      "diff": {},
+      "id": "8f9ee144-6705-44fa-a516-e66fc0ba414a",
+      "match_key": "work24:hrd:AIG20250000531612",
+      "matched": true,
+      "patch": {},
+      "source": "고용24",
+      "title": "엑셀神되기 컴퓨터활용능력 1급[컴활 1급(엑셀, 엑세스)]실기 완전정복 클래스"
+    },
+    {
+      "diff": {},
+      "id": "c7ed169e-cd04-43b0-9be6-470229033fbe",
+      "match_key": "work24:hrd:AIG20230000421194",
+      "matched": true,
+      "patch": {},
+      "source": "고용24",
+      "title": "『자바스크립트』UI/UX웹퍼블리셔 프론트엔드(JS,JQ,반응형)"
+    },
+    {
+      "diff": {},
+      "id": "db49d2cd-d9ee-494e-a1e8-a3b993ce28b5",
+      "match_key": "kstartup:announcement:176945",
+      "matched": true,
+      "patch": {},
+      "source": "K-Startup 창업진흥원",
+      "title": "2026 웨스트버지니아(WV) 거점 북미 진출 지원 프로그램"
+    },
+    {
+      "diff": {},
+      "id": "bde1c9c6-368a-4815-98e1-ed338156ecb1",
+      "match_key": "sesac:course:1237",
+      "matched": true,
+      "patch": {},
+      "source": "sesac",
+      "title": "모집예정 금천 보안 (금천6기) AI 활용 보안 엔지니어 양성 과정"
+    },
+    {
+      "diff": {},
+      "id": "06830451-ca43-4014-8cf9-a71224ebf437",
+      "match_key": "kstartup:announcement:176996",
+      "matched": true,
+      "patch": {},
+      "source": "K-Startup 창업진흥원",
+      "title": "2026년 서울시 기후테크 시제품 제작지원 사업 참가 모집"
+    },
+    {
+      "diff": {},
+      "id": "354c41d4-2564-4c7c-9daf-de01b526e6c7",
+      "match_key": "work24:hrd:AIG20230000419970",
+      "matched": true,
+      "patch": {},
+      "source": "고용24",
+      "title": "자바(JAVA)풀스택개발자 비전공자 선수과정"
+    },
+    {
+      "diff": {},
+      "id": "ac691e6b-6d3e-4e2e-907c-87b010a8b6a5",
+      "match_key": "kstartup:announcement:176759",
+      "matched": true,
+      "patch": {},
+      "source": "K-Startup 창업진흥원",
+      "title": "2026년 서울시 소셜벤처 투자유치 액셀러레이팅 지원사업 참여기업 모집"
+    },
+    {
+      "diff": {},
+      "id": "54f92601-eb4e-4769-9e2d-b7596a634036",
+      "match_key": "kstartup:announcement:176749",
+      "matched": true,
+      "patch": {},
+      "source": "K-Startup 창업진흥원",
+      "title": "[성동구 관내기업] 2026년도 정부지원사업 및 베트남 현지진출 컨설팅 지원기업 모집"
+    },
+    {
+      "diff": {},
+      "id": "d0f84bf5-1441-467f-84ac-c35aa754d9f7",
+      "match_key": "work24:hrd:AIG20250000503208",
+      "matched": true,
+      "patch": {},
+      "source": "고용24",
+      "title": "미용사(일반) 헤어국가자격증 실기과정(단기속성반)"
+    },
+    {
+      "diff": {},
+      "id": "1df9c63b-7f18-44cc-8ede-c503bd690d7b",
+      "match_key": "work24:hrd:AIG20250000516201",
+      "matched": true,
+      "patch": {},
+      "source": "고용24",
+      "title": "초보도 가능한 포토샵 자격증 취득 (GTQ)"
+    },
+    {
+      "diff": {
+        "compare_meta": {
+          "after": {
+            "capacity": "20",
+            "contact_phone": "02-2658-1131",
+            "email": "wkddkseo1@naver.com",
+            "hrd_id": "AIG20240000492743",
+            "ncs_code": "08030402",
+            "registered_count": "0",
+            "satisfaction_score": "4.8",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20240000492743&tracseTme=9&crseTracseSe=C0061&trainstCstmrId=500020042738",
+            "tracse_tme": "9",
+            "trainst_cstmr_id": "500020042738",
+            "weekend_code": "3"
+          },
+          "before": {
+            "capacity": "20",
+            "contact_phone": "02-2658-1131",
+            "email": "wkddkseo1@naver.com",
+            "hrd_id": "AIG20240000492743",
+            "registered_count": "0",
+            "satisfaction_score": "4.8",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20240000492743&tracseTme=9&crseTracseSe=C0061&trainstCstmrId=500020042738",
+            "tracse_tme": "9",
+            "trainst_cstmr_id": "500020042738"
+          }
+        }
+      },
+      "id": "6b20d995-398b-431f-a72e-25d96fba3d6a",
+      "match_key": "work24:hrd:AIG20240000492743",
+      "matched": true,
+      "patch": {
+        "compare_meta": {
+          "capacity": "20",
+          "contact_phone": "02-2658-1131",
+          "email": "wkddkseo1@naver.com",
+          "hrd_id": "AIG20240000492743",
+          "ncs_code": "08030402",
+          "registered_count": "0",
+          "satisfaction_score": "4.8",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20240000492743&tracseTme=9&crseTracseSe=C0061&trainstCstmrId=500020042738",
+          "tracse_tme": "9",
+          "trainst_cstmr_id": "500020042738",
+          "weekend_code": "3"
+        }
+      },
+      "source": "고용24",
+      "title": "콘텐츠 제작을 위한 영상촬영"
+    },
+    {
+      "diff": {},
+      "id": "0b4f2d1f-9c36-46c5-bd9d-3af75dfc6ab7",
+      "match_key": "work24:hrd:AIG20250000502457",
+      "matched": true,
+      "patch": {},
+      "source": "고용24",
+      "title": "제빵 실기 과정"
+    },
+    {
+      "diff": {},
+      "id": "d52230ee-68af-4305-b93b-39342f6f8d39",
+      "match_key": "work24:hrd:AIG20250000519068",
+      "matched": true,
+      "patch": {},
+      "source": "고용24",
+      "title": "쉽게 배우는 컴퓨터 활용 기초과정(윈도우,인터넷,한글,엑셀)"
+    },
+    {
+      "diff": {},
+      "id": "bdfd19a9-5469-46b8-bd6a-348088a0f53a",
+      "match_key": "work24:hrd:AIG20250000505019",
+      "matched": true,
+      "patch": {},
+      "source": "고용24",
+      "title": "컴퓨터활용능력2급(실기)"
+    },
+    {
+      "diff": {
+        "compare_meta": {
+          "after": {
+            "capacity": "20",
+            "contact_phone": "02-722-2111",
+            "email": "chltjdgus1761@gmail.com",
+            "hrd_id": "AIG20230000419940",
+            "ncs_code": "20010202",
+            "registered_count": "0",
+            "satisfaction_score": "91.4",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20230000419940&tracseTme=5&crseTracseSe=C0061&trainstCstmrId=500020062235",
+            "tracse_tme": "5",
+            "trainst_cstmr_id": "500020062235",
+            "weekend_code": "3"
+          },
+          "before": {
+            "capacity": "20",
+            "contact_phone": "02-722-2111",
+            "hrd_id": "AIG20230000419940",
+            "ncs_code": "20010202",
+            "registered_count": "0",
+            "satisfaction_score": "91.4",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20230000419940&tracseTme=5&crseTracseSe=C0061&trainstCstmrId=500020062235",
+            "weekend_code": "3"
+          }
+        }
+      },
+      "id": "329b3589-79d2-4f55-b21a-ab732a6deb6f",
+      "match_key": "work24:hrd:AIG20230000419940",
+      "matched": true,
+      "patch": {
+        "compare_meta": {
+          "capacity": "20",
+          "contact_phone": "02-722-2111",
+          "email": "chltjdgus1761@gmail.com",
+          "hrd_id": "AIG20230000419940",
+          "ncs_code": "20010202",
+          "registered_count": "0",
+          "satisfaction_score": "91.4",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20230000419940&tracseTme=5&crseTracseSe=C0061&trainstCstmrId=500020062235",
+          "tracse_tme": "5",
+          "trainst_cstmr_id": "500020062235",
+          "weekend_code": "3"
+        }
+      },
+      "source": "고용24",
+      "title": "『파이썬』Python 자료구조&알고리즘 프로그래밍"
+    },
+    {
+      "diff": {},
+      "id": "6b430d60-f777-497e-a74a-93774298891d",
+      "match_key": "work24:hrd:AIG20250000519536",
+      "matched": true,
+      "patch": {},
+      "source": "고용24",
+      "title": "바리스타2급 자격증 취득과정"
+    },
+    {
+      "diff": {},
+      "id": "5e4c1360-1579-45ab-ae98-f7c06cbe76bd",
+      "match_key": "work24:hrd:AIG20250000509716",
+      "matched": true,
+      "patch": {},
+      "source": "고용24",
+      "title": "[초보자 가능] C언어 프로그래밍"
+    },
+    {
+      "diff": {},
+      "id": "9f9b70bc-f37e-4187-b1d1-e54518f43ebd",
+      "match_key": "work24:hrd:AIG20250000505161",
+      "matched": true,
+      "patch": {},
+      "source": "고용24",
+      "title": "Oracle SQL 기초 이해부터 실무활용 과정(SQL/PL-SQL)"
+    },
+    {
+      "diff": {},
+      "id": "00779dba-35dd-4a27-abe3-01e2187bfe54",
+      "match_key": "work24:hrd:AIG20250000505047",
+      "matched": true,
+      "patch": {},
+      "source": "고용24",
+      "title": "Spring Boot 실무개발 향상과정"
+    },
+    {
+      "diff": {},
+      "id": "3de9346b-d6b7-40cc-acf9-00c05836d242",
+      "match_key": "work24:hrd:AIG20240000467433",
+      "matched": true,
+      "patch": {},
+      "source": "고용24",
+      "title": "실무적용을 위한 라이노 활용 3D모델링&렌더링"
+    }
+  ],
+  "mode": "dry-run",
+  "patch_count": 2,
+  "policy": "fill-null-only",
+  "source_record_count": 602
+}

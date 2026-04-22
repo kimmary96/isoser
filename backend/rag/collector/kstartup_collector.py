@@ -2,6 +2,7 @@ from datetime import date
 from typing import Dict, List
 
 from .base_api_collector import BaseApiCollector
+from .program_field_mapping import map_kstartup_announcement_item
 
 
 class KstartupApiCollector(BaseApiCollector):
@@ -39,11 +40,7 @@ class KstartupApiCollector(BaseApiCollector):
 
     def map_item(self, item: Dict, source_meta: Dict) -> Dict:
         return {
-            "title": str(item.get("biz_pbanc_nm", "")).strip(),
-            "raw_deadline": str(item.get("pbanc_rcpt_end_dt", "")).strip(),
-            "link": str(item.get("detl_pg_url", "") or item.get("biz_aply_url", "") or item.get("biz_gdnc_url", "")).strip(),
-            "category_hint": "창업",
-            "target": [str(item.get("aply_trgt", "")).strip()] if str(item.get("aply_trgt", "")).strip() else None,
+            **map_kstartup_announcement_item(item),
             "source_meta": source_meta,
             "raw": item,
         }
