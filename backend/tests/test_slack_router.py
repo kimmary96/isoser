@@ -4,9 +4,25 @@ import hashlib
 import hmac
 import json
 import time
+from pathlib import Path
 from urllib.parse import urlencode
 
 from routers import slack
+
+
+def test_cowork_approvals_rls_policy_is_service_role_only() -> None:
+    migration = (
+        Path(__file__).resolve().parents[2]
+        / "supabase"
+        / "migrations"
+        / "20260423201000_add_cowork_approvals_service_role_policy.sql"
+    ).read_text(encoding="utf-8")
+
+    assert "enable row level security" in migration
+    assert "cowork_approvals_service_role_all" in migration
+    assert "to service_role" in migration
+    assert "to anon" not in migration
+    assert "to authenticated" not in migration
 
 
 def _build_signature(secret: str, timestamp: str, body: bytes) -> str:

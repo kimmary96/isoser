@@ -1,5 +1,19 @@
 # 리팩토링 로그
 
+## 2026-04-23 cowork approvals RLS policy 명시
+
+- 변경 파일
+  - `supabase/migrations/20260423201000_add_cowork_approvals_service_role_policy.sql`
+  - `backend/tests/test_slack_router.py`
+  - `docs/current-state.md`
+  - `reports/TASK-2026-04-23-cowork-approvals-rls-policy-result.md`
+- 변경 내용
+  - Supabase linter의 `rls_enabled_no_policy_public_cowork_approvals` INFO를 해소하기 위해 `cowork_approvals`에 service role 전용 all policy를 추가함
+  - Slack 승인 큐는 backend service role 경로만 사용하므로 `anon`/`authenticated` policy는 추가하지 않음
+  - migration 내용이 공개 role을 열지 않도록 테스트로 고정함
+- 검증
+  - `backend\venv\Scripts\python.exe -m pytest backend\tests\test_slack_router.py -q`
+
 ## 2026-04-23 programs 페이지 숫자 페이지네이션 복구
 
 - 변경 파일

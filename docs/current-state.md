@@ -1,6 +1,7 @@
 # Current State
 
 Update 2026-04-23:
+- `supabase/migrations/20260423201000_add_cowork_approvals_service_role_policy.sql`는 Slack/cowork 승인 큐인 `cowork_approvals`의 RLS 의도를 명시한다. 이 테이블은 backend service role 경로만 읽고 쓰므로 `anon`/`authenticated` policy를 만들지 않고 `service_role` 전용 all policy만 둔다.
 - `supabase/migrations/20260423195000_improve_program_list_browse_pool_quality.sql`는 read-model refresh 단계에서 `cost_type`/`participation_time`을 다시 추론해 facet snapshot의 빈 bucket을 줄이고, browse rank 산정 시 Work24 계열이 soft cap 이후에는 다른 source와 interleave되도록 보정한다. 다른 source가 충분하지 않으면 Work24 overflow를 이어 붙여 pool size 300은 유지한다.
 - `supabase/migrations/20260423200000_move_pg_trgm_extension_schema.sql`는 Supabase linter의 `extension_in_public` 경고를 분리 처리하기 위해 기존 `pg_trgm` extension을 `extensions` schema로 이동한다. `auth_leaked_password_protection` 경고는 DB migration 대상이 아니라 Supabase Auth dashboard에서 leaked password protection을 켜야 한다.
 - `GET /programs/filter-options` now uses the latest `program_list_facet_snapshots` row for default browse mode instead of scanning source `programs` rows, so `/programs` page entry no longer waits on the legacy filter-option derivation path before rendering the list.
