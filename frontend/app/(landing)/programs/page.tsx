@@ -4,7 +4,7 @@ import Link from "next/link";
 import AdSlot from "@/components/AdSlot";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { getProgramCount, getProgramFilterOptions, listPrograms } from "@/lib/api/backend";
-import { buildUrgentProgramChips, buildUrgentProgramsParams } from "@/lib/programs-page-layout";
+import { buildUrgentProgramChips } from "@/lib/programs-page-layout";
 import { getSiteUrl } from "@/lib/seo";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Program, ProgramSort } from "@/lib/types";

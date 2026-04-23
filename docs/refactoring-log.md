@@ -2642,3 +2642,4 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - Work24 국민내일배움카드 목록 API에 별도 모집마감일이 없어 `traStartDate`를 `deadline`/`compare_meta.application_deadline` fallback으로 저장하고 `compare_meta.deadline_source=traStartDate`를 남기도록 변경함
   - 기존 고용24 `deadline=end_date` 오염값 무시 방어는 유지하되, `deadline_source=traStartDate`가 있는 1일 과정은 신뢰하도록 backend 목록/추천/backfill/frontend fallback을 함께 보정함
   - `traStartDate`/`traEndDate` 기반 날짜 메타를 `YYYY-MM-DD`로 정규화해 Python 3.10 날짜 파싱과 D-day 계산이 basic date 문자열에 막히지 않도록 함
+  - 운영 DB Work24 계열 12,206건 중 `deadline_null`을 0건으로 보정하고, `/programs?recruiting_only=true&sort=deadline&limit=20` 기본 노출 Work24 70%를 재확인함
