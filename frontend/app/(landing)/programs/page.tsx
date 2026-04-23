@@ -477,7 +477,9 @@ function ProgramKeywordList({ keywords }: { keywords: string[] }) {
 function UrgentProgramCompactCard({ program }: { program: Program }) {
   const programId = String(program.id ?? "");
   const href = programId ? `/programs/${encodeURIComponent(programId)}` : "/programs";
-  const chips = [...getDisplayCategories(program), ...normalizeTextList(program.extracted_keywords), ...normalizeTextList(program.skills)].slice(0, 4);
+  const chips = Array.from(
+    new Set([...getDisplayCategories(program), ...normalizeTextList(program.extracted_keywords), ...normalizeTextList(program.skills)])
+  ).slice(0, 4);
   const summary = program.summary || program.description;
   const deadline = deadlineLabel(program);
 
