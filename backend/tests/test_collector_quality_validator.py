@@ -2,7 +2,10 @@ from __future__ import annotations
 
 from copy import deepcopy
 
-from backend.rag.collector.quality_validator import validate_program_row
+from backend.rag.collector.quality_validator import (
+    summarize_program_field_gaps,
+    validate_program_row,
+)
 
 
 def issue_codes(row: dict) -> set[str]:
@@ -118,3 +121,27 @@ def test_validator_flags_date_and_cost_sanity_risks() -> None:
 
     assert "invalid_training_period" in codes
     assert "invalid_cost" in codes
+
+
+def test_summarize_program_field_gaps_groups_issue_fields_and_samples() -> None:
+    summary = summarize_program_field_gaps(
+        [
+            {
+                "title": "AI 과정",
+                "source": "고용24",
+                "source_unique_key": "work24:AIG202500001:7:500012345678",
+                "deadline": "2026-06-29",
+                "start_date": "2026-04-22",
+                "end_date": "2026-06-29",
+                "source_url": "https://www.work24.go.kr/hr/detail",
+                "region": "서울",
+            }
+        ],
+        sample_limit=1,
+    )
+
+    assert summary["checked_rows"] == 1
+    assert summary["rows_with_any_issues"] == 1
+    assert summary["issue_codes"]["missing_provider"] == 1
+    assert summary["issue_fields"]["provider"] == 1
+    assert summary["samples"][0]["issue_fields"] == ["provider"]

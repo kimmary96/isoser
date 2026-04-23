@@ -460,6 +460,36 @@ def build_snapshot_capture_summary(
     }
 
 
+def build_field_gap_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    issue_codes: dict[str, int] = {}
+    issue_fields: dict[str, int] = {}
+    source_count_with_any_issues = 0
+    source_count_with_only_info_issues = 0
+
+    for row in rows:
+        field_gap_audit = row.get("field_gap_audit")
+        if not isinstance(field_gap_audit, dict):
+            continue
+        if int(field_gap_audit.get("rows_with_any_issues") or 0) > 0:
+            source_count_with_any_issues += 1
+        checked_rows = int(field_gap_audit.get("checked_rows") or 0)
+        rows_with_info_only = int(field_gap_audit.get("rows_with_info_only") or 0)
+        if checked_rows > 0 and checked_rows == rows_with_info_only:
+            source_count_with_only_info_issues += 1
+        for code, count in (field_gap_audit.get("issue_codes") or {}).items():
+            issue_codes[str(code)] = issue_codes.get(str(code), 0) + int(count or 0)
+        for field, count in (field_gap_audit.get("issue_fields") or {}).items():
+            issue_fields[str(field)] = issue_fields.get(str(field), 0) + int(count or 0)
+
+    return {
+        "enabled": True,
+        "source_count_with_any_issues": source_count_with_any_issues,
+        "source_count_with_only_info_issues": source_count_with_only_info_issues,
+        "issue_codes": dict(sorted(issue_codes.items())),
+        "issue_fields": dict(sorted(issue_fields.items())),
+    }
+
+
 def write_html_snapshot_file(
     *,
     snapshot_output_dir: Path,
@@ -1044,6 +1074,7 @@ def render_markdown_report(report: dict[str, Any]) -> str:
         ocr_candidates = report.get("ocr_probe_candidates", [])
         poster_or_attachment_candidates = report.get("poster_or_attachment_candidates", [])
         inconclusive_sources = report.get("detail_probe_inconclusive_sources", [])
+        field_gap_summary = report.get("field_gap_summary") or {}
         lines.extend(
             [
                 "## OCR / Image Preflight",
@@ -1053,27 +1084,43 @@ def render_markdown_report(report: dict[str, Any]) -> str:
                 f"- OCR runtime opt-in candidates: `{len(ocr_candidates)}`",
                 f"- Poster/attachment review candidates: `{len(poster_or_attachment_candidates)}`",
                 f"- Detail/parser follow-up candidates: `{len(inconclusive_sources)}`",
+                f"- Sources with any field gaps: `{field_gap_summary.get('source_count_with_any_issues', 0)}`",
+                f"- Sources with info-only field gaps: `{field_gap_summary.get('source_count_with_only_info_issues', 0)}`",
                 "",
             ]
         )
         for classification, count in report.get("ocr_summary", {}).items():
             lines.append(f"- `{classification}`: `{count}`")
+        issue_fields = field_gap_summary.get("issue_fields") or {}
+        if issue_fields:
+            lines.append(
+                "- Aggregated field gaps: {}".format(
+                    ", ".join(f"`{field}={count}`" for field, count in issue_fields.items())
+                )
+            )
 
         lines.extend(
             [
                 "",
-                "| Source | OCR classification | Evidence |",
-                "| --- | --- | --- |",
+                "| Source | OCR classification | Field gap rows | Top field gaps | Evidence |",
+                "| --- | --- | ---: | --- | --- |",
             ]
         )
         for row in report["sources"]:
             ocr_probe = row.get("ocr_probe") or {}
             if not isinstance(ocr_probe, dict):
                 continue
+            field_gap_audit = row.get("field_gap_audit") or {}
+            gap_fields = field_gap_audit.get("issue_fields") or {}
+            gap_summary = ", ".join(
+                f"{field}={count}" for field, count in list(gap_fields.items())[:3]
+            )
             lines.append(
-                "| {source} | {classification} | {evidence} |".format(
+                "| {source} | {classification} | {gap_rows} | {gap_summary} | {evidence} |".format(
                     source=_escape_table(str(row["source"])),
                     classification=ocr_probe.get("classification", "unknown"),
+                    gap_rows=field_gap_audit.get("rows_with_any_issues", 0),
+                    gap_summary=_escape_table(gap_summary or "-"),
                     evidence=_escape_table(", ".join(str(item) for item in ocr_probe.get("evidence", []))),
                 )
             )
@@ -1094,6 +1141,22 @@ def render_markdown_report(report: dict[str, Any]) -> str:
                 continue
             lines.append(f"#### {row['source']}")
             lines.append("")
+            field_gap_audit = row.get("field_gap_audit") or {}
+            if isinstance(field_gap_audit, dict) and field_gap_audit.get("checked_rows", 0):
+                lines.append(
+                    "- Field gap audit: checked_rows={checked}, rows_with_any_issues={rows_with_issues}, rows_with_info_only={rows_with_info_only}".format(
+                        checked=field_gap_audit.get("checked_rows", 0),
+                        rows_with_issues=field_gap_audit.get("rows_with_any_issues", 0),
+                        rows_with_info_only=field_gap_audit.get("rows_with_info_only", 0),
+                    )
+                )
+                issue_codes = field_gap_audit.get("issue_codes") or {}
+                if issue_codes:
+                    lines.append(
+                        "- Field gap issue codes: {}".format(
+                            ", ".join(f"`{code}={count}`" for code, count in issue_codes.items())
+                        )
+                    )
             attachment_samples = ocr_probe.get("source_attachment_url_samples") or []
             image_samples = ocr_probe.get("source_image_url_samples") or []
             if attachment_samples:
@@ -1132,6 +1195,15 @@ def render_markdown_report(report: dict[str, Any]) -> str:
                             ", ".join(f"`{value}`" for value in image_urls)
                         )
                     )
+            for sample in field_gap_audit.get("samples") or []:
+                if not isinstance(sample, dict):
+                    continue
+                lines.append(
+                    "  field gap sample: `{title}` issues={issues}".format(
+                        title=sample.get("title", ""),
+                        issues=", ".join(str(code) for code in sample.get("issue_codes", [])),
+                    )
+                )
             lines.append("")
 
         lines.extend(["", "## OCR Decision", ""])
