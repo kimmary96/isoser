@@ -1,5 +1,32 @@
 # 리팩토링 로그
 
+## 2026-04-23 프로그램 검색/deadline audit/추천 캐시 정합화
+
+- 변경 파일
+  - `backend/routers/programs.py`
+  - `backend/tests/test_programs_router.py`
+  - `scripts/program_backfill.py`
+  - `backend/tests/test_program_backfill.py`
+  - `supabase/migrations/20260423123000_align_recommendations_cache_schema.sql`
+  - `docs/current-state.md`
+- 변경 내용
+  - `/programs?q=` 백엔드 후처리 검색에 `category`, `category_detail`, 프론트 카테고리 라벨 alias를 포함해 비교 모달의 "카테고리 검색" 기대와 실제 검색 범위를 맞춤
+  - `scripts/program_backfill.py --deadline-audit` dry-run을 추가해 `deadline` 기반 모집중 검색에서 누락될 수 있는 row를 분류하도록 함
+  - Windows 콘솔에서도 audit JSON/markdown 출력이 깨지지 않도록 stdout UTF-8 설정을 추가함
+  - `recommendations` 캐시 테이블에 최신 추천 캐시 컬럼과 `(user_id, program_id)` unique index를 맞추는 migration을 추가함
+  - 최신 캐시 컬럼이 없는 운영 DB에서는 legacy `score`/`created_at` 캐시를 읽어 fresh recommendation fallback 전까지 완충하도록 함
+- 보존한 동작
+  - 기존 `search_text` 후보 축소와 short ASCII 검색 fallback 정책은 유지함
+  - 추천 fresh path, 캐시 stale 판정, anonymous/default 추천 fallback은 유지함
+  - deadline audit는 읽기 전용 dry-run이며 DB 값을 수정하지 않음
+- 검증
+  - `backend\venv\Scripts\python.exe -m pytest backend/tests/test_programs_router.py backend/tests/test_program_backfill.py -q` 통과 (`70 passed`)
+  - `scripts/program_backfill.py --deadline-audit --limit 200 --format json` 운영 dry-run 실행: 후보 248건 중 의심 245건, `work24_deadline_copied_from_end_date` 182건, `active_row_without_recruiting_deadline` 48건, `deadline_equals_end_date_review` 15건
+- 리스크/후속 후보
+  - 카테고리 alias 검색 추가로 검색 결과가 이전보다 넓어질 수 있어 운영 키워드별 결과 품질 확인이 필요함
+  - `deadline` 누락/오매핑 row는 audit만 추가됐고 실제 backfill/apply는 별도 승인 후 진행해야 함
+  - 운영 DB에 `cost_type`, `participation_time` 컬럼이 없다면 비용/참여 시간 필터는 계속 fallback 휴리스틱에 의존함
+
 ## 2026-04-23 프로필 주소 지역 필드 추가
 
 - 변경 파일
