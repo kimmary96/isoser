@@ -287,4 +287,6 @@ where p.participation_time is distinct from public.infer_program_participation_t
   p.description
 );
 
-select public.refresh_program_list_index(300);
+-- Do not run the full read-model refresh here. On the operating dataset this
+-- RPC can exceed Supabase's statement timeout; the following migration adds a
+-- bounded browse-pool fallback refresh for post-migration catch-up.

@@ -28,14 +28,45 @@ def load_backend_env() -> None:
         os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
 
 
-async def refresh(pool_limit: int) -> dict[str, object]:
+def _exception_detail(exc: Exception) -> str:
+    return str(getattr(exc, "detail", None) or str(exc) or repr(exc))
+
+
+async def _refresh_rpc(function_name: str, pool_limit: int) -> object:
     result = await request_supabase(
         method="POST",
-        path="/rest/v1/rpc/refresh_program_list_index",
+        path=f"/rest/v1/rpc/{function_name}",
         payload={"pool_limit": pool_limit},
     )
+    return result
+
+
+async def refresh(pool_limit: int, *, fallback_to_browse: bool = True, browse_only: bool = False) -> dict[str, object]:
+    if browse_only:
+        result = await _refresh_rpc("refresh_program_list_browse_pool", pool_limit)
+        return {
+            "pool_limit": pool_limit,
+            "status": "browse_fallback_only",
+            "affected_rows": result,
+        }
+
+    try:
+        result = await _refresh_rpc("refresh_program_list_index", pool_limit)
+    except Exception as exc:
+        if not fallback_to_browse:
+            raise
+        full_refresh_error = _exception_detail(exc)
+        fallback_result = await _refresh_rpc("refresh_program_list_browse_pool", pool_limit)
+        return {
+            "pool_limit": pool_limit,
+            "status": "browse_fallback",
+            "full_refresh_error": full_refresh_error,
+            "affected_rows": fallback_result,
+        }
+
     return {
         "pool_limit": pool_limit,
+        "status": "full_refresh",
         "affected_rows": result,
     }
 
@@ -44,11 +75,27 @@ def main() -> int:
     load_backend_env()
     parser = argparse.ArgumentParser(description="Refresh the programs list read model and browse facet snapshot.")
     parser.add_argument("--pool-limit", type=int, default=int(os.getenv("PROGRAM_BROWSE_POOL_LIMIT", "300")))
+    parser.add_argument(
+        "--no-fallback",
+        action="store_true",
+        help="Do not fall back to the bounded browse-pool refresh RPC when the full refresh fails.",
+    )
+    parser.add_argument(
+        "--browse-only",
+        action="store_true",
+        help="Skip the full refresh and call only refresh_program_list_browse_pool.",
+    )
     args = parser.parse_args()
     try:
-        report = asyncio.run(refresh(args.pool_limit))
+        report = asyncio.run(
+            refresh(
+                args.pool_limit,
+                fallback_to_browse=not args.no_fallback,
+                browse_only=args.browse_only,
+            )
+        )
     except Exception as exc:
-        detail = getattr(exc, "detail", None) or str(exc) or repr(exc)
+        detail = _exception_detail(exc)
         print(
             json.dumps(
                 {
