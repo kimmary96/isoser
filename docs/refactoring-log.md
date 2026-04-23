@@ -2316,6 +2316,15 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-23: `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/app/dashboard/page.tsx`, `docs/current-state.md`, `reports/dashboard-recommend-calendar-relevance-result.md`
   - 대시보드 추천 캘린더 BFF의 백엔드 추천 fetch에 3.5초 timeout, backend 목록 fallback에 2.5초 timeout을 추가해 상류 지연 시 공개 프로그램 fallback으로 빠르게 전환되도록 함
   - 대시보드 기본 추천 목록을 15분 localStorage cache로 저장하고 재진입 시 즉시 표시한 뒤 최신 추천으로 갱신하도록 함
+- 2026-04-23: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/app/(landing)/programs/page.tsx`, `frontend/lib/api/backend.ts`, `frontend/lib/types/index.ts`, `docs/current-state.md`, `reports/compare-page-detail-fields-result.md`
+  - `GET /programs/filter-options`를 추가해 운영 기관, 추천 대상, 선발 절차, 채용 연계 필터 옵션을 현재 검색/카테고리/지역/수업방식/모집 상태 조건에 맞는 실제 프로그램 row에서 추출하도록 함
+  - `/programs` 서버 페이지는 옵션 조회가 실패하거나 빈 배열이면 기존 정적 옵션으로 fallback해 기존 필터 동작을 유지함
+- 2026-04-23: `frontend/app/(landing)/programs/[id]/page.tsx`, `frontend/app/(landing)/programs/[id]/program-detail-client.tsx`, `frontend/app/(landing)/programs/program-bookmark-button.tsx`, `docs/current-state.md`, `reports/compare-page-detail-fields-result.md`
+  - 프로그램 상세 페이지 북마크 버튼이 로컬 토글만 하던 문제를 기존 dashboard bookmark BFF mutation 컴포넌트 재사용으로 교체함
+  - 상세 페이지 서버 렌더링 시 `program_bookmarks`에서 현재 사용자 초기 찜 상태를 읽어 목록 페이지와 같은 기준으로 표시하도록 함
+- 2026-04-23: `frontend/app/(landing)/compare/program-select-modal.tsx`, `docs/current-state.md`, `reports/compare-page-detail-fields-result.md`
+  - 비교 프로그램 선택 모달의 전체 검색 탭에 `/programs/filter-options` 기반 운영 기관, 추천 대상, 선발 절차, 채용 연계 필터를 추가함
+  - 옵션 조회 실패가 검색 결과 로딩을 막지 않도록 옵션 fetch는 best-effort로 분리하고, 선택된 옵션은 기존 `/programs` 목록 query 파라미터로 적용함
 - 2026-04-23: `frontend/app/(landing)/landing-c/page.tsx`, `frontend/app/(landing)/landing-c/_*.ts*`, `docs/current-state.md`, `reports/landing-c-component-refactor-result.md`
   - landing-c의 단일 대형 `page.tsx`를 landing-a와 유사하게 스타일 변수, 정적 콘텐츠, 검색 파라미터 정규화, 프로그램 표시/정렬 helper, 히어로, Opportunity feed, 하단 지원 섹션 파일로 분리함
   - `page.tsx`는 기존 `listPrograms` 호출, Live Board 후보 조회, Opportunity feed 정렬, 섹션 조립만 맡도록 축소해 화면/라우팅 동작 변경 없이 수정 리스크를 낮춤
@@ -2324,3 +2333,29 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - 런칭 smoke checklist의 공개 진입과 로그인 기본 복귀 항목을 현재 기본 랜딩인 `/landing-c` 기준으로 갱신함
   - landing-c 리팩토링 후속 검증 포인트로 Live Board, 검색/칩 필터, Opportunity feed 카드, 카드 액션 렌더 확인을 명시함
   - 로컬 dev server `http://localhost:3031/landing-c`에서 HTTP 200, 루트 `/`의 `/landing-c` 307 redirect, agent-browser nonblank/error-overlay/key element smoke를 확인함
+- 2026-04-23: `frontend/app/(landing)/programs/programs-filter-bar.tsx`, `frontend/app/(landing)/programs/[id]/page.tsx`, `frontend/app/(landing)/programs/[id]/program-detail-client.tsx`, `frontend/app/(landing)/programs/[id]/not-found.tsx`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `reports/programs-qa-immediate-fixes-result.md`
+  - QA에서 발견된 programs 정렬/다중 필터/잘못된 ID/공유 안내 문제를 즉시 수정함
+  - 정렬은 버튼형 메뉴 대신 select 변경 즉시 제출로 단순화하고, 다중 필터 메뉴에는 `선택 적용` submit 버튼을 추가해 열린 메뉴 상태에서도 선택값을 URL query에 반영할 수 있게 함
+  - 프로그램 상세 API는 UUID 형식이 아닌 id를 404로 방어하고, 상세 페이지는 내부 Supabase 오류 대신 전용 한국어 404/안내 화면과 공유 복사 결과 메시지를 제공함
+- 2026-04-23: `frontend/app/(landing)/programs/programs-filter-bar.tsx`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `reports/programs-filter-toggle-latest-sort-fix-result.md`
+  - 다중 필터 메뉴의 `선택 적용` 버튼을 제거하고, 필터 항목 또는 `전체선택` 클릭 즉시 메뉴가 닫히도록 조정함
+  - `/programs?sort=latest&recruiting_only=true`에서 최신 원천 데이터 첫 묶음이 표시 불가 항목으로 채워져 결과가 비는 문제를 해결하기 위해 최신순 모집중 후보를 1,000건 단위로 넓게 조회한 뒤 실제 모집 마감일 기준으로 후처리함
+  - 고용24 `deadline=end_date` 보정 후 `days_left`가 없는 항목은 모집중 목록/count에서 제외하도록 목록과 카운트 기준을 맞추고, 관련 backend 회귀 테스트를 추가함
+- 2026-04-23: `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/programs-filter-bar.tsx`, `docs/current-state.md`, `reports/programs-filter-search-layout-result.md`
+  - `/programs` 목록 필터에서 선발 절차와 채용 연계 필터를 제거하고, 해당 query는 목록 화면의 active chip/API 요청/페이지네이션 URL 보존 대상에서 제외함
+  - 검색 input, 검색 버튼, 초기화 버튼을 필터 드롭다운 아래 별도 줄로 내려 배치해 필터 선택 후 검색 실행 흐름이 더 명확하게 보이도록 조정함
+  - 비교 프로그램 선택 모달과 backend filter-options 계약은 다른 화면에서 계속 쓰일 수 있어 변경하지 않음
+  - 검색/초기화 버튼 폭을 필터 토글 1칸과 맞추고, 정렬을 native select 대신 같은 커스텀 토글 UI로 맞춰 `마감 임박순` 디자인 불일치를 해소함
+- 2026-04-23: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/app/(landing)/programs/page.tsx`, `frontend/lib/types/index.ts`, `docs/current-state.md`, `reports/programs-list-metadata-normalization-result.md`
+  - `/programs` 목록 응답에 실제 row 텍스트 기반 파생 표시 필드 `display_categories`, `participation_mode_label`, `participation_time_text`, `selection_process_label`, `extracted_keywords`를 추가함
+  - 카테고리는 기존 source/category_detail을 참고하되 제목/요약/설명/tags/skills/compare_meta 기반 규칙으로 보정하고, 짧은 영문 키워드는 단어 경계가 맞을 때만 매칭해 URL/식별자 오분류를 줄임
+  - 목록 테이블은 파생 카테고리 badge, 참여 시간 라벨+상세 시간, 선발절차 라벨, 실제 내용 기반 keyword chip을 우선 표시하고 빈 keyword chip/dash 중복은 숨기도록 조정함
+- 2026-04-23: `backend/routers/programs.py`, `backend/rag/collector/work24_detail_parser.py`, `scripts/program_backfill.py`, `frontend/app/(landing)/programs/page.tsx`, `frontend/lib/types/index.ts`, `supabase/migrations/20260423112000_refine_programs_search_metadata.sql`, `backend/tests/test_programs_router.py`, `backend/tests/test_program_backfill.py`, `docs/current-state.md`, `reports/programs-list-metadata-normalization-result.md`
+  - `ai` 검색이 고용24 `tracseId=AIG...`, `source_url`, `hrd_id` 같은 운영 식별자 때문에 바리스타/ERP/포토샵 과정을 잘못 포함하던 문제를 해결함
+  - 검색, category detail 추론, 목록 파생 카테고리/키워드 생성에서 `compare_meta` 전체 JSON 대신 교육 내용 관련 allowlist key만 사용하도록 조정함
+  - 고용24 상세 HTML 파서가 명시된 수강신청/모집/접수 마감일만 `deadline`으로 보강하고, 훈련유형/주야/주말/훈련시간을 `compare_meta`에 보존하도록 확장함
+  - 목록 비용 칸은 KDT/산대특/국기/내일배움 같은 실제 지원유형 텍스트가 있으면 작은 badge로 함께 표시함
+- 2026-04-23: `backend/rag/collector/normalizer.py`, `backend/tests/test_work24_kstartup_field_mapping.py`, `scripts/program_source_diff.py`, `supabase/migrations/20260423112000_refine_programs_search_metadata.sql`, `docs/current-state.md`, `reports/program-detail-data-diagnosis-result.md`
+  - 운영 DB에 누락될 수 있는 `category_detail`, `support_type`, `teaching_method`, `raw_data`, `search_text` 등 programs metadata 컬럼을 최신 migration 시작부에서 `add column if not exists`로 보강하도록 정리함
+  - collector normalized row가 원본 `raw` payload를 `raw_data`로 넘기도록 추가해 신규 수집/재수집 row에서 원본 API 필드 비교가 가능하게 함
+  - `scripts/program_source_diff.py`의 추적 필드에 `raw_data`를 포함해 live raw, DB raw_data, API/UI 매핑 차이를 같은 진단 리포트에서 볼 수 있게 함
