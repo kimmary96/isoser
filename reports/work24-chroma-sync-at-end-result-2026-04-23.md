@@ -37,6 +37,13 @@ Work24 지역 partition sync는 DB 최신화까지는 자동화했지만, 추천
 |---|---|
 | `backend\venv\Scripts\python.exe -m pytest backend\tests\test_work24_partition_sync.py -q` | 10 passed |
 | `backend\venv\Scripts\python.exe -m py_compile scripts\work24_partition_sync.py` | passed |
+| `CHROMA_MODE=persistent`, `--apply --sync-chroma-at-end --stop-after 경기 --max-pages 1` | `candidate_count=100`, `synced_count=100`, `skipped_count=0` |
+
+Smoke report:
+
+| 파일 | 내용 |
+|---|---|
+| `reports/work24_partition_sync_with_chroma_smoke_20260423.json` | persistent Chroma sync smoke 결과 |
 
 ## 리스크 / 회귀 가능성
 

@@ -1,0 +1,46 @@
+{
+  "mode": "apply",
+  "start_dt": "20260423",
+  "end_dt": "20261023",
+  "include_seoul": false,
+  "start_from": null,
+  "stop_after": "경기",
+  "partition_order": [
+    {
+      "code": "41",
+      "name": "경기"
+    }
+  ],
+  "preview": [
+    {
+      "code": "41",
+      "name": "경기",
+      "total_count": 6212,
+      "page_rows": 100,
+      "page_size": 100,
+      "estimated_pages": 63,
+      "within_api_page_limit": true
+    }
+  ],
+  "sync_results": [
+    {
+      "code": "41",
+      "name": "경기",
+      "fetched_rows": 100,
+      "payload_rows": 100,
+      "deadline_from_traStartDate_rows": 100,
+      "upserted_rows": 100,
+      "duration_seconds": 1.893,
+      "chroma_candidate_rows": 100
+    }
+  ],
+  "chroma_sync": {
+    "requested": true,
+    "chroma_mode": "persistent",
+    "candidate_count": 100,
+    "status": "completed",
+    "synced_count": 100,
+    "skipped_count": 0,
+    "duration_seconds": 21.012
+  }
+}
