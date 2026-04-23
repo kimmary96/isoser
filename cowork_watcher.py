@@ -48,6 +48,7 @@ RUN_LEDGER_PATH = "./cowork/dispatch/run-ledger.jsonl"
 TASKS_INBOX_DIR = "./tasks/inbox"
 TASKS_REMOTE_DIR = "./tasks/remote"
 COWORK_WATCHER_LOCK_PATH = "./.cowork_watcher.lock"
+REPORTS_DIR = "./reports"
 PROJECT_PATH = os.environ.get("ISOSER_PROJECT_PATH", str(Path(__file__).resolve().parent))
 SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL", "").strip()
 POLL_INTERVAL_SECONDS = 10
@@ -79,8 +80,49 @@ def ensure_directories() -> None:
             COWORK_DISPATCH_DIR,
             TASKS_INBOX_DIR,
             TASKS_REMOTE_DIR,
+            REPORTS_DIR,
         ]
     )
+
+
+def timing_artifact_path(task_id: str) -> str:
+    return os.path.join(REPORTS_DIR, f"{task_id}-timing.json")
+
+
+def record_task_timing_anchor(
+    task_id: str,
+    *,
+    source: str,
+    stage: str,
+    timestamp: Optional[str] = None,
+    details: Optional[dict[str, object]] = None,
+) -> str:
+    path = timing_artifact_path(task_id)
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    payload: dict[str, object]
+    if os.path.exists(path):
+        try:
+            payload = json.loads(Path(path).read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            payload = {}
+    else:
+        payload = {}
+
+    payload.setdefault("task_id", task_id)
+    payload.setdefault("version", 1)
+    anchors = payload.setdefault("anchors", {})
+    assert isinstance(anchors, dict)
+
+    anchor_payload: dict[str, object] = {
+        "source": source,
+        "at": timestamp or datetime.now().isoformat(timespec="seconds"),
+    }
+    if details:
+        anchor_payload["details"] = details
+    anchors[stage] = anchor_payload
+
+    Path(path).write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return path
 
 
 def startup_warning_messages() -> list[str]:
@@ -505,7 +547,28 @@ def write_dispatch(task_id: str, stage: str, lines: list[str]) -> str:
             except OSError:
                 pass
 
+    timing_timestamp = ""
+    timing_details: dict[str, object] = {}
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("created_at:"):
+            timing_timestamp = stripped.removeprefix("created_at:").strip().strip("`")
+        elif stripped.startswith("approved_at:"):
+            timing_timestamp = stripped.removeprefix("approved_at:").strip().strip("`")
+        elif stripped.startswith("status:"):
+            timing_details["status"] = stripped.removeprefix("status:").strip()
+        elif stripped.startswith("target:"):
+            timing_details["target"] = stripped.removeprefix("target:").strip().strip("`")
+
     write_markdown(dispatch_path, "\n".join(lines))
+    if stage in {"review-ready", "review-failed", "approval-blocked-stale-review", "promoted"}:
+        record_task_timing_anchor(
+            task_id,
+            source="cowork-dispatch",
+            stage=stage,
+            timestamp=timing_timestamp or None,
+            details=timing_details or None,
+        )
     append_run_ledger(
         task_id,
         stage,

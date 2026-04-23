@@ -1036,3 +1036,32 @@ def test_write_dispatch_review_ready_supersedes_old_review_failed(tmp_path: Path
     ready_body = (dispatch_dir / "TASK-TEST-SUPERSEDE-review-ready.md").read_text(encoding="utf-8")
     assert "- supersedes_previous_review_failed: `2026-04-24T00:40:01`" in ready_body
     assert not failed_path.exists()
+
+
+def test_write_dispatch_records_timing_artifact(tmp_path: Path, monkeypatch) -> None:
+    dispatch_dir = tmp_path / "dispatch"
+    reports_dir = tmp_path / "reports"
+    dispatch_dir.mkdir(parents=True, exist_ok=True)
+    reports_dir.mkdir(parents=True, exist_ok=True)
+
+    monkeypatch.setattr(cowork_watcher, "COWORK_DISPATCH_DIR", str(dispatch_dir))
+    monkeypatch.setattr(cowork_watcher, "REPORTS_DIR", str(reports_dir))
+    monkeypatch.setattr(cowork_watcher, "notify_slack_for_dispatch", lambda **_kwargs: None)
+    monkeypatch.setattr(cowork_watcher, "append_run_ledger", lambda *args, **kwargs: None)
+
+    cowork_watcher.write_dispatch(
+        "TASK-TEST-TIMING",
+        "promoted",
+        [
+            "# Dispatch: TASK-TEST-TIMING",
+            "",
+            "stage: promoted",
+            "target: `inbox`",
+            "approved_at: `2026-04-24T01:11:20`",
+        ],
+    )
+
+    timing = Path(reports_dir / "TASK-TEST-TIMING-timing.json").read_text(encoding="utf-8")
+    assert '"promoted"' in timing
+    assert '"cowork-dispatch"' in timing
+    assert '"2026-04-24T01:11:20"' in timing

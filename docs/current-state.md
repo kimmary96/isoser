@@ -92,6 +92,9 @@ Update 2026-04-16:
 - cowork Slack review-ready 알림은 같은 `task_id` 재발행 시 이전 알림을 대체한다는 표식을 포함하고, review snapshot 문구는 한국어 중심의 번호형 `판정`/`핵심 확인사항` 포맷으로 정규화한다.
 - Slack에서 cowork 승인/거절 버튼을 누르면 기존 review-ready 메시지를 새 top-level 메시지로 늘리지 않고 갱신하며, 이후 `승격 완료`/`승격 보류` 후속 알림은 같은 작업 스레드로 이어진다.
 - local `watcher.py`도 task별 Slack approval marker에 저장된 `slack_message_ts`를 재사용해, 같은 task의 `completed`/`drift`/`blocked`/`push-failed`/`runtime-error` 알림을 가능한 한 기존 Slack 스레드에 이어서 기록한다.
+- local `watcher.py`의 task-scoped git automation은 branch push에서 GitHub `500/502/503/504` 같은 transient HTTP 오류가 나면 한 번 더 재시도한다. 재시도 뒤에도 push 명령이 실패했더라도 `origin/<branch>` fetch 후 task commit이 이미 원격 branch에 포함된 것이 확인되면 false-negative `push-failed`로 남기지 않고 branch push 성공으로 처리한다.
+- `cowork_watcher.py`와 local `watcher.py`는 둘 다 `reports/<task-id>-timing.json` timing artifact를 갱신한다. cowork 쪽은 `review-ready` / `review-failed` / `approval-blocked-stale-review` / `promoted` 시점을, local watcher 쪽은 `running-started`, supervisor 단계 시작, 최종 alert stage를 같은 JSON anchor map에 기록해 queue benchmark나 후속 SLA 분석에서 안정적인 시각 기준으로 재사용할 수 있다.
+- local watcher에서 `push-failed` 알림이 나더라도 summary가 “remote branch already contains the task commit” 류의 stale 상태로 판명되면 일반 error alert 대신 `self-healed`로 다운그레이드한다.
 - `tasks/inbox`에 이미 `running`/`blocked`/`drifted`/`done` 상태가 존재하는 같은 파일명이 다시 들어오면 watcher는 재실행 대신 `tasks/archive/`로 보관하고 중복 inbox packet을 건너뛴다.
 - 실행 중이던 packet이 완료 단계에서 이미 같은 이름의 `tasks/done` 파일과 충돌하면 watcher는 런타임 예외로 죽지 않고 중복 packet만 `tasks/archive/`로 치워 후속 Git/Slack 처리만 계속한다.
 - `cowork_watcher.py`는 이미 `tasks/inbox/` 또는 `tasks/remote/`에 존재하는 packet을 다시 승인받아도 `FileExistsError`로 죽지 않고, 기존 승격본을 재사용한 것으로 기록만 남긴다.

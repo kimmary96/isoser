@@ -1,5 +1,45 @@
 # 리팩토링 로그
 
+- 2026-04-24: `docs/specs/program-canonical-schema-design-v1.md`, `docs/specs/program-recommendation-backend-touchpoints-v1.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/serializer-api-bff-transition-plan-v1.md`, `docs/specs/README.md`, `reports/SESSION-2026-04-24-program-canonical-migration-transition-result.md`
+  - `program-surface-contract-v2` 기준으로 `programs`, `program_source_records`, `program_list_index`의 최종 역할과 컬럼 분리를 문서화해 프로그램 축 A/B의 DB 설계 빈칸을 채움
+  - 현재 저장소의 실제 read/write 지점을 기준으로 프로그램 축과 사용자 추천 축이 만나는 backend/BFF 변경 포인트를 정리함
+  - 사용자 추천 draft migration 이후 어떤 순서로 provenance 분리, dual write, read switch, cleanup을 진행할지 통합 로드맵과 serializer/API/BFF 전환 순서를 추가함
+
+- 2026-04-24: `docs/specs/final-refactor-axis-map-v1.md`, `docs/specs/README.md`, `reports/SESSION-2026-04-24-final-refactor-axis-map-result.md`
+  - 프로그램 정본 개편과 사용자 추천 개편을 포함해 전체 개편을 6축으로 나누는 상위 기준 문서를 추가함
+  - 메인 축을 `프로그램 정본`, `프로그램 화면/API 계약`, `사용자 추천 정본`, `정규화 사전`, `운영 정합성`으로 고정하고, 행동 신호 축은 1차 일부 반영 후 2차 확장 축으로 위치시킴
+  - 새 창 handoff 시에도 같은 우선순위를 유지할 수 있도록 전체 구현 순서와 축 간 의존 관계를 문서화함
+
+- 2026-04-24: `supabase/migrations/20260425103000_add_profiles_target_job_columns.sql`, `supabase/migrations/20260425104000_create_user_program_preferences.sql`, `supabase/migrations/20260425105000_create_user_recommendation_profile.sql`, `supabase/migrations/20260425110000_create_user_recommendation_profile_refresh_function.sql`, `supabase/migrations/20260425111000_backfill_user_recommendation_inputs.sql`, `supabase/migrations/20260425112000_align_recommendations_with_user_recommendation_profile.sql`, `docs/specs/user-recommendation-serializer-contract-v1.md`, `docs/specs/README.md`, `reports/SESSION-2026-04-24-user-recommendation-sql-drafts-and-contract-result.md`
+  - 맞춤형 프로그램 추천용 사용자 축을 실제 migration SQL 파일 초안 단위로 내려 `profiles.target_job`, `user_program_preferences`, `user_recommendation_profile`, `recommendations` 정렬 패키지를 추가함
+  - `refresh_user_recommendation_profile()` SQL 초안과 초기 backfill SQL 초안을 함께 고정해 이후 backend switch 전에 DB 구조와 파생 정본 흐름을 먼저 확정함
+  - `program-surface-contract-v2`와 연결되는 추천 serializer / profile derivation 계약 문서를 추가하고, `cowork/drafts/relevance-scoring-v2.md`의 가중치를 현재 저장소 기준으로 보정 적용함
+
+- 2026-04-24: `docs/specs/user-recommendation-schema-migration-plan-v1.md`, `docs/specs/README.md`, `reports/SESSION-2026-04-24-user-recommendation-schema-migration-plan-result.md`
+  - 맞춤형 프로그램 추천용 사용자 스키마 재정의를 실제 migration 단계로 풀어, `profiles.target_job` 추가, `user_program_preferences`, `user_recommendation_profile`, 추천 cache 계약 정렬 순서를 문서화함
+  - 단계별 migration 파일명, SQL 초안, 코드 변경 순서, 검증 SQL, 롤백 전략을 함께 정리해 실행 계획 문서로 고정함
+
+- 2026-04-24: `docs/specs/user-recommendation-schema-v1.md`, `docs/specs/README.md`, `reports/SESSION-2026-04-24-user-recommendation-schema-review-result.md`
+  - `supabase/SQL.md` 기준 현재 `profiles`, `activities`, `resumes`, `recommendations` 구조와 추천 코드가 실제로 읽는 사용자 필드를 비교해 맞춤형 프로그램 추천용 사용자 스키마 재정의 문서를 추가함
+  - `bio`와 희망 직무 의미 충돌, `profiles`의 `target_job` 부재, 거주지와 선호 지역 미분리, `recommendations` 문서/코드 드리프트를 핵심 문제로 정리함
+  - 최종 권장 구조를 `profiles + user_program_preferences + user_recommendation_profile + user_program_events`로 문서화함
+
+- 2026-04-24: `docs/specs/program-surface-contract-v2.md`, `docs/specs/README.md`, `reports/SESSION-2026-04-24-program-surface-contract-v2-result.md`
+  - 프로그램 화면 계약 재정의 스펙을 추가해 카드형, 테이블형, 상세형, 화면 문맥 계약을 `ProgramBaseSummary`, `ProgramCardSummary`, `ProgramListRow`, `ProgramDetailResponse`, `ProgramSurfaceContext`로 분리해 고정함
+  - 실제 페이지 검토 기준으로 프로그램 목록 테이블은 `ProgramDetail`이 아니라 별도 `ProgramListRow` 계약을 써야 한다는 판단을 문서화함
+  - 이 문서는 현재 운영 truth가 아니라 앞으로의 스키마/API/UI 통합 개편 기준 스펙으로 위치시킴
+
+- 2026-04-24: `watcher.py`, `cowork_watcher.py`, `tests/test_watcher.py`, `tests/test_cowork_watcher.py`, `docs/current-state.md`
+  - cowork/local watcher가 공통으로 `reports/<task-id>-timing.json` timing artifact를 기록해 review-ready, promoted, running, supervisor 단계, 최종 alert 시각을 구조화된 anchor map으로 남기도록 보강함
+  - local watcher의 `push-failed`는 branch push `500/502/503/504` 계열 transient 오류를 한 번 재시도하고, 재시도 후에도 실패했더라도 원격 branch가 이미 task commit을 포함하면 stale push failure를 성공으로 처리하도록 보강함
+  - stale branch push failure summary를 받은 alert도 `self-healed`로 다운그레이드하는 runbook을 추가함
+  - 검증: `python -m pytest tests/test_watcher.py tests/test_cowork_watcher.py -q` (repo root를 `PYTHONPATH`에 추가한 환경) 통과
+
+- 2026-04-24: `watcher.py`, `tests/test_watcher.py`, `docs/current-state.md`
+  - watcher의 task 완료 후 branch push에서 GitHub `500/502/503/504` 계열 transient HTTP 오류가 나면 한 번 더 재시도하도록 보강함
+  - push 명령이 결국 실패해도 `fetch origin <branch>` 뒤 task commit이 이미 `origin/<branch>`에 포함된 것이 확인되면 false-negative `push-failed` 대신 branch push 성공으로 처리하도록 보강함
+  - 검증: `python -m pytest tests/test_watcher.py -q` (repo root를 `PYTHONPATH`에 추가한 환경) 통과
+
 - 2026-04-24: `backend/rag/collector/quality_validator.py`, `scripts/html_collector_diagnostic.py`, `backend/tests/test_collector_quality_validator.py`, `backend/tests/test_html_collector_diagnostic_cli.py`, `docs/current-state.md`, `docs/refactoring-log.md`
   - OCR preflight `field_gap_audit`에 source별 `rows_with_warning_or_error`, `warning_or_error_follow_up_needed`, `field_gap_follow_up_bucket`을 추가해 info-only gap과 실제 warning/error 후속 조치 대상을 명시적으로 분리함
   - 집계 `field_gap_summary`에도 `source_count_with_warning_or_error_follow_up`를 추가하고 Markdown 표/요약에서 같은 bucket을 그대로 노출해 operator가 raw issue code를 다시 해석하지 않아도 되게 함
