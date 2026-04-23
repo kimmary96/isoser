@@ -1,5 +1,17 @@
 # 리팩토링 로그
 
+- 2026-04-24: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/lib/types/index.ts`, `frontend/app/(landing)/programs/page.tsx`, `docs/current-state.md`
+  - read-model `promoted_items`를 unfiltered 첫 browse 진입 계약으로 고정하고, filtered browse/search/archive/offset/cursor 경로에서 promoted query가 섞이지 않도록 helper로 분리함
+  - explicit ad row와 provider-match fallback row가 같은 프로그램을 가리켜도 promoted layer 안에서 중복되지 않도록 회귀 테스트를 추가함
+  - frontend 타입에서 `promoted_items`를 optional이 아닌 required 필드로 맞춰 backend 응답 계약을 더 명확히 함
+
+- 2026-04-24: `backend/rag/collector/quality_validator.py`, `scripts/html_collector_diagnostic.py`, `backend/tests/test_collector_quality_validator.py`, `backend/tests/test_html_collector_diagnostic_cli.py`, `docs/current-state.md`, `reports/html-collector-ocr-diagnostic-2026-04-24.json`, `reports/html-collector-ocr-diagnostic-2026-04-24.md`
+  - `summarize_program_field_gaps()`를 추가해 normalized row 품질 이슈를 field/code/sample 단위로 요약하고, OCR preflight가 source별 field gap audit을 함께 내리도록 연결함
+  - OCR markdown/json 리포트가 attachment/image URL sample과 함께 `field_gap_summary`, `field_gap_audit`를 보여주도록 확장해 poster/attachment 후보가 실제로 OCR이 필요한 필드 결손을 갖는지 바로 판별할 수 있게 함
+  - 2026-04-24 rerun 기준 OCR 분류는 `poster_or_attachment_candidate=7`, `detail_probe_inconclusive=3`, `text_sufficient_no_ocr=4`였고, field gap이 잡힌 13개 source의 175건은 모두 info-level `missing_provider`라 즉시 OCR runtime opt-in 후보는 여전히 0건으로 유지됨
+  - 검증: `backend\venv\Scripts\python.exe -m pytest backend/tests/test_collector_quality_validator.py backend/tests/test_program_quality_report_cli.py backend/tests/test_scheduler_collectors.py backend/tests/test_html_collector_diagnostic_cli.py -q` 통과 (`36 passed`)
+
+
 - 2026-04-24: `backend/rag/collector/base_html_collector.py`, `backend/rag/collector/regional_html_collectors.py`, `backend/rag/collector/tier3_collectors.py`, `backend/rag/collector/tier4_collectors.py`, `scripts/html_collector_diagnostic.py`, `backend/tests/test_html_collector_diagnostic_cli.py`, `backend/tests/test_tier4_collectors.py`, `docs/schemas/html-collector-scheduler-summary.schema.json`, `docs/current-state.md`
   - parse-empty snapshot 메타에 collector별 selector match count를 추가하고, HTML snapshot 파일에도 selector hit 요약을 함께 저장해 selector drift/JS 의존 판별 신호를 강화함
   - OCR preflight sample에 source별 attachment/image URL sample을 추가해 poster/attachment 후보의 실제 증거 링크를 JSON/Markdown 리포트에서 바로 확인할 수 있게 함

@@ -2580,6 +2580,38 @@ def _normalize_program_sort(sort: Any) -> str:
     return sort if isinstance(sort, str) and sort in PROGRAM_SORT_OPTIONS else "default"
 
 
+def _is_default_browse_entry_request(
+    *,
+    mode: Literal["browse", "search", "archive"],
+    sort: str,
+    offset: int,
+    cursor: str | None,
+    category: str | None = None,
+    category_detail: str | None = None,
+    region_detail: str | None = None,
+    regions: list[str] | None = None,
+    sources: list[str] | None = None,
+    teaching_methods: list[str] | None = None,
+    cost_types: list[str] | None = None,
+    participation_times: list[str] | None = None,
+    targets: list[str] | None = None,
+) -> bool:
+    if mode != "browse" or sort != "default" or offset != 0 or cursor:
+        return False
+    if category or category_detail or region_detail:
+        return False
+    return not any(
+        (
+            regions,
+            sources,
+            teaching_methods,
+            cost_types,
+            participation_times,
+            targets,
+        )
+    )
+
+
 def _encode_program_cursor(row: Mapping[str, Any], *, sort: str) -> str | None:
     program_id = str(row.get("id") or "").strip()
     if not program_id:
@@ -2859,7 +2891,21 @@ async def _fetch_program_list_read_model_rows(
     mode = _program_list_mode(q=q, scope=scope, include_closed_recent=include_closed_recent)
     effective_sort = _normalize_program_sort(sort)
     promoted_items: list[ProgramListItem] = []
-    if mode == "browse" and effective_sort == "default" and offset == 0 and not cursor:
+    if _is_default_browse_entry_request(
+        mode=mode,
+        sort=effective_sort,
+        offset=offset,
+        cursor=cursor,
+        category=category,
+        category_detail=category_detail,
+        region_detail=region_detail,
+        regions=regions,
+        sources=sources,
+        teaching_methods=teaching_methods,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
+    ):
         promoted_items = await _fetch_promoted_read_model_rows(
             category=category,
             category_detail=category_detail,

@@ -760,7 +760,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
       }),
       listPrograms(buildUrgentProgramsParams()),
     ]);
-    promotedPrograms = programsPage.promoted_items ?? [];
+    promotedPrograms = programsPage.promoted_items;
     programs = programsPage.items;
     totalCount = programsPage.count ?? programsPage.items.length;
     urgentPrograms = urgentRows;
