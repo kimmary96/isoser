@@ -1,16 +1,33 @@
-# Review: TASK-2026-04-24-1130-collector-quality-phase2
-
 ## Overall assessment
 
-아직 승격 준비가 되지 않았습니다.
+Promotable with minor or no changes. The packet is execution-ready against the current repository for a small `fix/update` task. Required frontmatter is complete, referenced predecessor reports exist, the planned repository paths are valid, and the optional `planned_files` / `planned_worktree_fingerprint` metadata still match the current worktree snapshot.
 
 ## Findings
 
-- Worktree fingerprint mismatch: packet의 optional fingerprint가 현재 planned files 상태와 다릅니다.
-- planned_files: `backend/rag/collector/quality_validator.py`, `scripts/html_collector_diagnostic.py`, `backend/tests/test_collector_quality_validator.py`, `backend/tests/test_html_collector_diagnostic_cli.py`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/TASK-2026-04-24-1130-collector-quality-phase2-result.md`
-- planned_worktree_fingerprint: `3359b7347b00db204ea6589d80e922f3aa3c7b84d73965dd04ca73b2d2e6300f`
-- actual_worktree_fingerprint: `1d3eff5e9bcdebf2a1189dae8f5946c3db7d0a9e7aea9969ae37a6f26b3be195`
+- Frontmatter completeness: pass.
+  - Required fields `id`, `status`, `type`, `title`, `planned_at`, `planned_against_commit` are present.
+  - Optional `planned_files` and `planned_worktree_fingerprint` are also present.
+- Repository path accuracy: pass.
+  - Planned code/doc/test paths exist.
+  - `reports/TASK-2026-04-24-1130-collector-quality-phase2-result.md` does not exist yet, which is expected for a future execution artifact and is not a blocker.
+- Planned worktree metadata: pass.
+  - Current computed fingerprint for the listed `planned_files` is still `1d3eff5e9bcdebf2a1189dae8f5946c3db7d0a9e7aea9969ae37a6f26b3be195`, matching the packet.
+- Drift risk: low.
+  - `planned_against_commit` is `7256cbc7169c747f6f2af716f8bfb294303b08b5`, while current `HEAD` is `aa13b6799b72a6edcb51afca8cb6f20ccb275ffb`.
+  - However, `git diff --name-only 7256cbc..HEAD` over the planned touched files returned no changes, so there is no material code drift in the planned execution area.
+  - Current dirty worktree entries are in `cowork/` packet/dispatch files, not in the planned implementation files.
+- Acceptance clarity: acceptable.
+  - The packet clearly preserves report-only behavior and existing API/frontend behavior.
+  - The intended gap from the current state is consistent with `reports/SESSION-2026-04-24-ocr-field-gap-audit-result.md`, which explicitly called out warning/error follow-up bucket separation as a follow-up candidate.
+- Missing references: none blocking.
+  - Current references cited by the packet exist and align with `docs/current-state.md`.
 
 ## Recommendation
 
-planned files 기준으로 packet fingerprint를 다시 고정한 뒤 review를 재생성하세요.
+Promote as-is if no one plans to edit the packet again before approval. If the packet is revised further in `cowork/packets/`, regenerate the review once more before promotion so the approval is tied to the latest packet text.
+
+## Review Run Metadata
+
+- generated_at: `2026-04-24T00:43:56`
+- watcher_exit_code: `0`
+- codex_tokens_used: `65,594`

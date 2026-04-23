@@ -6,9 +6,9 @@ title: Collector quality phase 2 for OCR warning buckets and report references
 priority: medium
 planned_by: codex
 planned_at: 2026-04-24T11:30:00+09:00
-planned_against_commit: 98bb49a274faa13d2606a7a2fc6914987aab0cb5
+planned_against_commit: 7256cbc7169c747f6f2af716f8bfb294303b08b5
 planned_files: backend/rag/collector/quality_validator.py, scripts/html_collector_diagnostic.py, backend/tests/test_collector_quality_validator.py, backend/tests/test_html_collector_diagnostic_cli.py, docs/current-state.md, docs/refactoring-log.md, reports/TASK-2026-04-24-1130-collector-quality-phase2-result.md
-planned_worktree_fingerprint: 3359b7347b00db204ea6589d80e922f3aa3c7b84d73965dd04ca73b2d2e6300f
+planned_worktree_fingerprint: 1d3eff5e9bcdebf2a1189dae8f5946c3db7d0a9e7aea9969ae37a6f26b3be195
 ---
 
 # Goal
