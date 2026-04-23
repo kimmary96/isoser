@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 import { LandingHeader } from "@/components/landing/LandingHeader";
-import { listPrograms } from "@/lib/api/backend";
+import { listProgramsPage } from "@/lib/api/backend";
 import { buildProgramFilterParams } from "@/lib/program-filters";
 import { getSiteUrl } from "@/lib/seo";
 import type { Program } from "@/lib/types";
@@ -47,14 +47,20 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
   let error: string | null = null;
 
   try {
-    [programs, liveBoardPrograms] = await Promise.all([
-      listPrograms(programParams),
-      listPrograms({
+    const [programsPage, liveBoardPage] = await Promise.all([
+      listProgramsPage({
+        ...programParams,
+        scope: programParams.q ? "all" : "default",
+      }),
+      listProgramsPage({
         sort: "deadline",
         recruiting_only: true,
-        limit: 100,
+        limit: 24,
+        scope: "default",
       }),
     ]);
+    programs = programsPage.items;
+    liveBoardPrograms = liveBoardPage.items;
   } catch (cause) {
     error = cause instanceof Error ? cause.message : "프로그램 정보를 불러오지 못했습니다.";
   }

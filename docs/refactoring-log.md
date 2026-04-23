@@ -25,6 +25,31 @@
   - `npx tsc --noEmit --project tsconfig.codex-check.json` 통과
   - `backend\venv\Scripts\python.exe -m py_compile backend\services\program_list_scoring.py scripts\refresh_program_list_index.py` 통과
 
+## 2026-04-23 programs read model 런타임 병목 보정
+
+- 변경 파일
+  - `backend/routers/programs.py`
+  - `backend/tests/test_programs_router.py`
+  - `frontend/app/(landing)/landing-a/page.tsx`
+  - `frontend/app/(landing)/landing-c/page.tsx`
+  - `supabase/migrations/20260423191000_program_list_read_model_runtime_indexes.sql`
+  - `supabase/migrations/20260423192000_optimize_program_list_refresh.sql`
+  - `docs/current-state.md`
+- 변경 내용
+  - `PROGRAM_LIST_SUMMARY_SELECT`에서 `compare_meta`와 존재하지 않는 rating/detail 컬럼을 제거해 운영 DB read model query 실패와 payload 비대를 함께 해결함
+  - 기본 browse의 `/programs/filter-options`를 source row scan 대신 `program_list_facet_snapshots` 기반으로 응답하게 바꿔 프로그램 페이지 진입 전 병목을 제거함
+  - landing-a/landing-c 프로그램 섹션을 `listProgramsPage` 기반으로 바꿔 list/count 병렬 호출과 Landing C 100건 fetch를 제거함
+  - runtime browse/deadline/facet snapshot 인덱스를 추가함
+  - `refresh_program_list_index`가 `programs p.*` 대신 명시 컬럼만 CTE로 전달하도록 재정의해 raw collector payload 같은 큰 컬럼이 refresh scoring/ranking 단계로 전파되지 않게 함
+  - read model refresh의 `search_text` 생성이 `compare_meta` 전체 JSON을 넣지 않고 allowlist summary key만 사용하도록 최적화함
+- 검증
+  - 운영 Supabase read model 직접 호출 기준 `/programs/list` browse 20개 응답 `items=20`, `count=300`, `source=read_model`, 약 2.44초
+  - 운영 Supabase facet snapshot 기반 filter options 응답 약 0.3초
+  - `backend\venv\Scripts\python.exe scripts\refresh_program_list_index.py --pool-limit 300`는 corrective migration 적용 전 운영 RPC에서 statement timeout을 재현함
+  - `backend\venv\Scripts\python.exe -m pytest backend\tests\test_programs_router.py -q` 통과 (`87 passed`)
+  - `npx tsc --noEmit --project tsconfig.codex-check.json` 통과
+  - `npm run lint` 통과
+
 ## 2026-04-23 blocked 문서 재점검 및 programs 필터/태그 보정
 
 - 변경 파일

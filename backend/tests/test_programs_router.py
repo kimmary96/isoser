@@ -135,6 +135,43 @@ def test_read_model_query_limits_default_browse_pool() -> None:
     assert params["order"].startswith("recommended_score.desc")
 
 
+def test_read_model_summary_select_excludes_heavy_detail_fields() -> None:
+    selected = set(programs.PROGRAM_LIST_SUMMARY_SELECT.split(","))
+
+    assert "compare_meta" not in selected
+    assert "description" not in selected
+    assert "raw_data" not in selected
+    assert "recommended_score" in selected
+
+
+@pytest.mark.asyncio
+async def test_filter_options_use_facet_snapshot_for_default_browse(monkeypatch: pytest.MonkeyPatch) -> None:
+    async def fake_load_facet_snapshot(*, mode: str):  # noqa: ANN202
+        assert mode == "browse"
+        return (
+            programs.ProgramFacetSnapshot(
+                source=[
+                    programs.ProgramFacetBucket(value="고용24", count=300),
+                    programs.ProgramFacetBucket(value="sesac", count=12),
+                ]
+            ),
+            "2026-04-23T00:00:00Z",
+        )
+
+    async def fail_legacy_request(**_: object) -> list[dict[str, object]]:
+        raise AssertionError("legacy filter option scan should not run for default browse")
+
+    monkeypatch.setattr(programs, "_load_program_facet_snapshot", fake_load_facet_snapshot)
+    monkeypatch.setattr(programs, "request_supabase", fail_legacy_request)
+    monkeypatch.setenv("ENABLE_PROGRAM_LIST_READ_MODEL", "true")
+
+    response = await programs.get_program_filter_options(teaching_methods=None)
+
+    assert [item.value for item in response.sources] == ["고용24", "sesac"]
+    assert response.targets
+    assert response.selection_processes == []
+
+
 @pytest.mark.asyncio
 async def test_list_programs_page_uses_read_model_and_cursor(monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[dict[str, object]] = []

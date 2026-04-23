@@ -13,7 +13,7 @@ import {
 import { chipOptions } from "./_content";
 import { landingAThemeVars } from "./_styles";
 import AdSlot from "@/components/AdSlot";
-import { getProgramCount, listPrograms } from "@/lib/api/backend";
+import { listProgramsPage } from "@/lib/api/backend";
 import { buildProgramFilterParams } from "@/lib/program-filters";
 import { getSiteUrl } from "@/lib/seo";
 import type { Program } from "@/lib/types";
@@ -67,15 +67,12 @@ export default async function LandingAPage({ searchParams }: LandingAPageProps) 
   let error: string | null = null;
 
   try {
-    [programs, totalCount] = await Promise.all([
-      listPrograms(programParams),
-      getProgramCount({
-        q: programParams.q,
-        category: programParams.category,
-        regions: programParams.regions,
-        recruiting_only: programParams.recruiting_only,
-      }),
-    ]);
+    const page = await listProgramsPage({
+      ...programParams,
+      scope: programParams.q ? "all" : "default",
+    });
+    programs = page.items;
+    totalCount = page.count ?? page.items.length;
   } catch (cause) {
     error = cause instanceof Error ? cause.message : "프로그램 정보를 불러오지 못했습니다.";
   }

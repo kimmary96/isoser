@@ -1,6 +1,11 @@
 # Current State
 
 Update 2026-04-23:
+- `GET /programs/filter-options` now uses the latest `program_list_facet_snapshots` row for default browse mode instead of scanning source `programs` rows, so `/programs` page entry no longer waits on the legacy filter-option derivation path before rendering the list.
+- `frontend/app/(landing)/landing-a/page.tsx` and `frontend/app/(landing)/landing-c/page.tsx` now use `GET /programs/list` through `listProgramsPage`, removing separate count/list waterfall calls from landing program sections. Landing C's live board fetch is bounded to a 24-item read-model request.
+- The read-model list select excludes heavy `compare_meta` and detail fields; detail pages still read those from `programs`.
+- `supabase/migrations/20260423191000_program_list_read_model_runtime_indexes.sql` adds runtime browse/deadline/facet indexes, and `20260423192000_optimize_program_list_refresh.sql` keeps read-model search text on allowlisted summary fields instead of full `compare_meta` JSON.
+- `supabase/migrations/20260423192000_optimize_program_list_refresh.sql` replaces the read-model refresh function with an explicit-column projection so refresh CTEs do not carry large source/detail columns such as raw collector payloads through scoring and ranking.
 - `supabase/migrations/20260423170000_add_program_list_read_model.sql` adds `program_list_index`, `program_list_facet_snapshots`, indexes, and `refresh_program_list_index(pool_limit)` so the public program list can use a summary read model instead of scanning source/detail rows for default browse traffic.
 - `backend/routers/programs.py` now prefers the read model for `GET /programs`, `GET /programs/list`, `GET /programs/count`, and `GET /programs/facets` when `ENABLE_PROGRAM_LIST_READ_MODEL` is enabled, with legacy fallback logging if the read model is unavailable.
 - Default browse mode is bounded by `PROGRAM_BROWSE_POOL_LIMIT` (default 300), search mode activates for `q` or `scope=all`, and archive mode activates for recent closed/closed scope. Cursor pagination uses stable sort value + id cursors on the read-model path.

@@ -191,9 +191,8 @@ PROGRAM_PROMOTED_SLOT_LIMIT = 15
 PROGRAM_LIST_SUMMARY_SELECT = (
     "id,title,provider,summary,category,category_detail,region,region_detail,location,"
     "teaching_method,cost,cost_type,participation_time,source,source_url,link,deadline,"
-    "close_date,start_date,end_date,is_active,is_ad,rating_raw,rating_normalized,rating_scale,"
-    "rating_display,review_count,display_categories,participation_mode_label,participation_time_text,"
-    "selection_process_label,extracted_keywords,tags,skills,compare_meta,days_left,"
+    "close_date,start_date,end_date,is_active,is_ad,display_categories,participation_mode_label,participation_time_text,"
+    "selection_process_label,extracted_keywords,tags,skills,days_left,"
     "deadline_confidence,recommended_score,recommendation_reasons,promoted_rank,updated_at"
 )
 PROGRAM_DEFAULT_WORK24_TARGET_RATIO = 0.7
@@ -1778,6 +1777,19 @@ def _extract_program_filter_options(rows: list[dict[str, Any]]) -> ProgramFilter
         targets=_build_named_filter_options(targets),
         selection_processes=_build_named_filter_options(selection_processes),
         employment_links=_build_named_filter_options(employment_links),
+    )
+
+
+def _filter_options_from_facet_snapshot(facets: ProgramFacetSnapshot) -> ProgramFilterOptionsResponse:
+    return ProgramFilterOptionsResponse(
+        sources=[
+            ProgramFilterOption(value=bucket.value, label=_program_source_label(bucket.value))
+            for bucket in facets.source
+            if bucket.value
+        ],
+        targets=[ProgramFilterOption(value=value, label=value) for value in sorted(PROGRAM_TARGETS)],
+        selection_processes=[],
+        employment_links=[],
     )
 
 
@@ -3455,6 +3467,8 @@ async def list_programs_page(
         cost_types=cost_types,
         participation_times=participation_times,
         targets=targets,
+        selection_processes=None,
+        employment_links=None,
         recruiting_only=recruiting_only,
         include_closed_recent=include_closed_recent,
         sort=sort,
@@ -3497,6 +3511,28 @@ def _build_facet_snapshot(raw_facets: Mapping[str, Any] | None) -> ProgramFacetS
     )
 
 
+async def _load_program_facet_snapshot(
+    *,
+    mode: Literal["browse", "search", "archive"],
+) -> tuple[ProgramFacetSnapshot, str | None]:
+    rows = await request_supabase(
+        method="GET",
+        path=f"/rest/v1/{PROGRAM_LIST_FACET_TABLE}",
+        params={
+            "select": "facets,generated_at",
+            "scope": f"eq.{mode}",
+            "pool_limit": f"eq.{_program_browse_pool_limit()}",
+            "order": "generated_at.desc",
+            "limit": "1",
+        },
+    )
+    row = rows[0] if isinstance(rows, list) and rows else {}
+    return (
+        _build_facet_snapshot(row.get("facets") if isinstance(row, Mapping) else None),
+        str(row.get("generated_at")) if isinstance(row, Mapping) and row.get("generated_at") else None,
+    )
+
+
 @programs_router.get("/facets", response_model=ProgramFacetSnapshotResponse)
 async def get_program_facets(
     scope: str | None = None,
@@ -3507,26 +3543,16 @@ async def get_program_facets(
     if not _program_list_read_model_enabled():
         return ProgramFacetSnapshotResponse(scope=mode, pool_limit=_program_browse_pool_limit())
     try:
-        rows = await request_supabase(
-            method="GET",
-            path=f"/rest/v1/{PROGRAM_LIST_FACET_TABLE}",
-            params={
-                "select": "facets,generated_at",
-                "scope": f"eq.{mode}",
-                "pool_limit": f"eq.{_program_browse_pool_limit()}",
-                "order": "generated_at.desc",
-                "limit": "1",
-            },
-        )
+        facets, generated_at = await _load_program_facet_snapshot(mode=mode)
     except Exception as exc:
         log_event(logger, logging.WARNING, "program_facets_read_model_fallback", error=str(exc))
-        rows = []
-    row = rows[0] if isinstance(rows, list) and rows else {}
+        facets = ProgramFacetSnapshot()
+        generated_at = None
     return ProgramFacetSnapshotResponse(
         scope=mode,
         pool_limit=_program_browse_pool_limit(),
-        generated_at=str(row.get("generated_at")) if row.get("generated_at") else None,
-        facets=_build_facet_snapshot(row.get("facets") if isinstance(row, Mapping) else None),
+        generated_at=generated_at,
+        facets=facets,
     )
 
 
@@ -3601,6 +3627,14 @@ async def get_program_filter_options(
     recruiting_only: bool = False,
     include_closed_recent: bool = False,
 ) -> ProgramFilterOptionsResponse:
+    mode = _program_list_mode(q=q, scope=scope, include_closed_recent=include_closed_recent)
+    if _program_list_read_model_enabled() and mode == "browse":
+        try:
+            facets, _ = await _load_program_facet_snapshot(mode=mode)
+            return _filter_options_from_facet_snapshot(facets)
+        except Exception as exc:
+            log_event(logger, logging.WARNING, "program_filter_options_facet_fallback", error=str(exc))
+
     select_fields = "source,target,title,provider,summary,description,support_type,teaching_method,tags,skills,compare_meta,deadline,end_date,is_active,created_at"
     params = _build_program_query_params(
         select=select_fields,
