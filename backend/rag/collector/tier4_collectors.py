@@ -100,53 +100,10 @@ class DistrictHtmlCollector(BaseHtmlCollector):
     empty_message = "district source returned 0 items"
 
     def collect_items(self) -> List[Dict]:
-        items: List[Dict] = []
-        request_errors: List[str] = []
-        parsed_empty_count = 0
-        successful_request_count = 0
-
-        for url in self.list_urls:
-            try:
-                html = self.fetch_html(url)
-            except Exception as exc:
-                request_errors.append(f"{url}: {exc}")
-                print(f"[{self.__class__.__name__}] request failed: {url}: {exc}")
-                continue
-            successful_request_count += 1
-            parsed_items = self.parse_html(html, base_url=url)
-            if not parsed_items:
-                parsed_empty_count += 1
-                print(f"[{self.__class__.__name__}] parsed 0 items: {url}")
-            items.extend(parsed_items)
-
-        if items:
-            self.last_collect_status = "success"
-            self.last_collect_message = (
-                f"{self.source_name} collected {len(items)} items "
-                f"from {successful_request_count}/{len(self.list_urls)} urls; "
-                f"request_failed={len(request_errors)}; parse_empty={parsed_empty_count}"
-            )
-            print(
-                f"[{self.__class__.__name__}] collected={len(items)} "
-                f"urls={successful_request_count}/{len(self.list_urls)} "
-                f"request_failed={len(request_errors)} parse_empty={parsed_empty_count}"
-            )
-            return items
-
-        if request_errors and successful_request_count == 0:
-            self.last_collect_status = "request_failed"
-            self.last_collect_message = (
-                f"all requests failed ({len(request_errors)}/{len(self.list_urls)}): "
-                + "; ".join(request_errors[:2])
-            )
-        else:
-            self.last_collect_status = "parsing_failed"
-            self.last_collect_message = (
-                f"{self.empty_message}; urls={successful_request_count}/{len(self.list_urls)}; "
-                f"request_failed={len(request_errors)}; parse_empty={parsed_empty_count}"
-            )
-        print(f"[{self.__class__.__name__}] {self.last_collect_message}")
-        return []
+        return self.collect_url_items(
+            lambda html, url: self.parse_html(html, base_url=url),
+            empty_message=self.empty_message,
+        )
 
     def parse_html(self, html: str, *, base_url: str) -> List[Dict]:
         raise NotImplementedError

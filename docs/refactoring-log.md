@@ -2826,3 +2826,8 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-23: `backend/rag/collector/program_field_mapping.py`, `backend/tests/test_work24_kstartup_field_mapping.py`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/TASK-2026-04-23-1945-program-field-source-evidence-result.md`
   - Work24/K-Startup normalized field의 원천 raw field명을 `compare_meta.field_sources`에 보존하도록 추가함
   - deadline/start/end/provider/location/cost/source_url/source_unique_key/application_url 등 주요 필드의 source evidence를 mapping 테스트로 고정함
+- 2026-04-23: `backend/rag/collector/base_html_collector.py`, `backend/rag/collector/regional_html_collectors.py`, `backend/rag/collector/tier3_collectors.py`, `backend/rag/collector/tier4_collectors.py`, `scripts/html_collector_diagnostic.py`, `backend/tests/test_html_collector_diagnostic_cli.py`, `docs/current-state.md`, `reports/aws-boottent-adoption-performance-report-2026-04-23.md`, `reports/html-collector-diagnostic-2026-04-23.json`, `reports/html-collector-dynamic-retrieve-diagnostic-2026-04-23.md`
+  - AWS/Bedrock 파이프라인 차용 후보 4번인 dynamic retrieve를 바로 Playwright 도입으로 진행하지 않고, source별 opt-in 근거를 만들기 위한 HTML collector read-only 진단 체계로 구현함
+  - `BaseHtmlCollector.collect_url_items()`를 추가해 Tier 2/3/4 HTML collector가 URL별 request failure, parse-empty, parse failure를 공통 `last_collect_message`로 남기도록 정리함
+  - `scripts/html_collector_diagnostic.py` CLI를 추가해 HTML collector live dry-run 결과를 `healthy_static_html`, `partial_parse_empty_monitor`, `playwright_probe_candidate` 등으로 분류하고 JSON/Markdown 리포트를 저장하게 함
+  - 전체/source별 `duration_ms`를 리포트에 남겨 2026-04-23 live 기준 14개 HTML collector 진단 12,630.91ms, 즉시 Playwright fallback 후보 0개, partial parse-empty 모니터링 대상 2개로 성능 리포트를 갱신함

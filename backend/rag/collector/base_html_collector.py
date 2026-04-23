@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from html import unescape
-from typing import Dict, Iterable, List, Optional
+from typing import Callable, Dict, Iterable, List, Optional
 from urllib.parse import urljoin
 from urllib.request import Request, urlopen
 
@@ -35,6 +35,77 @@ class BaseHtmlCollector(BaseCollector):
 
     def collect_items(self) -> List[Dict]:
         raise NotImplementedError
+
+    def collect_url_items(
+        self,
+        parser: Callable[[str, str], List[Dict]],
+        *,
+        fetcher: Callable[[str], str] | None = None,
+        empty_message: str | None = None,
+    ) -> List[Dict]:
+        items: List[Dict] = []
+        request_errors: List[str] = []
+        parse_errors: List[str] = []
+        parsed_empty_count = 0
+        successful_request_count = 0
+        list_urls = list(getattr(self, "list_urls", []) or [])
+        html_fetcher = fetcher or self.fetch_html
+
+        for url in list_urls:
+            try:
+                html = html_fetcher(url)
+            except Exception as exc:
+                request_errors.append(f"{url}: {exc}")
+                print(f"[{self.__class__.__name__}] request failed: {url}: {exc}")
+                continue
+
+            successful_request_count += 1
+            try:
+                parsed_items = parser(html, url)
+            except Exception as exc:
+                parse_errors.append(f"{url}: {exc}")
+                parsed_items = []
+                print(f"[{self.__class__.__name__}] parse failed: {url}: {exc}")
+
+            if not parsed_items:
+                parsed_empty_count += 1
+                print(f"[{self.__class__.__name__}] parsed 0 items: {url}")
+            items.extend(parsed_items)
+
+        if items:
+            self.last_collect_status = "success"
+            self.last_collect_message = (
+                f"{self.source_name} collected {len(items)} items "
+                f"from {successful_request_count}/{len(list_urls)} urls; "
+                f"request_failed={len(request_errors)}; parse_empty={parsed_empty_count}"
+            )
+            if parse_errors:
+                self.last_collect_message += f"; parse_failed={len(parse_errors)}"
+            print(
+                f"[{self.__class__.__name__}] collected={len(items)} "
+                f"urls={successful_request_count}/{len(list_urls)} "
+                f"request_failed={len(request_errors)} parse_empty={parsed_empty_count} "
+                f"parse_failed={len(parse_errors)}"
+            )
+            return items
+
+        if request_errors and successful_request_count == 0:
+            self.last_collect_status = "request_failed"
+            self.last_collect_message = (
+                f"all requests failed ({len(request_errors)}/{len(list_urls)}): "
+                + "; ".join(request_errors[:2])
+            )
+        else:
+            self.last_collect_status = "parsing_failed"
+            source_empty_message = empty_message or f"{self.source_name} 목록 0건 또는 경로 변경 의심"
+            self.last_collect_message = (
+                f"{source_empty_message}; urls={successful_request_count}/{len(list_urls)}; "
+                f"request_failed={len(request_errors)}; parse_empty={parsed_empty_count}"
+            )
+            if parse_errors:
+                self.last_collect_message += f"; parse_failed={len(parse_errors)}"
+        print(f"[{self.__class__.__name__}] {self.last_collect_message}")
+        return []
 
     def fetch_html(self, url: str) -> str:
         request = Request(url, headers={"User-Agent": self.user_agent})

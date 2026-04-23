@@ -1,0 +1,395 @@
+{
+  "collector_count": 14,
+  "duration_ms": 12630.91,
+  "mode": "read-only-live-diagnostic",
+  "playwright_probe_candidates": [],
+  "sources": [
+    {
+      "class_name": "SbaPostingCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 2355.32,
+      "evidence": [
+        "status=success",
+        "raw=10",
+        "normalized=10",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "서울경제진흥원 사업신청 collected 10 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://www.sba.kr/Pages/BusinessApply/Posting.aspx"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 10,
+      "playwright_probe_candidate": false,
+      "raw_count": 10,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "source": "서울경제진흥원 사업신청",
+      "source_key": "sba_posting",
+      "source_type": "seoul_city",
+      "tier": 2
+    },
+    {
+      "class_name": "Seoul50PlusCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 596.65,
+      "evidence": [
+        "status=success",
+        "raw=12",
+        "normalized=12",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "서울시 50플러스 collected 16 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://service1.50plus.or.kr/"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 12,
+      "playwright_probe_candidate": false,
+      "raw_count": 12,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "source": "서울시 50플러스",
+      "source_key": "seoul_50plus",
+      "source_type": "seoul_city",
+      "tier": 2
+    },
+    {
+      "class_name": "SeoulJobPortalCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 1494.86,
+      "evidence": [
+        "status=success",
+        "raw=10",
+        "normalized=10",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "서울일자리포털 collected 11 items from 3/3 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://job.seoul.go.kr/hmpg/chjb/prmg/prmgListPgng.do",
+        "https://job.seoul.go.kr/hmpg/chjb/pvmg/pcmgListPgng.do",
+        "https://job.seoul.go.kr/hmpg/chjb/prnt/prntListPgng.do"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 10,
+      "playwright_probe_candidate": false,
+      "raw_count": 10,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "source": "서울일자리포털",
+      "source_key": "seoul_job_portal",
+      "source_type": "seoul_city",
+      "tier": 2
+    },
+    {
+      "class_name": "CampusTownCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 242.24,
+      "evidence": [
+        "status=success",
+        "raw=20",
+        "normalized=20",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "서울캠퍼스타운 collected 20 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://campustown.seoul.go.kr/site/main/board/university_news/list"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 20,
+      "playwright_probe_candidate": false,
+      "raw_count": 20,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "source": "서울캠퍼스타운",
+      "source_key": "campus_town",
+      "source_type": "seoul_city",
+      "tier": 2
+    },
+    {
+      "class_name": "SeoulWomanUpCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 128.87,
+      "evidence": [
+        "status=success",
+        "raw=18",
+        "normalized=18",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "서울커리업 collected 42 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://project.seoulcareerup.or.kr/swm/internship/recruit/list.do?menu_no=02030200"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 18,
+      "playwright_probe_candidate": false,
+      "raw_count": 18,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "source": "서울커리업",
+      "source_key": "seoul_womanup",
+      "source_type": "seoul_city",
+      "tier": 2
+    },
+    {
+      "class_name": "SesacCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 223.81,
+      "evidence": [
+        "status=success",
+        "raw=12",
+        "normalized=12",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "청년취업사관학교 SeSAC collected 12 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://sesac.seoul.kr/sesac/course/offline/courseList.do"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 12,
+      "playwright_probe_candidate": false,
+      "raw_count": 12,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "source": "청년취업사관학교 SeSAC",
+      "source_key": "sesac",
+      "source_type": "seoul_city",
+      "tier": 2
+    },
+    {
+      "class_name": "KisedCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 339.79,
+      "evidence": [
+        "status=success",
+        "raw=39",
+        "normalized=39",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "KISED collected 42 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://www.kised.or.kr/misAnnouncement/index.es?mid=a10302000000"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 39,
+      "playwright_probe_candidate": false,
+      "raw_count": 39,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "source": "KISED",
+      "source_key": "KISED",
+      "source_type": "semi_public_crawl",
+      "tier": 3
+    },
+    {
+      "class_name": "KobiaCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 48.04,
+      "evidence": [
+        "status=success",
+        "raw=10",
+        "normalized=10",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "KOBIA collected 11 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "http://www.kobia.or.kr/board/list.do?board_kind=KNOTICE"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 10,
+      "playwright_probe_candidate": false,
+      "raw_count": 10,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "source": "KOBIA",
+      "source_key": "KOBIA",
+      "source_type": "semi_public_crawl",
+      "tier": 3
+    },
+    {
+      "class_name": "GuroCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 103.07,
+      "evidence": [
+        "status=success",
+        "raw=4",
+        "normalized=4"
+      ],
+      "last_collect_message": "구로 청년이룸 collected 4 items (HTTP fixed due TLS issues)",
+      "last_collect_status": "success",
+      "list_urls": [
+        "http://youtheroom.kr/product/list.php?ca_id=10",
+        "http://youtheroom.kr/bbs/board.php?tbl=bbs41"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 4,
+      "playwright_probe_candidate": false,
+      "raw_count": 4,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "source": "구로 청년이룸",
+      "source_key": "guro_youtheroom",
+      "source_type": "district_crawl",
+      "tier": 4
+    },
+    {
+      "class_name": "NowonCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 732.86,
+      "evidence": [
+        "status=success",
+        "raw=10",
+        "normalized=10",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "노원구 청년일자리센터 청년내일 collected 10 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://www.nwjob.kr/18"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 10,
+      "playwright_probe_candidate": false,
+      "raw_count": 10,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "source": "노원구 청년일자리센터 청년내일",
+      "source_key": "nowon_youth_tomorrow",
+      "source_type": "district_crawl",
+      "tier": 4
+    },
+    {
+      "class_name": "DobongCollector",
+      "classification": "partial_parse_empty_monitor",
+      "collection_method": "web_crawl",
+      "duration_ms": 1807.53,
+      "evidence": [
+        "status=success",
+        "raw=1",
+        "normalized=1",
+        "parse_empty=1",
+        "request_failed=0"
+      ],
+      "last_collect_message": "도봉구청 일자리경제과 collected 1 items from 2/2 urls; request_failed=0; parse_empty=1",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://www.dobong.go.kr/bbs.asp?code=10008769",
+        "https://www.dobong.go.kr/bbs.asp?code=10008770"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 1,
+      "playwright_probe_candidate": false,
+      "raw_count": 1,
+      "recommendation": "일부 URL은 비었지만 같은 source에서 수집 성공도 있다. Playwright 도입 전 빈 URL의 HTML snapshot/selector drift를 확인한다.",
+      "source": "도봉구청 일자리경제과",
+      "source_key": "dobong_district_jobs",
+      "source_type": "district_crawl",
+      "tier": 4
+    },
+    {
+      "class_name": "DobongStartupCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 655.88,
+      "evidence": [
+        "status=success",
+        "raw=33",
+        "normalized=33",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "도봉구청년창업센터 collected 33 items from 2/2 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://dobongstartup.com/bbs/board.php?bo_table=donotic",
+        "https://dobongstartup.com/program/programlist.php"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 33,
+      "playwright_probe_candidate": false,
+      "raw_count": 33,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "source": "도봉구청년창업센터",
+      "source_key": "dobong_startup",
+      "source_type": "district_crawl",
+      "tier": 4
+    },
+    {
+      "class_name": "MapoCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 282.81,
+      "evidence": [
+        "status=success",
+        "raw=6",
+        "normalized=6",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "마포구고용복지지원센터 collected 6 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://mapoworkfare.or.kr/"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 6,
+      "playwright_probe_candidate": false,
+      "raw_count": 6,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "source": "마포구고용복지지원센터",
+      "source_key": "mapo_workfare_center",
+      "source_type": "district_crawl",
+      "tier": 4
+    },
+    {
+      "class_name": "SeongdongCollector",
+      "classification": "partial_parse_empty_monitor",
+      "collection_method": "web_crawl",
+      "duration_ms": 3618.86,
+      "evidence": [
+        "status=success",
+        "raw=5",
+        "normalized=5",
+        "parse_empty=1",
+        "request_failed=0"
+      ],
+      "last_collect_message": "서울청년센터 성동 collected 5 items from 2/2 urls; request_failed=0; parse_empty=1",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://youth.seoul.go.kr/orang/cntr/program.do?key=2309210001&cntrId=CT00006",
+        "https://youth.seoul.go.kr/orang/cntr/notice.do?key=2309210001&cntrId=CT00006"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 5,
+      "playwright_probe_candidate": false,
+      "raw_count": 5,
+      "recommendation": "일부 URL은 비었지만 같은 source에서 수집 성공도 있다. Playwright 도입 전 빈 URL의 HTML snapshot/selector drift를 확인한다.",
+      "source": "서울청년센터 성동",
+      "source_key": "seongdong_youth_center",
+      "source_type": "district_crawl",
+      "tier": 4
+    }
+  ],
+  "started_at": "2026-04-23T22:37:32+0900",
+  "summary": {
+    "healthy_static_html": 12,
+    "partial_parse_empty_monitor": 2
+  }
+}

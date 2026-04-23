@@ -33,27 +33,10 @@ class KobiaCollector(BaseHtmlCollector):
     ]
 
     def collect_items(self) -> List[Dict]:
-        items: List[Dict] = []
-        for url in self.list_urls:
-            try:
-                html = self.fetch_html(url)
-            except Exception as exc:
-                self.last_collect_status = "request_failed"
-                self.last_collect_message = f"KOBIA request failed: {exc}"
-                print(f"[KobiaCollector] request failed: {url}: {exc}")
-                return []
-            items.extend(self.parse_html(html))
-
-        if not items:
-            self.last_collect_status = "parsing_failed"
-            self.last_collect_message = "KOBIA 구조 변경 의심 또는 목록 0건"
-            print("[KobiaCollector] parsing returned 0 items; structure change suspected")
-            return []
-
-        self.last_collect_status = "success"
-        self.last_collect_message = f"KOBIA collected {len(items)} items"
-        print(f"[KobiaCollector] collected={len(items)} failed=0")
-        return items
+        return self.collect_url_items(
+            lambda html, _url: self.parse_html(html),
+            empty_message="KOBIA 구조 변경 의심 또는 목록 0건",
+        )
 
     def parse_html(self, html: str) -> List[Dict]:
         soup = self.soup_from_html(html)
@@ -185,27 +168,10 @@ class KisedCollector(BaseHtmlCollector):
     ]
 
     def collect_items(self) -> List[Dict]:
-        items: List[Dict] = []
-        for url in self.list_urls:
-            try:
-                html = self.fetch_html(url)
-            except Exception as exc:
-                self.last_collect_status = "request_failed"
-                self.last_collect_message = f"KISED request failed: {exc}"
-                print(f"[KisedCollector] request failed: {url}: {exc}")
-                return []
-            items.extend(self.parse_html(html, base_url=url))
-
-        if not items:
-            self.last_collect_status = "parsing_failed"
-            self.last_collect_message = "KISED 구조 변경 의심 또는 목록 0건"
-            print("[KisedCollector] parsing returned 0 items; structure change suspected")
-            return []
-
-        self.last_collect_status = "success"
-        self.last_collect_message = f"KISED collected {len(items)} items"
-        print(f"[KisedCollector] collected={len(items)} failed=0")
-        return items
+        return self.collect_url_items(
+            lambda html, url: self.parse_html(html, base_url=url),
+            empty_message="KISED 구조 변경 의심 또는 목록 0건",
+        )
 
     def parse_html(self, html: str, *, base_url: str) -> List[Dict]:
         soup = self.soup_from_html(html)

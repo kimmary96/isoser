@@ -34,15 +34,11 @@ class SeoulJobPortalCollector(BaseHtmlCollector):
     title_keywords = ("매력일자리", "직무캠프", "취업", "일자리카페", "인턴", "청년")
 
     def collect_items(self) -> List[Dict]:
-        items: List[Dict] = []
-        for url in self.list_urls:
-            try:
-                html = self._fetch_fragment(url)
-            except Exception as exc:
-                print(f"[{self.__class__.__name__}] request failed: {url}: {exc}")
-                continue
-            items.extend(self.parse_html(html, base_url=url))
-        return items
+        return self.collect_url_items(
+            lambda html, url: self.parse_html(html, base_url=url),
+            fetcher=self._fetch_fragment,
+            empty_message="서울일자리포털 목록 0건 또는 경로 변경 의심",
+        )
 
     def _fetch_fragment(self, url: str) -> str:
         request = Request(
@@ -134,15 +130,10 @@ class SbaPostingCollector(BaseHtmlCollector):
     }
 
     def collect_items(self) -> List[Dict]:
-        items: List[Dict] = []
-        for url in self.list_urls:
-            try:
-                html = self.fetch_html(url)
-            except Exception as exc:
-                print(f"[{self.__class__.__name__}] request failed: {url}: {exc}")
-                continue
-            items.extend(self.parse_html(html, base_url=url))
-        return items
+        return self.collect_url_items(
+            lambda html, url: self.parse_html(html, base_url=url),
+            empty_message="서울경제진흥원 사업신청 목록 0건 또는 경로 변경 의심",
+        )
 
     def parse_html(self, html: str, *, base_url: str) -> List[Dict]:
         soup = self.soup_from_html(html)
@@ -214,15 +205,10 @@ class SesacCollector(BaseHtmlCollector):
     ]
 
     def collect_items(self) -> List[Dict]:
-        items: List[Dict] = []
-        for url in self.list_urls:
-            try:
-                html = self.fetch_html(url)
-            except Exception as exc:
-                print(f"[{self.__class__.__name__}] request failed: {url}: {exc}")
-                continue
-            items.extend(self.parse_html(html, base_url=url))
-        return items
+        return self.collect_url_items(
+            lambda html, url: self.parse_html(html, base_url=url),
+            empty_message="SeSAC 과정 목록 0건 또는 경로 변경 의심",
+        )
 
     def parse_html(self, html: str, *, base_url: str) -> List[Dict]:
         soup = self.soup_from_html(html)
@@ -335,15 +321,10 @@ class Seoul50PlusCollector(BaseHtmlCollector):
     ]
 
     def collect_items(self) -> List[Dict]:
-        items: List[Dict] = []
-        for url in self.list_urls:
-            try:
-                html = self.fetch_html(url)
-            except Exception as exc:
-                print(f"[{self.__class__.__name__}] request failed: {url}: {exc}")
-                continue
-            items.extend(self.parse_html(html, base_url=url))
-        return items
+        return self.collect_url_items(
+            lambda html, url: self.parse_html(html, base_url=url),
+            empty_message="서울시 50플러스 목록 0건 또는 경로 변경 의심",
+        )
 
     def parse_html(self, html: str, *, base_url: str) -> List[Dict]:
         soup = self.soup_from_html(html)
@@ -427,15 +408,10 @@ class CampusTownCollector(BaseHtmlCollector):
     ]
 
     def collect_items(self) -> List[Dict]:
-        items: List[Dict] = []
-        for url in self.list_urls:
-            try:
-                html = self.fetch_html(url)
-            except Exception as exc:
-                print(f"[{self.__class__.__name__}] request failed: {url}: {exc}")
-                continue
-            items.extend(self.parse_html(html, base_url=url))
-        return items
+        return self.collect_url_items(
+            lambda html, url: self.parse_html(html, base_url=url),
+            empty_message="서울캠퍼스타운 목록 0건 또는 경로 변경 의심",
+        )
 
     def parse_html(self, html: str, *, base_url: str) -> List[Dict]:
         soup = self.soup_from_html(html)
@@ -494,15 +470,10 @@ class SeoulWomanUpCollector(BaseHtmlCollector):
     ]
 
     def collect_items(self) -> List[Dict]:
-        items: List[Dict] = []
-        for url in self.list_urls:
-            try:
-                html = self.fetch_html(url)
-            except Exception as exc:
-                print(f"[{self.__class__.__name__}] request failed: {url}: {exc}")
-                continue
-            items.extend(self.parse_html(html, base_url=url))
-        return items
+        return self.collect_url_items(
+            lambda html, url: self.parse_html(html, base_url=url),
+            empty_message="서울커리업 목록 0건 또는 경로 변경 의심",
+        )
 
     def parse_html(self, html: str, *, base_url: str) -> List[Dict]:
         soup = self.soup_from_html(html)
