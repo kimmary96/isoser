@@ -2316,3 +2316,11 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-23: `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/app/dashboard/page.tsx`, `docs/current-state.md`, `reports/dashboard-recommend-calendar-relevance-result.md`
   - 대시보드 추천 캘린더 BFF의 백엔드 추천 fetch에 3.5초 timeout, backend 목록 fallback에 2.5초 timeout을 추가해 상류 지연 시 공개 프로그램 fallback으로 빠르게 전환되도록 함
   - 대시보드 기본 추천 목록을 15분 localStorage cache로 저장하고 재진입 시 즉시 표시한 뒤 최신 추천으로 갱신하도록 함
+- 2026-04-23: `frontend/app/(landing)/landing-c/page.tsx`, `frontend/app/(landing)/landing-c/_*.ts*`, `docs/current-state.md`, `reports/landing-c-component-refactor-result.md`
+  - landing-c의 단일 대형 `page.tsx`를 landing-a와 유사하게 스타일 변수, 정적 콘텐츠, 검색 파라미터 정규화, 프로그램 표시/정렬 helper, 히어로, Opportunity feed, 하단 지원 섹션 파일로 분리함
+  - `page.tsx`는 기존 `listPrograms` 호출, Live Board 후보 조회, Opportunity feed 정렬, 섹션 조립만 맡도록 축소해 화면/라우팅 동작 변경 없이 수정 리스크를 낮춤
+  - 후속으로 landing-a/c의 프로그램 카드 표시 helper 중 중복되는 provider/location/period 정규화 로직을 공용 helper로 더 줄일 수 있음
+- 2026-04-23: `docs/launch-smoke-test.md`, `reports/landing-c-component-refactor-result.md`
+  - 런칭 smoke checklist의 공개 진입과 로그인 기본 복귀 항목을 현재 기본 랜딩인 `/landing-c` 기준으로 갱신함
+  - landing-c 리팩토링 후속 검증 포인트로 Live Board, 검색/칩 필터, Opportunity feed 카드, 카드 액션 렌더 확인을 명시함
+  - 로컬 dev server `http://localhost:3031/landing-c`에서 HTTP 200, 루트 `/`의 `/landing-c` 307 redirect, agent-browser nonblank/error-overlay/key element smoke를 확인함
