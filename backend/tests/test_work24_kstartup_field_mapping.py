@@ -65,6 +65,23 @@ def test_work24_collector_preserves_detail_fields_for_program_pages() -> None:
     assert row["compare_meta"]["weekend_code"] == "3"
 
 
+def test_work24_collector_passes_region_code_map_to_field_mapping() -> None:
+    collector = Work24Collector(
+        region_code_map={"11680": {"region": "서울", "region_detail": "강남구"}}
+    )
+    mapped = collector.map_item(
+        {
+            "trprId": "AIG202500002",
+            "title": "AI 과정",
+            "trngAreaCd": "11680",
+        },
+        collector.get_source_meta(),
+    )
+
+    assert mapped["region"] == "서울"
+    assert mapped["region_detail"] == "강남구"
+
+
 def test_work24_field_mapping_can_be_used_without_collector_state() -> None:
     mapped = map_work24_training_item(
         {
@@ -96,11 +113,42 @@ def test_work24_field_mapping_derives_non_seoul_region() -> None:
     assert mapped["region_detail"] == "해운대구"
 
 
+def test_work24_field_mapping_uses_region_code_map_when_address_is_missing() -> None:
+    mapped = map_work24_training_item(
+        {
+            "title": "클라우드 과정",
+            "trngAreaCd": "26350",
+        },
+        region_code_map={"26350": {"region": "부산", "region_detail": "해운대구"}},
+    )
+
+    assert mapped["region"] == "부산"
+    assert mapped["region_detail"] == "해운대구"
+
+
 def test_derive_korean_region_falls_back_to_area_code() -> None:
     region, region_detail = derive_korean_region("", "41135")
 
     assert region == "경기"
     assert region_detail == "경기"
+
+
+def test_derive_korean_region_uses_full_area_code_map() -> None:
+    region, region_detail = derive_korean_region(
+        "",
+        "41135",
+        region_code_map={"41135": {"region": "경기", "region_detail": "성남시"}},
+    )
+
+    assert region == "경기"
+    assert region_detail == "성남시"
+
+
+def test_derive_korean_region_keeps_city_and_district_detail() -> None:
+    region, region_detail = derive_korean_region("경기 성남시 분당구", "41135")
+
+    assert region == "경기"
+    assert region_detail == "성남시 분당구"
 
 
 def test_kstartup_collector_preserves_description_provider_and_trace_meta() -> None:

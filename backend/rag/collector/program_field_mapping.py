@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Any
 from urllib.parse import parse_qs, urlparse
 
@@ -125,11 +126,22 @@ def query_param(value: str, key: str) -> str:
     return clean_text(values[0]) if values else ""
 
 
-def derive_korean_region(address: object = None, region_code: object = None) -> tuple[str | None, str | None]:
+RegionCodeMap = Mapping[str, Mapping[str, object] | tuple[object, object] | list[object]]
+
+
+def derive_korean_region(
+    address: object = None,
+    region_code: object = None,
+    *,
+    region_code_map: RegionCodeMap | None = None,
+) -> tuple[str | None, str | None]:
     address_text = clean_text(address)
     compact_address = address_text.replace(" ", "")
-    region = _region_from_address(compact_address) or _region_from_code(region_code)
+    mapped_region, mapped_detail = _region_from_code_map(region_code, region_code_map)
+    region = _region_from_address(compact_address) or mapped_region or _region_from_code(region_code)
     detail = _region_detail_from_address(address_text, region) if region else None
+    if not detail and mapped_region == region:
+        detail = mapped_detail
     return region, detail or region
 
 
@@ -137,7 +149,7 @@ def _region_from_address(compact_address: str) -> str | None:
     if not compact_address:
         return None
     for region, aliases in REGION_ALIASES:
-        if any(alias.replace(" ", "") in compact_address for alias in aliases):
+        if any(compact_address.startswith(alias.replace(" ", "")) for alias in aliases):
             return region
     return None
 
@@ -149,6 +161,29 @@ def _region_from_code(value: object) -> str | None:
     return REGION_CODE_PREFIXES.get(digits[:2])
 
 
+def _region_from_code_map(
+    value: object,
+    region_code_map: RegionCodeMap | None,
+) -> tuple[str | None, str | None]:
+    if not region_code_map:
+        return None, None
+    digits = "".join(ch for ch in clean_text(value) if ch.isdigit())
+    if not digits:
+        return None, None
+    entry = region_code_map.get(digits)
+    if not entry:
+        return None, None
+    if isinstance(entry, Mapping):
+        region = clean_text(entry.get("region")) or None
+        detail = clean_text(entry.get("region_detail")) or None
+        return region, detail
+    if isinstance(entry, (tuple, list)):
+        region = clean_text(entry[0]) if len(entry) > 0 else ""
+        detail = clean_text(entry[1]) if len(entry) > 1 else ""
+        return region or None, detail or None
+    return None, None
+
+
 def _region_detail_from_address(address: str, region: str) -> str | None:
     aliases = {
         alias.replace(" ", "")
@@ -156,13 +191,14 @@ def _region_detail_from_address(address: str, region: str) -> str | None:
         if known_region == region
         for alias in (known_region, *known_aliases)
     }
+    detail_tokens: list[str] = []
     for token in address.split():
         normalized = token.strip().replace(",", "").replace("(", "").replace(")", "")
         if not normalized or normalized.replace(" ", "") in aliases:
             continue
         if len(normalized) >= 2 and normalized.endswith(("시", "군", "구")):
-            return normalized
-    return None
+            detail_tokens.append(normalized)
+    return " ".join(detail_tokens) if detail_tokens else None
 
 
 def work24_source_unique_key(item: dict[str, Any], source_url: str) -> str | None:
@@ -180,7 +216,11 @@ def work24_source_unique_key(item: dict[str, Any], source_url: str) -> str | Non
     return None
 
 
-def map_work24_training_item(item: dict[str, Any]) -> dict[str, Any]:
+def map_work24_training_item(
+    item: dict[str, Any],
+    *,
+    region_code_map: RegionCodeMap | None = None,
+) -> dict[str, Any]:
     source_url = clean_text(item.get("titleLink"))
     address = clean_text(item.get("address")) or clean_text(item.get("ADDRESS"))
     provider_name = clean_text(item.get("subTitle"))
@@ -189,7 +229,11 @@ def map_work24_training_item(item: dict[str, Any]) -> dict[str, Any]:
     description = clean_text(item.get("contents"))
     ncs_code = clean_text(item.get("ncsCd"))
     training_area_code = clean_text(item.get("trngAreaCd")) or clean_text(item.get("TRNG_AREA_CD"))
-    region, region_detail = derive_korean_region(address, training_area_code)
+    region, region_detail = derive_korean_region(
+        address,
+        training_area_code,
+        region_code_map=region_code_map,
+    )
 
     return {
         "title": clean_text(item.get("title")),

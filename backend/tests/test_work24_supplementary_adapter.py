@@ -3,7 +3,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from backend.rag.source_adapters.work24_supplementary import Work24SupplementaryAdapter
+from backend.rag.source_adapters.work24_supplementary import (
+    Work24SupplementaryAdapter,
+    build_region_code_map,
+)
 
 
 def test_fetch_job_info_uses_official_params(monkeypatch, tmp_path: Path) -> None:
@@ -94,6 +97,50 @@ def test_fetch_common_codes_flattens_nested_entries(monkeypatch, tmp_path: Path)
     assert {"dtl_gb": "2", "label": "job_classification", "code": "02", "name": "분석", "super_code": "", "depth": "1"} in payload["records"]
     assert {"dtl_gb": "2", "label": "job_classification", "code": "0201", "name": "데이터분석", "super_code": "02", "depth": "2"} in payload["records"]
     assert payload["by_dtl_gb"]["8"][0]["label"] == "major_series"
+
+
+def test_fetch_region_code_map_uses_common_code_group(monkeypatch, tmp_path: Path) -> None:
+    adapter = Work24SupplementaryAdapter(
+        common_codes_endpoint="https://example.com/common",
+        output_path=tmp_path / "work24_supplement.json",
+        sample_dir=tmp_path / "samples",
+    )
+
+    def fake_request(endpoint_url: str, *, source, params, sample_name: str):
+        assert endpoint_url == "https://example.com/common"
+        assert params == {"returnType": "XML", "target": "CMCD", "dtlGb": "1"}
+        assert sample_name == "common_codes_1"
+        return {
+            "result": {
+                "oneDepth": {
+                    "regionCd": "11000",
+                    "regionNm": "서울",
+                    "twoDepth": {"regionCd": "11680", "regionNm": "서울 강남구", "superCd": "11000"},
+                }
+            }
+        }
+
+    monkeypatch.setattr(adapter, "_request_payload", fake_request)
+
+    region_code_map = adapter.fetch_region_code_map()
+
+    assert region_code_map["11000"] == {"region": "서울", "region_detail": "서울"}
+    assert region_code_map["11680"] == {"region": "서울", "region_detail": "강남구"}
+
+
+def test_build_region_code_map_converts_work24_middle_codes() -> None:
+    common_codes = {
+        "by_dtl_gb": {
+            "1": [
+                {"code": "26", "name": "부산", "super_code": "", "depth": "1"},
+                {"code": "26350", "name": "해운대구", "super_code": "26", "depth": "2"},
+            ]
+        }
+    }
+
+    region_code_map = build_region_code_map(common_codes)
+
+    assert region_code_map["26350"] == {"region": "부산", "region_detail": "해운대구"}
 
 
 def test_fetch_major_info_uses_general_and_special_detail(monkeypatch, tmp_path: Path) -> None:

@@ -23,6 +23,7 @@
 | `WORK24_TRAINING_ORGAN_NAME` | `srchTraOrganNm` | 없음 | 훈련기관명 |
 | `WORK24_TRAINING_SORT` | `sort` | `ASC` | 정렬방법 |
 | `WORK24_TRAINING_SORT_COL` | `sortCol` | `2` | 정렬컬럼. `2`는 훈련시작일 |
+| `WORK24_COMMON_CODES_AUTH_KEY` | `authKey` | 없음 | 선택. 공통 코드 API `dtlGb=1` 지역 중분류를 `region_detail` 시군구명으로 변환할 때 사용 |
 
 ## Admin Sync Query
 
@@ -53,9 +54,12 @@ max_pages=2
 ## Region Normalization
 
 Work24 응답의 `address`와 `trngAreaCd`를 사용해 `programs.region`과 `programs.region_detail`을 채웁니다.
+`WORK24_COMMON_CODES_AUTH_KEY`가 있으면 공통 코드 API의 `dtlGb=1` 지역 코드표를 먼저 읽어 `trngAreaCd=41135` 같은 중분류 코드를 `성남시 분당구`처럼 시군구명으로 변환합니다.
+공통 코드 조회가 불가하거나 코드가 없으면 주소 텍스트를 사용하고, 주소도 없으면 지역 코드 앞 두 자리의 광역 지역까지만 fallback합니다.
 
 | 입력 | 결과 |
 |---|---|
 | `address=서울 강남구` | `region=서울`, `region_detail=강남구` |
 | `address=부산광역시 해운대구` | `region=부산`, `region_detail=해운대구` |
-| `trngAreaCd=41135`, 주소 없음 | `region=경기`, `region_detail=경기` |
+| `trngAreaCd=41135`, 공통 코드 map 있음 | `region=경기`, `region_detail=성남시 분당구` |
+| `trngAreaCd=41135`, 공통 코드 map 없음, 주소 없음 | `region=경기`, `region_detail=경기` |

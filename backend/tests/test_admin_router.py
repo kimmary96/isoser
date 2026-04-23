@@ -55,7 +55,7 @@ def test_normalize_program_row_preserves_work24_region_fields() -> None:
     )
 
     assert row["region"] == "경기"
-    assert row["region_detail"] == "성남시"
+    assert row["region_detail"] == "성남시 분당구"
 
 
 @pytest.mark.asyncio
@@ -208,6 +208,7 @@ async def test_sync_programs_passes_documented_work24_filters(monkeypatch: pytes
 
     monkeypatch.setenv("ADMIN_SECRET_KEY", "secret")
     monkeypatch.setenv("WORK24_TRAINING_AUTH_KEY", "work24-key")
+    monkeypatch.delenv("WORK24_COMMON_CODES_AUTH_KEY", raising=False)
     monkeypatch.setattr(admin, "Work24TrainingAdapter", lambda: FakeAdapter())
 
     result = await admin.sync_programs(

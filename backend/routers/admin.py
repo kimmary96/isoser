@@ -11,6 +11,7 @@ from fastapi import APIRouter, Header, HTTPException, Query
 
 from rag.programs_rag import ProgramsRAG
 from rag.source_adapters.work24_training import Work24TrainingAdapter
+from rag.source_adapters.work24_supplementary import Work24SupplementaryAdapter
 from utils.supabase_admin import request_supabase
 from rag.collector.normalizer import _classify_category
 from rag.collector.program_field_mapping import derive_korean_region
@@ -449,7 +450,18 @@ async def sync_programs(
             )
 
         fetch_started_at = perf_counter()
-        adapter = Work24TrainingAdapter()
+        region_code_map: dict[str, dict[str, str]] = {}
+        if os.getenv("WORK24_COMMON_CODES_AUTH_KEY", "").strip():
+            try:
+                region_code_map = Work24SupplementaryAdapter().fetch_region_code_map()
+            except Exception as exc:
+                log_event(
+                    logger,
+                    logging.WARNING,
+                    "admin_work24_region_codes_load_failed",
+                    error=str(exc),
+                )
+        adapter = Work24TrainingAdapter(region_code_map=region_code_map) if region_code_map else Work24TrainingAdapter()
         fetched_rows = adapter.fetch_all(
             start_dt=resolved_start_dt,
             end_dt=resolved_end_dt,

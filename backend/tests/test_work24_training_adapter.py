@@ -114,6 +114,27 @@ def test_normalize_program_adds_category_label_and_provider_name(tmp_path: Path)
     assert normalized["summary"] == "테스트 훈련기관"
 
 
+def test_normalize_program_uses_region_code_map_without_address(tmp_path: Path) -> None:
+    adapter = Work24TrainingAdapter(
+        list_endpoint="https://example.com/list",
+        sample_dir=tmp_path / "samples",
+        region_code_map={"11680": {"region": "서울", "region_detail": "강남구"}},
+    )
+
+    normalized = adapter._normalize_program(
+        {
+            "trprId": "TR-002",
+            "title": "AI 과정",
+            "trngAreaCd": "11680",
+            "traStartDate": "2026-04-15",
+            "traEndDate": "2026-07-15",
+        }
+    )
+
+    assert normalized["region"] == "서울"
+    assert normalized["region_detail"] == "강남구"
+
+
 def test_fetch_all_respects_max_pages(monkeypatch, tmp_path: Path) -> None:
     adapter = Work24TrainingAdapter(
         list_endpoint="https://example.com/list",

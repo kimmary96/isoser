@@ -14,9 +14,11 @@ import httpx
 
 try:
     from backend.rag.runtime_config import load_backend_dotenv
+    from backend.rag.collector.program_field_mapping import derive_korean_region
     from backend.rag.source_adapters.base import ApiSourceAdapter
 except ImportError:
     from rag.runtime_config import load_backend_dotenv
+    from rag.collector.program_field_mapping import derive_korean_region
     from rag.source_adapters.base import ApiSourceAdapter
 
 
@@ -94,6 +96,7 @@ LIST_CONTAINER_KEYS = (
 )
 CHILD_CONTAINER_KEYS = ("oneDepth", "twoDepth", "threeDepth", "fourDepth", "children", "childList")
 CODE_KEYS = (
+    "regionCd",
     "jobCd",
     "jobClcd",
     "majorCd",
@@ -105,6 +108,7 @@ CODE_KEYS = (
     "superCd",
 )
 NAME_KEYS = (
+    "regionNm",
     "jobNm",
     "jobClcdNM",
     "majorNm",
@@ -234,6 +238,92 @@ def _extract_named_strings(value: Any, record_keys: tuple[str, ...], target_keys
             continue
         seen.add(text)
         results.append(text)
+    return results
+
+
+def _flatten_common_code_nodes(
+    value: Any,
+    *,
+    dtl_gb: str,
+    label: str,
+    parent_code: str = "",
+    depth: int = 1,
+) -> list[dict[str, str]]:
+    if isinstance(value, list):
+        rows: list[dict[str, str]] = []
+        for item in value:
+            rows.extend(
+                _flatten_common_code_nodes(
+                    item,
+                    dtl_gb=dtl_gb,
+                    label=label,
+                    parent_code=parent_code,
+                    depth=depth,
+                )
+            )
+        return rows
+    if not isinstance(value, dict):
+        return []
+    rows: list[dict[str, str]] = []
+    code = _pick_first(value, CODE_KEYS)
+    name = _pick_first(value, NAME_KEYS)
+    current_parent = _pick_first(value, ("superCd",)) or parent_code
+    next_parent = parent_code
+    next_depth = depth
+    if code and name:
+        rows.append(
+            {
+                "dtl_gb": dtl_gb,
+                "label": label,
+                "code": code,
+                "name": name,
+                "super_code": current_parent,
+                "depth": str(depth),
+            }
+        )
+        next_parent = code
+        next_depth = depth + 1
+    for key in CHILD_CONTAINER_KEYS:
+        if key in value:
+            rows.extend(
+                _flatten_common_code_nodes(
+                    value[key],
+                    dtl_gb=dtl_gb,
+                    label=label,
+                    parent_code=next_parent,
+                    depth=next_depth,
+                )
+            )
+    if not rows:
+        for nested in value.values():
+            if isinstance(nested, (dict, list)):
+                rows.extend(
+                    _flatten_common_code_nodes(
+                        nested,
+                        dtl_gb=dtl_gb,
+                        label=label,
+                        parent_code=parent_code,
+                        depth=depth,
+                    )
+                )
+    return rows
+
+
+def build_region_code_map(common_codes: dict[str, Any]) -> dict[str, dict[str, str]]:
+    region_rows = common_codes.get("by_dtl_gb", {}).get("1", [])
+    results: dict[str, dict[str, str]] = {}
+    for row in region_rows:
+        code = _pick_first(row, ("code",))
+        name = _pick_first(row, ("name",))
+        if not code or not name:
+            continue
+        region, region_detail = derive_korean_region(name, code)
+        if not region:
+            continue
+        results[code] = {
+            "region": region,
+            "region_detail": region_detail or region,
+        }
     return results
 
 
@@ -398,67 +488,36 @@ class Work24SupplementaryAdapter:
         return results
 
     def fetch_common_codes(self) -> dict[str, Any]:
-        def flatten_nodes(value: Any, *, dtl_gb: str, label: str, parent_code: str = "", depth: int = 1) -> list[dict[str, str]]:
-            if isinstance(value, list):
-                rows: list[dict[str, str]] = []
-                for item in value:
-                    rows.extend(flatten_nodes(item, dtl_gb=dtl_gb, label=label, parent_code=parent_code, depth=depth))
-                return rows
-            if not isinstance(value, dict):
-                return []
-            rows: list[dict[str, str]] = []
-            code = _pick_first(value, CODE_KEYS)
-            name = _pick_first(value, NAME_KEYS)
-            current_parent = _pick_first(value, ("superCd",)) or parent_code
-            next_parent = parent_code
-            next_depth = depth
-            if code and name:
-                rows.append(
-                    {
-                        "dtl_gb": dtl_gb,
-                        "label": label,
-                        "code": code,
-                        "name": name,
-                        "super_code": current_parent,
-                        "depth": str(depth),
-                    }
-                )
-                next_parent = code
-                next_depth = depth + 1
-            for key in CHILD_CONTAINER_KEYS:
-                if key in value:
-                    rows.extend(
-                        flatten_nodes(value[key], dtl_gb=dtl_gb, label=label, parent_code=next_parent, depth=next_depth)
-                    )
-            if not rows:
-                for nested in value.values():
-                    if isinstance(nested, (dict, list)):
-                        rows.extend(
-                            flatten_nodes(nested, dtl_gb=dtl_gb, label=label, parent_code=parent_code, depth=depth)
-                        )
-            return rows
-
         records: list[dict[str, str]] = []
         by_dtl_gb: dict[str, list[dict[str, str]]] = {}
         for dtl_gb, label in COMMON_CODE_LABELS.items():
-            payload = self._request_payload(
-                self.common_codes_endpoint,
-                source=COMMON_CODES_SOURCE,
-                params={"returnType": "XML", "target": "CMCD", "dtlGb": dtl_gb},
-                sample_name=f"common_codes_{dtl_gb}",
-            )
-            flattened = flatten_nodes(payload, dtl_gb=dtl_gb, label=label)
-            deduped: list[dict[str, str]] = []
-            seen: set[tuple[str, str, str]] = set()
-            for row in flattened:
-                key = (row["dtl_gb"], row["code"], row["name"])
-                if key in seen:
-                    continue
-                seen.add(key)
-                deduped.append(row)
-                records.append(row)
+            deduped = self.fetch_common_code_group(dtl_gb, label=label)
+            records.extend(deduped)
             by_dtl_gb[dtl_gb] = deduped
         return {"records": records, "by_dtl_gb": by_dtl_gb}
+
+    def fetch_common_code_group(self, dtl_gb: str, *, label: str | None = None) -> list[dict[str, str]]:
+        resolved_label = label or COMMON_CODE_LABELS.get(dtl_gb, f"common_code_{dtl_gb}")
+        payload = self._request_payload(
+            self.common_codes_endpoint,
+            source=COMMON_CODES_SOURCE,
+            params={"returnType": "XML", "target": "CMCD", "dtlGb": dtl_gb},
+            sample_name=f"common_codes_{dtl_gb}",
+        )
+        flattened = _flatten_common_code_nodes(payload, dtl_gb=dtl_gb, label=resolved_label)
+        deduped: list[dict[str, str]] = []
+        seen: set[tuple[str, str, str]] = set()
+        for row in flattened:
+            key = (row["dtl_gb"], row["code"], row["name"])
+            if key in seen:
+                continue
+            seen.add(key)
+            deduped.append(row)
+        return deduped
+
+    def fetch_region_code_map(self) -> dict[str, dict[str, str]]:
+        rows = self.fetch_common_code_group("1", label=COMMON_CODE_LABELS["1"])
+        return build_region_code_map({"by_dtl_gb": {"1": rows}})
 
     def fetch_major_info(self) -> list[dict[str, Any]]:
         payload = self._request_payload(

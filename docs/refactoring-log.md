@@ -2594,3 +2594,7 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-23: `backend/rag/collector/program_field_mapping.py`, `backend/rag/collector/normalizer.py`, `backend/rag/source_adapters/work24_training.py`, `backend/routers/admin.py`, `docs/data/work24-training-sync.md`, `reports/work24-region-normalization-refactoring-summary-2026-04-23.md`
   - Work24 row의 `address`와 `trngAreaCd`에서 `region`/`region_detail`을 정규화해 전국 수집 시에도 프로그램이 서울 source meta에 고정되지 않도록 보강함
   - collector normalizer와 admin sync payload가 row-level region 값을 보존하도록 연결하고, Work24 scheduler/admin sync env/query 사용법을 데이터 문서로 분리함
+- 2026-04-23: `backend/rag/collector/program_field_mapping.py`, `backend/rag/source_adapters/work24_supplementary.py`, `backend/rag/source_adapters/work24_training.py`, `backend/rag/collector/work24_collector.py`, `backend/routers/admin.py`, `docs/data/work24-training-sync.md`, `reports/work24-region-code-backfill-result-2026-04-23.md`
+  - Work24 공통 코드 API `dtlGb=1` 응답의 `regionCd`/`regionNm`을 파싱해 `trngAreaCd` 중분류 코드를 `성남시 분당구` 같은 시군구명 `region_detail`로 변환하도록 연결함
+  - scheduler와 admin sync가 `WORK24_COMMON_CODES_AUTH_KEY`가 있을 때 지역 코드 map을 사용하고, 실패 시 기존 주소/광역 코드 fallback을 유지하도록 보강함
+  - 운영 Supabase Work24 3,438건 중 안전하게 보정 가능한 3,383건과 추가 잔여 309건을 적용해 코드/주소 기반으로 복구 가능한 지역 patch를 0건으로 줄임

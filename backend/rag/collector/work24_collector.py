@@ -3,6 +3,7 @@ from typing import Dict, List
 
 from .base_api_collector import BaseApiCollector
 from .program_field_mapping import map_work24_training_item
+from ..source_adapters.work24_supplementary import Work24SupplementaryAdapter
 from ..source_adapters.work24_training import build_training_list_params, default_training_date_range
 
 
@@ -18,6 +19,19 @@ class Work24Collector(BaseApiCollector):
     timeout_seconds: int = 10
     max_pages: int | None = None
     page_size: int = 100
+    region_code_map: dict[str, dict[str, str]]
+
+    def __init__(self, *, region_code_map: dict[str, dict[str, str]] | None = None) -> None:
+        self.region_code_map = region_code_map or {}
+
+    def collect(self) -> List[Dict]:
+        if not self.region_code_map and os.getenv("WORK24_COMMON_CODES_AUTH_KEY", "").strip():
+            try:
+                self.region_code_map = Work24SupplementaryAdapter().fetch_region_code_map()
+            except Exception as exc:
+                self.region_code_map = {}
+                print(f"[Work24Collector] failed to load Work24 region codes: {exc}")
+        return super().collect()
 
     def build_params(self, *, api_key: str, page_num: int) -> Dict[str, str]:
         start_dt, end_dt = default_training_date_range()
@@ -62,7 +76,7 @@ class Work24Collector(BaseApiCollector):
 
     def map_item(self, item: Dict, source_meta: Dict) -> Dict:
         return {
-            **map_work24_training_item(item),
+            **map_work24_training_item(item, region_code_map=self.region_code_map),
             "source_meta": source_meta,
             "raw": item,
         }

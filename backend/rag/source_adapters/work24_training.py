@@ -387,6 +387,7 @@ class Work24TrainingAdapter:
         page_size: int = DEFAULT_PAGE_SIZE,
         sleep_seconds: float = DEFAULT_SLEEP_SECONDS,
         max_pages: int | None = DEFAULT_MAX_PAGES,
+        region_code_map: dict[str, Any] | None = None,
         client: httpx.Client | None = None,
     ) -> None:
         load_backend_dotenv()
@@ -397,6 +398,7 @@ class Work24TrainingAdapter:
         self.page_size = page_size
         self.sleep_seconds = sleep_seconds
         self.max_pages = max_pages if max_pages and max_pages > 0 else None
+        self.region_code_map = region_code_map or {}
         self.client = client or httpx.Client(timeout=self.timeout_seconds, trust_env=False)
         self.sample_dir.mkdir(parents=True, exist_ok=True)
         self.saved_samples: list[str] = []
@@ -506,14 +508,17 @@ class Work24TrainingAdapter:
         print(f"[work24_training] {request_label} request failed: {last_error}")
         return None
 
-    @staticmethod
-    def _normalize_program(row: dict[str, Any]) -> dict[str, Any]:
+    def _normalize_program(self, row: dict[str, Any]) -> dict[str, Any]:
         title = _pick_first(row, ("TITLE", "title"))
         provider_name = _pick_first(row, ("SUB_TITLE", "subTitle"))
         target = _pick_first(row, ("TRAIN_TARGET", "trainTarget"))
         location = _pick_first(row, ("ADDRESS", "address"))
         training_area_code = _pick_first(row, ("TRNG_AREA_CD", "trngAreaCd"))
-        region, region_detail = derive_korean_region(location, training_area_code)
+        region, region_detail = derive_korean_region(
+            location,
+            training_area_code,
+            region_code_map=self.region_code_map,
+        )
         return {
             "hrd_id": _pick_first(row, ("TRPR_ID", "trprId")),
             "title": title,
