@@ -6,9 +6,10 @@ title: Collector quality phase 2 for OCR warning buckets and report references
 priority: medium
 planned_by: codex
 planned_at: 2026-04-24T11:30:00+09:00
-planned_against_commit: 7256cbc7169c747f6f2af716f8bfb294303b08b5
+planned_against_commit: 85ba05f5a5dc4437d59ec2fe5231250109a918b6
 planned_files: backend/rag/collector/quality_validator.py, scripts/html_collector_diagnostic.py, backend/tests/test_collector_quality_validator.py, backend/tests/test_html_collector_diagnostic_cli.py, docs/current-state.md, docs/refactoring-log.md, reports/TASK-2026-04-24-1130-collector-quality-phase2-result.md
-planned_worktree_fingerprint: 1d3eff5e9bcdebf2a1189dae8f5946c3db7d0a9e7aea9969ae37a6f26b3be195
+planned_worktree_fingerprint: cf21670043a74676f65efc57301c74ddc65138a907f1626f29bcedba9e4a8711
+auto_recovery_attempts: 1
 ---
 
 # Goal
@@ -21,7 +22,14 @@ planned_worktree_fingerprint: 1d3eff5e9bcdebf2a1189dae8f5946c3db7d0a9e7aea9969ae
 - `reports/TASK-2026-04-23-1900-collector-quality-validator-result.md`
 - `reports/TASK-2026-04-23-1945-program-field-source-evidence-result.md`
 - `reports/SESSION-2026-04-24-ocr-field-gap-audit-result.md`
+- `reports/TASK-2026-04-24-1100-html-diagnostic-followup-result.md`
 - `docs/current-state.md`의 OCR preflight `field_gap_summary` / `field_gap_audit` 기록
+
+# Recovery Baseline Note
+
+이 packet의 직전 drift는 외부 의존성이나 제품 결정 누락이 아니라, 선행 `html_diagnostic` follow-up 이후 `scripts/html_collector_diagnostic.py`, `backend/tests/test_html_collector_diagnostic_cli.py`, `docs/current-state.md`, `docs/refactoring-log.md`의 worktree snapshot이 바뀌면서 optional fingerprint metadata가 stale해진 상태였다.
+이번 재시도 baseline은 현재 `HEAD` `85ba05f5a5dc4437d59ec2fe5231250109a918b6`와 planned-file fingerprint `cf21670043a74676f65efc57301c74ddc65138a907f1626f29bcedba9e4a8711`이다.
+재실행은 기존 planned files 범위 안에서만 진행하고, 이미 추가된 `repeated_parse_empty_in_run` 같은 per-source monitor 신호를 재사용한 채 warning/error follow-up bucket semantics만 좁혀야 한다.
 
 # Scope
 
@@ -68,3 +76,11 @@ planned_worktree_fingerprint: 1d3eff5e9bcdebf2a1189dae8f5946c3db7d0a9e7aea9969ae
 - source별 KPI 누적 리포트
 - golden fixture 확장
 - OCR opt-in 판단 임계값 문서화
+
+## Auto Recovery Context
+
+- source_task: `tasks/blocked/TASK-2026-04-24-1130-collector-quality-phase2.md`
+- failure_stage: `blocked`
+- failure_report: `reports/TASK-2026-04-24-1130-collector-quality-phase2-blocked.md`
+- recovery_report: `reports/TASK-2026-04-24-1130-collector-quality-phase2-recovery.md`
+- reviewer_action: update the packet or provide approval/feedback before requeueing
