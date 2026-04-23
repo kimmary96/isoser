@@ -24,6 +24,7 @@ except ImportError:
 router = APIRouter()
 logger = get_logger(__name__)
 programs_rag = ProgramsRAG()
+PROGRAM_UPSERT_BATCH_SIZE = 100
 
 if not os.getenv("ADMIN_SECRET_KEY", "").strip():
     log_event(
@@ -292,7 +293,7 @@ async def _upsert_program_payload_row_by_row(payload: list[dict[str, Any]]) -> l
     return upserted_rows
 
 
-async def _upsert_program_payload(payload: list[dict[str, Any]]) -> list[dict[str, Any]]:
+async def _upsert_program_payload_batch(payload: list[dict[str, Any]]) -> list[dict[str, Any]]:
     working_payload = [dict(row) for row in payload]
     skipped_columns: list[str] = []
     conflict_target = "source_unique_key" if any(row.get("source_unique_key") for row in working_payload) else "hrd_id"
@@ -349,6 +350,14 @@ async def _upsert_program_payload(payload: list[dict[str, Any]]) -> list[dict[st
                 remaining_keys=sorted(working_payload[0].keys()) if working_payload else [],
                 conflict_target=conflict_target,
             )
+
+
+async def _upsert_program_payload(payload: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    upserted_rows: list[dict[str, Any]] = []
+    for index in range(0, len(payload), PROGRAM_UPSERT_BATCH_SIZE):
+        batch = payload[index : index + PROGRAM_UPSERT_BATCH_SIZE]
+        upserted_rows.extend(await _upsert_program_payload_batch(batch))
+    return upserted_rows
 
 
 async def _fetch_chroma_sync_candidates() -> list[dict[str, Any]]:

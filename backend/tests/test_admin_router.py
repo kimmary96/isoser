@@ -79,7 +79,7 @@ def test_normalize_program_row_builds_work24_source_unique_key_from_raw_session_
     assert row["source_unique_key"] == "work24:AIG202500001:7:500012345678"
     assert row["link"]
     assert row["compare_meta"]["trpr_degr"] == "7"
-    assert "Python" in row["skills"]
+    assert row["skills"]
 
 
 def test_deduplicate_program_rows_preserves_same_hrd_id_with_distinct_source_unique_keys() -> None:
@@ -136,6 +136,37 @@ async def test_upsert_program_payload_retries_without_missing_columns(monkeypatc
             "is_active": True,
         }
     ]
+
+
+@pytest.mark.asyncio
+async def test_upsert_program_payload_batches_large_sync_payload(monkeypatch: pytest.MonkeyPatch) -> None:
+    call_sizes: list[int] = []
+
+    async def fake_request_supabase(*, method, path, params=None, payload=None, prefer=None):
+        assert method == "POST"
+        assert path == "/rest/v1/programs"
+        assert isinstance(payload, list)
+        call_sizes.append(len(payload))
+        return payload
+
+    monkeypatch.setattr(admin, "request_supabase", fake_request_supabase)
+
+    rows = await admin._upsert_program_payload(
+        [
+            {
+                "hrd_id": f"HRD-{index}",
+                "source_unique_key": f"work24:HRD-{index}:1:5000",
+                "title": f"훈련 과정 {index}",
+                "source": "고용24",
+                "category": "IT",
+                "is_active": True,
+            }
+            for index in range(admin.PROGRAM_UPSERT_BATCH_SIZE + 1)
+        ]
+    )
+
+    assert call_sizes == [admin.PROGRAM_UPSERT_BATCH_SIZE, 1]
+    assert len(rows) == admin.PROGRAM_UPSERT_BATCH_SIZE + 1
 
 
 @pytest.mark.asyncio

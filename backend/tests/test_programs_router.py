@@ -707,6 +707,82 @@ def test_postprocess_program_list_rows_recruiting_only_drops_unresolved_deadline
     assert rows[0]["deadline"] == future_deadline
 
 
+def test_postprocess_program_list_rows_keeps_active_work24_without_recruiting_deadline() -> None:
+    future_deadline = (date.today() + timedelta(days=5)).isoformat()
+    training_end_date = (date.today() + timedelta(days=30)).isoformat()
+
+    rows = programs._postprocess_program_list_rows(
+        [
+            {
+                "id": "work24-training-end-only",
+                "title": "훈련 종료일만 있는 과정",
+                "source": "고용24",
+                "deadline": training_end_date,
+                "end_date": training_end_date,
+                "is_active": True,
+            },
+            {
+                "id": "open-program",
+                "title": "모집중 과정",
+                "source": "K-Startup",
+                "deadline": future_deadline,
+            },
+        ],
+        recruiting_only=True,
+        sort="deadline",
+        include_closed_recent=False,
+        limit=10,
+        offset=0,
+    )
+
+    assert [row["id"] for row in rows] == ["open-program", "work24-training-end-only"]
+    assert rows[1]["deadline"] is None
+
+
+def test_postprocess_program_list_rows_balances_work24_default_mix() -> None:
+    future_deadline = (date.today() + timedelta(days=5)).isoformat()
+    rows = programs._postprocess_program_list_rows(
+        [
+            *[
+                {
+                    "id": f"kstartup-{index}",
+                    "title": f"창업 지원 {index}",
+                    "source": "K-Startup 창업진흥원",
+                    "deadline": future_deadline,
+                }
+                for index in range(10)
+            ],
+            *[
+                {
+                    "id": f"work24-{index}",
+                    "title": f"고용24 훈련 {index}",
+                    "source": "고용24",
+                    "deadline": future_deadline,
+                    "is_active": True,
+                }
+                for index in range(10)
+            ],
+        ],
+        recruiting_only=True,
+        sort="deadline",
+        include_closed_recent=False,
+        limit=10,
+        offset=0,
+        prefer_work24_default_mix=True,
+    )
+
+    work24_count = sum(1 for row in rows if row["source"] == "고용24")
+    assert work24_count == 7
+
+
+def test_should_apply_work24_default_mix_skips_startup_filters_and_explicit_sources() -> None:
+    assert programs._should_apply_work24_default_mix(category="IT") is True
+    assert programs._should_apply_work24_default_mix(category="창업") is False
+    assert programs._should_apply_work24_default_mix(category_detail="project-career-startup") is False
+    assert programs._should_apply_work24_default_mix(q="스타트업 지원") is False
+    assert programs._should_apply_work24_default_mix(sources=["K-Startup 창업진흥원"]) is False
+
+
 def test_postprocess_program_list_rows_searches_provider_and_orders_by_match_field() -> None:
     deadline = (date.today() + timedelta(days=10)).isoformat()
 

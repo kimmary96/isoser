@@ -2620,3 +2620,7 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - 대시보드에 `program_bookmarks` 기반 `찜한 훈련` 섹션을 추가해 목록/상세에서 북마크한 프로그램을 같은 dashboard bookmark BFF로 조회해 보여주도록 함
   - 비교 프로그램 선택 모달은 닫았다 다시 열 때 찜 목록을 새로 조회하도록 조정해 최근 북마크 변경이 모달에 반영되게 함
   - 기존 북마크 저장/삭제 BFF와 backend `/bookmarks` 계약은 유지하고, 대시보드/비교는 같은 저장 상태를 읽는 방식으로 연결함
+- 2026-04-23: `backend/routers/admin.py`, `backend/tests/test_admin_router.py`, `backend/tests/test_programs_router.py`, `reports/work24-default-exposure-sync-result-2026-04-23.md`
+  - 운영 Work24 서울 live sync를 재실행해 보류됐던 신규 row를 재시도했고, 1차 estimated new rows 2,434건과 2차 idempotency 0건을 확인함
+  - admin sync upsert를 100건 단위 batch로 나눠 Supabase payload/timeout 리스크를 줄임
+  - `/programs` 기본 노출은 창업/source 명시 필터가 없을 때 Work24 70% mix를 유지하고, 창업 필터에서는 mix를 적용하지 않는 회귀 테스트를 추가함
