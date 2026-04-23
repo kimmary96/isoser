@@ -1,5 +1,10 @@
 # 리팩토링 로그
 
+- 2026-04-24: `supabase/migrations/20260425113000_create_program_source_records.sql`, `supabase/migrations/20260425114000_add_program_canonical_columns.sql`, `supabase/migrations/20260425115000_backfill_program_source_records_from_programs.sql`, `supabase/migrations/20260425116000_backfill_program_canonical_fields.sql`, `supabase/migrations/20260425117000_extend_program_list_index_surface_contract.sql`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-program-canonical-sql-drafts-result.md`
+  - 프로그램 정본/provenance 분리 패키지 2 초안으로 `program_source_records` 신설, `programs` canonical 컬럼 추가, 기존 `programs` 혼합 구조를 새 provenance/정본 컬럼으로 백필하는 draft SQL 체인을 추가함
+  - 기존 `program_list_index`가 `program-surface-contract-v2`의 base/card/list summary를 직접 채울 수 있도록 surface contract용 additive 컬럼과 보조 helper/trigger 초안을 추가함
+  - 현재 운영 경로를 즉시 뒤집지 않고 additive + backfill + transition trigger 방식으로 다음 구현 턴에서 dual write/read switch를 이어가기 쉬운 형태로 정리함
+
 - 2026-04-24: `docs/specs/program-canonical-schema-design-v1.md`, `docs/specs/program-recommendation-backend-touchpoints-v1.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/serializer-api-bff-transition-plan-v1.md`, `docs/specs/README.md`, `reports/SESSION-2026-04-24-program-canonical-migration-transition-result.md`
   - `program-surface-contract-v2` 기준으로 `programs`, `program_source_records`, `program_list_index`의 최종 역할과 컬럼 분리를 문서화해 프로그램 축 A/B의 DB 설계 빈칸을 채움
   - 현재 저장소의 실제 read/write 지점을 기준으로 프로그램 축과 사용자 추천 축이 만나는 backend/BFF 변경 포인트를 정리함
@@ -2948,6 +2953,10 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - `/programs` 페이지와 필터 바에 흩어져 있던 정렬 라벨/허용값/기본값/정규화 로직을 `program-sort.ts`로 모아 `popular` 누락 재발 위험을 줄임
   - 필터 바 정렬 메뉴가 공용 계약을 직접 사용하도록 바꿔, backend/URL에서 이미 지원하던 `popular` 정렬을 UI에서도 바로 선택할 수 있게 맞춤
   - `program-sort.test.ts`로 허용값과 라벨 동기화, query sort 정규화 fallback을 고정함
+- 2026-04-24: `supabase/migrations/20260425115000_backfill_program_source_records_from_programs.sql`, `supabase/migrations/20260425116000_backfill_program_canonical_fields.sql`, `supabase/migrations/20260425117000_extend_program_list_index_surface_contract.sql`, `reports/SESSION-2026-04-24-program-canonical-sql-drafts-result.md`
+  - Supabase SQL Editor 실실행 중 일부 환경에 `programs.application_url` legacy 컬럼이 없는 drift가 확인되어, draft migration이 해당 컬럼 존재를 강하게 가정하지 않도록 보강함
+  - 3단계 source-record backfill, 4단계 canonical field backfill, 5단계 `program_list_index` surface trigger가 모두 `to_jsonb(row) ->> 'application_url'` 방식으로 optional legacy 필드를 읽도록 바꿔 이후 단계 연쇄 실패 가능성을 줄임
+  - 추가로 일부 행의 `compare_meta`가 JSON object가 아니라 scalar여서 `- 'field_sources'` 연산이 실패하는 drift도 확인되어, 3/4단계 draft가 object가 아닐 때는 빈 객체 또는 `legacy_compare_meta_scalar` 래핑으로 안전하게 처리하도록 보강함
 ## 2026-04-24 cowork review-failed 중복 알림 억제
 
 - 변경 이유
