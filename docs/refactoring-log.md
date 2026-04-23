@@ -2643,3 +2643,7 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - 기존 고용24 `deadline=end_date` 오염값 무시 방어는 유지하되, `deadline_source=traStartDate`가 있는 1일 과정은 신뢰하도록 backend 목록/추천/backfill/frontend fallback을 함께 보정함
   - `traStartDate`/`traEndDate` 기반 날짜 메타를 `YYYY-MM-DD`로 정규화해 Python 3.10 날짜 파싱과 D-day 계산이 basic date 문자열에 막히지 않도록 함
   - 운영 DB Work24 계열 12,206건 중 `deadline_null`을 0건으로 보정하고, `/programs?recruiting_only=true&sort=deadline&limit=20` 기본 노출 Work24 70%를 재확인함
+- 2026-04-23: `scripts/work24_partition_sync.py`, `backend/tests/test_work24_partition_sync.py`, `docs/current-state.md`, `docs/data/work24-training-sync.md`, `reports/work24-region-partition-sync-result-2026-04-23.md`
+  - Work24 전국 단일 조회가 6개월 기준 108,069건으로 API 100,000건 한도를 넘는 문제를 피하기 위해 `srchTraArea1` 17개 광역 지역 partition sync runner를 추가함
+  - 기본 실행 순서를 서울 인접 권역부터 `경기 -> 인천 -> 강원 -> 충북 -> 충남 -> 세종 -> 대전 ...`으로 고정하고, `--start-from`, `--stop-after`, `--include-seoul` 옵션과 retry/report 저장을 제공함
+  - 운영에서 서울 제외 16개 partition 16,205건을 upsert했고, 최종 Work24 계열 DB row는 27,772건, `deadline_null` 0건, 기본 프로그램 목록 Work24 70% 노출을 확인함

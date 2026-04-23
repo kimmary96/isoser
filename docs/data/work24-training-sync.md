@@ -55,6 +55,32 @@ max_pages=2
 
 목록 API는 실제 신청 마감일 필드를 제공하지 않습니다. 그래서 `traStartDate`를 모집기한 fallback으로 `programs.deadline`과 `compare_meta.application_deadline`에 저장하고, `compare_meta.deadline_source=traStartDate`를 함께 남깁니다. `traEndDate`는 훈련 종료일이므로 `programs.end_date`와 `compare_meta.training_end_date`로만 저장합니다.
 
+## Region Partition Sync
+
+전국 단일 조회는 6개월 기준 Work24 API의 100,000건 페이지 한도를 넘을 수 있으므로 `scripts/work24_partition_sync.py`로 `srchTraArea1` 광역 지역별 partition sync를 실행합니다. 기본 순서는 서울을 이미 sync했다는 전제에서 서울 인접 권역부터 진행합니다.
+
+```text
+경기(41) -> 인천(28) -> 강원(51) -> 충북(43) -> 충남(44) -> 세종(36) -> 대전(30) -> 전북(45) -> 경북(47) -> 대구(27) -> 경남(48) -> 울산(31) -> 부산(26) -> 전남(46) -> 광주(29) -> 제주(50)
+```
+
+Preview:
+
+```powershell
+backend\venv\Scripts\python.exe scripts\work24_partition_sync.py --report-path reports\work24_partition_preview_YYYYMMDD.json
+```
+
+서울부터 포함해 전체 실행:
+
+```powershell
+backend\venv\Scripts\python.exe scripts\work24_partition_sync.py --include-seoul --apply --report-path reports\work24_partition_sync_YYYYMMDD.json
+```
+
+서울을 건너뛰고 경기부터 대전까지만 실행:
+
+```powershell
+backend\venv\Scripts\python.exe scripts\work24_partition_sync.py --apply --stop-after 대전 --report-path reports\work24_partition_sync_to_daejeon_YYYYMMDD.json
+```
+
 ## Region Normalization
 
 Work24 응답의 `address`와 `trngAreaCd`를 사용해 `programs.region`과 `programs.region_detail`을 채웁니다.
