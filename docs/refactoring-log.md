@@ -2867,3 +2867,7 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - 랜딩 C `Live Board`가 기본 추천 proxy 대신 `sort=popular` read-model 목록과 상세 조회수(`detail_view_count_7d`, `detail_view_count`)를 우선 사용하도록 연결함
   - 프로그램 상세 클라이언트는 같은 프로그램 id에 대해 중복 기록을 피하면서 BFF `detail-view` 추적을 1회 전송하도록 연결함
   - `/programs` 정렬 라벨/허용값에 `popular`를 추가해 프런트 타입 체크와 정렬 UI 계약을 맞추고, Vitest로 live board fallback 규칙을 고정함
+- 2026-04-24: `frontend/app/(landing)/programs/program-sort.ts`, `frontend/app/(landing)/programs/program-sort.test.ts`, `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/programs-filter-bar.tsx`, `reports/SESSION-2026-04-24-program-sort-contract-refactor-result.md`
+  - `/programs` 페이지와 필터 바에 흩어져 있던 정렬 라벨/허용값/기본값/정규화 로직을 `program-sort.ts`로 모아 `popular` 누락 재발 위험을 줄임
+  - 필터 바 정렬 메뉴가 공용 계약을 직접 사용하도록 바꿔, backend/URL에서 이미 지원하던 `popular` 정렬을 UI에서도 바로 선택할 수 있게 맞춤
+  - `program-sort.test.ts`로 허용값과 라벨 동기화, query sort 정규화 fallback을 고정함

@@ -5,6 +5,8 @@ import Link from "next/link";
 
 import type { ProgramSort } from "@/lib/types";
 
+import { DEFAULT_PROGRAM_SORT, isProgramSort, PROGRAM_SORT_OPTIONS } from "./program-sort";
+
 export type ProgramsFilterChip = {
   label: string;
   href: string;
@@ -50,16 +52,6 @@ export type NamedFilterOption = {
   label: string;
 };
 
-const SORT_OPTIONS: Array<{ value: ProgramSort; label: string }> = [
-  { value: "default", label: "기본 정렬" },
-  { value: "deadline", label: "마감 임박순" },
-  { value: "start_soon", label: "개강 빠른순" },
-  { value: "cost_low", label: "비용 낮은순" },
-  { value: "cost_high", label: "비용 높은순" },
-  { value: "duration_short", label: "짧은 기간순" },
-  { value: "duration_long", label: "긴 기간순" },
-];
-const DEFAULT_SORT: ProgramSort = "default";
 const SORT_DOT_COLORS = [
   "bg-violet-500",
   "bg-amber-500",
@@ -304,7 +296,7 @@ export function ProgramsFilterBar({
       dotClassName: method === "온라인" ? "bg-violet-500" : method === "오프라인" ? "bg-blue-500" : "bg-teal-500",
     })),
   ];
-  const sortMenuOptions: FilterMenuOption[] = SORT_OPTIONS.map((option, index) => ({
+  const sortMenuOptions: FilterMenuOption[] = PROGRAM_SORT_OPTIONS.map((option, index) => ({
     value: option.value,
     label: option.label,
     dotClassName: SORT_DOT_COLORS[index] || "bg-slate-400",
@@ -400,7 +392,7 @@ export function ProgramsFilterBar({
           <input
             ref={sortInputRef}
             type="hidden"
-            name={pendingSort === DEFAULT_SORT ? undefined : "sort"}
+            name={pendingSort === DEFAULT_PROGRAM_SORT ? undefined : "sort"}
             value={pendingSort}
             readOnly
           />
@@ -410,9 +402,9 @@ export function ProgramsFilterBar({
             options={sortMenuOptions}
             placeholder="기본 정렬"
             onChange={(value) => {
-              const nextSort = SORT_OPTIONS.some((option) => option.value === value) ? (value as ProgramSort) : DEFAULT_SORT;
+              const nextSort: ProgramSort = isProgramSort(value) ? value : DEFAULT_PROGRAM_SORT;
               if (sortInputRef.current) {
-                if (nextSort === DEFAULT_SORT) {
+                if (nextSort === DEFAULT_PROGRAM_SORT) {
                   sortInputRef.current.removeAttribute("name");
                 } else {
                   sortInputRef.current.name = "sort";

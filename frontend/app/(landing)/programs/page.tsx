@@ -21,6 +21,7 @@ import {
   formatProgramParticipationTime,
   getSelectionKeywordTone,
 } from "./page-helpers";
+import { DEFAULT_PROGRAM_SORT, normalizeProgramSort, PROGRAM_SORT_LABELS } from "./program-sort";
 import ProgramBookmarkButton from "./program-bookmark-button";
 import { deadlineLabel, deadlineTone, normalizeTextList, scorePercent } from "./program-utils";
 
@@ -41,7 +42,6 @@ export const metadata: Metadata = {
 };
 
 const PAGE_SIZE = 20;
-const DEFAULT_SORT: ProgramSort = "default";
 const REGION_OPTIONS = [
   "서울",
   "경기",
@@ -98,27 +98,6 @@ const PROGRAM_CATEGORY_OPTIONS: readonly ProgramCategoryMenuOption[] = [
   { id: "design-3d", label: "디자인·3D", category: "디자인", dotClassName: "bg-orange-500" },
   { id: "project-career-startup", label: "프로젝트·취준·창업", category: "창업", dotClassName: "bg-lime-600" },
 ];
-const SORT_LABELS: Record<ProgramSort, string> = {
-  default: "기본 정렬",
-  deadline: "마감 임박순",
-  popular: "인기순",
-  start_soon: "개강 빠른순",
-  cost_low: "비용 낮은순",
-  cost_high: "비용 높은순",
-  duration_short: "짧은 기간순",
-  duration_long: "긴 기간순",
-};
-const SORT_VALUES = new Set<ProgramSort>([
-  "default",
-  "deadline",
-  "popular",
-  "start_soon",
-  "cost_low",
-  "cost_high",
-  "duration_short",
-  "duration_long",
-]);
-
 type ProgramsPageSearchParams = {
   q?: string | string[];
   category?: string | string[];
@@ -227,11 +206,6 @@ function normalizeShowClosed(value?: string | string[]): boolean {
   return closed === "true" || closed === "1" || closed === "on";
 }
 
-function normalizeSort(value?: string | string[]): ProgramSort {
-  const sort = takeFirst(value);
-  return SORT_VALUES.has(sort as ProgramSort) ? (sort as ProgramSort) : DEFAULT_SORT;
-}
-
 function normalizePage(value?: string | string[]): number {
   const page = Number.parseInt(takeFirst(value) || "1", 10);
   return Number.isFinite(page) && page > 0 ? page : 1;
@@ -276,7 +250,7 @@ function buildProgramsHref(params: ProgramsHrefParams): string {
   }
   if (params.q) searchParams.set("scope", "all");
   if (params.closed) searchParams.set("closed", "true");
-  if (params.sort && params.sort !== DEFAULT_SORT) searchParams.set("sort", params.sort);
+  if (params.sort && params.sort !== DEFAULT_PROGRAM_SORT) searchParams.set("sort", params.sort);
   if (params.page && params.page > 1) searchParams.set("page", String(params.page));
 
   const query = searchParams.toString();
@@ -376,9 +350,9 @@ function renderActiveFilters(params: {
     });
   }
 
-  if (params.sort !== DEFAULT_SORT) {
+  if (params.sort !== DEFAULT_PROGRAM_SORT) {
     chips.push({
-      label: `정렬: ${SORT_LABELS[params.sort]}`,
+      label: `정렬: ${PROGRAM_SORT_LABELS[params.sort]}`,
       href: hrefWith({ sort: undefined }),
     });
   }
@@ -715,7 +689,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
 
   const selectedSources = normalizeNamedOptions(resolvedSearchParams.sources, sourceOptions);
   const selectedTargets = normalizeNamedOptions(resolvedSearchParams.targets, targetOptions);
-  const sort = normalizeSort(resolvedSearchParams.sort);
+  const sort = normalizeProgramSort(resolvedSearchParams.sort);
   const page = normalizePage(resolvedSearchParams.page);
   const offset = (page - 1) * PAGE_SIZE;
   const activeFilters = renderActiveFilters({
@@ -839,7 +813,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
       selectedSources.length ||
       selectedTargets.length ||
       showClosedRecent ||
-      sort !== DEFAULT_SORT
+      sort !== DEFAULT_PROGRAM_SORT
   );
 
   return (
@@ -918,7 +892,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                             .join(", ")}`
                         : ""}
                       {showClosedRecent ? " · 최근 3개월 마감 포함" : " · 모집중만"}
-                      {` · ${SORT_LABELS[sort]}`}
+                      {` · ${PROGRAM_SORT_LABELS[sort]}`}
                     </p>
                   </div>
                   <p className="text-sm text-slate-500">
