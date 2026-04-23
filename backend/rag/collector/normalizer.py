@@ -58,6 +58,7 @@ def normalize(raw_item: Dict) -> Optional[Dict]:
         "source_url": _clean_optional(raw_item.get("source_url")),
         "source_unique_key": _clean_optional(raw_item.get("source_unique_key")),
         "compare_meta": _clean_compare_meta(raw_item.get("compare_meta")),
+        "raw_data": _clean_raw_data(raw_item.get("raw")),
     }
     for key, value in optional_fields.items():
         if value not in (None, "", {}, []):
@@ -115,6 +116,14 @@ def _clean_compare_meta(value: Any) -> dict[str, Any] | None:
         if entry not in (None, "", [], {})
     }
     return cleaned or None
+
+
+def _clean_raw_data(value: Any) -> Any | None:
+    if value in (None, "", [], {}):
+        return None
+    if isinstance(value, (dict, list, str, int, float, bool)):
+        return value
+    return str(value)
 
 
 def _classify_category(title: str) -> str:

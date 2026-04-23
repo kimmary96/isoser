@@ -30,6 +30,7 @@ BACKFILL_FIELDS = (
     "provider",
     "location",
     "description",
+    "deadline",
     "start_date",
     "end_date",
     "source_url",

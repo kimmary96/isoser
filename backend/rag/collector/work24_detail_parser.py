@@ -19,7 +19,33 @@ def _query_param(value: str, key: str) -> str:
 
 
 def _extract_label_value(text: str, label: str) -> str:
-    pattern = rf"{re.escape(label)}\s+(.+?)(?=\s+(훈련유형|훈련기간|주야구분|주말여부|훈련시간|성과 및 운영 정보|NCS 및 자격정보|훈련기관 및 담당자|주소|담당자 성명|전화번호|이메일|주관부처|관심정보 등록|훈련과정안내|훈련대상 요건|$))"
+    labels = (
+        "훈련유형",
+        "훈련기간",
+        "주야구분",
+        "주말여부",
+        "훈련시간",
+        "수강신청기간",
+        "신청기간",
+        "모집기간",
+        "접수기간",
+        "모집마감",
+        "신청마감",
+        "접수마감",
+        "성과 및 운영 정보",
+        "NCS 및 자격정보",
+        "훈련기관 및 담당자",
+        "주소",
+        "담당자 성명",
+        "전화번호",
+        "이메일",
+        "주관부처",
+        "관심정보 등록",
+        "훈련과정안내",
+        "훈련대상 요건",
+    )
+    lookahead = "|".join(re.escape(item) for item in labels)
+    pattern = rf"{re.escape(label)}\s+(.+?)(?=\s+({lookahead})|$)"
     match = re.search(pattern, text)
     return _clean_text(match.group(1)).replace(" 지도 보기", "").strip() if match else ""
 
@@ -43,6 +69,33 @@ def _extract_description(text: str) -> str:
     return _clean_text(match.group(1)) if match else ""
 
 
+def _normalize_date_text(value: str) -> str | None:
+    match = re.search(r"(\d{4})[.-](\d{1,2})[.-](\d{1,2})", value)
+    if not match:
+        return None
+    return f"{match.group(1)}-{int(match.group(2)):02d}-{int(match.group(3)):02d}"
+
+
+def _extract_period_end_date(value: str) -> str | None:
+    matches = re.findall(r"(\d{4})[.-](\d{1,2})[.-](\d{1,2})", value)
+    if not matches:
+        return None
+    year, month, day = matches[-1]
+    return f"{year}-{int(month):02d}-{int(day):02d}"
+
+
+def _extract_application_deadline(text: str) -> str | None:
+    for label in ("수강신청기간", "신청기간", "모집기간", "접수기간"):
+        deadline = _extract_period_end_date(_extract_label_value(text, label))
+        if deadline:
+            return deadline
+    for label in ("모집마감", "신청마감", "접수마감"):
+        deadline = _normalize_date_text(_extract_label_value(text, label))
+        if deadline:
+            return deadline
+    return None
+
+
 def _compact_meta(meta: dict[str, Any]) -> dict[str, Any]:
     return {
         key: value
@@ -64,11 +117,17 @@ def parse_work24_detail_html(html: str, *, title: str, source_url: str) -> dict[
     rating_match = re.search(r"만족도\s*\(([\d.]+)\)", text)
     capacity_match = re.search(r"모집인원\s+(\d+)명", text)
     selected_match = re.search(r"선발인원\s+(\d+)명", text)
+    application_deadline = _extract_application_deadline(text)
+    training_type = _extract_label_value(text, "훈련유형")
+    day_night = _extract_label_value(text, "주야구분")
+    weekend_text = _extract_label_value(text, "주말여부")
+    training_time = _extract_label_value(text, "훈련시간")
 
     normalized = {
         "provider": _extract_provider(lines, title) or None,
         "location": _extract_label_value(text, "주소") or None,
         "description": _extract_description(text) or None,
+        "deadline": application_deadline,
         "start_date": start_date,
         "end_date": end_date,
         "source_url": source_url,
@@ -83,6 +142,11 @@ def parse_work24_detail_html(html: str, *, title: str, source_url: str) -> dict[
                 "satisfaction_score": rating_match.group(1) if rating_match else None,
                 "capacity": capacity_match.group(1) if capacity_match else None,
                 "registered_count": selected_match.group(1) if selected_match else None,
+                "application_deadline": application_deadline,
+                "training_type": training_type or None,
+                "day_night": day_night or None,
+                "weekend_text": weekend_text or None,
+                "training_time": training_time or None,
                 "contact_phone": _extract_label_value(text, "전화번호") or None,
                 "email": _extract_label_value(text, "이메일") or None,
             }
