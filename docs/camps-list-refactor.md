@@ -30,11 +30,18 @@ Config:
 - `PROGRAM_BROWSE_POOL_LIMIT`, default `300`
 - `PROGRAM_PROMOTED_SLOT_LIMIT`, default `15`
 
+Quality hardening migrations:
+
+- `20260423195000_improve_program_list_browse_pool_quality.sql` redefines the refresh function so cost/time facets are inferred at read-model build time and browse rank uses source diversity interleaving.
+- `20260423200000_move_pg_trgm_extension_schema.sql` handles the Supabase linter warning for `pg_trgm` installed in `public`.
+
 ## Browse / Search / Archive
 
 - `browse`: no `q`, no `scope=all`, no closed mode. Filters operate inside `browse_rank <= PROGRAM_BROWSE_POOL_LIMIT` and `is_open=true`.
 - `search`: `q` is present or `scope=all`. This bypasses the browse pool and uses `program_list_index.search_text` first.
 - `archive`: `include_closed_recent=true`, `closed=true` on frontend, or `scope=archive`. This targets closed rows separately.
+
+Browse rank is still score-led, but the pool builder groups sources and applies a Work24 soft cap at 70% of the configured pool before allowing Work24 overflow rows. This means alternative sources are interleaved when available, while sparse source coverage still returns a full 300-row browse pool.
 
 The existing `/programs` response remains a plain array for compatibility. The new paged contract is `GET /programs/list`, returning:
 
@@ -95,6 +102,8 @@ Recommendation reason badges are derived from actual score components:
 
 `program_list_facet_snapshots` stores browse facet snapshots by scope and pool limit. The current implementation refreshes browse facets during `refresh_program_list_index`.
 
+`cost_type` and `participation_time` are populated in the read model from explicit source columns first, then conservative SQL inference over support type, selected `compare_meta` keys, title, summary, description, and start/end duration. This keeps browse filters DB-backed even when the source table has sparse normalized fields.
+
 API:
 
 - `GET /programs/facets`
@@ -148,3 +157,4 @@ Frontend:
 - Count currently reads matching read-model ids through REST instead of using a `Prefer: count` response path.
 - Cursor pagination is forward-only in the first frontend integration; numbered deep paging remains legacy/fallback behavior.
 - Promoted slots are stored separately through `promoted_rank`, but the current frontend still uses existing `AdSlot` plus organic rows. A dedicated promoted row layer can be added once product ad inventory rules are finalized.
+- Supabase `auth_leaked_password_protection` is not fixable through SQL; enable leaked password protection in Auth settings after database migrations.

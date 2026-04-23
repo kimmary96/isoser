@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date, timedelta
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -142,6 +143,34 @@ def test_read_model_summary_select_excludes_heavy_detail_fields() -> None:
     assert "description" not in selected
     assert "raw_data" not in selected
     assert "recommended_score" in selected
+
+
+def test_program_list_quality_migration_hardens_refresh_policy() -> None:
+    migration = (
+        Path(__file__).resolve().parents[2]
+        / "supabase"
+        / "migrations"
+        / "20260423195000_improve_program_list_browse_pool_quality.sql"
+    ).read_text(encoding="utf-8")
+
+    assert "program_list_infer_cost_type" in migration
+    assert "program_list_infer_participation_time" in migration
+    assert "source_group" in migration
+    assert "source_rank_calc" in migration
+    assert "0.70" in migration
+    assert "organic_browse_rank" in migration
+
+
+def test_pg_trgm_extension_warning_has_separate_migration() -> None:
+    migration = (
+        Path(__file__).resolve().parents[2]
+        / "supabase"
+        / "migrations"
+        / "20260423200000_move_pg_trgm_extension_schema.sql"
+    ).read_text(encoding="utf-8")
+
+    assert "create schema if not exists extensions" in migration
+    assert "alter extension pg_trgm set schema extensions" in migration
 
 
 @pytest.mark.asyncio

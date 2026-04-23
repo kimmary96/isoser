@@ -1,5 +1,20 @@
 # 리팩토링 로그
 
+## 2026-04-23 programs read model 품질 보강
+
+- 변경 파일
+  - `supabase/migrations/20260423195000_improve_program_list_browse_pool_quality.sql`
+  - `supabase/migrations/20260423200000_move_pg_trgm_extension_schema.sql`
+  - `backend/tests/test_programs_router.py`
+  - `docs/current-state.md`
+  - `reports/TASK-2026-04-23-program-list-quality-hardening-result.md`
+- 변경 내용
+  - read-model refresh 단계에 비용/참여시간 추론 helper를 추가해 운영 row의 `cost_type`/`participation_time` 컬럼이 비어 있어도 list index와 facet snapshot이 채워지도록 보강함
+  - 기본 browse pool rank를 source group interleaving으로 바꿔 Work24 계열은 pool 70% soft cap 이후 다른 source와 섞이고, 다른 source가 부족하면 overflow로 300개 pool을 유지하도록 조정함
+  - Supabase linter의 `pg_trgm` public extension 경고는 `extensions` schema 이동 migration으로 분리하고, Auth leaked password warning은 Dashboard 운영 설정 대상으로 문서화함
+- 검증
+  - `backend\venv\Scripts\python.exe -m pytest backend\tests\test_programs_router.py -q`
+
 ## 2026-04-23 camps/programs 목록 read model 리팩터링
 
 - 변경 파일
