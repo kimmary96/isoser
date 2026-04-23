@@ -241,7 +241,13 @@ export default function ProgramSelectModal({
   }, [activeTab, open]);
 
   useEffect(() => {
-    if (!open || activeTab !== "bookmarks" || !isLoggedIn || bookmarksLoaded || bookmarksLoading) {
+    if (!open) {
+      setBookmarksLoaded(false);
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (!open || activeTab !== "bookmarks" || !isLoggedIn || bookmarksLoading) {
       return;
     }
 
