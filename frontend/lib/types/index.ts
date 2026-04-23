@@ -411,6 +411,11 @@ export interface CalendarRecommendItem {
   deadline: string | null;
   d_day_label: string;
   reason: string;
+  fit_keywords?: string[];
+  relevance_reasons?: string[];
+  score_breakdown?: RelevanceScoreBreakdown;
+  relevance_grade?: RelevanceGrade;
+  relevance_badge?: string | null;
   program: Program;
 }
 

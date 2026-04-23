@@ -172,6 +172,11 @@ class CalendarRecommendItem(BaseModel):
     deadline: str | None = None
     d_day_label: str
     reason: str
+    fit_keywords: list[str] = Field(default_factory=list)
+    relevance_reasons: list[str] = Field(default_factory=list)
+    score_breakdown: dict[str, int] = Field(default_factory=dict)
+    relevance_grade: Literal["high", "medium", "low", "none"] = "none"
+    relevance_badge: str | None = None
     program: ProgramListItem
 
 
@@ -419,12 +424,19 @@ def _build_calendar_item(
     program: dict[str, Any],
     relevance_score: float,
     urgency_score: float,
+    fit_keywords: list[str] | None = None,
+    relevance_reasons: list[str] | None = None,
+    score_breakdown: dict[str, int] | None = None,
+    relevance_grade: Literal["high", "medium", "low", "none"] | None = None,
+    relevance_badge: str | None = None,
 ) -> CalendarRecommendItem | None:
     deadline = _resolve_program_deadline(program)
     if _is_expired_program(program):
         return None
 
     final_score = _recalculate_final_score(relevance_score, urgency_score)
+    score_percent = _score_to_percent(relevance_score)
+    resolved_relevance_reasons = relevance_reasons or ([reason] if reason else [])
     program_record = _build_recommendation_program_record(
         program,
         relevance_score=relevance_score,
@@ -439,6 +451,11 @@ def _build_calendar_item(
         deadline=deadline,
         d_day_label=_format_d_day_label(program_record.get("days_left")),
         reason=reason,
+        fit_keywords=fit_keywords or [],
+        relevance_reasons=resolved_relevance_reasons[:3],
+        score_breakdown=score_breakdown or _default_score_breakdown(score_percent),
+        relevance_grade=relevance_grade or _relevance_grade(score_percent),
+        relevance_badge=relevance_badge if relevance_badge is not None else _relevance_badge(score_percent),
         program=ProgramListItem.model_validate(program_record),
     )
 
@@ -463,6 +480,11 @@ def _build_calendar_items_from_recommendations(
             program=program_payload,
             relevance_score=relevance_score,
             urgency_score=urgency_score,
+            fit_keywords=[] if anonymous else item.fit_keywords,
+            relevance_reasons=[] if anonymous else item.relevance_reasons,
+            score_breakdown={} if anonymous else item.score_breakdown,
+            relevance_grade="none" if anonymous else item.relevance_grade,
+            relevance_badge=None if anonymous else item.relevance_badge,
         )
         if calendar_item is not None:
             calendar_items.append(calendar_item)
@@ -1489,7 +1511,7 @@ def _compute_region_match(
     if explicit_delivery == "online":
         return ["온라인"], 0.8
 
-    program_region = _normalize_region_name(
+    program_region = _normalize_region_name_by_priority(
         program.get("region"),
         program.get("location"),
         program.get("region_detail"),
@@ -1544,6 +1566,14 @@ def _classify_delivery_region_signal(value: str) -> Literal["online", "hybrid"] 
 
 def _contains_any(value: str, keywords: tuple[str, ...]) -> bool:
     return any(keyword.casefold() in value.casefold() for keyword in keywords)
+
+
+def _normalize_region_name_by_priority(*values: Any) -> str | None:
+    for value in values:
+        normalized = _normalize_region_name(value)
+        if normalized:
+            return normalized
+    return None
 
 
 def _normalize_region_name(*values: Any) -> str | None:
