@@ -2647,3 +2647,6 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - Work24 전국 단일 조회가 6개월 기준 108,069건으로 API 100,000건 한도를 넘는 문제를 피하기 위해 `srchTraArea1` 17개 광역 지역 partition sync runner를 추가함
   - 기본 실행 순서를 서울 인접 권역부터 `경기 -> 인천 -> 강원 -> 충북 -> 충남 -> 세종 -> 대전 ...`으로 고정하고, `--start-from`, `--stop-after`, `--include-seoul` 옵션과 retry/report 저장을 제공함
   - 운영에서 서울 제외 16개 partition 16,205건을 upsert했고, 최종 Work24 계열 DB row는 27,772건, `deadline_null` 0건, 기본 프로그램 목록 Work24 70% 노출을 확인함
+- 2026-04-23: `reports/work24-region-partition-sync-result-2026-04-23.md`
+  - 후속 리스크 관리로 Chroma programs 후보 200건을 직접 sync해 200 synced, 0 skipped를 확인함
+  - Gemini embedding 429 발생 후 local fallback으로 완료됐고, 현재 `CHROMA_MODE=ephemeral` 환경에서는 persistent index 보강이 아니라 프로세스 단위 smoke 검증임을 보고서에 명시함

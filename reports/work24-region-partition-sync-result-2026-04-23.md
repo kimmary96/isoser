@@ -136,6 +136,7 @@ backend\venv\Scripts\python.exe scripts\work24_partition_sync.py --apply --stop-
 | 명령 | 결과 |
 |---|---|
 | `backend\venv\Scripts\python.exe -m pytest backend\tests\test_work24_partition_sync.py -q` | 4 passed |
+| Chroma programs sync 후보 200건 직접 실행 | 200 synced, 0 skipped |
 
 이전 Work24 deadline fallback 변경의 전체 검증은 같은 세션에서 다음을 통과했다.
 
@@ -151,13 +152,14 @@ backend\venv\Scripts\python.exe scripts\work24_partition_sync.py --apply --stop-
 | 리스크 | 관리 |
 |---|---|
 | 첫 실행에서 Supabase timeout 발생 | runner에 upsert retry와 중간 report 저장 추가 |
-| Chroma 추천 인덱스는 이번 runner에서 별도 재동기화하지 않음 | `/programs`, 랜딩, live board 노출은 DB 기준으로 반영됨. 추천 품질까지 맞추려면 Chroma sync를 별도 1회 실행 |
+| Chroma 추천 인덱스는 partition runner에 자동 연결되지 않음 | 후속으로 programs 후보 200건을 직접 sync해 200 synced, 0 skipped를 확인함. 다만 현재 환경은 `CHROMA_MODE=ephemeral`이라 프로세스 종료 후 유지되는 persistent index 보강으로 보기는 어렵다 |
+| Gemini embedding 분당 quota 초과 | 100건 이후 429가 발생했지만 기존 local fallback 방어가 작동해 batch skip 없이 완료됨 |
 | 전북 preview는 0건이지만 DB에는 legacy row가 남아 있음 | live API 응답 기준 신규 rows는 없고, 기존 DB row는 보존됨 |
 
 ## 추가 리팩토링 후보
 
 | 우선순위 | 후보 |
 |---|---|
-| 상 | partition runner에 `--sync-chroma-at-end` 옵션 추가 |
+| 상 | persistent Chroma 운영 모드에서 partition runner의 `--sync-chroma-at-end` 옵션 추가 |
 | 중 | 실행 결과를 DB audit table 또는 `reports/*.json` diff로 누적 관리 |
 | 하 | 거리 기준 순서를 config JSON으로 분리 |
