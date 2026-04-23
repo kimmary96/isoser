@@ -1,0 +1,92 @@
+[
+  {
+    "name": "work24_training_start_deadline_fallback",
+    "row": {
+      "id": "program-work24-trastart",
+      "title": "AI 데이터 분석 과정",
+      "source": "고용24",
+      "source_unique_key": "work24:AIG202500001:7:500012345678",
+      "deadline": "2026-04-22",
+      "start_date": "2026-04-22",
+      "end_date": "2026-06-29",
+      "provider": "테스트 훈련기관",
+      "location": "서울 강남구",
+      "source_url": "https://www.work24.go.kr/hr/detail",
+      "cost": 1000000,
+      "subsidy_amount": 300000,
+      "compare_meta": {
+        "deadline_source": "traStartDate"
+      }
+    },
+    "expected": {
+      "error_codes": [],
+      "warning_codes": [],
+      "info_codes": [
+        "work24_deadline_from_training_start"
+      ]
+    }
+  },
+  {
+    "name": "work24_deadline_copied_from_training_end",
+    "row": {
+      "id": "program-work24-enddate",
+      "title": "클라우드 엔지니어 과정",
+      "source": "고용24",
+      "source_unique_key": "work24:AIG202500002:1:500012345678",
+      "deadline": "2026-06-29",
+      "start_date": "2026-04-22",
+      "end_date": "2026-06-29",
+      "provider": "테스트 훈련기관",
+      "location": "서울 강남구",
+      "source_url": "https://www.work24.go.kr/hr/detail"
+    },
+    "expected": {
+      "error_codes": [],
+      "warning_codes": [
+        "work24_deadline_matches_end_date"
+      ],
+      "info_codes": []
+    }
+  },
+  {
+    "name": "kstartup_traceable_announcement",
+    "row": {
+      "id": "program-kstartup",
+      "title": "코디세이 AI 네이티브 과정",
+      "source": "K-Startup",
+      "source_unique_key": "kstartup:177296",
+      "deadline": "2026-05-14",
+      "start_date": "2026-04-15",
+      "end_date": "2026-05-14",
+      "provider": "(재)이노베이션아카데미",
+      "location": "서울",
+      "source_url": "https://www.k-startup.go.kr/detail"
+    },
+    "expected": {
+      "error_codes": [],
+      "warning_codes": [],
+      "info_codes": []
+    }
+  },
+  {
+    "name": "sesac_missing_provider_is_display_fallback_only",
+    "row": {
+      "id": "program-sesac",
+      "title": "금천 보안 실무 과정",
+      "source": "SeSAC",
+      "source_unique_key": "urltitle:sesac:abcdef123456",
+      "deadline": "2026-05-26",
+      "start_date": "2026-06-01",
+      "end_date": "2026-07-01",
+      "region": "서울",
+      "source_url": "https://sesac.seoul.kr/sesac/course/offline/courseDetail.do?crsSn=1174"
+    },
+    "expected": {
+      "error_codes": [],
+      "warning_codes": [],
+      "info_codes": [
+        "missing_provider"
+      ]
+    }
+  }
+]
