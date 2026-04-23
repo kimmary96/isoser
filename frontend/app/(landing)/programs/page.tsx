@@ -705,6 +705,19 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
   let error: string | null = null;
   let isLoggedIn = false;
   let bookmarkedProgramIds: string[] = [];
+  const currentFilterParams = {
+    q: q || undefined,
+    category: selectedCategory.category !== "전체" ? selectedCategory.category : undefined,
+    category_detail: selectedCategory.id !== "all" ? selectedCategory.id : undefined,
+    regions: selectedRegions,
+    sources: selectedSources,
+    teaching_methods: selectedTeachingMethods,
+    cost_types: selectedCostTypes,
+    participation_times: selectedParticipationTimes,
+    targets: selectedTargets,
+    recruiting_only: recruitingOnly,
+    include_closed_recent: showClosedRecent,
+  };
 
   try {
     const supabase = await createServerSupabaseClient();
@@ -729,34 +742,21 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
   try {
     [programs, urgentPrograms, totalCount] = await Promise.all([
       listPrograms({
-        q: q || undefined,
-        category: selectedCategory.category !== "전체" ? selectedCategory.category : undefined,
-        category_detail: selectedCategory.id !== "all" ? selectedCategory.id : undefined,
-        regions: selectedRegions,
-        sources: selectedSources,
-        teaching_methods: selectedTeachingMethods,
-        cost_types: selectedCostTypes,
-        participation_times: selectedParticipationTimes,
-        targets: selectedTargets,
-        recruiting_only: recruitingOnly,
-        include_closed_recent: showClosedRecent,
+        ...currentFilterParams,
         sort,
         limit: PAGE_SIZE,
         offset,
       }),
-      listPrograms(buildUrgentProgramsParams()),
+      listPrograms({
+        ...currentFilterParams,
+        recruiting_only: true,
+        include_closed_recent: false,
+        sort: "deadline",
+        limit: 12,
+        offset: 0,
+      }),
       getProgramCount({
-        q: q || undefined,
-        category: selectedCategory.category !== "전체" ? selectedCategory.category : undefined,
-        category_detail: selectedCategory.id !== "all" ? selectedCategory.id : undefined,
-        regions: selectedRegions,
-        sources: selectedSources,
-        teaching_methods: selectedTeachingMethods,
-        cost_types: selectedCostTypes,
-        participation_times: selectedParticipationTimes,
-        targets: selectedTargets,
-        recruiting_only: recruitingOnly,
-        include_closed_recent: showClosedRecent,
+        ...currentFilterParams,
       }),
     ]);
   } catch (e) {
@@ -819,7 +819,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                   <div>
                     <p className="text-sm font-semibold uppercase tracking-[0.24em] text-amber-700">Closing Soon</p>
                     <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-950">마감 임박 프로그램</h2>
-                    <p className="mt-2 text-sm text-slate-600">검색 조건과 별개로 7일 이내 마감되는 프로그램 {displayUrgentPrograms.length}개입니다.</p>
+                    <p className="mt-2 text-sm text-slate-600">현재 검색 조건에서 마감이 가까운 프로그램 {displayUrgentPrograms.length}개입니다.</p>
                   </div>
                 </div>
                 <div className="mt-5 flex snap-x gap-4 overflow-x-auto pb-2">

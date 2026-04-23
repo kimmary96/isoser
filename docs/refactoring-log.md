@@ -2588,6 +2588,9 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-23: `frontend/app/(landing)/programs/page.tsx`, `docs/current-state.md`
   - Closing Soon 조회에서 검색어/필터 파라미터를 제거해 검색 결과와 무관하게 전역 마감임박 섹션이 계속 유지되도록 변경함
   - 섹션 안내 문구도 검색 조건과 별개인 기준으로 갱신함
+- 2026-04-23: `frontend/app/(landing)/programs/page.tsx`, `docs/current-state.md`, `reports/programs-filter-scoped-closing-soon-result.md`
+  - 필터 적용 후 바로 아래 Closing Soon 레일에 전역 마감임박 공고가 섞여 보이던 혼란을 줄이기 위해 목록/count와 같은 검색/카테고리/지역/수업방식/비용/참여시간/기관/대상 조건을 Closing Soon 조회에도 재사용하도록 변경함
+  - Closing Soon 안내 문구를 현재 검색 조건 기준으로 갱신하고, 같은 파일의 중복 urgent chip key 방어 로직을 유지함
 - 2026-04-23: `backend/rag/collector/normalizer.py`, `backend/tests/test_work24_kstartup_field_mapping.py`, `scripts/program_source_diff.py`, `supabase/migrations/20260423112000_refine_programs_search_metadata.sql`, `docs/current-state.md`, `reports/program-detail-data-diagnosis-result.md`
   - 운영 DB에 누락될 수 있는 `category_detail`, `support_type`, `teaching_method`, `raw_data`, `search_text` 등 programs metadata 컬럼을 최신 migration 시작부에서 `add column if not exists`로 보강하도록 정리함
   - collector normalized row가 원본 `raw` payload를 `raw_data`로 넘기도록 추가해 신규 수집/재수집 row에서 원본 API 필드 비교가 가능하게 함
