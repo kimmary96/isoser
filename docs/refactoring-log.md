@@ -1,5 +1,10 @@
 # 리팩토링 로그
 
+- 2026-04-24: `backend/tests/test_html_collector_diagnostic_cli.py`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-scheduler-summary-consumer-smoke-test-result.md`
+  - scheduler summary bundle이 가리키는 `docs/schemas/html-collector-scheduler-summary.schema.json`을 test consumer가 직접 읽어, 직렬화된 JSON 리포트의 `scheduler_dry_run` / `sources[*].scheduler_dry_run` / nested `quality` payload가 schema contract와 어긋나지 않는지 smoke test로 고정함
+  - 외부 `jsonschema` 의존성을 새로 넣지 않고, 현재 schema에서 쓰는 `const`, `required`, `additionalProperties`, `oneOf`, primitive type/minimum만 읽는 가벼운 validator를 테스트 내부에 두어 Windows 로컬 환경에서도 바로 검증 가능하게 함
+  - 검증: `backend\venv\Scripts\python.exe -m pytest backend/tests/test_html_collector_diagnostic_cli.py -q` 통과 (`11 passed`), `backend\venv\Scripts\python.exe -m pytest backend/tests/test_collector_quality_validator.py backend/tests/test_program_quality_report_cli.py backend/tests/test_scheduler_collectors.py backend/tests/test_html_collector_diagnostic_cli.py -q --basetemp .pytest_tmp_scheduler_smoke` 통과 (`37 passed`)
+
 - 2026-04-24: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/lib/types/index.ts`, `frontend/app/(landing)/programs/page.tsx`, `docs/current-state.md`
   - read-model `promoted_items`를 unfiltered 첫 browse 진입 계약으로 고정하고, filtered browse/search/archive/offset/cursor 경로에서 promoted query가 섞이지 않도록 helper로 분리함
   - explicit ad row와 provider-match fallback row가 같은 프로그램을 가리켜도 promoted layer 안에서 중복되지 않도록 회귀 테스트를 추가함
@@ -10,6 +15,11 @@
   - OCR markdown/json 리포트가 attachment/image URL sample과 함께 `field_gap_summary`, `field_gap_audit`를 보여주도록 확장해 poster/attachment 후보가 실제로 OCR이 필요한 필드 결손을 갖는지 바로 판별할 수 있게 함
   - 2026-04-24 rerun 기준 OCR 분류는 `poster_or_attachment_candidate=7`, `detail_probe_inconclusive=3`, `text_sufficient_no_ocr=4`였고, field gap이 잡힌 13개 source의 175건은 모두 info-level `missing_provider`라 즉시 OCR runtime opt-in 후보는 여전히 0건으로 유지됨
   - 검증: `backend\venv\Scripts\python.exe -m pytest backend/tests/test_collector_quality_validator.py backend/tests/test_program_quality_report_cli.py backend/tests/test_scheduler_collectors.py backend/tests/test_html_collector_diagnostic_cli.py -q` 통과 (`36 passed`)
+
+- 2026-04-24: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `reports/SESSION-2026-04-24-click-hotness-contract-hardening-result.md`
+  - `click hotness` fallback 계산식의 recent weight와 total cap을 module 상수/헬퍼로 분리해 Python 경로가 SQL `program_list_click_hotness_score` 계약을 한 곳에서 참조하도록 정리함
+  - migration SQL formula가 backend 상수와 같은 weight/cap/coalesce 구조를 유지하는지 회귀 테스트를 추가해 SQL/Python drift를 더 빨리 감지하게 함
+  - 검증: `backend\venv\Scripts\python.exe -m pytest backend/tests/test_programs_router.py -q` 통과 (`108 passed`)
 
 
 - 2026-04-24: `backend/rag/collector/base_html_collector.py`, `backend/rag/collector/regional_html_collectors.py`, `backend/rag/collector/tier3_collectors.py`, `backend/rag/collector/tier4_collectors.py`, `scripts/html_collector_diagnostic.py`, `backend/tests/test_html_collector_diagnostic_cli.py`, `backend/tests/test_tier4_collectors.py`, `docs/schemas/html-collector-scheduler-summary.schema.json`, `docs/current-state.md`

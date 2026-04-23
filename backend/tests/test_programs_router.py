@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import date, timedelta
 from pathlib import Path
+import re
 from types import SimpleNamespace
 
 import pytest
@@ -356,6 +357,49 @@ def test_program_detail_click_hotness_migration_adds_daily_stats_and_rpc() -> No
     assert "record_program_detail_view" in migration
     assert "click_hotness_score" in migration
     assert "detail_view_count_7d" in migration
+
+
+def test_program_click_hotness_helper_matches_sql_contract() -> None:
+    assert (
+        programs._calculate_program_click_hotness_score(
+            recent_count=3,
+            total_count=12,
+            recommended=0.75,
+        )
+        == 3 * programs.PROGRAM_CLICK_HOTNESS_RECENT_WEIGHT + 12 + 0.75
+    )
+    assert (
+        programs._calculate_program_click_hotness_score(
+            recent_count=-4,
+            total_count=-9,
+            recommended=0.25,
+        )
+        == 0.25
+    )
+    assert (
+        programs._calculate_program_click_hotness_score(
+            recent_count=1,
+            total_count=programs.PROGRAM_CLICK_HOTNESS_TOTAL_CAP + 50,
+            recommended=0.5,
+        )
+        == programs.PROGRAM_CLICK_HOTNESS_RECENT_WEIGHT + programs.PROGRAM_CLICK_HOTNESS_TOTAL_CAP + 0.5
+    )
+
+
+def test_program_detail_click_hotness_migration_formula_matches_backend_contract() -> None:
+    migration = (
+        Path(__file__).resolve().parents[2]
+        / "supabase"
+        / "migrations"
+        / "20260424110000_add_program_detail_click_hotness.sql"
+    ).read_text(encoding="utf-8")
+
+    recent_weight_pattern = rf"greatest\(coalesce\(recent_count,\s*0\),\s*0\)::numeric\s*\*\s*{programs.PROGRAM_CLICK_HOTNESS_RECENT_WEIGHT}"
+    total_cap_pattern = rf"least\(greatest\(coalesce\(total_count,\s*0\),\s*0\),\s*{programs.PROGRAM_CLICK_HOTNESS_TOTAL_CAP}\)::numeric"
+
+    assert re.search(recent_weight_pattern, migration)
+    assert re.search(total_cap_pattern, migration)
+    assert "+ coalesce(recommended, 0);" in migration
 
 
 def test_pg_trgm_extension_warning_has_separate_migration() -> None:

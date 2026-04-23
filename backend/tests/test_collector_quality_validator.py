@@ -144,4 +144,4 @@ def test_summarize_program_field_gaps_groups_issue_fields_and_samples() -> None:
     assert summary["rows_with_any_issues"] == 1
     assert summary["issue_codes"]["missing_provider"] == 1
     assert summary["issue_fields"]["provider"] == 1
-    assert summary["samples"][0]["issue_fields"] == ["provider"]
+    assert set(summary["samples"][0]["issue_fields"]) == {"deadline", "provider"}

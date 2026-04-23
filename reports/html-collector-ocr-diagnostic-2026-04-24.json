@@ -5,7 +5,7 @@
       "class_name": "Seoul50PlusCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 485.97,
+      "duration_ms": 549.43,
       "evidence": [
         "status=success",
         "raw=12",
@@ -13,6 +13,77 @@
         "parse_empty=0",
         "request_failed=0"
       ],
+      "field_gap_audit": {
+        "checked_rows": 12,
+        "issue_codes": {
+          "missing_provider": 12
+        },
+        "issue_fields": {
+          "provider": 12
+        },
+        "rows_with_any_issues": 12,
+        "rows_with_info_only": 12,
+        "sample_limit": 3,
+        "samples": [
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "seoul_50plus",
+            "source_unique_key": "urltitle:seoul_50plus:d4c0681649316d77000ee044",
+            "title": "경력인재지원 이편한동행 사회적협동조합 [북부] 중장년 경력 인재 지원(직무체험형) 참여자 모집(이편한동행 사회적협동조합)"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "seoul_50plus",
+            "source_unique_key": "urltitle:seoul_50plus:e6daaee859c677c97acccb39",
+            "title": "경력인재지원 주식회사 한국취업센터 [북부] 중장년 경력 인재 지원(직무체험형) 참여자 모집(주식회사 한국취업센터)"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "seoul_50plus",
+            "source_unique_key": "urltitle:seoul_50plus:238a7d2d744d3ceb0c48275c",
+            "title": "경력인재지원 햇살가득사회적협동조합 [북부] 중장년 경력 인재 지원(직무체험형) 참여자 모집(햇살가득사회적협동조합)"
+          }
+        ]
+      },
       "last_collect_message": "서울시 50플러스 collected 16 items from 1/1 urls; request_failed=0; parse_empty=0",
       "last_collect_status": "success",
       "list_urls": [
@@ -83,7 +154,7 @@
       "class_name": "SesacCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 221.04,
+      "duration_ms": 225.98,
       "evidence": [
         "status=success",
         "raw=12",
@@ -91,6 +162,15 @@
         "parse_empty=0",
         "request_failed=0"
       ],
+      "field_gap_audit": {
+        "checked_rows": 12,
+        "issue_codes": {},
+        "issue_fields": {},
+        "rows_with_any_issues": 0,
+        "rows_with_info_only": 0,
+        "sample_limit": 3,
+        "samples": []
+      },
       "last_collect_message": "청년취업사관학교 SeSAC collected 12 items from 1/1 urls; request_failed=0; parse_empty=0",
       "last_collect_status": "success",
       "list_urls": [
@@ -159,7 +239,7 @@
       "class_name": "KisedCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 716.82,
+      "duration_ms": 739.66,
       "evidence": [
         "status=success",
         "raw=39",
@@ -167,6 +247,77 @@
         "parse_empty=0",
         "request_failed=0"
       ],
+      "field_gap_audit": {
+        "checked_rows": 39,
+        "issue_codes": {
+          "missing_provider": 39
+        },
+        "issue_fields": {
+          "provider": 39
+        },
+        "rows_with_any_issues": 39,
+        "rows_with_info_only": 39,
+        "sample_limit": 3,
+        "samples": [
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "KISED",
+            "source_unique_key": "urltitle:KISED:f339ca231cf626eece07eeae",
+            "title": "고객광장"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "KISED",
+            "source_unique_key": "urltitle:KISED:e187f20558c6032af7e3ef53",
+            "title": "정보공개"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "KISED",
+            "source_unique_key": "urltitle:KISED:33bef77b887cb06a67201559",
+            "title": "민간기업 분야 우수인재 특별귀화 추천 신청 모집 공고 (Announcement on the Call for Applications for Recommendation for Special Naturalization of Outstanding Private-Sector Talent)"
+          }
+        ]
+      },
       "last_collect_message": "KISED collected 42 items from 1/1 urls; request_failed=0; parse_empty=0",
       "last_collect_status": "success",
       "list_urls": [
@@ -264,123 +415,20 @@
           "url": "https://www.kised.or.kr/misAnnouncement/index.es?mid=a10302000000"
         }
       ]
-    },
-    {
-      "class_name": "SeongdongCollector",
-      "classification": "healthy_static_html",
-      "collection_method": "web_crawl",
-      "duration_ms": 45579.41,
-      "evidence": [
-        "status=success",
-        "raw=3",
-        "normalized=3",
-        "parse_empty=0",
-        "request_failed=1"
-      ],
-      "last_collect_message": "서울청년센터 성동 collected 3 items from 1/2 urls; request_failed=1; parse_empty=0",
-      "last_collect_status": "success",
-      "list_urls": [
-        "https://youth.seoul.go.kr/orang/cntr/program.do?key=2309210001&cntrId=CT00006",
-        "https://youth.seoul.go.kr/orang/cntr/notice.do?key=2309210001&cntrId=CT00006"
-      ],
-      "normalize_failed": 0,
-      "normalized_count": 3,
-      "ocr_probe": {
-        "attachment_signal_count": 0,
-        "classification": "detail_probe_inconclusive",
-        "detail_attachment_count": 0,
-        "detail_checked": 0,
-        "detail_fetch_failed": 2,
-        "detail_low_text_image_count": 0,
-        "detail_text_sufficient_count": 0,
-        "evidence": [
-          "items=3",
-          "short_list_text=3",
-          "attachment_signals=0",
-          "image_signals=0",
-          "detail_checked=0",
-          "detail_fetch_failed=2",
-          "detail_attachments=0",
-          "detail_low_text_images=0",
-          "detail_text_sufficient=0"
-        ],
-        "image_signal_count": 0,
-        "item_count": 3,
-        "recommendation": "목록 텍스트가 짧지만 detail HTML 확인이 부족하다. OCR보다 detail page text/attachment snapshot 진단을 먼저 보강한다.",
-        "samples": [
-          {
-            "attachment_signal": false,
-            "attachment_urls": [],
-            "error": "TimeoutError: The read operation timed out",
-            "image_signal": false,
-            "image_urls": [],
-            "link": "https://youth.seoul.go.kr/orang/cntr/programView.do?key=2309210001&cntrId=CT00006&sprtInfoId=69292",
-            "list_text_length": 105,
-            "status": "fetch_failed",
-            "title": "서울청년센터 성동 성동청년일경험 | 타겟 고객 기반 상품 라인업 설계 챌린지 참여자 모집"
-          },
-          {
-            "attachment_signal": false,
-            "attachment_urls": [],
-            "error": "TimeoutError: The read operation timed out",
-            "image_signal": false,
-            "image_urls": [],
-            "link": "https://youth.seoul.go.kr/orang/cntr/programView.do?key=2309210001&cntrId=CT00006&sprtInfoId=69382",
-            "list_text_length": 115,
-            "status": "fetch_failed",
-            "title": "서울청년센터 성동 성동청년일경험 | 웹디자인 직무경험:사용자 행동 기반 랜딩페이지 설계 챌린지 참여자 모집"
-          }
-        ],
-        "short_list_text_count": 3,
-        "source_attachment_url_samples": [],
-        "source_image_url_samples": []
-      },
-      "playwright_probe_candidate": false,
-      "raw_count": 3,
-      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
-      "scheduler_dry_run": {
-        "deduped_row_count": 3,
-        "message": "Collected 3 rows; upsert skipped (raw_items=3, deduped_rows=3); collector_message=서울청년센터 성동 collected 3 items from 1/2 urls; request_failed=1; parse_empty=0",
-        "quality": {
-          "checked_rows": 3,
-          "issue_codes": {
-            "missing_provider": 3
-          },
-          "issue_counts": {
-            "error": 0,
-            "info": 3,
-            "warning": 0
-          },
-          "rows_with_errors": 0,
-          "rows_with_warnings": 0
-        },
-        "raw_count": 3,
-        "schema_id": "scheduler_source_summary_v1",
-        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
-        "status": "dry_run"
-      },
-      "source": "서울청년센터 성동",
-      "source_key": "seongdong_youth_center",
-      "source_type": "district_crawl",
-      "tier": 4,
-      "url_diagnostics": [
-        {
-          "item_count": 3,
-          "parse_status": "success",
-          "request_status": "success",
-          "url": "https://youth.seoul.go.kr/orang/cntr/program.do?key=2309210001&cntrId=CT00006"
-        },
-        {
-          "error": "The read operation timed out",
-          "item_count": 0,
-          "parse_status": "not_attempted",
-          "request_status": "request_failed",
-          "url": "https://youth.seoul.go.kr/orang/cntr/notice.do?key=2309210001&cntrId=CT00006"
-        }
-      ]
     }
   ],
-  "duration_ms": 59756.44,
+  "duration_ms": 21776.8,
+  "field_gap_summary": {
+    "enabled": true,
+    "issue_codes": {
+      "missing_provider": 175
+    },
+    "issue_fields": {
+      "provider": 175
+    },
+    "source_count_with_any_issues": 13,
+    "source_count_with_only_info_issues": 13
+  },
   "mode": "read-only-live-diagnostic",
   "ocr_probe": {
     "enabled": true,
@@ -389,16 +437,16 @@
   },
   "ocr_probe_candidates": [],
   "ocr_summary": {
-    "detail_probe_inconclusive": 4,
+    "detail_probe_inconclusive": 3,
     "poster_or_attachment_candidate": 7,
-    "text_sufficient_no_ocr": 3
+    "text_sufficient_no_ocr": 4
   },
   "partial_parse_empty_sources": [
     {
       "class_name": "DobongCollector",
       "classification": "partial_parse_empty_monitor",
       "collection_method": "web_crawl",
-      "duration_ms": 3253.6,
+      "duration_ms": 4301.97,
       "evidence": [
         "status=success",
         "raw=1",
@@ -406,6 +454,39 @@
         "parse_empty=1",
         "request_failed=0"
       ],
+      "field_gap_audit": {
+        "checked_rows": 1,
+        "issue_codes": {
+          "missing_provider": 1
+        },
+        "issue_fields": {
+          "provider": 1
+        },
+        "rows_with_any_issues": 1,
+        "rows_with_info_only": 1,
+        "sample_limit": 3,
+        "samples": [
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "dobong_district_jobs",
+            "source_unique_key": "urltitle:dobong_district_jobs:10f2c38fe8c97905e5e817ee",
+            "title": "2026년 5월 구민정보화교육 수강생 모집 안내"
+          }
+        ]
+      },
       "last_collect_message": "도봉구청 일자리경제과 collected 1 items from 2/2 urls; request_failed=0; parse_empty=1",
       "last_collect_status": "success",
       "list_urls": [
@@ -539,6 +620,245 @@
           "url": "https://www.dobong.go.kr/bbs.asp?code=10008770"
         }
       ]
+    },
+    {
+      "class_name": "SeongdongCollector",
+      "classification": "partial_parse_empty_monitor",
+      "collection_method": "web_crawl",
+      "duration_ms": 5828.74,
+      "evidence": [
+        "status=success",
+        "raw=3",
+        "normalized=3",
+        "parse_empty=1",
+        "request_failed=0"
+      ],
+      "field_gap_audit": {
+        "checked_rows": 3,
+        "issue_codes": {
+          "missing_provider": 3
+        },
+        "issue_fields": {
+          "provider": 3
+        },
+        "rows_with_any_issues": 3,
+        "rows_with_info_only": 3,
+        "sample_limit": 3,
+        "samples": [
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "seongdong_youth_center",
+            "source_unique_key": "urltitle:seongdong_youth_center:0e49eab1e06685bbce27057e",
+            "title": "서울청년센터 성동 성동청년일경험 | 타겟 고객 기반 상품 라인업 설계 챌린지 참여자 모집"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "seongdong_youth_center",
+            "source_unique_key": "urltitle:seongdong_youth_center:2a8ba7e2c13b9025198e76d1",
+            "title": "서울청년센터 성동 성동청년일경험 | 웹디자인 직무경험:사용자 행동 기반 랜딩페이지 설계 챌린지 참여자 모집"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "seongdong_youth_center",
+            "source_unique_key": "urltitle:seongdong_youth_center:980549afd3baf1cb4e764e4f",
+            "title": "[창업] 서울청년센터 성동 청년커리어패스 | AI 시대에 올라타는 창업 참여자 모집"
+          }
+        ]
+      },
+      "last_collect_message": "서울청년센터 성동 collected 3 items from 2/2 urls; request_failed=0; parse_empty=1",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://youth.seoul.go.kr/orang/cntr/program.do?key=2309210001&cntrId=CT00006",
+        "https://youth.seoul.go.kr/orang/cntr/notice.do?key=2309210001&cntrId=CT00006"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 3,
+      "ocr_probe": {
+        "attachment_signal_count": 0,
+        "classification": "text_sufficient_no_ocr",
+        "detail_attachment_count": 0,
+        "detail_checked": 2,
+        "detail_fetch_failed": 0,
+        "detail_low_text_image_count": 0,
+        "detail_text_sufficient_count": 2,
+        "evidence": [
+          "items=3",
+          "short_list_text=3",
+          "attachment_signals=0",
+          "image_signals=0",
+          "detail_checked=2",
+          "detail_fetch_failed=0",
+          "detail_attachments=0",
+          "detail_low_text_images=0",
+          "detail_text_sufficient=2"
+        ],
+        "image_signal_count": 0,
+        "item_count": 3,
+        "recommendation": "현재 목록/detail HTML 텍스트로 수집 근거가 충분하거나 이미지/첨부 신호가 없다. OCR opt-in 대상에서 제외한다.",
+        "samples": [
+          {
+            "attachment_link_count": 0,
+            "attachment_signal": false,
+            "attachment_urls": [],
+            "image_count": 5,
+            "image_signal": false,
+            "image_urls": [
+              "https://youth.seoul.go.kr/resource/orang/img/layout/logo.png",
+              "https://youth.seoul.go.kr/atch/getImg.do?atchFileSn=2441696",
+              "https://youth.seoul.go.kr/atch/getImg.do?atchFileSn=2586998"
+            ],
+            "link": "https://youth.seoul.go.kr/orang/cntr/programView.do?key=2309210001&cntrId=CT00006&sprtInfoId=69292",
+            "list_text_length": 105,
+            "status": "fetched",
+            "title": "서울청년센터 성동 성동청년일경험 | 타겟 고객 기반 상품 라인업 설계 챌린지 참여자 모집",
+            "visible_text_length": 1972
+          },
+          {
+            "attachment_link_count": 0,
+            "attachment_signal": false,
+            "attachment_urls": [],
+            "image_count": 8,
+            "image_signal": false,
+            "image_urls": [
+              "https://youth.seoul.go.kr/resource/orang/img/layout/logo.png",
+              "https://youth.seoul.go.kr/atch/getImg.do?atchFileSn=2441696",
+              "https://youth.seoul.go.kr/atch/getImg.do?atchFileSn=2587933"
+            ],
+            "link": "https://youth.seoul.go.kr/orang/cntr/programView.do?key=2309210001&cntrId=CT00006&sprtInfoId=69382",
+            "list_text_length": 115,
+            "status": "fetched",
+            "title": "서울청년센터 성동 성동청년일경험 | 웹디자인 직무경험:사용자 행동 기반 랜딩페이지 설계 챌린지 참여자 모집",
+            "visible_text_length": 2550
+          }
+        ],
+        "short_list_text_count": 3,
+        "source_attachment_url_samples": [],
+        "source_image_url_samples": [
+          "https://youth.seoul.go.kr/resource/orang/img/layout/logo.png",
+          "https://youth.seoul.go.kr/atch/getImg.do?atchFileSn=2441696",
+          "https://youth.seoul.go.kr/atch/getImg.do?atchFileSn=2586998",
+          "https://youth.seoul.go.kr/atch/getImg.do?atchFileSn=2587933"
+        ]
+      },
+      "playwright_probe_candidate": false,
+      "raw_count": 3,
+      "recommendation": "일부 URL은 비었지만 같은 source에서 수집 성공도 있다. Playwright 도입 전 빈 URL의 HTML snapshot/selector drift를 확인한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 3,
+        "message": "Collected 3 rows; upsert skipped (raw_items=3, deduped_rows=3); collector_message=서울청년센터 성동 collected 3 items from 2/2 urls; request_failed=0; parse_empty=1",
+        "quality": {
+          "checked_rows": 3,
+          "issue_codes": {
+            "missing_provider": 3
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 3,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 3,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "snapshot_capture": {
+        "saved_count": 1,
+        "saved_paths": [
+          "reports\\html-collector-snapshots-2026-04-24\\seongdong_youth_center-list-2-parse_empty.html"
+        ]
+      },
+      "source": "서울청년센터 성동",
+      "source_key": "seongdong_youth_center",
+      "source_type": "district_crawl",
+      "tier": 4,
+      "url_diagnostics": [
+        {
+          "item_count": 3,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://youth.seoul.go.kr/orang/cntr/program.do?key=2309210001&cntrId=CT00006"
+        },
+        {
+          "html_snapshot": {
+            "body_text_preview": "내 지역 센터 찾기 | 서울청년센터 본문영역 바로가기 메인메뉴 바로가기 하단링크 바로가기 주요메뉴 소개 서울청년센터는? 청년센터에서 준비 했어요! 소식ㆍ참여 공지사항 프로그램 신청 대관하기 동네정보퐁퐁 서울청년센터 자료집 청년지원정보 청년 상담 청년 상담 청년센터 찾기 내 지역 센터 찾기 문의 하기 로그인 모바일 메뉴 열기 모바일 메뉴 닫기 메인페이지로 이동 로그인 해주세요 청년센터 찾기 내 지역 센터 찾기 문의 하기 홈으로 이동 청년센터 찾기 소개 소식ㆍ참여 청년 상담 청년센터 찾기 내 지역 센터 찾기 내 지역 센터 찾기 문의 하기 내 지역 센터 찾기 공유하기 페이스북 트위터 카카오톡 닫기 프린트하기 서울청년센터 성동 서울청년센터 성동은 성동, 용산, 중구 권역 가까이, 청년 누구나 이용할 수 있는 곳입니",
+            "body_text_preview_truncated": true,
+            "form_tag_count": 2,
+            "html_length": 87594,
+            "html_preview_truncated": true,
+            "iframe_tag_count": 0,
+            "noscript_tag_count": 0,
+            "script_tag_count": 18,
+            "selector_matches": [
+              {
+                "match_count": 10,
+                "selector": "tbody tr"
+              },
+              {
+                "match_count": 24,
+                "selector": "a[onclick]"
+              },
+              {
+                "match_count": 1,
+                "selector": ".board"
+              },
+              {
+                "match_count": 0,
+                "selector": ".board-list"
+              }
+            ],
+            "selectors_checked": 4,
+            "selectors_with_matches": 3,
+            "title_text": "내 지역 센터 찾기 | 서울청년센터"
+          },
+          "item_count": 0,
+          "parse_status": "parse_empty",
+          "request_status": "success",
+          "snapshot_path": "reports\\html-collector-snapshots-2026-04-24\\seongdong_youth_center-list-2-parse_empty.html",
+          "url": "https://youth.seoul.go.kr/orang/cntr/notice.do?key=2309210001&cntrId=CT00006"
+        }
+      ]
     }
   ],
   "playwright_probe_candidates": [],
@@ -547,7 +867,7 @@
       "class_name": "SeoulJobPortalCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 2108.6,
+      "duration_ms": 1923.36,
       "evidence": [
         "status=success",
         "raw=10",
@@ -555,6 +875,77 @@
         "parse_empty=0",
         "request_failed=0"
       ],
+      "field_gap_audit": {
+        "checked_rows": 10,
+        "issue_codes": {
+          "missing_provider": 10
+        },
+        "issue_fields": {
+          "provider": 10
+        },
+        "rows_with_any_issues": 10,
+        "rows_with_info_only": 10,
+        "sample_limit": 3,
+        "samples": [
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "seoul_job_portal",
+            "source_unique_key": "urltitle:seoul_job_portal:4f59f07b0923f52466846942",
+            "title": "청년취업사관학교 새싹(SeSAC) 교육운영 주니어 매니저"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "seoul_job_portal",
+            "source_unique_key": "urltitle:seoul_job_portal:6fcdb47ad8110363a88b63d7",
+            "title": "생성형 AI 리터러시 중심 기획·콘텐츠 실무 인재 양성 교육 및 취업 과정"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "seoul_job_portal",
+            "source_unique_key": "urltitle:seoul_job_portal:79986a7648aba95dde96eb08",
+            "title": "AI기반 디지털 교육콘텐츠 실무인재 양성 및 취업과정"
+          }
+        ]
+      },
       "last_collect_message": "서울일자리포털 collected 11 items from 3/3 urls; request_failed=0; parse_empty=0",
       "last_collect_status": "success",
       "list_urls": [
@@ -694,7 +1085,7 @@
       "class_name": "CampusTownCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 653.57,
+      "duration_ms": 714.97,
       "evidence": [
         "status=success",
         "raw=20",
@@ -702,6 +1093,77 @@
         "parse_empty=0",
         "request_failed=0"
       ],
+      "field_gap_audit": {
+        "checked_rows": 20,
+        "issue_codes": {
+          "missing_provider": 20
+        },
+        "issue_fields": {
+          "provider": 20
+        },
+        "rows_with_any_issues": 20,
+        "rows_with_info_only": 20,
+        "sample_limit": 3,
+        "samples": [
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "campus_town",
+            "source_unique_key": "urltitle:campus_town:6bde7b8e383ae457a5bbbe20",
+            "title": "[국민대학교 캠퍼스타운] 2026 국민대학교 캠퍼스타운 CLUB HOUSE IR 자료 고도화 워크샵(~04.27(월), 23시 30분까지)"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "campus_town",
+            "source_unique_key": "urltitle:campus_town:24d8a1d1f88ccd9397d79d91",
+            "title": "2026년 서울대학교 RISE 사업단(캠퍼스타운) 추가 입주기업 모집(마감일: ~4월 10일 13:00까지)"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "campus_town",
+            "source_unique_key": "urltitle:campus_town:13bd65de4e832b1b2af78749",
+            "title": "[중앙대학교 캠퍼스타운] 2026년 제12회 중앙대학교 캠퍼스타운 입주기업 선발 경진대회(~4/12)"
+          }
+        ]
+      },
       "last_collect_message": "서울캠퍼스타운 collected 20 items from 1/1 urls; request_failed=0; parse_empty=0",
       "last_collect_status": "success",
       "list_urls": [
@@ -824,7 +1286,7 @@
       "class_name": "KobiaCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 196.89,
+      "duration_ms": 434.66,
       "evidence": [
         "status=success",
         "raw=10",
@@ -832,6 +1294,77 @@
         "parse_empty=0",
         "request_failed=0"
       ],
+      "field_gap_audit": {
+        "checked_rows": 10,
+        "issue_codes": {
+          "missing_provider": 10
+        },
+        "issue_fields": {
+          "provider": 10
+        },
+        "rows_with_any_issues": 10,
+        "rows_with_info_only": 10,
+        "sample_limit": 3,
+        "samples": [
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "KOBIA",
+            "source_unique_key": "urltitle:KOBIA:b002fa6bfc78e7d48f43c308",
+            "title": "공고 [채용공고] (사)한국창업보육협회 2026년 제2차 직원 채용 공고"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "KOBIA",
+            "source_unique_key": "urltitle:KOBIA:1445449f9ca0465944d4d887",
+            "title": "안내 한국여성경제인협회 2026년 펨테크 산업 육성 지원기업 모집 통합 공고"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "KOBIA",
+            "source_unique_key": "urltitle:KOBIA:2a76bcdad1f2cf8cd766244b",
+            "title": "안내 [ICT콤플랙스] 지역 우수기업-개발자 네트워킹"
+          }
+        ]
+      },
       "last_collect_message": "KOBIA collected 11 items from 1/1 urls; request_failed=0; parse_empty=0",
       "last_collect_status": "success",
       "list_urls": [
@@ -954,7 +1487,7 @@
       "class_name": "NowonCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 1912.14,
+      "duration_ms": 1754.35,
       "evidence": [
         "status=success",
         "raw=10",
@@ -962,6 +1495,77 @@
         "parse_empty=0",
         "request_failed=0"
       ],
+      "field_gap_audit": {
+        "checked_rows": 10,
+        "issue_codes": {
+          "missing_provider": 10
+        },
+        "issue_fields": {
+          "provider": 10
+        },
+        "rows_with_any_issues": 10,
+        "rows_with_info_only": 10,
+        "sample_limit": 3,
+        "samples": [
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "nowon_youth_tomorrow",
+            "source_unique_key": "urltitle:nowon_youth_tomorrow:05c9fa070c7ee4ad9613dd5d",
+            "title": "[~4/27] 2026년 노원구 『경춘스테이션 북&커피 카페』 초단시간 기간제근로자 채용 공고"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "nowon_youth_tomorrow",
+            "source_unique_key": "urltitle:nowon_youth_tomorrow:3f53877370ddea07d696f7a6",
+            "title": "[~4/26] 서울시 매력일자리 서울통신원(10명) 모집"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "nowon_youth_tomorrow",
+            "source_unique_key": "urltitle:nowon_youth_tomorrow:066eb70e0e230ab49ff2c433",
+            "title": "[~4/26] 서울시 매력일자리 진로컨설팅 전문가(3명) 모집"
+          }
+        ]
+      },
       "last_collect_message": "노원구 청년일자리센터 청년내일 collected 10 items from 1/1 urls; request_failed=0; parse_empty=0",
       "last_collect_status": "success",
       "list_urls": [
@@ -996,8 +1600,8 @@
             "attachment_link_count": 2,
             "attachment_signal": false,
             "attachment_urls": [
-              "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIxNTVmNjY0ZDg3NTMwNyI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMWU2NzNlN2MwOTIyNTMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzNmJmYTRlYTYiO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30=",
-              "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIxNTVmNjY0ZDg3NTMwNyI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMWViMjQ4NmZlMTI4NTMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzNmJmYTU5YmYiO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30="
+              "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIxNTVmNjY0ZDg3NTMwNyI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMWU2NzNlN2MwOTIyNTMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzYjJmZDdhODEiO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30=",
+              "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIxNTVmNjY0ZDg3NTMwNyI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMWViMjQ4NmZlMTI4NTMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzYjJmZDg0NTIiO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30="
             ],
             "image_count": 16,
             "image_signal": false,
@@ -1016,7 +1620,7 @@
             "attachment_link_count": 1,
             "attachment_signal": false,
             "attachment_urls": [
-              "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIwYTM3N2VkNjUzOWNhZSI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMGYwZTBmOGVmOGQ2ODMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzNmMwNWQ1NDciO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30="
+              "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIwYTM3N2VkNjUzOWNhZSI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMGYwZTBmOGVmOGQ2ODMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzYjMwN2RmMjkiO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30="
             ],
             "image_count": 12,
             "image_signal": false,
@@ -1034,9 +1638,9 @@
         ],
         "short_list_text_count": 6,
         "source_attachment_url_samples": [
-          "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIxNTVmNjY0ZDg3NTMwNyI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMWU2NzNlN2MwOTIyNTMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzNmJmYTRlYTYiO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30=",
-          "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIxNTVmNjY0ZDg3NTMwNyI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMWViMjQ4NmZlMTI4NTMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzNmJmYTU5YmYiO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30=",
-          "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIwYTM3N2VkNjUzOWNhZSI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMGYwZTBmOGVmOGQ2ODMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzNmMwNWQ1NDciO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30="
+          "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIxNTVmNjY0ZDg3NTMwNyI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMWU2NzNlN2MwOTIyNTMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzYjJmZDdhODEiO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30=",
+          "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIxNTVmNjY0ZDg3NTMwNyI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMWViMjQ4NmZlMTI4NTMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzYjJmZDg0NTIiO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30=",
+          "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIwYTM3N2VkNjUzOWNhZSI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMGYwZTBmOGVmOGQ2ODMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzYjMwN2RmMjkiO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30="
         ],
         "source_image_url_samples": [
           "https://www.nwjob.kr/common/img/default_profile.png",
@@ -1085,7 +1689,7 @@
       "class_name": "DobongCollector",
       "classification": "partial_parse_empty_monitor",
       "collection_method": "web_crawl",
-      "duration_ms": 3253.6,
+      "duration_ms": 4301.97,
       "evidence": [
         "status=success",
         "raw=1",
@@ -1093,6 +1697,39 @@
         "parse_empty=1",
         "request_failed=0"
       ],
+      "field_gap_audit": {
+        "checked_rows": 1,
+        "issue_codes": {
+          "missing_provider": 1
+        },
+        "issue_fields": {
+          "provider": 1
+        },
+        "rows_with_any_issues": 1,
+        "rows_with_info_only": 1,
+        "sample_limit": 3,
+        "samples": [
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "dobong_district_jobs",
+            "source_unique_key": "urltitle:dobong_district_jobs:10f2c38fe8c97905e5e817ee",
+            "title": "2026년 5월 구민정보화교육 수강생 모집 안내"
+          }
+        ]
+      },
       "last_collect_message": "도봉구청 일자리경제과 collected 1 items from 2/2 urls; request_failed=0; parse_empty=1",
       "last_collect_status": "success",
       "list_urls": [
@@ -1231,7 +1868,7 @@
       "class_name": "DobongStartupCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 686.04,
+      "duration_ms": 1283.94,
       "evidence": [
         "status=success",
         "raw=33",
@@ -1239,6 +1876,77 @@
         "parse_empty=0",
         "request_failed=0"
       ],
+      "field_gap_audit": {
+        "checked_rows": 33,
+        "issue_codes": {
+          "missing_provider": 33
+        },
+        "issue_fields": {
+          "provider": 33
+        },
+        "rows_with_any_issues": 33,
+        "rows_with_info_only": 33,
+        "sample_limit": 3,
+        "samples": [
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "dobong_startup",
+            "source_unique_key": "urltitle:dobong_startup:763001e5bf2fa036b4e4079a",
+            "title": "4월 '전문가 창업상담' 참여자 모집(04.24.)(마감)"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "dobong_startup",
+            "source_unique_key": "urltitle:dobong_startup:cc4157191d87453eb93bb0ca",
+            "title": "[스타아카데미2] '외주 없이 AI로 홍보 영상 만들기' 수강생 모집(마감)"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "dobong_startup",
+            "source_unique_key": "urltitle:dobong_startup:4234920a804a3b2c157652b5",
+            "title": "2026 도봉 스타아카데미 - 수강생 모집"
+          }
+        ]
+      },
       "last_collect_message": "도봉구청년창업센터 collected 33 items from 2/2 urls; request_failed=0; parse_empty=0",
       "last_collect_status": "success",
       "list_urls": [
@@ -1364,7 +2072,7 @@
       "class_name": "MapoCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 1071.11,
+      "duration_ms": 1096.53,
       "evidence": [
         "status=success",
         "raw=6",
@@ -1372,6 +2080,77 @@
         "parse_empty=0",
         "request_failed=0"
       ],
+      "field_gap_audit": {
+        "checked_rows": 6,
+        "issue_codes": {
+          "missing_provider": 6
+        },
+        "issue_fields": {
+          "provider": 6
+        },
+        "rows_with_any_issues": 6,
+        "rows_with_info_only": 6,
+        "sample_limit": 3,
+        "samples": [
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "mapo_workfare_center",
+            "source_unique_key": "urltitle:mapo_workfare_center:53d35fda7e8027e5e3e54fdc",
+            "title": "2026 [느린학습자 아동을 위한 디지털 교육 강사 양성 사업]"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "mapo_workfare_center",
+            "source_unique_key": "urltitle:mapo_workfare_center:05c23a91aebef99ad6691276",
+            "title": "[2026청년도전지원사업]중.단기 프로그램 참여자 모집"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "mapo_workfare_center",
+            "source_unique_key": "urltitle:mapo_workfare_center:93051af1ab7d1a1600560c86",
+            "title": "[최종결과발표] 청년도전 매..."
+          }
+        ]
+      },
       "last_collect_message": "마포구고용복지지원센터 collected 6 items from 1/1 urls; request_failed=0; parse_empty=0",
       "last_collect_status": "success",
       "list_urls": [
@@ -1419,7 +2198,7 @@
             "list_text_length": 48,
             "status": "fetched",
             "title": "2026 [느린학습자 아동을 위한 디지털 교육 강사 양성 사업]",
-            "visible_text_length": 5474
+            "visible_text_length": 5475
           },
           {
             "attachment_link_count": 5,
@@ -1530,9 +2309,10 @@
   "snapshot_capture": {
     "enabled": true,
     "output_dir": "reports\\html-collector-snapshots-2026-04-24",
-    "saved_count": 1,
+    "saved_count": 2,
     "saved_paths": [
-      "reports\\html-collector-snapshots-2026-04-24\\dobong_district_jobs-list-1-parse_empty.html"
+      "reports\\html-collector-snapshots-2026-04-24\\dobong_district_jobs-list-1-parse_empty.html",
+      "reports\\html-collector-snapshots-2026-04-24\\seongdong_youth_center-list-2-parse_empty.html"
     ]
   },
   "sources": [
@@ -1540,7 +2320,7 @@
       "class_name": "SbaPostingCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 2304.25,
+      "duration_ms": 2319.88,
       "evidence": [
         "status=success",
         "raw=10",
@@ -1548,6 +2328,77 @@
         "parse_empty=0",
         "request_failed=0"
       ],
+      "field_gap_audit": {
+        "checked_rows": 10,
+        "issue_codes": {
+          "missing_provider": 10
+        },
+        "issue_fields": {
+          "provider": 10
+        },
+        "rows_with_any_issues": 10,
+        "rows_with_info_only": 10,
+        "sample_limit": 3,
+        "samples": [
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "sba_posting",
+            "source_unique_key": "urltitle:sba_posting:8341af1f9f74b99158952363",
+            "title": "2026 이탈리아 비첸차오로 전시회 참가기업 모집"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "sba_posting",
+            "source_unique_key": "urltitle:sba_posting:c18cdb4fa0098810c91833e6",
+            "title": "2026년 B the B 뷰티 기반 융복합 콘텐츠 전시(다운타운) 팝업 모집"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "sba_posting",
+            "source_unique_key": "urltitle:sba_posting:535b05c47087446b957b76b7",
+            "title": "2026 뷰티트레이드쇼(Beauty Trade Show) 참가기업 모집"
+          }
+        ]
+      },
       "last_collect_message": "서울경제진흥원 사업신청 collected 10 items from 1/1 urls; request_failed=0; parse_empty=0",
       "last_collect_status": "success",
       "list_urls": [
@@ -1618,7 +2469,7 @@
       "class_name": "Seoul50PlusCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 485.97,
+      "duration_ms": 549.43,
       "evidence": [
         "status=success",
         "raw=12",
@@ -1626,6 +2477,77 @@
         "parse_empty=0",
         "request_failed=0"
       ],
+      "field_gap_audit": {
+        "checked_rows": 12,
+        "issue_codes": {
+          "missing_provider": 12
+        },
+        "issue_fields": {
+          "provider": 12
+        },
+        "rows_with_any_issues": 12,
+        "rows_with_info_only": 12,
+        "sample_limit": 3,
+        "samples": [
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "seoul_50plus",
+            "source_unique_key": "urltitle:seoul_50plus:d4c0681649316d77000ee044",
+            "title": "경력인재지원 이편한동행 사회적협동조합 [북부] 중장년 경력 인재 지원(직무체험형) 참여자 모집(이편한동행 사회적협동조합)"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "seoul_50plus",
+            "source_unique_key": "urltitle:seoul_50plus:e6daaee859c677c97acccb39",
+            "title": "경력인재지원 주식회사 한국취업센터 [북부] 중장년 경력 인재 지원(직무체험형) 참여자 모집(주식회사 한국취업센터)"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "seoul_50plus",
+            "source_unique_key": "urltitle:seoul_50plus:238a7d2d744d3ceb0c48275c",
+            "title": "경력인재지원 햇살가득사회적협동조합 [북부] 중장년 경력 인재 지원(직무체험형) 참여자 모집(햇살가득사회적협동조합)"
+          }
+        ]
+      },
       "last_collect_message": "서울시 50플러스 collected 16 items from 1/1 urls; request_failed=0; parse_empty=0",
       "last_collect_status": "success",
       "list_urls": [
@@ -1696,7 +2618,7 @@
       "class_name": "SeoulJobPortalCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 2108.6,
+      "duration_ms": 1923.36,
       "evidence": [
         "status=success",
         "raw=10",
@@ -1704,6 +2626,77 @@
         "parse_empty=0",
         "request_failed=0"
       ],
+      "field_gap_audit": {
+        "checked_rows": 10,
+        "issue_codes": {
+          "missing_provider": 10
+        },
+        "issue_fields": {
+          "provider": 10
+        },
+        "rows_with_any_issues": 10,
+        "rows_with_info_only": 10,
+        "sample_limit": 3,
+        "samples": [
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "seoul_job_portal",
+            "source_unique_key": "urltitle:seoul_job_portal:4f59f07b0923f52466846942",
+            "title": "청년취업사관학교 새싹(SeSAC) 교육운영 주니어 매니저"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "seoul_job_portal",
+            "source_unique_key": "urltitle:seoul_job_portal:6fcdb47ad8110363a88b63d7",
+            "title": "생성형 AI 리터러시 중심 기획·콘텐츠 실무 인재 양성 교육 및 취업 과정"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "seoul_job_portal",
+            "source_unique_key": "urltitle:seoul_job_portal:79986a7648aba95dde96eb08",
+            "title": "AI기반 디지털 교육콘텐츠 실무인재 양성 및 취업과정"
+          }
+        ]
+      },
       "last_collect_message": "서울일자리포털 collected 11 items from 3/3 urls; request_failed=0; parse_empty=0",
       "last_collect_status": "success",
       "list_urls": [
@@ -1843,7 +2836,7 @@
       "class_name": "CampusTownCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 653.57,
+      "duration_ms": 714.97,
       "evidence": [
         "status=success",
         "raw=20",
@@ -1851,6 +2844,77 @@
         "parse_empty=0",
         "request_failed=0"
       ],
+      "field_gap_audit": {
+        "checked_rows": 20,
+        "issue_codes": {
+          "missing_provider": 20
+        },
+        "issue_fields": {
+          "provider": 20
+        },
+        "rows_with_any_issues": 20,
+        "rows_with_info_only": 20,
+        "sample_limit": 3,
+        "samples": [
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "campus_town",
+            "source_unique_key": "urltitle:campus_town:6bde7b8e383ae457a5bbbe20",
+            "title": "[국민대학교 캠퍼스타운] 2026 국민대학교 캠퍼스타운 CLUB HOUSE IR 자료 고도화 워크샵(~04.27(월), 23시 30분까지)"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "campus_town",
+            "source_unique_key": "urltitle:campus_town:24d8a1d1f88ccd9397d79d91",
+            "title": "2026년 서울대학교 RISE 사업단(캠퍼스타운) 추가 입주기업 모집(마감일: ~4월 10일 13:00까지)"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "campus_town",
+            "source_unique_key": "urltitle:campus_town:13bd65de4e832b1b2af78749",
+            "title": "[중앙대학교 캠퍼스타운] 2026년 제12회 중앙대학교 캠퍼스타운 입주기업 선발 경진대회(~4/12)"
+          }
+        ]
+      },
       "last_collect_message": "서울캠퍼스타운 collected 20 items from 1/1 urls; request_failed=0; parse_empty=0",
       "last_collect_status": "success",
       "list_urls": [
@@ -1973,7 +3037,7 @@
       "class_name": "SeoulWomanUpCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 316.81,
+      "duration_ms": 369.25,
       "evidence": [
         "status=success",
         "raw=18",
@@ -1981,6 +3045,77 @@
         "parse_empty=0",
         "request_failed=0"
       ],
+      "field_gap_audit": {
+        "checked_rows": 18,
+        "issue_codes": {
+          "missing_provider": 18
+        },
+        "issue_fields": {
+          "provider": 18
+        },
+        "rows_with_any_issues": 18,
+        "rows_with_info_only": 18,
+        "sample_limit": 3,
+        "samples": [
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "seoul_womanup",
+            "source_unique_key": "urltitle:seoul_womanup:ea6f0327b7695ca750eddc51",
+            "title": "링켄리브 기획, 마케팅, 홍보 조사 인턴십"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "seoul_womanup",
+            "source_unique_key": "urltitle:seoul_womanup:894d7d1b0852c411ce6eb27a",
+            "title": "마크클라우드 IT, 연구, R&D 인턴십"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "seoul_womanup",
+            "source_unique_key": "urltitle:seoul_womanup:643ff9e0a246a8e1d4e55c96",
+            "title": "쉐어박스 디자인, 상품기획, MD 인턴십"
+          }
+        ]
+      },
       "last_collect_message": "서울커리업 collected 42 items from 1/1 urls; request_failed=0; parse_empty=0",
       "last_collect_status": "success",
       "list_urls": [
@@ -2095,7 +3230,7 @@
       "class_name": "SesacCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 221.04,
+      "duration_ms": 225.98,
       "evidence": [
         "status=success",
         "raw=12",
@@ -2103,6 +3238,15 @@
         "parse_empty=0",
         "request_failed=0"
       ],
+      "field_gap_audit": {
+        "checked_rows": 12,
+        "issue_codes": {},
+        "issue_fields": {},
+        "rows_with_any_issues": 0,
+        "rows_with_info_only": 0,
+        "sample_limit": 3,
+        "samples": []
+      },
       "last_collect_message": "청년취업사관학교 SeSAC collected 12 items from 1/1 urls; request_failed=0; parse_empty=0",
       "last_collect_status": "success",
       "list_urls": [
@@ -2171,7 +3315,7 @@
       "class_name": "KisedCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 716.82,
+      "duration_ms": 739.66,
       "evidence": [
         "status=success",
         "raw=39",
@@ -2179,6 +3323,77 @@
         "parse_empty=0",
         "request_failed=0"
       ],
+      "field_gap_audit": {
+        "checked_rows": 39,
+        "issue_codes": {
+          "missing_provider": 39
+        },
+        "issue_fields": {
+          "provider": 39
+        },
+        "rows_with_any_issues": 39,
+        "rows_with_info_only": 39,
+        "sample_limit": 3,
+        "samples": [
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "KISED",
+            "source_unique_key": "urltitle:KISED:f339ca231cf626eece07eeae",
+            "title": "고객광장"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "KISED",
+            "source_unique_key": "urltitle:KISED:e187f20558c6032af7e3ef53",
+            "title": "정보공개"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "KISED",
+            "source_unique_key": "urltitle:KISED:33bef77b887cb06a67201559",
+            "title": "민간기업 분야 우수인재 특별귀화 추천 신청 모집 공고 (Announcement on the Call for Applications for Recommendation for Special Naturalization of Outstanding Private-Sector Talent)"
+          }
+        ]
+      },
       "last_collect_message": "KISED collected 42 items from 1/1 urls; request_failed=0; parse_empty=0",
       "last_collect_status": "success",
       "list_urls": [
@@ -2281,7 +3496,7 @@
       "class_name": "KobiaCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 196.89,
+      "duration_ms": 434.66,
       "evidence": [
         "status=success",
         "raw=10",
@@ -2289,6 +3504,77 @@
         "parse_empty=0",
         "request_failed=0"
       ],
+      "field_gap_audit": {
+        "checked_rows": 10,
+        "issue_codes": {
+          "missing_provider": 10
+        },
+        "issue_fields": {
+          "provider": 10
+        },
+        "rows_with_any_issues": 10,
+        "rows_with_info_only": 10,
+        "sample_limit": 3,
+        "samples": [
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "KOBIA",
+            "source_unique_key": "urltitle:KOBIA:b002fa6bfc78e7d48f43c308",
+            "title": "공고 [채용공고] (사)한국창업보육협회 2026년 제2차 직원 채용 공고"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "KOBIA",
+            "source_unique_key": "urltitle:KOBIA:1445449f9ca0465944d4d887",
+            "title": "안내 한국여성경제인협회 2026년 펨테크 산업 육성 지원기업 모집 통합 공고"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "KOBIA",
+            "source_unique_key": "urltitle:KOBIA:2a76bcdad1f2cf8cd766244b",
+            "title": "안내 [ICT콤플랙스] 지역 우수기업-개발자 네트워킹"
+          }
+        ]
+      },
       "last_collect_message": "KOBIA collected 11 items from 1/1 urls; request_failed=0; parse_empty=0",
       "last_collect_status": "success",
       "list_urls": [
@@ -2411,12 +3697,83 @@
       "class_name": "GuroCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 248.2,
+      "duration_ms": 231.88,
       "evidence": [
         "status=success",
         "raw=3",
         "normalized=3"
       ],
+      "field_gap_audit": {
+        "checked_rows": 3,
+        "issue_codes": {
+          "missing_provider": 3
+        },
+        "issue_fields": {
+          "provider": 3
+        },
+        "rows_with_any_issues": 3,
+        "rows_with_info_only": 3,
+        "sample_limit": 3,
+        "samples": [
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "guro_youtheroom",
+            "source_unique_key": "urltitle:guro_youtheroom:195fc231dde1b41d8a8447c5",
+            "title": "청년성장프로젝트「AI·VR면접 이루JOB」참여자 모집 (상시모집)"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "guro_youtheroom",
+            "source_unique_key": "urltitle:guro_youtheroom:a78e3ec614c9d84d9a399182",
+            "title": "청년성장프로젝트「1:1 진로 및 정책상담」참여자 모집 (상시모집)"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "guro_youtheroom",
+            "source_unique_key": "urltitle:guro_youtheroom:09253f881ecb12cc3f4657bb",
+            "title": "[2026 아트스페이스] 면접 심사 대상자 안내"
+          }
+        ]
+      },
       "last_collect_message": "구로 청년이룸 collected 3 items (HTTP fixed due TLS issues)",
       "last_collect_status": "success",
       "list_urls": [
@@ -2459,7 +3816,7 @@
               "http://youtheroom.kr/images/main/logo_tab.jpg",
               "http://youtheroom.kr/images/main/logo_mob.jpg"
             ],
-            "link": "http://youtheroom.kr/product/item.php?ca_id=10&ca_id2=&page=1&sort1=&sort2=&status=&search=&year=&it_id=1774861600&PHPSESSID=ca958be186d1d58d87a08a6d030caf05",
+            "link": "http://youtheroom.kr/product/item.php?ca_id=10&ca_id2=&page=1&sort1=&sort2=&status=&search=&year=&it_id=1774861600&PHPSESSID=82f52d821514b3f49ba2993eb0dcda03",
             "list_text_length": 79,
             "status": "fetched",
             "title": "청년성장프로젝트「AI·VR면접 이루JOB」참여자 모집 (상시모집)",
@@ -2476,7 +3833,7 @@
               "http://youtheroom.kr/images/main/logo_tab.jpg",
               "http://youtheroom.kr/images/main/logo_mob.jpg"
             ],
-            "link": "http://youtheroom.kr/product/item.php?ca_id=10&ca_id2=&page=1&sort1=&sort2=&status=&search=&year=&it_id=1774860743&PHPSESSID=ca958be186d1d58d87a08a6d030caf05",
+            "link": "http://youtheroom.kr/product/item.php?ca_id=10&ca_id2=&page=1&sort1=&sort2=&status=&search=&year=&it_id=1774860743&PHPSESSID=82f52d821514b3f49ba2993eb0dcda03",
             "list_text_length": 79,
             "status": "fetched",
             "title": "청년성장프로젝트「1:1 진로 및 정책상담」참여자 모집 (상시모집)",
@@ -2538,7 +3895,7 @@
       "class_name": "NowonCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 1912.14,
+      "duration_ms": 1754.35,
       "evidence": [
         "status=success",
         "raw=10",
@@ -2546,6 +3903,77 @@
         "parse_empty=0",
         "request_failed=0"
       ],
+      "field_gap_audit": {
+        "checked_rows": 10,
+        "issue_codes": {
+          "missing_provider": 10
+        },
+        "issue_fields": {
+          "provider": 10
+        },
+        "rows_with_any_issues": 10,
+        "rows_with_info_only": 10,
+        "sample_limit": 3,
+        "samples": [
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "nowon_youth_tomorrow",
+            "source_unique_key": "urltitle:nowon_youth_tomorrow:05c9fa070c7ee4ad9613dd5d",
+            "title": "[~4/27] 2026년 노원구 『경춘스테이션 북&커피 카페』 초단시간 기간제근로자 채용 공고"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "nowon_youth_tomorrow",
+            "source_unique_key": "urltitle:nowon_youth_tomorrow:3f53877370ddea07d696f7a6",
+            "title": "[~4/26] 서울시 매력일자리 서울통신원(10명) 모집"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "nowon_youth_tomorrow",
+            "source_unique_key": "urltitle:nowon_youth_tomorrow:066eb70e0e230ab49ff2c433",
+            "title": "[~4/26] 서울시 매력일자리 진로컨설팅 전문가(3명) 모집"
+          }
+        ]
+      },
       "last_collect_message": "노원구 청년일자리센터 청년내일 collected 10 items from 1/1 urls; request_failed=0; parse_empty=0",
       "last_collect_status": "success",
       "list_urls": [
@@ -2580,8 +4008,8 @@
             "attachment_link_count": 2,
             "attachment_signal": false,
             "attachment_urls": [
-              "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIxNTVmNjY0ZDg3NTMwNyI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMWU2NzNlN2MwOTIyNTMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzNmJmYTRlYTYiO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30=",
-              "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIxNTVmNjY0ZDg3NTMwNyI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMWViMjQ4NmZlMTI4NTMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzNmJmYTU5YmYiO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30="
+              "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIxNTVmNjY0ZDg3NTMwNyI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMWU2NzNlN2MwOTIyNTMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzYjJmZDdhODEiO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30=",
+              "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIxNTVmNjY0ZDg3NTMwNyI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMWViMjQ4NmZlMTI4NTMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzYjJmZDg0NTIiO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30="
             ],
             "image_count": 16,
             "image_signal": false,
@@ -2600,7 +4028,7 @@
             "attachment_link_count": 1,
             "attachment_signal": false,
             "attachment_urls": [
-              "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIwYTM3N2VkNjUzOWNhZSI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMGYwZTBmOGVmOGQ2ODMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzNmMwNWQ1NDciO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30="
+              "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIwYTM3N2VkNjUzOWNhZSI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMGYwZTBmOGVmOGQ2ODMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzYjMwN2RmMjkiO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30="
             ],
             "image_count": 12,
             "image_signal": false,
@@ -2618,9 +4046,9 @@
         ],
         "short_list_text_count": 6,
         "source_attachment_url_samples": [
-          "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIxNTVmNjY0ZDg3NTMwNyI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMWU2NzNlN2MwOTIyNTMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzNmJmYTRlYTYiO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30=",
-          "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIxNTVmNjY0ZDg3NTMwNyI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMWViMjQ4NmZlMTI4NTMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzNmJmYTU5YmYiO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30=",
-          "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIwYTM3N2VkNjUzOWNhZSI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMGYwZTBmOGVmOGQ2ODMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzNmMwNWQ1NDciO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30="
+          "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIxNTVmNjY0ZDg3NTMwNyI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMWU2NzNlN2MwOTIyNTMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzYjJmZDdhODEiO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30=",
+          "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIxNTVmNjY0ZDg3NTMwNyI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMWViMjQ4NmZlMTI4NTMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzYjJmZDg0NTIiO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30=",
+          "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIwYTM3N2VkNjUzOWNhZSI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMGYwZTBmOGVmOGQ2ODMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzYjMwN2RmMjkiO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30="
         ],
         "source_image_url_samples": [
           "https://www.nwjob.kr/common/img/default_profile.png",
@@ -2669,7 +4097,7 @@
       "class_name": "DobongCollector",
       "classification": "partial_parse_empty_monitor",
       "collection_method": "web_crawl",
-      "duration_ms": 3253.6,
+      "duration_ms": 4301.97,
       "evidence": [
         "status=success",
         "raw=1",
@@ -2677,6 +4105,39 @@
         "parse_empty=1",
         "request_failed=0"
       ],
+      "field_gap_audit": {
+        "checked_rows": 1,
+        "issue_codes": {
+          "missing_provider": 1
+        },
+        "issue_fields": {
+          "provider": 1
+        },
+        "rows_with_any_issues": 1,
+        "rows_with_info_only": 1,
+        "sample_limit": 3,
+        "samples": [
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "dobong_district_jobs",
+            "source_unique_key": "urltitle:dobong_district_jobs:10f2c38fe8c97905e5e817ee",
+            "title": "2026년 5월 구민정보화교육 수강생 모집 안내"
+          }
+        ]
+      },
       "last_collect_message": "도봉구청 일자리경제과 collected 1 items from 2/2 urls; request_failed=0; parse_empty=1",
       "last_collect_status": "success",
       "list_urls": [
@@ -2815,7 +4276,7 @@
       "class_name": "DobongStartupCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 686.04,
+      "duration_ms": 1283.94,
       "evidence": [
         "status=success",
         "raw=33",
@@ -2823,6 +4284,77 @@
         "parse_empty=0",
         "request_failed=0"
       ],
+      "field_gap_audit": {
+        "checked_rows": 33,
+        "issue_codes": {
+          "missing_provider": 33
+        },
+        "issue_fields": {
+          "provider": 33
+        },
+        "rows_with_any_issues": 33,
+        "rows_with_info_only": 33,
+        "sample_limit": 3,
+        "samples": [
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "dobong_startup",
+            "source_unique_key": "urltitle:dobong_startup:763001e5bf2fa036b4e4079a",
+            "title": "4월 '전문가 창업상담' 참여자 모집(04.24.)(마감)"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "dobong_startup",
+            "source_unique_key": "urltitle:dobong_startup:cc4157191d87453eb93bb0ca",
+            "title": "[스타아카데미2] '외주 없이 AI로 홍보 영상 만들기' 수강생 모집(마감)"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "dobong_startup",
+            "source_unique_key": "urltitle:dobong_startup:4234920a804a3b2c157652b5",
+            "title": "2026 도봉 스타아카데미 - 수강생 모집"
+          }
+        ]
+      },
       "last_collect_message": "도봉구청년창업센터 collected 33 items from 2/2 urls; request_failed=0; parse_empty=0",
       "last_collect_status": "success",
       "list_urls": [
@@ -2948,7 +4480,7 @@
       "class_name": "MapoCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 1071.11,
+      "duration_ms": 1096.53,
       "evidence": [
         "status=success",
         "raw=6",
@@ -2956,6 +4488,77 @@
         "parse_empty=0",
         "request_failed=0"
       ],
+      "field_gap_audit": {
+        "checked_rows": 6,
+        "issue_codes": {
+          "missing_provider": 6
+        },
+        "issue_fields": {
+          "provider": 6
+        },
+        "rows_with_any_issues": 6,
+        "rows_with_info_only": 6,
+        "sample_limit": 3,
+        "samples": [
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "mapo_workfare_center",
+            "source_unique_key": "urltitle:mapo_workfare_center:53d35fda7e8027e5e3e54fdc",
+            "title": "2026 [느린학습자 아동을 위한 디지털 교육 강사 양성 사업]"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "mapo_workfare_center",
+            "source_unique_key": "urltitle:mapo_workfare_center:05c23a91aebef99ad6691276",
+            "title": "[2026청년도전지원사업]중.단기 프로그램 참여자 모집"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "mapo_workfare_center",
+            "source_unique_key": "urltitle:mapo_workfare_center:93051af1ab7d1a1600560c86",
+            "title": "[최종결과발표] 청년도전 매..."
+          }
+        ]
+      },
       "last_collect_message": "마포구고용복지지원센터 collected 6 items from 1/1 urls; request_failed=0; parse_empty=0",
       "last_collect_status": "success",
       "list_urls": [
@@ -3003,7 +4606,7 @@
             "list_text_length": 48,
             "status": "fetched",
             "title": "2026 [느린학습자 아동을 위한 디지털 교육 강사 양성 사업]",
-            "visible_text_length": 5474
+            "visible_text_length": 5475
           },
           {
             "attachment_link_count": 5,
@@ -3079,17 +4682,88 @@
     },
     {
       "class_name": "SeongdongCollector",
-      "classification": "healthy_static_html",
+      "classification": "partial_parse_empty_monitor",
       "collection_method": "web_crawl",
-      "duration_ms": 45579.41,
+      "duration_ms": 5828.74,
       "evidence": [
         "status=success",
         "raw=3",
         "normalized=3",
-        "parse_empty=0",
-        "request_failed=1"
+        "parse_empty=1",
+        "request_failed=0"
       ],
-      "last_collect_message": "서울청년센터 성동 collected 3 items from 1/2 urls; request_failed=1; parse_empty=0",
+      "field_gap_audit": {
+        "checked_rows": 3,
+        "issue_codes": {
+          "missing_provider": 3
+        },
+        "issue_fields": {
+          "provider": 3
+        },
+        "rows_with_any_issues": 3,
+        "rows_with_info_only": 3,
+        "sample_limit": 3,
+        "samples": [
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "seongdong_youth_center",
+            "source_unique_key": "urltitle:seongdong_youth_center:0e49eab1e06685bbce27057e",
+            "title": "서울청년센터 성동 성동청년일경험 | 타겟 고객 기반 상품 라인업 설계 챌린지 참여자 모집"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "seongdong_youth_center",
+            "source_unique_key": "urltitle:seongdong_youth_center:2a8ba7e2c13b9025198e76d1",
+            "title": "서울청년센터 성동 성동청년일경험 | 웹디자인 직무경험:사용자 행동 기반 랜딩페이지 설계 챌린지 참여자 모집"
+          },
+          {
+            "issue_codes": [
+              "missing_provider"
+            ],
+            "issue_fields": [
+              "provider"
+            ],
+            "issues": [
+              {
+                "code": "missing_provider",
+                "field": "provider",
+                "message": "provider is empty; card/detail UI may show a fallback label.",
+                "severity": "info"
+              }
+            ],
+            "source": "seongdong_youth_center",
+            "source_unique_key": "urltitle:seongdong_youth_center:980549afd3baf1cb4e764e4f",
+            "title": "[창업] 서울청년센터 성동 청년커리어패스 | AI 시대에 올라타는 창업 참여자 모집"
+          }
+        ]
+      },
+      "last_collect_message": "서울청년센터 성동 collected 3 items from 2/2 urls; request_failed=0; parse_empty=1",
       "last_collect_status": "success",
       "list_urls": [
         "https://youth.seoul.go.kr/orang/cntr/program.do?key=2309210001&cntrId=CT00006",
@@ -3099,60 +4773,77 @@
       "normalized_count": 3,
       "ocr_probe": {
         "attachment_signal_count": 0,
-        "classification": "detail_probe_inconclusive",
+        "classification": "text_sufficient_no_ocr",
         "detail_attachment_count": 0,
-        "detail_checked": 0,
-        "detail_fetch_failed": 2,
+        "detail_checked": 2,
+        "detail_fetch_failed": 0,
         "detail_low_text_image_count": 0,
-        "detail_text_sufficient_count": 0,
+        "detail_text_sufficient_count": 2,
         "evidence": [
           "items=3",
           "short_list_text=3",
           "attachment_signals=0",
           "image_signals=0",
-          "detail_checked=0",
-          "detail_fetch_failed=2",
+          "detail_checked=2",
+          "detail_fetch_failed=0",
           "detail_attachments=0",
           "detail_low_text_images=0",
-          "detail_text_sufficient=0"
+          "detail_text_sufficient=2"
         ],
         "image_signal_count": 0,
         "item_count": 3,
-        "recommendation": "목록 텍스트가 짧지만 detail HTML 확인이 부족하다. OCR보다 detail page text/attachment snapshot 진단을 먼저 보강한다.",
+        "recommendation": "현재 목록/detail HTML 텍스트로 수집 근거가 충분하거나 이미지/첨부 신호가 없다. OCR opt-in 대상에서 제외한다.",
         "samples": [
           {
+            "attachment_link_count": 0,
             "attachment_signal": false,
             "attachment_urls": [],
-            "error": "TimeoutError: The read operation timed out",
+            "image_count": 5,
             "image_signal": false,
-            "image_urls": [],
+            "image_urls": [
+              "https://youth.seoul.go.kr/resource/orang/img/layout/logo.png",
+              "https://youth.seoul.go.kr/atch/getImg.do?atchFileSn=2441696",
+              "https://youth.seoul.go.kr/atch/getImg.do?atchFileSn=2586998"
+            ],
             "link": "https://youth.seoul.go.kr/orang/cntr/programView.do?key=2309210001&cntrId=CT00006&sprtInfoId=69292",
             "list_text_length": 105,
-            "status": "fetch_failed",
-            "title": "서울청년센터 성동 성동청년일경험 | 타겟 고객 기반 상품 라인업 설계 챌린지 참여자 모집"
+            "status": "fetched",
+            "title": "서울청년센터 성동 성동청년일경험 | 타겟 고객 기반 상품 라인업 설계 챌린지 참여자 모집",
+            "visible_text_length": 1972
           },
           {
+            "attachment_link_count": 0,
             "attachment_signal": false,
             "attachment_urls": [],
-            "error": "TimeoutError: The read operation timed out",
+            "image_count": 8,
             "image_signal": false,
-            "image_urls": [],
+            "image_urls": [
+              "https://youth.seoul.go.kr/resource/orang/img/layout/logo.png",
+              "https://youth.seoul.go.kr/atch/getImg.do?atchFileSn=2441696",
+              "https://youth.seoul.go.kr/atch/getImg.do?atchFileSn=2587933"
+            ],
             "link": "https://youth.seoul.go.kr/orang/cntr/programView.do?key=2309210001&cntrId=CT00006&sprtInfoId=69382",
             "list_text_length": 115,
-            "status": "fetch_failed",
-            "title": "서울청년센터 성동 성동청년일경험 | 웹디자인 직무경험:사용자 행동 기반 랜딩페이지 설계 챌린지 참여자 모집"
+            "status": "fetched",
+            "title": "서울청년센터 성동 성동청년일경험 | 웹디자인 직무경험:사용자 행동 기반 랜딩페이지 설계 챌린지 참여자 모집",
+            "visible_text_length": 2550
           }
         ],
         "short_list_text_count": 3,
         "source_attachment_url_samples": [],
-        "source_image_url_samples": []
+        "source_image_url_samples": [
+          "https://youth.seoul.go.kr/resource/orang/img/layout/logo.png",
+          "https://youth.seoul.go.kr/atch/getImg.do?atchFileSn=2441696",
+          "https://youth.seoul.go.kr/atch/getImg.do?atchFileSn=2586998",
+          "https://youth.seoul.go.kr/atch/getImg.do?atchFileSn=2587933"
+        ]
       },
       "playwright_probe_candidate": false,
       "raw_count": 3,
-      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "recommendation": "일부 URL은 비었지만 같은 source에서 수집 성공도 있다. Playwright 도입 전 빈 URL의 HTML snapshot/selector drift를 확인한다.",
       "scheduler_dry_run": {
         "deduped_row_count": 3,
-        "message": "Collected 3 rows; upsert skipped (raw_items=3, deduped_rows=3); collector_message=서울청년센터 성동 collected 3 items from 1/2 urls; request_failed=1; parse_empty=0",
+        "message": "Collected 3 rows; upsert skipped (raw_items=3, deduped_rows=3); collector_message=서울청년센터 성동 collected 3 items from 2/2 urls; request_failed=0; parse_empty=1",
         "quality": {
           "checked_rows": 3,
           "issue_codes": {
@@ -3171,6 +4862,12 @@
         "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
         "status": "dry_run"
       },
+      "snapshot_capture": {
+        "saved_count": 1,
+        "saved_paths": [
+          "reports\\html-collector-snapshots-2026-04-24\\seongdong_youth_center-list-2-parse_empty.html"
+        ]
+      },
       "source": "서울청년센터 성동",
       "source_key": "seongdong_youth_center",
       "source_type": "district_crawl",
@@ -3183,18 +4880,49 @@
           "url": "https://youth.seoul.go.kr/orang/cntr/program.do?key=2309210001&cntrId=CT00006"
         },
         {
-          "error": "The read operation timed out",
+          "html_snapshot": {
+            "body_text_preview": "내 지역 센터 찾기 | 서울청년센터 본문영역 바로가기 메인메뉴 바로가기 하단링크 바로가기 주요메뉴 소개 서울청년센터는? 청년센터에서 준비 했어요! 소식ㆍ참여 공지사항 프로그램 신청 대관하기 동네정보퐁퐁 서울청년센터 자료집 청년지원정보 청년 상담 청년 상담 청년센터 찾기 내 지역 센터 찾기 문의 하기 로그인 모바일 메뉴 열기 모바일 메뉴 닫기 메인페이지로 이동 로그인 해주세요 청년센터 찾기 내 지역 센터 찾기 문의 하기 홈으로 이동 청년센터 찾기 소개 소식ㆍ참여 청년 상담 청년센터 찾기 내 지역 센터 찾기 내 지역 센터 찾기 문의 하기 내 지역 센터 찾기 공유하기 페이스북 트위터 카카오톡 닫기 프린트하기 서울청년센터 성동 서울청년센터 성동은 성동, 용산, 중구 권역 가까이, 청년 누구나 이용할 수 있는 곳입니",
+            "body_text_preview_truncated": true,
+            "form_tag_count": 2,
+            "html_length": 87594,
+            "html_preview_truncated": true,
+            "iframe_tag_count": 0,
+            "noscript_tag_count": 0,
+            "script_tag_count": 18,
+            "selector_matches": [
+              {
+                "match_count": 10,
+                "selector": "tbody tr"
+              },
+              {
+                "match_count": 24,
+                "selector": "a[onclick]"
+              },
+              {
+                "match_count": 1,
+                "selector": ".board"
+              },
+              {
+                "match_count": 0,
+                "selector": ".board-list"
+              }
+            ],
+            "selectors_checked": 4,
+            "selectors_with_matches": 3,
+            "title_text": "내 지역 센터 찾기 | 서울청년센터"
+          },
           "item_count": 0,
-          "parse_status": "not_attempted",
-          "request_status": "request_failed",
+          "parse_status": "parse_empty",
+          "request_status": "success",
+          "snapshot_path": "reports\\html-collector-snapshots-2026-04-24\\seongdong_youth_center-list-2-parse_empty.html",
           "url": "https://youth.seoul.go.kr/orang/cntr/notice.do?key=2309210001&cntrId=CT00006"
         }
       ]
     }
   ],
-  "started_at": "2026-04-24T00:12:50+0900",
+  "started_at": "2026-04-24T00:31:07+0900",
   "summary": {
-    "healthy_static_html": 13,
-    "partial_parse_empty_monitor": 1
+    "healthy_static_html": 12,
+    "partial_parse_empty_monitor": 2
   }
 }

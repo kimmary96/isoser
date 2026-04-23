@@ -54,6 +54,8 @@ PROGRAM_DEADLINE_SORTS = {"default", "deadline"}
 PROGRAM_COMPUTED_SORTS = {"start_soon", "cost_low", "cost_high", "duration_short", "duration_long"}
 PROGRAM_POPULAR_SORTS = {"popular"}
 PROGRAM_SORT_OPTIONS = PROGRAM_DEADLINE_SORTS | PROGRAM_COMPUTED_SORTS | PROGRAM_POPULAR_SORTS | {"latest"}
+PROGRAM_CLICK_HOTNESS_RECENT_WEIGHT = 1_000_000
+PROGRAM_CLICK_HOTNESS_TOTAL_CAP = 999_999
 PROGRAM_TEACHING_METHODS = {"온라인", "오프라인", "혼합"}
 PROGRAM_COST_TYPES = {"naeil-card", "free-no-card", "paid"}
 PROGRAM_PARTICIPATION_TIMES = {"part-time", "full-time"}
@@ -1856,6 +1858,13 @@ def _program_detail_view_count(row: Mapping[str, Any], *, recent_only: bool = Fa
     return _int_or_none(row.get(key)) or 0
 
 
+def _calculate_program_click_hotness_score(*, recent_count: int, total_count: int, recommended: float) -> float:
+    # Keep this fallback contract aligned with public.program_list_click_hotness_score in SQL.
+    safe_recent_count = max(recent_count, 0)
+    safe_total_count = min(max(total_count, 0), PROGRAM_CLICK_HOTNESS_TOTAL_CAP)
+    return safe_recent_count * PROGRAM_CLICK_HOTNESS_RECENT_WEIGHT + safe_total_count + recommended
+
+
 def _program_click_hotness_score(row: Mapping[str, Any]) -> float:
     explicit = _coerce_score(row.get("click_hotness_score"))
     if explicit is not None:
@@ -1863,7 +1872,11 @@ def _program_click_hotness_score(row: Mapping[str, Any]) -> float:
     recent_count = _program_detail_view_count(row, recent_only=True)
     total_count = _program_detail_view_count(row)
     recommended = _coerce_score(row.get("recommended_score")) or 0.0
-    return recent_count * 1_000_000 + min(total_count, 999_999) + recommended
+    return _calculate_program_click_hotness_score(
+        recent_count=recent_count,
+        total_count=total_count,
+        recommended=recommended,
+    )
 
 
 def _sort_program_list_rows(

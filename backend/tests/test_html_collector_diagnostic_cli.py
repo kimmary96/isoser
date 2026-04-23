@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 from scripts.html_collector_diagnostic import (
     BaseHtmlCollector,
@@ -11,6 +12,13 @@ from scripts.html_collector_diagnostic import (
     render_markdown_report,
     write_json_report,
     write_markdown_report,
+)
+
+SCHEDULER_SUMMARY_SCHEMA_PATH = (
+    Path(__file__).resolve().parents[2]
+    / "docs"
+    / "schemas"
+    / "html-collector-scheduler-summary.schema.json"
 )
 
 
@@ -63,6 +71,87 @@ def _raw_item(title: str = "HTML 취업 과정") -> dict:
         },
         "raw": {"id": "1"},
     }
+
+
+def _load_scheduler_schema_defs() -> dict[str, Any]:
+    return json.loads(SCHEDULER_SUMMARY_SCHEMA_PATH.read_text(encoding="utf-8"))["$defs"]
+
+
+def _resolve_schema(schema_defs: dict[str, Any], schema: dict[str, Any]) -> dict[str, Any]:
+    ref = schema.get("$ref")
+    if isinstance(ref, str) and ref.startswith("#/$defs/"):
+        return schema_defs[ref.split("/")[-1]]
+    return schema
+
+
+def _assert_matches_schema(
+    schema_defs: dict[str, Any],
+    schema: dict[str, Any],
+    value: Any,
+    *,
+    path: str,
+) -> None:
+    schema = _resolve_schema(schema_defs, schema)
+    if "oneOf" in schema:
+        errors: list[str] = []
+        for option in schema["oneOf"]:
+            try:
+                _assert_matches_schema(schema_defs, option, value, path=path)
+                return
+            except AssertionError as exc:
+                errors.append(str(exc))
+        raise AssertionError(f"{path} did not match any allowed schema: {errors}")
+
+    if "const" in schema:
+        assert value == schema["const"], f"{path} expected const {schema['const']!r}, got {value!r}"
+
+    schema_type = schema.get("type")
+    if schema_type == "object":
+        assert isinstance(value, dict), f"{path} expected object, got {type(value).__name__}"
+        required = set(schema.get("required") or [])
+        missing = required - set(value)
+        assert not missing, f"{path} missing required keys: {sorted(missing)}"
+
+        properties = schema.get("properties") or {}
+        additional_properties = schema.get("additionalProperties", True)
+        if additional_properties is False:
+            unexpected = set(value) - set(properties)
+            assert not unexpected, f"{path} has unexpected keys: {sorted(unexpected)}"
+
+        for key, item in value.items():
+            property_schema = properties.get(key)
+            if property_schema is not None:
+                _assert_matches_schema(schema_defs, property_schema, item, path=f"{path}.{key}")
+                continue
+            if isinstance(additional_properties, dict):
+                _assert_matches_schema(
+                    schema_defs,
+                    additional_properties,
+                    item,
+                    path=f"{path}.{key}",
+                )
+        return
+
+    if schema_type == "integer":
+        assert isinstance(value, int) and not isinstance(
+            value, bool
+        ), f"{path} expected integer, got {type(value).__name__}"
+        minimum = schema.get("minimum")
+        if minimum is not None:
+            assert value >= minimum, f"{path} expected >= {minimum}, got {value}"
+        return
+
+    if schema_type == "string":
+        assert isinstance(value, str), f"{path} expected string, got {type(value).__name__}"
+        return
+
+    if schema_type == "boolean":
+        assert isinstance(value, bool), f"{path} expected boolean, got {type(value).__name__}"
+        return
+
+    if schema_type == "null":
+        assert value is None, f"{path} expected null, got {value!r}"
+        return
 
 
 def test_classify_source_marks_full_parse_empty_as_playwright_probe_candidate() -> None:
@@ -138,6 +227,53 @@ def test_build_html_collector_report_can_attach_scheduler_summary() -> None:
     assert report["sources"][0]["scheduler_dry_run"]["status"] == "dry_run"
 
 
+def test_scheduler_summary_bundle_schema_smoke_validates_written_report_payloads(
+    tmp_path: Path,
+) -> None:
+    collector = _FixtureHtmlCollector(
+        status="success",
+        message="Fixture HTML collected 1 items from 1/1 urls; request_failed=0; parse_empty=0",
+        items=[_raw_item()],
+    )
+
+    report = build_html_collector_report(
+        [collector],
+        include_scheduler_summary=True,
+    )
+    output_path = tmp_path / "diagnostic.json"
+    write_json_report(report, output_path)
+
+    written_report = json.loads(output_path.read_text(encoding="utf-8"))
+    schema_defs = _load_scheduler_schema_defs()
+    schema_bundle = written_report["schemas"]["scheduler_summary_bundle"]
+    assert schema_bundle["schema_path"] == "docs/schemas/html-collector-scheduler-summary.schema.json"
+
+    _assert_matches_schema(
+        schema_defs,
+        schema_defs[schema_bundle["scheduler_dry_run_summary_schema"]],
+        written_report["scheduler_dry_run"],
+        path="scheduler_dry_run",
+    )
+    _assert_matches_schema(
+        schema_defs,
+        schema_defs[schema_bundle["program_quality_summary_schema"]],
+        written_report["scheduler_dry_run"]["quality"],
+        path="scheduler_dry_run.quality",
+    )
+    _assert_matches_schema(
+        schema_defs,
+        schema_defs[schema_bundle["scheduler_source_summary_schema"]],
+        written_report["sources"][0]["scheduler_dry_run"],
+        path="sources[0].scheduler_dry_run",
+    )
+    _assert_matches_schema(
+        schema_defs,
+        schema_defs[schema_bundle["program_quality_summary_schema"]],
+        written_report["sources"][0]["scheduler_dry_run"]["quality"],
+        path="sources[0].scheduler_dry_run.quality",
+    )
+
+
 def test_classify_ocr_probe_marks_attachment_signal_candidate() -> None:
     classification, evidence, recommendation = classify_ocr_probe(
         item_count=3,
@@ -193,7 +329,11 @@ def test_build_html_collector_report_can_include_ocr_preflight() -> None:
     assert report["ocr_probe"]["enabled"] is True
     assert report["ocr_summary"] == {"ocr_probe_candidate": 1}
     assert len(report["ocr_probe_candidates"]) == 1
+    assert report["field_gap_summary"]["source_count_with_any_issues"] == 1
+    assert report["field_gap_summary"]["issue_fields"]["provider"] == 1
     assert report["sources"][0]["ocr_probe"]["detail_low_text_image_count"] == 1
+    assert report["sources"][0]["field_gap_audit"]["rows_with_any_issues"] == 1
+    assert report["sources"][0]["field_gap_audit"]["issue_codes"]["missing_provider"] == 1
     assert report["sources"][0]["ocr_probe"]["source_image_url_samples"] == [
         "https://example.com/poster.png"
     ]
@@ -226,6 +366,7 @@ def test_ocr_preflight_keeps_text_sufficient_attachments_out_of_runtime_candidat
     assert report["ocr_summary"] == {"poster_or_attachment_candidate": 1}
     assert report["ocr_probe_candidates"] == []
     assert len(report["poster_or_attachment_candidates"]) == 1
+    assert report["sources"][0]["field_gap_audit"]["issue_fields"]["provider"] == 1
     assert report["sources"][0]["ocr_probe"]["source_attachment_url_samples"] == [
         "https://example.com/files/poster.pdf"
     ]
@@ -324,6 +465,22 @@ def test_render_and_write_reports(tmp_path: Path) -> None:
                 "scheduler_dry_run_summary_schema": "scheduler_dry_run_summary_v1",
             }
         },
+        "ocr_probe": {
+            "enabled": True,
+            "sample_limit": 1,
+            "mode": "read-only-detail-html-preflight",
+        },
+        "ocr_summary": {"poster_or_attachment_candidate": 1},
+        "ocr_probe_candidates": [],
+        "poster_or_attachment_candidates": [],
+        "detail_probe_inconclusive_sources": [],
+        "field_gap_summary": {
+            "enabled": True,
+            "source_count_with_any_issues": 1,
+            "source_count_with_only_info_issues": 1,
+            "issue_codes": {"missing_provider": 1},
+            "issue_fields": {"provider": 1},
+        },
         "sources": [
             {
                 "source": "Fixture HTML",
@@ -353,6 +510,48 @@ def test_render_and_write_reports(tmp_path: Path) -> None:
                 "snapshot_capture": {
                     "saved_count": 1,
                     "saved_paths": [str(tmp_path / "snapshots" / "fixture.html")],
+                },
+                "ocr_probe": {
+                    "classification": "poster_or_attachment_candidate",
+                    "evidence": ["items=1", "detail_attachments=1"],
+                    "samples": [
+                        {
+                            "status": "fetched",
+                            "link": "https://example.com/program/1",
+                            "visible_text_length": 1200,
+                            "image_count": 0,
+                            "attachment_link_count": 1,
+                            "attachment_urls": ["https://example.com/files/poster.pdf"],
+                            "image_urls": [],
+                        }
+                    ],
+                    "source_attachment_url_samples": ["https://example.com/files/poster.pdf"],
+                    "source_image_url_samples": [],
+                },
+                "field_gap_audit": {
+                    "checked_rows": 1,
+                    "rows_with_any_issues": 1,
+                    "rows_with_info_only": 1,
+                    "issue_codes": {"missing_provider": 1},
+                    "issue_fields": {"provider": 1},
+                    "sample_limit": 1,
+                    "samples": [
+                        {
+                            "title": "Fixture HTML",
+                            "source": "Fixture HTML",
+                            "source_unique_key": "fixture_html:1",
+                            "issue_codes": ["missing_provider"],
+                            "issue_fields": ["provider"],
+                            "issues": [
+                                {
+                                    "code": "missing_provider",
+                                    "severity": "info",
+                                    "field": "provider",
+                                    "message": "provider is empty; card/detail UI may show a fallback label.",
+                                }
+                            ],
+                        }
+                    ],
                 },
                 "url_diagnostics": [
                     {
@@ -393,5 +592,8 @@ def test_render_and_write_reports(tmp_path: Path) -> None:
     assert "| Fixture HTML | `_FixtureHtmlCollector` | 1 | 1 | 12.3 | success | healthy_static_html |" in markdown
     assert "## HTML Snapshots" in markdown
     assert "## Scheduler Dry-Run Summary" in markdown
+    assert "## OCR / Image Preflight" in markdown
+    assert "Sources with any field gaps: `1`" in markdown
+    assert "field gap sample: `Fixture HTML` issues=missing_provider" in markdown
     assert "Schema path: `docs/schemas/html-collector-scheduler-summary.schema.json`" in markdown
     assert render_markdown_report(report).startswith("# HTML Collector Dynamic Retrieve Diagnostic")
