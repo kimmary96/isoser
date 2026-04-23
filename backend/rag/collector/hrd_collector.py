@@ -52,7 +52,9 @@ class HrdCollector(BaseApiCollector):
     def map_item(self, item: Dict, source_meta: Dict) -> Dict:
         return {
             "title": str(item.get("trprNm", "")).strip(),
-            "raw_deadline": str(item.get("traEndDate", "")).strip(),
+            "raw_deadline": str(item.get("traStartDate", "")).strip(),
+            "start_date": str(item.get("traStartDate", "")).strip(),
+            "end_date": str(item.get("traEndDate", "")).strip(),
             "link": str(item.get("titleLink", "")).strip(),
             "source_meta": source_meta,
             "raw": item,

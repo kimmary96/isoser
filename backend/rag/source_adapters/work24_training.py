@@ -188,6 +188,16 @@ def _clean_text(value: Any) -> str:
     return text
 
 
+def _normalize_date_text(value: Any) -> str:
+    text = _clean_text(value)
+    if not text:
+        return ""
+    digits = re.sub(r"\D", "", text)
+    if len(digits) == 8:
+        return f"{digits[:4]}-{digits[4:6]}-{digits[6:8]}"
+    return text
+
+
 def _to_int(value: Any) -> int | None:
     text = _clean_text(value)
     if not text:
@@ -514,6 +524,8 @@ class Work24TrainingAdapter:
         target = _pick_first(row, ("TRAIN_TARGET", "trainTarget"))
         location = _pick_first(row, ("ADDRESS", "address"))
         training_area_code = _pick_first(row, ("TRNG_AREA_CD", "trngAreaCd"))
+        start_date = _normalize_date_text(_pick_first(row, ("TRA_START_DATE", "traStartDate")))
+        end_date = _normalize_date_text(_pick_first(row, ("TRA_END_DATE", "traEndDate")))
         region, region_detail = derive_korean_region(
             location,
             training_area_code,
@@ -527,8 +539,10 @@ class Work24TrainingAdapter:
             "location": location,
             "region": region,
             "region_detail": region_detail,
-            "start_date": _pick_first(row, ("TRA_START_DATE", "traStartDate")),
-            "end_date": _pick_first(row, ("TRA_END_DATE", "traEndDate")),
+            "start_date": start_date,
+            "end_date": end_date,
+            "deadline": start_date,
+            "deadline_source": "traStartDate" if start_date else "",
             "cost": _to_int(row.get("COURSE_MAN") if "COURSE_MAN" in row else row.get("courseMan")),
             "subsidy_amount": _to_int(row.get("REAL_MAN") if "REAL_MAN" in row else row.get("realMan")),
             "target": target,

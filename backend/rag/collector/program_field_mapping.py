@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 from urllib.parse import parse_qs, urlparse
+import re
 
 SKILL_KEYWORDS = {
     "AI": ["AI", "인공지능", "머신러닝", "딥러닝", "LLM", "ChatGPT", "생성형 AI"],
@@ -68,6 +69,16 @@ REGION_ALIASES: tuple[tuple[str, tuple[str, ...]], ...] = (
 
 def clean_text(value: object) -> str:
     return str(value or "").strip()
+
+
+def normalize_date_text(value: object) -> str:
+    text = clean_text(value)
+    if not text:
+        return ""
+    digits = re.sub(r"\D", "", text)
+    if len(digits) == 8:
+        return f"{digits[:4]}-{digits[4:6]}-{digits[6:8]}"
+    return text
 
 
 def parse_int(value: object) -> int | None:
@@ -224,8 +235,8 @@ def map_work24_training_item(
     source_url = clean_text(item.get("titleLink"))
     address = clean_text(item.get("address")) or clean_text(item.get("ADDRESS"))
     provider_name = clean_text(item.get("subTitle"))
-    start_date = clean_text(item.get("traStartDate"))
-    end_date = clean_text(item.get("traEndDate"))
+    start_date = normalize_date_text(item.get("traStartDate"))
+    end_date = normalize_date_text(item.get("traEndDate"))
     description = clean_text(item.get("contents"))
     ncs_code = clean_text(item.get("ncsCd"))
     training_area_code = clean_text(item.get("trngAreaCd")) or clean_text(item.get("TRNG_AREA_CD"))
@@ -238,6 +249,7 @@ def map_work24_training_item(
     return {
         "title": clean_text(item.get("title")),
         "link": source_url,
+        "raw_deadline": start_date or None,
         "target": [clean_text(item.get("trainTarget"))] if clean_text(item.get("trainTarget")) else None,
         "hrd_id": clean_text(item.get("trprId")) or None,
         "source_unique_key": work24_source_unique_key(item, source_url),
@@ -271,6 +283,9 @@ def map_work24_training_item(
                 "certificate": clean_text(item.get("certificate")) or None,
                 "contact_phone": clean_text(item.get("telNo")) or None,
                 "weekend_code": clean_text(item.get("wkendSe")) or None,
+                "application_deadline": start_date or None,
+                "deadline_source": "traStartDate" if start_date else None,
+                "training_start_date": start_date or None,
                 "training_end_date": end_date or None,
                 "satisfaction_score": clean_text(item.get("stdgScor")) or None,
                 "employment_rate_3m": clean_text(item.get("eiEmplRate3")) or None,

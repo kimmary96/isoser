@@ -48,7 +48,7 @@ def test_work24_collector_preserves_detail_fields_for_program_pages() -> None:
     assert row["description"] == "훈련 과정 소개"
     assert row["start_date"] == "2026-04-22"
     assert row["end_date"] == "2026-06-29"
-    assert row.get("deadline") is None
+    assert row["deadline"] == "2026-04-22"
     assert row["cost"] == 1000000
     assert row["subsidy_amount"] == 300000
     assert row["source_url"] == "https://www.work24.go.kr/hr/detail"
@@ -61,7 +61,10 @@ def test_work24_collector_preserves_detail_fields_for_program_pages() -> None:
     assert row["compare_meta"]["trpr_degr"] == "7"
     assert row["compare_meta"]["trainst_cstmr_id"] == "500012345678"
     assert row["compare_meta"]["contact_phone"] == "02-1234-5678"
-    assert row["compare_meta"]["training_end_date"] == "20260629"
+    assert row["compare_meta"]["application_deadline"] == "2026-04-22"
+    assert row["compare_meta"]["deadline_source"] == "traStartDate"
+    assert row["compare_meta"]["training_start_date"] == "2026-04-22"
+    assert row["compare_meta"]["training_end_date"] == "2026-06-29"
     assert row["compare_meta"]["weekend_code"] == "3"
 
 
@@ -94,7 +97,7 @@ def test_work24_field_mapping_can_be_used_without_collector_state() -> None:
     )
 
     assert mapped["title"] == "AI 과정"
-    assert "raw_deadline" not in mapped
+    assert mapped.get("raw_deadline") is None
     assert mapped["description"] == "훈련기관"
     assert mapped["cost"] == 120000
     assert mapped["subsidy_amount"] == 0

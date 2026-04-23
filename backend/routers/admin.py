@@ -76,9 +76,15 @@ def _normalize_program_row(row: dict[str, Any]) -> dict[str, Any]:
     title = str(row.get("title") or "").strip() or hrd_id
     provider_name = str(row.get("provider_name") or "").strip()
     provider = provider_name or str(row.get("provider") or "").strip() or mapped_from_raw.get("provider") or None
-    end_date = str(row.get("end_date") or "").strip() or None
     start_date = str(row.get("start_date") or "").strip() or None
-    deadline = _normalize_program_deadline(row, end_date)
+    end_date = str(row.get("end_date") or "").strip() or None
+    compare_meta = mapped_from_raw.get("compare_meta")
+    deadline = _normalize_program_deadline(
+        row,
+        start_date=start_date,
+        end_date=end_date,
+        compare_meta=compare_meta,
+    )
     target_text = str(row.get("target") or "").strip()
     target = [target_text] if target_text else []
     category = str(row.get("category_label") or "").strip() or str(row.get("category") or "").strip()
@@ -97,7 +103,6 @@ def _normalize_program_row(row: dict[str, Any]) -> dict[str, Any]:
     source_url = str(row.get("source_url") or "").strip() or mapped_from_raw.get("source_url") or None
     link = mapped_from_raw.get("link") or source_url
     skills = mapped_from_raw.get("skills")
-    compare_meta = mapped_from_raw.get("compare_meta")
 
     return {
         "hrd_id": hrd_id,
@@ -128,16 +133,53 @@ def _normalize_program_row(row: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _normalize_program_deadline(row: dict[str, Any], end_date: str | None) -> str | None:
+def _normalize_program_deadline(
+    row: dict[str, Any],
+    *,
+    start_date: str | None,
+    end_date: str | None,
+    compare_meta: dict[str, Any] | None = None,
+) -> str | None:
     raw_deadline = str(row.get("deadline") or row.get("close_date") or "").strip() or None
     if not raw_deadline:
         return None
 
     source_text = str(row.get("source") or "고용24").casefold()
     is_work24 = "고용24" in source_text or "work24" in source_text
-    if is_work24 and end_date and raw_deadline[:10] == end_date[:10]:
+    if (
+        is_work24
+        and end_date
+        and raw_deadline[:10] == end_date[:10]
+        and not _uses_work24_training_start_deadline(row, compare_meta, start_date=start_date)
+    ):
         return None
     return raw_deadline
+
+
+def _uses_work24_training_start_deadline(
+    row: dict[str, Any],
+    compare_meta: dict[str, Any] | None,
+    *,
+    start_date: str | None,
+) -> bool:
+    markers: list[Any] = [row.get("deadline_source")]
+    if isinstance(compare_meta, dict):
+        markers.extend(
+            [
+                compare_meta.get("deadline_source"),
+                compare_meta.get("application_deadline_source"),
+                compare_meta.get("recruitment_deadline_source"),
+            ]
+        )
+        application_deadline = str(compare_meta.get("application_deadline") or "").strip()
+        if application_deadline and start_date and application_deadline[:10] == start_date[:10]:
+            return True
+
+    for marker in markers:
+        normalized = str(marker or "").replace("_", "").replace("-", "").casefold()
+        if normalized in {"trastartdate", "trainingstartdate", "trainingstart"}:
+            return True
+    return False
 
 
 def _coerce_program_category(category: str, title: str) -> str:

@@ -59,8 +59,20 @@ function hasTrustedDeadline(program: Program): boolean {
     compareMeta.application_end_date ||
     compareMeta.recruitment_deadline ||
     compareMeta.recruitment_end_date;
+  const deadlineSource = String(
+    compareMeta.deadline_source ||
+      compareMeta.application_deadline_source ||
+      compareMeta.recruitment_deadline_source ||
+      "",
+  )
+    .replace(/[_-]/g, "")
+    .toLowerCase();
+  const usesTrainingStartDeadline =
+    deadlineSource === "trastartdate" ||
+    deadlineSource === "trainingstartdate" ||
+    deadlineSource === "trainingstart";
 
-  if (isWork24Program(program) && endDate && deadline === endDate && !metaDeadline) {
+  if (isWork24Program(program) && endDate && deadline === endDate && !metaDeadline && !usesTrainingStartDeadline) {
     return false;
   }
 
@@ -74,7 +86,6 @@ async function loadSupabaseFallbackPrograms(topK: number): Promise<CalendarRecom
     .from("programs")
     .select("*")
     .gte("deadline", today)
-    .not("source", "in", '("고용24","work24_training")')
     .order("deadline", { ascending: true, nullsFirst: false })
     .limit(SUPABASE_FALLBACK_SCAN_LIMIT);
 

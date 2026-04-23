@@ -67,6 +67,14 @@ def test_detects_work24_deadline_copied_from_training_end_date() -> None:
             "end_date": "2026-06-30",
         }
     )
+    assert not is_work24_deadline_copied_from_end_date(
+        {
+            "source": "고용24",
+            "deadline": "2026-06-30",
+            "end_date": "2026-06-30",
+            "compare_meta": {"deadline_source": "traStartDate"},
+        }
+    )
 
 
 def test_work24_deadline_audit_report_is_dry_run(monkeypatch) -> None:
@@ -312,6 +320,28 @@ def test_build_patch_replaces_copied_work24_deadline_with_detail_deadline() -> N
 
     assert patch["deadline"] == "2026-06-01"
     assert patch["close_date"] == "2026-06-01"
+
+
+def test_build_patch_fills_close_date_from_training_start_deadline_meta() -> None:
+    db_row = {
+        "source": "고용24",
+        "deadline": "2026-06-30",
+        "end_date": "2026-06-30",
+        "close_date": None,
+        "compare_meta": None,
+    }
+    normalized = {
+        "deadline": "2026-06-30",
+        "compare_meta": {
+            "application_deadline": "2026-06-30",
+            "deadline_source": "traStartDate",
+        },
+    }
+
+    patch = build_patch(db_row, normalized, overwrite=False)
+
+    assert patch["compare_meta"]["application_deadline"] == "2026-06-30"
+    assert patch["close_date"] == "2026-06-30"
 
 
 def test_build_patch_backfills_identity_and_keyword_fields() -> None:

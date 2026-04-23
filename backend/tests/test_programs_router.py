@@ -456,6 +456,24 @@ def test_serialize_program_list_row_ignores_work24_deadline_copied_from_training
     assert row["end_date"] == training_end_date
 
 
+def test_serialize_program_list_row_trusts_work24_training_start_deadline_marker() -> None:
+    one_day_date = (date.today() + timedelta(days=3)).isoformat()
+
+    row = programs._serialize_program_list_row(
+        {
+            "id": "work24-one-day",
+            "source": "고용24",
+            "deadline": one_day_date,
+            "start_date": one_day_date,
+            "end_date": one_day_date,
+            "compare_meta": {"deadline_source": "traStartDate"},
+        }
+    )
+
+    assert row["deadline"] == one_day_date
+    assert row["days_left"] == 3
+
+
 def test_serialize_program_list_row_uses_close_date_when_deadline_is_missing() -> None:
     close_date = (date.today() + timedelta(days=6)).isoformat()
     training_end_date = (date.today() + timedelta(days=20)).isoformat()
@@ -1764,3 +1782,26 @@ def test_build_calendar_item_drops_unresolved_work24_deadline() -> None:
     )
 
     assert item is None
+
+
+def test_build_calendar_item_trusts_work24_training_start_deadline_marker() -> None:
+    one_day_date = (date.today() + timedelta(days=5)).isoformat()
+
+    item = programs._build_calendar_item(
+        program_id="work24-training-start-deadline",
+        reason="fallback",
+        program={
+            "id": "work24-training-start-deadline",
+            "source": "고용24",
+            "title": "훈련시작일을 모집기한으로 쓰는 과정",
+            "deadline": one_day_date,
+            "start_date": one_day_date,
+            "end_date": one_day_date,
+            "compare_meta": {"deadline_source": "traStartDate"},
+        },
+        relevance_score=0,
+        urgency_score=0,
+    )
+
+    assert item is not None
+    assert item.deadline == one_day_date

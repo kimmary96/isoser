@@ -44,6 +44,22 @@ def test_normalize_program_row_keeps_distinct_work24_deadline() -> None:
     assert row["deadline"] == "2026-05-20"
 
 
+def test_normalize_program_row_trusts_training_start_deadline_source_for_one_day_course() -> None:
+    row = admin._normalize_program_row(
+        {
+            "hrd_id": "HRD-1",
+            "title": "고용24 1일 과정",
+            "source": "고용24",
+            "start_date": "2026-05-20",
+            "end_date": "2026-05-20",
+            "deadline": "2026-05-20",
+            "deadline_source": "traStartDate",
+        }
+    )
+
+    assert row["deadline"] == "2026-05-20"
+
+
 def test_normalize_program_row_preserves_work24_region_fields() -> None:
     row = admin._normalize_program_row(
         {

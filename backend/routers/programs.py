@@ -641,10 +641,25 @@ def _resolve_program_deadline(program: dict[str, Any]) -> str | None:
         return None
 
     end_date = str(program.get("end_date") or "").strip()
-    if _is_work24_program(program) and not close_date and not meta_deadline and end_date and text[:10] == end_date[:10]:
+    if (
+        _is_work24_program(program)
+        and not close_date
+        and not meta_deadline
+        and end_date
+        and text[:10] == end_date[:10]
+        and not _uses_work24_training_start_deadline(compare_meta)
+    ):
         return None
 
     return text
+
+
+def _uses_work24_training_start_deadline(compare_meta: Mapping[str, Any]) -> bool:
+    for key in ("deadline_source", "application_deadline_source", "recruitment_deadline_source"):
+        normalized = str(compare_meta.get(key) or "").replace("_", "").replace("-", "").casefold()
+        if normalized in {"trastartdate", "trainingstartdate", "trainingstart"}:
+            return True
+    return False
 
 
 def _is_work24_source_value(value: Any) -> bool:

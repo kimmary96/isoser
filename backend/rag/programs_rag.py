@@ -57,7 +57,21 @@ def _safe_text(value: Any) -> str:
 
 def _resolve_recruitment_deadline(program: Mapping[str, Any]) -> str | None:
     close_date = program.get("close_date")
-    raw = close_date or program.get("deadline")
+    compare_meta = program.get("compare_meta") if isinstance(program.get("compare_meta"), dict) else {}
+    meta_deadline = next(
+        (
+            compare_meta.get(key)
+            for key in (
+                "application_deadline",
+                "application_end_date",
+                "recruitment_deadline",
+                "recruitment_end_date",
+            )
+            if _safe_text(compare_meta.get(key))
+        ),
+        None,
+    )
+    raw = close_date or meta_deadline or program.get("deadline")
     deadline = _safe_text(raw)
     if not deadline:
         return None
@@ -65,10 +79,25 @@ def _resolve_recruitment_deadline(program: Mapping[str, Any]) -> str | None:
     source_text = _safe_text(program.get("source")).casefold()
     end_date = _safe_text(program.get("end_date"))
     is_work24 = "고용24" in source_text or "work24" in source_text
-    if is_work24 and not close_date and end_date and deadline[:10] == end_date[:10]:
+    if (
+        is_work24
+        and not close_date
+        and not meta_deadline
+        and end_date
+        and deadline[:10] == end_date[:10]
+        and not _uses_work24_training_start_deadline(compare_meta)
+    ):
         return None
 
     return deadline
+
+
+def _uses_work24_training_start_deadline(compare_meta: Mapping[str, Any]) -> bool:
+    for key in ("deadline_source", "application_deadline_source", "recruitment_deadline_source"):
+        normalized = _safe_text(compare_meta.get(key)).replace("_", "").replace("-", "").casefold()
+        if normalized in {"trastartdate", "trainingstartdate", "trainingstart"}:
+            return True
+    return False
 
 
 def _program_document(program: Mapping[str, Any]) -> str:

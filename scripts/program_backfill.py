@@ -210,10 +210,11 @@ def build_patch(db_row: dict[str, Any], normalized: dict[str, Any], *, overwrite
                 patch[field] = incoming
     if (
         source_family(db_row) == "work24"
-        and not is_blank(patch.get("deadline"))
         and is_blank(db_row.get("close_date"))
     ):
-        patch["close_date"] = patch["deadline"]
+        close_date = patch.get("deadline") or _work24_training_start_application_deadline(patch.get("compare_meta"))
+        if not is_blank(close_date):
+            patch["close_date"] = close_date
     return patch
 
 
@@ -322,9 +323,28 @@ def is_work24_deadline_copied_from_end_date(row: dict[str, Any]) -> bool:
     source = str(row.get("source") or "").casefold()
     if "고용24" not in source and "work24" not in source:
         return False
+    if _uses_work24_training_start_deadline(row.get("compare_meta")):
+        return False
     deadline = str(row.get("deadline") or "").strip()
     end_date = str(row.get("end_date") or "").strip()
     return bool(deadline and end_date and deadline[:10] == end_date[:10])
+
+
+def _uses_work24_training_start_deadline(compare_meta: Any) -> bool:
+    if not isinstance(compare_meta, dict):
+        return False
+    for key in ("deadline_source", "application_deadline_source", "recruitment_deadline_source"):
+        normalized = str(compare_meta.get(key) or "").replace("_", "").replace("-", "").casefold()
+        if normalized in {"trastartdate", "trainingstartdate", "trainingstart"}:
+            return True
+    return False
+
+
+def _work24_training_start_application_deadline(compare_meta: Any) -> str | None:
+    if not _uses_work24_training_start_deadline(compare_meta):
+        return None
+    deadline = str(compare_meta.get("application_deadline") or "").strip()
+    return deadline or None
 
 
 def _date_prefix(value: Any) -> str:

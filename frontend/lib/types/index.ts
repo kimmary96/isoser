@@ -246,6 +246,9 @@ export interface CompareMeta {
   interview_required?: boolean | CompareStatus | null;
   target_job?: string | null;
   application_deadline?: string | null;
+  deadline_source?: string | null;
+  application_deadline_source?: string | null;
+  recruitment_deadline_source?: string | null;
   recruitment_deadline?: string | null;
   recruitment_end_date?: string | null;
   application_end_date?: string | null;

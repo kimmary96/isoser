@@ -109,6 +109,8 @@ def test_normalize_program_adds_category_label_and_provider_name(tmp_path: Path)
     assert normalized["location"] == "서울 강남구"
     assert normalized["region"] == "서울"
     assert normalized["region_detail"] == "강남구"
+    assert normalized["deadline"] == "2026-04-15"
+    assert normalized["deadline_source"] == "traStartDate"
     assert normalized["provider"] == "500020011165"
     assert normalized["provider_name"] == "테스트 훈련기관"
     assert normalized["summary"] == "테스트 훈련기관"
