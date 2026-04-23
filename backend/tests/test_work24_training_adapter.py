@@ -2,7 +2,81 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from backend.rag.source_adapters.work24_training import Work24TrainingAdapter
+from backend.rag.source_adapters.work24_training import Work24TrainingAdapter, build_training_list_params
+
+
+def test_build_training_list_params_uses_documented_required_params() -> None:
+    params = build_training_list_params(
+        auth_key="test-key",
+        page_num=1,
+        page_size=100,
+        start_dt="20260423",
+        end_dt="20261023",
+    )
+
+    assert params == {
+        "returnType": "JSON",
+        "outType": "1",
+        "pageNum": "1",
+        "pageSize": "100",
+        "srchTraStDt": "20260423",
+        "srchTraEndDt": "20261023",
+        "sort": "ASC",
+        "sortCol": "2",
+        "authKey": "test-key",
+    }
+
+
+def test_build_training_list_params_supports_documented_optional_params() -> None:
+    params = build_training_list_params(
+        auth_key="test-key",
+        page_num=3,
+        page_size=50,
+        start_dt="20260423",
+        end_dt="20261023",
+        area_code="11",
+        area2_code="11680",
+        ncs1_code="20",
+        ncs2_code="2001",
+        ncs3_code="200102",
+        ncs4_code="20010201",
+        weekend_code="3",
+        course_type="C0104",
+        training_category="M1005",
+        training_type="M1005-1",
+        process_name="AI",
+        organization_name="테스트기관",
+        sort="DESC",
+        sort_col="5",
+    )
+
+    assert params["srchTraArea1"] == "11"
+    assert params["srchTraArea2"] == "11680"
+    assert params["srchNcs1"] == "20"
+    assert params["srchNcs2"] == "2001"
+    assert params["srchNcs3"] == "200102"
+    assert params["srchNcs4"] == "20010201"
+    assert params["wkendSe"] == "3"
+    assert params["crseTracseSe"] == "C0104"
+    assert params["srchTraGbn"] == "M1005"
+    assert params["srchTraType"] == "M1005-1"
+    assert params["srchTraProcessNm"] == "AI"
+    assert params["srchTraOrganNm"] == "테스트기관"
+    assert params["sort"] == "DESC"
+    assert params["sortCol"] == "5"
+
+
+def test_build_training_list_params_maps_legacy_ncs_code_to_documented_param() -> None:
+    params = build_training_list_params(
+        page_num=1,
+        page_size=100,
+        start_dt="20260423",
+        end_dt="20261023",
+        ncs_code="20010201",
+    )
+
+    assert params["srchNcs4"] == "20010201"
+    assert "srchNcsCd" not in params
 
 
 def test_normalize_program_adds_category_label_and_provider_name(tmp_path: Path) -> None:
@@ -46,7 +120,16 @@ def test_fetch_all_respects_max_pages(monkeypatch, tmp_path: Path) -> None:
 
     page_calls: list[int] = []
 
-    def fake_request_payload(*, page_num: int, page_size: int, start_dt, end_dt, area_code, ncs_code, sample_name=None):
+    def fake_request_payload(
+        *,
+        page_num: int,
+        page_size: int,
+        start_dt,
+        end_dt,
+        area_code,
+        ncs_code,
+        **_,
+    ):
         page_calls.append(page_num)
         if page_num == 1:
             return {
@@ -70,3 +153,67 @@ def test_fetch_all_respects_max_pages(monkeypatch, tmp_path: Path) -> None:
     assert rows is not None
     assert len(rows) == 4
     assert page_calls == [1, 2]
+
+
+def test_request_payload_sends_documented_params(monkeypatch, tmp_path: Path) -> None:
+    captured: dict = {}
+
+    class FakeResponse:
+        headers = {"content-type": "application/json"}
+
+        def raise_for_status(self) -> None:
+            return None
+
+        def json(self):
+            return {"srchList": []}
+
+    class FakeClient:
+        def get(self, url, *, params):
+            captured["url"] = url
+            captured["params"] = dict(params)
+            return FakeResponse()
+
+    monkeypatch.setenv("WORK24_TRAINING_AUTH_KEY", "test-key")
+    adapter = Work24TrainingAdapter(
+        list_endpoint="https://example.com/list",
+        sample_dir=tmp_path / "samples",
+        client=FakeClient(),
+        retry_count=1,
+    )
+
+    payload = adapter._request_payload(
+        page_num=2,
+        page_size=100,
+        start_dt="20260423",
+        end_dt="20261023",
+        area_code="11",
+        area2_code="11680",
+        ncs_code=None,
+        ncs1_code="20",
+        ncs2_code=None,
+        ncs3_code=None,
+        ncs4_code=None,
+        weekend_code="3",
+        course_type="C0061",
+        training_category="M1001",
+        training_type=None,
+        process_name="AI",
+        organization_name="테스트기관",
+        sort="ASC",
+        sort_col="2",
+    )
+
+    assert payload == {"srchList": []}
+    assert captured["params"]["authKey"] == "test-key"
+    assert captured["params"]["srchTraStDt"] == "20260423"
+    assert captured["params"]["srchTraEndDt"] == "20261023"
+    assert captured["params"]["sort"] == "ASC"
+    assert captured["params"]["sortCol"] == "2"
+    assert captured["params"]["srchTraArea1"] == "11"
+    assert captured["params"]["srchTraArea2"] == "11680"
+    assert captured["params"]["srchNcs1"] == "20"
+    assert captured["params"]["wkendSe"] == "3"
+    assert captured["params"]["crseTracseSe"] == "C0061"
+    assert captured["params"]["srchTraGbn"] == "M1001"
+    assert captured["params"]["srchTraProcessNm"] == "AI"
+    assert captured["params"]["srchTraOrganNm"] == "테스트기관"

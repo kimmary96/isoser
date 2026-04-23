@@ -409,12 +409,27 @@ async def sync_programs(
     start_dt: str | None = Query(default=None),
     end_dt: str | None = Query(default=None),
     area_code: str | None = Query(default=None),
+    srch_tra_area1: str | None = Query(default=None, alias="srchTraArea1"),
+    area2_code: str | None = Query(default=None, alias="srchTraArea2"),
     ncs_code: str | None = Query(default=None),
+    ncs1_code: str | None = Query(default=None, alias="srchNcs1"),
+    ncs2_code: str | None = Query(default=None, alias="srchNcs2"),
+    ncs3_code: str | None = Query(default=None, alias="srchNcs3"),
+    ncs4_code: str | None = Query(default=None, alias="srchNcs4"),
+    weekend_code: str | None = Query(default=None, alias="wkendSe"),
+    course_type: str | None = Query(default=None, alias="crseTracseSe"),
+    training_category: str | None = Query(default=None, alias="srchTraGbn"),
+    training_type: str | None = Query(default=None, alias="srchTraType"),
+    process_name: str | None = Query(default=None, alias="srchTraProcessNm"),
+    organization_name: str | None = Query(default=None, alias="srchTraOrganNm"),
+    sort: str | None = Query(default="ASC"),
+    sort_col: str | None = Query(default="2", alias="sortCol"),
     max_pages: int | None = Query(default=None, ge=1),
 ) -> dict[str, Any]:
     started_at = perf_counter()
     resolved_start_dt = (start_dt or "").strip() or _default_start_dt()
     resolved_end_dt = (end_dt or "").strip() or _default_end_dt()
+    resolved_area_code = (srch_tra_area1 or area_code or "").strip() or None
 
     try:
         _require_admin_secret(authorization)
@@ -429,8 +444,21 @@ async def sync_programs(
         fetched_rows = adapter.fetch_all(
             start_dt=resolved_start_dt,
             end_dt=resolved_end_dt,
-            area_code=area_code,
+            area_code=resolved_area_code,
+            area2_code=area2_code,
             ncs_code=ncs_code,
+            ncs1_code=ncs1_code,
+            ncs2_code=ncs2_code,
+            ncs3_code=ncs3_code,
+            ncs4_code=ncs4_code,
+            weekend_code=weekend_code,
+            course_type=course_type,
+            training_category=training_category,
+            training_type=training_type,
+            process_name=process_name,
+            organization_name=organization_name,
+            sort=sort,
+            sort_col=sort_col,
             max_pages=max_pages,
         )
         fetch_duration = round(perf_counter() - fetch_started_at, 3)
@@ -440,8 +468,21 @@ async def sync_programs(
             "admin_programs_fetch_completed",
             start_dt=resolved_start_dt,
             end_dt=resolved_end_dt,
-            area_code=area_code,
+            area_code=resolved_area_code,
+            area2_code=area2_code,
             ncs_code=ncs_code,
+            ncs1_code=ncs1_code,
+            ncs2_code=ncs2_code,
+            ncs3_code=ncs3_code,
+            ncs4_code=ncs4_code,
+            weekend_code=weekend_code,
+            course_type=course_type,
+            training_category=training_category,
+            training_type=training_type,
+            process_name=process_name,
+            organization_name=organization_name,
+            sort=sort,
+            sort_col=sort_col,
             max_pages=max_pages,
             duration_seconds=fetch_duration,
             fetched_count=len(fetched_rows or []),

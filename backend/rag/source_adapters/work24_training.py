@@ -4,6 +4,7 @@ import json
 import os
 import re
 import time
+from datetime import date
 from pathlib import Path
 from typing import Any
 from xml.etree import ElementTree
@@ -37,6 +38,8 @@ REQUEST_RETRY_COUNT = 3
 DEFAULT_PAGE_SIZE = 100
 DEFAULT_SLEEP_SECONDS = 0.5
 DEFAULT_MAX_PAGES: int | None = None
+DEFAULT_SORT = "ASC"
+DEFAULT_SORT_COL = "2"
 
 LIST_CONTAINER_KEYS = (
     "response",
@@ -50,6 +53,125 @@ LIST_CONTAINER_KEYS = (
     "srchList",
 )
 TOTAL_COUNT_KEYS = ("scn_cnt", "totalCount", "totalCnt", "total_count", "total", "count")
+
+
+def _add_months(base: date, months: int) -> date:
+    month_index = base.month - 1 + months
+    year = base.year + month_index // 12
+    month = month_index % 12 + 1
+    month_lengths = [31, 29 if year % 4 == 0 and (year % 100 != 0 or year % 400 == 0) else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    day = min(base.day, month_lengths[month - 1])
+    return date(year, month, day)
+
+
+def default_training_date_range(*, today: date | None = None, months: int = 6) -> tuple[str, str]:
+    base = today or date.today()
+    return base.strftime("%Y%m%d"), _add_months(base, months).strftime("%Y%m%d")
+
+
+def _clean_param(value: Any) -> str | None:
+    text = _clean_text(value)
+    if not text or text.upper() in {"ALL", "NONE", "NULL"}:
+        return None
+    return text
+
+
+def _normalize_sort(value: Any) -> str:
+    sort = (_clean_param(value) or DEFAULT_SORT).upper()
+    return sort if sort in {"ASC", "DESC"} else DEFAULT_SORT
+
+
+def _normalize_sort_col(value: Any) -> str:
+    sort_col = _clean_param(value) or DEFAULT_SORT_COL
+    return sort_col if sort_col in {"1", "2", "3", "5"} else DEFAULT_SORT_COL
+
+
+def _apply_legacy_ncs_code(
+    params: dict[str, Any],
+    *,
+    ncs_code: str | None,
+    ncs1_code: str | None,
+    ncs2_code: str | None,
+    ncs3_code: str | None,
+    ncs4_code: str | None,
+) -> None:
+    code = _clean_param(ncs_code)
+    if not code:
+        return
+    if any(_clean_param(value) for value in (ncs1_code, ncs2_code, ncs3_code, ncs4_code)):
+        return
+
+    compact = re.sub(r"\D", "", code)
+    if len(compact) <= 2:
+        params["srchNcs1"] = compact or code
+    elif len(compact) <= 4:
+        params["srchNcs2"] = compact
+    elif len(compact) <= 6:
+        params["srchNcs3"] = compact
+    else:
+        params["srchNcs4"] = compact[:8]
+
+
+def build_training_list_params(
+    *,
+    auth_key: str | None = None,
+    page_num: int,
+    page_size: int,
+    start_dt: str | None,
+    end_dt: str | None,
+    area_code: str | None = None,
+    area2_code: str | None = None,
+    ncs_code: str | None = None,
+    ncs1_code: str | None = None,
+    ncs2_code: str | None = None,
+    ncs3_code: str | None = None,
+    ncs4_code: str | None = None,
+    weekend_code: str | None = None,
+    course_type: str | None = None,
+    training_category: str | None = None,
+    training_type: str | None = None,
+    process_name: str | None = None,
+    organization_name: str | None = None,
+    sort: str | None = DEFAULT_SORT,
+    sort_col: str | None = DEFAULT_SORT_COL,
+) -> dict[str, str]:
+    params: dict[str, Any] = {
+        "returnType": "JSON",
+        "outType": "1",
+        "pageNum": page_num,
+        "pageSize": page_size,
+        "srchTraStDt": start_dt,
+        "srchTraEndDt": end_dt,
+        "sort": _normalize_sort(sort),
+        "sortCol": _normalize_sort_col(sort_col),
+        "wkendSe": weekend_code,
+        "srchTraArea1": area_code,
+        "srchTraArea2": area2_code,
+        "srchNcs1": ncs1_code,
+        "srchNcs2": ncs2_code,
+        "srchNcs3": ncs3_code,
+        "srchNcs4": ncs4_code,
+        "crseTracseSe": course_type,
+        "srchTraGbn": training_category,
+        "srchTraType": training_type,
+        "srchTraProcessNm": process_name,
+        "srchTraOrganNm": organization_name,
+    }
+    if auth_key:
+        params[SOURCE.auth_param_name] = auth_key
+    _apply_legacy_ncs_code(
+        params,
+        ncs_code=ncs_code,
+        ncs1_code=ncs1_code,
+        ncs2_code=ncs2_code,
+        ncs3_code=ncs3_code,
+        ncs4_code=ncs4_code,
+    )
+    return {
+        key: str(value)
+        for key, value in params.items()
+        if _clean_param(value) is not None
+    }
 
 
 def _safe_slug(value: str) -> str:
@@ -318,7 +440,20 @@ class Work24TrainingAdapter:
         start_dt: str | None,
         end_dt: str | None,
         area_code: str | None,
+        area2_code: str | None,
         ncs_code: str | None,
+        ncs1_code: str | None,
+        ncs2_code: str | None,
+        ncs3_code: str | None,
+        ncs4_code: str | None,
+        weekend_code: str | None,
+        course_type: str | None,
+        training_category: str | None,
+        training_type: str | None,
+        process_name: str | None,
+        organization_name: str | None,
+        sort: str | None,
+        sort_col: str | None,
         sample_name: str | None = None,
     ) -> Any | None:
         auth_key = self._resolve_auth_key()
@@ -329,25 +464,31 @@ class Work24TrainingAdapter:
             return None
 
         last_error: Exception | None = None
-        params = {
-            "returnType": "JSON",
-            "outType": "1",
-            "pageNum": page_num,
-            "pageSize": page_size,
-            "srchTraStDt": start_dt,
-            "srchTraEndDt": end_dt,
-            "srchTraArea1": area_code,
-            "srchNcsCd": ncs_code,
-        }
+        request_params = build_training_list_params(
+            auth_key=auth_key,
+            page_num=page_num,
+            page_size=page_size,
+            start_dt=start_dt,
+            end_dt=end_dt,
+            area_code=area_code,
+            area2_code=area2_code,
+            ncs_code=ncs_code,
+            ncs1_code=ncs1_code,
+            ncs2_code=ncs2_code,
+            ncs3_code=ncs3_code,
+            ncs4_code=ncs4_code,
+            weekend_code=weekend_code,
+            course_type=course_type,
+            training_category=training_category,
+            training_type=training_type,
+            process_name=process_name,
+            organization_name=organization_name,
+            sort=sort,
+            sort_col=sort_col,
+        )
 
         for attempt in range(1, self.retry_count + 1):
             try:
-                request_params = {
-                    key: str(value)
-                    for key, value in params.items()
-                    if value not in (None, "")
-                }
-                request_params[SOURCE.auth_param_name] = auth_key
                 response = self.client.get(self.list_endpoint, params=request_params)
                 response.raise_for_status()
                 payload = self._parse_response_payload(response)
@@ -398,7 +539,20 @@ class Work24TrainingAdapter:
         start_dt: str | None = None,
         end_dt: str | None = None,
         area_code: str | None = None,
+        area2_code: str | None = None,
         ncs_code: str | None = None,
+        ncs1_code: str | None = None,
+        ncs2_code: str | None = None,
+        ncs3_code: str | None = None,
+        ncs4_code: str | None = None,
+        weekend_code: str | None = None,
+        course_type: str | None = None,
+        training_category: str | None = None,
+        training_type: str | None = None,
+        process_name: str | None = None,
+        organization_name: str | None = None,
+        sort: str | None = DEFAULT_SORT,
+        sort_col: str | None = DEFAULT_SORT_COL,
     ) -> list[dict[str, Any]] | None:
         """Fetch one page of training programs and normalize to program columns."""
 
@@ -409,7 +563,20 @@ class Work24TrainingAdapter:
                 start_dt=start_dt,
                 end_dt=end_dt,
                 area_code=area_code,
+                area2_code=area2_code,
                 ncs_code=ncs_code,
+                ncs1_code=ncs1_code,
+                ncs2_code=ncs2_code,
+                ncs3_code=ncs3_code,
+                ncs4_code=ncs4_code,
+                weekend_code=weekend_code,
+                course_type=course_type,
+                training_category=training_category,
+                training_type=training_type,
+                process_name=process_name,
+                organization_name=organization_name,
+                sort=sort,
+                sort_col=sort_col,
             )
             if payload is None:
                 return None
@@ -423,7 +590,20 @@ class Work24TrainingAdapter:
         start_dt: str | None = None,
         end_dt: str | None = None,
         area_code: str | None = None,
+        area2_code: str | None = None,
         ncs_code: str | None = None,
+        ncs1_code: str | None = None,
+        ncs2_code: str | None = None,
+        ncs3_code: str | None = None,
+        ncs4_code: str | None = None,
+        weekend_code: str | None = None,
+        course_type: str | None = None,
+        training_category: str | None = None,
+        training_type: str | None = None,
+        process_name: str | None = None,
+        organization_name: str | None = None,
+        sort: str | None = DEFAULT_SORT,
+        sort_col: str | None = DEFAULT_SORT_COL,
         max_pages: int | None = None,
     ) -> list[dict[str, Any]] | None:
         """Fetch all pages using 100-item pagination with a 0.5s delay."""
@@ -435,7 +615,20 @@ class Work24TrainingAdapter:
                 start_dt=start_dt,
                 end_dt=end_dt,
                 area_code=area_code,
+                area2_code=area2_code,
                 ncs_code=ncs_code,
+                ncs1_code=ncs1_code,
+                ncs2_code=ncs2_code,
+                ncs3_code=ncs3_code,
+                ncs4_code=ncs4_code,
+                weekend_code=weekend_code,
+                course_type=course_type,
+                training_category=training_category,
+                training_type=training_type,
+                process_name=process_name,
+                organization_name=organization_name,
+                sort=sort,
+                sort_col=sort_col,
             )
             if first_page_payload is None:
                 return None
@@ -458,7 +651,20 @@ class Work24TrainingAdapter:
                     start_dt=start_dt,
                     end_dt=end_dt,
                     area_code=area_code,
+                    area2_code=area2_code,
                     ncs_code=ncs_code,
+                    ncs1_code=ncs1_code,
+                    ncs2_code=ncs2_code,
+                    ncs3_code=ncs3_code,
+                    ncs4_code=ncs4_code,
+                    weekend_code=weekend_code,
+                    course_type=course_type,
+                    training_category=training_category,
+                    training_type=training_type,
+                    process_name=process_name,
+                    organization_name=organization_name,
+                    sort=sort,
+                    sort_col=sort_col,
                 )
                 if page_rows is None:
                     continue

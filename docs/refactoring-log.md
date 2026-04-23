@@ -2587,3 +2587,7 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - scheduler dedupe 기준을 `source_unique_key` 우선으로 바꾸고, normalizer가 source/link/title 기반 fallback key를 생성해 legacy unique 제거 후에도 반복 sync 중복을 줄이도록 함
   - `source_unique_key`가 있는 row는 admin/scheduler fallback에서 legacy `hrd_id`나 `(title, source)` row로 병합하지 않게 해 같은 제목의 다른 회차가 덮이지 않도록 방어함
   - `programs_unique(title, source)`와 `hrd_id` unique 제약이 남아 있으면 live 후보 2,560건은 여전히 저장 불가하므로, legacy unique 제거 migration 적용 후 backfill/sync 재실행이 필요함
+- 2026-04-23: `backend/rag/source_adapters/work24_training.py`, `backend/rag/collector/work24_collector.py`, `backend/routers/admin.py`, `backend/tests/test_work24_training_adapter.py`, `backend/tests/test_scheduler_collectors.py`, `backend/tests/test_admin_router.py`, `reports/work24-training-api-params-result-2026-04-23.md`
+  - 고용24 국민내일배움카드 목록 API 요청을 문서 기준 필수 파라미터(`srchTraStDt`, `srchTraEndDt`, `sort`, `sortCol` 포함)와 맞추고, scheduler/admin sync가 같은 `build_training_list_params` helper를 쓰도록 정리함
+  - `srchNcsCd` 대신 문서 기준 `srchNcs1~4`를 지원하고, 기존 `ncs_code` 입력은 코드 길이에 따라 `srchNcs1~4`로 후방 호환 매핑함
+  - scheduler는 env로 `wkendSe`, 지역 중분류, NCS 1~4차, 훈련유형/구분/종류, 과정명, 기관명, 정렬값을 넘길 수 있고, admin sync는 같은 파라미터를 query alias로 받을 수 있게 함

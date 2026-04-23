@@ -1,7 +1,9 @@
+import os
 from typing import Dict, List
 
 from .base_api_collector import BaseApiCollector
 from .program_field_mapping import map_work24_training_item
+from ..source_adapters.work24_training import build_training_list_params, default_training_date_range
 
 
 class Work24Collector(BaseApiCollector):
@@ -18,14 +20,28 @@ class Work24Collector(BaseApiCollector):
     page_size: int = 100
 
     def build_params(self, *, api_key: str, page_num: int) -> Dict[str, str]:
-        return {
-            "returnType": "JSON",
-            "outType": "1",
-            "authKey": api_key,
-            "pageNum": str(page_num),
-            "pageSize": str(self.page_size),
-            "srchTraArea1": "11",
-        }
+        start_dt, end_dt = default_training_date_range()
+        return build_training_list_params(
+            auth_key=api_key,
+            page_num=page_num,
+            page_size=self.page_size,
+            start_dt=_env_param("WORK24_TRAINING_START_DT") or start_dt,
+            end_dt=_env_param("WORK24_TRAINING_END_DT") or end_dt,
+            area_code=_env_param("WORK24_TRAINING_AREA1", default="11"),
+            area2_code=_env_param("WORK24_TRAINING_AREA2"),
+            ncs1_code=_env_param("WORK24_TRAINING_NCS1"),
+            ncs2_code=_env_param("WORK24_TRAINING_NCS2"),
+            ncs3_code=_env_param("WORK24_TRAINING_NCS3"),
+            ncs4_code=_env_param("WORK24_TRAINING_NCS4"),
+            weekend_code=_env_param("WORK24_TRAINING_WKEND_SE"),
+            course_type=_env_param("WORK24_TRAINING_CRSE_TRACSE_SE"),
+            training_category=_env_param("WORK24_TRAINING_TRA_GBN"),
+            training_type=_env_param("WORK24_TRAINING_TRA_TYPE"),
+            process_name=_env_param("WORK24_TRAINING_PROCESS_NAME"),
+            organization_name=_env_param("WORK24_TRAINING_ORGAN_NAME"),
+            sort=_env_param("WORK24_TRAINING_SORT", default="ASC"),
+            sort_col=_env_param("WORK24_TRAINING_SORT_COL", default="2"),
+        )
 
     def extract_items(self, payload: object) -> List[Dict]:
         if not isinstance(payload, dict):
@@ -50,3 +66,10 @@ class Work24Collector(BaseApiCollector):
             "source_meta": source_meta,
             "raw": item,
         }
+
+
+def _env_param(name: str, *, default: str | None = None) -> str | None:
+    value = os.getenv(name, default or "").strip()
+    if not value or value.upper() in {"ALL", "NONE", "NULL"}:
+        return None
+    return value

@@ -181,3 +181,62 @@ async def test_upsert_single_source_unique_key_does_not_merge_by_hrd_id(
             "is_active": True,
         }
     ]
+
+
+@pytest.mark.asyncio
+async def test_sync_programs_passes_documented_work24_filters(monkeypatch: pytest.MonkeyPatch) -> None:
+    captured: dict = {}
+
+    class FakeAdapter:
+        def fetch_all(self, **kwargs):
+            captured.update(kwargs)
+            return []
+
+    monkeypatch.setenv("ADMIN_SECRET_KEY", "secret")
+    monkeypatch.setenv("WORK24_TRAINING_AUTH_KEY", "work24-key")
+    monkeypatch.setattr(admin, "Work24TrainingAdapter", lambda: FakeAdapter())
+
+    result = await admin.sync_programs(
+        authorization="secret",
+        start_dt="20260423",
+        end_dt="20261023",
+        area_code=None,
+        srch_tra_area1="11",
+        area2_code="11680",
+        ncs_code="20010201",
+        ncs1_code="20",
+        ncs2_code="2001",
+        ncs3_code="200102",
+        ncs4_code="20010201",
+        weekend_code="3",
+        course_type="C0104",
+        training_category="M1005",
+        training_type="M1010",
+        process_name="AI",
+        organization_name="테스트기관",
+        sort="DESC",
+        sort_col="5",
+        max_pages=2,
+    )
+
+    assert result["synced"] == 0
+    assert captured == {
+        "start_dt": "20260423",
+        "end_dt": "20261023",
+        "area_code": "11",
+        "area2_code": "11680",
+        "ncs_code": "20010201",
+        "ncs1_code": "20",
+        "ncs2_code": "2001",
+        "ncs3_code": "200102",
+        "ncs4_code": "20010201",
+        "weekend_code": "3",
+        "course_type": "C0104",
+        "training_category": "M1005",
+        "training_type": "M1010",
+        "process_name": "AI",
+        "organization_name": "테스트기관",
+        "sort": "DESC",
+        "sort_col": "5",
+        "max_pages": 2,
+    }

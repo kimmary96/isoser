@@ -194,6 +194,56 @@ def test_work24_collector_scans_enough_pages_for_provider_search_samples() -> No
     assert Work24Collector.max_pages is None
 
 
+def test_work24_collector_uses_documented_training_list_params(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "backend.rag.collector.work24_collector.default_training_date_range",
+        lambda: ("20260423", "20261023"),
+    )
+
+    params = Work24Collector().build_params(api_key="test-key", page_num=2)
+
+    assert params["authKey"] == "test-key"
+    assert params["returnType"] == "JSON"
+    assert params["outType"] == "1"
+    assert params["pageNum"] == "2"
+    assert params["pageSize"] == "100"
+    assert params["srchTraStDt"] == "20260423"
+    assert params["srchTraEndDt"] == "20261023"
+    assert params["sort"] == "ASC"
+    assert params["sortCol"] == "2"
+    assert params["srchTraArea1"] == "11"
+
+
+def test_work24_collector_accepts_documented_optional_params_from_env(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "backend.rag.collector.work24_collector.default_training_date_range",
+        lambda: ("20260423", "20261023"),
+    )
+    monkeypatch.setenv("WORK24_TRAINING_AREA1", "ALL")
+    monkeypatch.setenv("WORK24_TRAINING_AREA2", "11680")
+    monkeypatch.setenv("WORK24_TRAINING_NCS1", "20")
+    monkeypatch.setenv("WORK24_TRAINING_WKEND_SE", "3")
+    monkeypatch.setenv("WORK24_TRAINING_CRSE_TRACSE_SE", "C0104")
+    monkeypatch.setenv("WORK24_TRAINING_TRA_GBN", "M1005")
+    monkeypatch.setenv("WORK24_TRAINING_PROCESS_NAME", "AI")
+    monkeypatch.setenv("WORK24_TRAINING_ORGAN_NAME", "테스트기관")
+    monkeypatch.setenv("WORK24_TRAINING_SORT", "DESC")
+    monkeypatch.setenv("WORK24_TRAINING_SORT_COL", "5")
+
+    params = Work24Collector().build_params(api_key="test-key", page_num=1)
+
+    assert "srchTraArea1" not in params
+    assert params["srchTraArea2"] == "11680"
+    assert params["srchNcs1"] == "20"
+    assert params["wkendSe"] == "3"
+    assert params["crseTracseSe"] == "C0104"
+    assert params["srchTraGbn"] == "M1005"
+    assert params["srchTraProcessNm"] == "AI"
+    assert params["srchTraOrganNm"] == "테스트기관"
+    assert params["sort"] == "DESC"
+    assert params["sortCol"] == "5"
+
+
 def test_scheduler_coerces_categories_to_db_allowed_values() -> None:
     assert _coerce_db_category({"title": "AI 심화 캠프", "category": "훈련"})["category"] == "AI"
     assert _coerce_db_category({"title": "재직자 데이터 분석 Course", "category": "훈련"})["category"] == "IT"
