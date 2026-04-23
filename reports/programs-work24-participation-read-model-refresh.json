@@ -1,0 +1,6 @@
+{
+  "pool_limit": 300,
+  "status": "failed",
+  "status_code": 500,
+  "error": "Supabase request failed: canceling statement due to statement timeout"
+}

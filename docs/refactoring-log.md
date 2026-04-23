@@ -1,5 +1,28 @@
 # 리팩토링 로그
 
+## 2026-04-23 Work24 참여시간 backfill 및 보수적 표시 정책
+
+- 변경 파일
+  - `backend/routers/programs.py`
+  - `backend/rag/collector/work24_detail_parser.py`
+  - `scripts/program_backfill.py`
+  - `scripts/refresh_program_list_index.py`
+  - `supabase/migrations/20260423203000_conservative_program_participation_display.sql`
+  - `frontend/lib/types/index.ts`
+  - `backend/tests/test_programs_router.py`
+  - `backend/tests/test_program_backfill.py`
+  - `docs/current-state.md`
+  - `reports/programs-work24-participation-backfill-result.md`
+- 변경 내용
+  - Work24 상세 backfill이 `--source-family work24`로 범위를 좁힐 수 있게 하고, 상세 HTML 파서가 malformed `훈련시간/훈련유형/연락처`를 저장하지 않도록 정제함
+  - backend와 SQL read model 표시 정책에서 날짜 기간만으로 `풀타임/파트타임`을 단정하지 않고, 명시 텍스트/시간 범위/야간·주말 신호만 라벨 근거로 쓰도록 조정함
+  - read model refresh 후에도 `participation_mode_label`과 `participation_time_text`가 채워지도록 trigger 기반 SQL migration을 추가함
+  - 운영 Work24 기본 browse pool 300건을 상세 backfill하고 read model 표시 필드를 직접 동기화해 참여시간 표시 누락을 297건에서 0건으로 줄임
+- 검증
+  - `backend\venv\Scripts\python.exe -m pytest backend\tests\test_programs_router.py backend\tests\test_program_backfill.py -q` 통과 (`115 passed`)
+  - `backend\venv\Scripts\python.exe -m py_compile backend\routers\programs.py backend\rag\collector\work24_detail_parser.py scripts\program_backfill.py scripts\refresh_program_list_index.py` 통과
+  - `refresh_program_list_index(300)` 운영 RPC는 statement timeout으로 실패해 JSON 실패 리포트를 남김
+
 ## 2026-04-23 cowork approvals RLS policy 명시
 
 - 변경 파일
@@ -2780,3 +2803,6 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - AWS Boottent 파이프라인의 Validation Agent 패턴을 Bedrock/Step Functions 없이 적용할 수 있도록 normalized program row용 report-only validator를 추가함
   - validator는 title/source/source_unique_key/source_url/location/provider/date/cost와 Work24 deadline source risk를 진단하되 ingestion을 차단하지 않음
   - `run_all_collectors(upsert=False)` dry-run source result에 `quality` 요약을 붙여 저장 전 source별 품질 신호를 볼 수 있게 함
+- 2026-04-23: `scripts/program_quality_report.py`, `backend/tests/test_program_quality_report_cli.py`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/TASK-2026-04-23-1915-program-quality-report-cli-result.md`
+  - collector quality validator를 재사용해 운영 `programs` row를 읽기 전용으로 샘플링하고 JSON 리포트를 저장하는 CLI를 추가함
+  - Supabase 호출은 `GET /rest/v1/programs`만 사용하고, 테스트에서는 요청 파라미터와 리포트 생성 계약을 mock으로 고정함

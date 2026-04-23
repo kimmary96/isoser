@@ -814,6 +814,24 @@ def test_serialize_program_list_row_uses_work24_day_night_metadata() -> None:
     assert row["participation_time_text"] == "주중"
 
 
+def test_serialize_program_list_row_uses_work24_total_training_time() -> None:
+    row = programs._serialize_program_list_row(
+        {
+            "id": "program-total-hours",
+            "title": "AI 엔지니어 양성",
+            "category": "AI",
+            "deadline": (date.today() + timedelta(days=5)).isoformat(),
+            "compare_meta": {
+                "day_night": "주간",
+                "weekend_text": "주중",
+                "training_time": "88일 · 총 700시간",
+            },
+        }
+    )
+
+    assert row["participation_time_text"] == "주중 / 88일 · 총 700시간"
+
+
 def test_serialize_program_list_row_uses_deadline_not_training_end_date_for_d_day() -> None:
     deadline = (date.today() + timedelta(days=4)).isoformat()
     training_end_date = (date.today() + timedelta(days=30)).isoformat()

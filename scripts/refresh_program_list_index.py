@@ -45,7 +45,23 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Refresh the programs list read model and browse facet snapshot.")
     parser.add_argument("--pool-limit", type=int, default=int(os.getenv("PROGRAM_BROWSE_POOL_LIMIT", "300")))
     args = parser.parse_args()
-    report = asyncio.run(refresh(args.pool_limit))
+    try:
+        report = asyncio.run(refresh(args.pool_limit))
+    except Exception as exc:
+        detail = getattr(exc, "detail", None) or str(exc) or repr(exc)
+        print(
+            json.dumps(
+                {
+                    "pool_limit": args.pool_limit,
+                    "status": "failed",
+                    "status_code": getattr(exc, "status_code", None),
+                    "error": detail,
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
+        return 1
     print(json.dumps(report, ensure_ascii=False, indent=2))
     return 0
 

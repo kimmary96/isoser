@@ -186,12 +186,15 @@ begin
     ),
     ''
   );
+  day_text := nullif(coalesce(meta ->> 'weekend_text', meta ->> 'weekend_yn'), '');
+  night_text := nullif(coalesce(meta ->> 'day_night', meta ->> 'day_night_type'), '');
   if schedule_text is not null then
+    if day_text is not null and schedule_text not like '%' || day_text || '%' then
+      return concat_ws(' / ', day_text, schedule_text);
+    end if;
     return schedule_text;
   end if;
 
-  day_text := nullif(coalesce(meta ->> 'weekend_text', meta ->> 'weekend_yn'), '');
-  night_text := nullif(coalesce(meta ->> 'day_night', meta ->> 'day_night_type'), '');
   if day_text is not null and night_text is not null then
     return concat_ws(' · ', day_text, night_text);
   end if;

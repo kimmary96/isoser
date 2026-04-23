@@ -1448,6 +1448,7 @@ def _extract_time_detail(text_values: list[str]) -> str | None:
     time_match = re.search(r"([01]?\d|2[0-3])[:시]\s*([0-5]\d)?\s*(?:~|-|부터|에서)\s*([01]?\d|2[0-3])[:시]\s*([0-5]\d)?", source)
     weekly_hours_match = re.search(r"주\s*(\d{1,2})\s*시간", source)
     daily_hours_match = re.search(r"(?:일|하루)\s*(\d{1,2})\s*시간", source)
+    total_hours_match = re.search(r"(?:(\d{1,3})\s*일\s*[·,/]?\s*)?총\s*(\d{1,4})\s*시간", source)
 
     day_text = None
     if weekend_match:
@@ -1468,6 +1469,13 @@ def _extract_time_detail(text_values: list[str]) -> str | None:
         return f"주 {weekly_hours_match.group(1)}시간 학습 권장"
     if daily_hours_match:
         return f"일 {daily_hours_match.group(1)}시간 학습 권장"
+    if total_hours_match:
+        duration_text = (
+            f"{total_hours_match.group(1)}일 · 총 {total_hours_match.group(2)}시간"
+            if total_hours_match.group(1)
+            else f"총 {total_hours_match.group(2)}시간"
+        )
+        return f"{day_text} / {duration_text}" if day_text else duration_text
     if day_text:
         return day_text
     return None
