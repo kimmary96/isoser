@@ -1,5 +1,7 @@
 import type { Program, ProgramSort } from "@/lib/types";
 
+import { isDisplayableProgram } from "./program-utils";
+
 type PromotionMergeArgs = {
   organicPrograms: Program[];
   promotedPrograms: Program[];
@@ -18,6 +20,12 @@ type PinPromotedArgs = {
   selectedTargetsCount: number;
   showClosedRecent: boolean;
   sort: ProgramSort;
+};
+
+type ProgramsDisplayStateArgs = PinPromotedArgs & {
+  programs: Program[];
+  promotedPrograms: Program[];
+  urgentPrograms: Program[];
 };
 
 const DEFAULT_PROMOTED_LIMIT = 3;
@@ -132,4 +140,52 @@ export function shouldPinPromotedPrograms({
       !showClosedRecent &&
       sort === "default"
   );
+}
+
+export function buildProgramsDisplayState({
+  programs,
+  promotedPrograms,
+  urgentPrograms,
+  ...pinArgs
+}: ProgramsDisplayStateArgs): {
+  tablePrograms: Program[];
+  displayUrgentPrograms: Program[];
+  urgentProgramsUseStrictWindow: boolean;
+  urgentProgramsUseUpcomingFallback: boolean;
+} {
+  const displayPrograms = programs.filter(isDisplayableProgram);
+  const displayPromotedPrograms = promotedPrograms.filter(isDisplayableProgram);
+  const pinPromotedPrograms = shouldPinPromotedPrograms(pinArgs);
+  const tablePrograms = mergeProgramsForDisplay({
+    organicPrograms: displayPrograms,
+    promotedPrograms: displayPromotedPrograms,
+    pinPromoted: pinPromotedPrograms,
+  });
+  const urgentSourcePrograms = urgentPrograms.length > 0 ? urgentPrograms : tablePrograms;
+  const rankedUrgentPrograms = urgentSourcePrograms
+    .filter(isDisplayableProgram)
+    .toSorted((left, right) => {
+      const leftDays = typeof left.days_left === "number" ? left.days_left : Number.MAX_SAFE_INTEGER;
+      const rightDays = typeof right.days_left === "number" ? right.days_left : Number.MAX_SAFE_INTEGER;
+      return leftDays - rightDays;
+    });
+  const strictUrgentPrograms = rankedUrgentPrograms.filter(
+    (program) => typeof program.days_left === "number" && program.days_left >= 0 && program.days_left <= 7
+  );
+  const upcomingPrograms = rankedUrgentPrograms.filter((program) => typeof program.days_left === "number" && program.days_left >= 0);
+  const displayUrgentPrograms = (strictUrgentPrograms.length > 0
+    ? strictUrgentPrograms
+    : upcomingPrograms.length > 0
+      ? upcomingPrograms
+      : rankedUrgentPrograms)
+    .slice(0, 6);
+  const urgentProgramsUseStrictWindow = strictUrgentPrograms.length > 0;
+  const urgentProgramsUseUpcomingFallback = !urgentProgramsUseStrictWindow && upcomingPrograms.length > 0;
+
+  return {
+    tablePrograms,
+    displayUrgentPrograms,
+    urgentProgramsUseStrictWindow,
+    urgentProgramsUseUpcomingFallback,
+  };
 }

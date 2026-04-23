@@ -17,13 +17,12 @@ import {
 } from "./programs-filter-bar";
 import { ProgramBookmarkStateProvider } from "./bookmark-state-provider";
 import {
+  buildProgramsDisplayState,
   formatProgramParticipationTime,
   getSelectionKeywordTone,
-  mergeProgramsForDisplay,
-  shouldPinPromotedPrograms,
 } from "./page-helpers";
 import ProgramBookmarkButton from "./program-bookmark-button";
-import { deadlineLabel, deadlineTone, isDisplayableProgram, normalizeTextList, scorePercent } from "./program-utils";
+import { deadlineLabel, deadlineTone, normalizeTextList, scorePercent } from "./program-utils";
 
 export const metadata: Metadata = {
   title: "국비 교육·취업 지원 프로그램 목록 | 이소서",
@@ -808,45 +807,22 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
   }
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
-  const displayPrograms = programs.filter(isDisplayableProgram);
-  const displayPromotedPrograms = promotedPrograms.filter(isDisplayableProgram);
-  const pinPromotedPrograms = shouldPinPromotedPrograms({
-    q,
-    selectedCategoryId: selectedCategory.id,
-    selectedRegionsCount: selectedRegions.length,
-    selectedTeachingMethodsCount: selectedTeachingMethods.length,
-    selectedCostTypesCount: selectedCostTypes.length,
-    selectedParticipationTimesCount: selectedParticipationTimes.length,
-    selectedSourcesCount: selectedSources.length,
-    selectedTargetsCount: selectedTargets.length,
-    showClosedRecent,
-    sort,
-  });
-  const tablePrograms = mergeProgramsForDisplay({
-    organicPrograms: displayPrograms,
-    promotedPrograms: displayPromotedPrograms,
-    pinPromoted: pinPromotedPrograms,
-  });
-  const urgentSourcePrograms = urgentPrograms.length > 0 ? urgentPrograms : tablePrograms;
-  const rankedUrgentPrograms = urgentSourcePrograms
-    .filter(isDisplayableProgram)
-    .toSorted((left, right) => {
-      const leftDays = typeof left.days_left === "number" ? left.days_left : Number.MAX_SAFE_INTEGER;
-      const rightDays = typeof right.days_left === "number" ? right.days_left : Number.MAX_SAFE_INTEGER;
-      return leftDays - rightDays;
+  const { tablePrograms, displayUrgentPrograms, urgentProgramsUseStrictWindow, urgentProgramsUseUpcomingFallback } =
+    buildProgramsDisplayState({
+      programs,
+      promotedPrograms,
+      urgentPrograms,
+      q,
+      selectedCategoryId: selectedCategory.id,
+      selectedRegionsCount: selectedRegions.length,
+      selectedTeachingMethodsCount: selectedTeachingMethods.length,
+      selectedCostTypesCount: selectedCostTypes.length,
+      selectedParticipationTimesCount: selectedParticipationTimes.length,
+      selectedSourcesCount: selectedSources.length,
+      selectedTargetsCount: selectedTargets.length,
+      showClosedRecent,
+      sort,
     });
-  const strictUrgentPrograms = rankedUrgentPrograms.filter(
-    (program) => typeof program.days_left === "number" && program.days_left >= 0 && program.days_left <= 7
-  );
-  const upcomingPrograms = rankedUrgentPrograms.filter((program) => typeof program.days_left === "number" && program.days_left >= 0);
-  const displayUrgentPrograms = (strictUrgentPrograms.length > 0
-    ? strictUrgentPrograms
-    : upcomingPrograms.length > 0
-      ? upcomingPrograms
-      : rankedUrgentPrograms)
-    .slice(0, 6);
-  const urgentProgramsUseStrictWindow = strictUrgentPrograms.length > 0;
-  const urgentProgramsUseUpcomingFallback = !urgentProgramsUseStrictWindow && upcomingPrograms.length > 0;
   const safePage = Math.min(page, totalPages);
   const visiblePages = Array.from({ length: totalPages }, (_, index) => index + 1).filter(
     (pageNumber) => pageNumber >= Math.max(1, safePage - 2) && pageNumber <= Math.min(totalPages, safePage + 2)
