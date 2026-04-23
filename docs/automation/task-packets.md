@@ -2,6 +2,12 @@
 
 For the full repository read order and source-of-truth priority, start with [../agent-playbook.md](../agent-playbook.md).
 
+## Scope
+- 이 문서는 execution queue로 들어가는 queued task packet contract만 설명한다.
+- Codex 대화 세션에서 사용자가 직접 요청한 작업은 이 문서의 대상이 아니다.
+- direct conversation work의 처리 규칙은 `AGENTS.md`와 `docs/agent-playbook.md`를 따른다.
+- direct conversation work는 사용자가 명시적으로 요청하지 않는 한 `tasks/inbox/`, `tasks/remote/`, `cowork/packets/`로 자동 생성하거나 승격하지 않는다.
+
 ## Packet lifecycle
 - `cowork/packets/<task-id>.md`는 기획 원본이자 review 대상 packet이다
 - review 결과는 `cowork/reviews/<task-id>-review.md`에 별도 문서로 남는다
@@ -11,6 +17,7 @@ For the full repository read order and source-of-truth priority, start with [../
 - approval smoke를 점검할 때는 `cowork/packets -> cowork/reviews -> Slack review-ready -> approval -> tasks/inbox|tasks/remote` 순서가 실제로 이어지는지만 짧게 확인한다
 
 ## Required frontmatter
+- 아래 필수 frontmatter는 queued task packet에만 적용된다
 - `id`
 - `status`
 - `type`
@@ -19,7 +26,7 @@ For the full repository read order and source-of-truth priority, start with [../
 - `planned_against_commit`
 
 ## Rules
-- task packet은 YAML-style frontmatter를 사용한다
+- queued task packet은 YAML-style frontmatter를 사용한다
 - 필수 필드가 빠지면 watcher가 blocked 처리한다
 - `spec_version`이 있는 Supervisor 표준 packet은 추가 필드(`request_id`, `execution_path`, `allowed_paths`, `fallback_plan`, `rollback_plan` 등)를 함께 가져야 하며, `allowed_paths`와 `blocked_paths`가 겹치면 watcher/cowork watcher가 실행 전에 차단한다
 - `planned_against_commit`이 현재 `HEAD`와 달라도 watcher는 실행할 수 있지만, Codex는 drift를 먼저 판단해야 한다
@@ -35,6 +42,11 @@ For the full repository read order and source-of-truth priority, start with [../
   - Supervisor 표준 packet:
     - `python scripts/create_task_packet.py --supervisor-spec --task-id TASK-YYYY-MM-DD-HHMM-slug --title "Short title" --output tasks/inbox/TASK-YYYY-MM-DD-HHMM-slug.md --files <repo-path> [<repo-path> ...]`
 - 파일명과 id는 가능하면 `TASK-YYYY-MM-DD-HHMM-short-slug` 형식을 쓴다
+
+## Direct conversation note
+- 대화 세션에서 사용자가 바로 요청한 작업은 task packet이 없어도 진행할 수 있다.
+- 이런 작업은 queue contract 검증, blocked report, packet scaffold 명령을 선행 조건으로 요구하지 않는다.
+- 필요 시 결과는 `reports/SESSION-YYYY-MM-DD-brief-topic-result.md` 형태의 세션 보고서로 남긴다.
 
 ## References
 - agent entrypoint: [../agent-playbook.md](../agent-playbook.md)

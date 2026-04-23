@@ -13,7 +13,7 @@
 작업을 시작할 때는 아래 순서로 읽는다.
 
 1. `AGENTS.md`
-2. 현재 작업 packet
+2. 현재 작업 packet이 있는 경우 해당 packet
    - `cowork/packets/<task-id>.md`
    - 또는 `tasks/inbox/<task-id>.md`
 3. `docs/current-state.md`
@@ -41,6 +41,8 @@
 중요:
 
 - packet이 현재 코드와 어긋날 수 있으므로, packet만 믿고 구현하지 않는다.
+- Codex 대화 세션에서 사용자가 직접 요청한 작업은 execution queue packet이 아니므로, packet frontmatter 누락만으로 차단하지 않는다.
+- 대화 세션 직접 작업은 `tasks/inbox/`, `tasks/remote/`, `cowork/packets/`로 자동 생성하거나 승격하지 않는다.
 - `docs/current-state.md`는 “지금 실제로 구현된 상태”를 확인하는 문서다.
 - 과거 `docs/refactoring-log.md`는 참고용이지, 현재 truth를 대신하지 않는다.
 
@@ -119,9 +121,10 @@
 2. existing implementation을 재사용한다.
 3. 최소 안전 변경으로 구현한다.
 4. touched area 기준 검증을 수행한다.
-5. `reports/<task-id>-result.md`를 작성한다.
-6. 구조나 동작이 바뀌면 `docs/current-state.md`를 갱신한다.
-7. 핵심 변경은 `docs/refactoring-log.md`에 남긴다.
+5. queued task라면 `reports/<task-id>-result.md`를 작성한다.
+6. Codex 대화 세션 직접 작업이라면 execution queue 파일을 만들지 않고, 필요한 경우 `reports/SESSION-YYYY-MM-DD-brief-topic-result.md` 형태의 세션 결과 보고서만 작성한다.
+7. 구조나 동작이 바뀌면 `docs/current-state.md`를 갱신한다.
+8. 핵심 변경은 `docs/refactoring-log.md`에 남긴다.
 
 추천 문서:
 
@@ -167,7 +170,7 @@
 
 1. `AGENTS.md`를 읽는다.
 2. 이 문서를 읽는다.
-3. 현재 task packet을 읽는다.
+3. 현재 task packet이 있으면 읽는다.
 4. `docs/current-state.md`를 읽는다.
 5. touched area 코드를 직접 확인한다.
 

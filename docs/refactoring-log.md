@@ -2835,3 +2835,14 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - OCR 런타임을 붙이지 않고 `--include-ocr-probe` 옵션으로 HTML detail page의 visible text, image count, attachment link count를 source별 소량 샘플링하는 read-only preflight를 추가함
   - OCR runtime opt-in 후보와 poster/attachment 검토 후보를 분리해, 2026-04-23 live 기준 OCR runtime 후보 0개, poster/attachment 검토 후보 7개, detail/parser 보강 우선 3개로 리포트를 남김
   - 첨부가 있어도 detail HTML 본문이 충분하면 OCR runtime 후보로 올리지 않도록 테스트로 고정함
+- 2026-04-23: `AGENTS.md`, `docs/agent-playbook.md`, `docs/current-state.md`
+  - queued task packet 작업과 Codex 대화 세션 직접 작업을 분리해, execution queue에 들어온 packet에는 기존 frontmatter gate를 유지하고 대화 세션 직접 요청은 큐 파일 생성 없이 바로 구현할 수 있도록 규칙을 정리함
+  - 직접 대화 작업은 필요한 경우 `reports/SESSION-YYYY-MM-DD-brief-topic-result.md` 형태의 세션 결과 보고서만 남기고, `tasks/inbox`나 `cowork/packets`로 자동 승격하지 않도록 명시함
+- 2026-04-23: `docs/automation/task-packets.md`, `reports/SESSION-2026-04-23-login-page-ui-and-direct-workflow-result.md`
+  - automation task packet contract 문서도 queued task packet 전용 범위로 정리해 direct conversation work와 충돌하지 않게 맞춤
+  - direct conversation work는 queue contract 검증이나 packet scaffold를 선행 조건으로 요구하지 않는다는 점을 contract 문서에 명시함
+- 2026-04-23: `frontend/app/(auth)/login/page.tsx`, `docs/current-state.md`, `reports/SESSION-2026-04-23-login-page-ui-and-direct-workflow-result.md`
+  - 제공된 로그인 화면 참고 TSX와 스냅샷을 기준으로 좌측 브랜드/메시지 패널과 우측 로그인 카드 구조로 UI를 변경함
+  - 바깥 배경과 좌측 패널의 파란 그라데이션을 더 진한 sky/blue 계열로 조정함
+  - `redirectedFrom` 안전 redirect, 로그인된 사용자 자동 redirect, `getGoogleAuthHref(safeNext)` 기반 Google OAuth 링크는 유지함
+  - 데스크톱 1280x720과 모바일 390x844 브라우저 검증에서 오류 오버레이와 가로 overflow가 없음을 확인함
