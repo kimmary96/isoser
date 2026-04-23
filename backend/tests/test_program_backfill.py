@@ -1,6 +1,11 @@
+from datetime import date
+
 from scripts.program_backfill import (
     build_patch,
+    build_program_deadline_audit_report,
     build_work24_deadline_audit_report,
+    classify_program_deadline_issues,
+    fetch_program_deadline_audit_rows,
     fetch_work24_record_from_detail_url,
     is_work24_deadline_copied_from_end_date,
     kstartup_key,
@@ -91,6 +96,103 @@ def test_work24_deadline_audit_report_is_dry_run(monkeypatch) -> None:
     assert report["candidate_count"] == 2
     assert report["suspect_count"] == 1
     assert report["items"][0]["recommended_patch"] == {"deadline": None}
+
+
+def test_classify_program_deadline_issues_flags_close_date_gap() -> None:
+    issues = classify_program_deadline_issues(
+        {
+            "source": "K-Startup 창업진흥원",
+            "deadline": None,
+            "close_date": "2026-05-20",
+            "end_date": None,
+            "is_active": True,
+        }
+    )
+
+    assert issues == [
+        {
+            "code": "deadline_missing_with_close_date",
+            "reason": "deadline은 비어 있지만 close_date가 있어 모집중 검색 후보에서 누락될 수 있습니다.",
+            "recommended_patch": {"deadline": "2026-05-20"},
+        }
+    ]
+
+
+def test_classify_program_deadline_issues_flags_past_deadline_with_active_close_date() -> None:
+    issues = classify_program_deadline_issues(
+        {
+            "source": "K-Startup 창업진흥원",
+            "deadline": "2026-04-01",
+            "close_date": "2026-05-20",
+            "end_date": None,
+        },
+        today=date(2026, 4, 23),
+    )
+
+    assert issues[0]["code"] == "deadline_past_but_close_date_active"
+    assert issues[0]["recommended_patch"] == {"deadline": "2026-05-20"}
+
+
+def test_program_deadline_audit_report_is_dry_run(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "scripts.program_backfill.fetch_program_deadline_audit_rows",
+        lambda limit: [
+            {
+                "id": "program-1",
+                "title": "close_date만 있는 과정",
+                "source": "K-Startup 창업진흥원",
+                "deadline": None,
+                "close_date": "2026-05-20",
+                "end_date": None,
+                "is_active": True,
+            },
+            {
+                "id": "program-2",
+                "title": "정상 과정",
+                "source": "SeSAC",
+                "deadline": "2026-05-20",
+                "close_date": None,
+                "end_date": None,
+                "is_active": True,
+            },
+        ],
+    )
+
+    report = build_program_deadline_audit_report(limit=10)
+
+    assert report["mode"] == "dry-run"
+    assert report["candidate_count"] == 2
+    assert report["suspect_count"] == 1
+    assert report["issue_counts"] == {"deadline_missing_with_close_date": 1}
+
+
+def test_fetch_program_deadline_audit_rows_scans_issue_buckets(monkeypatch) -> None:
+    calls: list[dict[str, str]] = []
+
+    def fake_supabase_request(method: str, path: str, params: dict[str, str]) -> list[dict[str, str]]:
+        assert method == "GET"
+        assert path == "/rest/v1/programs"
+        calls.append(params)
+        if params.get("deadline") == "is.null":
+            return [{"id": "program-null-deadline"}]
+        if params.get("close_date") == "not.is.null":
+            return [{"id": "program-close-date"}, {"id": "program-null-deadline"}]
+        return [{"id": "program-end-date"}]
+
+    monkeypatch.setattr("scripts.program_backfill.supabase_request", fake_supabase_request)
+
+    rows = fetch_program_deadline_audit_rows(limit=10)
+
+    assert [call.get("deadline") or call.get("close_date") for call in calls] == [
+        "is.null",
+        "not.is.null",
+        "not.is.null",
+    ]
+    assert [row["id"] for row in rows] == [
+        "program-null-deadline",
+        "program-close-date",
+        "program-end-date",
+    ]
 
 
 def test_sesac_key_uses_course_id_before_cleaned_title() -> None:

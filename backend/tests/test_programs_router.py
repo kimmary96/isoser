@@ -56,6 +56,39 @@ def test_build_program_query_params_skips_index_for_short_ascii_search() -> None
     assert "search_text" not in params
 
 
+def test_program_query_filter_matches_category_detail_aliases() -> None:
+    rows = [
+        {
+            "id": "program-1",
+            "title": "프론트엔드 실무 과정",
+            "category": "IT",
+            "category_detail": "web-development",
+        },
+        {
+            "id": "program-2",
+            "title": "마케팅 실무 과정",
+            "category": "경영",
+            "category_detail": "planning-marketing-other",
+        },
+    ]
+
+    assert [row["id"] for row in programs._filter_program_rows_by_query(rows, "웹개발")] == ["program-1"]
+    assert [row["id"] for row in programs._filter_program_rows_by_query(rows, "data-ai")] == []
+
+
+def test_program_query_filter_matches_category_label_without_middle_dot() -> None:
+    rows = [
+        {
+            "id": "program-1",
+            "title": "비전공자 입문 과정",
+            "category": "AI",
+            "category_detail": "data-ai",
+        }
+    ]
+
+    assert [row["id"] for row in programs._filter_program_rows_by_query(rows, "데이터AI")] == ["program-1"]
+
+
 def test_build_program_query_params_expands_latest_recruiting_scan_limit() -> None:
     params = programs._build_program_query_params(
         select="*",
@@ -1066,6 +1099,56 @@ async def test_build_cached_recommendation_items_recalculates_final_score(
     assert items[0].program.final_score == 0.44
     assert items[0].program.relevance_score == 0.4
     assert items[0].program.urgency_score == 0.5
+
+
+@pytest.mark.asyncio
+async def test_load_cached_recommendations_falls_back_to_legacy_schema(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+
+    async def fake_request_supabase(
+        *,
+        method: str,
+        path: str,
+        params: dict[str, object] | None = None,
+        payload: object | None = None,
+        prefer: str | None = None,
+    ) -> list[dict[str, object]]:
+        assert method == "GET"
+        assert path == "/rest/v1/recommendations"
+        assert payload is None
+        assert prefer is None
+        select = str((params or {}).get("select") or "")
+        calls.append(select)
+        if "generated_at" in select:
+            raise RuntimeError("column recommendations.generated_at does not exist")
+        return [
+            {
+                "program_id": "program-1",
+                "score": 0.73,
+                "created_at": "2099-01-01T00:00:00+00:00",
+            }
+        ]
+
+    monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
+
+    rows = await programs._load_cached_recommendations("user-1")
+
+    assert calls == [
+        "program_id,similarity_score,relevance_score,urgency_score,final_score,generated_at",
+        "program_id,score,created_at",
+    ]
+    assert rows == [
+        {
+            "program_id": "program-1",
+            "similarity_score": 0.73,
+            "relevance_score": 0.73,
+            "urgency_score": 0.0,
+            "final_score": 0.73,
+            "generated_at": "2099-01-01T00:00:00+00:00",
+        }
+    ]
 
 
 def test_recommend_calendar_anonymous_returns_contract_shape(

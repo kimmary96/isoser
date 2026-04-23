@@ -56,6 +56,17 @@ PROGRAM_CATEGORY_LABELS: dict[str, str] = {
     "design-3d": "UX/UI/디자인",
     "project-career-startup": "PM/기획",
 }
+PROGRAM_CATEGORY_SEARCH_ALIASES: dict[str, tuple[str, ...]] = {
+    "web-development": ("웹개발", "웹 개발", "웹 풀스택", "fullstack"),
+    "mobile": ("모바일", "앱", "프론트엔드"),
+    "data-ai": ("데이터", "데이터AI", "데이터 AI", "AI서비스", "인공지능"),
+    "cloud-security": ("클라우드", "보안", "클라우드보안"),
+    "iot-embedded-semiconductor": ("IoT", "임베디드", "반도체"),
+    "game-blockchain": ("게임", "블록체인"),
+    "planning-marketing-other": ("기획", "마케팅", "PM", "기타"),
+    "design-3d": ("디자인", "3D", "UX", "UI"),
+    "project-career-startup": ("프로젝트", "취준", "창업", "스타트업"),
+}
 PROGRAM_CATEGORY_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("AI서비스", ("ai", "인공지능", "llm", "rag", "생성형", "챗봇", "머신러닝", "딥러닝", "mcp")),
     ("AI역량강화", ("ai 활용", "ai 역량", "프롬프트", "업무자동화", "노코드", "로우코드")),
@@ -854,14 +865,27 @@ def _searchable_compare_meta_values(value: Any) -> list[str]:
     return values
 
 
+def _program_category_search_values(row: dict[str, Any]) -> list[str]:
+    values = _flatten_search_values(row.get("category")) + _flatten_search_values(row.get("category_detail"))
+    category_detail = str(row.get("category_detail") or "").strip()
+    if category_detail:
+        values.append(category_detail.replace("-", ""))
+        values.extend(PROGRAM_CATEGORY_SEARCH_ALIASES.get(category_detail, ()))
+        label = PROGRAM_CATEGORY_LABELS.get(category_detail)
+        if label:
+            values.extend((label, re.sub(r"[\s·/]+", "", label)))
+    return values
+
+
 def _program_search_groups(row: dict[str, Any]) -> list[tuple[int, list[str]]]:
     return [
         (0, _flatten_search_values(row.get("title"))),
         (1, _flatten_search_values(row.get("provider"))),
-        (2, _flatten_search_values(row.get("description")) + _flatten_search_values(row.get("summary"))),
-        (3, _flatten_search_values(row.get("location")) + _flatten_search_values(row.get("region_detail")) + _flatten_search_values(row.get("region"))),
-        (4, _flatten_search_values(row.get("tags")) + _flatten_search_values(row.get("skills"))),
-        (5, _searchable_compare_meta_values(row.get("compare_meta"))),
+        (2, _program_category_search_values(row)),
+        (3, _flatten_search_values(row.get("description")) + _flatten_search_values(row.get("summary"))),
+        (4, _flatten_search_values(row.get("location")) + _flatten_search_values(row.get("region_detail")) + _flatten_search_values(row.get("region"))),
+        (5, _flatten_search_values(row.get("tags")) + _flatten_search_values(row.get("skills"))),
+        (6, _searchable_compare_meta_values(row.get("compare_meta"))),
     ]
 
 
@@ -1428,8 +1452,47 @@ async def _load_cached_recommendations(user_id: str) -> list[dict[str, Any]] | N
         )
     except Exception as exc:
         log_event(logger, logging.WARNING, "recommend_cache_load_failed", error=str(exc))
-        return None
+        return await _load_legacy_cached_recommendations(user_id=user_id, cutoff=cutoff)
     return rows if isinstance(rows, list) and rows else None
+
+
+async def _load_legacy_cached_recommendations(
+    *,
+    user_id: str,
+    cutoff: str,
+) -> list[dict[str, Any]] | None:
+    try:
+        rows = await request_supabase(
+            method="GET",
+            path="/rest/v1/recommendations",
+            params={
+                "select": "program_id,score,created_at",
+                "user_id": f"eq.{user_id}",
+                "created_at": f"gte.{cutoff}",
+                "order": "score.desc.nullslast",
+                "limit": "20",
+            },
+        )
+    except Exception as exc:
+        log_event(logger, logging.WARNING, "recommend_legacy_cache_load_failed", error=str(exc))
+        return None
+    if not isinstance(rows, list) or not rows:
+        return None
+
+    normalized_rows: list[dict[str, Any]] = []
+    for row in rows:
+        score = _coerce_score(row.get("score")) or 0.0
+        normalized_rows.append(
+            {
+                "program_id": row.get("program_id"),
+                "similarity_score": score,
+                "relevance_score": score,
+                "urgency_score": 0.0,
+                "final_score": score,
+                "generated_at": row.get("created_at"),
+            }
+        )
+    return normalized_rows
 
 
 async def _save_recommendations(
