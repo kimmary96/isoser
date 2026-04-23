@@ -99,6 +99,13 @@ def compact_meta(meta: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def source_field_name(item: Mapping[str, Any], *keys: str) -> str | None:
+    for key in keys:
+        if clean_text(item.get(key)):
+            return key
+    return None
+
+
 def extract_skill_keywords(*values: object) -> list[str]:
     text = " ".join(clean_text(value) for value in values if clean_text(value))
     if not text:
@@ -293,6 +300,29 @@ def map_work24_training_item(
                 "registered_count": clean_text(item.get("regCourseMan")) or None,
                 "capacity": clean_text(item.get("yardMan")) or None,
                 "source_url": source_url or None,
+                "field_sources": compact_meta(
+                    {
+                        "provider": source_field_name(item, "subTitle"),
+                        "location": source_field_name(item, "address", "ADDRESS"),
+                        "region": source_field_name(item, "address", "ADDRESS", "trngAreaCd", "TRNG_AREA_CD"),
+                        "region_detail": source_field_name(item, "address", "ADDRESS", "trngAreaCd", "TRNG_AREA_CD"),
+                        "description": source_field_name(item, "contents", "subTitle"),
+                        "deadline": "traStartDate" if start_date else None,
+                        "start_date": "traStartDate" if start_date else None,
+                        "end_date": "traEndDate" if end_date else None,
+                        "cost": source_field_name(item, "courseMan"),
+                        "subsidy_amount": source_field_name(item, "realMan"),
+                        "source_url": source_field_name(item, "titleLink"),
+                        "source_unique_key": source_field_name(
+                            item,
+                            "trprId",
+                            "trprDegr",
+                            "trainstCstId",
+                            "trainstCstmrId",
+                        )
+                        or ("titleLink" if work24_source_unique_key(item, source_url) else None),
+                    }
+                ),
             }
         ),
     }
@@ -346,6 +376,28 @@ def map_kstartup_announcement_item(item: dict[str, Any]) -> dict[str, Any]:
                 "excluded_target": clean_text(item.get("aply_excl_trgt_ctnt")) or None,
                 "recruiting_status": clean_text(item.get("rcrt_prgs_yn")) or None,
                 "source_url": detail_url or None,
+                "field_sources": compact_meta(
+                    {
+                        "title": source_field_name(item, "biz_pbanc_nm"),
+                        "deadline": source_field_name(item, "pbanc_rcpt_end_dt"),
+                        "start_date": source_field_name(item, "pbanc_rcpt_bgng_dt"),
+                        "end_date": source_field_name(item, "pbanc_rcpt_end_dt"),
+                        "source_url": source_field_name(item, "detl_pg_url"),
+                        "application_url": source_field_name(
+                            item,
+                            "biz_aply_url",
+                            "aply_mthd_onli_rcpt_istc",
+                            "aply_mthd_etc_istc",
+                            "biz_gdnc_url",
+                        ),
+                        "target": source_field_name(item, "aply_trgt"),
+                        "location": source_field_name(item, "supt_regin"),
+                        "provider": source_field_name(item, "pbanc_ntrp_nm"),
+                        "description": source_field_name(item, "pbanc_ctnt"),
+                        "source_unique_key": source_field_name(item, "pbanc_sn"),
+                        "sponsor_name": source_field_name(item, "biz_prch_dprt_nm", "sprv_inst"),
+                    }
+                ),
             }
         ),
     }

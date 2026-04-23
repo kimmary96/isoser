@@ -2806,3 +2806,6 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-23: `scripts/program_quality_report.py`, `backend/tests/test_program_quality_report_cli.py`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/TASK-2026-04-23-1915-program-quality-report-cli-result.md`
   - collector quality validator를 재사용해 운영 `programs` row를 읽기 전용으로 샘플링하고 JSON 리포트를 저장하는 CLI를 추가함
   - Supabase 호출은 `GET /rest/v1/programs`만 사용하고, 테스트에서는 요청 파라미터와 리포트 생성 계약을 mock으로 고정함
+- 2026-04-23: `backend/rag/collector/program_field_mapping.py`, `backend/tests/test_work24_kstartup_field_mapping.py`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/TASK-2026-04-23-1945-program-field-source-evidence-result.md`
+  - Work24/K-Startup normalized field의 원천 raw field명을 `compare_meta.field_sources`에 보존하도록 추가함
+  - deadline/start/end/provider/location/cost/source_url/source_unique_key/application_url 등 주요 필드의 source evidence를 mapping 테스트로 고정함

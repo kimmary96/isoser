@@ -66,6 +66,12 @@ def test_work24_collector_preserves_detail_fields_for_program_pages() -> None:
     assert row["compare_meta"]["training_start_date"] == "2026-04-22"
     assert row["compare_meta"]["training_end_date"] == "2026-06-29"
     assert row["compare_meta"]["weekend_code"] == "3"
+    assert row["compare_meta"]["field_sources"]["provider"] == "subTitle"
+    assert row["compare_meta"]["field_sources"]["location"] == "address"
+    assert row["compare_meta"]["field_sources"]["deadline"] == "traStartDate"
+    assert row["compare_meta"]["field_sources"]["cost"] == "courseMan"
+    assert row["compare_meta"]["field_sources"]["subsidy_amount"] == "realMan"
+    assert row["compare_meta"]["field_sources"]["source_unique_key"] == "trprId"
 
 
 def test_work24_collector_passes_region_code_map_to_field_mapping() -> None:
@@ -200,6 +206,11 @@ def test_kstartup_collector_preserves_description_provider_and_trace_meta() -> N
     assert row["compare_meta"]["contact_phone"] == "02-6177-2111"
     assert row["compare_meta"]["business_type"] == "멘토링ㆍ컨설팅ㆍ교육"
     assert row["compare_meta"]["target_detail"] == "성인 또는 고졸 이상 누구나"
+    assert row["compare_meta"]["field_sources"]["title"] == "biz_pbanc_nm"
+    assert row["compare_meta"]["field_sources"]["deadline"] == "pbanc_rcpt_end_dt"
+    assert row["compare_meta"]["field_sources"]["application_url"] == "aply_mthd_onli_rcpt_istc"
+    assert row["compare_meta"]["field_sources"]["provider"] == "pbanc_ntrp_nm"
+    assert row["compare_meta"]["field_sources"]["source_unique_key"] == "pbanc_sn"
 
 
 def test_kstartup_field_mapping_prefers_detail_url_and_keeps_apply_url_in_meta() -> None:
