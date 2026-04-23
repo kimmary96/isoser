@@ -40,7 +40,7 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
   const resolvedSearchParams = await searchParams;
   const activeChip = normalizeChip(resolvedSearchParams.chip);
   const keyword = normalizeKeyword(resolvedSearchParams.q);
-  const programParams = buildProgramFilterParams(activeChip, keyword, 24);
+  const programParams = buildProgramFilterParams(activeChip, keyword, 48);
 
   let programs: Program[] = [];
   let liveBoardPrograms: Program[] = [];
@@ -53,9 +53,9 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
         scope: programParams.q ? "all" : "default",
       }),
       listProgramsPage({
-        sort: "deadline",
+        sort: "default",
         recruiting_only: true,
-        limit: 24,
+        limit: 72,
         scope: "default",
       }),
     ]);
@@ -65,10 +65,8 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
     error = cause instanceof Error ? cause.message : "프로그램 정보를 불러오지 못했습니다.";
   }
 
-  const preferWork24Exposure =
-    activeChip !== "창업" && !/창업|스타트업|startup|k-startup|kstartup/i.test(keyword);
-  const heroPrograms = getLiveBoardPrograms(liveBoardPrograms, { preferWork24: preferWork24Exposure });
-  const opportunityPrograms = orderOpportunityPrograms(programs, { preferWork24: preferWork24Exposure });
+  const heroPrograms = getLiveBoardPrograms(liveBoardPrograms);
+  const opportunityPrograms = orderOpportunityPrograms(programs, { activeChip });
 
   return (
     <main className="min-h-screen bg-[var(--surface)] text-[var(--ink)]" style={landingCThemeVars}>

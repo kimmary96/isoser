@@ -1,11 +1,11 @@
 import {
   getProgramDeadlineTone,
-} from "@/components/landing/program-card-helpers";
+} from "../../../components/landing/program-card-helpers";
 import type { Program } from "@/lib/types";
 
 import { OPPORTUNITY_FEED_SIZE, SEOUL_DISTRICTS, liveBoardSources } from "./_content";
 
-const DEFAULT_WORK24_TARGET_RATIO = 0.7;
+const LIVE_BOARD_LIMIT = liveBoardSources.length;
 
 export function sourceLabel(program: Program): string {
   return [program.source || program.provider, locationLabel(program)].filter(Boolean).join(" · ") || "프로그램 정보";
@@ -225,6 +225,22 @@ function programRatingDisplay(program: Program): string | null {
   );
 }
 
+function programRatingValue(program: Program): number {
+  const rating = parseMetricNumber(program.rating_display) ?? parseMetricNumber(program.rating) ?? parseMetricNumber(program.compare_meta?.satisfaction_score);
+  if (rating === null || rating <= 0) {
+    return 0;
+  }
+  return rating <= 5 ? rating : rating / 20;
+}
+
+function programReviewCount(program: Program): number {
+  return parseMetricNumber(program.review_count) ?? 0;
+}
+
+function programRecommendedScore(program: Program): number {
+  return typeof program.recommended_score === "number" && Number.isFinite(program.recommended_score) ? program.recommended_score : 0;
+}
+
 function opportunityCompletenessScore(program: Program): number {
   let score = 0;
   if (program.provider) score += 3;
@@ -236,74 +252,26 @@ function opportunityCompletenessScore(program: Program): number {
   return score;
 }
 
-type Work24ExposureOptions = {
-  preferWork24?: boolean;
-  limit?: number;
-};
-
-function balanceWork24Exposure(
-  programs: Program[],
-  { preferWork24 = true, limit = programs.length }: Work24ExposureOptions = {},
-): Program[] {
-  const cappedLimit = Math.max(0, limit);
-  if (!preferWork24 || cappedLimit === 0) {
-    return programs.slice(0, cappedLimit);
+function programDaysLeft(program: Program): number | null {
+  if (typeof program.days_left === "number" && Number.isFinite(program.days_left)) {
+    return program.days_left;
   }
 
-  const work24Programs = programs.filter(isWork24Program);
-  const otherPrograms = programs.filter((program) => !isWork24Program(program));
-  if (work24Programs.length === 0 || otherPrograms.length === 0) {
-    return programs.slice(0, cappedLimit);
+  const timestamp = Date.parse(String(program.deadline || ""));
+  if (Number.isNaN(timestamp)) {
+    return null;
   }
 
-  const mixed: Program[] = [];
-  let work24Index = 0;
-  let otherIndex = 0;
-  while (mixed.length < programs.length) {
-    const desiredWork24Count = Math.round((mixed.length + 1) * DEFAULT_WORK24_TARGET_RATIO);
-    const shouldTakeWork24 =
-      work24Index < work24Programs.length &&
-      (work24Index < desiredWork24Count || otherIndex >= otherPrograms.length);
-
-    if (shouldTakeWork24) {
-      mixed.push(work24Programs[work24Index]);
-      work24Index += 1;
-    } else if (otherIndex < otherPrograms.length) {
-      mixed.push(otherPrograms[otherIndex]);
-      otherIndex += 1;
-    } else if (work24Index < work24Programs.length) {
-      mixed.push(work24Programs[work24Index]);
-      work24Index += 1;
-    } else {
-      break;
-    }
-  }
-
-  return mixed.slice(0, cappedLimit);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const deadline = new Date(timestamp);
+  deadline.setHours(0, 0, 0, 0);
+  return Math.round((deadline.getTime() - today.getTime()) / 86_400_000);
 }
 
-export function orderOpportunityPrograms(programs: Program[], options?: Work24ExposureOptions): Program[] {
-  const ordered = programs
-    .map((program, index) => ({ program, index }))
-    .toSorted((a, b) => {
-      const scoreDiff = opportunityCompletenessScore(b.program) - opportunityCompletenessScore(a.program);
-      return scoreDiff || a.index - b.index;
-    })
-    .map(({ program }) => program);
-
-  return balanceWork24Exposure(ordered, {
-    ...options,
-    limit: options?.limit ?? OPPORTUNITY_FEED_SIZE,
-  });
-}
-
-function liveBoardSourceText(program: Program): string {
-  return [program.source, program.provider].filter(Boolean).join(" ").toLowerCase();
-}
-
-function isLiveBoardSource(program: Program, matches: readonly string[]): boolean {
-  const sourceText = liveBoardSourceText(program);
-  return matches.some((keyword) => sourceText.includes(keyword.toLowerCase()));
+function isRecruitingProgram(program: Program, minDaysLeft = 0): boolean {
+  const daysLeft = programDaysLeft(program);
+  return daysLeft !== null && daysLeft >= minDaysLeft;
 }
 
 function parseDeadlineTime(program: Program): number {
@@ -311,17 +279,65 @@ function parseDeadlineTime(program: Program): number {
   return Number.isNaN(timestamp) ? Number.MAX_SAFE_INTEGER : timestamp;
 }
 
-export function getLiveBoardPrograms(programs: Program[], options?: Work24ExposureOptions): Program[] {
-  const sourceMatches = liveBoardSources.flatMap((source) => [...source.matches]);
-  const eligiblePrograms = programs
-    .filter((program) => isLiveBoardSource(program, sourceMatches))
-    .filter((program) => typeof program.days_left !== "number" || program.days_left >= 0)
-    .toSorted((a, b) => parseDeadlineTime(a) - parseDeadlineTime(b));
+function compareDescending(left: number, right: number): number {
+  return right - left;
+}
 
-  return balanceWork24Exposure(eligiblePrograms, {
-    ...options,
-    limit: options?.limit ?? liveBoardSources.length,
+function compareAscending(left: number, right: number): number {
+  return left - right;
+}
+
+function compareProgramsByHotness(left: Program, right: Program): number {
+  return (
+    compareDescending(programRatingValue(left), programRatingValue(right)) ||
+    compareDescending(programReviewCount(left), programReviewCount(right)) ||
+    compareDescending(programRecommendedScore(left), programRecommendedScore(right)) ||
+    compareDescending(opportunityCompletenessScore(left), opportunityCompletenessScore(right)) ||
+    compareAscending(programDaysLeft(left) ?? Number.MAX_SAFE_INTEGER, programDaysLeft(right) ?? Number.MAX_SAFE_INTEGER) ||
+    compareAscending(parseDeadlineTime(left), parseDeadlineTime(right))
+  );
+}
+
+function compareProgramsByUrgency(left: Program, right: Program): number {
+  return (
+    compareAscending(programDaysLeft(left) ?? Number.MAX_SAFE_INTEGER, programDaysLeft(right) ?? Number.MAX_SAFE_INTEGER) ||
+    compareProgramsByHotness(left, right)
+  );
+}
+
+type OpportunityOrderingOptions = {
+  activeChip?: string;
+  limit?: number;
+};
+
+export function orderOpportunityPrograms(programs: Program[], options?: OpportunityOrderingOptions): Program[] {
+  const limit = options?.limit ?? OPPORTUNITY_FEED_SIZE;
+  const isAllChip = !options?.activeChip || options.activeChip === "전체";
+  const minimumDaysLeft = isAllChip ? 1 : 0;
+  const recruitingPrograms = programs.filter((program) => isRecruitingProgram(program, minimumDaysLeft));
+  const fallbackPrograms =
+    recruitingPrograms.length >= limit ? recruitingPrograms : programs.filter((program) => isRecruitingProgram(program, 0));
+  const comparePrograms = isAllChip ? compareProgramsByHotness : compareProgramsByUrgency;
+
+  return fallbackPrograms
+    .map((program, index) => ({ program, index }))
+    .toSorted((left, right) => comparePrograms(left.program, right.program) || left.index - right.index)
+    .map(({ program }) => program)
+    .slice(0, limit);
+}
+
+export function getLiveBoardPrograms(programs: Program[]): Program[] {
+  const weekPrograms = programs.filter((program) => {
+    const daysLeft = programDaysLeft(program);
+    return daysLeft !== null && daysLeft >= 0 && daysLeft <= 7;
   });
+  const fallbackPrograms = weekPrograms.length >= LIVE_BOARD_LIMIT ? weekPrograms : programs.filter((program) => isRecruitingProgram(program, 0));
+
+  return fallbackPrograms
+    .map((program, index) => ({ program, index }))
+    .toSorted((left, right) => compareProgramsByHotness(left.program, right.program) || left.index - right.index)
+    .map(({ program }) => program)
+    .slice(0, LIVE_BOARD_LIMIT);
 }
 
 export { getProgramDeadlineTone };

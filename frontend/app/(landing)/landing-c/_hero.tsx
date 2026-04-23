@@ -76,7 +76,7 @@ export function LandingCHeroSection({ heroPrograms }: LandingCHeroSectionProps) 
             ))}
             {heroPrograms.length === 0 && (
               <div className="rounded-[18px] border border-dashed border-[var(--border)] bg-[var(--surface)] p-5 text-sm font-bold text-[var(--sub)]">
-                고용24, 창업진흥원, 새싹의 모집중 공고가 있으면 이 영역에 표시됩니다.
+                이번 주 안에 마감하는 모집중 공고가 있으면 이 영역에 표시됩니다.
               </div>
             )}
           </div>

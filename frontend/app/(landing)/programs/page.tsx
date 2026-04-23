@@ -4,7 +4,7 @@ import Link from "next/link";
 import AdSlot from "@/components/AdSlot";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { getProgramFilterOptions, listPrograms, listProgramsPage } from "@/lib/api/backend";
-import { buildUrgentProgramChips } from "@/lib/programs-page-layout";
+import { buildUrgentProgramChips, buildUrgentProgramsParams } from "@/lib/programs-page-layout";
 import { getSiteUrl } from "@/lib/seo";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Program, ProgramSort } from "@/lib/types";
@@ -16,6 +16,12 @@ import {
   type ProgramsFilterChip,
 } from "./programs-filter-bar";
 import { ProgramBookmarkStateProvider } from "./bookmark-state-provider";
+import {
+  formatProgramParticipationTime,
+  getSelectionKeywordTone,
+  mergeProgramsForDisplay,
+  shouldPinPromotedPrograms,
+} from "./page-helpers";
 import ProgramBookmarkButton from "./program-bookmark-button";
 import { deadlineLabel, deadlineTone, isDisplayableProgram, normalizeTextList, scorePercent } from "./program-utils";
 
@@ -439,18 +445,6 @@ function getDisplayCategories(program: Program): string[] {
   return [program.category, program.category_detail].filter((value): value is string => Boolean(value?.trim())).slice(0, 2);
 }
 
-function formatParticipationTime(program: Program): { label: string | null; detail: string | null } {
-  const label =
-    program.participation_mode_label ||
-    (program.participation_time === "full-time"
-      ? "풀타임"
-      : program.participation_time === "part-time"
-        ? "파트타임"
-        : program.participation_time || null);
-  const detail = program.participation_time_text || null;
-  return { label, detail };
-}
-
 function extractSelectionKeywords(program: Program): string[] {
   const meta = program.compare_meta;
   const candidates = [
@@ -481,7 +475,7 @@ function ProgramKeywordList({ keywords }: { keywords: string[] }) {
   return (
     <div className="flex max-w-md flex-wrap gap-1.5">
       {keywords.slice(0, 8).map((keyword) => (
-        <span key={keyword} className="rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600">
+        <span key={keyword} className={`rounded-md px-2 py-1 text-xs font-medium ${getSelectionKeywordTone(keyword)}`}>
           {keyword}
         </span>
       ))}
@@ -565,7 +559,7 @@ function ProgramsTable({
             const href = programId ? `/programs/${encodeURIComponent(programId)}` : "/programs";
             const percent = scorePercent(program);
             const categories = getDisplayCategories(program);
-            const participation = formatParticipationTime(program);
+            const participation = formatProgramParticipationTime(program);
             const methodAndRegion = formatMethodAndRegion(program);
             const selectionKeywords = extractSelectionKeywords(program);
             const supportBadge = getSupportBadge(program);
@@ -789,14 +783,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
         limit: PAGE_SIZE,
         offset,
       }),
-      listPrograms({
-        ...currentFilterParams,
-        recruiting_only: true,
-        include_closed_recent: false,
-        sort: "deadline",
-        limit: 12,
-        offset: 0,
-      }),
+      listPrograms(buildUrgentProgramsParams()),
     ]);
     promotedPrograms = programsPage.promoted_items ?? [];
     programs = programsPage.items;
@@ -812,14 +799,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
           limit: PAGE_SIZE,
           offset,
         }),
-        listPrograms({
-          ...currentFilterParams,
-          recruiting_only: true,
-          include_closed_recent: false,
-          sort: "deadline",
-          limit: 12,
-          offset: 0,
-        }),
+        listPrograms(buildUrgentProgramsParams()),
       ]);
       totalCount = programs.length;
     } catch {
@@ -829,13 +809,44 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
   const displayPrograms = programs.filter(isDisplayableProgram);
-  const promotedIds = new Set(promotedPrograms.map((program) => String(program.id ?? "")).filter(Boolean));
   const displayPromotedPrograms = promotedPrograms.filter(isDisplayableProgram);
-  const organicDisplayPrograms = displayPrograms.filter((program) => !promotedIds.has(String(program.id ?? "")));
-  const displayUrgentPrograms = urgentPrograms
+  const pinPromotedPrograms = shouldPinPromotedPrograms({
+    q,
+    selectedCategoryId: selectedCategory.id,
+    selectedRegionsCount: selectedRegions.length,
+    selectedTeachingMethodsCount: selectedTeachingMethods.length,
+    selectedCostTypesCount: selectedCostTypes.length,
+    selectedParticipationTimesCount: selectedParticipationTimes.length,
+    selectedSourcesCount: selectedSources.length,
+    selectedTargetsCount: selectedTargets.length,
+    showClosedRecent,
+    sort,
+  });
+  const tablePrograms = mergeProgramsForDisplay({
+    organicPrograms: displayPrograms,
+    promotedPrograms: displayPromotedPrograms,
+    pinPromoted: pinPromotedPrograms,
+  });
+  const urgentSourcePrograms = urgentPrograms.length > 0 ? urgentPrograms : tablePrograms;
+  const rankedUrgentPrograms = urgentSourcePrograms
     .filter(isDisplayableProgram)
-    .filter((program) => typeof program.days_left === "number" && program.days_left >= 0 && program.days_left <= 7)
+    .toSorted((left, right) => {
+      const leftDays = typeof left.days_left === "number" ? left.days_left : Number.MAX_SAFE_INTEGER;
+      const rightDays = typeof right.days_left === "number" ? right.days_left : Number.MAX_SAFE_INTEGER;
+      return leftDays - rightDays;
+    });
+  const strictUrgentPrograms = rankedUrgentPrograms.filter(
+    (program) => typeof program.days_left === "number" && program.days_left >= 0 && program.days_left <= 7
+  );
+  const upcomingPrograms = rankedUrgentPrograms.filter((program) => typeof program.days_left === "number" && program.days_left >= 0);
+  const displayUrgentPrograms = (strictUrgentPrograms.length > 0
+    ? strictUrgentPrograms
+    : upcomingPrograms.length > 0
+      ? upcomingPrograms
+      : rankedUrgentPrograms)
     .slice(0, 6);
+  const urgentProgramsUseStrictWindow = strictUrgentPrograms.length > 0;
+  const urgentProgramsUseUpcomingFallback = !urgentProgramsUseStrictWindow && upcomingPrograms.length > 0;
   const safePage = Math.min(page, totalPages);
   const visiblePages = Array.from({ length: totalPages }, (_, index) => index + 1).filter(
     (pageNumber) => pageNumber >= Math.max(1, safePage - 2) && pageNumber <= Math.min(totalPages, safePage + 2)
@@ -886,7 +897,13 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                   <div>
                     <p className="text-sm font-semibold uppercase tracking-[0.24em] text-amber-700">Closing Soon</p>
                     <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-950">마감 임박 프로그램</h2>
-                    <p className="mt-2 text-sm text-slate-600">현재 검색 조건에서 마감이 가까운 프로그램 {displayUrgentPrograms.length}개입니다.</p>
+                    <p className="mt-2 text-sm text-slate-600">
+                      {urgentProgramsUseStrictWindow
+                        ? `현재 공개된 모집중 공고 중 D-7 이내 프로그램 ${displayUrgentPrograms.length}개입니다.`
+                        : urgentProgramsUseUpcomingFallback
+                          ? `현재 공개된 모집중 공고 중 가장 먼저 마감되는 프로그램 ${displayUrgentPrograms.length}개입니다.`
+                          : `현재 공개된 프로그램 중 먼저 확인할 프로그램 ${displayUrgentPrograms.length}개입니다.`}
+                    </p>
                   </div>
                 </div>
                 <div className="mt-5 flex snap-x gap-4 overflow-x-auto pb-2">
@@ -905,21 +922,6 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                   slotId="programs-results-top-banner"
                   className="mb-6 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3"
                 />
-                {displayPromotedPrograms.length > 0 ? (
-                  <div className="mb-6 border-b border-slate-100 pb-6">
-                    <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-                      <div>
-                        <p className="text-sm font-semibold text-slate-900">스폰서 추천</p>
-                        <p className="mt-1 text-sm text-slate-500">광고 상품으로 노출되는 프로그램이며 일반 추천순 결과와 분리됩니다.</p>
-                      </div>
-                    </div>
-                    <ProgramsTable
-                      programs={displayPromotedPrograms}
-                      isLoggedIn={isLoggedIn}
-                      bookmarkedProgramIds={bookmarkedProgramIds}
-                    />
-                  </div>
-                ) : null}
                 <div className="flex flex-col gap-4 border-b border-slate-100 pb-5 md:flex-row md:items-center md:justify-between">
                   <div>
                     <p className="text-sm font-semibold text-slate-900">
@@ -950,8 +952,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                   <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 px-6 py-12 text-center text-sm text-rose-700">
                     {error}
                   </div>
-                ) : organicDisplayPrograms.length === 0 ? (
-                  displayPromotedPrograms.length > 0 ? null : (
+                ) : tablePrograms.length === 0 ? (
                   <div className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-16 text-center">
                     <p className="text-base font-semibold text-slate-900">
                       {hasAnyFilter ? "조건에 맞는 프로그램이 없습니다" : "현재 등록된 프로그램이 없습니다"}
@@ -972,11 +973,10 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                       </div>
                     ) : null}
                   </div>
-                  )
                 ) : (
                   <>
                     <ProgramsTable
-                      programs={organicDisplayPrograms}
+                      programs={tablePrograms}
                       isLoggedIn={isLoggedIn}
                       bookmarkedProgramIds={bookmarkedProgramIds}
                     />

@@ -1,4 +1,4 @@
-import { PROGRAM_FILTER_CHIPS } from "@/lib/program-filters";
+import { PROGRAM_FILTER_CHIPS } from "../../../lib/program-filters";
 
 export const chips = PROGRAM_FILTER_CHIPS;
 

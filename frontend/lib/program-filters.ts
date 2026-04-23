@@ -30,12 +30,13 @@ export const PROGRAM_REGION_FILTER_MAP: Record<string, string[]> = {
 export function buildProgramFilterParams(activeChip: string, keyword: string, limit = 6): ProgramListParams {
   const params: ProgramListParams = {
     q: keyword || undefined,
-    sort: "deadline",
+    recruiting_only: true,
+    sort: activeChip === "전체" ? "default" : "deadline",
     limit,
   };
 
   if (activeChip === "마감임박") {
-    params.recruiting_only = true;
+    params.sort = "deadline";
     return params;
   }
 
