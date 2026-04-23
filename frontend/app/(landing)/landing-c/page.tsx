@@ -53,9 +53,9 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
         scope: programParams.q ? "all" : "default",
       }),
       listProgramsPage({
-        sort: "default",
+        sort: "popular",
         recruiting_only: true,
-        limit: 72,
+        limit: 100,
         scope: "default",
       }),
     ]);

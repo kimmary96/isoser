@@ -237,6 +237,14 @@ function programReviewCount(program: Program): number {
   return parseMetricNumber(program.review_count) ?? 0;
 }
 
+function programDetailViewCount(program: Program): number {
+  return parseMetricNumber(program.detail_view_count) ?? 0;
+}
+
+function programDetailViewCount7d(program: Program): number {
+  return parseMetricNumber(program.detail_view_count_7d) ?? 0;
+}
+
 function programRecommendedScore(program: Program): number {
   return typeof program.recommended_score === "number" && Number.isFinite(program.recommended_score) ? program.recommended_score : 0;
 }
@@ -298,6 +306,14 @@ function compareProgramsByHotness(left: Program, right: Program): number {
   );
 }
 
+function compareProgramsByLiveBoardHotness(left: Program, right: Program): number {
+  return (
+    compareDescending(programDetailViewCount7d(left), programDetailViewCount7d(right)) ||
+    compareDescending(programDetailViewCount(left), programDetailViewCount(right)) ||
+    compareProgramsByHotness(left, right)
+  );
+}
+
 function compareProgramsByUrgency(left: Program, right: Program): number {
   return (
     compareAscending(programDaysLeft(left) ?? Number.MAX_SAFE_INTEGER, programDaysLeft(right) ?? Number.MAX_SAFE_INTEGER) ||
@@ -335,7 +351,7 @@ export function getLiveBoardPrograms(programs: Program[]): Program[] {
 
   return fallbackPrograms
     .map((program, index) => ({ program, index }))
-    .toSorted((left, right) => compareProgramsByHotness(left.program, right.program) || left.index - right.index)
+    .toSorted((left, right) => compareProgramsByLiveBoardHotness(left.program, right.program) || left.index - right.index)
     .map(({ program }) => program)
     .slice(0, LIVE_BOARD_LIMIT);
 }

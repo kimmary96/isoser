@@ -2863,3 +2863,7 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - `program_list_index`에 상세 조회 기반 인기 점수 메타(`detail_view_count`, `detail_view_count_7d`, `click_hotness_score`, `last_detail_viewed_at`)를 추가하고, `record_program_detail_view` RPC로 프로그램 상세 진입을 일별 집계하도록 준비함
   - `GET /programs/popular`과 read-model browse query가 `popular` 정렬을 지원하도록 보강하고, 인기 정렬은 curated browse pool 대신 전체 open non-ad read-model row를 대상으로 하도록 분리함
   - Next.js BFF `POST /api/programs/[programId]/detail-view`와 app helper를 추가하고, 직접 호출 테스트에서 FastAPI `Query` 기본값이 섞여도 promoted/default browse 동작이 깨지지 않도록 sort 정규화 회귀를 함께 보강함
+- 2026-04-24: `frontend/app/(landing)/landing-c/page.tsx`, `frontend/app/(landing)/landing-c/_program-utils.ts`, `frontend/app/(landing)/landing-c/_program-utils.test.ts`, `frontend/app/(landing)/programs/[id]/program-detail-client.tsx`, `frontend/app/(landing)/programs/page.tsx`, `frontend/tsconfig.codex-check.tsbuildinfo`, `docs/current-state.md`, `reports/SESSION-2026-04-24-click-hotness-frontend-surface-result.md`
+  - 랜딩 C `Live Board`가 기본 추천 proxy 대신 `sort=popular` read-model 목록과 상세 조회수(`detail_view_count_7d`, `detail_view_count`)를 우선 사용하도록 연결함
+  - 프로그램 상세 클라이언트는 같은 프로그램 id에 대해 중복 기록을 피하면서 BFF `detail-view` 추적을 1회 전송하도록 연결함
+  - `/programs` 정렬 라벨/허용값에 `popular`를 추가해 프런트 타입 체크와 정렬 UI 계약을 맞추고, Vitest로 live board fallback 규칙을 고정함

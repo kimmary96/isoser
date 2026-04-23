@@ -101,6 +101,7 @@ const PROGRAM_CATEGORY_OPTIONS: readonly ProgramCategoryMenuOption[] = [
 const SORT_LABELS: Record<ProgramSort, string> = {
   default: "기본 정렬",
   deadline: "마감 임박순",
+  popular: "인기순",
   start_soon: "개강 빠른순",
   cost_low: "비용 낮은순",
   cost_high: "비용 높은순",
@@ -110,6 +111,7 @@ const SORT_LABELS: Record<ProgramSort, string> = {
 const SORT_VALUES = new Set<ProgramSort>([
   "default",
   "deadline",
+  "popular",
   "start_soon",
   "cost_low",
   "cost_high",

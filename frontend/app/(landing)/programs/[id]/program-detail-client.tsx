@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import AdSlot from "@/components/AdSlot";
+import { trackProgramDetailView } from "@/lib/api/app";
 import type { ProgramDetail } from "@/lib/types";
 
 import ProgramBookmarkButton from "../program-bookmark-button";
@@ -171,6 +172,7 @@ export default function ProgramDetailClient({
   isLoggedIn,
   initialBookmarked = false,
 }: ProgramDetailClientProps) {
+  const trackedProgramIdRef = useRef<string | null>(null);
   const [shareStatus, setShareStatus] = useState<"idle" | "copied" | "failed">("idle");
   const eligibility = textList(program.eligibility);
   const tags = textList(program.tags);
@@ -447,6 +449,18 @@ export default function ProgramDetailClient({
   const heroBadges = [program.support_type, deadlineState.active ? "모집 중" : deadlineState.label, program.location].filter(
     (item): item is string => Boolean(item)
   );
+
+  useEffect(() => {
+    const programId = typeof program.id === "string" || typeof program.id === "number" ? String(program.id) : "";
+    if (!programId || trackedProgramIdRef.current === programId) {
+      return;
+    }
+
+    trackedProgramIdRef.current = programId;
+    void trackProgramDetailView(programId).catch(() => {
+      trackedProgramIdRef.current = null;
+    });
+  }, [program.id]);
 
   useEffect(() => {
     if (!sections.length) return;
