@@ -1,0 +1,1945 @@
+{
+  "candidate_count": 30,
+  "deadline_from": null,
+  "items": [
+    {
+      "diff": {
+        "close_date": {
+          "after": "2026-04-15"
+        },
+        "compare_meta": {
+          "after": {
+            "application_deadline": "2026-04-15",
+            "capacity": "10",
+            "contact_phone": "052-281-1400",
+            "day_night": "주간",
+            "deadline_source": "traStartDate",
+            "email": "kimygjy@hanmail.net",
+            "hrd_id": "AIG20250000520086",
+            "registered_count": "10",
+            "satisfaction_score": "4.6",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000520086&tracseTme=22&crseTracseSe=C0061&trainstCstmrId=500020046190",
+            "tracse_tme": "22",
+            "training_end_date": "2026-05-07",
+            "training_start_date": "2026-04-15",
+            "training_time": "15일 · 총 60시간",
+            "training_type": "근로자직업능력개발훈련",
+            "trainst_cstmr_id": "500020046190",
+            "weekend_text": "주중"
+          },
+          "before": {
+            "application_deadline": "2026-04-15",
+            "capacity": "10",
+            "contact_phone": "052-281-1400",
+            "deadline_source": "traStartDate",
+            "email": "kimygjy@hanmail.net",
+            "hrd_id": "AIG20250000520086",
+            "registered_count": "10",
+            "satisfaction_score": "4.6",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000520086&tracseTme=22&crseTracseSe=C0061&trainstCstmrId=500020046190",
+            "tracse_tme": "22",
+            "training_end_date": "2026-05-07",
+            "training_start_date": "2026-04-15",
+            "trainst_cstmr_id": "500020046190"
+          }
+        }
+      },
+      "id": "349e502d-29cb-4ac1-bfc7-e3c31c4261f4",
+      "match_key": "work24:hrd:AIG20250000520086",
+      "matched": true,
+      "patch": {
+        "close_date": "2026-04-15",
+        "compare_meta": {
+          "application_deadline": "2026-04-15",
+          "capacity": "10",
+          "contact_phone": "052-281-1400",
+          "day_night": "주간",
+          "deadline_source": "traStartDate",
+          "email": "kimygjy@hanmail.net",
+          "hrd_id": "AIG20250000520086",
+          "registered_count": "10",
+          "satisfaction_score": "4.6",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000520086&tracseTme=22&crseTracseSe=C0061&trainstCstmrId=500020046190",
+          "tracse_tme": "22",
+          "training_end_date": "2026-05-07",
+          "training_start_date": "2026-04-15",
+          "training_time": "15일 · 총 60시간",
+          "training_type": "근로자직업능력개발훈련",
+          "trainst_cstmr_id": "500020046190",
+          "weekend_text": "주중"
+        }
+      },
+      "source": "work24_training",
+      "title": "지게차자격증실기(오전60A)"
+    },
+    {
+      "diff": {
+        "close_date": {
+          "after": "2026-04-15"
+        },
+        "compare_meta": {
+          "after": {
+            "application_deadline": "2026-04-15",
+            "capacity": "20",
+            "contact_phone": "051-294-2001",
+            "day_night": "주간",
+            "deadline_source": "traStartDate",
+            "email": "kendoyong@naver.com",
+            "hrd_id": "AIG20250000513525",
+            "registered_count": "12",
+            "satisfaction_score": "4.4",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000513525&tracseTme=3&crseTracseSe=C0061&trainstCstmrId=500020049082",
+            "tracse_tme": "3",
+            "training_end_date": "2026-05-14",
+            "training_start_date": "2026-04-15",
+            "training_time": "20일 · 총 70시간",
+            "training_type": "실업자계좌제",
+            "trainst_cstmr_id": "500020049082",
+            "weekend_text": "주중"
+          },
+          "before": {
+            "application_deadline": "2026-04-15",
+            "capacity": "20",
+            "contact_phone": "051-294-2001",
+            "deadline_source": "traStartDate",
+            "email": "kendoyong@naver.com",
+            "hrd_id": "AIG20250000513525",
+            "registered_count": "12",
+            "satisfaction_score": "4.4",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000513525&tracseTme=3&crseTracseSe=C0061&trainstCstmrId=500020049082",
+            "tracse_tme": "3",
+            "training_end_date": "2026-05-14",
+            "training_start_date": "2026-04-15",
+            "trainst_cstmr_id": "500020049082"
+          }
+        }
+      },
+      "id": "bc4287a7-a435-45cf-a684-89909c6dea66",
+      "match_key": "work24:hrd:AIG20250000513525",
+      "matched": true,
+      "patch": {
+        "close_date": "2026-04-15",
+        "compare_meta": {
+          "application_deadline": "2026-04-15",
+          "capacity": "20",
+          "contact_phone": "051-294-2001",
+          "day_night": "주간",
+          "deadline_source": "traStartDate",
+          "email": "kendoyong@naver.com",
+          "hrd_id": "AIG20250000513525",
+          "registered_count": "12",
+          "satisfaction_score": "4.4",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000513525&tracseTme=3&crseTracseSe=C0061&trainstCstmrId=500020049082",
+          "tracse_tme": "3",
+          "training_end_date": "2026-05-14",
+          "training_start_date": "2026-04-15",
+          "training_time": "20일 · 총 70시간",
+          "training_type": "실업자계좌제",
+          "trainst_cstmr_id": "500020049082",
+          "weekend_text": "주중"
+        }
+      },
+      "source": "work24_training",
+      "title": "[기초+자격증] 기초+ITQ한글/파워포인트/엑셀 (자체고사장)"
+    },
+    {
+      "diff": {
+        "close_date": {
+          "after": "2026-04-15"
+        },
+        "compare_meta": {
+          "after": {
+            "application_deadline": "2026-04-15",
+            "deadline_source": "traStartDate",
+            "hrd_id": "AIG20250000518396",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000518396&tracseTme=13&crseTracseSe=C0061&trainstCstmrId=500020024148",
+            "tracse_tme": "13",
+            "training_end_date": "2026-06-12",
+            "training_start_date": "2026-04-15",
+            "trainst_cstmr_id": "500020024148"
+          },
+          "before": {
+            "application_deadline": "2026-04-15",
+            "deadline_source": "traStartDate",
+            "training_end_date": "2026-06-12",
+            "training_start_date": "2026-04-15"
+          }
+        }
+      },
+      "id": "0e5e8253-4937-48d7-9195-45953220abc9",
+      "match_key": "work24:hrd:AIG20250000518396",
+      "matched": true,
+      "patch": {
+        "close_date": "2026-04-15",
+        "compare_meta": {
+          "application_deadline": "2026-04-15",
+          "deadline_source": "traStartDate",
+          "hrd_id": "AIG20250000518396",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000518396&tracseTme=13&crseTracseSe=C0061&trainstCstmrId=500020024148",
+          "tracse_tme": "13",
+          "training_end_date": "2026-06-12",
+          "training_start_date": "2026-04-15",
+          "trainst_cstmr_id": "500020024148"
+        }
+      },
+      "source": "work24_training",
+      "title": "[2026년 필수교과+모의고사 개정반영] 회계·인사·총무 취업을 위한 전사회계1급,전산세무2급,FAT1급,TAT2급 취득과정"
+    },
+    {
+      "diff": {
+        "close_date": {
+          "after": "2026-04-15"
+        },
+        "compare_meta": {
+          "after": {
+            "address": "서울 노원구",
+            "application_deadline": "2026-04-15",
+            "capacity": "9",
+            "contact_phone": "02-6959-2849",
+            "deadline_source": "traStartDate",
+            "hrd_id": "AIG20250000509490",
+            "ncs_code": "21020102",
+            "registered_count": "0",
+            "satisfaction_score": "0",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000509490&tracseTme=8&crseTracseSe=C0061&trainstCstmrId=500041496260",
+            "training_end_date": "2026-06-08",
+            "training_start_date": "2026-04-15",
+            "trainst_cstmr_id": "500041496260",
+            "trng_area_code": "11350",
+            "trpr_degr": "8",
+            "weekend_code": "3"
+          },
+          "before": {
+            "application_deadline": "2026-04-15",
+            "deadline_source": "traStartDate",
+            "training_end_date": "2026-06-08",
+            "training_start_date": "2026-04-15"
+          }
+        },
+        "raw_data": {
+          "after": {
+            "address": "서울 노원구",
+            "courseMan": "408000",
+            "instCd": "202200999",
+            "ncsCd": "21020102",
+            "realMan": "500000",
+            "regCourseMan": "0",
+            "stdgScor": "0",
+            "subTitle": "퍼스트아카데미(바리스타,제과제빵)학원노원",
+            "subTitleLink": "https://www.work24.go.kr/hr/a/a/3200/selectTrainInstitution.do?tracseId=AIG20250000509490&tracseTme=8&crseTracseSe=C0061&trainstCstmrId=500041496260",
+            "telNo": "02-6959-2849",
+            "title": "제빵마스터 자격증 취득(실기)",
+            "titleIcon": "<img src=\"hrd.work24.go.kr/images/ico_system2.gif\" alt=\"내일배움카드제(실업자)\" title=\"내일배움카드제(실업자)\" />",
+            "titleLink": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000509490&tracseTme=8&crseTracseSe=C0061&trainstCstmrId=500041496260",
+            "traEndDate": "2026-07-02",
+            "traStartDate": "2026-04-23",
+            "trainTarget": "국민내일배움카드(일반)",
+            "trainTargetCd": "C0061",
+            "trainstCstId": "500041496260",
+            "trngAreaCd": "11350",
+            "trprDegr": "8",
+            "trprId": "AIG20250000509490",
+            "wkendSe": "3",
+            "yardMan": "9"
+          }
+        }
+      },
+      "id": "75099dde-9482-484c-be02-6b5917004858",
+      "match_key": "work24:hrd:AIG20250000509490",
+      "matched": true,
+      "patch": {
+        "close_date": "2026-04-15",
+        "compare_meta": {
+          "address": "서울 노원구",
+          "application_deadline": "2026-04-15",
+          "capacity": "9",
+          "contact_phone": "02-6959-2849",
+          "deadline_source": "traStartDate",
+          "hrd_id": "AIG20250000509490",
+          "ncs_code": "21020102",
+          "registered_count": "0",
+          "satisfaction_score": "0",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000509490&tracseTme=8&crseTracseSe=C0061&trainstCstmrId=500041496260",
+          "training_end_date": "2026-06-08",
+          "training_start_date": "2026-04-15",
+          "trainst_cstmr_id": "500041496260",
+          "trng_area_code": "11350",
+          "trpr_degr": "8",
+          "weekend_code": "3"
+        },
+        "raw_data": {
+          "address": "서울 노원구",
+          "courseMan": "408000",
+          "instCd": "202200999",
+          "ncsCd": "21020102",
+          "realMan": "500000",
+          "regCourseMan": "0",
+          "stdgScor": "0",
+          "subTitle": "퍼스트아카데미(바리스타,제과제빵)학원노원",
+          "subTitleLink": "https://www.work24.go.kr/hr/a/a/3200/selectTrainInstitution.do?tracseId=AIG20250000509490&tracseTme=8&crseTracseSe=C0061&trainstCstmrId=500041496260",
+          "telNo": "02-6959-2849",
+          "title": "제빵마스터 자격증 취득(실기)",
+          "titleIcon": "<img src=\"hrd.work24.go.kr/images/ico_system2.gif\" alt=\"내일배움카드제(실업자)\" title=\"내일배움카드제(실업자)\" />",
+          "titleLink": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000509490&tracseTme=8&crseTracseSe=C0061&trainstCstmrId=500041496260",
+          "traEndDate": "2026-07-02",
+          "traStartDate": "2026-04-23",
+          "trainTarget": "국민내일배움카드(일반)",
+          "trainTargetCd": "C0061",
+          "trainstCstId": "500041496260",
+          "trngAreaCd": "11350",
+          "trprDegr": "8",
+          "trprId": "AIG20250000509490",
+          "wkendSe": "3",
+          "yardMan": "9"
+        }
+      },
+      "source": "work24_training",
+      "title": "제빵마스터 자격증 취득(실기)"
+    },
+    {
+      "diff": {
+        "close_date": {
+          "after": "2026-04-15"
+        },
+        "compare_meta": {
+          "after": {
+            "application_deadline": "2026-04-15",
+            "capacity": "40",
+            "contact_phone": "02-2245-9205",
+            "day_night": "주간",
+            "deadline_source": "traStartDate",
+            "email": "rollewar@hanmail.net",
+            "hrd_id": "AIG20250000532088",
+            "registered_count": "10",
+            "satisfaction_score": "4.7",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000532088&tracseTme=3&crseTracseSe=C0061&trainstCstmrId=500020056212",
+            "tracse_tme": "3",
+            "training_end_date": "2026-06-12",
+            "training_start_date": "2026-04-15",
+            "training_time": "40일 · 총 320시간",
+            "training_type": "실업자계좌제",
+            "trainst_cstmr_id": "500020056212",
+            "weekend_text": "주중"
+          },
+          "before": {
+            "application_deadline": "2026-04-15",
+            "deadline_source": "traStartDate",
+            "training_end_date": "2026-06-12",
+            "training_start_date": "2026-04-15"
+          }
+        }
+      },
+      "id": "22ae9f27-62ae-49bb-a6bb-6edc4ee5730b",
+      "match_key": "work24:hrd:AIG20250000532088",
+      "matched": true,
+      "patch": {
+        "close_date": "2026-04-15",
+        "compare_meta": {
+          "application_deadline": "2026-04-15",
+          "capacity": "40",
+          "contact_phone": "02-2245-9205",
+          "day_night": "주간",
+          "deadline_source": "traStartDate",
+          "email": "rollewar@hanmail.net",
+          "hrd_id": "AIG20250000532088",
+          "registered_count": "10",
+          "satisfaction_score": "4.7",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000532088&tracseTme=3&crseTracseSe=C0061&trainstCstmrId=500020056212",
+          "tracse_tme": "3",
+          "training_end_date": "2026-06-12",
+          "training_start_date": "2026-04-15",
+          "training_time": "40일 · 총 320시간",
+          "training_type": "실업자계좌제",
+          "trainst_cstmr_id": "500020056212",
+          "weekend_text": "주중"
+        }
+      },
+      "source": "work24_training",
+      "title": "요양보호사자격취득과정"
+    },
+    {
+      "diff": {
+        "close_date": {
+          "after": "2026-04-15"
+        },
+        "compare_meta": {
+          "after": {
+            "application_deadline": "2026-04-15",
+            "capacity": "32",
+            "contact_phone": "053-559-1004",
+            "day_night": "주간",
+            "deadline_source": "traStartDate",
+            "email": "ynan1004@hanmail.net",
+            "hrd_id": "AIG20250000528331",
+            "registered_count": "8",
+            "satisfaction_score": "0",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000528331&tracseTme=1&crseTracseSe=C0061&trainstCstmrId=500020044975",
+            "tracse_tme": "1",
+            "training_end_date": "2027-03-09",
+            "training_start_date": "2026-04-15",
+            "training_time": "221일 · 총 1520시간",
+            "training_type": "근로자직업능력개발훈련",
+            "trainst_cstmr_id": "500020044975",
+            "weekend_text": "주중"
+          },
+          "before": {
+            "application_deadline": "2026-04-15",
+            "deadline_source": "traStartDate",
+            "training_end_date": "2027-03-09",
+            "training_start_date": "2026-04-15"
+          }
+        }
+      },
+      "id": "3a58beb0-7082-457f-8f35-f596fbefccff",
+      "match_key": "work24:hrd:AIG20250000528331",
+      "matched": true,
+      "patch": {
+        "close_date": "2026-04-15",
+        "compare_meta": {
+          "application_deadline": "2026-04-15",
+          "capacity": "32",
+          "contact_phone": "053-559-1004",
+          "day_night": "주간",
+          "deadline_source": "traStartDate",
+          "email": "ynan1004@hanmail.net",
+          "hrd_id": "AIG20250000528331",
+          "registered_count": "8",
+          "satisfaction_score": "0",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000528331&tracseTme=1&crseTracseSe=C0061&trainstCstmrId=500020044975",
+          "tracse_tme": "1",
+          "training_end_date": "2027-03-09",
+          "training_start_date": "2026-04-15",
+          "training_time": "221일 · 총 1520시간",
+          "training_type": "근로자직업능력개발훈련",
+          "trainst_cstmr_id": "500020044975",
+          "weekend_text": "주중"
+        }
+      },
+      "source": "work24_training",
+      "title": "간호조무사 자격 취득과정"
+    },
+    {
+      "diff": {},
+      "id": "a265fbf9-6434-4fa0-967f-86998081ebee",
+      "match_key": "work24:hrd:AIG20250000522332",
+      "matched": true,
+      "patch": {},
+      "source": "work24_training",
+      "title": "(주간)ITQ마스터 (MS워드+엑셀+파워포인터)"
+    },
+    {
+      "diff": {
+        "close_date": {
+          "after": "2026-04-15"
+        },
+        "compare_meta": {
+          "after": {
+            "application_deadline": "2026-04-15",
+            "capacity": "10",
+            "contact_phone": "051-305-7766",
+            "day_night": "야간",
+            "deadline_source": "traStartDate",
+            "email": "rkgus5428@naver.com",
+            "hrd_id": "AIG20250000503434",
+            "registered_count": "4",
+            "satisfaction_score": "0",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000503434&tracseTme=1&crseTracseSe=C0061&trainstCstmrId=500020062365",
+            "tracse_tme": "1",
+            "training_end_date": "2026-05-20",
+            "training_start_date": "2026-04-15",
+            "training_time": "13일 · 총 39시간",
+            "training_type": "근로자직업능력개발훈련",
+            "trainst_cstmr_id": "500020062365",
+            "weekend_text": "주중"
+          },
+          "before": {
+            "application_deadline": "2026-04-15",
+            "capacity": "10",
+            "contact_phone": "051-305-7766",
+            "deadline_source": "traStartDate",
+            "email": "rkgus5428@naver.com",
+            "hrd_id": "AIG20250000503434",
+            "registered_count": "4",
+            "satisfaction_score": "0",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000503434&tracseTme=1&crseTracseSe=C0061&trainstCstmrId=500020062365",
+            "tracse_tme": "1",
+            "training_end_date": "2026-05-20",
+            "training_start_date": "2026-04-15",
+            "trainst_cstmr_id": "500020062365"
+          }
+        }
+      },
+      "id": "96c8ed27-5f20-456b-87ba-5253c4d75d36",
+      "match_key": "work24:hrd:AIG20250000503434",
+      "matched": true,
+      "patch": {
+        "close_date": "2026-04-15",
+        "compare_meta": {
+          "application_deadline": "2026-04-15",
+          "capacity": "10",
+          "contact_phone": "051-305-7766",
+          "day_night": "야간",
+          "deadline_source": "traStartDate",
+          "email": "rkgus5428@naver.com",
+          "hrd_id": "AIG20250000503434",
+          "registered_count": "4",
+          "satisfaction_score": "0",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000503434&tracseTme=1&crseTracseSe=C0061&trainstCstmrId=500020062365",
+          "tracse_tme": "1",
+          "training_end_date": "2026-05-20",
+          "training_start_date": "2026-04-15",
+          "training_time": "13일 · 총 39시간",
+          "training_type": "근로자직업능력개발훈련",
+          "trainst_cstmr_id": "500020062365",
+          "weekend_text": "주중"
+        }
+      },
+      "source": "work24_training",
+      "title": "컴퓨터 기초(윈도우, 인터넷, 한글)과정"
+    },
+    {
+      "diff": {
+        "close_date": {
+          "after": "2026-04-15"
+        },
+        "compare_meta": {
+          "after": {
+            "application_deadline": "2026-04-15",
+            "capacity": "20",
+            "contact_phone": "031-8044-2111",
+            "day_night": "주간",
+            "deadline_source": "traStartDate",
+            "email": "yeong1523@naver.com",
+            "hrd_id": "AIG20240000482898",
+            "registered_count": "20",
+            "satisfaction_score": "4.8",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20240000482898&tracseTme=7&crseTracseSe=C0061&trainstCstmrId=500020024148",
+            "tracse_tme": "7",
+            "training_end_date": "2026-05-13",
+            "training_start_date": "2026-04-15",
+            "training_time": "20일 · 총 100시간",
+            "training_type": "실업자계좌제",
+            "trainst_cstmr_id": "500020024148",
+            "weekend_text": "주중"
+          },
+          "before": {
+            "application_deadline": "2026-04-15",
+            "capacity": "20",
+            "contact_phone": "031-8044-2111",
+            "deadline_source": "traStartDate",
+            "email": "yeong1523@naver.com",
+            "hrd_id": "AIG20240000482898",
+            "registered_count": "20",
+            "satisfaction_score": "4.8",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20240000482898&tracseTme=7&crseTracseSe=C0061&trainstCstmrId=500020024148",
+            "tracse_tme": "7",
+            "training_end_date": "2026-05-13",
+            "training_start_date": "2026-04-15",
+            "trainst_cstmr_id": "500020024148"
+          }
+        }
+      },
+      "id": "4fe708b3-6b6c-49d3-befb-cf07cbd5be81",
+      "match_key": "work24:hrd:AIG20240000482898",
+      "matched": true,
+      "patch": {
+        "close_date": "2026-04-15",
+        "compare_meta": {
+          "application_deadline": "2026-04-15",
+          "capacity": "20",
+          "contact_phone": "031-8044-2111",
+          "day_night": "주간",
+          "deadline_source": "traStartDate",
+          "email": "yeong1523@naver.com",
+          "hrd_id": "AIG20240000482898",
+          "registered_count": "20",
+          "satisfaction_score": "4.8",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20240000482898&tracseTme=7&crseTracseSe=C0061&trainstCstmrId=500020024148",
+          "tracse_tme": "7",
+          "training_end_date": "2026-05-13",
+          "training_start_date": "2026-04-15",
+          "training_time": "20일 · 총 100시간",
+          "training_type": "실업자계좌제",
+          "trainst_cstmr_id": "500020024148",
+          "weekend_text": "주중"
+        }
+      },
+      "source": "work24_training",
+      "title": "컴퓨터활용능력2급+ITQ(한글,엑셀,파워포인트) 속성대비-자체시험장운영"
+    },
+    {
+      "diff": {
+        "close_date": {
+          "after": "2026-04-15"
+        },
+        "compare_meta": {
+          "after": {
+            "application_deadline": "2026-04-15",
+            "capacity": "30",
+            "contact_phone": "051-503-7268",
+            "day_night": "주간",
+            "deadline_source": "traStartDate",
+            "email": "wwhouse@daum.net",
+            "hrd_id": "AIG20250000519265",
+            "registered_count": "22",
+            "satisfaction_score": "4.6",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000519265&tracseTme=3&crseTracseSe=C0061&trainstCstmrId=500020041041",
+            "tracse_tme": "3",
+            "training_end_date": "2026-05-07",
+            "training_start_date": "2026-04-15",
+            "training_time": "8일 · 총 24시간",
+            "training_type": "근로자직업능력개발훈련",
+            "trainst_cstmr_id": "500020041041",
+            "weekend_text": "주중"
+          },
+          "before": {
+            "application_deadline": "2026-04-15",
+            "capacity": "30",
+            "contact_phone": "051-503-7268",
+            "deadline_source": "traStartDate",
+            "email": "wwhouse@daum.net",
+            "hrd_id": "AIG20250000519265",
+            "registered_count": "22",
+            "satisfaction_score": "4.6",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000519265&tracseTme=3&crseTracseSe=C0061&trainstCstmrId=500020041041",
+            "tracse_tme": "3",
+            "training_end_date": "2026-05-07",
+            "training_start_date": "2026-04-15",
+            "trainst_cstmr_id": "500020041041"
+          }
+        }
+      },
+      "id": "9a9af977-f205-4514-8ef6-84838bf87572",
+      "match_key": "work24:hrd:AIG20250000519265",
+      "matched": true,
+      "patch": {
+        "close_date": "2026-04-15",
+        "compare_meta": {
+          "application_deadline": "2026-04-15",
+          "capacity": "30",
+          "contact_phone": "051-503-7268",
+          "day_night": "주간",
+          "deadline_source": "traStartDate",
+          "email": "wwhouse@daum.net",
+          "hrd_id": "AIG20250000519265",
+          "registered_count": "22",
+          "satisfaction_score": "4.6",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000519265&tracseTme=3&crseTracseSe=C0061&trainstCstmrId=500020041041",
+          "tracse_tme": "3",
+          "training_end_date": "2026-05-07",
+          "training_start_date": "2026-04-15",
+          "training_time": "8일 · 총 24시간",
+          "training_type": "근로자직업능력개발훈련",
+          "trainst_cstmr_id": "500020041041",
+          "weekend_text": "주중"
+        }
+      },
+      "source": "work24_training",
+      "title": "정리수납전문가 2급 자격과정"
+    },
+    {
+      "diff": {
+        "close_date": {
+          "after": "2026-04-15"
+        },
+        "compare_meta": {
+          "after": {
+            "application_deadline": "2026-04-15",
+            "capacity": "20",
+            "contact_phone": "031-719-3688",
+            "day_night": "주간",
+            "deadline_source": "traStartDate",
+            "email": "ezensn@naver.com",
+            "hrd_id": "AIG20250000505679",
+            "registered_count": "0",
+            "satisfaction_score": "4.3",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000505679&tracseTme=4&crseTracseSe=C0061&trainstCstmrId=500020055633",
+            "tracse_tme": "4",
+            "training_end_date": "2026-05-14",
+            "training_start_date": "2026-04-15",
+            "training_time": "20일 · 총 80시간",
+            "training_type": "실업자계좌제",
+            "trainst_cstmr_id": "500020055633",
+            "weekend_text": "주중"
+          },
+          "before": {
+            "application_deadline": "2026-04-15",
+            "capacity": "20",
+            "contact_phone": "031-719-3688",
+            "deadline_source": "traStartDate",
+            "email": "ezensn@naver.com",
+            "hrd_id": "AIG20250000505679",
+            "registered_count": "0",
+            "satisfaction_score": "4.3",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000505679&tracseTme=4&crseTracseSe=C0061&trainstCstmrId=500020055633",
+            "tracse_tme": "4",
+            "training_end_date": "2026-05-14",
+            "training_start_date": "2026-04-15",
+            "trainst_cstmr_id": "500020055633"
+          }
+        }
+      },
+      "id": "1a26620a-7c39-4cfc-a464-8cd8674573e8",
+      "match_key": "work24:hrd:AIG20250000505679",
+      "matched": true,
+      "patch": {
+        "close_date": "2026-04-15",
+        "compare_meta": {
+          "application_deadline": "2026-04-15",
+          "capacity": "20",
+          "contact_phone": "031-719-3688",
+          "day_night": "주간",
+          "deadline_source": "traStartDate",
+          "email": "ezensn@naver.com",
+          "hrd_id": "AIG20250000505679",
+          "registered_count": "0",
+          "satisfaction_score": "4.3",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000505679&tracseTme=4&crseTracseSe=C0061&trainstCstmrId=500020055633",
+          "tracse_tme": "4",
+          "training_end_date": "2026-05-14",
+          "training_start_date": "2026-04-15",
+          "training_time": "20일 · 총 80시간",
+          "training_type": "실업자계좌제",
+          "trainst_cstmr_id": "500020055633",
+          "weekend_text": "주중"
+        }
+      },
+      "source": "work24_training",
+      "title": "[컴퓨터활용능력 2급] 컴활2급_필기,실기 자격증취득과정"
+    },
+    {
+      "diff": {
+        "close_date": {
+          "after": "2026-04-15"
+        },
+        "compare_meta": {
+          "after": {
+            "application_deadline": "2026-04-15",
+            "capacity": "20",
+            "contact_phone": "031-712-7447",
+            "day_night": "주간",
+            "deadline_source": "traStartDate",
+            "email": "mriz@nate.com",
+            "hrd_id": "AIG20240000476604",
+            "registered_count": "0",
+            "satisfaction_score": "4.1",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20240000476604&tracseTme=3&crseTracseSe=C0061&trainstCstmrId=500020054642",
+            "tracse_tme": "3",
+            "training_end_date": "2026-06-10",
+            "training_start_date": "2026-04-15",
+            "training_time": "37일 · 총 185시간",
+            "training_type": "실업자계좌제",
+            "trainst_cstmr_id": "500020054642",
+            "weekend_text": "주중"
+          },
+          "before": {
+            "application_deadline": "2026-04-15",
+            "deadline_source": "traStartDate",
+            "training_end_date": "2026-06-10",
+            "training_start_date": "2026-04-15"
+          }
+        }
+      },
+      "id": "4f4aad7b-d9dc-4d35-9c99-4ec4c38ddf49",
+      "match_key": "work24:hrd:AIG20240000476604",
+      "matched": true,
+      "patch": {
+        "close_date": "2026-04-15",
+        "compare_meta": {
+          "application_deadline": "2026-04-15",
+          "capacity": "20",
+          "contact_phone": "031-712-7447",
+          "day_night": "주간",
+          "deadline_source": "traStartDate",
+          "email": "mriz@nate.com",
+          "hrd_id": "AIG20240000476604",
+          "registered_count": "0",
+          "satisfaction_score": "4.1",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20240000476604&tracseTme=3&crseTracseSe=C0061&trainstCstmrId=500020054642",
+          "tracse_tme": "3",
+          "training_end_date": "2026-06-10",
+          "training_start_date": "2026-04-15",
+          "training_time": "37일 · 총 185시간",
+          "training_type": "실업자계좌제",
+          "trainst_cstmr_id": "500020054642",
+          "weekend_text": "주중"
+        }
+      },
+      "source": "work24_training",
+      "title": "[디자인 첫걸음]광고&편집디자인(포토샵, 일러스트, 인디자인)입문과정"
+    },
+    {
+      "diff": {
+        "close_date": {
+          "after": "2026-04-15"
+        },
+        "compare_meta": {
+          "after": {
+            "application_deadline": "2026-04-15",
+            "capacity": "30",
+            "contact_phone": "051-912-1000",
+            "day_night": "주간",
+            "deadline_source": "traStartDate",
+            "email": "rc_ruler@naver.com",
+            "hrd_id": "AIG20250000513924",
+            "registered_count": "18",
+            "satisfaction_score": "4.5",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000513924&tracseTme=4&crseTracseSe=C0061&trainstCstmrId=500020016714",
+            "tracse_tme": "4",
+            "training_end_date": "2026-05-13",
+            "training_start_date": "2026-04-15",
+            "training_time": "20일 · 총 80시간",
+            "training_type": "실업자계좌제",
+            "trainst_cstmr_id": "500020016714",
+            "weekend_text": "주중"
+          },
+          "before": {
+            "application_deadline": "2026-04-15",
+            "capacity": "30",
+            "contact_phone": "051-912-1000",
+            "deadline_source": "traStartDate",
+            "email": "rc_ruler@naver.com",
+            "hrd_id": "AIG20250000513924",
+            "registered_count": "18",
+            "satisfaction_score": "4.5",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000513924&tracseTme=4&crseTracseSe=C0061&trainstCstmrId=500020016714",
+            "tracse_tme": "4",
+            "training_end_date": "2026-05-13",
+            "training_start_date": "2026-04-15",
+            "trainst_cstmr_id": "500020016714"
+          }
+        }
+      },
+      "id": "f942f0c5-01d1-4c7f-ad62-3f91e2a90217",
+      "match_key": "work24:hrd:AIG20250000513924",
+      "matched": true,
+      "patch": {
+        "close_date": "2026-04-15",
+        "compare_meta": {
+          "application_deadline": "2026-04-15",
+          "capacity": "30",
+          "contact_phone": "051-912-1000",
+          "day_night": "주간",
+          "deadline_source": "traStartDate",
+          "email": "rc_ruler@naver.com",
+          "hrd_id": "AIG20250000513924",
+          "registered_count": "18",
+          "satisfaction_score": "4.5",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000513924&tracseTme=4&crseTracseSe=C0061&trainstCstmrId=500020016714",
+          "tracse_tme": "4",
+          "training_end_date": "2026-05-13",
+          "training_start_date": "2026-04-15",
+          "training_time": "20일 · 총 80시간",
+          "training_type": "실업자계좌제",
+          "trainst_cstmr_id": "500020016714",
+          "weekend_text": "주중"
+        }
+      },
+      "source": "work24_training",
+      "title": "『한번에 취득하는』컴퓨터활용능력(컴활) 2급 (필기+실기) 자격증 취득과정 및 사무 취업과정"
+    },
+    {
+      "diff": {
+        "close_date": {
+          "after": "2026-04-15"
+        },
+        "compare_meta": {
+          "after": {
+            "application_deadline": "2026-04-15",
+            "capacity": "25",
+            "contact_phone": "031-877-1170",
+            "day_night": "주간",
+            "deadline_source": "traStartDate",
+            "email": "acegrooming1170@naver.com",
+            "hrd_id": "AIG20250000524241",
+            "registered_count": "6",
+            "satisfaction_score": "0",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000524241&tracseTme=2&crseTracseSe=C0061&trainstCstmrId=500034209690",
+            "tracse_tme": "2",
+            "training_end_date": "2026-10-01",
+            "training_start_date": "2026-04-15",
+            "training_time": "110일 · 총 440시간",
+            "training_type": "실업자계좌제",
+            "trainst_cstmr_id": "500034209690"
+          },
+          "before": {
+            "application_deadline": "2026-04-15",
+            "deadline_source": "traStartDate",
+            "training_end_date": "2026-10-01",
+            "training_start_date": "2026-04-15"
+          }
+        }
+      },
+      "id": "29620b7a-2d9f-4356-af4f-8c2caff83cfd",
+      "match_key": "work24:hrd:AIG20250000524241",
+      "matched": true,
+      "patch": {
+        "close_date": "2026-04-15",
+        "compare_meta": {
+          "application_deadline": "2026-04-15",
+          "capacity": "25",
+          "contact_phone": "031-877-1170",
+          "day_night": "주간",
+          "deadline_source": "traStartDate",
+          "email": "acegrooming1170@naver.com",
+          "hrd_id": "AIG20250000524241",
+          "registered_count": "6",
+          "satisfaction_score": "0",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000524241&tracseTme=2&crseTracseSe=C0061&trainstCstmrId=500034209690",
+          "tracse_tme": "2",
+          "training_end_date": "2026-10-01",
+          "training_start_date": "2026-04-15",
+          "training_time": "110일 · 총 440시간",
+          "training_type": "실업자계좌제",
+          "trainst_cstmr_id": "500034209690"
+        }
+      },
+      "source": "work24_training",
+      "title": "애견미용사3급자격증"
+    },
+    {
+      "diff": {
+        "close_date": {
+          "after": "2026-04-15"
+        },
+        "compare_meta": {
+          "after": {
+            "application_deadline": "2026-04-15",
+            "deadline_source": "traStartDate",
+            "hrd_id": "AIG20230000434120",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20230000434120&tracseTme=13&crseTracseSe=C0061&trainstCstmrId=500020047973",
+            "tracse_tme": "13",
+            "training_end_date": "2026-05-29",
+            "training_start_date": "2026-04-15",
+            "trainst_cstmr_id": "500020047973"
+          },
+          "before": {
+            "application_deadline": "2026-04-15",
+            "deadline_source": "traStartDate",
+            "training_end_date": "2026-05-29",
+            "training_start_date": "2026-04-15"
+          }
+        }
+      },
+      "id": "e75053e8-17f0-4e9a-a3a9-24ed9c0a265c",
+      "match_key": "work24:hrd:AIG20230000434120",
+      "matched": true,
+      "patch": {
+        "close_date": "2026-04-15",
+        "compare_meta": {
+          "application_deadline": "2026-04-15",
+          "deadline_source": "traStartDate",
+          "hrd_id": "AIG20230000434120",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20230000434120&tracseTme=13&crseTracseSe=C0061&trainstCstmrId=500020047973",
+          "tracse_tme": "13",
+          "training_end_date": "2026-05-29",
+          "training_start_date": "2026-04-15",
+          "trainst_cstmr_id": "500020047973"
+        }
+      },
+      "source": "work24_training",
+      "title": "ITQ(한글,엑셀,파워포인트)Master 및 컴퓨터활용능력2급(실기)취득"
+    },
+    {
+      "diff": {
+        "close_date": {
+          "after": "2026-04-15"
+        },
+        "compare_meta": {
+          "after": {
+            "application_deadline": "2026-04-15",
+            "capacity": "37",
+            "contact_phone": "031-768-7988",
+            "day_night": "주간",
+            "deadline_source": "traStartDate",
+            "email": "hp.2010@hanmail.net",
+            "hrd_id": "AIG20250000507538",
+            "registered_count": "15",
+            "satisfaction_score": "4.9",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000507538&tracseTme=2&crseTracseSe=C0061&trainstCstmrId=500038265965",
+            "tracse_tme": "2",
+            "training_end_date": "2026-06-15",
+            "training_start_date": "2026-04-15",
+            "training_time": "41일 · 총 320시간",
+            "training_type": "실업자계좌제",
+            "trainst_cstmr_id": "500038265965",
+            "weekend_text": "주중"
+          },
+          "before": {
+            "application_deadline": "2026-04-15",
+            "deadline_source": "traStartDate",
+            "training_end_date": "2026-06-15",
+            "training_start_date": "2026-04-15"
+          }
+        }
+      },
+      "id": "6e359374-309f-4e55-a95f-b31e4ad055f0",
+      "match_key": "work24:hrd:AIG20250000507538",
+      "matched": true,
+      "patch": {
+        "close_date": "2026-04-15",
+        "compare_meta": {
+          "application_deadline": "2026-04-15",
+          "capacity": "37",
+          "contact_phone": "031-768-7988",
+          "day_night": "주간",
+          "deadline_source": "traStartDate",
+          "email": "hp.2010@hanmail.net",
+          "hrd_id": "AIG20250000507538",
+          "registered_count": "15",
+          "satisfaction_score": "4.9",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000507538&tracseTme=2&crseTracseSe=C0061&trainstCstmrId=500038265965",
+          "tracse_tme": "2",
+          "training_end_date": "2026-06-15",
+          "training_start_date": "2026-04-15",
+          "training_time": "41일 · 총 320시간",
+          "training_type": "실업자계좌제",
+          "trainst_cstmr_id": "500038265965",
+          "weekend_text": "주중"
+        }
+      },
+      "source": "work24_training",
+      "title": "요양보호사 자격취득과정(신규자)"
+    },
+    {
+      "diff": {
+        "close_date": {
+          "after": "2026-04-15"
+        },
+        "compare_meta": {
+          "after": {
+            "application_deadline": "2026-04-15",
+            "capacity": "20",
+            "contact_phone": "032-463-2266",
+            "day_night": "주간",
+            "deadline_source": "traStartDate",
+            "email": "lik0913@naver.com",
+            "hrd_id": "AIG20250000525376",
+            "registered_count": "20",
+            "satisfaction_score": "4.4",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000525376&tracseTme=8&crseTracseSe=C0061&trainstCstmrId=500020016040",
+            "tracse_tme": "8",
+            "training_end_date": "2026-05-08",
+            "training_start_date": "2026-04-15",
+            "training_time": "15일 · 총 45시간",
+            "training_type": "근로자직업능력개발훈련",
+            "trainst_cstmr_id": "500020016040",
+            "weekend_text": "주중"
+          },
+          "before": {
+            "application_deadline": "2026-04-15",
+            "capacity": "20",
+            "contact_phone": "032-463-2266",
+            "deadline_source": "traStartDate",
+            "email": "lik0913@naver.com",
+            "hrd_id": "AIG20250000525376",
+            "registered_count": "20",
+            "satisfaction_score": "4.4",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000525376&tracseTme=8&crseTracseSe=C0061&trainstCstmrId=500020016040",
+            "tracse_tme": "8",
+            "training_end_date": "2026-05-08",
+            "training_start_date": "2026-04-15",
+            "trainst_cstmr_id": "500020016040"
+          }
+        }
+      },
+      "id": "b014be9f-f1cf-4fc6-9b62-16569758f76c",
+      "match_key": "work24:hrd:AIG20250000525376",
+      "matched": true,
+      "patch": {
+        "close_date": "2026-04-15",
+        "compare_meta": {
+          "application_deadline": "2026-04-15",
+          "capacity": "20",
+          "contact_phone": "032-463-2266",
+          "day_night": "주간",
+          "deadline_source": "traStartDate",
+          "email": "lik0913@naver.com",
+          "hrd_id": "AIG20250000525376",
+          "registered_count": "20",
+          "satisfaction_score": "4.4",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000525376&tracseTme=8&crseTracseSe=C0061&trainstCstmrId=500020016040",
+          "tracse_tme": "8",
+          "training_end_date": "2026-05-08",
+          "training_start_date": "2026-04-15",
+          "training_time": "15일 · 총 45시간",
+          "training_type": "근로자직업능력개발훈련",
+          "trainst_cstmr_id": "500020016040",
+          "weekend_text": "주중"
+        }
+      },
+      "source": "work24_training",
+      "title": "『낮과정』 컴퓨터활용능력 2급 필기+실기 자격증 취득"
+    },
+    {
+      "diff": {
+        "close_date": {
+          "after": "2026-04-15"
+        },
+        "compare_meta": {
+          "after": {
+            "application_deadline": "2026-04-15",
+            "capacity": "18",
+            "contact_phone": "031-251-2151",
+            "day_night": "주간",
+            "deadline_source": "traStartDate",
+            "email": "cys2151@naver.com",
+            "hrd_id": "AIG20250000525618",
+            "registered_count": "9",
+            "satisfaction_score": "4.6",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000525618&tracseTme=3&crseTracseSe=C0061&trainstCstmrId=500036696085",
+            "tracse_tme": "3",
+            "training_end_date": "2026-04-28",
+            "training_start_date": "2026-04-15",
+            "training_time": "10일 · 총 80시간",
+            "training_type": "실업자계좌제",
+            "trainst_cstmr_id": "500036696085",
+            "weekend_text": "주중"
+          },
+          "before": {
+            "application_deadline": "2026-04-15",
+            "capacity": "18",
+            "contact_phone": "031-251-2151",
+            "deadline_source": "traStartDate",
+            "email": "cys2151@naver.com",
+            "hrd_id": "AIG20250000525618",
+            "registered_count": "9",
+            "satisfaction_score": "4.6",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000525618&tracseTme=3&crseTracseSe=C0061&trainstCstmrId=500036696085",
+            "tracse_tme": "3",
+            "training_end_date": "2026-04-28",
+            "training_start_date": "2026-04-15",
+            "trainst_cstmr_id": "500036696085"
+          }
+        }
+      },
+      "id": "d019f2dc-bb6c-4fa0-9d5d-ecd7b04e7368",
+      "match_key": "work24:hrd:AIG20250000525618",
+      "matched": true,
+      "patch": {
+        "close_date": "2026-04-15",
+        "compare_meta": {
+          "application_deadline": "2026-04-15",
+          "capacity": "18",
+          "contact_phone": "031-251-2151",
+          "day_night": "주간",
+          "deadline_source": "traStartDate",
+          "email": "cys2151@naver.com",
+          "hrd_id": "AIG20250000525618",
+          "registered_count": "9",
+          "satisfaction_score": "4.6",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000525618&tracseTme=3&crseTracseSe=C0061&trainstCstmrId=500036696085",
+          "tracse_tme": "3",
+          "training_end_date": "2026-04-28",
+          "training_start_date": "2026-04-15",
+          "training_time": "10일 · 총 80시간",
+          "training_type": "실업자계좌제",
+          "trainst_cstmr_id": "500036696085",
+          "weekend_text": "주중"
+        }
+      },
+      "source": "work24_training",
+      "title": "실용 인테리어 타일 집수리 실무과정"
+    },
+    {
+      "diff": {
+        "close_date": {
+          "after": "2026-04-15"
+        },
+        "compare_meta": {
+          "after": {
+            "application_deadline": "2026-04-15",
+            "capacity": "20",
+            "contact_phone": "032-881-6060",
+            "day_night": "주간",
+            "deadline_source": "traStartDate",
+            "email": "namgu6060@hanmail.net",
+            "hrd_id": "AIG20250000523221",
+            "registered_count": "7",
+            "satisfaction_score": "4.6",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000523221&tracseTme=2&crseTracseSe=C0061&trainstCstmrId=500020054637",
+            "tracse_tme": "2",
+            "training_end_date": "2026-05-20",
+            "training_start_date": "2026-04-15",
+            "training_time": "10일 · 총 28시간",
+            "training_type": "근로자직업능력개발훈련",
+            "trainst_cstmr_id": "500020054637",
+            "weekend_text": "주중"
+          },
+          "before": {
+            "application_deadline": "2026-04-15",
+            "capacity": "20",
+            "contact_phone": "032-881-6060",
+            "deadline_source": "traStartDate",
+            "email": "namgu6060@hanmail.net",
+            "hrd_id": "AIG20250000523221",
+            "registered_count": "7",
+            "satisfaction_score": "4.6",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000523221&tracseTme=2&crseTracseSe=C0061&trainstCstmrId=500020054637",
+            "tracse_tme": "2",
+            "training_end_date": "2026-05-20",
+            "training_start_date": "2026-04-15",
+            "trainst_cstmr_id": "500020054637"
+          }
+        }
+      },
+      "id": "d73359c3-bd84-4aec-aa6b-35051057cbce",
+      "match_key": "work24:hrd:AIG20250000523221",
+      "matched": true,
+      "patch": {
+        "close_date": "2026-04-15",
+        "compare_meta": {
+          "application_deadline": "2026-04-15",
+          "capacity": "20",
+          "contact_phone": "032-881-6060",
+          "day_night": "주간",
+          "deadline_source": "traStartDate",
+          "email": "namgu6060@hanmail.net",
+          "hrd_id": "AIG20250000523221",
+          "registered_count": "7",
+          "satisfaction_score": "4.6",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000523221&tracseTme=2&crseTracseSe=C0061&trainstCstmrId=500020054637",
+          "tracse_tme": "2",
+          "training_end_date": "2026-05-20",
+          "training_start_date": "2026-04-15",
+          "training_time": "10일 · 총 28시간",
+          "training_type": "근로자직업능력개발훈련",
+          "trainst_cstmr_id": "500020054637",
+          "weekend_text": "주중"
+        }
+      },
+      "source": "work24_training",
+      "title": "정리수납전문가 2급&홈케어마스터"
+    },
+    {
+      "diff": {
+        "close_date": {
+          "after": "2026-04-15"
+        },
+        "compare_meta": {
+          "after": {
+            "application_deadline": "2026-04-15",
+            "capacity": "37",
+            "contact_phone": "052-211-8333",
+            "day_night": "주간",
+            "deadline_source": "traStartDate",
+            "email": "kgyg3578@naver.com",
+            "hrd_id": "AIG20250000502091",
+            "registered_count": "34",
+            "satisfaction_score": "5.0",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000502091&tracseTme=5&crseTracseSe=C0061&trainstCstmrId=500020040201",
+            "tracse_tme": "5",
+            "training_end_date": "2026-06-19",
+            "training_start_date": "2026-04-15",
+            "training_time": "45일 · 총 320시간",
+            "training_type": "실업자계좌제",
+            "trainst_cstmr_id": "500020040201",
+            "weekend_text": "주중"
+          },
+          "before": {
+            "application_deadline": "2026-04-15",
+            "deadline_source": "traStartDate",
+            "training_end_date": "2026-06-19",
+            "training_start_date": "2026-04-15"
+          }
+        }
+      },
+      "id": "c81d4367-707f-4b52-a53a-fe5d69148d6b",
+      "match_key": "work24:hrd:AIG20250000502091",
+      "matched": true,
+      "patch": {
+        "close_date": "2026-04-15",
+        "compare_meta": {
+          "application_deadline": "2026-04-15",
+          "capacity": "37",
+          "contact_phone": "052-211-8333",
+          "day_night": "주간",
+          "deadline_source": "traStartDate",
+          "email": "kgyg3578@naver.com",
+          "hrd_id": "AIG20250000502091",
+          "registered_count": "34",
+          "satisfaction_score": "5.0",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000502091&tracseTme=5&crseTracseSe=C0061&trainstCstmrId=500020040201",
+          "tracse_tme": "5",
+          "training_end_date": "2026-06-19",
+          "training_start_date": "2026-04-15",
+          "training_time": "45일 · 총 320시간",
+          "training_type": "실업자계좌제",
+          "trainst_cstmr_id": "500020040201",
+          "weekend_text": "주중"
+        }
+      },
+      "source": "work24_training",
+      "title": "요양보호사 자격 취득과정 [주간/야간]"
+    },
+    {
+      "diff": {
+        "close_date": {
+          "after": "2026-04-15"
+        },
+        "compare_meta": {
+          "after": {
+            "application_deadline": "2026-04-15",
+            "capacity": "20",
+            "contact_phone": "031-8044-2111",
+            "day_night": "주간",
+            "deadline_source": "traStartDate",
+            "email": "yeong1523@naver.com",
+            "hrd_id": "AIG20250000530464",
+            "registered_count": "0",
+            "satisfaction_score": "0",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000530464&tracseTme=11&crseTracseSe=C0061&trainstCstmrId=500020024148",
+            "tracse_tme": "11",
+            "training_end_date": "2026-05-07",
+            "training_start_date": "2026-04-15",
+            "training_time": "16일 · 총 80시간",
+            "training_type": "실업자계좌제",
+            "trainst_cstmr_id": "500020024148",
+            "weekend_text": "주중"
+          },
+          "before": {
+            "application_deadline": "2026-04-15",
+            "capacity": "20",
+            "contact_phone": "031-8044-2111",
+            "deadline_source": "traStartDate",
+            "email": "yeong1523@naver.com",
+            "hrd_id": "AIG20250000530464",
+            "registered_count": "0",
+            "satisfaction_score": "0",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000530464&tracseTme=11&crseTracseSe=C0061&trainstCstmrId=500020024148",
+            "tracse_tme": "11",
+            "training_end_date": "2026-05-07",
+            "training_start_date": "2026-04-15",
+            "trainst_cstmr_id": "500020024148"
+          }
+        }
+      },
+      "id": "a55edfcc-7f75-4cd8-a00c-0810ecdafa24",
+      "match_key": "work24:hrd:AIG20250000530464",
+      "matched": true,
+      "patch": {
+        "close_date": "2026-04-15",
+        "compare_meta": {
+          "application_deadline": "2026-04-15",
+          "capacity": "20",
+          "contact_phone": "031-8044-2111",
+          "day_night": "주간",
+          "deadline_source": "traStartDate",
+          "email": "yeong1523@naver.com",
+          "hrd_id": "AIG20250000530464",
+          "registered_count": "0",
+          "satisfaction_score": "0",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000530464&tracseTme=11&crseTracseSe=C0061&trainstCstmrId=500020024148",
+          "tracse_tme": "11",
+          "training_end_date": "2026-05-07",
+          "training_start_date": "2026-04-15",
+          "training_time": "16일 · 총 80시간",
+          "training_type": "실업자계좌제",
+          "trainst_cstmr_id": "500020024148",
+          "weekend_text": "주중"
+        }
+      },
+      "source": "work24_training",
+      "title": "[26년 최신과정] Smart Designer – AI와 함께하는 포토샵&일러스트"
+    },
+    {
+      "diff": {
+        "close_date": {
+          "after": "2026-04-15"
+        },
+        "compare_meta": {
+          "after": {
+            "application_deadline": "2026-04-15",
+            "capacity": "10",
+            "contact_phone": "032-882-3908",
+            "day_night": "주간",
+            "deadline_source": "traStartDate",
+            "email": "mjschool83@naver.com",
+            "hrd_id": "AIG20250000509251",
+            "registered_count": "0",
+            "satisfaction_score": ".7",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000509251&tracseTme=8&crseTracseSe=C0061&trainstCstmrId=500020013498",
+            "tracse_tme": "8",
+            "training_end_date": "2026-05-19",
+            "training_start_date": "2026-04-15",
+            "training_time": "24일 · 총 92시간",
+            "training_type": "실업자계좌제",
+            "trainst_cstmr_id": "500020013498",
+            "weekend_text": "주중"
+          },
+          "before": {
+            "application_deadline": "2026-04-15",
+            "capacity": "10",
+            "contact_phone": "032-882-3908",
+            "deadline_source": "traStartDate",
+            "email": "mjschool83@naver.com",
+            "hrd_id": "AIG20250000509251",
+            "registered_count": "0",
+            "satisfaction_score": ".7",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000509251&tracseTme=8&crseTracseSe=C0061&trainstCstmrId=500020013498",
+            "tracse_tme": "8",
+            "training_end_date": "2026-05-19",
+            "training_start_date": "2026-04-15",
+            "trainst_cstmr_id": "500020013498"
+          }
+        }
+      },
+      "id": "a3aec28a-9d86-42c7-81d4-cbca0798c00f",
+      "match_key": "work24:hrd:AIG20250000509251",
+      "matched": true,
+      "patch": {
+        "close_date": "2026-04-15",
+        "compare_meta": {
+          "application_deadline": "2026-04-15",
+          "capacity": "10",
+          "contact_phone": "032-882-3908",
+          "day_night": "주간",
+          "deadline_source": "traStartDate",
+          "email": "mjschool83@naver.com",
+          "hrd_id": "AIG20250000509251",
+          "registered_count": "0",
+          "satisfaction_score": ".7",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000509251&tracseTme=8&crseTracseSe=C0061&trainstCstmrId=500020013498",
+          "tracse_tme": "8",
+          "training_end_date": "2026-05-19",
+          "training_start_date": "2026-04-15",
+          "training_time": "24일 · 총 92시간",
+          "training_type": "실업자계좌제",
+          "trainst_cstmr_id": "500020013498",
+          "weekend_text": "주중"
+        }
+      },
+      "source": "work24_training",
+      "title": "컴퓨터활용능력2급(필기+실기)"
+    },
+    {
+      "diff": {
+        "close_date": {
+          "after": "2026-04-15"
+        },
+        "compare_meta": {
+          "after": {
+            "application_deadline": "2026-04-15",
+            "capacity": "15",
+            "contact_phone": "032-438-0045",
+            "day_night": "주간",
+            "deadline_source": "traStartDate",
+            "email": "plibi@hanmail.net",
+            "hrd_id": "AIG20230000420693",
+            "registered_count": "9",
+            "satisfaction_score": "4.6",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20230000420693&tracseTme=21&crseTracseSe=C0061&trainstCstmrId=500020059992",
+            "tracse_tme": "21",
+            "training_end_date": "2026-06-05",
+            "training_start_date": "2026-04-15",
+            "training_time": "21일 · 총 73시간",
+            "training_type": "실업자계좌제",
+            "trainst_cstmr_id": "500020059992",
+            "weekend_text": "주중"
+          },
+          "before": {
+            "application_deadline": "2026-04-15",
+            "deadline_source": "traStartDate",
+            "training_end_date": "2026-06-05",
+            "training_start_date": "2026-04-15"
+          }
+        }
+      },
+      "id": "7f47cac0-fffd-413f-badf-2ef2ac3adcfe",
+      "match_key": "work24:hrd:AIG20230000420693",
+      "matched": true,
+      "patch": {
+        "close_date": "2026-04-15",
+        "compare_meta": {
+          "application_deadline": "2026-04-15",
+          "capacity": "15",
+          "contact_phone": "032-438-0045",
+          "day_night": "주간",
+          "deadline_source": "traStartDate",
+          "email": "plibi@hanmail.net",
+          "hrd_id": "AIG20230000420693",
+          "registered_count": "9",
+          "satisfaction_score": "4.6",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20230000420693&tracseTme=21&crseTracseSe=C0061&trainstCstmrId=500020059992",
+          "tracse_tme": "21",
+          "training_end_date": "2026-06-05",
+          "training_start_date": "2026-04-15",
+          "training_time": "21일 · 총 73시간",
+          "training_type": "실업자계좌제",
+          "trainst_cstmr_id": "500020059992",
+          "weekend_text": "주중"
+        }
+      },
+      "source": "work24_training",
+      "title": "카페 디저트 실무"
+    },
+    {
+      "diff": {
+        "close_date": {
+          "after": "2026-04-15"
+        },
+        "compare_meta": {
+          "after": {
+            "application_deadline": "2026-04-15",
+            "capacity": "5",
+            "contact_phone": "053-654-8883",
+            "day_night": "야간",
+            "deadline_source": "traStartDate",
+            "email": "ksugki@naver.com",
+            "hrd_id": "AIG20250000521803",
+            "registered_count": "2",
+            "satisfaction_score": "0",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000521803&tracseTme=1&crseTracseSe=C0061&trainstCstmrId=500020062459",
+            "tracse_tme": "1",
+            "training_end_date": "2026-05-27",
+            "training_start_date": "2026-04-15",
+            "training_time": "13일 · 총 39시간",
+            "training_type": "근로자직업능력개발훈련",
+            "trainst_cstmr_id": "500020062459",
+            "weekend_text": "주중"
+          },
+          "before": {
+            "application_deadline": "2026-04-15",
+            "capacity": "5",
+            "contact_phone": "053-654-8883",
+            "deadline_source": "traStartDate",
+            "email": "ksugki@naver.com",
+            "hrd_id": "AIG20250000521803",
+            "registered_count": "2",
+            "satisfaction_score": "0",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000521803&tracseTme=1&crseTracseSe=C0061&trainstCstmrId=500020062459",
+            "tracse_tme": "1",
+            "training_end_date": "2026-05-27",
+            "training_start_date": "2026-04-15",
+            "trainst_cstmr_id": "500020062459"
+          }
+        }
+      },
+      "id": "52c8607b-0ced-4d0d-83cd-69e0955319eb",
+      "match_key": "work24:hrd:AIG20250000521803",
+      "matched": true,
+      "patch": {
+        "close_date": "2026-04-15",
+        "compare_meta": {
+          "application_deadline": "2026-04-15",
+          "capacity": "5",
+          "contact_phone": "053-654-8883",
+          "day_night": "야간",
+          "deadline_source": "traStartDate",
+          "email": "ksugki@naver.com",
+          "hrd_id": "AIG20250000521803",
+          "registered_count": "2",
+          "satisfaction_score": "0",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000521803&tracseTme=1&crseTracseSe=C0061&trainstCstmrId=500020062459",
+          "tracse_tme": "1",
+          "training_end_date": "2026-05-27",
+          "training_start_date": "2026-04-15",
+          "training_time": "13일 · 총 39시간",
+          "training_type": "근로자직업능력개발훈련",
+          "trainst_cstmr_id": "500020062459",
+          "weekend_text": "주중"
+        }
+      },
+      "source": "work24_training",
+      "title": "포토샵기초(중장년)"
+    },
+    {
+      "diff": {
+        "close_date": {
+          "after": "2026-04-15"
+        },
+        "compare_meta": {
+          "after": {
+            "application_deadline": "2026-04-15",
+            "capacity": "20",
+            "contact_phone": "053-628-0911",
+            "day_night": "야간",
+            "deadline_source": "traStartDate",
+            "email": "happykd@naver.com",
+            "hrd_id": "AIG20230000419950",
+            "registered_count": "0",
+            "satisfaction_score": "5.0",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20230000419950&tracseTme=17&crseTracseSe=C0061&trainstCstmrId=500020039412",
+            "tracse_tme": "17",
+            "training_end_date": "2026-06-04",
+            "training_start_date": "2026-04-15",
+            "training_time": "20일 · 총 60시간",
+            "training_type": "근로자직업능력개발훈련",
+            "trainst_cstmr_id": "500020039412",
+            "weekend_text": "주중"
+          },
+          "before": {
+            "application_deadline": "2026-04-15",
+            "deadline_source": "traStartDate",
+            "training_end_date": "2026-06-04",
+            "training_start_date": "2026-04-15"
+          }
+        }
+      },
+      "id": "4385f208-dea8-43ef-a493-0071a7e922d2",
+      "match_key": "work24:hrd:AIG20230000419950",
+      "matched": true,
+      "patch": {
+        "close_date": "2026-04-15",
+        "compare_meta": {
+          "application_deadline": "2026-04-15",
+          "capacity": "20",
+          "contact_phone": "053-628-0911",
+          "day_night": "야간",
+          "deadline_source": "traStartDate",
+          "email": "happykd@naver.com",
+          "hrd_id": "AIG20230000419950",
+          "registered_count": "0",
+          "satisfaction_score": "5.0",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20230000419950&tracseTme=17&crseTracseSe=C0061&trainstCstmrId=500020039412",
+          "tracse_tme": "17",
+          "training_end_date": "2026-06-04",
+          "training_start_date": "2026-04-15",
+          "training_time": "20일 · 총 60시간",
+          "training_type": "근로자직업능력개발훈련",
+          "trainst_cstmr_id": "500020039412",
+          "weekend_text": "주중"
+        }
+      },
+      "source": "work24_training",
+      "title": "전산회계1급(기초포함)"
+    },
+    {
+      "diff": {
+        "close_date": {
+          "after": "2026-04-15"
+        },
+        "compare_meta": {
+          "after": {
+            "application_deadline": "2026-04-15",
+            "capacity": "30",
+            "contact_phone": "055-313-0118",
+            "day_night": "주간",
+            "deadline_source": "traStartDate",
+            "email": "yu0510@naver.com",
+            "hrd_id": "AIG20250000529684",
+            "registered_count": "17",
+            "satisfaction_score": "0",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000529684&tracseTme=2&crseTracseSe=C0061&trainstCstmrId=500041238041",
+            "tracse_tme": "2",
+            "training_end_date": "2026-06-26",
+            "training_start_date": "2026-04-15",
+            "training_time": "50일 · 총 320시간",
+            "training_type": "실업자계좌제",
+            "trainst_cstmr_id": "500041238041",
+            "weekend_text": "주중"
+          },
+          "before": {
+            "application_deadline": "2026-04-15",
+            "deadline_source": "traStartDate",
+            "training_end_date": "2026-06-26",
+            "training_start_date": "2026-04-15"
+          }
+        }
+      },
+      "id": "03261446-38a4-4679-871a-700ba387e44d",
+      "match_key": "work24:hrd:AIG20250000529684",
+      "matched": true,
+      "patch": {
+        "close_date": "2026-04-15",
+        "compare_meta": {
+          "application_deadline": "2026-04-15",
+          "capacity": "30",
+          "contact_phone": "055-313-0118",
+          "day_night": "주간",
+          "deadline_source": "traStartDate",
+          "email": "yu0510@naver.com",
+          "hrd_id": "AIG20250000529684",
+          "registered_count": "17",
+          "satisfaction_score": "0",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000529684&tracseTme=2&crseTracseSe=C0061&trainstCstmrId=500041238041",
+          "tracse_tme": "2",
+          "training_end_date": "2026-06-26",
+          "training_start_date": "2026-04-15",
+          "training_time": "50일 · 총 320시간",
+          "training_type": "실업자계좌제",
+          "trainst_cstmr_id": "500041238041",
+          "weekend_text": "주중"
+        }
+      },
+      "source": "work24_training",
+      "title": "요양보호사 표준교육과정(신규자반)"
+    },
+    {
+      "diff": {
+        "close_date": {
+          "after": "2026-04-15"
+        },
+        "compare_meta": {
+          "after": {
+            "application_deadline": "2026-04-15",
+            "capacity": "18",
+            "contact_phone": "053-295-1134",
+            "day_night": "주간",
+            "deadline_source": "traStartDate",
+            "email": "rummage@naver.com",
+            "hrd_id": "AIG20250000512415",
+            "registered_count": "7",
+            "satisfaction_score": "5.0",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000512415&tracseTme=5&crseTracseSe=C0061&trainstCstmrId=500020037099",
+            "tracse_tme": "5",
+            "training_end_date": "2026-05-06",
+            "training_start_date": "2026-04-15",
+            "training_time": "10일 · 총 30시간",
+            "training_type": "근로자직업능력개발훈련",
+            "trainst_cstmr_id": "500020037099",
+            "weekend_text": "주중"
+          },
+          "before": {
+            "application_deadline": "2026-04-15",
+            "capacity": "18",
+            "contact_phone": "053-295-1134",
+            "deadline_source": "traStartDate",
+            "email": "rummage@naver.com",
+            "hrd_id": "AIG20250000512415",
+            "registered_count": "7",
+            "satisfaction_score": "5.0",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000512415&tracseTme=5&crseTracseSe=C0061&trainstCstmrId=500020037099",
+            "tracse_tme": "5",
+            "training_end_date": "2026-05-06",
+            "training_start_date": "2026-04-15",
+            "trainst_cstmr_id": "500020037099"
+          }
+        }
+      },
+      "id": "8a7ed15c-30c8-4f71-826d-1c0301229fe3",
+      "match_key": "work24:hrd:AIG20250000512415",
+      "matched": true,
+      "patch": {
+        "close_date": "2026-04-15",
+        "compare_meta": {
+          "application_deadline": "2026-04-15",
+          "capacity": "18",
+          "contact_phone": "053-295-1134",
+          "day_night": "주간",
+          "deadline_source": "traStartDate",
+          "email": "rummage@naver.com",
+          "hrd_id": "AIG20250000512415",
+          "registered_count": "7",
+          "satisfaction_score": "5.0",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000512415&tracseTme=5&crseTracseSe=C0061&trainstCstmrId=500020037099",
+          "tracse_tme": "5",
+          "training_end_date": "2026-05-06",
+          "training_start_date": "2026-04-15",
+          "training_time": "10일 · 총 30시간",
+          "training_type": "근로자직업능력개발훈련",
+          "trainst_cstmr_id": "500020037099",
+          "weekend_text": "주중"
+        }
+      },
+      "source": "work24_training",
+      "title": "카페디저트 C(치즈케이크/호두타르트/휘낭시에 외)"
+    },
+    {
+      "diff": {
+        "close_date": {
+          "after": "2026-04-15"
+        },
+        "compare_meta": {
+          "after": {
+            "application_deadline": "2026-04-15",
+            "capacity": "20",
+            "contact_phone": "02-6956-2408",
+            "day_night": "주간",
+            "deadline_source": "traStartDate",
+            "email": "biz@mbccomputer.co.kr",
+            "hrd_id": "AIG20250000515701",
+            "registered_count": "1",
+            "satisfaction_score": "4.9",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000515701&tracseTme=2&crseTracseSe=C0061&trainstCstmrId=500020031223",
+            "tracse_tme": "2",
+            "training_end_date": "2026-06-10",
+            "training_start_date": "2026-04-15",
+            "training_time": "38일 · 총 190시간",
+            "training_type": "실업자계좌제",
+            "trainst_cstmr_id": "500020031223",
+            "weekend_text": "주중"
+          },
+          "before": {
+            "application_deadline": "2026-04-15",
+            "deadline_source": "traStartDate",
+            "training_end_date": "2026-06-10",
+            "training_start_date": "2026-04-15"
+          }
+        }
+      },
+      "id": "d09a54c6-b0fa-4872-87d0-0b5a534b9c4f",
+      "match_key": "work24:hrd:AIG20250000515701",
+      "matched": true,
+      "patch": {
+        "close_date": "2026-04-15",
+        "compare_meta": {
+          "application_deadline": "2026-04-15",
+          "capacity": "20",
+          "contact_phone": "02-6956-2408",
+          "day_night": "주간",
+          "deadline_source": "traStartDate",
+          "email": "biz@mbccomputer.co.kr",
+          "hrd_id": "AIG20250000515701",
+          "registered_count": "1",
+          "satisfaction_score": "4.9",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000515701&tracseTme=2&crseTracseSe=C0061&trainstCstmrId=500020031223",
+          "tracse_tme": "2",
+          "training_end_date": "2026-06-10",
+          "training_start_date": "2026-04-15",
+          "training_time": "38일 · 총 190시간",
+          "training_type": "실업자계좌제",
+          "trainst_cstmr_id": "500020031223",
+          "weekend_text": "주중"
+        }
+      },
+      "source": "work24_training",
+      "title": "기초부터 배우는 전산세무회계취득(회계1급+세무2급+FAT1급+TAT2급)"
+    },
+    {
+      "diff": {
+        "close_date": {
+          "after": "2026-04-15"
+        },
+        "compare_meta": {
+          "after": {
+            "application_deadline": "2026-04-15",
+            "capacity": "12",
+            "contact_phone": "070-4138-0144",
+            "day_night": "주간",
+            "deadline_source": "traStartDate",
+            "email": "inwol.kr@gmail.com",
+            "hrd_id": "AIG20250000505004",
+            "registered_count": "4",
+            "satisfaction_score": "5.0",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000505004&tracseTme=5&crseTracseSe=C0061&trainstCstmrId=500020051104",
+            "tracse_tme": "5",
+            "training_end_date": "2026-05-18",
+            "training_start_date": "2026-04-15",
+            "training_time": "13일 · 총 39시간",
+            "training_type": "근로자직업능력개발훈련",
+            "trainst_cstmr_id": "500020051104",
+            "weekend_text": "주중"
+          },
+          "before": {
+            "application_deadline": "2026-04-15",
+            "capacity": "12",
+            "contact_phone": "070-4138-0144",
+            "deadline_source": "traStartDate",
+            "email": "inwol.kr@gmail.com",
+            "hrd_id": "AIG20250000505004",
+            "registered_count": "4",
+            "satisfaction_score": "5.0",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000505004&tracseTme=5&crseTracseSe=C0061&trainstCstmrId=500020051104",
+            "tracse_tme": "5",
+            "training_end_date": "2026-05-18",
+            "training_start_date": "2026-04-15",
+            "trainst_cstmr_id": "500020051104"
+          }
+        }
+      },
+      "id": "2d446949-e0eb-4233-bc6f-198cca5122e6",
+      "match_key": "work24:hrd:AIG20250000505004",
+      "matched": true,
+      "patch": {
+        "close_date": "2026-04-15",
+        "compare_meta": {
+          "application_deadline": "2026-04-15",
+          "capacity": "12",
+          "contact_phone": "070-4138-0144",
+          "day_night": "주간",
+          "deadline_source": "traStartDate",
+          "email": "inwol.kr@gmail.com",
+          "hrd_id": "AIG20250000505004",
+          "registered_count": "4",
+          "satisfaction_score": "5.0",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000505004&tracseTme=5&crseTracseSe=C0061&trainstCstmrId=500020051104",
+          "tracse_tme": "5",
+          "training_end_date": "2026-05-18",
+          "training_start_date": "2026-04-15",
+          "training_time": "13일 · 총 39시간",
+          "training_type": "근로자직업능력개발훈련",
+          "trainst_cstmr_id": "500020051104",
+          "weekend_text": "주중"
+        }
+      },
+      "source": "work24_training",
+      "title": "컴퓨터활용능력 2급 실기 자격증 취득 과정"
+    },
+    {
+      "diff": {
+        "close_date": {
+          "after": "2026-04-15"
+        },
+        "compare_meta": {
+          "after": {
+            "application_deadline": "2026-04-15",
+            "capacity": "20",
+            "contact_phone": "031-8044-2111",
+            "day_night": "주간",
+            "deadline_source": "traStartDate",
+            "email": "yeong1523@naver.com",
+            "hrd_id": "AIG20250000517323",
+            "registered_count": "0",
+            "satisfaction_score": "4.6",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000517323&tracseTme=11&crseTracseSe=C0061&trainstCstmrId=500020024148",
+            "tracse_tme": "11",
+            "training_end_date": "2026-05-07",
+            "training_start_date": "2026-04-15",
+            "training_time": "16일 · 총 80시간",
+            "training_type": "실업자계좌제",
+            "trainst_cstmr_id": "500020024148",
+            "weekend_text": "주중"
+          },
+          "before": {
+            "application_deadline": "2026-04-15",
+            "capacity": "20",
+            "contact_phone": "031-8044-2111",
+            "deadline_source": "traStartDate",
+            "email": "yeong1523@naver.com",
+            "hrd_id": "AIG20250000517323",
+            "registered_count": "0",
+            "satisfaction_score": "4.6",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000517323&tracseTme=11&crseTracseSe=C0061&trainstCstmrId=500020024148",
+            "tracse_tme": "11",
+            "training_end_date": "2026-05-07",
+            "training_start_date": "2026-04-15",
+            "trainst_cstmr_id": "500020024148"
+          }
+        }
+      },
+      "id": "f3fef1ca-de2f-4dbb-a5a9-1d62106d2f31",
+      "match_key": "work24:hrd:AIG20250000517323",
+      "matched": true,
+      "patch": {
+        "close_date": "2026-04-15",
+        "compare_meta": {
+          "application_deadline": "2026-04-15",
+          "capacity": "20",
+          "contact_phone": "031-8044-2111",
+          "day_night": "주간",
+          "deadline_source": "traStartDate",
+          "email": "yeong1523@naver.com",
+          "hrd_id": "AIG20250000517323",
+          "registered_count": "0",
+          "satisfaction_score": "4.6",
+          "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20250000517323&tracseTme=11&crseTracseSe=C0061&trainstCstmrId=500020024148",
+          "tracse_tme": "11",
+          "training_end_date": "2026-05-07",
+          "training_start_date": "2026-04-15",
+          "training_time": "16일 · 총 80시간",
+          "training_type": "실업자계좌제",
+          "trainst_cstmr_id": "500020024148",
+          "weekend_text": "주중"
+        }
+      },
+      "source": "work24_training",
+      "title": "[2026년 최신기출 유형] 엑셀 실무와 컴활2급 자격증 한번에 취득! 자격증 완벽대비"
+    }
+  ],
+  "mode": "dry-run",
+  "patch_count": 29,
+  "policy": "fill-null-only",
+  "source_family": "work24",
+  "source_record_count": 312
+}

@@ -401,5 +401,14 @@
       "duration_seconds": 1.026,
       "chroma_candidate_rows": 96
     }
-  ]
+  ],
+  "chroma_sync": {
+    "requested": true,
+    "chroma_mode": "persistent",
+    "candidate_count": 21879,
+    "status": "completed",
+    "synced_count": 21879,
+    "skipped_count": 0,
+    "duration_seconds": 2283.907
+  }
 }

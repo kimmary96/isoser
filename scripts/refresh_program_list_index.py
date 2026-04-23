@@ -16,6 +16,18 @@ if str(BACKEND) not in sys.path:
 from utils.supabase_admin import request_supabase  # noqa: E402
 
 
+def load_backend_env() -> None:
+    env_path = BACKEND / ".env"
+    if not env_path.exists():
+        return
+    for line in env_path.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#") or "=" not in stripped:
+            continue
+        key, value = stripped.split("=", maxsplit=1)
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
 async def refresh(pool_limit: int) -> dict[str, object]:
     result = await request_supabase(
         method="POST",
@@ -29,6 +41,7 @@ async def refresh(pool_limit: int) -> dict[str, object]:
 
 
 def main() -> int:
+    load_backend_env()
     parser = argparse.ArgumentParser(description="Refresh the programs list read model and browse facet snapshot.")
     parser.add_argument("--pool-limit", type=int, default=int(os.getenv("PROGRAM_BROWSE_POOL_LIMIT", "300")))
     args = parser.parse_args()

@@ -104,6 +104,50 @@ def _compact_meta(meta: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _normalize_choice(value: str, allowed: set[str]) -> str | None:
+    cleaned = _clean_text(value)
+    return cleaned if cleaned in allowed else None
+
+
+def _normalize_training_type(value: str) -> str | None:
+    cleaned = _clean_text(value)
+    if (
+        not cleaned
+        or cleaned == "-"
+        or len(cleaned) > 40
+        or "훈련기간" in cleaned
+        or "(회차)" in cleaned
+        or "자비부담액" in cleaned
+        or "기본정보" in cleaned
+    ):
+        return None
+    return cleaned
+
+
+def _normalize_training_time(value: str) -> str | None:
+    cleaned = _clean_text(value).replace(" 시간표 보기", "").replace("시간표 보기", "").strip()
+    if not cleaned or cleaned == "-":
+        return None
+    if re.search(r"총\s*0\s*시간", cleaned):
+        return None
+    total_match = re.search(r"(?:(\d+)\s*일,\s*)?총\s*(\d+)\s*시간", cleaned)
+    if total_match:
+        days = total_match.group(1)
+        hours = total_match.group(2)
+        return f"{days}일 · 총 {hours}시간" if days else f"총 {hours}시간"
+    return cleaned if re.search(r"\d", cleaned) else None
+
+
+def _normalize_phone(value: str) -> str | None:
+    cleaned = _clean_text(value)
+    return cleaned if re.search(r"\d{2,}", cleaned) else None
+
+
+def _normalize_email(value: str) -> str | None:
+    cleaned = _clean_text(value)
+    return cleaned if re.search(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", cleaned) else None
+
+
 def parse_work24_detail_html(html: str, *, title: str, source_url: str) -> dict[str, Any] | None:
     soup = BeautifulSoup(html, "html.parser")
     lines = [_clean_text(line) for line in soup.get_text("\n", strip=True).splitlines()]
@@ -118,10 +162,10 @@ def parse_work24_detail_html(html: str, *, title: str, source_url: str) -> dict[
     capacity_match = re.search(r"모집인원\s+(\d+)명", text)
     selected_match = re.search(r"선발인원\s+(\d+)명", text)
     application_deadline = _extract_application_deadline(text)
-    training_type = _extract_label_value(text, "훈련유형")
-    day_night = _extract_label_value(text, "주야구분")
-    weekend_text = _extract_label_value(text, "주말여부")
-    training_time = _extract_label_value(text, "훈련시간")
+    training_type = _normalize_training_type(_extract_label_value(text, "훈련유형"))
+    day_night = _normalize_choice(_extract_label_value(text, "주야구분"), {"주간", "야간"})
+    weekend_text = _normalize_choice(_extract_label_value(text, "주말여부"), {"주중", "주말"})
+    training_time = _normalize_training_time(_extract_label_value(text, "훈련시간"))
 
     normalized = {
         "provider": _extract_provider(lines, title) or None,
@@ -143,12 +187,12 @@ def parse_work24_detail_html(html: str, *, title: str, source_url: str) -> dict[
                 "capacity": capacity_match.group(1) if capacity_match else None,
                 "registered_count": selected_match.group(1) if selected_match else None,
                 "application_deadline": application_deadline,
-                "training_type": training_type or None,
-                "day_night": day_night or None,
-                "weekend_text": weekend_text or None,
-                "training_time": training_time or None,
-                "contact_phone": _extract_label_value(text, "전화번호") or None,
-                "email": _extract_label_value(text, "이메일") or None,
+                "training_type": training_type,
+                "day_night": day_night,
+                "weekend_text": weekend_text,
+                "training_time": training_time,
+                "contact_phone": _normalize_phone(_extract_label_value(text, "전화번호")),
+                "email": _normalize_email(_extract_label_value(text, "이메일")),
             }
         ),
     }

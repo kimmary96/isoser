@@ -186,6 +186,20 @@ def test_program_list_quality_migration_hardens_refresh_policy() -> None:
     assert "organic_browse_rank" in migration
 
 
+def test_program_participation_display_migration_uses_conservative_policy() -> None:
+    migration = (
+        Path(__file__).resolve().parents[2]
+        / "supabase"
+        / "migrations"
+        / "20260423203000_conservative_program_participation_display.sql"
+    ).read_text(encoding="utf-8")
+
+    assert "program_list_participation_mode_label" in migration
+    assert "program_list_participation_time_text" in migration
+    assert "trg_program_list_apply_participation_display" in migration
+    assert "duration_days" not in migration
+
+
 def test_pg_trgm_extension_warning_has_separate_migration() -> None:
     migration = (
         Path(__file__).resolve().parents[2]
@@ -532,6 +546,7 @@ def test_program_extra_filters_classify_participation_times() -> None:
             {
                 "id": "full-time",
                 "title": "웹개발 부트캠프",
+                "description": "월,화,수,목,금 09:00 ~ 18:00 운영",
                 "start_date": "2026-05-01",
                 "end_date": "2026-06-30",
                 "deadline": deadline,
@@ -545,6 +560,20 @@ def test_program_extra_filters_classify_participation_times() -> None:
     )
 
     assert [row["id"] for row in rows] == ["full-time"]
+
+
+def test_program_participation_time_does_not_classify_from_date_span_only() -> None:
+    assert (
+        programs._program_participation_time(
+            {
+                "id": "date-only",
+                "title": "웹개발 과정",
+                "start_date": "2026-05-01",
+                "end_date": "2026-06-30",
+            }
+        )
+        is None
+    )
 
 
 def test_extract_program_filter_options_uses_present_program_values() -> None:
@@ -765,6 +794,24 @@ def test_serialize_program_list_row_derives_weekend_and_semiconductor_metadata()
     assert row["participation_mode_label"] == "주말반"
     assert row["participation_time_text"] == "주말 / 10:00 ~ 17:00"
     assert {"FPGA", "SoC", "RTL", "Verilog", "반도체설계"}.issubset(set(row["extracted_keywords"]))
+
+
+def test_serialize_program_list_row_uses_work24_day_night_metadata() -> None:
+    row = programs._serialize_program_list_row(
+        {
+            "id": "program-night",
+            "title": "AI 실무 야간 과정",
+            "category": "AI",
+            "deadline": (date.today() + timedelta(days=5)).isoformat(),
+            "compare_meta": {
+                "day_night": "야간",
+                "weekend_text": "주중",
+            },
+        }
+    )
+
+    assert row["participation_mode_label"] == "저녁반"
+    assert row["participation_time_text"] == "주중"
 
 
 def test_serialize_program_list_row_uses_deadline_not_training_end_date_for_d_day() -> None:

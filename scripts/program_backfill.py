@@ -251,10 +251,21 @@ def supabase_request(method: str, path: str, *, params: dict[str, str] | None = 
     return response.json()
 
 
-def fetch_candidate_rows(limit: int, *, deadline_from: str | None = None) -> list[dict[str, Any]]:
+def fetch_candidate_rows(
+    limit: int,
+    *,
+    deadline_from: str | None = None,
+    source_family_filter: str | None = None,
+) -> list[dict[str, Any]]:
+    source_filter = {
+        "work24": "(source.ilike.*고용24*,source.ilike.*work24*)",
+        "kstartup": "(source.ilike.*K-Startup*,source.ilike.*kstartup*)",
+        "sesac": "(source.ilike.*sesac*,source.ilike.*새싹*,source.ilike.*청년취업사관학교*)",
+    }.get(source_family_filter or "")
     params = {
         "select": "*",
-        "or": "(source.ilike.*고용24*,source.ilike.*work24*,source.ilike.*K-Startup*,source.ilike.*kstartup*,source.ilike.*sesac*,source.ilike.*새싹*,source.ilike.*청년취업사관학교*)",
+        "or": source_filter
+        or "(source.ilike.*고용24*,source.ilike.*work24*,source.ilike.*K-Startup*,source.ilike.*kstartup*,source.ilike.*sesac*,source.ilike.*새싹*,source.ilike.*청년취업사관학교*)",
         "order": "deadline.asc.nullslast",
         "limit": str(limit),
     }
@@ -565,8 +576,19 @@ def fetch_kstartup_record_by_announcement_id(announcement_id: str) -> SourceReco
     )
 
 
-def build_report(*, limit: int, max_pages: int, overwrite: bool, deadline_from: str | None) -> dict[str, Any]:
-    db_rows = fetch_candidate_rows(limit, deadline_from=deadline_from)
+def build_report(
+    *,
+    limit: int,
+    max_pages: int,
+    overwrite: bool,
+    deadline_from: str | None,
+    source_family_filter: str | None = None,
+) -> dict[str, Any]:
+    db_rows = fetch_candidate_rows(
+        limit,
+        deadline_from=deadline_from,
+        source_family_filter=source_family_filter,
+    )
     source_records = collect_source_records(max_pages)
     items: list[dict[str, Any]] = []
     for db_row in db_rows:
@@ -595,6 +617,7 @@ def build_report(*, limit: int, max_pages: int, overwrite: bool, deadline_from: 
         "mode": "dry-run",
         "policy": "overwrite" if overwrite else "fill-null-only",
         "deadline_from": deadline_from,
+        "source_family": source_family_filter or "all",
         "candidate_count": len(db_rows),
         "source_record_count": len(source_records),
         "patch_count": sum(1 for item in items if item["patch"]),
@@ -664,6 +687,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-pages", type=int, default=5, help="Source API pages to scan.")
     parser.add_argument("--overwrite", action="store_true", help="Overwrite existing values. Default fills blank fields only.")
     parser.add_argument("--deadline-from", default=None, help="Only inspect DB rows with deadline >= this YYYY-MM-DD value.")
+    parser.add_argument(
+        "--source-family",
+        choices=("all", "work24", "kstartup", "sesac"),
+        default="all",
+        help="Limit inspected DB rows to one source family. Default scans all supported sources.",
+    )
     parser.add_argument("--apply", action="store_true", help="Apply patches to Supabase. Default is dry-run.")
     parser.add_argument(
         "--work24-deadline-audit",
@@ -694,6 +723,7 @@ def main() -> int:
             max_pages=args.max_pages,
             overwrite=args.overwrite,
             deadline_from=args.deadline_from,
+            source_family_filter=None if args.source_family == "all" else args.source_family,
         )
     if args.apply and not args.work24_deadline_audit and not args.deadline_audit:
         report = apply_report(report)

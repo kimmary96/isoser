@@ -1,10 +1,12 @@
 from datetime import date
 
+from backend.rag.collector.work24_detail_parser import parse_work24_detail_html
 from scripts.program_backfill import (
     build_patch,
     build_program_deadline_audit_report,
     build_work24_deadline_audit_report,
     classify_program_deadline_issues,
+    fetch_candidate_rows,
     fetch_program_deadline_audit_rows,
     fetch_work24_record_from_detail_url,
     is_work24_deadline_copied_from_end_date,
@@ -22,6 +24,19 @@ def test_kstartup_key_prefers_announcement_id_from_compare_meta() -> None:
     }
 
     assert kstartup_key(row) == "kstartup:announcement:177296"
+
+
+def test_fetch_candidate_rows_can_limit_to_work24(monkeypatch) -> None:
+    captured: dict[str, str] = {}
+
+    def fake_supabase_request(method, path, *, params=None, payload=None):
+        captured.update(params or {})
+        return []
+
+    monkeypatch.setattr("scripts.program_backfill.supabase_request", fake_supabase_request)
+
+    assert fetch_candidate_rows(10, source_family_filter="work24") == []
+    assert captured["or"] == "(source.ilike.*고용24*,source.ilike.*work24*)"
 
 
 def test_kstartup_key_falls_back_to_pbanc_sn_url_param() -> None:
@@ -269,7 +284,37 @@ def test_fetch_work24_record_from_detail_url_extracts_html_fields(monkeypatch) -
     assert record.normalized["compare_meta"]["registered_count"] == "17"
     assert record.normalized["compare_meta"]["application_deadline"] == "2026-04-15"
     assert record.normalized["compare_meta"]["training_type"] == "국가기간전략산업직종"
+    assert record.normalized["compare_meta"]["day_night"] == "주간"
+    assert record.normalized["compare_meta"]["weekend_text"] == "주중"
     assert record.normalized["compare_meta"]["training_time"] == "월,화,수,목,금 / 09:00 ~ 18:00"
+    assert record.normalized["compare_meta"]["contact_phone"] == "02-792-3440"
+    assert record.normalized["compare_meta"]["email"] == "test@example.com"
+
+
+def test_work24_detail_parser_drops_malformed_schedule_and_contact_values() -> None:
+    html = """
+    <html><body>
+      <h1>전산세무 과정</h1>
+      <p>훈련유형 훈련기간 ~ (회차) 훈련기간 2026-04-15 ~ 2026-06-12</p>
+      <p>주야구분 - 주말여부 - 훈련시간 일, 총 0시간 시간표 보기</p>
+      <p>훈련기관 및 담당자 주소 서울 전화번호 이메일 이메일 주관부처</p>
+    </body></html>
+    """
+
+    normalized = parse_work24_detail_html(
+        html,
+        title="전산세무 과정",
+        source_url="https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG1",
+    )
+
+    assert normalized is not None
+    meta = normalized["compare_meta"]
+    assert "training_type" not in meta
+    assert "day_night" not in meta
+    assert "weekend_text" not in meta
+    assert "training_time" not in meta
+    assert "contact_phone" not in meta
+    assert "email" not in meta
 
 
 def test_build_patch_fills_only_blank_fields_by_default() -> None:

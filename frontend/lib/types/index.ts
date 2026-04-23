@@ -252,8 +252,13 @@ export interface CompareMeta {
   recruitment_deadline?: string | null;
   recruitment_end_date?: string | null;
   application_end_date?: string | null;
+  day_night?: string | null;
+  day_night_type?: string | null;
   training_type?: string | null;
+  training_schedule?: string | null;
   schedule_text?: string | null;
+  weekend_text?: string | null;
+  weekend_yn?: string | null;
   weekday_text?: string | null;
   training_time?: string | null;
 }

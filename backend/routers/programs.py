@@ -211,6 +211,8 @@ PROGRAM_SEARCHABLE_COMPARE_META_KEYS = {
     "business_type",
     "certificate",
     "curriculum",
+    "day_night",
+    "day_night_type",
     "delivery_method",
     "employment_connection",
     "location",
@@ -224,9 +226,12 @@ PROGRAM_SEARCHABLE_COMPARE_META_KEYS = {
     "target_group",
     "target_job",
     "teaching_method",
+    "training_schedule",
     "training_institution",
     "training_time",
     "training_type",
+    "weekend_text",
+    "weekend_yn",
     "weekday_text",
 }
 PROGRAM_DEADLINE_COMPARE_META_KEYS = (
@@ -1438,6 +1443,7 @@ def _infer_display_categories(row: dict[str, Any]) -> list[str]:
 def _extract_time_detail(text_values: list[str]) -> str | None:
     source = " / ".join(text_values)
     weekday_match = re.search(r"(월\s*[,~·/ ]\s*화\s*[,~·/ ]\s*수\s*[,~·/ ]\s*목\s*[,~·/ ]\s*금|월\s*[~-]\s*금|평일)", source)
+    weekday_broad_match = re.search(r"주중", source)
     weekend_match = re.search(r"(토\s*[,~·/ ]\s*일|주말)", source)
     time_match = re.search(r"([01]?\d|2[0-3])[:시]\s*([0-5]\d)?\s*(?:~|-|부터|에서)\s*([01]?\d|2[0-3])[:시]\s*([0-5]\d)?", source)
     weekly_hours_match = re.search(r"주\s*(\d{1,2})\s*시간", source)
@@ -1448,6 +1454,8 @@ def _extract_time_detail(text_values: list[str]) -> str | None:
         day_text = "주말"
     elif weekday_match:
         day_text = "월,화,수,목,금"
+    elif weekday_broad_match:
+        day_text = "주중"
 
     if time_match:
         start_hour = int(time_match.group(1))
@@ -1465,14 +1473,30 @@ def _extract_time_detail(text_values: list[str]) -> str | None:
     return None
 
 
+def _extract_time_hours(text_values: list[str]) -> tuple[int | None, int | None]:
+    source = " ".join(text_values)
+    time_match = re.search(r"([01]?\d|2[0-3])[:시]\s*(?:[0-5]\d)?\s*(?:~|-|부터|에서)\s*([01]?\d|2[0-3])", source)
+    if not time_match:
+        return None, None
+    return int(time_match.group(1)), int(time_match.group(2))
+
+
+def _time_span_hours(start_hour: int | None, end_hour: int | None) -> int | None:
+    if start_hour is None or end_hour is None:
+        return None
+    span = end_hour - start_hour
+    if span < 0:
+        span += 24
+    return span
+
+
 def _derive_participation_display(row: dict[str, Any]) -> tuple[str | None, str | None]:
     explicit = str(row.get("participation_time") or "").strip()
     text_values = _program_source_text_values(row)
     text = " ".join(text_values).casefold()
     time_detail = _extract_time_detail(text_values)
-    time_match = re.search(r"([01]?\d|2[0-3])[:시]\s*(?:[0-5]\d)?\s*(?:~|-|부터|에서)\s*([01]?\d|2[0-3])", " ".join(text_values))
-    start_hour = int(time_match.group(1)) if time_match else None
-    end_hour = int(time_match.group(2)) if time_match else None
+    start_hour, end_hour = _extract_time_hours(text_values)
+    span_hours = _time_span_hours(start_hour, end_hour)
 
     if "주말" in text or re.search(r"토\s*[,~·/ ]\s*일", " ".join(text_values)):
         label = "주말반"
@@ -1482,7 +1506,7 @@ def _derive_participation_display(row: dict[str, Any]) -> tuple[str | None, str 
         label = "자율학습"
     elif explicit == "full-time" or "풀타임" in text or "전일" in text or (start_hour is not None and end_hour is not None and start_hour <= 10 and end_hour >= 17):
         label = "풀타임"
-    elif explicit == "part-time" or any(keyword in text for keyword in ("파트타임", "part-time", "특강", "세미나")):
+    elif explicit == "part-time" or any(keyword in text for keyword in ("파트타임", "part-time", "특강", "세미나")) or (span_hours is not None and 0 < span_hours <= 5):
         label = "파트타임"
     else:
         inferred = _program_participation_time(row)
@@ -1587,14 +1611,6 @@ def _program_cost_type(row: dict[str, Any]) -> str | None:
     return None
 
 
-def _program_duration_days(row: dict[str, Any]) -> int | None:
-    start = _parse_program_deadline(str(row.get("start_date") or ""))
-    end = _parse_program_deadline(str(row.get("end_date") or ""))
-    if start is None or end is None or end < start:
-        return None
-    return (end - start).days + 1
-
-
 def _program_sort_date(
     row: dict[str, Any],
     *,
@@ -1659,19 +1675,22 @@ def _program_participation_time(row: dict[str, Any]) -> str | None:
     if explicit_participation_time in PROGRAM_PARTICIPATION_TIMES:
         return explicit_participation_time
 
-    text = _program_text_blob(row)
-    if any(keyword in text for keyword in ("파트타임", "part-time", "야간", "저녁", "주말", "특강", "세미나")):
-        return "part-time"
+    text_values = _program_source_text_values(row)
+    text = " ".join(text_values).casefold()
+    start_hour, end_hour = _extract_time_hours(text_values)
+    span_hours = _time_span_hours(start_hour, end_hour)
+
     if any(keyword in text for keyword in ("풀타임", "full-time", "전일", "종일")):
         return "full-time"
-
-    duration_days = _program_duration_days(row)
-    if duration_days is None:
-        return None
-    if duration_days <= 14:
-        return "part-time"
-    if duration_days >= 28:
+    if start_hour is not None and end_hour is not None and start_hour <= 10 and end_hour >= 17:
         return "full-time"
+
+    if any(keyword in text for keyword in ("파트타임", "part-time", "야간", "저녁", "주말", "특강", "세미나")):
+        return "part-time"
+    if start_hour is not None and start_hour >= 18:
+        return "part-time"
+    if span_hours is not None and 0 < span_hours <= 5:
+        return "part-time"
     return None
 
 
