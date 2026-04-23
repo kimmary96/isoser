@@ -207,6 +207,14 @@ export async function getProgramCompareRelevance(
   );
 }
 
+export async function trackProgramDetailView(programId: string): Promise<{ ok: true }> {
+  return requestAppJson<{ ok: true }>(
+    `/api/programs/${encodeURIComponent(programId)}/detail-view`,
+    { method: "POST", keepalive: true },
+    "프로그램 상세 진입 기록에 실패했습니다."
+  );
+}
+
 export async function getDashboardBookmarks(): Promise<{
   items: Array<{
     programId: string | null;

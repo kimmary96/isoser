@@ -300,6 +300,10 @@ export interface Program {
   deadline_confidence?: "high" | "medium" | "low" | null;
   recommended_score?: number | null;
   recommendation_reasons?: string[] | null;
+  detail_view_count?: number | null;
+  detail_view_count_7d?: number | null;
+  click_hotness_score?: number | null;
+  last_detail_viewed_at?: string | null;
   promoted_rank?: number | null;
   display_categories?: string[] | null;
   participation_mode_label?: string | null;
@@ -393,6 +397,7 @@ export interface ProgramFilterOptionsResponse {
 export type ProgramSort =
   | "default"
   | "deadline"
+  | "popular"
   | "start_soon"
   | "cost_low"
   | "cost_high"

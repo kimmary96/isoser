@@ -157,6 +157,31 @@ def test_read_model_query_limits_default_browse_pool() -> None:
     assert params["order"].startswith("recommended_score.desc")
 
 
+def test_read_model_query_popular_sort_skips_browse_pool() -> None:
+    params, mode = programs._build_read_model_params(
+        category=None,
+        category_detail=None,
+        scope=None,
+        region_detail=None,
+        q=None,
+        regions=None,
+        sources=None,
+        teaching_methods=None,
+        cost_types=None,
+        participation_times=None,
+        targets=None,
+        recruiting_only=True,
+        include_closed_recent=False,
+        sort="popular",
+        limit=20,
+    )
+
+    assert mode == "browse"
+    assert "browse_rank" not in params
+    assert params["is_open"] == "eq.true"
+    assert params["order"].startswith("click_hotness_score.desc")
+
+
 def test_read_model_query_scope_all_switches_mode_without_scope_column_filter() -> None:
     params, mode = programs._build_read_model_params(
         category=None,
@@ -276,6 +301,20 @@ def test_program_participation_display_migration_uses_conservative_policy() -> N
     assert "program_list_participation_time_text" in migration
     assert "trg_program_list_apply_participation_display" in migration
     assert "duration_days" not in migration
+
+
+def test_program_detail_click_hotness_migration_adds_daily_stats_and_rpc() -> None:
+    migration = (
+        Path(__file__).resolve().parents[2]
+        / "supabase"
+        / "migrations"
+        / "20260424110000_add_program_detail_click_hotness.sql"
+    ).read_text(encoding="utf-8")
+
+    assert "program_detail_daily_stats" in migration
+    assert "record_program_detail_view" in migration
+    assert "click_hotness_score" in migration
+    assert "detail_view_count_7d" in migration
 
 
 def test_pg_trgm_extension_warning_has_separate_migration() -> None:
@@ -403,6 +442,36 @@ async def test_list_programs_page_forwards_offset_to_read_model(monkeypatch: pyt
     assert calls[0]["params"]["offset"] == "20"  # type: ignore[index]
 
 
+@pytest.mark.asyncio
+async def test_list_popular_programs_prefers_read_model_popular_sort(monkeypatch: pytest.MonkeyPatch) -> None:
+    async def fake_fetch_program_list_read_model_rows(**kwargs: object) -> programs.ProgramListPageResponse:
+        assert kwargs["sort"] == "popular"
+        assert kwargs["recruiting_only"] is True
+        return programs.ProgramListPageResponse(
+            items=[
+                programs.ProgramListItem(
+                    id="00000000-0000-0000-0000-000000000111",
+                    title="실제 클릭 인기 과정",
+                    source="고용24",
+                    detail_view_count_7d=7,
+                    detail_view_count=11,
+                    click_hotness_score=7_000_011.9,
+                    recommended_score=0.9,
+                )
+            ],
+            mode="browse",
+            source="read_model",
+        )
+
+    monkeypatch.setattr(programs, "_fetch_program_list_read_model_rows", fake_fetch_program_list_read_model_rows)
+    monkeypatch.setenv("ENABLE_PROGRAM_LIST_READ_MODEL", "true")
+
+    response = await programs.list_popular_programs()
+
+    assert response[0]["title"] == "실제 클릭 인기 과정"
+    assert response[0]["detail_view_count_7d"] == 7
+
+
 def test_promoted_and_organic_read_model_params_do_not_mix_scores() -> None:
     params, _ = programs._build_read_model_params(
         category=None,
@@ -484,6 +553,37 @@ async def test_list_programs_page_returns_fastcampus_promoted_layer_without_orga
     assert response.promoted_items[0].is_ad is True
     assert "광고" in response.promoted_items[0].recommendation_reasons
     assert [item.id for item in response.items] == ["program-organic"]
+
+
+@pytest.mark.asyncio
+async def test_record_program_detail_view_calls_rpc(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[tuple[str, str, dict[str, object] | None]] = []
+
+    async def fake_request_supabase(
+        *,
+        method: str,
+        path: str,
+        params: dict[str, object] | None = None,
+        payload: dict[str, object] | None = None,
+        prefer: str | None = None,
+    ) -> int:
+        assert params is None
+        assert prefer is None
+        calls.append((method, path, payload))
+        return 3
+
+    monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
+
+    response = await programs.record_program_detail_view("00000000-0000-0000-0000-000000000123")
+
+    assert response == {"ok": True}
+    assert calls == [
+        (
+            "POST",
+            "/rest/v1/rpc/record_program_detail_view",
+            {"target_program_id": "00000000-0000-0000-0000-000000000123"},
+        )
+    ]
 
 
 def test_build_program_query_params_uses_parent_category_for_category_detail() -> None:

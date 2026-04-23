@@ -52,7 +52,8 @@ programs_rag = ProgramsRAG()
 
 PROGRAM_DEADLINE_SORTS = {"default", "deadline"}
 PROGRAM_COMPUTED_SORTS = {"start_soon", "cost_low", "cost_high", "duration_short", "duration_long"}
-PROGRAM_SORT_OPTIONS = PROGRAM_DEADLINE_SORTS | PROGRAM_COMPUTED_SORTS | {"latest"}
+PROGRAM_POPULAR_SORTS = {"popular"}
+PROGRAM_SORT_OPTIONS = PROGRAM_DEADLINE_SORTS | PROGRAM_COMPUTED_SORTS | PROGRAM_POPULAR_SORTS | {"latest"}
 PROGRAM_TEACHING_METHODS = {"온라인", "오프라인", "혼합"}
 PROGRAM_COST_TYPES = {"naeil-card", "free-no-card", "paid"}
 PROGRAM_PARTICIPATION_TIMES = {"part-time", "full-time"}
@@ -193,7 +194,8 @@ PROGRAM_LIST_SUMMARY_SELECT = (
     "teaching_method,cost,cost_type,participation_time,source,source_url,link,deadline,"
     "close_date,start_date,end_date,is_active,is_ad,display_categories,participation_mode_label,participation_time_text,"
     "selection_process_label,extracted_keywords,tags,skills,days_left,"
-    "deadline_confidence,recommended_score,recommendation_reasons,promoted_rank,updated_at"
+    "deadline_confidence,recommended_score,recommendation_reasons,detail_view_count,detail_view_count_7d,"
+    "click_hotness_score,last_detail_viewed_at,promoted_rank,updated_at"
 )
 PROGRAM_DEFAULT_WORK24_TARGET_RATIO = 0.7
 PROGRAM_STARTUP_FILTER_KEYWORDS = (
@@ -337,6 +339,10 @@ class ProgramListItem(BaseModel):
     deadline_confidence: Literal["high", "medium", "low"] | None = None
     recommended_score: float | None = None
     recommendation_reasons: list[str] = Field(default_factory=list)
+    detail_view_count: int | None = None
+    detail_view_count_7d: int | None = None
+    click_hotness_score: float | None = None
+    last_detail_viewed_at: str | None = None
     promoted_rank: int | None = None
     compare_meta: dict[str, Any] | None = None
 
@@ -1845,6 +1851,21 @@ def _serialize_program_list_row(program: dict[str, Any]) -> dict[str, Any]:
     return record
 
 
+def _program_detail_view_count(row: Mapping[str, Any], *, recent_only: bool = False) -> int:
+    key = "detail_view_count_7d" if recent_only else "detail_view_count"
+    return _int_or_none(row.get(key)) or 0
+
+
+def _program_click_hotness_score(row: Mapping[str, Any]) -> float:
+    explicit = _coerce_score(row.get("click_hotness_score"))
+    if explicit is not None:
+        return explicit
+    recent_count = _program_detail_view_count(row, recent_only=True)
+    total_count = _program_detail_view_count(row)
+    recommended = _coerce_score(row.get("recommended_score")) or 0.0
+    return recent_count * 1_000_000 + min(total_count, 999_999) + recommended
+
+
 def _sort_program_list_rows(
     rows: list[dict[str, Any]],
     *,
@@ -1897,6 +1918,18 @@ def _sort_program_list_rows(
                 if reverse_duration
                 else (_program_sort_duration_days(row) or 0),
                 deadline_sort_key(row),
+            ),
+        )
+
+    if sort == "popular":
+        return sorted(
+            rows,
+            key=lambda row: (
+                -_program_detail_view_count(row, recent_only=True),
+                -_program_detail_view_count(row),
+                -(_coerce_score(row.get("recommended_score")) or 0.0),
+                deadline_sort_key(row),
+                str(row.get("id") or ""),
             ),
         )
 
@@ -2543,12 +2576,18 @@ def _program_list_mode(*, q: str | None, scope: str | None, include_closed_recen
     return "browse"
 
 
+def _normalize_program_sort(sort: Any) -> str:
+    return sort if isinstance(sort, str) and sort in PROGRAM_SORT_OPTIONS else "default"
+
+
 def _encode_program_cursor(row: Mapping[str, Any], *, sort: str) -> str | None:
     program_id = str(row.get("id") or "").strip()
     if not program_id:
         return None
     if sort == "deadline":
         sort_value = row.get("deadline") or "9999-12-31"
+    elif sort == "popular":
+        sort_value = _program_click_hotness_score(row)
     elif sort == "latest":
         sort_value = row.get("updated_at") or ""
     else:
@@ -2597,6 +2636,8 @@ def _add_read_model_or_filter(params: dict[str, Any], group: str) -> None:
 def _read_model_order(sort: str) -> str:
     if sort == "deadline":
         return "deadline.asc.nullslast,recommended_score.desc.nullslast,id.asc"
+    if sort == "popular":
+        return "click_hotness_score.desc.nullslast,deadline.asc.nullslast,id.asc"
     if sort == "latest":
         return "updated_at.desc.nullslast,id.asc"
     return "recommended_score.desc.nullslast,id.asc"
@@ -2612,6 +2653,8 @@ def _apply_read_model_cursor(params: dict[str, Any], *, cursor: str | None, sort
         return
     if sort == "deadline":
         _add_read_model_or_filter(params, f"(deadline.gt.{value},and(deadline.eq.{value},id.gt.{cursor_id}))")
+    elif sort == "popular":
+        _add_read_model_or_filter(params, f"(click_hotness_score.lt.{value},and(click_hotness_score.eq.{value},id.gt.{cursor_id}))")
     elif sort == "latest":
         _add_read_model_or_filter(params, f"(updated_at.lt.{value},and(updated_at.eq.{value},id.gt.{cursor_id}))")
     else:
@@ -2641,6 +2684,7 @@ def _build_read_model_params(
 ) -> tuple[dict[str, Any], Literal["browse", "search", "archive"]]:
     mode = _program_list_mode(q=q, scope=scope, include_closed_recent=include_closed_recent)
     effective_sort = sort if sort in PROGRAM_SORT_OPTIONS else "default"
+    use_browse_pool = mode == "browse" and effective_sort != "popular"
     params: dict[str, Any] = {
         "select": "id" if count else PROGRAM_LIST_SUMMARY_SELECT,
         "order": _read_model_order(effective_sort),
@@ -2687,8 +2731,10 @@ def _build_read_model_params(
     if normalized_targets:
         params["target_summary"] = "cs.{" + ",".join(f'"{value}"' for value in normalized_targets) + "}"
 
-    if mode == "browse":
+    if use_browse_pool:
         params["browse_rank"] = f"lte.{_program_browse_pool_limit()}"
+        params["is_open"] = "eq.true"
+    elif mode == "browse":
         params["is_open"] = "eq.true"
     elif mode == "archive":
         params["is_open"] = "eq.false"
@@ -2811,8 +2857,9 @@ async def _fetch_program_list_read_model_rows(
 ) -> ProgramListPageResponse:
     started = time.perf_counter()
     mode = _program_list_mode(q=q, scope=scope, include_closed_recent=include_closed_recent)
+    effective_sort = _normalize_program_sort(sort)
     promoted_items: list[ProgramListItem] = []
-    if mode == "browse" and offset == 0 and not cursor:
+    if mode == "browse" and effective_sort == "default" and offset == 0 and not cursor:
         promoted_items = await _fetch_promoted_read_model_rows(
             category=category,
             category_detail=category_detail,
@@ -2843,7 +2890,7 @@ async def _fetch_program_list_read_model_rows(
         targets=targets,
         recruiting_only=recruiting_only,
         include_closed_recent=include_closed_recent,
-        sort=sort,
+        sort=effective_sort,
         limit=fetch_limit,
         offset=offset,
         cursor=cursor,
@@ -2852,7 +2899,7 @@ async def _fetch_program_list_read_model_rows(
     read_rows = rows if isinstance(rows, list) else []
     organic_rows = [row for row in read_rows if str(row.get("id") or "") not in promoted_ids]
     page_rows = organic_rows[:limit]
-    next_cursor = _encode_program_cursor(page_rows[-1], sort=sort if sort in PROGRAM_SORT_OPTIONS else "default") if len(organic_rows) > limit and page_rows else None
+    next_cursor = _encode_program_cursor(page_rows[-1], sort=effective_sort) if len(organic_rows) > limit and page_rows else None
     elapsed_ms = round((time.perf_counter() - started) * 1000, 2)
     log_event(
         logger,
@@ -2889,6 +2936,7 @@ async def _count_program_read_model_rows(
     targets: list[str] | None = None,
     recruiting_only: bool = False,
     include_closed_recent: bool = False,
+    sort: str = "default",
 ) -> int:
     params, _ = _build_read_model_params(
         category=category,
@@ -2904,12 +2952,20 @@ async def _count_program_read_model_rows(
         targets=targets,
         recruiting_only=recruiting_only,
         include_closed_recent=include_closed_recent,
-        sort="default",
+        sort=sort,
         limit=1,
         count=True,
     )
     rows = await request_supabase(method="GET", path=f"/rest/v1/{PROGRAM_LIST_INDEX_TABLE}", params=params)
     return len(rows) if isinstance(rows, list) else 0
+
+
+async def _record_program_detail_view(program_id: str) -> None:
+    await request_supabase(
+        method="POST",
+        path="/rest/v1/rpc/record_program_detail_view",
+        payload={"target_program_id": program_id},
+    )
 
 
 async def _fetch_program_list_rows(params: dict[str, Any], *, q: str | None) -> list[dict[str, Any]]:
@@ -3630,6 +3686,7 @@ async def list_programs_page(
                 targets=targets,
                 recruiting_only=recruiting_only,
                 include_closed_recent=include_closed_recent,
+                sort=sort,
             )
             return response
         except Exception as exc:
@@ -3850,24 +3907,33 @@ async def get_program_filter_options(
 
 @programs_router.get("/popular")
 async def list_popular_programs() -> Any:
-    rows = await request_supabase(
-        method="GET",
-        path="/rest/v1/programs",
-        params={
-            "select": "*",
-            "is_ad": "eq.false",
-            "order": "deadline.asc.nullslast",
-            "limit": "100",
-        },
+    if _program_list_read_model_enabled():
+        try:
+            page = await _fetch_program_list_read_model_rows(
+                recruiting_only=True,
+                include_closed_recent=False,
+                sort="popular",
+                limit=10,
+            )
+            return [item.model_dump() for item in page.items]
+        except Exception as exc:
+            log_event(logger, logging.WARNING, "program_popular_read_model_fallback", error=str(exc))
+
+    params = _build_program_query_params(
+        select="*",
+        recruiting_only=True,
+        include_closed_recent=False,
+        sort="popular",
     )
+    rows = await _fetch_program_list_rows(params, q=None)
     return _postprocess_program_list_rows(
         rows if isinstance(rows, list) else [],
         recruiting_only=True,
-        sort="deadline",
+        sort="popular",
         include_closed_recent=False,
         limit=10,
         offset=0,
-        prefer_work24_default_mix=True,
+        prefer_work24_default_mix=False,
     )
 
 
@@ -3932,6 +3998,17 @@ async def get_program_detail(program_id: str) -> ProgramDetailResponse:
     if not rows:
         raise HTTPException(status_code=404, detail="Program not found")
     return _build_program_detail_response(dict(rows[0]))
+
+
+@programs_router.post("/{program_id}/detail-view")
+async def record_program_detail_view(program_id: str) -> dict[str, bool]:
+    try:
+        UUID(program_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail="Program not found") from exc
+
+    await _record_program_detail_view(program_id)
+    return {"ok": True}
 
 
 @programs_router.get("/{program_id}")

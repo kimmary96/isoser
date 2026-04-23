@@ -1,5 +1,10 @@
 # Current State
 
+Update 2026-04-24:
+- `GET /programs/popular` now prefers the read-model `popular` sort, ordering open non-ad rows by `click_hotness_score desc`, then deadline. Browse-mode `popular` queries intentionally skip the default `browse_rank <= 300` pool so the API can surface recently clicked detail traffic beyond the curated browse pool.
+- `POST /programs/{program_id}/detail-view` records a detail-page visit through Supabase RPC `record_program_detail_view`, and `frontend/app/api/programs/[programId]/detail-view/route.ts` plus `frontend/lib/api/app.ts` expose the same write through the Next.js BFF. Program list/read-model payload types now carry `detail_view_count`, `detail_view_count_7d`, `click_hotness_score`, and `last_detail_viewed_at`.
+- `supabase/migrations/20260424110000_add_program_detail_click_hotness.sql` adds `program_detail_daily_stats`, the `record_program_detail_view` RPC, click-hotness rollup columns on `program_list_index`, and refresh/runtime index updates so read-model refresh can keep popularity metadata in sync.
+
 Update 2026-04-23:
 - `AGENTS.md`와 `docs/agent-playbook.md`는 queued task packet 작업과 Codex 대화 세션 직접 작업을 분리한다. `tasks/inbox`, `tasks/remote`, `cowork/packets` 등 execution queue에 들어온 packet에는 기존 frontmatter 요구를 유지하지만, 사용자가 현재 Codex 대화에서 직접 요청한 작업은 frontmatter 누락만으로 차단하지 않고 큐 파일을 만들지 않은 채 바로 구현할 수 있다.
 - `frontend/app/(auth)/login/page.tsx`는 진한 파란 그라데이션의 좌측 브랜드/메시지 패널과 우측 로그인 카드로 구성된 새 로그인 화면을 사용한다. 기존 `redirectedFrom` 기반 안전 redirect, 로그인된 사용자 자동 redirect, Google OAuth 시작 링크는 유지한다.

@@ -2859,3 +2859,7 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - 바깥 배경과 좌측 패널의 파란 그라데이션을 더 진한 sky/blue 계열로 조정함
   - `redirectedFrom` 안전 redirect, 로그인된 사용자 자동 redirect, `getGoogleAuthHref(safeNext)` 기반 Google OAuth 링크는 유지함
   - 데스크톱 1280x720과 모바일 390x844 브라우저 검증에서 오류 오버레이와 가로 overflow가 없음을 확인함
+- 2026-04-24: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/app/api/programs/[programId]/detail-view/route.ts`, `frontend/lib/api/app.ts`, `frontend/lib/types/index.ts`, `supabase/migrations/20260424110000_add_program_detail_click_hotness.sql`, `docs/current-state.md`, `reports/SESSION-2026-04-24-program-detail-click-hotness-result.md`
+  - `program_list_index`에 상세 조회 기반 인기 점수 메타(`detail_view_count`, `detail_view_count_7d`, `click_hotness_score`, `last_detail_viewed_at`)를 추가하고, `record_program_detail_view` RPC로 프로그램 상세 진입을 일별 집계하도록 준비함
+  - `GET /programs/popular`과 read-model browse query가 `popular` 정렬을 지원하도록 보강하고, 인기 정렬은 curated browse pool 대신 전체 open non-ad read-model row를 대상으로 하도록 분리함
+  - Next.js BFF `POST /api/programs/[programId]/detail-view`와 app helper를 추가하고, 직접 호출 테스트에서 FastAPI `Query` 기본값이 섞여도 promoted/default browse 동작이 깨지지 않도록 sort 정규화 회귀를 함께 보강함
