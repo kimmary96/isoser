@@ -1,5 +1,15 @@
 # 리팩토링 로그
 
+- 2026-04-23: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `reports/programs-read-model-or-filter-result.md`
+  - read model cursor pagination 조건과 region 다중 필터가 모두 PostgREST `or` 파라미터를 쓰면서 서로 덮일 수 있는 경로를 `_add_read_model_or_filter()` 병합 helper로 정리함
+  - cursor 조건과 region 조건을 `and=(or(...),or(...))` 형태로 조합해, 커서 페이지 이동과 지역 필터가 동시에 유지되도록 함
+  - `test_read_model_query_combines_cursor_and_region_or_filters`로 `or` 덮어쓰기 방지를 회귀 테스트로 고정함
+
+- 2026-04-23: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `reports/programs-read-model-scope-search-result.md`
+  - `/programs/list?q=...&scope=all` 검색 경로가 `program_list_index`에 존재하지 않는 `scope` 컬럼 필터를 붙여 read model fallback으로 빠질 수 있는 문제를 수정함
+  - `scope=all`은 browse/search/archive 모드 결정에만 사용하고, read model query params에는 전달하지 않도록 정리함
+  - `test_read_model_query_scope_all_switches_mode_without_scope_column_filter`로 검색 모드 전환과 `scope` 필터 미전달을 회귀 테스트로 고정함
+
 ## 2026-04-23 Work24 참여시간 backfill 및 보수적 표시 정책
 
 - 변경 파일

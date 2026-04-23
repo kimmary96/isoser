@@ -2558,6 +2558,31 @@ def _decode_program_cursor(cursor: str | None) -> dict[str, Any] | None:
     return decoded if isinstance(decoded, dict) and decoded.get("id") else None
 
 
+def _add_read_model_or_filter(params: dict[str, Any], group: str) -> None:
+    normalized_group = group if group.startswith("(") and group.endswith(")") else f"({group})"
+    existing_or = params.pop("or", None)
+    if existing_or:
+        existing_and = params.pop("and", None)
+        clauses: list[str] = []
+        if existing_and:
+            existing_inner = str(existing_and).strip()
+            if existing_inner.startswith("(") and existing_inner.endswith(")"):
+                existing_inner = existing_inner[1:-1]
+            if existing_inner:
+                clauses.append(existing_inner)
+        clauses.append(f"or{existing_or}")
+        clauses.append(f"or{normalized_group}")
+        params["and"] = "(" + ",".join(clauses) + ")"
+        return
+    if "and" in params:
+        existing_inner = str(params["and"]).strip()
+        if existing_inner.startswith("(") and existing_inner.endswith(")"):
+            existing_inner = existing_inner[1:-1]
+        params["and"] = f"({existing_inner},or{normalized_group})" if existing_inner else f"(or{normalized_group})"
+        return
+    params["or"] = normalized_group
+
+
 def _read_model_order(sort: str) -> str:
     if sort == "deadline":
         return "deadline.asc.nullslast,recommended_score.desc.nullslast,id.asc"
@@ -2575,11 +2600,11 @@ def _apply_read_model_cursor(params: dict[str, Any], *, cursor: str | None, sort
     if not cursor_id:
         return
     if sort == "deadline":
-        params["or"] = f"(deadline.gt.{value},and(deadline.eq.{value},id.gt.{cursor_id}))"
+        _add_read_model_or_filter(params, f"(deadline.gt.{value},and(deadline.eq.{value},id.gt.{cursor_id}))")
     elif sort == "latest":
-        params["or"] = f"(updated_at.lt.{value},and(updated_at.eq.{value},id.gt.{cursor_id}))"
+        _add_read_model_or_filter(params, f"(updated_at.lt.{value},and(updated_at.eq.{value},id.gt.{cursor_id}))")
     else:
-        params["or"] = f"(recommended_score.lt.{value},and(recommended_score.eq.{value},id.gt.{cursor_id}))"
+        _add_read_model_or_filter(params, f"(recommended_score.lt.{value},and(recommended_score.eq.{value},id.gt.{cursor_id}))")
 
 
 def _build_read_model_params(
@@ -2621,14 +2646,12 @@ def _build_read_model_params(
         params["category"] = f"eq.{effective_category}"
     if category_detail:
         params["category_detail"] = f"eq.{category_detail}"
-    if scope and mode == "search":
-        params["scope"] = f"eq.{scope}"
     if region_detail:
         params["region_detail"] = f"eq.{region_detail}"
 
     normalized_regions = _expand_region_keywords(_normalize_regions_param(regions))
     if normalized_regions:
-        params["or"] = "(" + ",".join(f"location.ilike.*{keyword}*" for keyword in normalized_regions) + ")"
+        _add_read_model_or_filter(params, "(" + ",".join(f"location.ilike.*{keyword}*" for keyword in normalized_regions) + ")")
 
     normalized_sources = [source.strip() for source in (sources or []) if source.strip()]
     if normalized_sources:

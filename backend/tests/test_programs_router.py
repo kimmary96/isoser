@@ -136,6 +136,63 @@ def test_read_model_query_limits_default_browse_pool() -> None:
     assert params["order"].startswith("recommended_score.desc")
 
 
+def test_read_model_query_scope_all_switches_mode_without_scope_column_filter() -> None:
+    params, mode = programs._build_read_model_params(
+        category=None,
+        category_detail=None,
+        scope="all",
+        region_detail=None,
+        q=None,
+        regions=None,
+        sources=None,
+        teaching_methods=None,
+        cost_types=None,
+        participation_times=None,
+        targets=None,
+        recruiting_only=True,
+        include_closed_recent=False,
+        sort="default",
+        limit=20,
+    )
+
+    assert mode == "search"
+    assert "scope" not in params
+    assert "browse_rank" not in params
+    assert params["is_open"] == "eq.true"
+
+
+def test_read_model_query_combines_cursor_and_region_or_filters() -> None:
+    cursor = programs._encode_program_cursor(
+        {"id": "00000000-0000-0000-0000-000000000001", "recommended_score": 0.8},
+        sort="default",
+    )
+    params, mode = programs._build_read_model_params(
+        category=None,
+        category_detail=None,
+        scope=None,
+        region_detail=None,
+        q=None,
+        regions=["서울", "경기"],
+        sources=None,
+        teaching_methods=None,
+        cost_types=None,
+        participation_times=None,
+        targets=None,
+        recruiting_only=True,
+        include_closed_recent=False,
+        sort="default",
+        limit=20,
+        cursor=cursor,
+    )
+
+    assert mode == "browse"
+    assert "or" not in params
+    assert "and" in params
+    assert "recommended_score.lt.0.8" in params["and"]
+    assert "location.ilike.*서울*" in params["and"]
+    assert "location.ilike.*경기*" in params["and"]
+
+
 def test_read_model_query_supports_offset_pagination() -> None:
     params, mode = programs._build_read_model_params(
         category=None,
