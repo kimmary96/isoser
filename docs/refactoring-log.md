@@ -1,5 +1,30 @@
 # 리팩토링 로그
 
+## 2026-04-23 camps/programs 목록 read model 리팩터링
+
+- 변경 파일
+  - `backend/routers/programs.py`
+  - `backend/services/program_list_scoring.py`
+  - `supabase/migrations/20260423170000_add_program_list_read_model.sql`
+  - `scripts/refresh_program_list_index.py`
+  - `frontend/app/(landing)/programs/page.tsx`
+  - `frontend/lib/api/backend.ts`
+  - `frontend/lib/types/index.ts`
+  - `docs/camps-list-refactor.md`
+  - `backend/tests/test_programs_router.py`
+- 변경 내용
+  - `/programs` 기본 browse를 전체 source/detail row scan 후 Python 정렬/필터하는 구조에서 `program_list_index` summary read model 우선 경로로 전환하고, 실패 시 legacy path로 fallback하도록 함
+  - browse/search/archive 모드 분기, browse pool 상한(`PROGRAM_BROWSE_POOL_LIMIT`, 기본 300), cursor pagination, recommended score, deadline confidence, facet snapshot table/API를 추가함
+  - 추천 점수 계산을 `program_list_scoring.py`로 분리해 우수기관, Bayesian 만족도, 리뷰 신뢰도, high-confidence deadline urgency, 최신성, 데이터 충실도 기준을 단위 테스트로 고정함
+  - 프론트 `/programs`는 `listProgramsPage`를 사용해 URL query에 `scope`/`cursor`를 동기화하고, list card에 API score 근거와 일치하는 recommendation reason badge를 표시하도록 함
+- 보존한 동작
+  - 기존 `/programs` 배열 응답과 legacy offset 기반 fallback은 유지함
+  - selection process / employment link처럼 read model에 아직 완전히 반영하지 않은 legacy 필터는 기존 경로로 처리함
+- 검증
+  - `backend\venv\Scripts\python.exe -m pytest backend\tests\test_programs_router.py -q` 통과 (`85 passed`)
+  - `npx tsc --noEmit --project tsconfig.codex-check.json` 통과
+  - `backend\venv\Scripts\python.exe -m py_compile backend\services\program_list_scoring.py scripts\refresh_program_list_index.py` 통과
+
 ## 2026-04-23 blocked 문서 재점검 및 programs 필터/태그 보정
 
 - 변경 파일

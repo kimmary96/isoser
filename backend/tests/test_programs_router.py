@@ -6,6 +6,7 @@ from types import SimpleNamespace
 import pytest
 from fastapi.testclient import TestClient
 
+from services.program_list_scoring import compute_recommended_score
 from routers import programs
 
 
@@ -43,6 +44,164 @@ def test_build_program_query_params_for_filtered_list() -> None:
     assert params["order"] == "created_at.desc.nullslast"
     assert "offset" not in params
     assert params["or"] == "(location.ilike.*서울*,location.ilike.*대전*,location.ilike.*충청*,location.ilike.*세종*)"
+
+
+def test_recommended_score_uses_weighted_components_and_reasons() -> None:
+    score = compute_recommended_score(
+        {
+            "title": "AI 부트캠프",
+            "provider": "우수기관",
+            "summary": "요약",
+            "category": "AI",
+            "category_detail": "data-ai",
+            "region": "서울",
+            "teaching_method": "온라인",
+            "tuition_type": "무료",
+            "study_time": "풀타임",
+            "thumbnail_url": "https://example.com/image.png",
+            "is_certified": True,
+            "satisfaction_avg": 4.8,
+            "satisfaction_count": 64,
+            "close_date": (date.today() + timedelta(days=2)).isoformat(),
+            "updated_at": date.today().isoformat(),
+        },
+        today=date.today(),
+    )
+
+    assert score.excellence_score == 1
+    assert score.deadline_urgency == 1
+    assert score.recommended_score > 0.85
+    assert "우수기관" in score.reasons
+    assert "마감임박" in score.reasons
+
+
+def test_recommended_score_excludes_low_confidence_deadline_urgency() -> None:
+    score = compute_recommended_score(
+        {
+            "title": "AI 부트캠프",
+            "deadline": (date.today() + timedelta(days=1)).isoformat(),
+            "deadline_confidence": "low",
+            "satisfaction_avg": 5,
+            "satisfaction_count": 1,
+        },
+        today=date.today(),
+    )
+
+    assert score.deadline_urgency == 0
+    assert "마감임박" not in score.reasons
+
+
+def test_program_cursor_round_trip_is_stable_for_recommended_sort() -> None:
+    row = {"id": "00000000-0000-0000-0000-000000000001", "recommended_score": 0.92}
+    cursor = programs._encode_program_cursor(row, sort="default")
+    decoded = programs._decode_program_cursor(cursor)
+
+    assert decoded == {
+        "sort": "default",
+        "value": 0.92,
+        "id": "00000000-0000-0000-0000-000000000001",
+    }
+
+
+def test_read_model_mode_splits_browse_search_and_archive() -> None:
+    assert programs._program_list_mode(q=None, scope=None, include_closed_recent=False) == "browse"
+    assert programs._program_list_mode(q="ai", scope=None, include_closed_recent=False) == "search"
+    assert programs._program_list_mode(q=None, scope="all", include_closed_recent=False) == "search"
+    assert programs._program_list_mode(q=None, scope=None, include_closed_recent=True) == "archive"
+
+
+def test_read_model_query_limits_default_browse_pool() -> None:
+    params, mode = programs._build_read_model_params(
+        category=None,
+        category_detail=None,
+        scope=None,
+        region_detail=None,
+        q=None,
+        regions=None,
+        sources=None,
+        teaching_methods=None,
+        cost_types=None,
+        participation_times=None,
+        targets=None,
+        recruiting_only=True,
+        include_closed_recent=False,
+        sort="default",
+        limit=20,
+    )
+
+    assert mode == "browse"
+    assert params["browse_rank"] == "lte.300"
+    assert params["is_open"] == "eq.true"
+    assert params["order"].startswith("recommended_score.desc")
+
+
+@pytest.mark.asyncio
+async def test_list_programs_page_uses_read_model_and_cursor(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[dict[str, object]] = []
+
+    async def fake_request_supabase(**kwargs: object) -> list[dict[str, object]]:
+        calls.append(kwargs)
+        params = kwargs.get("params")
+        assert isinstance(params, dict)
+        if params.get("select") == "id":
+            return [{"id": "program-1"}]
+        return [
+            {
+                "id": "00000000-0000-0000-0000-000000000001",
+                "title": "AI 과정",
+                "source": "고용24",
+                "recommended_score": 0.9,
+            },
+            {
+                "id": "00000000-0000-0000-0000-000000000002",
+                "title": "백엔드 과정",
+                "source": "고용24",
+                "recommended_score": 0.8,
+            },
+        ]
+
+    monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
+    monkeypatch.setenv("ENABLE_PROGRAM_LIST_READ_MODEL", "true")
+
+    response = await programs.list_programs_page(
+        regions=None,
+        sources=None,
+        teaching_methods=None,
+        cost_types=None,
+        participation_times=None,
+        targets=None,
+        cursor=None,
+        limit=1,
+    )
+
+    assert response.source == "read_model"
+    assert response.mode == "browse"
+    assert len(response.items) == 1
+    assert response.next_cursor is not None
+    assert response.count == 1
+
+
+def test_promoted_and_organic_read_model_params_do_not_mix_scores() -> None:
+    params, _ = programs._build_read_model_params(
+        category=None,
+        category_detail=None,
+        scope=None,
+        region_detail=None,
+        q=None,
+        regions=None,
+        sources=None,
+        teaching_methods=None,
+        cost_types=None,
+        participation_times=None,
+        targets=None,
+        recruiting_only=True,
+        include_closed_recent=False,
+        sort="default",
+        limit=20,
+    )
+
+    assert "promoted_rank" not in params["order"]
+    assert "recommended_score" in params["order"]
 
 
 def test_build_program_query_params_uses_parent_category_for_category_detail() -> None:

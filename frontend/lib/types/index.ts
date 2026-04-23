@@ -292,6 +292,10 @@ export interface Program {
   rating_scale?: number | null;
   rating_display?: string | null;
   review_count?: number | null;
+  deadline_confidence?: "high" | "medium" | "low" | null;
+  recommended_score?: number | null;
+  recommendation_reasons?: string[] | null;
+  promoted_rank?: number | null;
   display_categories?: string[] | null;
   participation_mode_label?: string | null;
   participation_time_text?: string | null;
@@ -421,10 +425,35 @@ export interface ProgramListParams {
   sort?: ProgramSort;
   limit?: number;
   offset?: number;
+  cursor?: string;
 }
 
 export interface ProgramCountResponse {
   count: number;
+}
+
+export interface ProgramFacetBucket {
+  value: string;
+  count: number;
+}
+
+export interface ProgramFacetSnapshot {
+  category: ProgramFacetBucket[];
+  region: ProgramFacetBucket[];
+  teaching_method: ProgramFacetBucket[];
+  cost_type: ProgramFacetBucket[];
+  participation_time: ProgramFacetBucket[];
+  source: ProgramFacetBucket[];
+}
+
+export interface ProgramListPageResponse {
+  items: Program[];
+  next_cursor: string | null;
+  count: number | null;
+  mode: "browse" | "search" | "archive";
+  source: "read_model" | "legacy";
+  cache_hit: boolean;
+  facets?: ProgramFacetSnapshot | null;
 }
 
 export interface ProgramRecommendItem {

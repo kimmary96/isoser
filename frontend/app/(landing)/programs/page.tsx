@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import AdSlot from "@/components/AdSlot";
 import { LandingHeader } from "@/components/landing/LandingHeader";
-import { getProgramCount, getProgramFilterOptions, listPrograms } from "@/lib/api/backend";
+import { getProgramFilterOptions, listPrograms, listProgramsPage } from "@/lib/api/backend";
 import { buildUrgentProgramChips } from "@/lib/programs-page-layout";
 import { getSiteUrl } from "@/lib/seo";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -123,6 +123,8 @@ type ProgramsPageSearchParams = {
   sources?: string | string[];
   targets?: string | string[];
   closed?: string | string[];
+  scope?: string | string[];
+  cursor?: string | string[];
   sort?: string | string[];
   page?: string | string[];
 };
@@ -239,6 +241,7 @@ type ProgramsHrefParams = {
   sources?: string[];
   targets?: string[];
   closed?: boolean;
+  cursor?: string;
   sort?: ProgramSort;
   page?: number;
 };
@@ -266,7 +269,9 @@ function buildProgramsHref(params: ProgramsHrefParams): string {
   if (params.targets?.length) {
     params.targets.forEach((target) => searchParams.append("targets", target));
   }
+  if (params.q) searchParams.set("scope", "all");
   if (params.closed) searchParams.set("closed", "true");
+  if (params.cursor) searchParams.set("cursor", params.cursor);
   if (params.sort && params.sort !== DEFAULT_SORT) searchParams.set("sort", params.sort);
   if (params.page && params.page > 1) searchParams.set("page", String(params.page));
 
@@ -418,9 +423,10 @@ function getSupportBadge(program: Program): string | null {
   return explicit && explicit.length <= 8 ? explicit : null;
 }
 
-function formatMethodAndRegion(program: Program): string {
-  const parts = [program.teaching_method, program.location].filter((value): value is string => Boolean(value?.trim()));
-  return parts.length ? parts.join(" / ") : "-";
+function formatMethodAndRegion(program: Program): { method: string | null; region: string | null } {
+  const method = program.teaching_method?.trim() || null;
+  const region = program.location?.trim() || null;
+  return { method, region };
 }
 
 function formatRecruitingStatus(program: Program): string {
@@ -563,6 +569,7 @@ function ProgramsTable({
             const percent = scorePercent(program);
             const categories = getDisplayCategories(program);
             const participation = formatParticipationTime(program);
+            const methodAndRegion = formatMethodAndRegion(program);
             const selectionKeywords = extractSelectionKeywords(program);
             const supportBadge = getSupportBadge(program);
 
@@ -582,6 +589,15 @@ function ProgramsTable({
                   <Link href={href} className="mt-1 block text-base font-semibold leading-6 text-slate-950 hover:text-violet-700">
                     {program.title}
                   </Link>
+                  {normalizeTextList(program.recommendation_reasons).length ? (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {normalizeTextList(program.recommendation_reasons).slice(0, 3).map((reason) => (
+                        <span key={reason} className="rounded-md bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">
+                          {reason}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
                   {percent !== null ? <p className="mt-1 text-xs font-semibold text-violet-600">관련도 {percent}%</p> : null}
                 </td>
                 <td className="px-4 py-4">
@@ -615,7 +631,20 @@ function ProgramsTable({
                     ) : null}
                   </div>
                 </td>
-                <td className="px-4 py-4 text-slate-600">{formatMethodAndRegion(program)}</td>
+                <td className="px-4 py-4 text-slate-600">
+                  {methodAndRegion.method || methodAndRegion.region ? (
+                    <div className="space-y-1">
+                      {methodAndRegion.method ? (
+                        <span className="inline-flex rounded-md bg-teal-50 px-2 py-1 text-xs font-semibold text-teal-700">
+                          {methodAndRegion.method}
+                        </span>
+                      ) : null}
+                      {methodAndRegion.region ? <p className="text-xs leading-5 text-slate-600">{methodAndRegion.region}</p> : null}
+                    </div>
+                  ) : (
+                    "-"
+                  )}
+                </td>
                 <td className="px-4 py-4 text-slate-600">{formatDateRange(program.start_date, program.end_date)}</td>
                 <td className="px-4 py-4 text-slate-600">
                   {participation.label || participation.detail ? (
@@ -695,8 +724,9 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
   const selectedSources = normalizeNamedOptions(resolvedSearchParams.sources, sourceOptions);
   const selectedTargets = normalizeNamedOptions(resolvedSearchParams.targets, targetOptions);
   const sort = normalizeSort(resolvedSearchParams.sort);
+  const cursor = normalizeQuery(resolvedSearchParams.cursor);
   const page = normalizePage(resolvedSearchParams.page);
-  const offset = (page - 1) * PAGE_SIZE;
+  const offset = cursor ? 0 : (page - 1) * PAGE_SIZE;
   const activeFilters = renderActiveFilters({
     q,
     categoryId: selectedCategory.id,
@@ -716,6 +746,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
   let programs: Program[] = [];
   let urgentPrograms: Program[] = [];
   let totalCount = 0;
+  let nextCursor: string | null = null;
   let error: string | null = null;
   let isLoggedIn = false;
   let bookmarkedProgramIds: string[] = [];
@@ -728,9 +759,10 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
     teaching_methods: selectedTeachingMethods,
     cost_types: selectedCostTypes,
     participation_times: selectedParticipationTimes,
-    targets: selectedTargets,
-    recruiting_only: recruitingOnly,
-    include_closed_recent: showClosedRecent,
+      targets: selectedTargets,
+      recruiting_only: recruitingOnly,
+      include_closed_recent: showClosedRecent,
+      scope: q ? "all" : showClosedRecent ? "archive" : "default",
   };
 
   try {
@@ -754,12 +786,12 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
   }
 
   try {
-    [programs, urgentPrograms, totalCount] = await Promise.all([
-      listPrograms({
+    const [programsPage, urgentRows] = await Promise.all([
+      listProgramsPage({
         ...currentFilterParams,
         sort,
         limit: PAGE_SIZE,
-        offset,
+        cursor: cursor || undefined,
       }),
       listPrograms({
         ...currentFilterParams,
@@ -769,12 +801,33 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
         limit: 12,
         offset: 0,
       }),
-      getProgramCount({
-        ...currentFilterParams,
-      }),
     ]);
+    programs = programsPage.items;
+    nextCursor = programsPage.next_cursor;
+    totalCount = programsPage.count ?? programsPage.items.length;
+    urgentPrograms = urgentRows;
   } catch (e) {
-    error = e instanceof Error ? e.message : "프로그램을 불러오는 중 문제가 발생했습니다.";
+    try {
+      [programs, urgentPrograms] = await Promise.all([
+        listPrograms({
+          ...currentFilterParams,
+          sort,
+          limit: PAGE_SIZE,
+          offset,
+        }),
+        listPrograms({
+          ...currentFilterParams,
+          recruiting_only: true,
+          include_closed_recent: false,
+          sort: "deadline",
+          limit: 12,
+          offset: 0,
+        }),
+      ]);
+      totalCount = programs.length;
+    } catch {
+      error = e instanceof Error ? e.message : "프로그램을 불러오는 중 문제가 발생했습니다.";
+    }
   }
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
@@ -783,7 +836,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
     .filter(isDisplayableProgram)
     .filter((program) => typeof program.days_left === "number" && program.days_left >= 0 && program.days_left <= 7)
     .slice(0, 6);
-  const safePage = Math.min(page, totalPages);
+  const safePage = cursor ? 1 : Math.min(page, totalPages);
   const visiblePages = Array.from({ length: totalPages }, (_, index) => index + 1).filter(
     (pageNumber) => pageNumber >= Math.max(1, safePage - 2) && pageNumber <= Math.min(totalPages, safePage + 2)
   );
@@ -911,7 +964,68 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                       bookmarkedProgramIds={bookmarkedProgramIds}
                     />
 
-                    {totalPages > 1 ? (
+                    {cursor || nextCursor ? (
+                      <nav className="mt-8 flex flex-wrap items-center justify-center gap-2" aria-label="커서 페이지네이션">
+                        <Link
+                          href={buildProgramsHref({
+                            q,
+                            categoryId: selectedCategory.id,
+                            regions: selectedRegions,
+                            teachingMethods: selectedTeachingMethods,
+                            costTypes: selectedCostTypes,
+                            participationTimes: selectedParticipationTimes,
+                            sources: selectedSources,
+                            targets: selectedTargets,
+                            closed: showClosedRecent,
+                            sort,
+                          })}
+                          className={`rounded-xl border px-3 py-2 text-sm font-medium transition ${
+                            cursor
+                              ? "border-slate-300 text-slate-700 hover:bg-slate-100"
+                              : "pointer-events-none border-slate-200 text-slate-300"
+                          }`}
+                        >
+                          처음
+                        </Link>
+                        <Link
+                          href={
+                            nextCursor
+                              ? buildProgramsHref({
+                                  q,
+                                  categoryId: selectedCategory.id,
+                                  regions: selectedRegions,
+                                  teachingMethods: selectedTeachingMethods,
+                                  costTypes: selectedCostTypes,
+                                  participationTimes: selectedParticipationTimes,
+                                  sources: selectedSources,
+                                  targets: selectedTargets,
+                                  closed: showClosedRecent,
+                                  sort,
+                                  cursor: nextCursor,
+                                })
+                              : buildProgramsHref({
+                                  q,
+                                  categoryId: selectedCategory.id,
+                                  regions: selectedRegions,
+                                  teachingMethods: selectedTeachingMethods,
+                                  costTypes: selectedCostTypes,
+                                  participationTimes: selectedParticipationTimes,
+                                  sources: selectedSources,
+                                  targets: selectedTargets,
+                                  closed: showClosedRecent,
+                                  sort,
+                                })
+                          }
+                          className={`rounded-xl border px-3 py-2 text-sm font-medium transition ${
+                            nextCursor
+                              ? "border-slate-300 text-slate-700 hover:bg-slate-100"
+                              : "pointer-events-none border-slate-200 text-slate-300"
+                          }`}
+                        >
+                          다음
+                        </Link>
+                      </nav>
+                    ) : totalPages > 1 ? (
                       <nav className="mt-8 flex flex-wrap items-center justify-center gap-2" aria-label="페이지네이션">
                         <Link
                           href={buildProgramsHref({

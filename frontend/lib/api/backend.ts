@@ -19,6 +19,7 @@ import type {
   ProgramDetail,
   ProgramDetailBatchResponse,
   ProgramFilterOptionsResponse,
+  ProgramListPageResponse,
   ProgramListParams,
   ProgramRecommendResponse,
   SkillSuggestResponse,
@@ -266,10 +267,40 @@ export async function listPrograms(params?: ProgramListParams): Promise<Program[
   if (params?.sort) searchParams.set("sort", params.sort);
   if (typeof params?.limit === "number") searchParams.set("limit", String(params.limit));
   if (typeof params?.offset === "number") searchParams.set("offset", String(params.offset));
+  if (params?.cursor) searchParams.set("cursor", params.cursor);
 
   const query = searchParams.toString();
   return requestJson<Program[]>(
     `/programs/${query ? `?${query}` : ""}`,
+    {
+      method: "GET",
+    },
+    "Failed to load programs."
+  );
+}
+
+export async function listProgramsPage(params?: ProgramListParams): Promise<ProgramListPageResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.q) searchParams.set("q", params.q);
+  if (params?.category) searchParams.set("category", params.category);
+  if (params?.category_detail) searchParams.set("category_detail", params.category_detail);
+  if (params?.scope) searchParams.set("scope", params.scope);
+  if (params?.region_detail) searchParams.set("region_detail", params.region_detail);
+  if (params?.regions?.length) params.regions.forEach((region) => searchParams.append("regions", region));
+  if (params?.sources?.length) params.sources.forEach((source) => searchParams.append("sources", source));
+  if (params?.teaching_methods?.length) params.teaching_methods.forEach((method) => searchParams.append("teaching_methods", method));
+  if (params?.cost_types?.length) params.cost_types.forEach((costType) => searchParams.append("cost_types", costType));
+  if (params?.participation_times?.length) params.participation_times.forEach((time) => searchParams.append("participation_times", time));
+  if (params?.targets?.length) params.targets.forEach((target) => searchParams.append("targets", target));
+  if (params?.recruiting_only) searchParams.set("recruiting_only", "true");
+  if (params?.include_closed_recent) searchParams.set("include_closed_recent", "true");
+  if (params?.sort) searchParams.set("sort", params.sort);
+  if (typeof params?.limit === "number") searchParams.set("limit", String(params.limit));
+  if (params?.cursor) searchParams.set("cursor", params.cursor);
+
+  const query = searchParams.toString();
+  return requestJson<ProgramListPageResponse>(
+    `/programs/list${query ? `?${query}` : ""}`,
     {
       method: "GET",
     },

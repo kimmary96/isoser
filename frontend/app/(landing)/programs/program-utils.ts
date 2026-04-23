@@ -16,7 +16,7 @@ export function normalizeTextList(value: string[] | string | null | undefined): 
 }
 
 export function scorePercent(program: Program): number | null {
-  const score = program._relevance_score ?? program.relevance_score ?? program._score ?? program.final_score;
+  const score = program._relevance_score ?? program.relevance_score ?? program._score ?? program.final_score ?? program.recommended_score;
   if (typeof score !== "number" || Number.isNaN(score)) return null;
   return Math.max(0, Math.min(100, Math.round(score <= 1 ? score * 100 : score)));
 }

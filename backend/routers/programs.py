@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import base64
 from datetime import date, datetime, timedelta, timezone
 import hashlib
 import json
 import logging
+import os
 import re
+import time
 from typing import Any, Literal, Mapping, Sequence
 from uuid import UUID
 
@@ -22,6 +25,11 @@ try:
     from backend.logging_config import get_logger, log_event
 except ImportError:
     from logging_config import get_logger, log_event
+
+try:
+    from backend.services.program_list_scoring import compute_recommended_score
+except ImportError:
+    from services.program_list_scoring import compute_recommended_score
 
 try:
     from rag.collector.scheduler import run_all_collectors
@@ -176,6 +184,18 @@ PROGRAM_SEARCH_SCAN_LIMIT = 10000
 PROGRAM_SEARCH_SCAN_PAGE_SIZE = 1000
 PROGRAM_SEARCH_INDEX_COLUMN = "search_text"
 PROGRAM_SHORT_ASCII_SEARCH_MAX_LENGTH = 2
+PROGRAM_LIST_INDEX_TABLE = "program_list_index"
+PROGRAM_LIST_FACET_TABLE = "program_list_facet_snapshots"
+PROGRAM_BROWSE_POOL_LIMIT = 300
+PROGRAM_PROMOTED_SLOT_LIMIT = 15
+PROGRAM_LIST_SUMMARY_SELECT = (
+    "id,title,provider,summary,category,category_detail,region,region_detail,location,"
+    "teaching_method,cost,cost_type,participation_time,source,source_url,link,deadline,"
+    "close_date,start_date,end_date,is_active,is_ad,rating_raw,rating_normalized,rating_scale,"
+    "rating_display,review_count,display_categories,participation_mode_label,participation_time_text,"
+    "selection_process_label,extracted_keywords,tags,skills,compare_meta,days_left,"
+    "deadline_confidence,recommended_score,recommendation_reasons,promoted_rank,updated_at"
+)
 PROGRAM_DEFAULT_WORK24_TARGET_RATIO = 0.7
 PROGRAM_STARTUP_FILTER_KEYWORDS = (
     "창업",
@@ -310,6 +330,10 @@ class ProgramListItem(BaseModel):
     final_score: float | None = None
     urgency_score: float | None = None
     days_left: int | None = None
+    deadline_confidence: Literal["high", "medium", "low"] | None = None
+    recommended_score: float | None = None
+    recommendation_reasons: list[str] = Field(default_factory=list)
+    promoted_rank: int | None = None
     compare_meta: dict[str, Any] | None = None
 
 
@@ -405,6 +429,37 @@ class ProgramCompareRelevanceResponse(BaseModel):
 
 class ProgramCountResponse(BaseModel):
     count: int
+
+
+class ProgramFacetBucket(BaseModel):
+    value: str
+    count: int
+
+
+class ProgramFacetSnapshot(BaseModel):
+    category: list[ProgramFacetBucket] = Field(default_factory=list)
+    region: list[ProgramFacetBucket] = Field(default_factory=list)
+    teaching_method: list[ProgramFacetBucket] = Field(default_factory=list)
+    cost_type: list[ProgramFacetBucket] = Field(default_factory=list)
+    participation_time: list[ProgramFacetBucket] = Field(default_factory=list)
+    source: list[ProgramFacetBucket] = Field(default_factory=list)
+
+
+class ProgramListPageResponse(BaseModel):
+    items: list[ProgramListItem] = Field(default_factory=list)
+    next_cursor: str | None = None
+    count: int | None = None
+    mode: Literal["browse", "search", "archive"] = "browse"
+    source: Literal["read_model", "legacy"] = "legacy"
+    cache_hit: bool = False
+    facets: ProgramFacetSnapshot | None = None
+
+
+class ProgramFacetSnapshotResponse(BaseModel):
+    scope: Literal["browse", "search", "archive"] = "browse"
+    pool_limit: int
+    generated_at: str | None = None
+    facets: ProgramFacetSnapshot = Field(default_factory=ProgramFacetSnapshot)
 
 
 class ProgramDetailResponse(BaseModel):
@@ -690,6 +745,19 @@ def _uses_work24_training_start_deadline(compare_meta: Mapping[str, Any]) -> boo
         if normalized in {"trastartdate", "trainingstartdate", "trainingstart"}:
             return True
     return False
+
+
+def _program_deadline_confidence(program: Mapping[str, Any]) -> Literal["high", "medium", "low"]:
+    explicit = str(program.get("deadline_confidence") or "").strip().lower()
+    if explicit in {"high", "medium", "low"}:
+        return explicit  # type: ignore[return-value]
+
+    compare_meta = program.get("compare_meta") if isinstance(program.get("compare_meta"), Mapping) else {}
+    if program.get("close_date") or any(compare_meta.get(key) for key in PROGRAM_DEADLINE_COMPARE_META_KEYS):
+        return "high"
+    if _uses_work24_training_start_deadline(compare_meta):
+        return "medium"
+    return "low"
 
 
 def _is_work24_source_value(value: Any) -> bool:
@@ -1730,6 +1798,10 @@ def _serialize_program_list_row(program: dict[str, Any]) -> dict[str, Any]:
     record["extracted_keywords"] = _extract_program_keywords(record)
     if days_left is not None:
         record["is_active"] = days_left >= 0
+    score = compute_recommended_score(record)
+    record["deadline_confidence"] = _program_deadline_confidence(record)
+    record["recommended_score"] = score.recommended_score
+    record["recommendation_reasons"] = list(score.reasons)
     return record
 
 
@@ -2381,6 +2453,275 @@ async def _count_program_rows(
     )
 
 
+def _program_list_read_model_enabled() -> bool:
+    return os.getenv("ENABLE_PROGRAM_LIST_READ_MODEL", "true").strip().lower() not in {"0", "false", "no", "off"}
+
+
+def _can_use_program_list_read_model(
+    *,
+    selection_processes: list[str] | None = None,
+    employment_links: list[str] | None = None,
+) -> bool:
+    return _program_list_read_model_enabled() and not (
+        _normalize_option_param(selection_processes, PROGRAM_SELECTION_PROCESSES)
+        or _normalize_option_param(employment_links, PROGRAM_EMPLOYMENT_LINKS)
+    )
+
+
+def _program_browse_pool_limit() -> int:
+    raw = os.getenv("PROGRAM_BROWSE_POOL_LIMIT", str(PROGRAM_BROWSE_POOL_LIMIT))
+    try:
+        return max(1, min(1000, int(raw)))
+    except ValueError:
+        return PROGRAM_BROWSE_POOL_LIMIT
+
+
+def _program_promoted_slot_limit() -> int:
+    raw = os.getenv("PROGRAM_PROMOTED_SLOT_LIMIT", str(PROGRAM_PROMOTED_SLOT_LIMIT))
+    try:
+        return max(0, min(50, int(raw)))
+    except ValueError:
+        return PROGRAM_PROMOTED_SLOT_LIMIT
+
+
+def _program_list_mode(*, q: str | None, scope: str | None, include_closed_recent: bool) -> Literal["browse", "search", "archive"]:
+    normalized_scope = str(scope or "default").strip().lower()
+    if include_closed_recent or normalized_scope in {"archive", "closed", "recent_closed"}:
+        return "archive"
+    if _normalize_search_text(q) or normalized_scope == "all":
+        return "search"
+    return "browse"
+
+
+def _encode_program_cursor(row: Mapping[str, Any], *, sort: str) -> str | None:
+    program_id = str(row.get("id") or "").strip()
+    if not program_id:
+        return None
+    if sort == "deadline":
+        sort_value = row.get("deadline") or "9999-12-31"
+    elif sort == "latest":
+        sort_value = row.get("updated_at") or ""
+    else:
+        sort_value = row.get("recommended_score") if row.get("recommended_score") is not None else 0
+    payload = json.dumps({"sort": sort, "value": sort_value, "id": program_id}, separators=(",", ":"))
+    return base64.urlsafe_b64encode(payload.encode("utf-8")).decode("ascii").rstrip("=")
+
+
+def _decode_program_cursor(cursor: str | None) -> dict[str, Any] | None:
+    if not cursor:
+        return None
+    try:
+        padded = cursor + "=" * (-len(cursor) % 4)
+        payload = base64.urlsafe_b64decode(padded.encode("ascii")).decode("utf-8")
+        decoded = json.loads(payload)
+    except (ValueError, json.JSONDecodeError):
+        return None
+    return decoded if isinstance(decoded, dict) and decoded.get("id") else None
+
+
+def _read_model_order(sort: str) -> str:
+    if sort == "deadline":
+        return "deadline.asc.nullslast,recommended_score.desc.nullslast,id.asc"
+    if sort == "latest":
+        return "updated_at.desc.nullslast,id.asc"
+    return "recommended_score.desc.nullslast,id.asc"
+
+
+def _apply_read_model_cursor(params: dict[str, Any], *, cursor: str | None, sort: str) -> None:
+    decoded = _decode_program_cursor(cursor)
+    if not decoded or decoded.get("sort") != sort:
+        return
+    cursor_id = str(decoded.get("id") or "").strip()
+    value = decoded.get("value")
+    if not cursor_id:
+        return
+    if sort == "deadline":
+        params["or"] = f"(deadline.gt.{value},and(deadline.eq.{value},id.gt.{cursor_id}))"
+    elif sort == "latest":
+        params["or"] = f"(updated_at.lt.{value},and(updated_at.eq.{value},id.gt.{cursor_id}))"
+    else:
+        params["or"] = f"(recommended_score.lt.{value},and(recommended_score.eq.{value},id.gt.{cursor_id}))"
+
+
+def _build_read_model_params(
+    *,
+    category: str | None,
+    category_detail: str | None,
+    scope: str | None,
+    region_detail: str | None,
+    q: str | None,
+    regions: list[str] | None,
+    sources: list[str] | None,
+    teaching_methods: list[str] | None,
+    cost_types: list[str] | None,
+    participation_times: list[str] | None,
+    targets: list[str] | None,
+    recruiting_only: bool,
+    include_closed_recent: bool,
+    sort: str,
+    limit: int,
+    cursor: str | None = None,
+    count: bool = False,
+) -> tuple[dict[str, Any], Literal["browse", "search", "archive"]]:
+    mode = _program_list_mode(q=q, scope=scope, include_closed_recent=include_closed_recent)
+    effective_sort = sort if sort in PROGRAM_SORT_OPTIONS else "default"
+    params: dict[str, Any] = {
+        "select": "id" if count else PROGRAM_LIST_SUMMARY_SELECT,
+        "order": _read_model_order(effective_sort),
+    }
+    if not count:
+        params["limit"] = str(limit + 1)
+        _apply_read_model_cursor(params, cursor=cursor, sort=effective_sort)
+
+    effective_category = category or PROGRAM_CATEGORY_PARENT_CATEGORIES.get(str(category_detail or "").strip())
+    if effective_category:
+        params["category"] = f"eq.{effective_category}"
+    if category_detail:
+        params["category_detail"] = f"eq.{category_detail}"
+    if scope and mode == "search":
+        params["scope"] = f"eq.{scope}"
+    if region_detail:
+        params["region_detail"] = f"eq.{region_detail}"
+
+    normalized_regions = _expand_region_keywords(_normalize_regions_param(regions))
+    if normalized_regions:
+        params["or"] = "(" + ",".join(f"location.ilike.*{keyword}*" for keyword in normalized_regions) + ")"
+
+    normalized_sources = [source.strip() for source in (sources or []) if source.strip()]
+    if normalized_sources:
+        quoted_sources = ",".join(f'"{source}"' for source in normalized_sources)
+        params["source"] = f"in.({quoted_sources})"
+
+    normalized_teaching_methods = _normalize_teaching_methods_param(teaching_methods)
+    if normalized_teaching_methods:
+        quoted_methods = ",".join(f'"{method}"' for method in normalized_teaching_methods)
+        params["teaching_method"] = f"in.({quoted_methods})"
+
+    normalized_cost_types = _normalize_option_param(cost_types, PROGRAM_COST_TYPES)
+    if normalized_cost_types:
+        params["cost_type"] = "in.(" + ",".join(f'"{value}"' for value in normalized_cost_types) + ")"
+
+    normalized_participation_times = _normalize_option_param(participation_times, PROGRAM_PARTICIPATION_TIMES)
+    if normalized_participation_times:
+        params["participation_time"] = "in.(" + ",".join(f'"{value}"' for value in normalized_participation_times) + ")"
+
+    normalized_targets = _normalize_option_param(targets, PROGRAM_TARGETS)
+    if normalized_targets:
+        params["target_summary"] = "cs.{" + ",".join(f'"{value}"' for value in normalized_targets) + "}"
+
+    if mode == "browse":
+        params["browse_rank"] = f"lte.{_program_browse_pool_limit()}"
+        params["is_open"] = "eq.true"
+    elif mode == "archive":
+        params["is_open"] = "eq.false"
+    elif recruiting_only:
+        params["is_open"] = "eq.true"
+
+    search_filter = _program_search_index_filter(q) if _can_use_program_search_index(q) else None
+    if search_filter:
+        params["search_text"] = search_filter
+    return params, mode
+
+
+async def _fetch_program_list_read_model_rows(
+    *,
+    category: str | None = None,
+    category_detail: str | None = None,
+    scope: str | None = None,
+    region_detail: str | None = None,
+    q: str | None = None,
+    regions: list[str] | None = None,
+    sources: list[str] | None = None,
+    teaching_methods: list[str] | None = None,
+    cost_types: list[str] | None = None,
+    participation_times: list[str] | None = None,
+    targets: list[str] | None = None,
+    recruiting_only: bool = False,
+    include_closed_recent: bool = False,
+    sort: str = "default",
+    limit: int = 20,
+    cursor: str | None = None,
+) -> ProgramListPageResponse:
+    started = time.perf_counter()
+    params, mode = _build_read_model_params(
+        category=category,
+        category_detail=category_detail,
+        scope=scope,
+        region_detail=region_detail,
+        q=q,
+        regions=regions,
+        sources=sources,
+        teaching_methods=teaching_methods,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
+        recruiting_only=recruiting_only,
+        include_closed_recent=include_closed_recent,
+        sort=sort,
+        limit=limit,
+        cursor=cursor,
+    )
+    rows = await request_supabase(method="GET", path=f"/rest/v1/{PROGRAM_LIST_INDEX_TABLE}", params=params)
+    read_rows = rows if isinstance(rows, list) else []
+    page_rows = read_rows[:limit]
+    next_cursor = _encode_program_cursor(page_rows[-1], sort=sort if sort in PROGRAM_SORT_OPTIONS else "default") if len(read_rows) > limit and page_rows else None
+    elapsed_ms = round((time.perf_counter() - started) * 1000, 2)
+    log_event(
+        logger,
+        logging.INFO,
+        "program_list_read_model",
+        mode=mode,
+        item_count=len(page_rows),
+        elapsed_ms=elapsed_ms,
+        cache_hit=False,
+    )
+    return ProgramListPageResponse(
+        items=[ProgramListItem.model_validate(row) for row in page_rows],
+        next_cursor=next_cursor,
+        mode=mode,
+        source="read_model",
+        cache_hit=False,
+    )
+
+
+async def _count_program_read_model_rows(
+    *,
+    category: str | None = None,
+    category_detail: str | None = None,
+    scope: str | None = None,
+    region_detail: str | None = None,
+    q: str | None = None,
+    regions: list[str] | None = None,
+    sources: list[str] | None = None,
+    teaching_methods: list[str] | None = None,
+    cost_types: list[str] | None = None,
+    participation_times: list[str] | None = None,
+    targets: list[str] | None = None,
+    recruiting_only: bool = False,
+    include_closed_recent: bool = False,
+) -> int:
+    params, _ = _build_read_model_params(
+        category=category,
+        category_detail=category_detail,
+        scope=scope,
+        region_detail=region_detail,
+        q=q,
+        regions=regions,
+        sources=sources,
+        teaching_methods=teaching_methods,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
+        recruiting_only=recruiting_only,
+        include_closed_recent=include_closed_recent,
+        sort="default",
+        limit=1,
+        count=True,
+    )
+    rows = await request_supabase(method="GET", path=f"/rest/v1/{PROGRAM_LIST_INDEX_TABLE}", params=params)
+    return len(rows) if isinstance(rows, list) else 0
+
+
 async def _fetch_program_list_rows(params: dict[str, Any], *, q: str | None) -> list[dict[str, Any]]:
     if not _normalize_search_text(q):
         requested_limit = _int_or_none(params.get("limit"))
@@ -2973,7 +3314,37 @@ async def list_programs(
     sort: str = Query(default="default"),
     limit: int = Query(default=20, ge=1),
     offset: int = Query(default=0, ge=0),
+    cursor: str | None = Query(default=None),
 ) -> Any:
+    if _can_use_program_list_read_model(selection_processes=selection_processes, employment_links=employment_links) and offset == 0:
+        try:
+            page = await _fetch_program_list_read_model_rows(
+                category=category,
+                category_detail=category_detail,
+                scope=scope,
+                region_detail=region_detail,
+                q=q,
+                regions=regions,
+                sources=sources,
+                teaching_methods=teaching_methods,
+                cost_types=cost_types,
+                participation_times=participation_times,
+                targets=targets,
+                recruiting_only=recruiting_only,
+                include_closed_recent=include_closed_recent,
+                sort=sort,
+                limit=limit,
+                cursor=cursor,
+            )
+            return [item.model_dump() for item in page.items]
+        except Exception as exc:
+            log_event(
+                logger,
+                logging.WARNING,
+                "program_list_read_model_fallback",
+                error=str(exc),
+                offset=offset,
+            )
     params = _build_program_query_params(
         select="*",
         category=category,
@@ -3014,6 +3385,151 @@ async def list_programs(
     )
 
 
+@programs_router.get("/list", response_model=ProgramListPageResponse)
+async def list_programs_page(
+    category: str | None = None,
+    category_detail: str | None = None,
+    scope: str | None = None,
+    region_detail: str | None = None,
+    q: str | None = None,
+    regions: list[str] | None = Query(default=None),
+    sources: list[str] | None = Query(default=None),
+    teaching_methods: list[str] | None = Query(default=None),
+    cost_types: list[str] | None = Query(default=None),
+    participation_times: list[str] | None = Query(default=None),
+    targets: list[str] | None = Query(default=None),
+    recruiting_only: bool = False,
+    include_closed_recent: bool = False,
+    sort: str = Query(default="default"),
+    limit: int = Query(default=20, ge=1, le=100),
+    cursor: str | None = Query(default=None),
+) -> ProgramListPageResponse:
+    if _program_list_read_model_enabled():
+        try:
+            response = await _fetch_program_list_read_model_rows(
+                category=category,
+                category_detail=category_detail,
+                scope=scope,
+                region_detail=region_detail,
+                q=q,
+                regions=regions,
+                sources=sources,
+                teaching_methods=teaching_methods,
+                cost_types=cost_types,
+                participation_times=participation_times,
+                targets=targets,
+                recruiting_only=recruiting_only,
+                include_closed_recent=include_closed_recent,
+                sort=sort,
+                limit=limit,
+                cursor=cursor,
+            )
+            response.count = await _count_program_read_model_rows(
+                category=category,
+                category_detail=category_detail,
+                scope=scope,
+                region_detail=region_detail,
+                q=q,
+                regions=regions,
+                sources=sources,
+                teaching_methods=teaching_methods,
+                cost_types=cost_types,
+                participation_times=participation_times,
+                targets=targets,
+                recruiting_only=recruiting_only,
+                include_closed_recent=include_closed_recent,
+            )
+            return response
+        except Exception as exc:
+            log_event(logger, logging.WARNING, "program_list_page_read_model_fallback", error=str(exc))
+
+    rows = await list_programs(
+        category=category,
+        category_detail=category_detail,
+        scope=scope,
+        region_detail=region_detail,
+        q=q,
+        regions=regions,
+        sources=sources,
+        teaching_methods=teaching_methods,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
+        recruiting_only=recruiting_only,
+        include_closed_recent=include_closed_recent,
+        sort=sort,
+        limit=limit,
+        offset=0,
+        cursor=None,
+    )
+    return ProgramListPageResponse(
+        items=[ProgramListItem.model_validate(row) for row in rows],
+        count=len(rows),
+        mode=_program_list_mode(q=q, scope=scope, include_closed_recent=include_closed_recent),
+        source="legacy",
+    )
+
+
+def _build_facet_snapshot(raw_facets: Mapping[str, Any] | None) -> ProgramFacetSnapshot:
+    raw_facets = raw_facets or {}
+
+    def buckets(key: str) -> list[ProgramFacetBucket]:
+        values = raw_facets.get(key)
+        if not isinstance(values, list):
+            return []
+        result: list[ProgramFacetBucket] = []
+        for item in values:
+            if not isinstance(item, Mapping):
+                continue
+            value = str(item.get("value") or "").strip()
+            count = _int_or_none(item.get("count")) or 0
+            if value:
+                result.append(ProgramFacetBucket(value=value, count=count))
+        return result
+
+    return ProgramFacetSnapshot(
+        category=buckets("category"),
+        region=buckets("region"),
+        teaching_method=buckets("teaching_method"),
+        cost_type=buckets("cost_type"),
+        participation_time=buckets("participation_time"),
+        source=buckets("source"),
+    )
+
+
+@programs_router.get("/facets", response_model=ProgramFacetSnapshotResponse)
+async def get_program_facets(
+    scope: str | None = None,
+    include_closed_recent: bool = False,
+    q: str | None = None,
+) -> ProgramFacetSnapshotResponse:
+    mode = _program_list_mode(q=q, scope=scope, include_closed_recent=include_closed_recent)
+    if not _program_list_read_model_enabled():
+        return ProgramFacetSnapshotResponse(scope=mode, pool_limit=_program_browse_pool_limit())
+    try:
+        rows = await request_supabase(
+            method="GET",
+            path=f"/rest/v1/{PROGRAM_LIST_FACET_TABLE}",
+            params={
+                "select": "facets,generated_at",
+                "scope": f"eq.{mode}",
+                "pool_limit": f"eq.{_program_browse_pool_limit()}",
+                "order": "generated_at.desc",
+                "limit": "1",
+            },
+        )
+    except Exception as exc:
+        log_event(logger, logging.WARNING, "program_facets_read_model_fallback", error=str(exc))
+        rows = []
+    row = rows[0] if isinstance(rows, list) and rows else {}
+    return ProgramFacetSnapshotResponse(
+        scope=mode,
+        pool_limit=_program_browse_pool_limit(),
+        generated_at=str(row.get("generated_at")) if row.get("generated_at") else None,
+        facets=_build_facet_snapshot(row.get("facets") if isinstance(row, Mapping) else None),
+    )
+
+
 @programs_router.get("/count", response_model=ProgramCountResponse)
 async def count_programs(
     category: str | None = None,
@@ -3032,6 +3548,27 @@ async def count_programs(
     recruiting_only: bool = False,
     include_closed_recent: bool = False,
 ) -> ProgramCountResponse:
+    if _can_use_program_list_read_model(selection_processes=selection_processes, employment_links=employment_links):
+        try:
+            return ProgramCountResponse(
+                count=await _count_program_read_model_rows(
+                    category=category,
+                    category_detail=category_detail,
+                    scope=scope,
+                    region_detail=region_detail,
+                    q=q,
+                    regions=regions,
+                    sources=sources,
+                    teaching_methods=teaching_methods,
+                    cost_types=cost_types,
+                    participation_times=participation_times,
+                    targets=targets,
+                    recruiting_only=recruiting_only,
+                    include_closed_recent=include_closed_recent,
+                )
+            )
+        except Exception as exc:
+            log_event(logger, logging.WARNING, "program_count_read_model_fallback", error=str(exc))
     count = await _count_program_rows(
         category=category,
         category_detail=category_detail,
