@@ -93,6 +93,22 @@ def test_district_collector_records_url_level_diagnostics() -> None:
     assert "from 2/3 urls" in collector.last_collect_message
     assert "request_failed=1" in collector.last_collect_message
     assert "parse_empty=1" in collector.last_collect_message
+    assert len(collector.last_collect_url_diagnostics) == 3
+    parse_empty = next(
+        diagnostic
+        for diagnostic in collector.last_collect_url_diagnostics
+        if diagnostic["parse_status"] == "parse_empty"
+    )
+    assert parse_empty["item_count"] == 0
+    assert parse_empty["html_snapshot"]["html_length"] > 0
+    assert parse_empty["html_snapshot"]["body_text_preview"] == "https://example.com/empty"
+    request_failed = next(
+        diagnostic
+        for diagnostic in collector.last_collect_url_diagnostics
+        if diagnostic["request_status"] == "request_failed"
+    )
+    assert request_failed["parse_status"] == "not_attempted"
+    assert request_failed["error"] == "blocked"
 
 
 def test_district_collector_distinguishes_parse_empty_and_request_failure() -> None:
@@ -108,6 +124,15 @@ def test_district_collector_distinguishes_parse_empty_and_request_failure() -> N
     assert failed_collector.last_collect_status == "request_failed"
     assert "all requests failed" in failed_collector.last_collect_message
     assert "blocked" in failed_collector.last_collect_message
+    assert failed_collector.last_collect_url_diagnostics == [
+        {
+            "url": "https://example.com/fail",
+            "request_status": "request_failed",
+            "parse_status": "not_attempted",
+            "item_count": 0,
+            "error": "blocked",
+        }
+    ]
 
 
 def test_guro_collector_uses_http_program_listing_and_it_category() -> None:

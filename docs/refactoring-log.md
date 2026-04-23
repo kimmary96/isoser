@@ -2835,6 +2835,10 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - OCR 런타임을 붙이지 않고 `--include-ocr-probe` 옵션으로 HTML detail page의 visible text, image count, attachment link count를 source별 소량 샘플링하는 read-only preflight를 추가함
   - OCR runtime opt-in 후보와 poster/attachment 검토 후보를 분리해, 2026-04-23 live 기준 OCR runtime 후보 0개, poster/attachment 검토 후보 7개, detail/parser 보강 우선 3개로 리포트를 남김
   - 첨부가 있어도 detail HTML 본문이 충분하면 OCR runtime 후보로 올리지 않도록 테스트로 고정함
+- 2026-04-23: `backend/rag/collector/base_html_collector.py`, `backend/tests/test_tier4_collectors.py`, `scripts/html_collector_diagnostic.py`, `backend/tests/test_html_collector_diagnostic_cli.py`, `docs/current-state.md`, `reports/aws-boottent-adoption-performance-report-2026-04-23.md`, `reports/html-collector-diagnostic-2026-04-23.json`, `reports/html-collector-dynamic-retrieve-diagnostic-2026-04-23.md`, `reports/html-collector-ocr-diagnostic-2026-04-23.json`, `reports/html-collector-ocr-diagnostic-2026-04-23.md`, `reports/html-collector-snapshots-2026-04-23/*`
+  - `collect_url_items()`가 URL별 structured diagnostics와 bounded HTML snapshot 메타를 남기도록 보강해 partial parse-empty source를 문자열 메시지 해석 없이 추적할 수 있게 함
+  - `scripts/html_collector_diagnostic.py`에 `--snapshot-output-dir`, `--include-scheduler-summary`를 추가해 partial parse-empty HTML snapshot 저장과 scheduler-style dry-run quality summary를 같은 리포트에 묶음
+  - OCR/image preflight Markdown에 sample detail highlights를 추가하고, 2026-04-23 live 기준 partial parse-empty snapshot 2건, HTML source dry-run quality checked rows 190건, OCR runtime 후보 0건을 다시 확인함
 - 2026-04-23: `AGENTS.md`, `docs/agent-playbook.md`, `docs/current-state.md`
   - queued task packet 작업과 Codex 대화 세션 직접 작업을 분리해, execution queue에 들어온 packet에는 기존 frontmatter gate를 유지하고 대화 세션 직접 요청은 큐 파일 생성 없이 바로 구현할 수 있도록 규칙을 정리함
   - 직접 대화 작업은 필요한 경우 `reports/SESSION-YYYY-MM-DD-brief-topic-result.md` 형태의 세션 결과 보고서만 남기고, `tasks/inbox`나 `cowork/packets`로 자동 승격하지 않도록 명시함

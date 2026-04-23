@@ -183,13 +183,18 @@
 - `backend/rag/collector/tier4_collectors.py`
 - `scripts/html_collector_diagnostic.py`
 - `backend/tests/test_html_collector_diagnostic_cli.py`
+- `backend/tests/test_tier4_collectors.py`
 - `reports/html-collector-diagnostic-2026-04-23.json`
 - `reports/html-collector-dynamic-retrieve-diagnostic-2026-04-23.md`
+- `reports/html-collector-snapshots-2026-04-23/*`
 
 향상된 점:
 
 - Tier 2/3/4 HTML collector가 공통 `collect_url_items()` helper로 URL별 request failure, parse-empty, parse failure를 `last_collect_message`에 남긴다.
+- `collect_url_items()`는 URL별 structured diagnostics와 bounded HTML snapshot 메타를 `last_collect_url_diagnostics`에 남긴다.
 - `scripts/html_collector_diagnostic.py`는 HTML collector만 read-only live collect하고, raw count, normalized count, source별 실행 시간, `last_collect_message`를 기준으로 dynamic retrieve 후보를 분류한다.
+- `--snapshot-output-dir`는 partial parse-empty URL의 HTML preview를 별도 `.html` 파일로 저장해 selector drift와 JS 렌더링 의존을 직접 확인할 수 있게 한다.
+- `--include-scheduler-summary`는 같은 live diagnostic 결과에서 scheduler dry-run 스타일 quality summary를 함께 계산해 source별 품질과 dynamic retrieve 후보를 한 리포트에서 확인하게 한다.
 - Playwright fallback은 아직 도입하지 않았고, source 전체가 반복 full parse-empty이며 HTML snapshot에서 JS 렌더링 의존이 확인될 때만 opt-in할 기준을 만들었다.
 
 2026-04-23 live 측정 결과:
@@ -197,21 +202,28 @@
 | 지표 | 값 |
 | --- | ---: |
 | HTML collector 수 | 14 |
-| 전체 진단 소요 시간 | 13,599.05 ms |
+| 전체 진단 소요 시간 | 14,513.11 ms |
 | `healthy_static_html` | 12 |
 | `partial_parse_empty_monitor` | 2 |
 | 즉시 Playwright probe 후보 | 0 |
 | request/network failure 후보 | 0 |
+| 저장된 HTML snapshot 수 | 2 |
+| HTML source dry-run quality checked rows | 190 |
 
 소요시간 상위 source:
 
 | Source | Duration ms | Classification | Raw / Normalized |
 | --- | ---: | --- | --- |
-| 서울청년센터 성동 | 3,823.62 | `partial_parse_empty_monitor` | 5 / 5 |
-| 서울경제진흥원 사업신청 | 2,347.15 | `healthy_static_html` | 10 / 10 |
-| 도봉구청 일자리경제과 | 1,843.62 | `partial_parse_empty_monitor` | 1 / 1 |
-| 도봉구청년창업센터 | 1,606.84 | `healthy_static_html` | 33 / 33 |
-| 서울일자리포털 | 1,470.59 | `healthy_static_html` | 10 / 10 |
+| 서울청년센터 성동 | 3,306.46 | `partial_parse_empty_monitor` | 5 / 5 |
+| 서울경제진흥원 사업신청 | 2,666.87 | `healthy_static_html` | 10 / 10 |
+| 도봉구청 일자리경제과 | 2,354.29 | `partial_parse_empty_monitor` | 1 / 1 |
+| 도봉구청년창업센터 | 1,750.46 | `healthy_static_html` | 33 / 33 |
+| 서울일자리포털 | 1,484.35 | `healthy_static_html` | 10 / 10 |
+
+저장된 partial parse-empty snapshot:
+
+- `reports/html-collector-snapshots-2026-04-23/dobong_district_jobs-list-1-parse_empty.html`
+- `reports/html-collector-snapshots-2026-04-23/seongdong_youth_center-list-2-parse_empty.html`
 
 성과 해석:
 
@@ -225,6 +237,8 @@
 - source별 raw/normalized count
 - source별 parse-empty/request failure 상태
 - Playwright probe 후보 수
+- partial parse-empty URL별 HTML preview, script/noscript count
+- HTML source 기준 scheduler dry-run quality summary
 
 아직 미계측인 지표:
 
@@ -245,6 +259,7 @@
 
 - 기존 HTML collector live 결과를 재사용하되, `--include-ocr-probe` 옵션을 켰을 때만 detail HTML을 source별 최대 2건 샘플링한다.
 - 샘플 detail의 visible text 길이, 이미지 수, 첨부 링크 수를 읽기 전용으로 계산해 `ocr_probe_candidate`, `poster_or_attachment_candidate`, `text_sufficient_no_ocr`, `detail_probe_inconclusive`로 분류한다.
+- Markdown 리포트는 source별 sample detail fetch 결과를 함께 남겨, poster/attachment 검토 후보와 detail/parser 보강 우선 source의 근거를 바로 확인할 수 있게 한다.
 - OCR 런타임이나 이미지 다운로드/처리는 추가하지 않고, source별 opt-in 필요성을 판단할 근거만 남긴다.
 
 2026-04-23 live 측정 결과:
@@ -252,11 +267,12 @@
 | 지표 | 값 |
 | --- | ---: |
 | HTML collector 수 | 14 |
-| OCR preflight 포함 진단 소요 시간 | 20,464.8 ms |
+| OCR preflight 포함 진단 소요 시간 | 21,086.47 ms |
 | OCR runtime opt-in 후보 | 0 |
 | poster/attachment 검토 후보 | 7 |
 | detail/parser 보강 우선 | 3 |
 | text sufficient / no OCR | 4 |
+| HTML source dry-run quality checked rows | 190 |
 
 poster/attachment 검토 후보:
 
@@ -279,6 +295,7 @@ detail/parser 보강 우선 source:
 - 현재 source 중 OCR runtime을 바로 opt-in할 만큼 명확한 포스터형/이미지 중심 공고는 없다.
 - poster/attachment 후보 7개 source는 detail HTML에 첨부/이미지 신호가 있지만, 샘플 detail에서 본문 텍스트도 충분히 노출됐다. 따라서 OCR보다 필드 누락률과 기존 detail parser 보강 가능성을 먼저 봐야 한다.
 - `detail_probe_inconclusive` 3개 source는 목록 텍스트가 짧거나 샘플 detail에서 충분한 본문 텍스트를 확인하지 못했으므로, OCR보다 detail page selector/parser 진단이 우선이다.
+- 따라서 OCR/image preflight의 현재 결론은 "OCR 런타임 즉시 도입 아님"과 "poster/attachment 검토 후보와 detail/parser follow-up 후보를 source별로 분리 완료"다.
 
 현재 측정 가능한 지표:
 
@@ -287,6 +304,7 @@ detail/parser 보강 우선 source:
 - detail visible text length 충분 여부
 - detail attachment/image signal count
 - OCR runtime opt-in 후보 수
+- poster/attachment 후보의 sample detail evidence
 
 아직 미계측인 지표:
 

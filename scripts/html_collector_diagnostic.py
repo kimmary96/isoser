@@ -19,11 +19,21 @@ for path in (REPO_ROOT, BACKEND_ROOT):
 try:
     from rag.collector.base_html_collector import BaseHtmlCollector  # type: ignore  # noqa: E402
     from rag.collector.normalizer import normalize  # type: ignore  # noqa: E402
-    from rag.collector.scheduler import COLLECTORS, _deduplicate_rows  # type: ignore  # noqa: E402
+    from rag.collector.quality_validator import summarize_program_quality  # type: ignore  # noqa: E402
+    from rag.collector.scheduler import (  # type: ignore  # noqa: E402
+        COLLECTORS,
+        _deduplicate_rows,
+        _format_dry_run_message,
+    )
 except ModuleNotFoundError:
     from backend.rag.collector.base_html_collector import BaseHtmlCollector  # noqa: E402
     from backend.rag.collector.normalizer import normalize  # noqa: E402
-    from backend.rag.collector.scheduler import COLLECTORS, _deduplicate_rows  # noqa: E402
+    from backend.rag.collector.quality_validator import summarize_program_quality  # noqa: E402
+    from backend.rag.collector.scheduler import (  # noqa: E402
+        COLLECTORS,
+        _deduplicate_rows,
+        _format_dry_run_message,
+    )
 
 
 PLAYWRIGHT_PROBE_CLASSIFICATIONS = {
@@ -35,6 +45,14 @@ OCR_PROBE_CANDIDATE_CLASSIFICATIONS = {
 }
 POSTER_ATTACHMENT_CLASSIFICATIONS = {
     "poster_or_attachment_candidate",
+}
+DETAIL_PROBE_INCONCLUSIVE_CLASSIFICATIONS = {
+    "detail_probe_inconclusive",
+}
+SNAPSHOT_RELEVANT_SOURCE_CLASSIFICATIONS = {
+    "partial_parse_empty_monitor",
+    "playwright_probe_candidate",
+    "selector_or_dynamic_probe_candidate",
 }
 ATTACHMENT_EXTENSIONS = (
     ".pdf",
@@ -88,20 +106,32 @@ def build_html_collector_report(
     source_filters: Iterable[str] | None = None,
     include_ocr_probe: bool = False,
     ocr_sample_limit: int = 3,
+    include_scheduler_summary: bool = False,
+    snapshot_output_dir: Path | None = None,
 ) -> dict[str, Any]:
     started = perf_counter()
     filters = [value.lower() for value in (source_filters or []) if value]
+    all_normalized_rows: list[dict[str, Any]] = []
     rows = []
     for collector in html_collectors(collectors):
         if filters and not _matches_filters(collector, filters):
             continue
-        rows.append(
-            build_source_diagnostic(
-                collector,
-                include_ocr_probe=include_ocr_probe,
-                ocr_sample_limit=ocr_sample_limit,
-            )
+        row, normalized_rows = build_source_diagnostic(
+            collector,
+            include_ocr_probe=include_ocr_probe,
+            ocr_sample_limit=ocr_sample_limit,
+            include_scheduler_summary=include_scheduler_summary,
         )
+        all_normalized_rows.extend(normalized_rows)
+        if snapshot_output_dir is not None:
+            capture_summary = persist_row_snapshots(
+                row,
+                snapshot_output_dir=snapshot_output_dir,
+            )
+            if capture_summary["saved_count"] > 0:
+                row["snapshot_capture"] = capture_summary
+        row.pop("_url_diagnostics", None)
+        rows.append(row)
 
     summary: dict[str, int] = {}
     ocr_summary: dict[str, int] = {}
@@ -124,8 +154,23 @@ def build_html_collector_report(
             for row in rows
             if row["classification"] in PLAYWRIGHT_PROBE_CLASSIFICATIONS
         ],
+        "partial_parse_empty_sources": [
+            row
+            for row in rows
+            if row["classification"] == "partial_parse_empty_monitor"
+        ],
         "sources": rows,
     }
+    if include_scheduler_summary:
+        report["scheduler_dry_run"] = build_scheduler_dry_run_summary(
+            rows,
+            normalized_rows=all_normalized_rows,
+        )
+    if snapshot_output_dir is not None:
+        report["snapshot_capture"] = build_snapshot_capture_summary(
+            rows,
+            snapshot_output_dir=snapshot_output_dir,
+        )
     if include_ocr_probe:
         report["ocr_probe"] = {
             "enabled": True,
@@ -145,6 +190,12 @@ def build_html_collector_report(
             if isinstance(row.get("ocr_probe"), dict)
             and row["ocr_probe"].get("classification") in POSTER_ATTACHMENT_CLASSIFICATIONS
         ]
+        report["detail_probe_inconclusive_sources"] = [
+            row
+            for row in rows
+            if isinstance(row.get("ocr_probe"), dict)
+            and row["ocr_probe"].get("classification") in DETAIL_PROBE_INCONCLUSIVE_CLASSIFICATIONS
+        ]
     return report
 
 
@@ -153,7 +204,8 @@ def build_source_diagnostic(
     *,
     include_ocr_probe: bool = False,
     ocr_sample_limit: int = 3,
-) -> dict[str, Any]:
+    include_scheduler_summary: bool = False,
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     started = perf_counter()
     row: dict[str, Any] = {
         "class_name": collector.__class__.__name__,
@@ -164,10 +216,10 @@ def build_source_diagnostic(
         "source_type": getattr(collector, "source_type", ""),
         "list_urls": list(getattr(collector, "list_urls", []) or []),
     }
+    normalized_rows: list[dict[str, Any]] = []
 
     try:
         raw_items = collector.collect()
-        normalized_rows = []
         normalize_failed = 0
         for raw_item in raw_items:
             try:
@@ -189,6 +241,8 @@ def build_source_diagnostic(
             "success" if raw_items else "empty",
         )
         row["last_collect_message"] = getattr(collector, "last_collect_message", "")
+        row["_url_diagnostics"] = list(getattr(collector, "last_collect_url_diagnostics", []))
+        row["url_diagnostics"] = sanitize_url_diagnostics(row["_url_diagnostics"])
         if include_ocr_probe:
             row["ocr_probe"] = build_ocr_probe(
                 collector,
@@ -201,6 +255,8 @@ def build_source_diagnostic(
         row["normalize_failed"] = 0
         row["last_collect_status"] = "collector_exception"
         row["last_collect_message"] = f"{type(exc).__name__}: {exc}"
+        row["_url_diagnostics"] = []
+        row["url_diagnostics"] = []
     finally:
         row["duration_ms"] = round((perf_counter() - started) * 1000, 2)
 
@@ -215,7 +271,182 @@ def build_source_diagnostic(
     row["evidence"] = evidence
     row["recommendation"] = recommendation
     row["playwright_probe_candidate"] = classification in PLAYWRIGHT_PROBE_CLASSIFICATIONS
-    return row
+    if include_scheduler_summary:
+        row["scheduler_dry_run"] = build_scheduler_source_summary(
+            raw_count=int(row.get("raw_count") or 0),
+            normalized_rows=normalized_rows,
+            source_status=str(row.get("last_collect_status") or ""),
+            source_message=str(row.get("last_collect_message") or ""),
+        )
+    return row, normalized_rows
+
+
+def sanitize_url_diagnostics(url_diagnostics: Iterable[Any]) -> list[dict[str, Any]]:
+    cleaned: list[dict[str, Any]] = []
+    for diagnostic in url_diagnostics:
+        if not isinstance(diagnostic, dict):
+            continue
+        snapshot = diagnostic.get("html_snapshot")
+        cleaned_snapshot = None
+        if isinstance(snapshot, dict):
+            cleaned_snapshot = {
+                key: value
+                for key, value in snapshot.items()
+                if key != "html_preview"
+            }
+        cleaned_diagnostic = {
+            "url": str(diagnostic.get("url") or ""),
+            "request_status": str(diagnostic.get("request_status") or ""),
+            "parse_status": str(diagnostic.get("parse_status") or ""),
+            "item_count": int(diagnostic.get("item_count") or 0),
+        }
+        if diagnostic.get("error"):
+            cleaned_diagnostic["error"] = str(diagnostic.get("error"))
+        if cleaned_snapshot is not None:
+            cleaned_diagnostic["html_snapshot"] = cleaned_snapshot
+        cleaned.append(cleaned_diagnostic)
+    return cleaned
+
+
+def build_scheduler_source_summary(
+    *,
+    raw_count: int,
+    normalized_rows: list[dict[str, Any]],
+    source_status: str,
+    source_message: str,
+) -> dict[str, Any]:
+    if normalized_rows:
+        return {
+            "status": "dry_run",
+            "message": _format_dry_run_message(
+                raw_count,
+                len(normalized_rows),
+                source_message,
+            ),
+            "quality": summarize_program_quality(normalized_rows),
+        }
+    return {
+        "status": source_status or "empty",
+        "message": source_message or "No rows to save after normalization",
+    }
+
+
+def build_scheduler_dry_run_summary(
+    rows: list[dict[str, Any]],
+    *,
+    normalized_rows: list[dict[str, Any]],
+) -> dict[str, Any]:
+    status_counts: dict[str, int] = {}
+    sources_with_quality_errors = 0
+    sources_with_quality_warnings = 0
+    for row in rows:
+        scheduler_summary = row.get("scheduler_dry_run")
+        if not isinstance(scheduler_summary, dict):
+            continue
+        status = str(scheduler_summary.get("status") or "unknown")
+        status_counts[status] = status_counts.get(status, 0) + 1
+        quality = scheduler_summary.get("quality")
+        if isinstance(quality, dict):
+            if int(quality.get("rows_with_errors") or 0) > 0:
+                sources_with_quality_errors += 1
+            if int(quality.get("rows_with_warnings") or 0) > 0:
+                sources_with_quality_warnings += 1
+    return {
+        "enabled": True,
+        "source_count": len(rows),
+        "status_counts": dict(sorted(status_counts.items())),
+        "sources_with_quality_errors": sources_with_quality_errors,
+        "sources_with_quality_warnings": sources_with_quality_warnings,
+        "quality": summarize_program_quality(normalized_rows),
+    }
+
+
+def persist_row_snapshots(
+    row: dict[str, Any],
+    *,
+    snapshot_output_dir: Path,
+) -> dict[str, Any]:
+    saved_paths: list[str] = []
+    source_key = str(row.get("source_key") or row.get("class_name") or "source")
+    raw_diagnostics = row.get("_url_diagnostics") or row.get("url_diagnostics") or []
+    cleaned_diagnostics = row.get("url_diagnostics") or []
+    for index, diagnostic in enumerate(raw_diagnostics, start=1):
+        if not isinstance(diagnostic, dict):
+            continue
+        snapshot_meta = diagnostic.get("html_snapshot")
+        if not isinstance(snapshot_meta, dict):
+            continue
+        if str(row.get("classification") or "") not in SNAPSHOT_RELEVANT_SOURCE_CLASSIFICATIONS:
+            continue
+        saved_path = write_html_snapshot_file(
+            snapshot_output_dir=snapshot_output_dir,
+            source_key=source_key,
+            label=f"list-{index}-{diagnostic.get('parse_status', 'snapshot')}",
+            url=str(diagnostic.get("url") or ""),
+            html_preview=str(snapshot_meta.get("html_preview") or ""),
+            metadata=snapshot_meta,
+        )
+        if index - 1 < len(cleaned_diagnostics) and isinstance(cleaned_diagnostics[index - 1], dict):
+            cleaned_diagnostics[index - 1]["snapshot_path"] = str(saved_path)
+        saved_paths.append(str(saved_path))
+    return {
+        "saved_count": len(saved_paths),
+        "saved_paths": saved_paths,
+    }
+
+
+def build_snapshot_capture_summary(
+    rows: list[dict[str, Any]],
+    *,
+    snapshot_output_dir: Path,
+) -> dict[str, Any]:
+    saved_paths: list[str] = []
+    for row in rows:
+        capture = row.get("snapshot_capture")
+        if not isinstance(capture, dict):
+            continue
+        for path in capture.get("saved_paths") or []:
+            saved_paths.append(str(path))
+    return {
+        "enabled": True,
+        "output_dir": str(snapshot_output_dir),
+        "saved_count": len(saved_paths),
+        "saved_paths": saved_paths,
+    }
+
+
+def write_html_snapshot_file(
+    *,
+    snapshot_output_dir: Path,
+    source_key: str,
+    label: str,
+    url: str,
+    html_preview: str,
+    metadata: dict[str, Any],
+) -> Path:
+    snapshot_output_dir.mkdir(parents=True, exist_ok=True)
+    safe_source = _slugify(source_key)
+    safe_label = _slugify(label)
+    output_path = snapshot_output_dir / f"{safe_source}-{safe_label}.html"
+    normalized_html = html_preview.replace("\r\n", "\n").replace("\r", "\n")
+    normalized_html = "\n".join(line.rstrip() for line in normalized_html.split("\n"))
+    metadata_lines = [
+        f"url={url}",
+        f"html_length={metadata.get('html_length', 0)}",
+        f"script_tag_count={metadata.get('script_tag_count', 0)}",
+        f"noscript_tag_count={metadata.get('noscript_tag_count', 0)}",
+        f"iframe_tag_count={metadata.get('iframe_tag_count', 0)}",
+        f"form_tag_count={metadata.get('form_tag_count', 0)}",
+        f"title_text={metadata.get('title_text', '')}",
+    ]
+    output_path.write_text(
+        "<!--\n"
+        + "\n".join(metadata_lines)
+        + "\n-->\n"
+        + normalized_html,
+        encoding="utf-8",
+    )
+    return output_path
 
 
 def build_ocr_probe(
@@ -602,9 +833,89 @@ def render_markdown_report(report: dict[str, Any]) -> str:
             ]
         )
 
+    if report.get("snapshot_capture", {}).get("enabled"):
+        lines.extend(
+            [
+                "## HTML Snapshots",
+                "",
+                f"- Output directory: `{report['snapshot_capture']['output_dir']}`",
+                f"- Saved snapshots: `{report['snapshot_capture']['saved_count']}`",
+                "",
+            ]
+        )
+        for row in report["sources"]:
+            capture = row.get("snapshot_capture")
+            if not isinstance(capture, dict) or not capture.get("saved_paths"):
+                continue
+            lines.append(f"### {row['source']}")
+            lines.append("")
+            for diagnostic in row.get("url_diagnostics") or []:
+                if not isinstance(diagnostic, dict) or not diagnostic.get("snapshot_path"):
+                    continue
+                snapshot = diagnostic.get("html_snapshot") or {}
+                lines.append(
+                    "- `{parse_status}` `{url}` -> `{path}` (title=`{title}`, scripts={scripts}, noscript={noscript})".format(
+                        parse_status=diagnostic.get("parse_status", "snapshot"),
+                        url=diagnostic.get("url", ""),
+                        path=diagnostic.get("snapshot_path", ""),
+                        title=snapshot.get("title_text", ""),
+                        scripts=snapshot.get("script_tag_count", 0),
+                        noscript=snapshot.get("noscript_tag_count", 0),
+                    )
+                )
+            lines.append("")
+
+    if report.get("scheduler_dry_run", {}).get("enabled"):
+        scheduler_summary = report["scheduler_dry_run"]
+        lines.extend(
+            [
+                "## Scheduler Dry-Run Summary",
+                "",
+                f"- HTML sources: `{scheduler_summary['source_count']}`",
+                f"- Sources with quality warnings: `{scheduler_summary['sources_with_quality_warnings']}`",
+                f"- Sources with quality errors: `{scheduler_summary['sources_with_quality_errors']}`",
+                "",
+            ]
+        )
+        for status, count in scheduler_summary.get("status_counts", {}).items():
+            lines.append(f"- `{status}`: `{count}`")
+        quality = scheduler_summary.get("quality") or {}
+        lines.extend(
+            [
+                "",
+                "| Source | Dry-run status | Checked rows | Warnings | Errors |",
+                "| --- | --- | ---: | ---: | ---: |",
+            ]
+        )
+        for row in report["sources"]:
+            scheduler_source = row.get("scheduler_dry_run") or {}
+            source_quality = scheduler_source.get("quality") or {}
+            lines.append(
+                "| {source} | {status} | {checked_rows} | {warnings} | {errors} |".format(
+                    source=_escape_table(str(row["source"])),
+                    status=scheduler_source.get("status", ""),
+                    checked_rows=source_quality.get("checked_rows", 0),
+                    warnings=source_quality.get("rows_with_warnings", 0),
+                    errors=source_quality.get("rows_with_errors", 0),
+                )
+            )
+        lines.extend(
+            [
+                "",
+                "- Aggregated quality checked rows: `{}`".format(quality.get("checked_rows", 0)),
+                "- Aggregated issue counts: `error={}, warning={}, info={}`".format(
+                    (quality.get("issue_counts") or {}).get("error", 0),
+                    (quality.get("issue_counts") or {}).get("warning", 0),
+                    (quality.get("issue_counts") or {}).get("info", 0),
+                ),
+                "",
+            ]
+        )
+
     if report.get("ocr_probe", {}).get("enabled"):
         ocr_candidates = report.get("ocr_probe_candidates", [])
         poster_or_attachment_candidates = report.get("poster_or_attachment_candidates", [])
+        inconclusive_sources = report.get("detail_probe_inconclusive_sources", [])
         lines.extend(
             [
                 "## OCR / Image Preflight",
@@ -613,6 +924,7 @@ def render_markdown_report(report: dict[str, Any]) -> str:
                 f"- Detail sample limit per source: `{report['ocr_probe']['sample_limit']}`",
                 f"- OCR runtime opt-in candidates: `{len(ocr_candidates)}`",
                 f"- Poster/attachment review candidates: `{len(poster_or_attachment_candidates)}`",
+                f"- Detail/parser follow-up candidates: `{len(inconclusive_sources)}`",
                 "",
             ]
         )
@@ -637,6 +949,34 @@ def render_markdown_report(report: dict[str, Any]) -> str:
                     evidence=_escape_table(", ".join(str(item) for item in ocr_probe.get("evidence", []))),
                 )
             )
+
+        lines.extend(["", "### OCR Sample Highlights", ""])
+        for row in report["sources"]:
+            ocr_probe = row.get("ocr_probe") or {}
+            if not isinstance(ocr_probe, dict):
+                continue
+            if ocr_probe.get("classification") not in (
+                *OCR_PROBE_CANDIDATE_CLASSIFICATIONS,
+                *POSTER_ATTACHMENT_CLASSIFICATIONS,
+                *DETAIL_PROBE_INCONCLUSIVE_CLASSIFICATIONS,
+            ):
+                continue
+            samples = [sample for sample in (ocr_probe.get("samples") or []) if isinstance(sample, dict)]
+            if not samples:
+                continue
+            lines.append(f"#### {row['source']}")
+            lines.append("")
+            for sample in samples:
+                lines.append(
+                    "- `{status}` `{link}` (text={text_len}, images={images}, attachments={attachments})".format(
+                        status=sample.get("status", ""),
+                        link=sample.get("link", ""),
+                        text_len=sample.get("visible_text_length", 0),
+                        images=sample.get("image_count", 0),
+                        attachments=sample.get("attachment_link_count", 0),
+                    )
+                )
+            lines.append("")
 
         lines.extend(["", "## OCR Decision", ""])
         if ocr_candidates:
@@ -701,6 +1041,16 @@ def build_parser() -> argparse.ArgumentParser:
         default=3,
         help="Maximum detail pages to inspect per source when --include-ocr-probe is set.",
     )
+    parser.add_argument(
+        "--include-scheduler-summary",
+        action="store_true",
+        help="Attach scheduler-style dry-run quality summary for the same HTML diagnostic rows.",
+    )
+    parser.add_argument(
+        "--snapshot-output-dir",
+        type=Path,
+        help="Optional directory where bounded HTML snapshots for parse-empty URLs are written.",
+    )
     return parser
 
 
@@ -711,6 +1061,8 @@ def main(argv: list[str] | None = None) -> int:
         source_filters=args.source,
         include_ocr_probe=args.include_ocr_probe,
         ocr_sample_limit=args.ocr_sample_limit,
+        include_scheduler_summary=args.include_scheduler_summary,
+        snapshot_output_dir=args.snapshot_output_dir,
     )
     write_json_report(report, args.output)
     if args.markdown_output:
@@ -740,6 +1092,11 @@ def _int_from(pattern: str, text: str) -> int | None:
 
 def _escape_table(value: str) -> str:
     return value.replace("|", "\\|")
+
+
+def _slugify(value: str) -> str:
+    slug = re.sub(r"[^0-9A-Za-z._-]+", "-", value or "").strip("-")
+    return slug or "snapshot"
 
 
 if __name__ == "__main__":

@@ -23,6 +23,8 @@ class BaseHtmlCollector(BaseCollector):
     region: str = "서울"
     region_detail: str = "서울"
     timeout_seconds: int = 15
+    html_snapshot_char_limit: int = 4000
+    text_snapshot_char_limit: int = 400
     user_agent: str = (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
         "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -48,29 +50,59 @@ class BaseHtmlCollector(BaseCollector):
         parse_errors: List[str] = []
         parsed_empty_count = 0
         successful_request_count = 0
+        url_diagnostics: List[Dict] = []
         list_urls = list(getattr(self, "list_urls", []) or [])
         html_fetcher = fetcher or self.fetch_html
+        self.last_collect_url_diagnostics = []
 
         for url in list_urls:
             try:
                 html = html_fetcher(url)
             except Exception as exc:
                 request_errors.append(f"{url}: {exc}")
+                url_diagnostics.append(
+                    {
+                        "url": url,
+                        "request_status": "request_failed",
+                        "parse_status": "not_attempted",
+                        "item_count": 0,
+                        "error": str(exc),
+                    }
+                )
                 print(f"[{self.__class__.__name__}] request failed: {url}: {exc}")
                 continue
 
             successful_request_count += 1
+            parse_status = "success"
+            parse_error = None
             try:
                 parsed_items = parser(html, url)
             except Exception as exc:
                 parse_errors.append(f"{url}: {exc}")
                 parsed_items = []
+                parse_status = "parse_failed"
+                parse_error = str(exc)
                 print(f"[{self.__class__.__name__}] parse failed: {url}: {exc}")
 
             if not parsed_items:
                 parsed_empty_count += 1
+                if parse_status == "success":
+                    parse_status = "parse_empty"
                 print(f"[{self.__class__.__name__}] parsed 0 items: {url}")
             items.extend(parsed_items)
+            url_diagnostic: Dict[str, object] = {
+                "url": url,
+                "request_status": "success",
+                "parse_status": parse_status,
+                "item_count": len(parsed_items),
+            }
+            if parse_error is not None:
+                url_diagnostic["error"] = parse_error
+            if parse_status in {"parse_empty", "parse_failed"}:
+                url_diagnostic["html_snapshot"] = self.build_html_snapshot(html)
+            url_diagnostics.append(url_diagnostic)
+
+        self.last_collect_url_diagnostics = url_diagnostics
 
         if items:
             self.last_collect_status = "success"
@@ -112,6 +144,27 @@ class BaseHtmlCollector(BaseCollector):
         with urlopen(request, timeout=self.timeout_seconds) as response:
             charset = response.headers.get_content_charset() or "utf-8"
             return response.read().decode(charset, errors="ignore")
+
+    def build_html_snapshot(self, html: str) -> Dict[str, object]:
+        soup = self.soup_from_html(html)
+        title_text = ""
+        if soup.title is not None and soup.title.string is not None:
+            title_text = self._clean_text(soup.title.string)
+        body_text = self._clean_text(soup.get_text(" ", strip=True))
+        html_preview = html[: self.html_snapshot_char_limit]
+        body_preview = body_text[: self.text_snapshot_char_limit]
+        return {
+            "html_length": len(html),
+            "html_preview": html_preview,
+            "html_preview_truncated": len(html) > self.html_snapshot_char_limit,
+            "body_text_preview": body_preview,
+            "body_text_preview_truncated": len(body_text) > self.text_snapshot_char_limit,
+            "title_text": title_text,
+            "script_tag_count": len(soup.select("script")),
+            "noscript_tag_count": len(soup.select("noscript")),
+            "iframe_tag_count": len(soup.select("iframe")),
+            "form_tag_count": len(soup.select("form")),
+        }
 
     def absolute_url(self, base_url: str, maybe_relative: str) -> str:
         return urljoin(base_url, maybe_relative.strip())

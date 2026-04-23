@@ -27,15 +27,18 @@ class _FixtureHtmlCollector(BaseHtmlCollector):
         message: str,
         items: list[dict] | None = None,
         detail_html_by_url: dict[str, str] | None = None,
+        url_diagnostics: list[dict] | None = None,
     ) -> None:
         self.fixture_status = status
         self.fixture_message = message
         self.fixture_items = items or []
         self.detail_html_by_url = detail_html_by_url or {}
+        self.fixture_url_diagnostics = url_diagnostics or []
 
     def collect_items(self):
         self.last_collect_status = self.fixture_status
         self.last_collect_message = self.fixture_message
+        self.last_collect_url_diagnostics = list(self.fixture_url_diagnostics)
         return self.fixture_items
 
     def fetch_html(self, url: str) -> str:
@@ -112,6 +115,24 @@ def test_build_html_collector_report_summarizes_html_sources_only() -> None:
     }
     assert len(report["playwright_probe_candidates"]) == 1
     assert report["sources"][0]["normalized_count"] == 1
+
+
+def test_build_html_collector_report_can_attach_scheduler_summary() -> None:
+    collector = _FixtureHtmlCollector(
+        status="success",
+        message="Fixture HTML collected 1 items from 1/1 urls; request_failed=0; parse_empty=0",
+        items=[_raw_item()],
+    )
+
+    report = build_html_collector_report(
+        [collector],
+        include_scheduler_summary=True,
+    )
+
+    assert report["scheduler_dry_run"]["enabled"] is True
+    assert report["scheduler_dry_run"]["quality"]["checked_rows"] == 1
+    assert report["scheduler_dry_run"]["quality"]["issue_counts"]["info"] == 1
+    assert report["sources"][0]["scheduler_dry_run"]["status"] == "dry_run"
 
 
 def test_classify_ocr_probe_marks_attachment_signal_candidate() -> None:
@@ -198,6 +219,50 @@ def test_ocr_preflight_keeps_text_sufficient_attachments_out_of_runtime_candidat
     assert len(report["poster_or_attachment_candidates"]) == 1
 
 
+def test_build_html_collector_report_can_write_parse_empty_snapshots(tmp_path: Path) -> None:
+    collector = _FixtureHtmlCollector(
+        status="success",
+        message="Fixture HTML collected 1 items from 2/2 urls; request_failed=0; parse_empty=1",
+        items=[_raw_item()],
+        url_diagnostics=[
+            {
+                "url": "https://example.com/list-a",
+                "request_status": "success",
+                "parse_status": "parse_empty",
+                "item_count": 0,
+                "html_snapshot": {
+                    "html_length": 64,
+                    "html_preview": "<html><head><title>Fixture</title></head><body><script>app()</script></body></html>",
+                    "html_preview_truncated": False,
+                    "body_text_preview": "",
+                    "body_text_preview_truncated": False,
+                    "title_text": "Fixture",
+                    "script_tag_count": 1,
+                    "noscript_tag_count": 0,
+                    "iframe_tag_count": 0,
+                    "form_tag_count": 0,
+                },
+            },
+            {
+                "url": "https://example.com/list-b",
+                "request_status": "success",
+                "parse_status": "success",
+                "item_count": 1,
+            },
+        ],
+    )
+
+    report = build_html_collector_report(
+        [collector],
+        snapshot_output_dir=tmp_path / "snapshots",
+    )
+
+    assert report["snapshot_capture"]["saved_count"] == 1
+    snapshot_path = Path(report["sources"][0]["url_diagnostics"][0]["snapshot_path"])
+    assert snapshot_path.exists()
+    assert "Fixture" in snapshot_path.read_text(encoding="utf-8")
+
+
 def test_render_and_write_reports(tmp_path: Path) -> None:
     report = {
         "mode": "read-only-live-diagnostic",
@@ -205,6 +270,26 @@ def test_render_and_write_reports(tmp_path: Path) -> None:
         "collector_count": 1,
         "summary": {"healthy_static_html": 1},
         "playwright_probe_candidates": [],
+        "scheduler_dry_run": {
+            "enabled": True,
+            "source_count": 1,
+            "status_counts": {"dry_run": 1},
+            "sources_with_quality_errors": 0,
+            "sources_with_quality_warnings": 0,
+            "quality": {
+                "checked_rows": 1,
+                "rows_with_errors": 0,
+                "rows_with_warnings": 0,
+                "issue_counts": {"error": 0, "warning": 0, "info": 1},
+                "issue_codes": {"missing_provider": 1},
+            },
+        },
+        "snapshot_capture": {
+            "enabled": True,
+            "output_dir": str(tmp_path / "snapshots"),
+            "saved_count": 1,
+            "saved_paths": [str(tmp_path / "snapshots" / "fixture.html")],
+        },
         "sources": [
             {
                 "source": "Fixture HTML",
@@ -216,6 +301,41 @@ def test_render_and_write_reports(tmp_path: Path) -> None:
                 "classification": "healthy_static_html",
                 "evidence": ["status=success"],
                 "recommendation": "ok",
+                "scheduler_dry_run": {
+                    "status": "dry_run",
+                    "message": "Collected 1 rows; upsert skipped",
+                    "quality": {
+                        "checked_rows": 1,
+                        "rows_with_errors": 0,
+                        "rows_with_warnings": 0,
+                        "issue_counts": {"error": 0, "warning": 0, "info": 1},
+                        "issue_codes": {"missing_provider": 1},
+                    },
+                },
+                "snapshot_capture": {
+                    "saved_count": 1,
+                    "saved_paths": [str(tmp_path / "snapshots" / "fixture.html")],
+                },
+                "url_diagnostics": [
+                    {
+                        "url": "https://example.com/list-a",
+                        "request_status": "success",
+                        "parse_status": "parse_empty",
+                        "item_count": 0,
+                        "html_snapshot": {
+                            "html_length": 64,
+                            "html_preview_truncated": False,
+                            "body_text_preview": "",
+                            "body_text_preview_truncated": False,
+                            "title_text": "Fixture",
+                            "script_tag_count": 1,
+                            "noscript_tag_count": 0,
+                            "iframe_tag_count": 0,
+                            "form_tag_count": 0,
+                        },
+                        "snapshot_path": str(tmp_path / "snapshots" / "fixture.html"),
+                    }
+                ],
             }
         ],
     }
@@ -228,4 +348,6 @@ def test_render_and_write_reports(tmp_path: Path) -> None:
     assert json.loads(json_path.read_text(encoding="utf-8"))["collector_count"] == 1
     markdown = markdown_path.read_text(encoding="utf-8")
     assert "| Fixture HTML | `_FixtureHtmlCollector` | 1 | 1 | 12.3 | success | healthy_static_html |" in markdown
+    assert "## HTML Snapshots" in markdown
+    assert "## Scheduler Dry-Run Summary" in markdown
     assert render_markdown_report(report).startswith("# HTML Collector Dynamic Retrieve Diagnostic")
