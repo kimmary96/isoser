@@ -2,6 +2,15 @@
 
 기획, 계약, 출력 스펙 기준 문서를 둡니다.
 
+- [program-surface-contract-v2.md](./program-surface-contract-v2.md)
+- [final-refactor-axis-map-v1.md](./final-refactor-axis-map-v1.md)
+- [program-canonical-schema-design-v1.md](./program-canonical-schema-design-v1.md)
+- [program-recommendation-backend-touchpoints-v1.md](./program-recommendation-backend-touchpoints-v1.md)
+- [final-refactor-migration-roadmap-v1.md](./final-refactor-migration-roadmap-v1.md)
+- [serializer-api-bff-transition-plan-v1.md](./serializer-api-bff-transition-plan-v1.md)
+- [user-recommendation-schema-v1.md](./user-recommendation-schema-v1.md)
+- [user-recommendation-schema-migration-plan-v1.md](./user-recommendation-schema-migration-plan-v1.md)
+- [user-recommendation-serializer-contract-v1.md](./user-recommendation-serializer-contract-v1.md)
 - [api-contract.md](./api-contract.md)
 - [prd.md](./prd.md)
 - [prd.html](./prd.html)

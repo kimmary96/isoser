@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="980" viewBox="0 0 1600 980">
+  <defs>
+    <style>
+      .bg { fill: #050505; }
+      .card { fill: #171717; stroke: #383838; stroke-width: 1; }
+      .card2 { fill: #222222; stroke: #383838; stroke-width: 1; }
+      .t-title { fill: #f3f3f3; font: 700 34px 'Pretendard','Malgun Gothic',sans-serif; }
+      .t-panel { fill: #f3f3f3; font: 700 21px 'Pretendard','Malgun Gothic',sans-serif; }
+      .t-kpi-label { fill: #b9b9b9; font: 700 18px 'Pretendard','Malgun Gothic',sans-serif; }
+      .t-kpi-value { font: 800 38px 'Pretendard','Malgun Gothic',sans-serif; }
+      .t-item { fill: #f3f3f3; font: 700 15px 'Pretendard','Malgun Gothic',sans-serif; }
+      .t-measure { font: 800 28px 'Pretendard','Malgun Gothic',sans-serif; }
+      .t-body { fill: #f3f3f3; font: 400 15px 'Pretendard','Malgun Gothic',sans-serif; }
+      .t-body-bold { font: 700 15px 'Pretendard','Malgun Gothic',sans-serif; }
+      .t-sub { fill: #b9b9b9; font: 400 16px 'Pretendard','Malgun Gothic',sans-serif; }
+      .t-small { fill: #b9b9b9; font: 400 13px 'Pretendard','Malgun Gothic',sans-serif; }
+      .t-foot { fill: #7cc7ff; font: 400 13px 'Pretendard','Malgun Gothic',sans-serif; }
+      .green { fill: #70e000; }
+      .yellow { fill: #ffd60a; }
+      .red { fill: #ff4d6d; }
+      .white { fill: #f3f3f3; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="1600" height="980" />
+
+<rect class="card" x="28" y="28" width="1544" height="118" rx="22" ry="22" />
+<text x="60" y="102" class="t-title" >큐 벤치마크 대시보드</text>
+<text x="60" y="130" class="t-sub" >2026-04-24 측정 · TASK-2026-04-24-0106-benchmark-queue-smoke 기준</text>
+<rect class="card" x="28" y="172" width="502" height="138" rx="22" ry="22" />
+<text x="52" y="216" class="t-kpi-label" >자동화만 기준</text>
+<text x="52" y="276" class="t-kpi-value green" >265초</text>
+<text x="52" y="296" class="t-sub" >승인 이후부터 closeout까지</text>
+<rect class="card" x="548" y="172" width="502" height="138" rx="22" ry="22" />
+<text x="572" y="216" class="t-kpi-label" >전체 End-to-End</text>
+<text x="572" y="276" class="t-kpi-value yellow" >374초</text>
+<text x="572" y="296" class="t-sub" >review-ready 이후 전체 시간</text>
+<rect class="card" x="1068" y="172" width="502" height="138" rx="22" ry="22" />
+<text x="1092" y="216" class="t-kpi-label" >측정 성격</text>
+<text x="1092" y="276" class="t-kpi-value red" >운영 기준선</text>
+<text x="1092" y="296" class="t-sub" >현재 backlog와 승인 대기 포함</text>
+<rect class="card" x="28" y="340" width="502" height="568" rx="22" ry="22" />
+<rect class="card" x="548" y="340" width="1024" height="568" rx="22" ry="22" />
+<text x="56" y="388" class="t-panel" >구간별 실측</text>
+<text x="56" y="412" class="t-sub" >실제 흐름에서 기록된 stage anchor 기준</text>
+<rect class="card2" x="48" y="426" width="462" height="82" rx="18" ry="18" />
+<text x="66" y="456" class="t-item" >리뷰 준비 → 승인</text>
+<text x="66" y="484" class="t-measure red" >109초</text>
+<text x="66" y="502" class="t-small" >사람 승인 대기 포함</text>
+<rect class="card2" x="48" y="520" width="462" height="82" rx="18" ry="18" />
+<text x="66" y="550" class="t-item" >승인 → 실행 시작</text>
+<text x="66" y="578" class="t-measure green" >3초</text>
+<text x="66" y="596" class="t-small" >승격과 queue pickup</text>
+<rect class="card2" x="48" y="614" width="462" height="82" rx="18" ry="18" />
+<text x="66" y="644" class="t-item" >실행 시작 → 구현 단계</text>
+<text x="66" y="672" class="t-measure yellow" >102초</text>
+<text x="66" y="690" class="t-small" >inspection과 handoff 포함</text>
+<rect class="card2" x="48" y="708" width="462" height="82" rx="18" ry="18" />
+<text x="66" y="738" class="t-item" >구현 단계 → 검증 단계</text>
+<text x="66" y="766" class="t-measure yellow" >95초</text>
+<text x="66" y="784" class="t-small" >implementation pass</text>
+<rect class="card2" x="48" y="802" width="462" height="82" rx="18" ry="18" />
+<text x="66" y="832" class="t-item" >검증 단계 → closeout</text>
+<text x="66" y="860" class="t-measure green" >65초</text>
+<text x="66" y="878" class="t-small" >완료 처리와 Git closeout 포함</text>
+<rect class="card" x="566" y="358" width="988" height="246" rx="22" ry="22" />
+<text x="588" y="388" class="t-panel" >해석 포인트</text>
+<text x="588" y="412" class="t-sub" >작은 task 1건 기준으로 planning에 바로 쓸 수 있게 요약</text>
+<rect class="card2" x="582" y="436" width="956" height="48" rx="16" ry="16" />
+<text x="600" y="465" class="t-body-bold green" >자동화 기준</text>
+<text x="772" y="465" class="t-body" >사람 승인 시간을 제외하면 small task 기준 약 4분 25초</text>
+<rect class="card2" x="582" y="496" width="956" height="48" rx="16" ry="16" />
+<text x="600" y="525" class="t-body-bold yellow" >사람 포함 기준</text>
+<text x="772" y="525" class="t-body" >승인 대기까지 합치면 전체 약 6분 14초</text>
+<rect class="card2" x="582" y="556" width="956" height="48" rx="16" ry="16" />
+<text x="600" y="585" class="t-body-bold red" >사용 방법</text>
+<text x="772" y="585" class="t-body" >review→approval, approval→promoted, promoted→done 세 구간을 분리해서 보는 편이 안전</text>
+<rect class="card" x="566" y="622" width="988" height="268" rx="22" ry="22" />
+<text x="588" y="670" class="t-panel" >작업 크기 추정표</text>
+<text x="588" y="694" class="t-sub" >실측 small task를 기준으로 배수 추정</text>
+<rect class="card2" x="582" y="706" width="956" height="44" rx="14" ry="14" />
+<text x="596" y="735" class="t-item" >크기</text>
+<text x="729" y="735" class="t-item" >배수</text>
+<text x="854" y="735" class="t-item" >자동화만</text>
+<text x="1064" y="735" class="t-item" >사람 포함 전체</text>
+<text x="1284" y="735" class="t-item" >비고</text>
+<rect class="card2" x="582" y="764" width="956" height="56" rx="14" ry="14" />
+<text x="596" y="797" class="t-item green" >소형</text>
+<text x="729" y="797" class="t-body" >×1.0</text>
+<text x="854" y="797" class="t-body" >4분 25초</text>
+<text x="1064" y="797" class="t-body" >6분 14초</text>
+<text x="1284" y="789" class="t-body" >리포트성 작업 또는 아주 작은 수정</text>
+<rect class="card2" x="582" y="830" width="956" height="56" rx="14" ry="14" />
+<text x="596" y="863" class="t-item yellow" >중형</text>
+<text x="729" y="863" class="t-body" >×2.0</text>
+<text x="854" y="863" class="t-body" >8분 50초</text>
+<text x="1064" y="863" class="t-body" >12분 28초</text>
+<text x="1284" y="855" class="t-body" >작은 코드 수정과 테스트가 포함된 작업</text>
+<rect class="card2" x="582" y="896" width="956" height="56" rx="14" ry="14" />
+<text x="596" y="929" class="t-item red" >대형</text>
+<text x="729" y="929" class="t-body" >×3.5</text>
+<text x="854" y="929" class="t-body" >15분 28초</text>
+<text x="1064" y="929" class="t-body" >21분 49초</text>
+<text x="1284" y="921" class="t-body" >여러 파일을 건드리지만 범위는 제한적인 작업</text>
+<rect class="card" x="28" y="922" width="1544" height="30" rx="12" ry="12" />
+<text x="46" y="943" class="t-foot" >주의: 이 기준선은 backlog 대기까지 포함한 운영 기준입니다. idle baseline이 필요하면 tasks/running이 비어 있는 시점에 다시 측정하는 편이 정확합니다.</text>
+</svg>

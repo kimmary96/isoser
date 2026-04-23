@@ -180,53 +180,142 @@
 | `program_id` | `uuid`        | Primary     |
 | `created_at` | `timestamptz` |             |
 
+## Table `program_detail_daily_stats`
+
+### Columns
+
+| Name               | Type            | Constraints |
+| ------------------ | --------------- | ----------- |
+| `program_id`     | `uuid`        | Primary     |
+| `bucket_date`    | `date`        | Primary     |
+| `view_count`     | `int8`        |             |
+| `last_viewed_at` | `timestamptz` |             |
+| `created_at`     | `timestamptz` |             |
+| `updated_at`     | `timestamptz` |             |
+
+## Table `program_list_facet_snapshots`
+
+### Columns
+
+| Name             | Type            | Constraints |
+| ---------------- | --------------- | ----------- |
+| `id`           | `int8`        | Primary     |
+| `scope`        | `text`        |             |
+| `pool_limit`   | `int4`        |             |
+| `facets`       | `jsonb`       |             |
+| `generated_at` | `timestamptz` |             |
+
+## Table `program_list_index`
+
+### Columns
+
+| Name                         | Type            | Constraints |
+| ---------------------------- | --------------- | ----------- |
+| `id`                       | `uuid`        | Primary     |
+| `title`                    | `text`        | Nullable    |
+| `provider`                 | `text`        | Nullable    |
+| `summary`                  | `text`        | Nullable    |
+| `category`                 | `text`        | Nullable    |
+| `category_detail`          | `text`        | Nullable    |
+| `region`                   | `text`        | Nullable    |
+| `region_detail`            | `text`        | Nullable    |
+| `location`                 | `text`        | Nullable    |
+| `teaching_method`          | `text`        | Nullable    |
+| `cost`                     | `int4`        | Nullable    |
+| `cost_type`                | `text`        | Nullable    |
+| `participation_time`       | `text`        | Nullable    |
+| `source`                   | `text`        | Nullable    |
+| `source_url`               | `text`        | Nullable    |
+| `link`                     | `text`        | Nullable    |
+| `thumbnail_url`            | `text`        | Nullable    |
+| `deadline`                 | `date`        | Nullable    |
+| `close_date`               | `date`        | Nullable    |
+| `start_date`               | `date`        | Nullable    |
+| `end_date`                 | `date`        | Nullable    |
+| `is_open`                  | `bool`        |             |
+| `is_active`                | `bool`        | Nullable    |
+| `is_ad`                    | `bool`        |             |
+| `promoted_rank`            | `int4`        | Nullable    |
+| `deadline_confidence`      | `text`        |             |
+| `excellence_score`         | `numeric`     |             |
+| `satisfaction_avg`         | `numeric`     | Nullable    |
+| `satisfaction_count`       | `int4`        |             |
+| `bayesian_satisfaction`    | `numeric`     |             |
+| `review_confidence`        | `numeric`     |             |
+| `deadline_urgency`         | `numeric`     |             |
+| `freshness_score`          | `numeric`     |             |
+| `data_completeness`        | `numeric`     |             |
+| `recommended_score`        | `numeric`     |             |
+| `recommendation_reasons`   | `_text`       |             |
+| `display_categories`       | `_text`       |             |
+| `participation_mode_label` | `text`        | Nullable    |
+| `participation_time_text`  | `text`        | Nullable    |
+| `selection_process_label`  | `text`        | Nullable    |
+| `extracted_keywords`       | `_text`       |             |
+| `tags`                     | `_text`       |             |
+| `skills`                   | `_text`       |             |
+| `target_summary`           | `_text`       |             |
+| `compare_meta`             | `jsonb`       |             |
+| `search_text`              | `text`        |             |
+| `days_left`                | `int4`        | Nullable    |
+| `browse_rank`              | `int4`        | Nullable    |
+| `updated_at`               | `timestamptz` |             |
+| `indexed_at`               | `timestamptz` |             |
+| `detail_view_count`        | `int8`        |             |
+| `detail_view_count_7d`     | `int8`        |             |
+| `click_hotness_score`      | `numeric`     |             |
+| `last_detail_viewed_at`    | `timestamptz` | Nullable    |
+
 ## Table `programs`
 
 ### Columns
 
-| Name                  | Type            | Constraints     |
-| --------------------- | --------------- | --------------- |
-| `id`                | `uuid`        | Primary         |
-| `hrd_id`            | `text`        | Nullable Unique |
-| `title`             | `text`        |                 |
-| `category`          | `text`        | Nullable        |
-| `provider`          | `text`        | Nullable        |
-| `location`          | `text`        | Nullable        |
-| `start_date`        | `date`        | Nullable        |
-| `end_date`          | `date`        | Nullable        |
-| `deadline`          | `date`        | Nullable        |
-| `cost`              | `int4`        | Nullable        |
-| `subsidy_rate`      | `int4`        | Nullable        |
-| `target`            | `_text`       | Nullable        |
-| `description`       | `text`        | Nullable        |
-| `source_url`        | `text`        | Nullable        |
-| `is_active`         | `bool`        | Nullable        |
-| `created_at`        | `timestamptz` | Nullable        |
-| `updated_at`        | `timestamptz` | Nullable        |
-| `subsidy_amount`    | `int4`        | Nullable        |
-| `source`            | `text`        | Nullable        |
-| `reg_start_date`    | `date`        | Nullable        |
-| `close_date`        | `date`        | Nullable        |
-| `job_type`          | `varchar`     | Nullable        |
-| `source_type`       | `text`        |                 |
-| `collection_method` | `text`        |                 |
-| `scope`             | `text`        |                 |
-| `region`            | `text`        | Nullable        |
-| `region_detail`     | `text`        | Nullable        |
-| `link`              | `text`        | Nullable        |
-| `is_ad`             | `bool`        | Nullable        |
-| `sponsor_name`      | `text`        | Nullable        |
-| `compare_meta`      | `jsonb`       | Nullable        |
-| `source_unique_key` | `text`        | Nullable        |
-| `summary`           | `text`        | Nullable        |
-| `tags`              | `_text`       | Nullable        |
-| `skills`            | `_text`       | Nullable        |
-| `search_text`       | `text`        | Nullable        |
-| `support_type`      | `text`        | Nullable        |
-| `teaching_method`   | `text`        | Nullable        |
-| `is_certified`      | `bool`        |                 |
-| `raw_data`          | `jsonb`       | Nullable        |
-| `category_detail`   | `text`        | Nullable        |
+| Name                   | Type            | Constraints |
+| ---------------------- | --------------- | ----------- |
+| `id`                 | `uuid`        | Primary     |
+| `hrd_id`             | `text`        | Nullable    |
+| `title`              | `text`        |             |
+| `category`           | `text`        | Nullable    |
+| `provider`           | `text`        | Nullable    |
+| `location`           | `text`        | Nullable    |
+| `start_date`         | `date`        | Nullable    |
+| `end_date`           | `date`        | Nullable    |
+| `deadline`           | `date`        | Nullable    |
+| `cost`               | `int4`        | Nullable    |
+| `subsidy_rate`       | `int4`        | Nullable    |
+| `target`             | `_text`       | Nullable    |
+| `description`        | `text`        | Nullable    |
+| `source_url`         | `text`        | Nullable    |
+| `is_active`          | `bool`        | Nullable    |
+| `created_at`         | `timestamptz` | Nullable    |
+| `updated_at`         | `timestamptz` | Nullable    |
+| `subsidy_amount`     | `int4`        | Nullable    |
+| `source`             | `text`        | Nullable    |
+| `reg_start_date`     | `date`        | Nullable    |
+| `close_date`         | `date`        | Nullable    |
+| `job_type`           | `varchar`     | Nullable    |
+| `source_type`        | `text`        |             |
+| `collection_method`  | `text`        |             |
+| `scope`              | `text`        |             |
+| `region`             | `text`        | Nullable    |
+| `region_detail`      | `text`        | Nullable    |
+| `link`               | `text`        | Nullable    |
+| `is_ad`              | `bool`        | Nullable    |
+| `sponsor_name`       | `text`        | Nullable    |
+| `compare_meta`       | `jsonb`       | Nullable    |
+| `source_unique_key`  | `text`        | Nullable    |
+| `summary`            | `text`        | Nullable    |
+| `tags`               | `_text`       | Nullable    |
+| `skills`             | `_text`       | Nullable    |
+| `search_text`        | `text`        | Nullable    |
+| `support_type`       | `text`        | Nullable    |
+| `teaching_method`    | `text`        | Nullable    |
+| `is_certified`       | `bool`        |             |
+| `raw_data`           | `jsonb`       | Nullable    |
+| `category_detail`    | `text`        | Nullable    |
+| `thumbnail_url`      | `text`        | Nullable    |
+| `cost_type`          | `text`        | Nullable    |
+| `participation_time` | `text`        | Nullable    |
 
 ## Table `recommendations`
 
