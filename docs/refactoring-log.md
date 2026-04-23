@@ -2616,3 +2616,7 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - Work24 공통 코드 API `dtlGb=1` 응답의 `regionCd`/`regionNm`을 파싱해 `trngAreaCd` 중분류 코드를 `성남시 분당구` 같은 시군구명 `region_detail`로 변환하도록 연결함
   - scheduler와 admin sync가 `WORK24_COMMON_CODES_AUTH_KEY`가 있을 때 지역 코드 map을 사용하고, 실패 시 기존 주소/광역 코드 fallback을 유지하도록 보강함
   - 운영 Supabase Work24 3,438건 중 코드/주소 기반으로 안전하게 보정 가능한 3,383건을 적용했고, 타임아웃 후 남은 patch를 이어 적용해 최종 복구 가능 후보를 0건으로 줄임
+- 2026-04-23: `frontend/app/dashboard/page.tsx`, `frontend/app/(landing)/compare/program-select-modal.tsx`, `docs/current-state.md`, `reports/program-bookmark-dashboard-compare-result.md`
+  - 대시보드에 `program_bookmarks` 기반 `찜한 훈련` 섹션을 추가해 목록/상세에서 북마크한 프로그램을 같은 dashboard bookmark BFF로 조회해 보여주도록 함
+  - 비교 프로그램 선택 모달은 닫았다 다시 열 때 찜 목록을 새로 조회하도록 조정해 최근 북마크 변경이 모달에 반영되게 함
+  - 기존 북마크 저장/삭제 BFF와 backend `/bookmarks` 계약은 유지하고, 대시보드/비교는 같은 저장 상태를 읽는 방식으로 연결함

@@ -59,8 +59,10 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
     error = cause instanceof Error ? cause.message : "프로그램 정보를 불러오지 못했습니다.";
   }
 
-  const heroPrograms = getLiveBoardPrograms(liveBoardPrograms);
-  const opportunityPrograms = orderOpportunityPrograms(programs);
+  const preferWork24Exposure =
+    activeChip !== "창업" && !/창업|스타트업|startup|k-startup|kstartup/i.test(keyword);
+  const heroPrograms = getLiveBoardPrograms(liveBoardPrograms, { preferWork24: preferWork24Exposure });
+  const opportunityPrograms = orderOpportunityPrograms(programs, { preferWork24: preferWork24Exposure });
 
   return (
     <main className="min-h-screen bg-[var(--surface)] text-[var(--ink)]" style={landingCThemeVars}>

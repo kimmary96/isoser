@@ -58,6 +58,42 @@ def test_normalize_program_row_preserves_work24_region_fields() -> None:
     assert row["region_detail"] == "성남시 분당구"
 
 
+def test_normalize_program_row_builds_work24_source_unique_key_from_raw_session_fields() -> None:
+    row = admin._normalize_program_row(
+        {
+            "hrd_id": "AIG202500001",
+            "title": "고용24 훈련 과정",
+            "source": "고용24",
+            "raw": {
+                "trprId": "AIG202500001",
+                "trprDegr": "7",
+                "trainstCstId": "500012345678",
+                "title": "고용24 훈련 과정",
+                "titleLink": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG202500001&tracseTme=7&trainstCstmrId=500012345678",
+                "ncsCd": "20010201",
+                "contents": "Python과 React 실습 과정",
+            },
+        }
+    )
+
+    assert row["source_unique_key"] == "work24:AIG202500001:7:500012345678"
+    assert row["link"]
+    assert row["compare_meta"]["trpr_degr"] == "7"
+    assert "Python" in row["skills"]
+
+
+def test_deduplicate_program_rows_preserves_same_hrd_id_with_distinct_source_unique_keys() -> None:
+    rows = admin._deduplicate_program_rows(
+        [
+            {"hrd_id": "HRD-1", "source_unique_key": "work24:HRD-1:1:1000", "title": "1회차"},
+            {"hrd_id": "HRD-1", "source_unique_key": "work24:HRD-1:2:1000", "title": "2회차"},
+            {"hrd_id": "HRD-1", "source_unique_key": "work24:HRD-1:2:1000", "title": "2회차 갱신"},
+        ]
+    )
+
+    assert [row["title"] for row in rows] == ["1회차", "2회차 갱신"]
+
+
 @pytest.mark.asyncio
 async def test_upsert_program_payload_retries_without_missing_columns(monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[list[str]] = []
