@@ -81,3 +81,10 @@ No live Supabase `EXPLAIN` was run in this session because the migration has not
 - generated_at: `2026-04-23T17:41:52`
 - watcher_exit_code: `0`
 - codex_tokens_used: `101,675`
+
+## Git Automation
+
+- status: `merged-main`
+- branch: `develop`
+- commit: `89fb5382c7db174a6fce11d0659cd66aaa877c00`
+- note: [codex] TASK-2026-04-23-camps-list-read-model-refactor 구현 완료. Auto-promoted to origin/main.
