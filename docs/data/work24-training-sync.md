@@ -81,7 +81,7 @@ backend\venv\Scripts\python.exe scripts\work24_partition_sync.py --include-seoul
 backend\venv\Scripts\python.exe scripts\work24_partition_sync.py --apply --stop-after 대전 --report-path reports\work24_partition_sync_to_daejeon_YYYYMMDD.json
 ```
 
-DB upsert가 끝난 뒤 추천 인덱스까지 함께 갱신하려면 persistent Chroma 환경에서 `--sync-chroma-at-end`를 붙입니다. 이 옵션은 `--apply` 실행 뒤 실제 upsert된 row만 dedupe해서 Chroma programs collection에 sync합니다. `CHROMA_MODE`가 `persistent`가 아니면 인덱스가 프로세스 종료 후 유지되지 않으므로 report에 `status=skipped`, `reason=non_persistent_chroma_mode`를 남기고 Chroma sync를 실행하지 않습니다.
+DB upsert가 끝난 뒤 추천 인덱스까지 함께 갱신하려면 persistent Chroma 환경에서 `--sync-chroma-at-end`를 붙입니다. 이 옵션은 `--apply` 실행 뒤 처리한 row의 `source_unique_key`로 DB row를 다시 조회해 canonical `id`를 확보한 다음 Chroma programs collection에 sync합니다. `CHROMA_MODE`가 `persistent`가 아니면 인덱스가 프로세스 종료 후 유지되지 않으므로 report에 `status=skipped`, `reason=non_persistent_chroma_mode`를 남기고 Chroma sync를 실행하지 않습니다.
 
 ```powershell
 $env:CHROMA_MODE="persistent"

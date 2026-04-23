@@ -34,6 +34,7 @@ from backend.routers.admin import (  # noqa: E402
     _sync_program_batches,
     _upsert_program_payload,
 )
+from backend.utils.supabase_admin import request_supabase  # noqa: E402
 
 
 @dataclass(frozen=True)
@@ -83,6 +84,8 @@ CHROMA_SYNC_FIELDS = (
     "tags",
     "skills",
 )
+CHROMA_DB_SELECT = ",".join(("source_unique_key", *CHROMA_SYNC_FIELDS))
+CHROMA_DB_FETCH_BATCH_SIZE = 100
 
 
 def configure_stdout() -> None:
@@ -221,6 +224,7 @@ async def sync_partition(
     end_dt: str,
     max_pages: int | None,
     upsert_retries: int,
+    collect_chroma_rows: bool = False,
 ) -> PartitionSyncOutcome:
     started_at = perf_counter()
     fetched_rows = adapter.fetch_all(
@@ -267,7 +271,41 @@ async def sync_partition(
     }
     if last_error:
         result["error"] = last_error
-    return PartitionSyncOutcome(report=result, upserted_rows=rows or [])
+    chroma_rows = rows or []
+    if collect_chroma_rows and not last_error:
+        chroma_rows = await fetch_chroma_db_rows_for_payload(payload)
+        result["chroma_candidate_rows"] = len(chroma_rows)
+    return PartitionSyncOutcome(report=result, upserted_rows=chroma_rows)
+
+
+def quote_postgrest_in_values(values: list[str]) -> str:
+    return ",".join(f'"{value.replace(chr(34), chr(92) + chr(34))}"' for value in values if value)
+
+
+async def fetch_chroma_db_rows_for_payload(payload: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    keys: list[str] = []
+    seen_keys: set[str] = set()
+    for row in payload:
+        key = str(row.get("source_unique_key") or "").strip()
+        if not key or key in seen_keys:
+            continue
+        seen_keys.add(key)
+        keys.append(key)
+
+    rows: list[dict[str, Any]] = []
+    for index in range(0, len(keys), CHROMA_DB_FETCH_BATCH_SIZE):
+        chunk = keys[index : index + CHROMA_DB_FETCH_BATCH_SIZE]
+        fetched = await request_supabase(
+            method="GET",
+            path="/rest/v1/programs",
+            params={
+                "select": CHROMA_DB_SELECT,
+                "source_unique_key": f"in.({quote_postgrest_in_values(chunk)})",
+            },
+        )
+        if isinstance(fetched, list):
+            rows.extend(row for row in fetched if isinstance(row, dict))
+    return rows
 
 
 def build_chroma_sync_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -375,6 +413,7 @@ async def main() -> None:
                 end_dt=end_dt,
                 max_pages=args.max_pages,
                 upsert_retries=args.upsert_retries,
+                collect_chroma_rows=args.sync_chroma_at_end,
             )
             result["sync_results"].append(sync_outcome.report)
             if args.sync_chroma_at_end:

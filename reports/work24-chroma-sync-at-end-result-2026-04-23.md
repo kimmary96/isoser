@@ -4,8 +4,8 @@
 
 | 파일 | 내용 |
 |---|---|
-| `scripts/work24_partition_sync.py` | `--sync-chroma-at-end` 옵션, persistent mode guard, upsert row dedupe 후 Chroma sync 연결 |
-| `backend/tests/test_work24_partition_sync.py` | Chroma sync row dedupe, preview skip, non-persistent skip, persistent 실행 분기 테스트 |
+| `scripts/work24_partition_sync.py` | `--sync-chroma-at-end` 옵션, persistent mode guard, `source_unique_key` 기반 DB row 재조회 후 Chroma sync 연결 |
+| `backend/tests/test_work24_partition_sync.py` | Chroma sync row dedupe, preview skip, non-persistent skip, persistent 실행, DB row 재조회 테스트 |
 | `docs/data/work24-training-sync.md` | persistent Chroma 운영 실행 명령 문서화 |
 
 ## 변경 이유
@@ -19,7 +19,7 @@ Work24 지역 partition sync는 DB 최신화까지는 자동화했지만, 추천
 | `--sync-chroma-at-end` 없음 | 기존과 동일하게 DB upsert만 실행 |
 | preview 실행 + `--sync-chroma-at-end` | Chroma sync를 실행하지 않고 `reason=requires_apply` 기록 |
 | `CHROMA_MODE!=persistent` | Chroma sync를 실행하지 않고 `reason=non_persistent_chroma_mode` 기록 |
-| `CHROMA_MODE=persistent` + `--apply --sync-chroma-at-end` | 각 partition upsert 결과 row를 program id 기준으로 dedupe한 뒤 Chroma programs collection에 batch sync |
+| `CHROMA_MODE=persistent` + `--apply --sync-chroma-at-end` | 각 partition에서 처리한 payload의 `source_unique_key`로 DB row를 다시 조회해 UUID `id`를 확보하고, program id 기준으로 dedupe한 뒤 Chroma programs collection에 batch sync |
 
 ## 유지된 기존 동작
 
@@ -35,7 +35,8 @@ Work24 지역 partition sync는 DB 최신화까지는 자동화했지만, 추천
 
 | 명령 | 결과 |
 |---|---|
-| `backend\venv\Scripts\python.exe -m pytest backend\tests\test_work24_partition_sync.py -q` | 8 passed |
+| `backend\venv\Scripts\python.exe -m pytest backend\tests\test_work24_partition_sync.py -q` | 10 passed |
+| `backend\venv\Scripts\python.exe -m py_compile scripts\work24_partition_sync.py` | passed |
 
 ## 리스크 / 회귀 가능성
 

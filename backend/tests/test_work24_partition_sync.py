@@ -7,7 +7,9 @@ from scripts import work24_partition_sync
 from scripts.work24_partition_sync import (
     REGION_PARTITIONS,
     build_chroma_sync_rows,
+    fetch_chroma_db_rows_for_payload,
     ordered_region_partitions,
+    quote_postgrest_in_values,
     sync_chroma_rows_at_end,
 )
 
@@ -124,3 +126,36 @@ def test_chroma_sync_at_end_runs_in_persistent_mode(monkeypatch) -> None:
     assert result["candidate_count"] == 2
     assert result["synced_count"] == 2
     assert result["skipped_count"] == 0
+
+
+def test_quote_postgrest_in_values_quotes_source_unique_keys() -> None:
+    assert quote_postgrest_in_values(["work24:A:1:5000", 'key"quoted']) == '"work24:A:1:5000","key\\"quoted"'
+
+
+def test_fetch_chroma_db_rows_for_payload_uses_source_unique_key(monkeypatch) -> None:
+    calls: list[dict[str, Any]] = []
+
+    async def fake_request_supabase(**kwargs: Any) -> list[dict[str, Any]]:
+        calls.append(kwargs)
+        return [
+            {"id": "program-1", "title": "첫 과정", "source_unique_key": "work24:A:1:5000"},
+            {"id": "program-2", "title": "둘째 과정", "source_unique_key": "work24:B:1:5000"},
+        ]
+
+    monkeypatch.setattr(work24_partition_sync, "request_supabase", fake_request_supabase)
+
+    rows = asyncio.run(
+        fetch_chroma_db_rows_for_payload(
+            [
+                {"source_unique_key": "work24:A:1:5000"},
+                {"source_unique_key": "work24:A:1:5000"},
+                {"source_unique_key": "work24:B:1:5000"},
+                {"source_unique_key": ""},
+            ]
+        )
+    )
+
+    assert [row["id"] for row in rows] == ["program-1", "program-2"]
+    assert calls[0]["method"] == "GET"
+    assert calls[0]["path"] == "/rest/v1/programs"
+    assert calls[0]["params"]["source_unique_key"] == 'in.("work24:A:1:5000","work24:B:1:5000")'
