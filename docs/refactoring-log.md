@@ -2776,3 +2776,7 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - `/programs` 정렬 드롭다운을 `기본 정렬`, `마감 임박순`, `개강 빠른순`, `비용 낮은순`, `비용 높은순`, `짧은 기간순`, `긴 기간순` 순서로 재구성함
   - `ProgramSort`와 backend `sort` 계약에 `default`, `start_soon`, `cost_low`, `cost_high`, `duration_short`, `duration_long`을 추가하고, legacy `latest`는 API 호환용으로 유지함
   - 명시 정렬 선택 시 백엔드 후처리에서 개강일, 비용, 기간 기준으로 실제 정렬되도록 회귀 테스트를 추가함
+- 2026-04-23: `backend/rag/collector/quality_validator.py`, `backend/rag/collector/scheduler.py`, `backend/tests/test_collector_quality_validator.py`, `backend/tests/test_scheduler_collectors.py`, `docs/current-state.md`, `reports/TASK-2026-04-23-1900-collector-quality-validator-result.md`
+  - AWS Boottent 파이프라인의 Validation Agent 패턴을 Bedrock/Step Functions 없이 적용할 수 있도록 normalized program row용 report-only validator를 추가함
+  - validator는 title/source/source_unique_key/source_url/location/provider/date/cost와 Work24 deadline source risk를 진단하되 ingestion을 차단하지 않음
+  - `run_all_collectors(upsert=False)` dry-run source result에 `quality` 요약을 붙여 저장 전 source별 품질 신호를 볼 수 있게 함

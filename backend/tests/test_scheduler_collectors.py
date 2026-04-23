@@ -306,6 +306,19 @@ def test_scheduler_preserves_source_unique_key_for_upsert(monkeypatch) -> None:
     assert supabase.rows[0]["source_unique_key"] == "tier1:program:1"
 
 
+def test_scheduler_adds_quality_summary_to_dry_run(monkeypatch) -> None:
+    monkeypatch.setattr("backend.rag.collector.scheduler.COLLECTORS", [_Tier1Collector()])
+
+    result = run_all_collectors(upsert=False)
+
+    quality = result["sources"][0]["quality"]
+    assert quality["checked_rows"] == 1
+    assert quality["rows_with_errors"] == 0
+    assert quality["rows_with_warnings"] == 0
+    assert quality["issue_counts"]["info"] == 1
+    assert quality["issue_codes"] == {"missing_provider": 1}
+
+
 class _Tier1Collector(BaseCollector):
     tier = 1
     source_name = "tier1"

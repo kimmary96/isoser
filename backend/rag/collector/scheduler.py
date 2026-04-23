@@ -14,6 +14,7 @@ try:
     from rag.collector.hrd_collector import HrdCollector
     from rag.collector.kstartup_collector import KstartupApiCollector
     from rag.collector.normalizer import normalize
+    from rag.collector.quality_validator import summarize_program_quality
     from rag.collector.regional_html_collectors import (
         CampusTownCollector,
         SbaPostingCollector,
@@ -38,6 +39,7 @@ except ModuleNotFoundError as error:
     from backend.rag.collector.hrd_collector import HrdCollector
     from backend.rag.collector.kstartup_collector import KstartupApiCollector
     from backend.rag.collector.normalizer import normalize
+    from backend.rag.collector.quality_validator import summarize_program_quality
     from backend.rag.collector.regional_html_collectors import (
         CampusTownCollector,
         SbaPostingCollector,
@@ -358,6 +360,7 @@ def run_all_collectors(*, upsert: bool = True) -> Dict:
             continue
 
         if not upsert:
+            quality_summary = summarize_program_quality(normalized_rows)
             dry_run_message = _format_dry_run_message(
                 len(raw_items),
                 len(normalized_rows),
@@ -376,6 +379,7 @@ def run_all_collectors(*, upsert: bool = True) -> Dict:
                     "failed": source_failed,
                     "status": "dry_run",
                     "message": dry_run_message,
+                    "quality": quality_summary,
                 }
             )
             continue
