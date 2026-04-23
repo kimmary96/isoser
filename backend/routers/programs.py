@@ -450,6 +450,7 @@ class ProgramFacetSnapshot(BaseModel):
 
 
 class ProgramListPageResponse(BaseModel):
+    promoted_items: list[ProgramListItem] = Field(default_factory=list)
     items: list[ProgramListItem] = Field(default_factory=list)
     next_cursor: str | None = None
     count: int | None = None
@@ -2523,6 +2524,16 @@ def _program_promoted_slot_limit() -> int:
         return PROGRAM_PROMOTED_SLOT_LIMIT
 
 
+def _program_promoted_provider_terms() -> list[str]:
+    raw = os.getenv("PROGRAM_PROMOTED_PROVIDER_MATCHES", "패스트캠퍼스,Fast Campus,fastcampus")
+    terms: list[str] = []
+    for term in raw.split(","):
+        normalized = re.sub(r"\s+", "", term.strip().lower())
+        if normalized and normalized not in terms:
+            terms.append(normalized)
+    return terms
+
+
 def _program_list_mode(*, q: str | None, scope: str | None, include_closed_recent: bool) -> Literal["browse", "search", "archive"]:
     normalized_scope = str(scope or "default").strip().lower()
     if include_closed_recent or normalized_scope in {"archive", "closed", "recent_closed"}:
@@ -2633,6 +2644,7 @@ def _build_read_model_params(
     params: dict[str, Any] = {
         "select": "id" if count else PROGRAM_LIST_SUMMARY_SELECT,
         "order": _read_model_order(effective_sort),
+        "is_ad": "eq.false",
     }
     if not count:
         params["limit"] = str(limit + 1)
@@ -2689,6 +2701,94 @@ def _build_read_model_params(
     return params, mode
 
 
+def _mark_program_as_promoted(row: Mapping[str, Any], *, rank: int) -> dict[str, Any]:
+    promoted = dict(row)
+    promoted["is_ad"] = True
+    promoted["promoted_rank"] = _int_or_none(promoted.get("promoted_rank")) or rank
+    reasons = _normalize_text_list(promoted.get("recommendation_reasons"))
+    promoted["recommendation_reasons"] = ["광고", *[reason for reason in reasons if reason != "광고"]]
+    return promoted
+
+
+async def _fetch_promoted_read_model_rows(
+    *,
+    category: str | None = None,
+    category_detail: str | None = None,
+    scope: str | None = None,
+    region_detail: str | None = None,
+    regions: list[str] | None = None,
+    sources: list[str] | None = None,
+    teaching_methods: list[str] | None = None,
+    cost_types: list[str] | None = None,
+    participation_times: list[str] | None = None,
+    targets: list[str] | None = None,
+    recruiting_only: bool = False,
+    include_closed_recent: bool = False,
+) -> list[ProgramListItem]:
+    slot_limit = _program_promoted_slot_limit()
+    if slot_limit <= 0:
+        return []
+    mode = _program_list_mode(q=None, scope=scope, include_closed_recent=include_closed_recent)
+    if mode != "browse":
+        return []
+
+    base_args = dict(
+        category=category,
+        category_detail=category_detail,
+        scope=scope,
+        region_detail=region_detail,
+        q=None,
+        regions=regions,
+        sources=sources,
+        teaching_methods=teaching_methods,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
+        recruiting_only=recruiting_only,
+        include_closed_recent=include_closed_recent,
+        sort="default",
+    )
+    promoted_rows: list[dict[str, Any]] = []
+    seen_ids: set[str] = set()
+
+    ad_params, _ = _build_read_model_params(**base_args, limit=slot_limit)
+    ad_params.pop("browse_rank", None)
+    ad_params["is_ad"] = "eq.true"
+    ad_params["order"] = "promoted_rank.asc.nullslast,recommended_score.desc.nullslast,id.asc"
+    ad_params["limit"] = str(slot_limit)
+    explicit_ads = await request_supabase(method="GET", path=f"/rest/v1/{PROGRAM_LIST_INDEX_TABLE}", params=ad_params)
+    for row in explicit_ads if isinstance(explicit_ads, list) else []:
+        row_id = str(row.get("id") or "").strip() if isinstance(row, Mapping) else ""
+        if not row_id or row_id in seen_ids:
+            continue
+        seen_ids.add(row_id)
+        promoted_rows.append(_mark_program_as_promoted(row, rank=len(promoted_rows) + 1))
+        if len(promoted_rows) >= slot_limit:
+            break
+
+    remaining = slot_limit - len(promoted_rows)
+    provider_terms = _program_promoted_provider_terms()
+    if remaining > 0 and provider_terms:
+        sponsor_params, _ = _build_read_model_params(**base_args, limit=remaining)
+        sponsor_params.pop("browse_rank", None)
+        sponsor_params["is_ad"] = "eq.false"
+        sponsor_params["order"] = "recommended_score.desc.nullslast,id.asc"
+        sponsor_params["limit"] = str(remaining)
+        sponsor_clauses = [f"search_text.ilike.*{term}*" for term in provider_terms]
+        _add_read_model_or_filter(sponsor_params, "(" + ",".join(sponsor_clauses) + ")")
+        sponsored_rows = await request_supabase(method="GET", path=f"/rest/v1/{PROGRAM_LIST_INDEX_TABLE}", params=sponsor_params)
+        for row in sponsored_rows if isinstance(sponsored_rows, list) else []:
+            row_id = str(row.get("id") or "").strip() if isinstance(row, Mapping) else ""
+            if not row_id or row_id in seen_ids:
+                continue
+            seen_ids.add(row_id)
+            promoted_rows.append(_mark_program_as_promoted(row, rank=len(promoted_rows) + 1))
+            if len(promoted_rows) >= slot_limit:
+                break
+
+    return [ProgramListItem.model_validate(row) for row in promoted_rows]
+
+
 async def _fetch_program_list_read_model_rows(
     *,
     category: str | None = None,
@@ -2710,6 +2810,25 @@ async def _fetch_program_list_read_model_rows(
     cursor: str | None = None,
 ) -> ProgramListPageResponse:
     started = time.perf_counter()
+    mode = _program_list_mode(q=q, scope=scope, include_closed_recent=include_closed_recent)
+    promoted_items: list[ProgramListItem] = []
+    if mode == "browse" and offset == 0 and not cursor:
+        promoted_items = await _fetch_promoted_read_model_rows(
+            category=category,
+            category_detail=category_detail,
+            scope=scope,
+            region_detail=region_detail,
+            regions=regions,
+            sources=sources,
+            teaching_methods=teaching_methods,
+            cost_types=cost_types,
+            participation_times=participation_times,
+            targets=targets,
+            recruiting_only=recruiting_only,
+            include_closed_recent=include_closed_recent,
+        )
+    promoted_ids = {str(item.id) for item in promoted_items if item.id is not None}
+    fetch_limit = limit + len(promoted_ids)
     params, mode = _build_read_model_params(
         category=category,
         category_detail=category_detail,
@@ -2725,25 +2844,28 @@ async def _fetch_program_list_read_model_rows(
         recruiting_only=recruiting_only,
         include_closed_recent=include_closed_recent,
         sort=sort,
-        limit=limit,
+        limit=fetch_limit,
         offset=offset,
         cursor=cursor,
     )
     rows = await request_supabase(method="GET", path=f"/rest/v1/{PROGRAM_LIST_INDEX_TABLE}", params=params)
     read_rows = rows if isinstance(rows, list) else []
-    page_rows = read_rows[:limit]
-    next_cursor = _encode_program_cursor(page_rows[-1], sort=sort if sort in PROGRAM_SORT_OPTIONS else "default") if len(read_rows) > limit and page_rows else None
+    organic_rows = [row for row in read_rows if str(row.get("id") or "") not in promoted_ids]
+    page_rows = organic_rows[:limit]
+    next_cursor = _encode_program_cursor(page_rows[-1], sort=sort if sort in PROGRAM_SORT_OPTIONS else "default") if len(organic_rows) > limit and page_rows else None
     elapsed_ms = round((time.perf_counter() - started) * 1000, 2)
     log_event(
         logger,
         logging.INFO,
         "program_list_read_model",
         mode=mode,
+        promoted_count=len(promoted_items),
         item_count=len(page_rows),
         elapsed_ms=elapsed_ms,
         cache_hit=False,
     )
     return ProgramListPageResponse(
+        promoted_items=promoted_items,
         items=[ProgramListItem.model_validate(row) for row in page_rows],
         next_cursor=next_cursor,
         mode=mode,

@@ -1,5 +1,12 @@
 # 리팩토링 로그
 
+- 2026-04-23: `backend/routers/programs.py`, `backend/services/program_list_scoring.py`, `backend/tests/test_programs_router.py`, `frontend/app/(landing)/programs/page.tsx`, `frontend/lib/types/index.ts`, `scripts/benchmark_program_list_performance.py`, `docs/camps-list-refactor.md`, `docs/current-state.md`, `reports/program-list-hardening-performance-20260423.json`, `reports/TASK-2026-04-23-program-list-hardening-result.md`
+  - `/programs/list` 응답에 `promoted_items`를 추가해 sponsored/promoted 노출을 organic `items`와 분리함
+  - organic read-model query는 `is_ad=false`로 제한하고, 명시 `is_ad=true` row 또는 `PROGRAM_PROMOTED_PROVIDER_MATCHES` 기반 Fast Campus sponsored fallback row가 organic 결과에 중복 노출되지 않도록 제거함
+  - 프론트 `/programs`는 sponsored rows를 `스폰서 추천` 레이어로 별도 렌더링하고 일반 추천순 테이블과 섞지 않음
+  - cursor와 region `or` 필터 조합, read-model field 기반 completeness, promoted 중복 방지 테스트를 추가함
+  - legacy/read-model 경로 성능 비교 CLI를 추가하고 운영 Supabase 기준 JSON 리포트를 남김
+
 - 2026-04-23: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `reports/programs-read-model-or-filter-result.md`
   - read model cursor pagination 조건과 region 다중 필터가 모두 PostgREST `or` 파라미터를 쓰면서 서로 덮일 수 있는 경로를 `_add_read_model_or_filter()` 병합 helper로 정리함
   - cursor 조건과 region 조건을 `and=(or(...),or(...))` 형태로 조합해, 커서 페이지 이동과 지역 필터가 동시에 유지되도록 함

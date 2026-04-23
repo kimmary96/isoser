@@ -92,6 +92,27 @@ def test_recommended_score_excludes_low_confidence_deadline_urgency() -> None:
     assert "마감임박" not in score.reasons
 
 
+def test_recommended_score_accepts_read_model_cost_and_time_fields() -> None:
+    score = compute_recommended_score(
+        {
+            "title": "AI 부트캠프",
+            "provider": "교육기관",
+            "summary": "요약",
+            "category": "AI",
+            "category_detail": "data-ai",
+            "region": "서울",
+            "teaching_method": "온라인",
+            "cost_type": "free",
+            "participation_time": "part-time",
+            "thumbnail_url": "https://example.com/image.png",
+        },
+        today=date.today(),
+    )
+
+    assert score.data_completeness == 1
+    assert "상세정보 충실" in score.reasons
+
+
 def test_program_cursor_round_trip_is_stable_for_recommended_sort() -> None:
     row = {"id": "00000000-0000-0000-0000-000000000001", "recommended_score": 0.92}
     cursor = programs._encode_program_cursor(row, sort="default")
@@ -324,6 +345,7 @@ async def test_list_programs_page_uses_read_model_and_cursor(monkeypatch: pytest
 
     monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
     monkeypatch.setenv("ENABLE_PROGRAM_LIST_READ_MODEL", "true")
+    monkeypatch.setenv("PROGRAM_PROMOTED_SLOT_LIMIT", "0")
 
     response = await programs.list_programs_page(
         regions=None,
@@ -364,6 +386,7 @@ async def test_list_programs_page_forwards_offset_to_read_model(monkeypatch: pyt
 
     monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
     monkeypatch.setenv("ENABLE_PROGRAM_LIST_READ_MODEL", "true")
+    monkeypatch.setenv("PROGRAM_PROMOTED_SLOT_LIMIT", "0")
 
     response = await programs.list_programs_page(
         regions=None,
@@ -401,6 +424,66 @@ def test_promoted_and_organic_read_model_params_do_not_mix_scores() -> None:
 
     assert "promoted_rank" not in params["order"]
     assert "recommended_score" in params["order"]
+    assert params["is_ad"] == "eq.false"
+
+
+@pytest.mark.asyncio
+async def test_list_programs_page_returns_fastcampus_promoted_layer_without_organic_duplicate(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_request_supabase(**kwargs: object) -> list[dict[str, object]]:
+        params = kwargs.get("params")
+        assert isinstance(params, dict)
+        if params.get("select") == "id":
+            return [{"id": "program-fastcampus"}, {"id": "program-organic"}]
+        if params.get("is_ad") == "eq.true":
+            return []
+        if "search_text.ilike.*패스트캠퍼스*" in str(params.get("or", "")) or "search_text.ilike.*패스트캠퍼스*" in str(params.get("and", "")):
+            return [
+                {
+                    "id": "program-fastcampus",
+                    "title": "패스트캠퍼스 AI 과정",
+                    "provider": "패스트캠퍼스",
+                    "source": "Fast Campus",
+                    "recommended_score": 0.6,
+                }
+            ]
+        return [
+            {
+                "id": "program-fastcampus",
+                "title": "패스트캠퍼스 AI 과정",
+                "provider": "패스트캠퍼스",
+                "source": "Fast Campus",
+                "recommended_score": 0.6,
+            },
+            {
+                "id": "program-organic",
+                "title": "일반 AI 과정",
+                "provider": "일반기관",
+                "source": "고용24",
+                "recommended_score": 0.5,
+            },
+        ]
+
+    monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
+    monkeypatch.setenv("ENABLE_PROGRAM_LIST_READ_MODEL", "true")
+    monkeypatch.setenv("PROGRAM_PROMOTED_SLOT_LIMIT", "1")
+    monkeypatch.setenv("PROGRAM_PROMOTED_PROVIDER_MATCHES", "패스트캠퍼스")
+
+    response = await programs.list_programs_page(
+        regions=None,
+        sources=None,
+        teaching_methods=None,
+        cost_types=None,
+        participation_times=None,
+        targets=None,
+        limit=1,
+    )
+
+    assert [item.id for item in response.promoted_items] == ["program-fastcampus"]
+    assert response.promoted_items[0].is_ad is True
+    assert "광고" in response.promoted_items[0].recommendation_reasons
+    assert [item.id for item in response.items] == ["program-organic"]
 
 
 def test_build_program_query_params_uses_parent_category_for_category_detail() -> None:

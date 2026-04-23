@@ -110,20 +110,20 @@ def _deadline_urgency(deadline: Any, confidence: str, *, today: date) -> float:
 
 
 def _data_completeness(row: Mapping[str, Any]) -> float:
-    keys = (
-        "title",
-        "provider",
-        "summary",
-        "category",
-        "category_detail",
-        "region",
-        "teaching_method",
-        "tuition_type",
-        "study_time",
-        "thumbnail_url",
+    field_groups = (
+        ("title",),
+        ("provider",),
+        ("summary",),
+        ("category",),
+        ("category_detail",),
+        ("region",),
+        ("teaching_method",),
+        ("cost_type", "tuition_type"),
+        ("participation_time", "study_time"),
+        ("thumbnail_url",),
     )
-    filled = sum(1 for key in keys if str(row.get(key) or "").strip())
-    return filled / len(keys)
+    filled = sum(1 for keys in field_groups if any(str(row.get(key) or "").strip() for key in keys))
+    return filled / len(field_groups)
 
 
 def compute_recommended_score(row: Mapping[str, Any], *, today: date | None = None) -> ProgramScore:

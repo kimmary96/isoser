@@ -1,0 +1,92 @@
+{
+  "generated_at": "2026-04-23T12:39:15.737291+00:00",
+  "runs_per_case": 3,
+  "limit": 20,
+  "query": "AI",
+  "results": [
+    {
+      "name": "after_read_model_default_browse",
+      "runs": 3,
+      "errors": [],
+      "item_count": 20,
+      "promoted_count": 15,
+      "count": 300,
+      "mode": "browse",
+      "source": "read_model",
+      "cache_hit": false,
+      "min_ms": 939.46,
+      "avg_ms": 1135.36,
+      "max_ms": 1519.32
+    },
+    {
+      "name": "before_legacy_default_browse",
+      "runs": 3,
+      "errors": [],
+      "item_count": 0,
+      "promoted_count": 0,
+      "count": 0,
+      "mode": "browse",
+      "source": "legacy",
+      "cache_hit": false,
+      "min_ms": 227.5,
+      "avg_ms": 234.47,
+      "max_ms": 245.35
+    },
+    {
+      "name": "after_read_model_scope_all_search",
+      "runs": 3,
+      "errors": [],
+      "item_count": 20,
+      "promoted_count": 0,
+      "count": 1000,
+      "mode": "search",
+      "source": "read_model",
+      "cache_hit": false,
+      "min_ms": 686.71,
+      "avg_ms": 1605.52,
+      "max_ms": 3424.76
+    },
+    {
+      "name": "before_legacy_scope_all_search",
+      "runs": 3,
+      "errors": [],
+      "item_count": 0,
+      "promoted_count": 0,
+      "count": 0,
+      "mode": "search",
+      "source": "legacy",
+      "cache_hit": false,
+      "min_ms": 218.97,
+      "avg_ms": 227.84,
+      "max_ms": 238.69
+    },
+    {
+      "name": "after_facet_snapshot_filter_options",
+      "runs": 3,
+      "errors": [],
+      "item_count": null,
+      "promoted_count": 0,
+      "count": null,
+      "mode": null,
+      "source": null,
+      "cache_hit": null,
+      "min_ms": 216.97,
+      "avg_ms": 222.85,
+      "max_ms": 228.72
+    },
+    {
+      "name": "before_legacy_filter_options",
+      "runs": 3,
+      "errors": [],
+      "item_count": null,
+      "promoted_count": 0,
+      "count": null,
+      "mode": null,
+      "source": null,
+      "cache_hit": null,
+      "min_ms": 11758.6,
+      "avg_ms": 12287.24,
+      "max_ms": 13285.87
+    }
+  ]
+}

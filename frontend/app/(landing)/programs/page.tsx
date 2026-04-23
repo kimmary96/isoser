@@ -740,6 +740,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
   });
 
   let programs: Program[] = [];
+  let promotedPrograms: Program[] = [];
   let urgentPrograms: Program[] = [];
   let totalCount = 0;
   let error: string | null = null;
@@ -797,10 +798,12 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
         offset: 0,
       }),
     ]);
+    promotedPrograms = programsPage.promoted_items ?? [];
     programs = programsPage.items;
     totalCount = programsPage.count ?? programsPage.items.length;
     urgentPrograms = urgentRows;
   } catch (e) {
+    promotedPrograms = [];
     try {
       [programs, urgentPrograms] = await Promise.all([
         listPrograms({
@@ -826,6 +829,9 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
   const displayPrograms = programs.filter(isDisplayableProgram);
+  const promotedIds = new Set(promotedPrograms.map((program) => String(program.id ?? "")).filter(Boolean));
+  const displayPromotedPrograms = promotedPrograms.filter(isDisplayableProgram);
+  const organicDisplayPrograms = displayPrograms.filter((program) => !promotedIds.has(String(program.id ?? "")));
   const displayUrgentPrograms = urgentPrograms
     .filter(isDisplayableProgram)
     .filter((program) => typeof program.days_left === "number" && program.days_left >= 0 && program.days_left <= 7)
@@ -899,6 +905,21 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                   slotId="programs-results-top-banner"
                   className="mb-6 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3"
                 />
+                {displayPromotedPrograms.length > 0 ? (
+                  <div className="mb-6 border-b border-slate-100 pb-6">
+                    <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900">스폰서 추천</p>
+                        <p className="mt-1 text-sm text-slate-500">광고 상품으로 노출되는 프로그램이며 일반 추천순 결과와 분리됩니다.</p>
+                      </div>
+                    </div>
+                    <ProgramsTable
+                      programs={displayPromotedPrograms}
+                      isLoggedIn={isLoggedIn}
+                      bookmarkedProgramIds={bookmarkedProgramIds}
+                    />
+                  </div>
+                ) : null}
                 <div className="flex flex-col gap-4 border-b border-slate-100 pb-5 md:flex-row md:items-center md:justify-between">
                   <div>
                     <p className="text-sm font-semibold text-slate-900">
@@ -929,7 +950,8 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                   <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 px-6 py-12 text-center text-sm text-rose-700">
                     {error}
                   </div>
-                ) : displayPrograms.length === 0 ? (
+                ) : organicDisplayPrograms.length === 0 ? (
+                  displayPromotedPrograms.length > 0 ? null : (
                   <div className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-16 text-center">
                     <p className="text-base font-semibold text-slate-900">
                       {hasAnyFilter ? "조건에 맞는 프로그램이 없습니다" : "현재 등록된 프로그램이 없습니다"}
@@ -950,10 +972,11 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                       </div>
                     ) : null}
                   </div>
+                  )
                 ) : (
                   <>
                     <ProgramsTable
-                      programs={displayPrograms}
+                      programs={organicDisplayPrograms}
                       isLoggedIn={isLoggedIn}
                       bookmarkedProgramIds={bookmarkedProgramIds}
                     />

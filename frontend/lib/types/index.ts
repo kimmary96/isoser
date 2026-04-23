@@ -452,6 +452,7 @@ export interface ProgramFacetSnapshot {
 }
 
 export interface ProgramListPageResponse {
+  promoted_items?: Program[];
   items: Program[];
   next_cursor: string | null;
   count: number | null;

@@ -45,12 +45,15 @@ Browse rank is still score-led, but the pool builder groups sources and applies 
 
 The existing `/programs` response remains a plain array for compatibility. The new paged contract is `GET /programs/list`, returning:
 
+- `promoted_items`
 - `items`
 - `next_cursor`
 - `count`
 - `mode`
 - `source`
 - `cache_hit`
+
+`promoted_items` is a separate first-page browse layer. Organic `items` are queried with `is_ad=false`, and promoted ids are removed from the organic page if a sponsored fallback matches an otherwise organic row. Until a real ad booking table exists, the current demo assumption uses configurable `PROGRAM_PROMOTED_PROVIDER_MATCHES` with Fast Campus / 패스트캠퍼스 as the default sponsored provider match.
 
 ## Read Model
 
@@ -156,5 +159,6 @@ Frontend:
 - The SQL refresh function should be run against staging Supabase before production rollout because production schema drift around `target` and legacy optional columns may still exist.
 - Count currently reads matching read-model ids through REST instead of using a `Prefer: count` response path.
 - Cursor pagination is forward-only in the first frontend integration; numbered deep paging remains legacy/fallback behavior.
-- Promoted slots are stored separately through `promoted_rank`, but the current frontend still uses existing `AdSlot` plus organic rows. A dedicated promoted row layer can be added once product ad inventory rules are finalized.
+- Promoted slots now have a dedicated `promoted_items` API/UI layer, but campaign lifecycle management is still not modeled.
+- The current Fast Campus sponsored fallback is intentionally config-based rather than a booking workflow. Replace `PROGRAM_PROMOTED_PROVIDER_MATCHES` with a real campaign/ad inventory table before selling multiple providers or date-ranged campaigns.
 - Supabase `auth_leaked_password_protection` is not fixable through SQL; enable leaked password protection in Auth settings after database migrations.
