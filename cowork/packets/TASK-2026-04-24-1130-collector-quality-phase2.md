@@ -1,52 +1,62 @@
 ---
 id: TASK-2026-04-24-1130-collector-quality-phase2
 status: queued
-type: improvement
-title: Collector quality phase 2 for OCR preflight and evidence coverage
+type: fix/update
+title: Collector quality phase 2 for OCR warning buckets and report references
 priority: medium
 planned_by: codex
 planned_at: 2026-04-24T11:30:00+09:00
-planned_against_commit: 3d973498973065c2427585631e836ee33fad5954
-planned_files: backend/rag/collector/quality_validator.py, backend/rag/collector/program_field_mapping.py, scripts/program_quality_report.py, backend/tests/test_collector_quality_validator.py, docs/current-state.md, docs/refactoring-log.md, reports/TASK-2026-04-24-1130-collector-quality-phase2-result.md
+planned_against_commit: 98bb49a274faa13d2606a7a2fc6914987aab0cb5
+planned_files: backend/rag/collector/quality_validator.py, scripts/html_collector_diagnostic.py, backend/tests/test_collector_quality_validator.py, backend/tests/test_html_collector_diagnostic_cli.py, docs/current-state.md, docs/refactoring-log.md, reports/TASK-2026-04-24-1130-collector-quality-phase2-result.md
+planned_worktree_fingerprint: 3359b7347b00db204ea6589d80e922f3aa3c7b84d73965dd04ca73b2d2e6300f
 ---
 
 # Goal
 
-AWS Boottent 차용의 다음 단계로, 현재 report-only validator와 OCR preflight 판단 근거를 더 구조화한다.
-무거운 런타임 도입 전에 source evidence와 후속 판단 기준을 더 안정적으로 만든다.
+이미 연결된 OCR preflight field-gap audit 위에, 실제 후속 조치에 쓰일 warning-priority bucket과 참조 문서를 더 명확히 고정한다.
+새 기능을 넓게 추가하는 것이 아니라, 현재 report-only 흐름에서 남아 있는 해석 모호성을 줄이는 것이 목적이다.
+
+# Current References
+
+- `reports/TASK-2026-04-23-1900-collector-quality-validator-result.md`
+- `reports/TASK-2026-04-23-1945-program-field-source-evidence-result.md`
+- `reports/SESSION-2026-04-24-ocr-field-gap-audit-result.md`
+- `docs/current-state.md`의 OCR preflight `field_gap_summary` / `field_gap_audit` 기록
 
 # Scope
 
-- quality validator 또는 quality report에서 source evidence를 더 명확히 남길 수 있는지 보강한다.
-- OCR preflight 후속 판단에 필요한 필드 근거를 구조적으로 남긴다.
+- existing `field_gap_summary` / `field_gap_audit`를 재사용한다.
+- info 중심 gap과 실제 follow-up 우선순위가 필요한 warning/error gap을 분리하는 source-level bucket을 추가하거나 명시한다.
+- 그 bucket이 어디에 기록되는지 리포트와 문서에서 명확히 고정한다.
 - validator는 계속 report-only로 유지한다.
 - 결과를 current-state, refactoring-log, result report에 반영한다.
 
 # Acceptance Criteria
 
-1. quality validator 또는 report CLI가 현재보다 더 명확한 source evidence를 제공한다.
-2. OCR preflight 후속 판단에 필요한 필드 근거가 구조적으로 남는다.
-3. validator는 여전히 report-only다.
-4. 기존 API/frontend 동작은 변하지 않는다.
+1. OCR preflight 결과에서 source별로 "warning/error gap follow-up needed" 여부를 일관되게 해석할 수 있는 bucket 또는 field가 추가된다.
+2. `missing_provider` 같은 info-only gap이 warning/error follow-up bucket과 구분된다.
+3. 관련 테스트가 새 bucket 또는 field semantics를 검증한다.
+4. validator는 여전히 report-only고 기존 API/frontend 동작은 변하지 않는다.
 
 # Constraints
 
 - ingestion blocking gate는 도입하지 않는다.
 - OCR runtime, Playwright runtime은 이번 task 범위에서 제외한다.
-- 기존 normalizer/field mapping 패턴을 재사용한다.
+- 기존 validator 및 OCR preflight 결과를 재사용한다.
 
 # Non-goals
 
 - Bedrock/Step Functions류 오케스트레이션 도입
 - OCR 실제 실행
 - DB schema 대개편
+- 이미 추가된 field-gap audit 자체를 다시 설계하는 작업
 
 # Test Points
 
-- validator issue code 회귀
-- field source evidence 보강 테스트
-- quality report CLI 출력 검증
-- representative fixture 기반 golden 성격 테스트
+- validator issue severity 회귀
+- OCR preflight CLI/source summary bucket 검증
+- `backend/tests/test_collector_quality_validator.py`
+- `backend/tests/test_html_collector_diagnostic_cli.py`
 
 # Risks
 
