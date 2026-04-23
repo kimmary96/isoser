@@ -30,6 +30,37 @@ PLAYWRIGHT_PROBE_CLASSIFICATIONS = {
     "playwright_probe_candidate",
     "selector_or_dynamic_probe_candidate",
 }
+OCR_PROBE_CANDIDATE_CLASSIFICATIONS = {
+    "ocr_probe_candidate",
+}
+POSTER_ATTACHMENT_CLASSIFICATIONS = {
+    "poster_or_attachment_candidate",
+}
+ATTACHMENT_EXTENSIONS = (
+    ".pdf",
+    ".hwp",
+    ".hwpx",
+    ".doc",
+    ".docx",
+    ".ppt",
+    ".pptx",
+    ".zip",
+)
+IMAGE_EXTENSIONS = (
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".gif",
+    ".webp",
+    ".bmp",
+    ".tif",
+    ".tiff",
+)
+ATTACHMENT_KEYWORDS = ("첨부", "붙임", "다운로드", "download", "filedown", "파일")
+IMAGE_KEYWORDS = ("포스터", "홍보물", "카드뉴스", "이미지", "poster")
+SHORT_LIST_TEXT_THRESHOLD = 120
+LOW_DETAIL_TEXT_THRESHOLD = 300
+SUFFICIENT_DETAIL_TEXT_THRESHOLD = 700
 
 
 def configure_stdout() -> None:
@@ -55,6 +86,8 @@ def build_html_collector_report(
     collectors: Iterable[Any] | None = None,
     *,
     source_filters: Iterable[str] | None = None,
+    include_ocr_probe: bool = False,
+    ocr_sample_limit: int = 3,
 ) -> dict[str, Any]:
     started = perf_counter()
     filters = [value.lower() for value in (source_filters or []) if value]
@@ -62,14 +95,25 @@ def build_html_collector_report(
     for collector in html_collectors(collectors):
         if filters and not _matches_filters(collector, filters):
             continue
-        rows.append(build_source_diagnostic(collector))
+        rows.append(
+            build_source_diagnostic(
+                collector,
+                include_ocr_probe=include_ocr_probe,
+                ocr_sample_limit=ocr_sample_limit,
+            )
+        )
 
     summary: dict[str, int] = {}
+    ocr_summary: dict[str, int] = {}
     for row in rows:
         classification = str(row["classification"])
         summary[classification] = summary.get(classification, 0) + 1
+        ocr_probe = row.get("ocr_probe")
+        if isinstance(ocr_probe, dict):
+            ocr_classification = str(ocr_probe.get("classification") or "unknown")
+            ocr_summary[ocr_classification] = ocr_summary.get(ocr_classification, 0) + 1
 
-    return {
+    report = {
         "mode": "read-only-live-diagnostic",
         "started_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         "duration_ms": round((perf_counter() - started) * 1000, 2),
@@ -82,9 +126,34 @@ def build_html_collector_report(
         ],
         "sources": rows,
     }
+    if include_ocr_probe:
+        report["ocr_probe"] = {
+            "enabled": True,
+            "sample_limit": ocr_sample_limit,
+            "mode": "read-only-detail-html-preflight",
+        }
+        report["ocr_summary"] = dict(sorted(ocr_summary.items()))
+        report["ocr_probe_candidates"] = [
+            row
+            for row in rows
+            if isinstance(row.get("ocr_probe"), dict)
+            and row["ocr_probe"].get("classification") in OCR_PROBE_CANDIDATE_CLASSIFICATIONS
+        ]
+        report["poster_or_attachment_candidates"] = [
+            row
+            for row in rows
+            if isinstance(row.get("ocr_probe"), dict)
+            and row["ocr_probe"].get("classification") in POSTER_ATTACHMENT_CLASSIFICATIONS
+        ]
+    return report
 
 
-def build_source_diagnostic(collector: BaseHtmlCollector) -> dict[str, Any]:
+def build_source_diagnostic(
+    collector: BaseHtmlCollector,
+    *,
+    include_ocr_probe: bool = False,
+    ocr_sample_limit: int = 3,
+) -> dict[str, Any]:
     started = perf_counter()
     row: dict[str, Any] = {
         "class_name": collector.__class__.__name__,
@@ -120,6 +189,12 @@ def build_source_diagnostic(collector: BaseHtmlCollector) -> dict[str, Any]:
             "success" if raw_items else "empty",
         )
         row["last_collect_message"] = getattr(collector, "last_collect_message", "")
+        if include_ocr_probe:
+            row["ocr_probe"] = build_ocr_probe(
+                collector,
+                raw_items,
+                sample_limit=ocr_sample_limit,
+            )
     except Exception as exc:
         row["raw_count"] = 0
         row["normalized_count"] = 0
@@ -141,6 +216,258 @@ def build_source_diagnostic(collector: BaseHtmlCollector) -> dict[str, Any]:
     row["recommendation"] = recommendation
     row["playwright_probe_candidate"] = classification in PLAYWRIGHT_PROBE_CLASSIFICATIONS
     return row
+
+
+def build_ocr_probe(
+    collector: BaseHtmlCollector,
+    raw_items: list[dict[str, Any]],
+    *,
+    sample_limit: int = 3,
+) -> dict[str, Any]:
+    profiles = [_build_item_probe_profile(item) for item in raw_items]
+    short_list_text_count = sum(
+        1 for profile in profiles if profile["list_text_length"] < SHORT_LIST_TEXT_THRESHOLD
+    )
+    attachment_signal_count = sum(1 for profile in profiles if profile["attachment_signal"])
+    image_signal_count = sum(1 for profile in profiles if profile["image_signal"])
+
+    detail_results: list[dict[str, Any]] = []
+    should_probe_details = bool(profiles) and (
+        short_list_text_count / len(profiles) >= 0.5
+        or attachment_signal_count > 0
+        or image_signal_count > 0
+    )
+    if should_probe_details:
+        for profile in profiles[: max(sample_limit, 0)]:
+            detail_results.append(_probe_detail_html_for_ocr(collector, profile))
+
+    detail_checked = sum(1 for result in detail_results if result["status"] == "fetched")
+    detail_fetch_failed = sum(1 for result in detail_results if result["status"] == "fetch_failed")
+    detail_attachment_count = sum(
+        int(result.get("attachment_link_count") or 0) for result in detail_results
+    )
+    detail_low_text_image_count = sum(
+        1
+        for result in detail_results
+        if result["status"] == "fetched"
+        and int(result.get("visible_text_length") or 0) < LOW_DETAIL_TEXT_THRESHOLD
+        and int(result.get("image_count") or 0) > 0
+    )
+    detail_text_sufficient_count = sum(
+        1
+        for result in detail_results
+        if result["status"] == "fetched"
+        and int(result.get("visible_text_length") or 0) >= SUFFICIENT_DETAIL_TEXT_THRESHOLD
+    )
+
+    classification, evidence, recommendation = classify_ocr_probe(
+        item_count=len(raw_items),
+        short_list_text_count=short_list_text_count,
+        attachment_signal_count=attachment_signal_count,
+        image_signal_count=image_signal_count,
+        detail_checked=detail_checked,
+        detail_fetch_failed=detail_fetch_failed,
+        detail_attachment_count=detail_attachment_count,
+        detail_low_text_image_count=detail_low_text_image_count,
+        detail_text_sufficient_count=detail_text_sufficient_count,
+    )
+    return {
+        "classification": classification,
+        "evidence": evidence,
+        "recommendation": recommendation,
+        "item_count": len(raw_items),
+        "short_list_text_count": short_list_text_count,
+        "attachment_signal_count": attachment_signal_count,
+        "image_signal_count": image_signal_count,
+        "detail_checked": detail_checked,
+        "detail_fetch_failed": detail_fetch_failed,
+        "detail_attachment_count": detail_attachment_count,
+        "detail_low_text_image_count": detail_low_text_image_count,
+        "detail_text_sufficient_count": detail_text_sufficient_count,
+        "samples": detail_results,
+    }
+
+
+def classify_ocr_probe(
+    *,
+    item_count: int,
+    short_list_text_count: int,
+    attachment_signal_count: int,
+    image_signal_count: int,
+    detail_checked: int,
+    detail_fetch_failed: int,
+    detail_attachment_count: int,
+    detail_low_text_image_count: int,
+    detail_text_sufficient_count: int,
+) -> tuple[str, list[str], str]:
+    evidence = [
+        f"items={item_count}",
+        f"short_list_text={short_list_text_count}",
+        f"attachment_signals={attachment_signal_count}",
+        f"image_signals={image_signal_count}",
+    ]
+    if detail_checked or detail_fetch_failed:
+        evidence.extend(
+            [
+                f"detail_checked={detail_checked}",
+                f"detail_fetch_failed={detail_fetch_failed}",
+                f"detail_attachments={detail_attachment_count}",
+                f"detail_low_text_images={detail_low_text_image_count}",
+                f"detail_text_sufficient={detail_text_sufficient_count}",
+            ]
+        )
+
+    if item_count == 0:
+        return (
+            "no_items_no_ocr_probe",
+            evidence,
+            "수집 item이 없어 OCR 후보를 판단할 수 없다. 먼저 parse-empty/request failure 원인을 분리한다.",
+        )
+
+    if detail_low_text_image_count > 0:
+        return (
+            "ocr_probe_candidate",
+            evidence,
+            "detail HTML 본문 텍스트가 짧고 이미지가 있어 포스터형 공고 가능성이 있다. OCR 런타임 도입 전 source별 샘플 snapshot과 필드 누락률을 확인한다.",
+        )
+
+    if attachment_signal_count > 0 or image_signal_count > 0 or detail_attachment_count > 0:
+        return (
+            "poster_or_attachment_candidate",
+            evidence,
+            "목록 또는 detail HTML에서 이미지/첨부 신호가 있다. OCR은 source별 opt-in으로 두고, 먼저 해당 첨부/이미지에서 필수 필드가 실제로 빠지는지 샘플 검증한다.",
+        )
+
+    if short_list_text_count > 0 and detail_checked == 0:
+        return (
+            "detail_probe_inconclusive",
+            evidence,
+            "목록 텍스트가 짧지만 detail HTML 확인이 부족하다. OCR보다 detail page text/attachment snapshot 진단을 먼저 보강한다.",
+        )
+
+    if short_list_text_count > 0 and detail_checked > 0 and detail_text_sufficient_count == 0:
+        return (
+            "detail_probe_inconclusive",
+            evidence,
+            "목록 텍스트가 짧고 샘플 detail에서도 충분한 본문 텍스트를 확인하지 못했다. OCR보다 detail parser/selector 보강 가능성을 먼저 확인한다.",
+        )
+
+    if detail_checked > 0 and detail_text_sufficient_count == 0 and detail_fetch_failed:
+        return (
+            "detail_probe_inconclusive",
+            evidence,
+            "detail HTML fetch가 실패했거나 충분한 텍스트를 확인하지 못했다. 네트워크/권한/selector drift를 OCR 후보 판단보다 먼저 분리한다.",
+        )
+
+    return (
+        "text_sufficient_no_ocr",
+        evidence,
+        "현재 목록/detail HTML 텍스트로 수집 근거가 충분하거나 이미지/첨부 신호가 없다. OCR opt-in 대상에서 제외한다.",
+    )
+
+
+def _build_item_probe_profile(item: dict[str, Any]) -> dict[str, Any]:
+    title = _normalize_space(str(item.get("title") or ""))
+    link = str(item.get("link") or "").strip()
+    raw_text = _raw_to_text(item.get("raw"))
+    combined_text = _normalize_space(" ".join([title, raw_text]))
+    haystack = " ".join([title, link, raw_text]).lower()
+    return {
+        "title": title,
+        "link": link,
+        "list_text_length": len(combined_text),
+        "attachment_signal": _has_attachment_signal(haystack),
+        "image_signal": _has_image_signal(haystack),
+    }
+
+
+def _probe_detail_html_for_ocr(
+    collector: BaseHtmlCollector,
+    profile: dict[str, Any],
+) -> dict[str, Any]:
+    link = str(profile.get("link") or "")
+    result: dict[str, Any] = {
+        "title": str(profile.get("title") or "")[:120],
+        "link": link,
+        "list_text_length": profile.get("list_text_length", 0),
+        "attachment_signal": bool(profile.get("attachment_signal")),
+        "image_signal": bool(profile.get("image_signal")),
+    }
+    if not link.startswith(("http://", "https://")):
+        return {**result, "status": "skipped_non_http"}
+    if _url_has_extension(link, ATTACHMENT_EXTENSIONS):
+        return {
+            **result,
+            "status": "direct_attachment",
+            "visible_text_length": 0,
+            "image_count": 0,
+            "attachment_link_count": 1,
+        }
+    if _url_has_extension(link, IMAGE_EXTENSIONS):
+        return {
+            **result,
+            "status": "direct_image",
+            "visible_text_length": 0,
+            "image_count": 1,
+            "attachment_link_count": 0,
+        }
+
+    try:
+        html = collector.fetch_html(link)
+    except Exception as exc:
+        return {**result, "status": "fetch_failed", "error": f"{type(exc).__name__}: {exc}"}
+
+    soup = collector.soup_from_html(html)
+    for tag in soup.select("script, style, noscript"):
+        tag.decompose()
+    visible_text = _normalize_space(soup.get_text(" ", strip=True))
+    image_count = len([node for node in soup.select("img[src]") if node.get("src")])
+    attachment_links = []
+    for anchor in soup.select("a[href]"):
+        href = str(anchor.get("href") or "")
+        anchor_text = _normalize_space(anchor.get_text(" ", strip=True))
+        if _has_attachment_signal(f"{href} {anchor_text}".lower()):
+            attachment_links.append(href)
+    return {
+        **result,
+        "status": "fetched",
+        "visible_text_length": len(visible_text),
+        "image_count": image_count,
+        "attachment_link_count": len(attachment_links),
+    }
+
+
+def _raw_to_text(raw: Any) -> str:
+    if isinstance(raw, dict):
+        return _normalize_space(" ".join(str(value or "") for value in raw.values()))
+    if isinstance(raw, list):
+        return _normalize_space(" ".join(str(value or "") for value in raw))
+    return _normalize_space(str(raw or ""))
+
+
+def _has_attachment_signal(value: str) -> bool:
+    lowered = value.lower()
+    return any(token in lowered for token in ATTACHMENT_KEYWORDS) or _url_has_extension(
+        lowered,
+        ATTACHMENT_EXTENSIONS,
+    )
+
+
+def _has_image_signal(value: str) -> bool:
+    lowered = value.lower()
+    return any(token in lowered for token in IMAGE_KEYWORDS) or _url_has_extension(
+        lowered,
+        IMAGE_EXTENSIONS,
+    )
+
+
+def _url_has_extension(value: str, extensions: tuple[str, ...]) -> bool:
+    lowered = value.lower().split("?", 1)[0].split("#", 1)[0]
+    return any(lowered.endswith(extension) for extension in extensions)
+
+
+def _normalize_space(value: str) -> str:
+    return re.sub(r"\s+", " ", value or "").strip()
 
 
 def classify_source(
@@ -275,6 +602,57 @@ def render_markdown_report(report: dict[str, Any]) -> str:
             ]
         )
 
+    if report.get("ocr_probe", {}).get("enabled"):
+        ocr_candidates = report.get("ocr_probe_candidates", [])
+        poster_or_attachment_candidates = report.get("poster_or_attachment_candidates", [])
+        lines.extend(
+            [
+                "## OCR / Image Preflight",
+                "",
+                f"- Mode: `{report['ocr_probe']['mode']}`",
+                f"- Detail sample limit per source: `{report['ocr_probe']['sample_limit']}`",
+                f"- OCR runtime opt-in candidates: `{len(ocr_candidates)}`",
+                f"- Poster/attachment review candidates: `{len(poster_or_attachment_candidates)}`",
+                "",
+            ]
+        )
+        for classification, count in report.get("ocr_summary", {}).items():
+            lines.append(f"- `{classification}`: `{count}`")
+
+        lines.extend(
+            [
+                "",
+                "| Source | OCR classification | Evidence |",
+                "| --- | --- | --- |",
+            ]
+        )
+        for row in report["sources"]:
+            ocr_probe = row.get("ocr_probe") or {}
+            if not isinstance(ocr_probe, dict):
+                continue
+            lines.append(
+                "| {source} | {classification} | {evidence} |".format(
+                    source=_escape_table(str(row["source"])),
+                    classification=ocr_probe.get("classification", "unknown"),
+                    evidence=_escape_table(", ".join(str(item) for item in ocr_probe.get("evidence", []))),
+                )
+            )
+
+        lines.extend(["", "## OCR Decision", ""])
+        if ocr_candidates:
+            lines.append(
+                "Keep OCR behind source-specific opt-in for the listed candidates after confirming field gaps from sampled image or attachment snapshots."
+            )
+        elif poster_or_attachment_candidates:
+            lines.append(
+                "No source currently has enough evidence for OCR runtime adoption. Poster/attachment signals exist, but sampled detail HTML still exposes enough text; verify field gaps before proposing source-specific OCR opt-in."
+            )
+        else:
+            lines.append(
+                "No source currently has enough evidence for OCR runtime adoption. Keep OCR work at read-only image/attachment preflight until poster or attachment-centered field gaps are confirmed."
+            )
+        lines.append("")
+
     return "\n".join(lines).rstrip() + "\n"
 
 
@@ -312,13 +690,28 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         help="Optional Markdown report path.",
     )
+    parser.add_argument(
+        "--include-ocr-probe",
+        action="store_true",
+        help="Also run a read-only image/attachment preflight over sampled detail HTML.",
+    )
+    parser.add_argument(
+        "--ocr-sample-limit",
+        type=int,
+        default=3,
+        help="Maximum detail pages to inspect per source when --include-ocr-probe is set.",
+    )
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     configure_stdout()
     args = build_parser().parse_args(argv)
-    report = build_html_collector_report(source_filters=args.source)
+    report = build_html_collector_report(
+        source_filters=args.source,
+        include_ocr_probe=args.include_ocr_probe,
+        ocr_sample_limit=args.ocr_sample_limit,
+    )
     write_json_report(report, args.output)
     if args.markdown_output:
         write_markdown_report(report, args.markdown_output)

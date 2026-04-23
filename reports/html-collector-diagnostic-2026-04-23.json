@@ -1,6 +1,6 @@
 {
   "collector_count": 14,
-  "duration_ms": 12630.91,
+  "duration_ms": 13599.05,
   "mode": "read-only-live-diagnostic",
   "playwright_probe_candidates": [],
   "sources": [
@@ -8,7 +8,7 @@
       "class_name": "SbaPostingCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 2355.32,
+      "duration_ms": 2347.15,
       "evidence": [
         "status=success",
         "raw=10",
@@ -35,7 +35,7 @@
       "class_name": "Seoul50PlusCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 596.65,
+      "duration_ms": 486.12,
       "evidence": [
         "status=success",
         "raw=12",
@@ -62,7 +62,7 @@
       "class_name": "SeoulJobPortalCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 1494.86,
+      "duration_ms": 1470.59,
       "evidence": [
         "status=success",
         "raw=10",
@@ -91,7 +91,7 @@
       "class_name": "CampusTownCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 242.24,
+      "duration_ms": 232.85,
       "evidence": [
         "status=success",
         "raw=20",
@@ -118,7 +118,7 @@
       "class_name": "SeoulWomanUpCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 128.87,
+      "duration_ms": 127.76,
       "evidence": [
         "status=success",
         "raw=18",
@@ -145,7 +145,7 @@
       "class_name": "SesacCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 223.81,
+      "duration_ms": 225.44,
       "evidence": [
         "status=success",
         "raw=12",
@@ -172,7 +172,7 @@
       "class_name": "KisedCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 339.79,
+      "duration_ms": 376.3,
       "evidence": [
         "status=success",
         "raw=39",
@@ -199,7 +199,7 @@
       "class_name": "KobiaCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 48.04,
+      "duration_ms": 43.08,
       "evidence": [
         "status=success",
         "raw=10",
@@ -226,7 +226,7 @@
       "class_name": "GuroCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 103.07,
+      "duration_ms": 103.96,
       "evidence": [
         "status=success",
         "raw=4",
@@ -252,7 +252,7 @@
       "class_name": "NowonCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 732.86,
+      "duration_ms": 627.93,
       "evidence": [
         "status=success",
         "raw=10",
@@ -279,7 +279,7 @@
       "class_name": "DobongCollector",
       "classification": "partial_parse_empty_monitor",
       "collection_method": "web_crawl",
-      "duration_ms": 1807.53,
+      "duration_ms": 1843.62,
       "evidence": [
         "status=success",
         "raw=1",
@@ -307,7 +307,7 @@
       "class_name": "DobongStartupCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 655.88,
+      "duration_ms": 1606.84,
       "evidence": [
         "status=success",
         "raw=33",
@@ -335,7 +335,7 @@
       "class_name": "MapoCollector",
       "classification": "healthy_static_html",
       "collection_method": "web_crawl",
-      "duration_ms": 282.81,
+      "duration_ms": 283.48,
       "evidence": [
         "status=success",
         "raw=6",
@@ -362,7 +362,7 @@
       "class_name": "SeongdongCollector",
       "classification": "partial_parse_empty_monitor",
       "collection_method": "web_crawl",
-      "duration_ms": 3618.86,
+      "duration_ms": 3823.62,
       "evidence": [
         "status=success",
         "raw=5",
@@ -387,7 +387,7 @@
       "tier": 4
     }
   ],
-  "started_at": "2026-04-23T22:37:32+0900",
+  "started_at": "2026-04-23T22:47:25+0900",
   "summary": {
     "healthy_static_html": 12,
     "partial_parse_empty_monitor": 2

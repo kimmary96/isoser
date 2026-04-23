@@ -4,8 +4,8 @@
 
 대상 범위:
 
-- 적용 완료: 1. 품질 validator / dry-run summary, 2. 품질 리포트 CLI, 3. 골든 fixture, 3-확장. 원문 필드 근거 보존, 4. 동적 페이지 Retrieve 사전 진단 체계
-- 미적용: 5. 이미지/OCR
+- 적용 완료: 1. 품질 validator / dry-run summary, 2. 품질 리포트 CLI, 3. 골든 fixture, 3-확장. 원문 필드 근거 보존, 4. 동적 페이지 Retrieve 사전 진단 체계, 5. 이미지/OCR 사전 진단 체계
+- 미적용: Playwright fallback 런타임, OCR 런타임
 
 참고 사례:
 
@@ -15,7 +15,7 @@
 
 부트텐트는 Amazon Bedrock과 AWS Step Functions 기반 자동화 파이프라인으로 교육과정 등록 시간을 평균 약 69.0% 줄이고, 골든 데이터셋 기준 필드 정확도 88.7%를 기록했다. 또한 하이브리드 Vision OCR 구성으로 Claude 4.5 Haiku 단독 대비 OCR 비용을 약 40% 낮춘 사례를 제시했다.
 
-우리 프로젝트는 Bedrock, Step Functions, OCR을 도입하지 않고 먼저 데이터 품질 관측성과 회귀 방지 장치를 차용했다. 1~3번 적용의 성과는 즉시 처리 속도나 OCR 비용 절감이 아니라, 수집 데이터가 서비스 DB에 들어가기 전후로 품질 문제를 구조화해서 확인하고, 원문 근거를 추적하며, 이후 동적 Retrieve/OCR 도입 여부를 판단할 수 있는 측정 기반을 만든 것이다. 4번은 Playwright 자체를 바로 붙이지 않고, HTML collector별 request failure, parse-empty, normalized row 회수 여부, 실행 시간을 반복 측정하는 read-only 진단 체계로 구현했다.
+우리 프로젝트는 Bedrock, Step Functions, OCR 런타임을 도입하지 않고 먼저 데이터 품질 관측성과 회귀 방지 장치를 차용했다. 1~3번 적용의 성과는 즉시 처리 속도나 OCR 비용 절감이 아니라, 수집 데이터가 서비스 DB에 들어가기 전후로 품질 문제를 구조화해서 확인하고, 원문 근거를 추적하며, 이후 동적 Retrieve/OCR 도입 여부를 판단할 수 있는 측정 기반을 만든 것이다. 4번은 Playwright 자체를 바로 붙이지 않고, HTML collector별 request failure, parse-empty, normalized row 회수 여부, 실행 시간을 반복 측정하는 read-only 진단 체계로 구현했다. 5번은 OCR 파이프라인 대신 detail HTML의 이미지/첨부/본문 텍스트 충분성을 샘플링해 source별 OCR opt-in 근거를 분리하는 사전 진단으로 제한했다.
 
 현재 단계에서 정량적으로 주장 가능한 성과는 다음과 같다.
 
@@ -27,9 +27,10 @@
 | 회귀 기준 | 대표 케이스 기대 결과 없음 | Work24/K-Startup/SeSAC 골든 fixture 4건 추가 | 완료 |
 | 원문 근거 추적 | 정규화 값의 raw field 출처가 불명확 | Work24/K-Startup 핵심 필드에 `compare_meta.field_sources` 추가 | 완료 |
 | 동적 Retrieve 판단 | parse-empty source를 감으로 판단 | HTML collector 진단 CLI로 14개 source 분류 및 소요시간 측정 | 완료 |
+| OCR 필요성 판단 | 이미지/첨부 공고 여부 미분리 | detail HTML 샘플 기반 OCR preflight로 runtime 후보와 첨부 검토 후보 분리 | 완료 |
 | 처리 시간 절감률 | 미계측 | 미계측 | 4~5번 또는 운영 계측 후 산정 |
 | 필드 정확도 | 미계측 | 골든 fixture 기반 회귀 검사는 가능, 전체 정확도는 미계측 | 운영 샘플링 필요 |
-| OCR 비용 절감 | OCR 미사용 | OCR 미사용 | 5번 적용 후 산정 |
+| OCR 비용 절감 | OCR 미사용 | OCR 미사용 | OCR runtime opt-in 후 산정 |
 
 ## Boottent 사례와 우리 적용 범위 비교
 
@@ -37,7 +38,7 @@
 | --- | --- | --- | --- |
 | Fetch URL 검증 | 불필요한 후속 처리 방지 | 부분 적용 | 기존 collector 흐름 유지, 품질 validator로 후속 진단 강화 |
 | Retrieve | Playwright로 동적 페이지 렌더링 | 부분 적용 | Playwright 도입 전 HTML collector별 parse-empty/request failure/실행시간 진단 CLI로 opt-in 근거 생성 |
-| Vision OCR | 하이브리드 OCR로 한국어 이미지 처리 | 미적용 | 5번에서 포스터형 공고 source 확인 시 검토 |
+| Vision OCR | 하이브리드 OCR로 한국어 이미지 처리 | 사전 진단 | OCR runtime 없이 이미지/첨부 중심 source 후보와 본문 충분 source를 분리 |
 | Extract + Validation Agent | 골든 데이터셋 기준 필드 정확도/오류 검출 | 부분 적용 | LLM agent 대신 결정론적 validator와 golden fixture 적용 |
 | Ingest | 추출 결과 DB 적재 | 기존 유지 | upsert 경로 변경 없음 |
 | Update/Notify | 상태 전이와 알림 | 미적용 | 현재 범위 아님 |
@@ -196,7 +197,7 @@
 | 지표 | 값 |
 | --- | ---: |
 | HTML collector 수 | 14 |
-| 전체 진단 소요 시간 | 12,630.91 ms |
+| 전체 진단 소요 시간 | 13,599.05 ms |
 | `healthy_static_html` | 12 |
 | `partial_parse_empty_monitor` | 2 |
 | 즉시 Playwright probe 후보 | 0 |
@@ -206,11 +207,11 @@
 
 | Source | Duration ms | Classification | Raw / Normalized |
 | --- | ---: | --- | --- |
-| 서울청년센터 성동 | 3,618.86 | `partial_parse_empty_monitor` | 5 / 5 |
-| 서울경제진흥원 사업신청 | 2,355.32 | `healthy_static_html` | 10 / 10 |
-| 도봉구청 일자리경제과 | 1,807.53 | `partial_parse_empty_monitor` | 1 / 1 |
-| 서울일자리포털 | 1,494.86 | `healthy_static_html` | 10 / 10 |
-| 노원구 청년일자리센터 청년내일 | 732.86 | `healthy_static_html` | 10 / 10 |
+| 서울청년센터 성동 | 3,823.62 | `partial_parse_empty_monitor` | 5 / 5 |
+| 서울경제진흥원 사업신청 | 2,347.15 | `healthy_static_html` | 10 / 10 |
+| 도봉구청 일자리경제과 | 1,843.62 | `partial_parse_empty_monitor` | 1 / 1 |
+| 도봉구청년창업센터 | 1,606.84 | `healthy_static_html` | 33 / 33 |
+| 서울일자리포털 | 1,470.59 | `healthy_static_html` | 10 / 10 |
 
 성과 해석:
 
@@ -231,9 +232,72 @@
 - partial parse-empty URL의 장기 추세
 - 실제 Playwright opt-in 이후 fallback 성공률과 추가 지연 시간
 
+## 5번 적용 효과: 이미지/OCR 사전 진단 체계
+
+변경 파일:
+
+- `scripts/html_collector_diagnostic.py`
+- `backend/tests/test_html_collector_diagnostic_cli.py`
+- `reports/html-collector-ocr-diagnostic-2026-04-23.json`
+- `reports/html-collector-ocr-diagnostic-2026-04-23.md`
+
+향상된 점:
+
+- 기존 HTML collector live 결과를 재사용하되, `--include-ocr-probe` 옵션을 켰을 때만 detail HTML을 source별 최대 2건 샘플링한다.
+- 샘플 detail의 visible text 길이, 이미지 수, 첨부 링크 수를 읽기 전용으로 계산해 `ocr_probe_candidate`, `poster_or_attachment_candidate`, `text_sufficient_no_ocr`, `detail_probe_inconclusive`로 분류한다.
+- OCR 런타임이나 이미지 다운로드/처리는 추가하지 않고, source별 opt-in 필요성을 판단할 근거만 남긴다.
+
+2026-04-23 live 측정 결과:
+
+| 지표 | 값 |
+| --- | ---: |
+| HTML collector 수 | 14 |
+| OCR preflight 포함 진단 소요 시간 | 20,464.8 ms |
+| OCR runtime opt-in 후보 | 0 |
+| poster/attachment 검토 후보 | 7 |
+| detail/parser 보강 우선 | 3 |
+| text sufficient / no OCR | 4 |
+
+poster/attachment 검토 후보:
+
+- 서울일자리포털
+- 서울캠퍼스타운
+- KOBIA
+- 노원구 청년일자리센터 청년내일
+- 도봉구청 일자리경제과
+- 도봉구청년창업센터
+- 마포구고용복지지원센터
+
+detail/parser 보강 우선 source:
+
+- 서울시 50플러스
+- 청년취업사관학교 SeSAC
+- KISED
+
+성과 해석:
+
+- 현재 source 중 OCR runtime을 바로 opt-in할 만큼 명확한 포스터형/이미지 중심 공고는 없다.
+- poster/attachment 후보 7개 source는 detail HTML에 첨부/이미지 신호가 있지만, 샘플 detail에서 본문 텍스트도 충분히 노출됐다. 따라서 OCR보다 필드 누락률과 기존 detail parser 보강 가능성을 먼저 봐야 한다.
+- `detail_probe_inconclusive` 3개 source는 목록 텍스트가 짧거나 샘플 detail에서 충분한 본문 텍스트를 확인하지 못했으므로, OCR보다 detail page selector/parser 진단이 우선이다.
+
+현재 측정 가능한 지표:
+
+- source별 short list text count
+- source별 detail sample fetch count/failure count
+- detail visible text length 충분 여부
+- detail attachment/image signal count
+- OCR runtime opt-in 후보 수
+
+아직 미계측인 지표:
+
+- 첨부 파일 본문에서만 존재하는 필드 비율
+- OCR 적용 시 실제 field fill lift
+- OCR 비용과 지연 시간
+- OCR 결과의 mismatch/hallucination 비율
+
 ## 현재 단계의 성과 해석
 
-이번 1~4번 작업은 처리량 증가나 사용자-facing 속도 개선보다 품질/수집 가능성 측정 기반을 높인 작업이다. 따라서 "프로그램 목록 API가 빨라졌다"거나 "등록 시간이 몇 퍼센트 줄었다"는 식의 성능 개선으로 표현하면 부정확하다.
+이번 1~5번 사전 진단 작업은 처리량 증가나 사용자-facing 속도 개선보다 품질/수집 가능성 측정 기반을 높인 작업이다. 따라서 "프로그램 목록 API가 빨라졌다"거나 "등록 시간이 몇 퍼센트 줄었다"는 식의 성능 개선으로 표현하면 부정확하다.
 
 정확히 표현할 수 있는 성과는 다음과 같다.
 
@@ -242,9 +306,10 @@
 - 대표 source의 품질 정책을 골든 fixture로 고정해 회귀 감지가 가능해졌다.
 - 정규화 값의 원문 필드 출처를 보존해 디버깅과 신뢰도 판단 기반을 만들었다.
 - 동적 Retrieve는 Playwright 도입 전 source별 필요성을 측정하는 진단 체계로 전환했고, 현재 즉시 후보가 없음을 확인했다.
+- 이미지/OCR은 런타임 도입 전 source별 본문 충분성, 첨부/이미지 신호, detail probe 부족 상태를 분리했고, 현재 즉시 OCR opt-in 후보가 없음을 확인했다.
 - Bedrock/Step Functions/OCR 없이도 Boottent 사례의 "검증 우선" 원칙을 낮은 리스크로 차용했다.
 
-## 이후 5번 또는 4번 Playwright Opt-In 시 추가할 측정 항목
+## 이후 OCR 또는 4번 Playwright Opt-In 시 추가할 측정 항목
 
 4번 Playwright opt-in 적용 후 추가할 항목:
 
@@ -255,7 +320,7 @@
 - fallback 적용 후 신규 row 증가량
 - JS 렌더링 필요 source 목록
 
-5번 이미지/OCR 적용 후 추가할 항목:
+OCR runtime opt-in 적용 후 추가할 항목:
 
 - 이미지 기반 공고에서 텍스트 추출 성공률
 - OCR 전후 필드 채움률 변화
@@ -280,11 +345,11 @@
 
 ## 결론
 
-Boottent 사례의 핵심 성과는 자동 입력 시간 절감, 필드 정확도 측정, OCR 비용 최적화였다. 우리 프로젝트의 1~4번 적용은 이 중 "정확도 측정과 검증 기반", 그리고 "동적 Retrieve 도입 여부를 판단하는 사전 관측성"을 먼저 가져온 단계다.
+Boottent 사례의 핵심 성과는 자동 입력 시간 절감, 필드 정확도 측정, OCR 비용 최적화였다. 우리 프로젝트의 1~5번 사전 진단 적용은 이 중 "정확도 측정과 검증 기반", "동적 Retrieve 도입 여부를 판단하는 사전 관측성", "OCR opt-in 여부를 판단하는 사전 관측성"을 먼저 가져온 단계다.
 
 따라서 현재 보고서의 결론은 다음과 같다.
 
 - 현재까지는 사용자-facing 처리 시간 절감률이나 OCR 비용 절감률을 주장하지 않는다.
 - 대신 수집 품질을 구조화해서 측정하고, 회귀를 잡고, 원문 근거를 추적할 수 있게 된 것이 핵심 향상점이다.
 - 4번의 현재 결론은 "즉시 Playwright 후보 없음"이며, 향후 반복 full parse-empty source가 확인되면 fallback 성공률과 추가 지연 시간을 이 문서에 추가한다.
-- 5번 OCR이 적용되면 OCR 비용/정확도 지표를 추가해 Boottent식 성과 리포트로 확장할 수 있다.
+- 5번의 현재 결론은 "즉시 OCR runtime 후보 없음"이며, poster/attachment 검토 후보 7개는 필드 누락률이 확인될 때만 source별 opt-in 계획으로 분리한다.

@@ -2830,4 +2830,8 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - AWS/Bedrock 파이프라인 차용 후보 4번인 dynamic retrieve를 바로 Playwright 도입으로 진행하지 않고, source별 opt-in 근거를 만들기 위한 HTML collector read-only 진단 체계로 구현함
   - `BaseHtmlCollector.collect_url_items()`를 추가해 Tier 2/3/4 HTML collector가 URL별 request failure, parse-empty, parse failure를 공통 `last_collect_message`로 남기도록 정리함
   - `scripts/html_collector_diagnostic.py` CLI를 추가해 HTML collector live dry-run 결과를 `healthy_static_html`, `partial_parse_empty_monitor`, `playwright_probe_candidate` 등으로 분류하고 JSON/Markdown 리포트를 저장하게 함
-  - 전체/source별 `duration_ms`를 리포트에 남겨 2026-04-23 live 기준 14개 HTML collector 진단 12,630.91ms, 즉시 Playwright fallback 후보 0개, partial parse-empty 모니터링 대상 2개로 성능 리포트를 갱신함
+  - 전체/source별 `duration_ms`를 리포트에 남겨 2026-04-23 live 기준 14개 HTML collector 진단 13,599.05ms, 즉시 Playwright fallback 후보 0개, partial parse-empty 모니터링 대상 2개로 성능 리포트를 갱신함
+- 2026-04-23: `scripts/html_collector_diagnostic.py`, `backend/tests/test_html_collector_diagnostic_cli.py`, `docs/current-state.md`, `reports/aws-boottent-adoption-performance-report-2026-04-23.md`, `reports/html-collector-ocr-diagnostic-2026-04-23.json`, `reports/html-collector-ocr-diagnostic-2026-04-23.md`
+  - OCR 런타임을 붙이지 않고 `--include-ocr-probe` 옵션으로 HTML detail page의 visible text, image count, attachment link count를 source별 소량 샘플링하는 read-only preflight를 추가함
+  - OCR runtime opt-in 후보와 poster/attachment 검토 후보를 분리해, 2026-04-23 live 기준 OCR runtime 후보 0개, poster/attachment 검토 후보 7개, detail/parser 보강 우선 3개로 리포트를 남김
+  - 첨부가 있어도 detail HTML 본문이 충분하면 OCR runtime 후보로 올리지 않도록 테스트로 고정함
