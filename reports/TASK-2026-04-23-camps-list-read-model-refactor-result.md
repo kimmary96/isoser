@@ -75,3 +75,9 @@ The existing list flow could request and post-process up to 10,000 source rows f
   - `idx_program_list_index_recommended`
 
 No live Supabase `EXPLAIN` was run in this session because the migration has not been applied to the local/remote database from this shell.
+
+## Run Metadata
+
+- generated_at: `2026-04-23T17:41:52`
+- watcher_exit_code: `0`
+- codex_tokens_used: `101,675`

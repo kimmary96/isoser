@@ -1,0 +1,231 @@
+{
+  "mode": "apply",
+  "start_dt": "20260423",
+  "end_dt": "20261023",
+  "include_seoul": false,
+  "start_from": null,
+  "stop_after": null,
+  "partition_order": [
+    {
+      "code": "41",
+      "name": "경기"
+    },
+    {
+      "code": "28",
+      "name": "인천"
+    },
+    {
+      "code": "51",
+      "name": "강원"
+    },
+    {
+      "code": "43",
+      "name": "충북"
+    },
+    {
+      "code": "44",
+      "name": "충남"
+    },
+    {
+      "code": "36",
+      "name": "세종"
+    },
+    {
+      "code": "30",
+      "name": "대전"
+    },
+    {
+      "code": "45",
+      "name": "전북"
+    },
+    {
+      "code": "47",
+      "name": "경북"
+    },
+    {
+      "code": "27",
+      "name": "대구"
+    },
+    {
+      "code": "48",
+      "name": "경남"
+    },
+    {
+      "code": "31",
+      "name": "울산"
+    },
+    {
+      "code": "26",
+      "name": "부산"
+    },
+    {
+      "code": "46",
+      "name": "전남"
+    },
+    {
+      "code": "29",
+      "name": "광주"
+    },
+    {
+      "code": "50",
+      "name": "제주"
+    }
+  ],
+  "preview": [
+    {
+      "code": "41",
+      "name": "경기",
+      "total_count": 6212,
+      "page_rows": 100,
+      "page_size": 100,
+      "estimated_pages": 63,
+      "within_api_page_limit": true
+    },
+    {
+      "code": "28",
+      "name": "인천",
+      "total_count": 2337,
+      "page_rows": 100,
+      "page_size": 100,
+      "estimated_pages": 24,
+      "within_api_page_limit": true
+    },
+    {
+      "code": "51",
+      "name": "강원",
+      "total_count": 280,
+      "page_rows": 100,
+      "page_size": 100,
+      "estimated_pages": 3,
+      "within_api_page_limit": true
+    },
+    {
+      "code": "43",
+      "name": "충북",
+      "total_count": 284,
+      "page_rows": 100,
+      "page_size": 100,
+      "estimated_pages": 3,
+      "within_api_page_limit": true
+    },
+    {
+      "code": "44",
+      "name": "충남",
+      "total_count": 547,
+      "page_rows": 100,
+      "page_size": 100,
+      "estimated_pages": 6,
+      "within_api_page_limit": true
+    },
+    {
+      "code": "36",
+      "name": "세종",
+      "total_count": 24,
+      "page_rows": 24,
+      "page_size": 100,
+      "estimated_pages": 1,
+      "within_api_page_limit": true
+    },
+    {
+      "code": "30",
+      "name": "대전",
+      "total_count": 610,
+      "page_rows": 100,
+      "page_size": 100,
+      "estimated_pages": 7,
+      "within_api_page_limit": true
+    },
+    {
+      "code": "45",
+      "name": "전북",
+      "total_count": 0,
+      "page_rows": 0,
+      "page_size": 100,
+      "estimated_pages": 0,
+      "within_api_page_limit": true
+    },
+    {
+      "code": "47",
+      "name": "경북",
+      "total_count": 498,
+      "page_rows": 100,
+      "page_size": 100,
+      "estimated_pages": 5,
+      "within_api_page_limit": true
+    },
+    {
+      "code": "27",
+      "name": "대구",
+      "total_count": 1141,
+      "page_rows": 100,
+      "page_size": 100,
+      "estimated_pages": 12,
+      "within_api_page_limit": true
+    },
+    {
+      "code": "48",
+      "name": "경남",
+      "total_count": 973,
+      "page_rows": 100,
+      "page_size": 100,
+      "estimated_pages": 10,
+      "within_api_page_limit": true
+    },
+    {
+      "code": "31",
+      "name": "울산",
+      "total_count": 405,
+      "page_rows": 100,
+      "page_size": 100,
+      "estimated_pages": 5,
+      "within_api_page_limit": true
+    },
+    {
+      "code": "26",
+      "name": "부산",
+      "total_count": 1776,
+      "page_rows": 100,
+      "page_size": 100,
+      "estimated_pages": 18,
+      "within_api_page_limit": true
+    },
+    {
+      "code": "46",
+      "name": "전남",
+      "total_count": 335,
+      "page_rows": 100,
+      "page_size": 100,
+      "estimated_pages": 4,
+      "within_api_page_limit": true
+    },
+    {
+      "code": "29",
+      "name": "광주",
+      "total_count": 694,
+      "page_rows": 100,
+      "page_size": 100,
+      "estimated_pages": 7,
+      "within_api_page_limit": true
+    },
+    {
+      "code": "50",
+      "name": "제주",
+      "total_count": 96,
+      "page_rows": 96,
+      "page_size": 100,
+      "estimated_pages": 1,
+      "within_api_page_limit": true
+    }
+  ],
+  "sync_results": [
+    {
+      "code": "41",
+      "name": "경기",
+      "fetched_rows": 6212,
+      "payload_rows": 6212,
+      "deadline_from_traStartDate_rows": 6212,
+      "upserted_rows": 0,
+      "duration_seconds": 136.333
+    }
+  ]
+}
