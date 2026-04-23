@@ -15,7 +15,6 @@ import {
   type ProgramsFilterChip,
 } from "./programs-filter-bar";
 import { ProgramBookmarkStateProvider } from "./bookmark-state-provider";
-import ProgramCard from "./program-card";
 import ProgramBookmarkButton from "./program-bookmark-button";
 import { deadlineLabel, deadlineTone, isDisplayableProgram, normalizeTextList, scorePercent } from "./program-utils";
 
@@ -475,6 +474,47 @@ function ProgramKeywordList({ keywords }: { keywords: string[] }) {
   );
 }
 
+function UrgentProgramCompactCard({ program }: { program: Program }) {
+  const programId = String(program.id ?? "");
+  const href = programId ? `/programs/${encodeURIComponent(programId)}` : "/programs";
+  const chips = [...getDisplayCategories(program), ...normalizeTextList(program.extracted_keywords), ...normalizeTextList(program.skills)].slice(0, 4);
+  const summary = program.summary || program.description;
+  const deadline = deadlineLabel(program);
+
+  return (
+    <Link
+      href={href}
+      className="block h-full rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-slate-300 hover:shadow-md"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+            {program.source || program.provider || "-"}
+          </p>
+          <h3 className="mt-1.5 line-clamp-2 text-base font-semibold leading-6 text-slate-950">{program.title}</h3>
+        </div>
+        {deadline ? (
+          <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${deadlineTone(program)}`}>
+            {deadline}
+          </span>
+        ) : null}
+      </div>
+
+      {chips.length ? (
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {chips.map((chip) => (
+            <span key={`${programId}-${chip}`} className="rounded-full bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600">
+              {chip}
+            </span>
+          ))}
+        </div>
+      ) : null}
+
+      {summary ? <p className="mt-3 line-clamp-2 text-sm leading-5 text-slate-600">{summary}</p> : null}
+    </Link>
+  );
+}
+
 function ProgramsTable({
   programs,
   isLoggedIn,
@@ -485,21 +525,20 @@ function ProgramsTable({
   bookmarkedProgramIds: string[];
 }) {
   return (
-    <div className="mt-6 overflow-x-auto border-y border-slate-200">
-      <table className="min-w-[1180px] w-full border-collapse text-left text-sm">
+    <div className="mt-6 border-y border-slate-200">
+      <table className="w-full table-fixed border-collapse text-left text-sm">
         <thead className="bg-slate-50 text-xs font-semibold text-slate-500">
           <tr>
             <th scope="col" className="w-12 px-4 py-3" aria-label="찜" />
-            <th scope="col" className="min-w-[260px] px-4 py-3">교육기관명 / 프로그램명</th>
-            <th scope="col" className="min-w-[130px] px-4 py-3">프로그램 과정</th>
-            <th scope="col" className="min-w-[110px] px-4 py-3">모집상태</th>
-            <th scope="col" className="min-w-[100px] px-4 py-3">비용</th>
-            <th scope="col" className="min-w-[140px] px-4 py-3">온·오프라인</th>
-            <th scope="col" className="min-w-[150px] px-4 py-3">학습기간</th>
-            <th scope="col" className="min-w-[110px] px-4 py-3">참여 시간</th>
-            <th scope="col" className="min-w-[260px] px-4 py-3">선발절차·키워드</th>
-            <th scope="col" className="min-w-[120px] px-4 py-3">채용연계</th>
-            <th scope="col" className="min-w-[100px] px-4 py-3">운영기관</th>
+            <th scope="col" className="w-[18%] px-4 py-3">교육기관명 / 프로그램명</th>
+            <th scope="col" className="w-[10%] px-4 py-3">프로그램 과정</th>
+            <th scope="col" className="w-[8%] px-4 py-3">모집상태</th>
+            <th scope="col" className="w-[7%] px-4 py-3">비용</th>
+            <th scope="col" className="w-[9%] px-4 py-3">온·오프라인</th>
+            <th scope="col" className="w-[9%] px-4 py-3">학습기간</th>
+            <th scope="col" className="w-[10%] px-4 py-3">참여 시간</th>
+            <th scope="col" className="w-[22%] px-4 py-3">선발절차·키워드</th>
+            <th scope="col" className="w-[7%] px-4 py-3">운영기관</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100 bg-white">
@@ -510,7 +549,6 @@ function ProgramsTable({
             const categories = getDisplayCategories(program);
             const participation = formatParticipationTime(program);
             const selectionKeywords = extractSelectionKeywords(program);
-            const employmentLink = program.compare_meta?.employment_connection || "-";
             const supportBadge = getSupportBadge(program);
 
             return (
@@ -594,7 +632,6 @@ function ProgramsTable({
                     <span className="text-slate-400">-</span>
                   )}
                 </td>
-                <td className="px-4 py-4 text-slate-600">{employmentLink}</td>
                 <td className="px-4 py-4 text-slate-600">{program.source || "-"}</td>
               </tr>
             );
@@ -707,15 +744,6 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
         offset,
       }),
       listPrograms({
-        q: q || undefined,
-        category: selectedCategory.category !== "전체" ? selectedCategory.category : undefined,
-        category_detail: selectedCategory.id !== "all" ? selectedCategory.id : undefined,
-        regions: selectedRegions,
-        sources: selectedSources,
-        teaching_methods: selectedTeachingMethods,
-        cost_types: selectedCostTypes,
-        participation_times: selectedParticipationTimes,
-        targets: selectedTargets,
         recruiting_only: true,
         sort: "deadline",
         limit: 12,
@@ -766,7 +794,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
     <>
       <LandingHeader />
       <main className="min-h-screen bg-slate-50 text-slate-950">
-        <div className="mx-auto flex max-w-7xl flex-col gap-8 px-6 py-10">
+        <div className="mx-auto flex w-full max-w-[1680px] flex-col gap-8 px-4 py-10 sm:px-6 lg:px-8">
           <ProgramsFilterBar
             q={q}
             selectedCategoryId={selectedCategory.id}
@@ -795,17 +823,13 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                   <div>
                     <p className="text-sm font-semibold uppercase tracking-[0.24em] text-amber-700">Closing Soon</p>
                     <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-950">마감 임박 프로그램</h2>
-                    <p className="mt-2 text-sm text-slate-600">현재 조건에서 7일 이내 마감되는 프로그램 {displayUrgentPrograms.length}개입니다.</p>
+                    <p className="mt-2 text-sm text-slate-600">검색 조건과 별개로 7일 이내 마감되는 프로그램 {displayUrgentPrograms.length}개입니다.</p>
                   </div>
                 </div>
                 <div className="mt-5 flex snap-x gap-4 overflow-x-auto pb-2">
                   {displayUrgentPrograms.map((program) => (
-                    <div key={String(program.id)} className="min-w-[300px] max-w-[340px] snap-start md:min-w-[360px]">
-                      <ProgramCard
-                        program={program}
-                        isLoggedIn={isLoggedIn}
-                        initialBookmarked={bookmarkedProgramIds.includes(String(program.id ?? ""))}
-                      />
+                    <div key={String(program.id)} className="min-w-[300px] max-w-[340px] shrink-0 snap-start md:min-w-[360px]">
+                      <UrgentProgramCompactCard program={program} />
                     </div>
                   ))}
                 </div>
@@ -813,7 +837,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
             ) : null}
 
             <section className="min-w-0">
-              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="w-full rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                 <AdSlot
                   slotId="programs-results-top-banner"
                   className="mb-6 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3"

@@ -101,6 +101,7 @@
 - `frontend`: `npm run lint`: 통과.
 - 브라우저 확인: `http://127.0.0.1:3000/programs?q=ai&sort=deadline` 로드 성공, Next.js error overlay 없음, 본문 nonblank.
 - 실제 API 확인: `GET /programs/count?q=ai&recruiting_only=true` 기준 13건에서 9건으로 감소했고, 바리스타/ERP/포토샵처럼 URL/ID만 `ai`에 걸리던 오탐 항목은 제외됐다.
+- 후속 UI 정리: 전체 프로그램 테이블의 `채용연계` 열은 제거했고, 원본/API 데이터는 유지했다.
 - 실제 데이터 10건 샘플에서 AI/UX/데이터/클라우드 및 일반 창업/비IT 과정을 확인했다.
 - QA 중 `AI`, `BI`, `DB`, `네트워크`, `침해` 같은 짧거나 일반적인 단어가 원본 URL/일반 문장과 매칭되는 오분류를 발견해 규칙을 보수적으로 조정했다.
 

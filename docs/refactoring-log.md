@@ -2570,6 +2570,24 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - 검색, category detail 추론, 목록 파생 카테고리/키워드 생성에서 `compare_meta` 전체 JSON 대신 교육 내용 관련 allowlist key만 사용하도록 조정함
   - 고용24 상세 HTML 파서가 명시된 수강신청/모집/접수 마감일만 `deadline`으로 보강하고, 훈련유형/주야/주말/훈련시간을 `compare_meta`에 보존하도록 확장함
   - 목록 비용 칸은 KDT/산대특/국기/내일배움 같은 실제 지원유형 텍스트가 있으면 작은 badge로 함께 표시함
+- 2026-04-23: `frontend/app/(landing)/programs/page.tsx`, `docs/current-state.md`
+  - 전체 프로그램 테이블에서 채용연계 열을 제거해 목록 가로 폭과 정보 밀도를 줄임
+  - `compare_meta.employment_connection` 데이터/API 필드는 유지해 상세/비교 등 다른 화면의 재사용 가능성은 보존함
+- 2026-04-23: `frontend/app/(landing)/programs/page.tsx`, `docs/current-state.md`
+  - 전체 프로그램 결과 카드가 테이블 행의 최소 폭에 맞춰 함께 넓어지도록 조정함
+  - 테이블 내부만 잘려 스크롤되는 대신 결과 카드 전체가 가로 스크롤되도록 해 카드 끝과 행 끝이 맞게 함
+- 2026-04-23: `frontend/app/(landing)/programs/page.tsx`, `docs/current-state.md`
+  - `/programs` 본문 컨테이너의 고정 최대폭을 제거해 Program Search, Closing Soon, 전체 프로그램 카드가 화면 전체 폭을 같은 기준으로 사용하도록 조정함
+  - 전체 프로그램 테이블은 가로 스크롤 대신 `table-fixed`와 줄바꿈으로 카드 안에서 펼쳐지도록 변경하고, 마감 임박 레일은 그리드 배치로 전환함
+- 2026-04-23: `frontend/app/(landing)/programs/page.tsx`, `docs/current-state.md`
+  - `/programs` 본문 컨테이너를 무제한 폭 대신 `max-w-[1680px]`로 고정해 테이블이 가려지지 않을 정도로 넓게 유지함
+  - Closing Soon은 다시 한 행 가로 레일로 바꾸고 초과 카드는 오른쪽으로 이어지도록 `shrink-0` 카드 배치를 적용함
+- 2026-04-23: `frontend/app/(landing)/programs/page.tsx`, `docs/current-state.md`
+  - Closing Soon 레일에서 일반 `ProgramCard` 대신 마감일, 제목, 핵심 chip, 2줄 설명만 표시하는 압축 카드 렌더링을 사용해 카드 높이를 줄임
+  - 필터와 전체 프로그램 테이블 사이의 세로 간격을 줄여 섹션 전환이 더 이어져 보이도록 조정함
+- 2026-04-23: `frontend/app/(landing)/programs/page.tsx`, `docs/current-state.md`
+  - Closing Soon 조회에서 검색어/필터 파라미터를 제거해 검색 결과와 무관하게 전역 마감임박 섹션이 계속 유지되도록 변경함
+  - 섹션 안내 문구도 검색 조건과 별개인 기준으로 갱신함
 - 2026-04-23: `backend/rag/collector/normalizer.py`, `backend/tests/test_work24_kstartup_field_mapping.py`, `scripts/program_source_diff.py`, `supabase/migrations/20260423112000_refine_programs_search_metadata.sql`, `docs/current-state.md`, `reports/program-detail-data-diagnosis-result.md`
   - 운영 DB에 누락될 수 있는 `category_detail`, `support_type`, `teaching_method`, `raw_data`, `search_text` 등 programs metadata 컬럼을 최신 migration 시작부에서 `add column if not exists`로 보강하도록 정리함
   - collector normalized row가 원본 `raw` payload를 `raw_data`로 넘기도록 추가해 신규 수집/재수집 row에서 원본 API 필드 비교가 가능하게 함
@@ -2597,4 +2615,4 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-23: `backend/rag/collector/program_field_mapping.py`, `backend/rag/source_adapters/work24_supplementary.py`, `backend/rag/source_adapters/work24_training.py`, `backend/rag/collector/work24_collector.py`, `backend/routers/admin.py`, `docs/data/work24-training-sync.md`, `reports/work24-region-code-backfill-result-2026-04-23.md`
   - Work24 공통 코드 API `dtlGb=1` 응답의 `regionCd`/`regionNm`을 파싱해 `trngAreaCd` 중분류 코드를 `성남시 분당구` 같은 시군구명 `region_detail`로 변환하도록 연결함
   - scheduler와 admin sync가 `WORK24_COMMON_CODES_AUTH_KEY`가 있을 때 지역 코드 map을 사용하고, 실패 시 기존 주소/광역 코드 fallback을 유지하도록 보강함
-  - 운영 Supabase Work24 3,438건 중 안전하게 보정 가능한 3,383건과 추가 잔여 309건을 적용해 코드/주소 기반으로 복구 가능한 지역 patch를 0건으로 줄임
+  - 운영 Supabase Work24 3,438건 중 코드/주소 기반으로 안전하게 보정 가능한 3,383건을 적용했고, 타임아웃 후 남은 patch를 이어 적용해 최종 복구 가능 후보를 0건으로 줄임
