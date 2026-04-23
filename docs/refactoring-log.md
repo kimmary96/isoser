@@ -2635,3 +2635,7 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-23: `frontend/lib/programs-page-layout.ts`, `frontend/lib/programs-page-layout.test.ts`, `frontend/app/(landing)/programs/page.tsx`, `reports/programs-page-layout-regression-tests-result.md`
   - `/programs` 마감임박 섹션이 검색/필터와 독립적으로 조회되는 정책을 `buildUrgentProgramsParams()` helper로 분리하고 Vitest로 고정함
   - 마감임박 압축 카드 chip 중복 제거를 `buildUrgentProgramChips()` helper로 분리해 React duplicate key 회귀를 테스트로 방어함
+- 2026-04-23: `backend/rag/collector/program_field_mapping.py`, `backend/rag/source_adapters/work24_training.py`, `backend/routers/admin.py`, `backend/routers/programs.py`, `backend/rag/programs_rag.py`, `scripts/program_backfill.py`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/lib/types/index.ts`, `docs/current-state.md`, `docs/data/work24-training-sync.md`, `reports/work24-training-start-deadline-fallback-result-2026-04-23.md`
+  - Work24 국민내일배움카드 목록 API에 별도 모집마감일이 없어 `traStartDate`를 `deadline`/`compare_meta.application_deadline` fallback으로 저장하고 `compare_meta.deadline_source=traStartDate`를 남기도록 변경함
+  - 기존 고용24 `deadline=end_date` 오염값 무시 방어는 유지하되, `deadline_source=traStartDate`가 있는 1일 과정은 신뢰하도록 backend 목록/추천/backfill/frontend fallback을 함께 보정함
+  - `traStartDate`/`traEndDate` 기반 날짜 메타를 `YYYY-MM-DD`로 정규화해 Python 3.10 날짜 파싱과 D-day 계산이 basic date 문자열에 막히지 않도록 함

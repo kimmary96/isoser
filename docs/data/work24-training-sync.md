@@ -51,6 +51,10 @@ max_pages=2
 
 기존 `area_code`와 `ncs_code` query는 후방 호환으로 유지합니다. `ncs_code`만 전달하면 코드 길이에 따라 `srchNcs1~4` 중 하나로 변환합니다.
 
+## Deadline Mapping
+
+목록 API는 실제 신청 마감일 필드를 제공하지 않습니다. 그래서 `traStartDate`를 모집기한 fallback으로 `programs.deadline`과 `compare_meta.application_deadline`에 저장하고, `compare_meta.deadline_source=traStartDate`를 함께 남깁니다. `traEndDate`는 훈련 종료일이므로 `programs.end_date`와 `compare_meta.training_end_date`로만 저장합니다.
+
 ## Region Normalization
 
 Work24 응답의 `address`와 `trngAreaCd`를 사용해 `programs.region`과 `programs.region_detail`을 채웁니다.
