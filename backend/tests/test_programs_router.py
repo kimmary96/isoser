@@ -57,6 +57,61 @@ def test_build_program_query_params_expands_scan_limit_for_backend_search() -> N
     assert params["search_text"] == "ilike.*패스트캠퍼스*"
 
 
+def test_build_program_query_params_skips_index_for_short_ascii_search() -> None:
+    params = programs._build_program_query_params(
+        select="*",
+        q="ai",
+    )
+
+    assert params["limit"] == str(programs.PROGRAM_SEARCH_SCAN_LIMIT)
+    assert "search_text" not in params
+
+
+def test_program_query_filter_matches_category_detail_aliases() -> None:
+    rows = [
+        {
+            "id": "program-1",
+            "title": "프론트엔드 실무 과정",
+            "category": "IT",
+            "category_detail": "web-development",
+        },
+        {
+            "id": "program-2",
+            "title": "마케팅 실무 과정",
+            "category": "경영",
+            "category_detail": "planning-marketing-other",
+        },
+    ]
+
+    assert [row["id"] for row in programs._filter_program_rows_by_query(rows, "웹개발")] == ["program-1"]
+    assert [row["id"] for row in programs._filter_program_rows_by_query(rows, "data-ai")] == []
+
+
+def test_program_query_filter_matches_category_label_without_middle_dot() -> None:
+    rows = [
+        {
+            "id": "program-1",
+            "title": "비전공자 입문 과정",
+            "category": "AI",
+            "category_detail": "data-ai",
+        }
+    ]
+
+    assert [row["id"] for row in programs._filter_program_rows_by_query(rows, "데이터AI")] == ["program-1"]
+
+
+def test_build_program_query_params_expands_latest_recruiting_scan_limit() -> None:
+    params = programs._build_program_query_params(
+        select="*",
+        recruiting_only=True,
+        sort="latest",
+    )
+
+    assert params["limit"] == str(programs.PROGRAM_SEARCH_SCAN_LIMIT)
+    assert params["deadline"] == f"gte.{date.today().isoformat()}"
+    assert params["order"] == "created_at.desc.nullslast"
+
+
 def test_build_program_query_params_deadline_sort_only_includes_active_programs() -> None:
     params = programs._build_program_query_params(
         select="*",
@@ -143,6 +198,74 @@ def test_program_extra_filters_classify_participation_times() -> None:
     )
 
     assert [row["id"] for row in rows] == ["full-time"]
+
+
+def test_extract_program_filter_options_uses_present_program_values() -> None:
+    rows = [
+        {
+            "source": "고용24",
+            "title": "청년 AI 부트캠프",
+            "description": "서류와 면접으로 선발하며 취업지원 멘토링을 제공합니다.",
+            "target": ["청년"],
+        },
+        {
+            "source": "kstartup",
+            "title": "창업 지원 사업",
+            "summary": "선착순 모집, 인턴십 연계",
+            "target": ["창업"],
+        },
+    ]
+
+    options = programs._extract_program_filter_options(rows)
+
+    assert [option.value for option in options.sources] == ["kstartup", "고용24"]
+    assert [option.label for option in options.sources] == ["K-Startup", "고용24"]
+    assert {option.value for option in options.targets} == {"청년", "창업"}
+    assert {option.value for option in options.selection_processes} == {"서류", "면접", "선착순"}
+    assert {option.value for option in options.employment_links} == {"취업지원", "멘토링", "인턴십"}
+
+
+def test_get_program_filter_options_endpoint(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_request_supabase(*, method: str, path: str, params: dict, **_: object) -> list[dict]:
+        assert method == "GET"
+        assert path == "/rest/v1/programs"
+        assert "source" in params["select"]
+        return [
+            {
+                "source": "sesac",
+                "title": "청년 웹개발 과정",
+                "description": "면접 후 선발하며 채용연계 과정입니다.",
+                "deadline": (date.today() + timedelta(days=10)).isoformat(),
+            }
+        ]
+
+    monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
+
+    response = client.get("/programs/filter-options?recruiting_only=true")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["sources"] == [{"value": "sesac", "label": "SeSAC"}]
+    assert payload["targets"] == [{"value": "청년", "label": "청년"}]
+    assert payload["selection_processes"] == [{"value": "면접", "label": "면접"}]
+    assert payload["employment_links"] == [{"value": "채용연계", "label": "채용연계"}]
+
+
+def test_get_program_detail_returns_404_for_invalid_uuid(client: TestClient) -> None:
+    response = client.get("/programs/not-a-real-program-id/detail")
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Program not found"
+
+
+def test_get_program_returns_404_for_invalid_uuid(client: TestClient) -> None:
+    response = client.get("/programs/not-a-real-program-id")
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Program not found"
 
 
 @pytest.mark.asyncio
@@ -237,6 +360,49 @@ def test_serialize_program_list_row_adds_normalized_rating_fields() -> None:
     assert row["rating_normalized"] == 5.0
     assert row["rating_scale"] == 5
     assert row["rating_display"] == "5.0"
+
+
+def test_serialize_program_list_row_derives_display_metadata_from_real_text() -> None:
+    row = programs._serialize_program_list_row(
+        {
+            "id": "program-ai",
+            "title": "MCP를 활용한 AI 서비스 개발 양성과정",
+            "category": "IT",
+            "category_detail": "data-ai",
+            "summary": "Python, RAG, LLM 기반 프로젝트를 진행합니다.",
+            "description": "서류 검토와 면접 후 선발합니다. 월,화,수,목,금 09:00 ~ 18:00 운영",
+            "tags": ["MCP", "머신러닝", "취업지원"],
+            "skills": ["Python", "RAG", "LLM"],
+            "deadline": (date.today() + timedelta(days=3)).isoformat(),
+            "compare_meta": {
+                "interview_required": True,
+                "portfolio_required": True,
+            },
+        }
+    )
+
+    assert row["display_categories"] == ["AI서비스"]
+    assert row["participation_mode_label"] == "풀타임"
+    assert row["participation_time_text"] == "월,화,수,목,금 / 09:00 ~ 18:00"
+    assert row["selection_process_label"] == "포트폴리오 / 면접 / 서류"
+    assert {"Python", "RAG", "LLM", "MCP", "머신러닝"}.issubset(set(row["extracted_keywords"]))
+
+
+def test_serialize_program_list_row_derives_weekend_and_semiconductor_metadata() -> None:
+    row = programs._serialize_program_list_row(
+        {
+            "id": "program-chip",
+            "title": "FPGA SoC 반도체설계 주말반",
+            "category": "IT",
+            "description": "주말 10:00~17:00 Verilog RTL 실습",
+            "deadline": (date.today() + timedelta(days=5)).isoformat(),
+        }
+    )
+
+    assert row["display_categories"] == ["반도체"]
+    assert row["participation_mode_label"] == "주말반"
+    assert row["participation_time_text"] == "주말 / 10:00 ~ 17:00"
+    assert {"FPGA", "SoC", "RTL", "Verilog", "반도체설계"}.issubset(set(row["extracted_keywords"]))
 
 
 def test_serialize_program_list_row_uses_deadline_not_training_end_date_for_d_day() -> None:
@@ -489,6 +655,37 @@ def test_postprocess_program_list_rows_keeps_active_first_then_recent_closed() -
     assert rows[1]["is_active"] is False
 
 
+def test_postprocess_program_list_rows_recruiting_only_drops_unresolved_deadlines() -> None:
+    future_deadline = (date.today() + timedelta(days=5)).isoformat()
+    training_end_date = (date.today() + timedelta(days=30)).isoformat()
+
+    rows = programs._postprocess_program_list_rows(
+        [
+            {
+                "id": "work24-training-end-only",
+                "title": "훈련 종료일만 있는 과정",
+                "source": "고용24",
+                "deadline": training_end_date,
+                "end_date": training_end_date,
+            },
+            {
+                "id": "open-program",
+                "title": "모집중 과정",
+                "source": "K-Startup",
+                "deadline": future_deadline,
+            },
+        ],
+        recruiting_only=True,
+        sort="latest",
+        include_closed_recent=False,
+        limit=10,
+        offset=0,
+    )
+
+    assert [row["id"] for row in rows] == ["open-program"]
+    assert rows[0]["deadline"] == future_deadline
+
+
 def test_postprocess_program_list_rows_searches_provider_and_orders_by_match_field() -> None:
     deadline = (date.today() + timedelta(days=10)).isoformat()
 
@@ -563,6 +760,56 @@ def test_postprocess_program_list_rows_searches_compare_meta_values() -> None:
     assert [row["id"] for row in rows] == ["meta-match"]
 
 
+def test_postprocess_program_list_rows_ignores_compare_meta_url_and_ids_for_search() -> None:
+    deadline = (date.today() + timedelta(days=10)).isoformat()
+
+    rows = programs._postprocess_program_list_rows(
+        [
+            {
+                "id": "url-only-match",
+                "title": "국제바리스타 자격취득과정",
+                "provider": "커피학원",
+                "compare_meta": {
+                    "hrd_id": "AIG202500001",
+                    "source_url": "https://www.work24.go.kr/hr/detail?tracseId=AIG202500001",
+                },
+                "deadline": deadline,
+            },
+            {
+                "id": "content-match",
+                "title": "AI 서비스 기획 과정",
+                "provider": "교육기관",
+                "deadline": deadline,
+            },
+        ],
+        q="ai",
+        sort="deadline",
+        include_closed_recent=False,
+        limit=10,
+        offset=0,
+    )
+
+    assert [row["id"] for row in rows] == ["content-match"]
+
+
+def test_serialize_program_list_row_uses_work24_application_deadline_from_compare_meta() -> None:
+    deadline = (date.today() + timedelta(days=7)).isoformat()
+    training_end_date = (date.today() + timedelta(days=30)).isoformat()
+
+    row = programs._serialize_program_list_row(
+        {
+            "id": "work24-application-deadline",
+            "source": "고용24",
+            "deadline": training_end_date,
+            "end_date": training_end_date,
+            "compare_meta": {"application_deadline": deadline},
+        }
+    )
+
+    assert row["deadline"] == deadline
+    assert row["days_left"] == 7
+
+
 @pytest.mark.asyncio
 async def test_fetch_program_list_rows_paginates_search_candidates(monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[dict] = []
@@ -579,6 +826,34 @@ async def test_fetch_program_list_rows_paginates_search_candidates(monkeypatch: 
     monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
 
     rows = await programs._fetch_program_list_rows({"select": "*"}, q="패스트캠퍼스")
+
+    assert len(rows) == programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE + 1
+    assert calls[0]["limit"] == str(programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE)
+    assert calls[0]["offset"] == "0"
+    assert calls[1]["offset"] == str(programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE)
+
+
+@pytest.mark.asyncio
+async def test_fetch_program_list_rows_paginates_large_non_search_candidates(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[dict] = []
+
+    async def fake_request_supabase(*, method: str, path: str, params: dict, **_: object) -> list[dict]:
+        calls.append(dict(params))
+        offset = int(params.get("offset", 0))
+        if offset == 0:
+            return [{"id": f"row-{index}"} for index in range(programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE)]
+        if offset == programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE:
+            return [{"id": "row-last"}]
+        return []
+
+    monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
+
+    rows = await programs._fetch_program_list_rows(
+        {"select": "*", "limit": str(programs.PROGRAM_SEARCH_SCAN_LIMIT)},
+        q=None,
+    )
 
     assert len(rows) == programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE + 1
     assert calls[0]["limit"] == str(programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE)
@@ -1080,6 +1355,54 @@ async def test_recommend_programs_returns_default_for_empty_profile(monkeypatch:
 
     assert len(response.items) == 1
     assert "프로필 기반 추천 데이터가 충분하지 않아" in response.items[0].reason
+@pytest.mark.asyncio
+async def test_load_cached_recommendations_falls_back_to_legacy_schema(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+
+    async def fake_request_supabase(
+        *,
+        method: str,
+        path: str,
+        params: dict[str, object] | None = None,
+        payload: object | None = None,
+        prefer: str | None = None,
+    ) -> list[dict[str, object]]:
+        assert method == "GET"
+        assert path == "/rest/v1/recommendations"
+        assert payload is None
+        assert prefer is None
+        select = str((params or {}).get("select") or "")
+        calls.append(select)
+        if "generated_at" in select:
+            raise RuntimeError("column recommendations.generated_at does not exist")
+        return [
+            {
+                "program_id": "program-1",
+                "score": 0.73,
+                "created_at": "2099-01-01T00:00:00+00:00",
+            }
+        ]
+
+    monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
+
+    rows = await programs._load_cached_recommendations("user-1")
+
+    assert calls == [
+        "program_id,similarity_score,relevance_score,urgency_score,final_score,generated_at,reason,fit_keywords,query_hash,profile_hash,expires_at",
+        "program_id,score,created_at",
+    ]
+    assert rows == [
+        {
+            "program_id": "program-1",
+            "similarity_score": 0.73,
+            "relevance_score": 0.73,
+            "urgency_score": 0.0,
+            "final_score": 0.73,
+            "generated_at": "2099-01-01T00:00:00+00:00",
+        }
+    ]
 
 
 def test_recommend_calendar_anonymous_returns_contract_shape(

@@ -18,6 +18,7 @@ import type {
   ProgramCountResponse,
   ProgramDetail,
   ProgramDetailBatchResponse,
+  ProgramFilterOptionsResponse,
   ProgramListParams,
   ProgramRecommendResponse,
   SkillSuggestResponse,
@@ -319,6 +320,32 @@ export async function getProgramCount(params?: ProgramListParams): Promise<numbe
     "Failed to load the program count."
   );
   return result.count;
+}
+
+export async function getProgramFilterOptions(params?: ProgramListParams): Promise<ProgramFilterOptionsResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.q) searchParams.set("q", params.q);
+  if (params?.category) searchParams.set("category", params.category);
+  if (params?.category_detail) searchParams.set("category_detail", params.category_detail);
+  if (params?.scope) searchParams.set("scope", params.scope);
+  if (params?.region_detail) searchParams.set("region_detail", params.region_detail);
+  if (params?.regions?.length) {
+    params.regions.forEach((region) => searchParams.append("regions", region));
+  }
+  if (params?.teaching_methods?.length) {
+    params.teaching_methods.forEach((method) => searchParams.append("teaching_methods", method));
+  }
+  if (params?.recruiting_only) searchParams.set("recruiting_only", "true");
+  if (params?.include_closed_recent) searchParams.set("include_closed_recent", "true");
+
+  const query = searchParams.toString();
+  return requestJson<ProgramFilterOptionsResponse>(
+    `/programs/filter-options${query ? `?${query}` : ""}`,
+    {
+      method: "GET",
+    },
+    "Failed to load program filter options."
+  );
 }
 
 export async function getProgram(programId: string): Promise<Program> {

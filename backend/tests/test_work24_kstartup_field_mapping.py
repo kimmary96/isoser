@@ -48,6 +48,8 @@ def test_work24_collector_preserves_detail_fields_for_program_pages() -> None:
     assert row["cost"] == 1000000
     assert row["subsidy_amount"] == 300000
     assert row["source_url"] == "https://www.work24.go.kr/hr/detail"
+    assert row["raw_data"]["trprId"] == "AIG202500001"
+    assert row["raw_data"]["title"] == "AI 데이터 분석 과정"
     assert row["skills"] == ["AI", "데이터", "IT", "소프트웨어", "정보기술"]
     assert row["compare_meta"]["ncs_code"] == "20010201"
     assert row["compare_meta"]["trpr_degr"] == "7"
@@ -113,6 +115,8 @@ def test_kstartup_collector_preserves_description_provider_and_trace_meta() -> N
     assert row["end_date"] == "2026-05-14"
     assert row["source_url"] == "https://www.k-startup.go.kr/detail"
     assert row["source_unique_key"] == "kstartup:177296"
+    assert row["raw_data"]["pbanc_sn"] == 177296
+    assert row["raw_data"]["biz_pbanc_nm"] == "코디세이 AI 네이티브 과정"
     assert row["sponsor_name"] == "코디세이"
     assert row["skills"] == ["AI", "창업"]
     assert row["compare_meta"]["application_url"] == "https://apply.example.com"

@@ -6,6 +6,7 @@ import json
 import logging
 import re
 from typing import Any, Literal, Mapping, Sequence
+from uuid import UUID
 
 from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Query
 from pydantic import BaseModel, ConfigDict, Field
@@ -48,9 +49,134 @@ PROGRAM_PARTICIPATION_TIMES = {"part-time", "full-time"}
 PROGRAM_TARGETS = {"청년", "여성", "중장년", "창업", "재직자", "구직자", "대학생"}
 PROGRAM_SELECTION_PROCESSES = {"서류", "면접", "테스트", "선착순", "추첨"}
 PROGRAM_EMPLOYMENT_LINKS = {"채용연계", "인턴십", "취업지원", "멘토링"}
+PROGRAM_CATEGORY_LABELS: dict[str, str] = {
+    "web-development": "웹 풀스택",
+    "mobile": "프론트엔드",
+    "data-ai": "AI서비스",
+    "cloud-security": "클라우드",
+    "iot-embedded-semiconductor": "반도체",
+    "game-blockchain": "기타",
+    "planning-marketing-other": "PM/기획",
+    "design-3d": "UX/UI/디자인",
+    "project-career-startup": "PM/기획",
+}
+PROGRAM_CATEGORY_SEARCH_ALIASES: dict[str, tuple[str, ...]] = {
+    "web-development": ("웹개발", "웹 개발", "웹 풀스택", "fullstack"),
+    "mobile": ("모바일", "앱", "프론트엔드"),
+    "data-ai": ("데이터", "데이터AI", "데이터 AI", "AI서비스", "인공지능"),
+    "cloud-security": ("클라우드", "보안", "클라우드보안"),
+    "iot-embedded-semiconductor": ("IoT", "임베디드", "반도체"),
+    "game-blockchain": ("게임", "블록체인"),
+    "planning-marketing-other": ("기획", "마케팅", "PM", "기타"),
+    "design-3d": ("디자인", "3D", "UX", "UI"),
+    "project-career-startup": ("프로젝트", "취준", "창업", "스타트업"),
+}
+PROGRAM_CATEGORY_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("AI서비스", ("ai", "인공지능", "llm", "rag", "생성형", "챗봇", "머신러닝", "딥러닝", "mcp")),
+    ("AI역량강화", ("ai 활용", "ai 역량", "프롬프트", "업무자동화", "노코드", "로우코드")),
+    ("웹 풀스택", ("풀스택", "fullstack", "웹개발", "웹 개발", "spring", "django", "react", "next.js", "node")),
+    ("백엔드", ("백엔드", "backend", "java", "spring", "api", "서버", "restapi")),
+    ("프론트엔드", ("프론트엔드", "frontend", "react", "vue", "next.js", "javascript", "typescript", "모바일", "앱")),
+    ("데이터분석", ("데이터분석", "데이터 분석", "시각화", "bi", "sql", "통계", "pandas")),
+    ("데이터엔지니어링", ("데이터엔지니어링", "데이터 엔지니어링", "데이터 파이프라인", "etl", "spark", "airflow", "db")),
+    ("UX/UI/디자인", ("ux", "ui", "uxui", "디자인", "figma", "피그마", "와이어프레임", "프로토타입")),
+    ("PM/기획", ("pm", "기획", "서비스기획", "프로덕트", "마케팅", "사업계획", "창업")),
+    ("클라우드", ("클라우드", "aws", "azure", "gcp", "devops", "쿠버네티스", "kubernetes", "docker")),
+    ("반도체", ("반도체", "fpga", "soc", "rtl", "verilog", "회로", "반도체설계")),
+    ("임베디드", ("임베디드", "iot", "arm", "펌웨어", "라즈베리", "아두이노")),
+    ("보안", ("정보보안", "보안 실무", "보안 엔지니어", "클라우드 보안", "사이버보안", "security", "해킹", "모의해킹", "침해대응", "침해 사고", "정보보호")),
+    ("인프라", ("인프라", "네트워크 인프라", "네트워크 관리", "네트워크 엔지니어", "linux", "리눅스", "ccna", "서버관리")),
+)
+PROGRAM_KEYWORD_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("AI", ("ai", "인공지능")),
+    ("Python", ("python", "파이썬")),
+    ("Java", ("java", "자바")),
+    ("JavaScript", ("javascript", "자바스크립트")),
+    ("TypeScript", ("typescript", "타입스크립트")),
+    ("React", ("react", "리액트")),
+    ("Next.js", ("next.js", "nextjs")),
+    ("FastAPI", ("fastapi",)),
+    ("Spring", ("spring", "스프링")),
+    ("SQL", ("sql",)),
+    ("DB", ("db", "database", "데이터베이스")),
+    ("데이터분석", ("데이터분석", "데이터 분석")),
+    ("머신러닝", ("머신러닝", "machine learning", "ml")),
+    ("딥러닝", ("딥러닝", "deep learning")),
+    ("RAG", ("rag",)),
+    ("LLM", ("llm", "대규모 언어모델")),
+    ("MCP", ("mcp",)),
+    ("ChatGPT", ("chatgpt", "chat gpt")),
+    ("Vibe Coding", ("vibe coding", "바이브코딩", "바이브 코딩")),
+    ("PRD", ("prd",)),
+    ("UXUI", ("ux/ui", "uxui", "ux ui")),
+    ("UIUX", ("ui/ux", "uiux", "ui ux")),
+    ("와이어프레임", ("와이어프레임", "wireframe")),
+    ("Figma", ("figma", "피그마")),
+    ("HTML5", ("html5",)),
+    ("CSS3", ("css3",)),
+    ("Bootstrap", ("bootstrap", "부트스트랩")),
+    ("PremierePro", ("premierepro", "premiere pro", "프리미어 프로", "프리미어프로")),
+    ("AfterEffect", ("aftereffect", "after effect", "애프터 이펙트", "에프터 이펙트", "에프터이펙트")),
+    ("Blender", ("blender", "블렌더")),
+    ("영상 편집", ("영상 편집", "영상편집")),
+    ("클라우드", ("클라우드", "cloud")),
+    ("AWS", ("aws",)),
+    ("Docker", ("docker", "도커")),
+    ("Kubernetes", ("kubernetes", "쿠버네티스", "k8s")),
+    ("FPGA", ("fpga",)),
+    ("SoC", ("soc",)),
+    ("RTL", ("rtl",)),
+    ("Verilog", ("verilog",)),
+    ("반도체설계", ("반도체설계", "반도체 설계")),
+    ("NVIDIA", ("nvidia", "엔비디아")),
+    ("Jetson", ("jetson",)),
+    ("Physical AI", ("physical ai",)),
+    ("Sim-to-Real", ("sim-to-real", "sim to real")),
+    ("OpenUSD", ("openusd",)),
+    ("Omniverse", ("omniverse",)),
+    ("Isaac Sim", ("isaac sim",)),
+    ("CCNA", ("ccna",)),
+    ("포트폴리오", ("포트폴리오", "portfolio")),
+    ("면접", ("면접", "인터뷰")),
+    ("현직자멘토링", ("현직자", "멘토링")),
+    ("취업지원", ("취업지원", "취업 지원")),
+    ("채용연계", ("채용연계", "채용 연계")),
+)
 PROGRAM_SEARCH_SCAN_LIMIT = 10000
 PROGRAM_SEARCH_SCAN_PAGE_SIZE = 1000
 PROGRAM_SEARCH_INDEX_COLUMN = "search_text"
+PROGRAM_SHORT_ASCII_SEARCH_MAX_LENGTH = 2
+PROGRAM_SEARCHABLE_COMPARE_META_KEYS = {
+    "address",
+    "application_deadline",
+    "application_end_date",
+    "business_type",
+    "certificate",
+    "curriculum",
+    "delivery_method",
+    "employment_connection",
+    "location",
+    "ncs_code",
+    "ncs_name",
+    "region",
+    "recruitment_deadline",
+    "schedule_text",
+    "selection_process",
+    "target_detail",
+    "target_group",
+    "target_job",
+    "teaching_method",
+    "training_institution",
+    "training_time",
+    "training_type",
+    "weekday_text",
+}
+PROGRAM_DEADLINE_COMPARE_META_KEYS = (
+    "application_deadline",
+    "application_end_date",
+    "recruitment_deadline",
+    "recruitment_end_date",
+)
 RECOMMEND_CACHE_TTL_HOURS = 24
 REGION_QUERY_ALIASES: dict[str, tuple[str, ...]] = {
     "서울": ("서울",),
@@ -136,6 +262,11 @@ class ProgramListItem(BaseModel):
     rating_normalized: float | None = None
     rating_scale: int | None = None
     rating_display: str | None = None
+    display_categories: list[str] = Field(default_factory=list)
+    participation_mode_label: str | None = None
+    participation_time_text: str | None = None
+    selection_process_label: str | None = None
+    extracted_keywords: list[str] = Field(default_factory=list)
     relevance_score: float | None = None
     final_score: float | None = None
     urgency_score: float | None = None
@@ -198,6 +329,18 @@ class ProgramDetailBatchRequest(BaseModel):
 
 class ProgramBatchResponse(BaseModel):
     items: list[ProgramListItem] = Field(default_factory=list)
+
+
+class ProgramFilterOption(BaseModel):
+    value: str
+    label: str
+
+
+class ProgramFilterOptionsResponse(BaseModel):
+    sources: list[ProgramFilterOption] = Field(default_factory=list)
+    targets: list[ProgramFilterOption] = Field(default_factory=list)
+    selection_processes: list[ProgramFilterOption] = Field(default_factory=list)
+    employment_links: list[ProgramFilterOption] = Field(default_factory=list)
 
 
 class ProgramRelevanceItem(BaseModel):
@@ -474,7 +617,16 @@ def _has_personalization_input(
 
 def _resolve_program_deadline(program: dict[str, Any]) -> str | None:
     close_date = program.get("close_date")
-    raw = close_date or program.get("deadline")
+    compare_meta = program.get("compare_meta") if isinstance(program.get("compare_meta"), dict) else {}
+    meta_deadline = next(
+        (
+            compare_meta.get(key)
+            for key in PROGRAM_DEADLINE_COMPARE_META_KEYS
+            if str(compare_meta.get(key) or "").strip()
+        ),
+        None,
+    )
+    raw = close_date or meta_deadline or program.get("deadline")
     text = str(raw).strip() if raw is not None else ""
     if not text:
         return None
@@ -482,7 +634,7 @@ def _resolve_program_deadline(program: dict[str, Any]) -> str | None:
     source_text = str(program.get("source") or "").casefold()
     is_work24 = "고용24" in source_text or "work24" in source_text
     end_date = str(program.get("end_date") or "").strip()
-    if is_work24 and not close_date and end_date and text[:10] == end_date[:10]:
+    if is_work24 and not close_date and not meta_deadline and end_date and text[:10] == end_date[:10]:
         return None
 
     return text
@@ -755,7 +907,7 @@ def _build_program_query_params(
 
     if limit is not None:
         params["limit"] = str(limit)
-    elif q:
+    elif q or (recruiting_only and effective_sort == "latest"):
         params["limit"] = str(PROGRAM_SEARCH_SCAN_LIMIT)
     if offset is not None:
         params["offset"] = str(offset)
@@ -787,7 +939,7 @@ def _build_program_query_params(
         quoted_sources = ",".join(f'"{source}"' for source in normalized_sources)
         params["source"] = f"in.({quoted_sources})"
 
-    search_filter = _program_search_index_filter(q)
+    search_filter = _program_search_index_filter(q) if _can_use_program_search_index(q) else None
     if search_filter:
         params[PROGRAM_SEARCH_INDEX_COLUMN] = search_filter
 
@@ -833,6 +985,15 @@ def _program_search_index_filter(q: str | None) -> str | None:
     return f"ilike.*{needle}*"
 
 
+def _can_use_program_search_index(q: str | None) -> bool:
+    needle = _normalize_search_text(q)
+    if not needle:
+        return False
+    if len(needle) <= PROGRAM_SHORT_ASCII_SEARCH_MAX_LENGTH and re.fullmatch(r"[a-z0-9]+", needle):
+        return False
+    return True
+
+
 def _flatten_search_values(value: Any) -> list[str]:
     if value is None:
         return []
@@ -850,14 +1011,37 @@ def _flatten_search_values(value: Any) -> list[str]:
     return [text] if text else []
 
 
+def _searchable_compare_meta_values(value: Any) -> list[str]:
+    if not isinstance(value, dict):
+        return []
+    values: list[str] = []
+    for key, item in value.items():
+        if key in PROGRAM_SEARCHABLE_COMPARE_META_KEYS:
+            values.extend(_flatten_search_values(item))
+    return values
+
+
+def _program_category_search_values(row: dict[str, Any]) -> list[str]:
+    values = _flatten_search_values(row.get("category")) + _flatten_search_values(row.get("category_detail"))
+    category_detail = str(row.get("category_detail") or "").strip()
+    if category_detail:
+        values.append(category_detail.replace("-", ""))
+        values.extend(PROGRAM_CATEGORY_SEARCH_ALIASES.get(category_detail, ()))
+        label = PROGRAM_CATEGORY_LABELS.get(category_detail)
+        if label:
+            values.extend((label, re.sub(r"[\s·/]+", "", label)))
+    return values
+
+
 def _program_search_groups(row: dict[str, Any]) -> list[tuple[int, list[str]]]:
     return [
         (0, _flatten_search_values(row.get("title"))),
         (1, _flatten_search_values(row.get("provider"))),
-        (2, _flatten_search_values(row.get("description")) + _flatten_search_values(row.get("summary"))),
-        (3, _flatten_search_values(row.get("location")) + _flatten_search_values(row.get("region_detail")) + _flatten_search_values(row.get("region"))),
-        (4, _flatten_search_values(row.get("tags")) + _flatten_search_values(row.get("skills"))),
-        (5, _flatten_search_values(row.get("compare_meta"))),
+        (2, _program_category_search_values(row)),
+        (3, _flatten_search_values(row.get("description")) + _flatten_search_values(row.get("summary"))),
+        (4, _flatten_search_values(row.get("location")) + _flatten_search_values(row.get("region_detail")) + _flatten_search_values(row.get("region"))),
+        (5, _flatten_search_values(row.get("tags")) + _flatten_search_values(row.get("skills"))),
+        (6, _searchable_compare_meta_values(row.get("compare_meta"))),
     ]
 
 
@@ -887,9 +1071,204 @@ def _program_text_blob(row: dict[str, Any]) -> str:
         + _flatten_search_values(row.get("teaching_method"))
         + _flatten_search_values(row.get("tags"))
         + _flatten_search_values(row.get("skills"))
-        + _flatten_search_values(row.get("compare_meta"))
+        + _searchable_compare_meta_values(row.get("compare_meta"))
     )
     return " ".join(values).casefold()
+
+
+def _dedupe_preserve_order(values: list[str], *, limit: int | None = None) -> list[str]:
+    items: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        cleaned = str(value or "").strip()
+        if not cleaned:
+            continue
+        key = re.sub(r"\s+", "", cleaned).casefold()
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        items.append(cleaned)
+        if limit is not None and len(items) >= limit:
+            break
+    return items
+
+
+def _program_source_text_values(row: dict[str, Any]) -> list[str]:
+    return (
+        _flatten_search_values(row.get("title"))
+        + _flatten_search_values(row.get("summary"))
+        + _flatten_search_values(row.get("description"))
+        + _flatten_search_values(row.get("tags"))
+        + _flatten_search_values(row.get("skills"))
+        + _flatten_search_values(row.get("support_type"))
+        + _flatten_search_values(row.get("teaching_method"))
+        + _searchable_compare_meta_values(row.get("compare_meta"))
+    )
+
+
+def _text_has_keyword(text: str, keyword: str) -> bool:
+    normalized_keyword = keyword.casefold()
+    if re.fullmatch(r"[a-z0-9.+#/-]+", normalized_keyword):
+        escaped = re.escape(normalized_keyword)
+        return re.search(rf"(?<![a-z0-9]){escaped}(?![a-z0-9])", text) is not None
+    return normalized_keyword in text
+
+
+def _infer_display_categories(row: dict[str, Any]) -> list[str]:
+    candidates: list[str] = []
+    category_detail = str(row.get("category_detail") or "").strip()
+    category = str(row.get("category") or "").strip()
+
+    if category_detail in PROGRAM_CATEGORY_LABELS:
+        mapped = PROGRAM_CATEGORY_LABELS[category_detail]
+        if mapped != "기타":
+            candidates.append(mapped)
+
+    text = " ".join(_program_source_text_values(row)).casefold()
+    for label, keywords in PROGRAM_CATEGORY_RULES:
+        if any(_text_has_keyword(text, keyword) for keyword in keywords):
+            candidates.append(label)
+
+    if category and category not in {"IT", "AI", "디자인", "경영", "창업", "기타", "전체"}:
+        candidates.append(category)
+    elif category == "AI":
+        candidates.append("AI서비스")
+    elif category == "디자인" and any(_text_has_keyword(text, keyword) for keyword in ("디자인", "ux", "ui", "figma", "피그마")):
+        candidates.append("UX/UI/디자인")
+    elif category == "창업":
+        candidates.append("PM/기획")
+
+    deduped = _dedupe_preserve_order(candidates, limit=2)
+    return deduped if deduped else ["기타"]
+
+
+def _extract_time_detail(text_values: list[str]) -> str | None:
+    source = " / ".join(text_values)
+    weekday_match = re.search(r"(월\s*[,~·/ ]\s*화\s*[,~·/ ]\s*수\s*[,~·/ ]\s*목\s*[,~·/ ]\s*금|월\s*[~-]\s*금|평일)", source)
+    weekend_match = re.search(r"(토\s*[,~·/ ]\s*일|주말)", source)
+    time_match = re.search(r"([01]?\d|2[0-3])[:시]\s*([0-5]\d)?\s*(?:~|-|부터|에서)\s*([01]?\d|2[0-3])[:시]\s*([0-5]\d)?", source)
+    weekly_hours_match = re.search(r"주\s*(\d{1,2})\s*시간", source)
+    daily_hours_match = re.search(r"(?:일|하루)\s*(\d{1,2})\s*시간", source)
+
+    day_text = None
+    if weekend_match:
+        day_text = "주말"
+    elif weekday_match:
+        day_text = "월,화,수,목,금"
+
+    if time_match:
+        start_hour = int(time_match.group(1))
+        start_minute = time_match.group(2) or "00"
+        end_hour = int(time_match.group(3))
+        end_minute = time_match.group(4) or "00"
+        time_text = f"{start_hour:02d}:{start_minute} ~ {end_hour:02d}:{end_minute}"
+        return f"{day_text} / {time_text}" if day_text else time_text
+    if weekly_hours_match:
+        return f"주 {weekly_hours_match.group(1)}시간 학습 권장"
+    if daily_hours_match:
+        return f"일 {daily_hours_match.group(1)}시간 학습 권장"
+    if day_text:
+        return day_text
+    return None
+
+
+def _derive_participation_display(row: dict[str, Any]) -> tuple[str | None, str | None]:
+    explicit = str(row.get("participation_time") or "").strip()
+    text_values = _program_source_text_values(row)
+    text = " ".join(text_values).casefold()
+    time_detail = _extract_time_detail(text_values)
+    time_match = re.search(r"([01]?\d|2[0-3])[:시]\s*(?:[0-5]\d)?\s*(?:~|-|부터|에서)\s*([01]?\d|2[0-3])", " ".join(text_values))
+    start_hour = int(time_match.group(1)) if time_match else None
+    end_hour = int(time_match.group(2)) if time_match else None
+
+    if "주말" in text or re.search(r"토\s*[,~·/ ]\s*일", " ".join(text_values)):
+        label = "주말반"
+    elif "야간" in text or "저녁" in text or (start_hour is not None and start_hour >= 18):
+        label = "저녁반"
+    elif "자율" in text or "자유 학습" in text or "개별 자유" in text:
+        label = "자율학습"
+    elif explicit == "full-time" or "풀타임" in text or "전일" in text or (start_hour is not None and end_hour is not None and start_hour <= 10 and end_hour >= 17):
+        label = "풀타임"
+    elif explicit == "part-time" or any(keyword in text for keyword in ("파트타임", "part-time", "특강", "세미나")):
+        label = "파트타임"
+    else:
+        inferred = _program_participation_time(row)
+        label = {"full-time": "풀타임", "part-time": "파트타임"}.get(inferred or "")
+
+    if label and time_detail:
+        return label, time_detail
+    if label:
+        return label, None
+    return None, time_detail
+
+
+def _derive_selection_process_label(row: dict[str, Any]) -> str | None:
+    compare_meta = row.get("compare_meta") if isinstance(row.get("compare_meta"), dict) else {}
+    candidates: list[str] = []
+    if compare_meta.get("coding_skill_required") in (True, "pass", "warn") or "코딩테스트" in _program_text_blob(row):
+        candidates.append("코딩 테스트")
+    if compare_meta.get("portfolio_required") is True:
+        candidates.append("포트폴리오")
+    if compare_meta.get("interview_required") is True:
+        candidates.append("면접")
+
+    text = _program_text_blob(row)
+    selection_map = (
+        ("서류", ("서류", "신청서", "자기소개서")),
+        ("면접", ("면접", "인터뷰")),
+        ("테스트", ("테스트", "코딩테스트", "역량평가")),
+        ("선착순", ("선착순",)),
+        ("추첨", ("추첨",)),
+    )
+    for label, keywords in selection_map:
+        if any(keyword.casefold() in text for keyword in keywords):
+            candidates.append(label)
+
+    deduped = _dedupe_preserve_order(candidates, limit=3)
+    return " / ".join(deduped) if deduped else "선발 절차 없음"
+
+
+def _is_useful_keyword(value: str) -> bool:
+    cleaned = value.strip(" #[](){}·,./")
+    if len(cleaned) < 2 or len(cleaned) > 18:
+        return False
+    generic = {
+        "교육",
+        "과정",
+        "프로그램",
+        "모집",
+        "무료",
+        "오프라인",
+        "온라인",
+        "혼합",
+        "서울",
+        "경기",
+        "청년",
+        "구직자",
+        "재직자",
+    }
+    return cleaned not in generic
+
+
+def _extract_program_keywords(row: dict[str, Any]) -> list[str]:
+    keywords: list[str] = []
+    text = " ".join(_program_source_text_values(row)).casefold()
+
+    for label, aliases in PROGRAM_KEYWORD_RULES:
+        if any(_text_has_keyword(text, alias) for alias in aliases):
+            keywords.append(label)
+
+    for value in _normalize_text_list(row.get("skills")) + _normalize_text_list(row.get("tags")):
+        cleaned = value.strip(" #[](){}·,./")
+        if _is_useful_keyword(cleaned):
+            keywords.append(cleaned)
+
+    for value in _flatten_search_values((row.get("compare_meta") if isinstance(row.get("compare_meta"), dict) else {}).get("target_job")):
+        cleaned = value.strip()
+        if _is_useful_keyword(cleaned):
+            keywords.append(cleaned)
+
+    return _dedupe_preserve_order(keywords, limit=8)
 
 
 def _program_cost_type(row: dict[str, Any]) -> str | None:
@@ -993,14 +1372,76 @@ def _program_matches_any(row: dict[str, Any], keywords: set[str]) -> bool:
     return any(keyword.casefold() in text.casefold() for keyword in keywords)
 
 
+def _program_source_label(source: str) -> str:
+    normalized = source.strip()
+    labels = {
+        "kstartup": "K-Startup",
+        "K-Startup": "K-Startup",
+        "sesac": "SeSAC",
+        "SeSAC": "SeSAC",
+    }
+    return labels.get(normalized, normalized)
+
+
+def _build_named_filter_options(values: list[str], *, source_labels: bool = False) -> list[ProgramFilterOption]:
+    seen: set[str] = set()
+    options: list[ProgramFilterOption] = []
+    for value in values:
+        normalized = str(value or "").strip()
+        if not normalized or normalized in seen:
+            continue
+        seen.add(normalized)
+        options.append(
+            ProgramFilterOption(
+                value=normalized,
+                label=_program_source_label(normalized) if source_labels else normalized,
+            )
+        )
+    return options
+
+
+def _extract_program_filter_options(rows: list[dict[str, Any]]) -> ProgramFilterOptionsResponse:
+    sources: list[str] = []
+    targets: list[str] = []
+    selection_processes: list[str] = []
+    employment_links: list[str] = []
+
+    for row in rows:
+        source = str(row.get("source") or "").strip()
+        if source:
+            sources.append(source)
+
+        target_text = (_program_text_blob(row) + " " + " ".join(_flatten_search_values(row.get("target")))).casefold()
+        targets.extend(target for target in sorted(PROGRAM_TARGETS) if target.casefold() in target_text)
+        selection_processes.extend(
+            process for process in sorted(PROGRAM_SELECTION_PROCESSES) if _program_matches_any(row, {process})
+        )
+        employment_links.extend(
+            link for link in sorted(PROGRAM_EMPLOYMENT_LINKS) if _program_matches_any(row, {link})
+        )
+
+    return ProgramFilterOptionsResponse(
+        sources=_build_named_filter_options(sorted(sources, key=str.casefold), source_labels=True),
+        targets=_build_named_filter_options(targets),
+        selection_processes=_build_named_filter_options(selection_processes),
+        employment_links=_build_named_filter_options(employment_links),
+    )
+
+
 def _serialize_program_list_row(program: dict[str, Any]) -> dict[str, Any]:
     record = dict(program)
     compare_meta = record.get("compare_meta") if isinstance(record.get("compare_meta"), dict) else {}
     record.update(_normalize_rating_fields(record.get("rating") or compare_meta.get("satisfaction_score")))
     deadline = _resolve_program_deadline(record)
     days_left = _calculate_days_left(deadline)
+    participation_mode_label, participation_time_text = _derive_participation_display(record)
     record["deadline"] = deadline
     record["days_left"] = days_left
+    record["display_categories"] = _infer_display_categories(record)
+    record["participation_mode_label"] = participation_mode_label
+    record["participation_time_text"] = participation_time_text
+    record["selection_process_label"] = _derive_selection_process_label(record)
+    record["extracted_keywords"] = _extract_program_keywords(record)
     if days_left is not None:
         record["is_active"] = days_left >= 0
     return record
@@ -1027,6 +1468,20 @@ def _sort_program_list_rows(
     return sorted(rows, key=sort_key)
 
 
+def _filter_program_rows_by_recruiting_state(
+    rows: list[dict[str, Any]],
+    *,
+    recruiting_only: bool,
+) -> list[dict[str, Any]]:
+    if not recruiting_only:
+        return rows
+    return [
+        row
+        for row in rows
+        if isinstance(row.get("days_left"), int) and row["days_left"] >= 0
+    ]
+
+
 def _postprocess_program_list_rows(
     rows: list[dict[str, Any]],
     *,
@@ -1036,21 +1491,25 @@ def _postprocess_program_list_rows(
     targets: list[str] | None = None,
     selection_processes: list[str] | None = None,
     employment_links: list[str] | None = None,
+    recruiting_only: bool = False,
     sort: str,
     include_closed_recent: bool,
     limit: int,
     offset: int,
 ) -> list[dict[str, Any]]:
-    serialized_rows = _filter_program_rows_by_extra_filters(
-        _filter_program_rows_by_query(
-            [_serialize_program_list_row(row) for row in rows],
-            q,
+    serialized_rows = _filter_program_rows_by_recruiting_state(
+        _filter_program_rows_by_extra_filters(
+            _filter_program_rows_by_query(
+                [_serialize_program_list_row(row) for row in rows],
+                q,
+            ),
+            cost_types=cost_types,
+            participation_times=participation_times,
+            targets=targets,
+            selection_processes=selection_processes,
+            employment_links=employment_links,
         ),
-        cost_types=cost_types,
-        participation_times=participation_times,
-        targets=targets,
-        selection_processes=selection_processes,
-        employment_links=employment_links,
+        recruiting_only=recruiting_only,
     )
     if _normalize_search_text(q):
         sorted_rows = sorted(
@@ -1189,7 +1648,7 @@ async def _load_cached_recommendations(
         )
     except Exception as exc:
         log_event(logger, logging.WARNING, "recommend_cache_load_failed", error=str(exc))
-        return None
+        return await _load_legacy_cached_recommendations(user_id=user_id, cutoff=cutoff)
     return rows if isinstance(rows, list) and rows else None
 
 
@@ -1212,6 +1671,45 @@ async def _delete_cached_recommendations(
         )
     except Exception as exc:
         log_event(logger, logging.WARNING, "recommend_cache_delete_failed", error=str(exc))
+
+
+async def _load_legacy_cached_recommendations(
+    *,
+    user_id: str,
+    cutoff: str,
+) -> list[dict[str, Any]] | None:
+    try:
+        rows = await request_supabase(
+            method="GET",
+            path="/rest/v1/recommendations",
+            params={
+                "select": "program_id,score,created_at",
+                "user_id": f"eq.{user_id}",
+                "created_at": f"gte.{cutoff}",
+                "order": "score.desc.nullslast",
+                "limit": "20",
+            },
+        )
+    except Exception as exc:
+        log_event(logger, logging.WARNING, "recommend_legacy_cache_load_failed", error=str(exc))
+        return None
+    if not isinstance(rows, list) or not rows:
+        return None
+
+    normalized_rows: list[dict[str, Any]] = []
+    for row in rows:
+        score = _coerce_score(row.get("score")) or 0.0
+        normalized_rows.append(
+            {
+                "program_id": row.get("program_id"),
+                "similarity_score": score,
+                "relevance_score": score,
+                "urgency_score": 0.0,
+                "final_score": score,
+                "generated_at": row.get("created_at"),
+            }
+        )
+    return normalized_rows
 
 
 async def _save_recommendations(
@@ -1472,7 +1970,11 @@ async def _count_program_rows(
         or _normalize_option_param(employment_links, PROGRAM_EMPLOYMENT_LINKS)
     )
     params = _build_program_query_params(
-        select="*" if _normalize_search_text(q) or has_extra_filters else "id,deadline,end_date,is_active,created_at",
+        select=(
+            "*"
+            if _normalize_search_text(q) or has_extra_filters
+            else "id,source,deadline,close_date,end_date,is_active,created_at"
+        ),
         category=category,
         category_detail=category_detail,
         scope=scope,
@@ -1487,13 +1989,16 @@ async def _count_program_rows(
     rows = await _fetch_program_list_rows(params, q=q)
     return len(
         _sort_program_list_rows(
-            _filter_program_rows_by_extra_filters(
-                _filter_program_rows_by_query([_serialize_program_list_row(row) for row in rows], q),
-                cost_types=cost_types,
-                participation_times=participation_times,
-                targets=targets,
-                selection_processes=selection_processes,
-                employment_links=employment_links,
+            _filter_program_rows_by_recruiting_state(
+                _filter_program_rows_by_extra_filters(
+                    _filter_program_rows_by_query([_serialize_program_list_row(row) for row in rows], q),
+                    cost_types=cost_types,
+                    participation_times=participation_times,
+                    targets=targets,
+                    selection_processes=selection_processes,
+                    employment_links=employment_links,
+                ),
+                recruiting_only=recruiting_only,
             ),
             sort="deadline",
             include_closed_recent=include_closed_recent,
@@ -1503,6 +2008,32 @@ async def _count_program_rows(
 
 async def _fetch_program_list_rows(params: dict[str, Any], *, q: str | None) -> list[dict[str, Any]]:
     if not _normalize_search_text(q):
+        requested_limit = _int_or_none(params.get("limit"))
+        if requested_limit is not None and requested_limit > PROGRAM_SEARCH_SCAN_PAGE_SIZE:
+            rows: list[dict[str, Any]] = []
+            offset = _int_or_none(params.get("offset")) or 0
+            while len(rows) < requested_limit:
+                page_params = {
+                    **params,
+                    "limit": str(min(PROGRAM_SEARCH_SCAN_PAGE_SIZE, requested_limit - len(rows))),
+                    "offset": str(offset),
+                }
+                try:
+                    page = await request_supabase(method="GET", path="/rest/v1/programs", params=page_params)
+                except Exception:
+                    if "category_detail" not in page_params:
+                        raise
+                    fallback_params = dict(page_params)
+                    fallback_params.pop("category_detail", None)
+                    page = await request_supabase(method="GET", path="/rest/v1/programs", params=fallback_params)
+                if not isinstance(page, list) or not page:
+                    break
+                rows.extend(page)
+                if len(page) < PROGRAM_SEARCH_SCAN_PAGE_SIZE:
+                    break
+                offset += PROGRAM_SEARCH_SCAN_PAGE_SIZE
+            return rows[:requested_limit]
+
         try:
             rows = await request_supabase(method="GET", path="/rest/v1/programs", params=params)
         except Exception:
@@ -2091,6 +2622,7 @@ async def list_programs(
         targets=targets,
         selection_processes=selection_processes,
         employment_links=employment_links,
+        recruiting_only=recruiting_only,
         sort=sort,
         include_closed_recent=include_closed_recent,
         limit=limit,
@@ -2134,6 +2666,43 @@ async def count_programs(
         include_closed_recent=include_closed_recent,
     )
     return ProgramCountResponse(count=count)
+
+
+@programs_router.get("/filter-options", response_model=ProgramFilterOptionsResponse)
+async def get_program_filter_options(
+    category: str | None = None,
+    category_detail: str | None = None,
+    scope: str | None = None,
+    region_detail: str | None = None,
+    q: str | None = None,
+    regions: list[str] | None = Query(default=None),
+    teaching_methods: list[str] | None = Query(default=None),
+    recruiting_only: bool = False,
+    include_closed_recent: bool = False,
+) -> ProgramFilterOptionsResponse:
+    select_fields = "source,target,title,provider,summary,description,support_type,teaching_method,tags,skills,compare_meta,deadline,end_date,is_active,created_at"
+    params = _build_program_query_params(
+        select=select_fields,
+        category=category,
+        category_detail=category_detail,
+        scope=scope,
+        region_detail=region_detail,
+        q=q,
+        regions=regions,
+        teaching_methods=teaching_methods,
+        recruiting_only=recruiting_only,
+        include_closed_recent=include_closed_recent,
+        sort="deadline",
+    )
+    try:
+        rows = await _fetch_program_list_rows(params, q=q)
+    except Exception:
+        fallback_params = dict(params)
+        fallback_params["select"] = select_fields.replace("target,", "")
+        rows = await _fetch_program_list_rows(fallback_params, q=q)
+    return _extract_program_filter_options(
+        _filter_program_rows_by_query([_serialize_program_list_row(row) for row in rows], q)
+    )
 
 
 @programs_router.get("/popular")
@@ -2194,6 +2763,11 @@ async def get_programs_batch(payload: ProgramDetailBatchRequest) -> ProgramBatch
 
 @programs_router.get("/{program_id}/detail", response_model=ProgramDetailResponse)
 async def get_program_detail(program_id: str) -> ProgramDetailResponse:
+    try:
+        UUID(program_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail="Program not found") from exc
+
     rows = await request_supabase(
         method="GET",
         path="/rest/v1/programs",
@@ -2210,6 +2784,11 @@ async def get_program_detail(program_id: str) -> ProgramDetailResponse:
 
 @programs_router.get("/{program_id}")
 async def get_program(program_id: str) -> Any:
+    try:
+        UUID(program_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail="Program not found") from exc
+
     rows = await request_supabase(
         method="GET",
         path="/rest/v1/programs",

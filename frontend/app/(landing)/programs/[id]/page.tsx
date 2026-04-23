@@ -6,6 +6,7 @@ import { cache } from "react";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { getProgramDetail } from "@/lib/api/backend";
 import { getSiteUrl } from "@/lib/seo";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { ProgramDetail } from "@/lib/types";
 
 import ProgramDetailClient from "./program-detail-client";
@@ -24,7 +25,7 @@ function isNotFoundError(error: unknown): boolean {
   }
 
   const message = error.message.toLowerCase();
-  return message.includes("404") || message.includes("not found");
+  return message.includes("404") || message.includes("not found") || message.includes("invalid input syntax");
 }
 
 function buildProgramDescription(program: ProgramDetail): string {
@@ -99,6 +100,29 @@ async function getProgramForPage(id: string): Promise<ProgramDetail> {
   }
 }
 
+async function getProgramBookmarkState(programId: string): Promise<{ isLoggedIn: boolean; initialBookmarked: boolean }> {
+  try {
+    const supabase = await createServerSupabaseClient();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session?.user?.id) {
+      return { isLoggedIn: false, initialBookmarked: false };
+    }
+
+    const { data } = await supabase
+      .from("program_bookmarks")
+      .select("program_id")
+      .eq("user_id", session.user.id)
+      .eq("program_id", programId)
+      .maybeSingle();
+
+    return { isLoggedIn: true, initialBookmarked: Boolean(data?.program_id) };
+  } catch {
+    return { isLoggedIn: false, initialBookmarked: false };
+  }
+}
+
 export async function generateMetadata({ params }: ProgramDetailPageProps): Promise<Metadata> {
   const { id } = await params;
 
@@ -140,6 +164,7 @@ export default async function ProgramDetailPage({ params }: ProgramDetailPagePro
 
   try {
     const program = await getProgramForPage(id);
+    const bookmarkState = await getProgramBookmarkState(String(program.id ?? id));
     const jsonLd = buildProgramJsonLd(program);
 
     return (
@@ -171,7 +196,11 @@ export default async function ProgramDetailPage({ params }: ProgramDetailPagePro
           </div>
         </div>
         <LandingHeader />
-        <ProgramDetailClient program={program} />
+        <ProgramDetailClient
+          program={program}
+          isLoggedIn={bookmarkState.isLoggedIn}
+          initialBookmarked={bookmarkState.initialBookmarked}
+        />
       </>
     );
   } catch (e) {
@@ -179,13 +208,15 @@ export default async function ProgramDetailPage({ params }: ProgramDetailPagePro
       notFound();
     }
 
-    const message = e instanceof Error ? e.message : "프로그램을 불러오지 못했습니다.";
     return (
       <>
         <LandingHeader />
         <main className="flex min-h-screen items-center justify-center bg-slate-50 px-6">
           <div className="rounded-2xl border border-rose-200 bg-white px-8 py-10 text-center shadow-sm">
-            <p className="text-base font-medium text-rose-700">{message}</p>
+            <p className="text-base font-medium text-rose-700">프로그램 정보를 불러오지 못했습니다.</p>
+            <p className="mt-2 text-sm leading-6 text-slate-500">
+              잠시 후 다시 시도하거나 프로그램 목록에서 다른 공고를 확인해 주세요.
+            </p>
             <Link href="/programs" className="mt-4 inline-flex text-sm font-medium text-slate-700 hover:text-slate-950">
               프로그램 목록으로 돌아가기
             </Link>

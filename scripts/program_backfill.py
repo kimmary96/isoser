@@ -6,6 +6,7 @@ import os
 import re
 import sys
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, urlparse
@@ -30,6 +31,7 @@ BACKFILL_FIELDS = (
     "provider",
     "location",
     "description",
+    "deadline",
     "start_date",
     "end_date",
     "source_url",
@@ -57,6 +59,13 @@ def load_backend_env() -> None:
             continue
         key, value = stripped.split("=", maxsplit=1)
         os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
+def configure_stdout() -> None:
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except AttributeError:
+        return
 
 
 def compact(value: Any) -> Any:
@@ -258,6 +267,41 @@ def fetch_work24_deadline_audit_rows(limit: int) -> list[dict[str, Any]]:
     return rows if isinstance(rows, list) else []
 
 
+def fetch_program_deadline_audit_rows(limit: int) -> list[dict[str, Any]]:
+    select_fields = "id,title,source,deadline,close_date,end_date,is_active,created_at"
+    query_params = [
+        {
+            "select": select_fields,
+            "deadline": "is.null",
+            "order": "created_at.desc.nullslast",
+            "limit": str(limit),
+        },
+        {
+            "select": select_fields,
+            "close_date": "not.is.null",
+            "order": "close_date.asc.nullslast",
+            "limit": str(limit),
+        },
+        {
+            "select": select_fields,
+            "deadline": "not.is.null",
+            "end_date": "not.is.null",
+            "order": "deadline.asc.nullslast",
+            "limit": str(limit),
+        },
+    ]
+    rows_by_id: dict[str, dict[str, Any]] = {}
+    for params in query_params:
+        rows = supabase_request("GET", "/rest/v1/programs", params=params)
+        if not isinstance(rows, list):
+            continue
+        for row in rows:
+            row_id = str(row.get("id") or "").strip()
+            if row_id:
+                rows_by_id.setdefault(row_id, row)
+    return list(rows_by_id.values())
+
+
 def is_work24_deadline_copied_from_end_date(row: dict[str, Any]) -> bool:
     source = str(row.get("source") or "").casefold()
     if "고용24" not in source and "work24" not in source:
@@ -265,6 +309,113 @@ def is_work24_deadline_copied_from_end_date(row: dict[str, Any]) -> bool:
     deadline = str(row.get("deadline") or "").strip()
     end_date = str(row.get("end_date") or "").strip()
     return bool(deadline and end_date and deadline[:10] == end_date[:10])
+
+
+def _date_prefix(value: Any) -> str:
+    return str(value or "").strip()[:10]
+
+
+def _parse_iso_date(value: Any) -> date | None:
+    text = _date_prefix(value)
+    if not text:
+        return None
+    try:
+        return date.fromisoformat(text)
+    except ValueError:
+        return None
+
+
+def classify_program_deadline_issues(
+    row: dict[str, Any],
+    *,
+    today: date | None = None,
+) -> list[dict[str, Any]]:
+    today = today or date.today()
+    deadline_text = _date_prefix(row.get("deadline"))
+    close_date_text = _date_prefix(row.get("close_date"))
+    end_date_text = _date_prefix(row.get("end_date"))
+    deadline = _parse_iso_date(deadline_text)
+    close_date = _parse_iso_date(close_date_text)
+    issues: list[dict[str, Any]] = []
+
+    if not deadline and close_date:
+        issues.append(
+            {
+                "code": "deadline_missing_with_close_date",
+                "reason": "deadline은 비어 있지만 close_date가 있어 모집중 검색 후보에서 누락될 수 있습니다.",
+                "recommended_patch": {"deadline": close_date_text},
+            }
+        )
+
+    if deadline and close_date and deadline < today <= close_date:
+        issues.append(
+            {
+                "code": "deadline_past_but_close_date_active",
+                "reason": "deadline은 지났지만 close_date는 아직 유효해 모집중 후보에서 조기 누락될 수 있습니다.",
+                "recommended_patch": {"deadline": close_date_text},
+            }
+        )
+
+    if is_work24_deadline_copied_from_end_date(row):
+        issues.append(
+            {
+                "code": "work24_deadline_copied_from_end_date",
+                "reason": "고용24 deadline이 훈련 종료일 end_date와 같아 모집 마감일로 신뢰하기 어렵습니다.",
+                "recommended_patch": {"deadline": None},
+            }
+        )
+
+    if not deadline and not close_date and row.get("is_active") is True:
+        issues.append(
+            {
+                "code": "active_row_without_recruiting_deadline",
+                "reason": "is_active는 true지만 모집 마감일 후보가 없어 deadline 기반 모집중 검색에서 제외됩니다.",
+                "recommended_patch": {},
+            }
+        )
+
+    if deadline_text and end_date_text and deadline_text == end_date_text and not issues:
+        issues.append(
+            {
+                "code": "deadline_equals_end_date_review",
+                "reason": "deadline과 end_date가 같아 source별 모집 마감일 매핑 확인이 필요합니다.",
+                "recommended_patch": {},
+            }
+        )
+
+    return issues
+
+
+def build_program_deadline_audit_report(*, limit: int) -> dict[str, Any]:
+    db_rows = fetch_program_deadline_audit_rows(limit)
+    items: list[dict[str, Any]] = []
+    issue_counts: dict[str, int] = {}
+    for row in db_rows:
+        issues = classify_program_deadline_issues(row)
+        if not issues:
+            continue
+        for issue in issues:
+            issue_counts[issue["code"]] = issue_counts.get(issue["code"], 0) + 1
+        items.append(
+            {
+                "id": row.get("id"),
+                "title": row.get("title"),
+                "source": row.get("source"),
+                "deadline": row.get("deadline"),
+                "close_date": row.get("close_date"),
+                "end_date": row.get("end_date"),
+                "is_active": row.get("is_active"),
+                "issues": issues,
+            }
+        )
+    return {
+        "mode": "dry-run",
+        "report": "program-deadline-search-candidate-gaps",
+        "candidate_count": len(db_rows),
+        "suspect_count": len(items),
+        "issue_counts": issue_counts,
+        "items": items,
+    }
 
 
 def build_work24_deadline_audit_report(*, limit: int) -> dict[str, Any]:
@@ -483,15 +634,23 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Dry-run report for Work24 rows whose deadline appears copied from training end_date.",
     )
+    parser.add_argument(
+        "--deadline-audit",
+        action="store_true",
+        help="Dry-run report for rows likely missing from recruiting-only deadline searches.",
+    )
     parser.add_argument("--format", choices=("json", "markdown"), default="json")
     parser.add_argument("--sample", type=int, default=3, help="Rows to print in markdown mode.")
     return parser
 
 
 def main() -> int:
+    configure_stdout()
     load_backend_env()
     args = build_parser().parse_args()
-    if args.work24_deadline_audit:
+    if args.deadline_audit:
+        report = build_program_deadline_audit_report(limit=args.limit)
+    elif args.work24_deadline_audit:
         report = build_work24_deadline_audit_report(limit=args.limit)
     else:
         report = build_report(
@@ -500,7 +659,7 @@ def main() -> int:
             overwrite=args.overwrite,
             deadline_from=args.deadline_from,
         )
-    if args.apply and not args.work24_deadline_audit:
+    if args.apply and not args.work24_deadline_audit and not args.deadline_audit:
         report = apply_report(report)
     if args.format == "markdown":
         print_markdown_table(report, sample=args.sample)

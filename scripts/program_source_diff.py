@@ -35,6 +35,7 @@ TRACKED_FIELDS = (
     "cost",
     "subsidy_amount",
     "compare_meta",
+    "raw_data",
 )
 
 UI_FIELDS = (
