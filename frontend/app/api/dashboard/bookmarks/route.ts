@@ -2,47 +2,50 @@ import { apiError, apiOk } from "@/lib/api/route-response";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Program } from "@/lib/types";
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
-
-type BackendBookmarkResponse = {
-  items?: Array<{
-    program_id?: string | null;
-    created_at?: string | null;
-    program?: Program | null;
-  }>;
+type BookmarkRow = {
+  program_id: string | null;
+  created_at: string | null;
 };
 
 export async function GET() {
   try {
     const supabase = await createServerSupabaseClient();
     const {
-      data: { session },
+      data: { user },
       error,
-    } = await supabase.auth.getSession();
-    const accessToken = !error && session?.access_token ? session.access_token : null;
+    } = await supabase.auth.getUser();
 
-    if (!accessToken) {
+    if (error || !user) {
       return apiError("로그인이 필요합니다.", 401, "UNAUTHORIZED");
     }
 
-    const response = await fetch(`${BACKEND_URL}/bookmarks`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-      cache: "no-store",
-    });
+    const { data: bookmarkRows, error: bookmarkError } = await supabase
+      .from("program_bookmarks")
+      .select("program_id, created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.detail || "찜한 프로그램을 불러오지 못했습니다.");
+    if (bookmarkError) {
+      throw new Error(bookmarkError.message || "찜한 프로그램을 불러오지 못했습니다.");
     }
 
-    const data = (await response.json()) as BackendBookmarkResponse;
-    const items = (data.items ?? []).map((item) => ({
+    const rows = ((bookmarkRows ?? []) as BookmarkRow[]).filter((row) => row.program_id);
+    const programIds = rows.map((row) => String(row.program_id));
+    const { data: programs, error: programsError } = programIds.length
+      ? await supabase.from("programs").select("*").in("id", programIds)
+      : { data: [] as Program[], error: null };
+
+    if (programsError) {
+      throw new Error(programsError.message || "찜한 프로그램 정보를 불러오지 못했습니다.");
+    }
+
+    const programMap = new Map(
+      ((programs ?? []) as Program[]).map((program) => [String(program.id ?? ""), program])
+    );
+    const items = rows.map((item) => ({
       programId: item.program_id ?? null,
       createdAt: item.created_at ?? null,
-      program: item.program ?? null,
+      program: item.program_id ? programMap.get(String(item.program_id)) ?? null : null,
     }));
 
     return apiOk({ items });

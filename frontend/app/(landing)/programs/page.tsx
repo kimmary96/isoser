@@ -4,6 +4,7 @@ import Link from "next/link";
 import AdSlot from "@/components/AdSlot";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { getProgramCount, getProgramFilterOptions, listPrograms } from "@/lib/api/backend";
+import { buildUrgentProgramChips, buildUrgentProgramsParams } from "@/lib/programs-page-layout";
 import { getSiteUrl } from "@/lib/seo";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Program, ProgramSort } from "@/lib/types";
@@ -477,9 +478,7 @@ function ProgramKeywordList({ keywords }: { keywords: string[] }) {
 function UrgentProgramCompactCard({ program }: { program: Program }) {
   const programId = String(program.id ?? "");
   const href = programId ? `/programs/${encodeURIComponent(programId)}` : "/programs";
-  const chips = Array.from(
-    new Set([...getDisplayCategories(program), ...normalizeTextList(program.extracted_keywords), ...normalizeTextList(program.skills)])
-  ).slice(0, 4);
+  const chips = buildUrgentProgramChips(program);
   const summary = program.summary || program.description;
   const deadline = deadlineLabel(program);
 
@@ -745,12 +744,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
         limit: PAGE_SIZE,
         offset,
       }),
-      listPrograms({
-        recruiting_only: true,
-        sort: "deadline",
-        limit: 12,
-        offset: 0,
-      }),
+      listPrograms(buildUrgentProgramsParams()),
       getProgramCount({
         q: q || undefined,
         category: selectedCategory.category !== "전체" ? selectedCategory.category : undefined,

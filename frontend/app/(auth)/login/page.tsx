@@ -58,20 +58,20 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <section className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm sm:p-10">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">Login</p>
             <h1 className="mt-4 text-4xl font-extrabold tracking-[-0.05em] text-slate-950 sm:text-5xl">
-              프로그램 탐색과 비교를
+              로그인하면 찜과 추천을
               <br />
-              같은 화면 흐름으로 이어갑니다
+              한 번에 이어서 볼 수 있습니다
             </h1>
             <p className="mt-5 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
-              로그인 전 공개 화면과 로그인 후 화면이 끊기지 않도록 맞췄습니다. 로그인 후에도 같은 랜딩과 탐색 흐름을
-              유지하면서, 추천과 문서 준비 기능만 자연스럽게 이어집니다.
+              로그인하면 찜한 프로그램을 저장하고, 내 정보에 맞는 추천과 관련도까지 함께 확인할 수 있습니다.
+              이후에는 활동 정리와 문서 준비 기능까지 이어서 사용할 수 있습니다.
             </p>
 
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
               {[
-                ["탐색", "오늘 기준 마감순으로 공고를 빠르게 확인"],
-                ["비교", "최대 3개 프로그램을 나란히 검토"],
-                ["추천", "로그인 후 같은 흐름에서 개인화 기능 확장"],
+                ["찜", "관심 있는 프로그램을 저장하고 다시 모아보기"],
+                ["추천", "내 정보 기준 맞춤 프로그램과 관련도 확인"],
+                ["문서 준비", "활동 정리와 자기소개서 준비 기능까지 확장"],
               ].map(([title, description]) => (
                 <div key={title} className="rounded-2xl bg-slate-50 p-4">
                   <div className="text-sm font-semibold text-slate-950">{title}</div>
@@ -85,7 +85,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             <div className="text-center">
               <h2 className="text-2xl font-bold text-slate-950">Google로 시작하기</h2>
               <p className="mt-2 text-sm text-slate-500">
-                로그인 후에는 다시 예전 랜딩으로 보내지지 않고, 현재 보고 있는 흐름으로 그대로 돌아갑니다.
+                로그인하면 찜한 프로그램 저장, 맞춤 추천 확인, 문서 준비 기능을 바로 사용할 수 있습니다.
               </p>
             </div>
 
@@ -121,8 +121,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             </a>
 
             <p className="mt-4 text-center text-xs leading-5 text-slate-500">
-              로그인 없이도 프로그램 탐색과 비교는 가능하며, 로그인 후에는 같은 화면 구조 위에 추천과 문서 기능이
-              추가됩니다.
+              로그인 없이도 탐색과 비교는 가능하고, 로그인하면 찜, 추천, 문서 준비 기능이 함께 열립니다.
             </p>
           </section>
         </div>

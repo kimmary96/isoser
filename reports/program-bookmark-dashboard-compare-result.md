@@ -42,6 +42,14 @@
 - `npm run lint -- --file "app/dashboard/page.tsx" --file "app/(landing)/compare/program-select-modal.tsx"`: 통과.
 - `npx tsc -p tsconfig.codex-check.json --noEmit`: 통과.
 
+## 후속 수정
+
+- 비교 모달의 찜한 프로그램 탭이 `찜한 프로그램을 불러오는 중입니다...` 상태에 머무를 수 있어, `frontend/app/api/dashboard/bookmarks/route.ts`의 GET 경로를 backend `/bookmarks` 프록시 대신 현재 Supabase 로그인 사용자 기준 직접 조회로 변경했다.
+- 전체 검색 탭의 운영 기관, 추천 대상, 선발 절차, 채용 연계 필터와 `/programs/filter-options` 호출을 제거하고 검색어 기반 검색만 남겼다.
+- 추가 검증:
+  - `npm run lint -- --file "app/api/dashboard/bookmarks/route.ts" --file "app/(landing)/compare/program-select-modal.tsx"`: 통과.
+  - `npx tsc -p tsconfig.codex-check.json --noEmit`: 통과.
+
 ## 추가 리팩토링 후보
 
 - 북마크 상태를 대시보드에서도 삭제/해제할 수 있게 하려면 공용 bookmark card/action 컴포넌트로 분리할 수 있다.

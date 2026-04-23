@@ -2620,7 +2620,18 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - 대시보드에 `program_bookmarks` 기반 `찜한 훈련` 섹션을 추가해 목록/상세에서 북마크한 프로그램을 같은 dashboard bookmark BFF로 조회해 보여주도록 함
   - 비교 프로그램 선택 모달은 닫았다 다시 열 때 찜 목록을 새로 조회하도록 조정해 최근 북마크 변경이 모달에 반영되게 함
   - 기존 북마크 저장/삭제 BFF와 backend `/bookmarks` 계약은 유지하고, 대시보드/비교는 같은 저장 상태를 읽는 방식으로 연결함
+- 2026-04-23: `frontend/app/api/dashboard/bookmarks/route.ts`, `frontend/app/(landing)/compare/program-select-modal.tsx`, `docs/current-state.md`, `reports/program-bookmark-dashboard-compare-result.md`
+  - 찜 목록 BFF의 GET 경로를 backend 프록시 대기 대신 현재 Supabase 로그인 사용자 기준 `program_bookmarks`/`programs` 직접 조회로 바꿔 비교 모달 loading 고착 가능성을 줄임
+  - 비교 모달 전체 검색 탭에서 운영 기관/추천 대상/선발 절차/채용 연계 필터 select와 filter-options 호출을 제거하고 검색어 기반 목록만 남김
+- 2026-04-23: `frontend/app/(auth)/login/page.tsx`, `frontend/app/(landing)/programs/program-bookmark-button.tsx`, `frontend/app/(landing)/programs/program-card.tsx`, `docs/current-state.md`, `reports/login-bookmark-auth-flow-result.md`
+  - 로그인 페이지 문구를 공개/랜딩 복귀 설명 대신 찜 저장, 맞춤 추천, 문서 준비 기능을 사용할 수 있다는 안내로 조정함
+  - 비로그인 사용자가 프로그램 목록/상세의 별 버튼을 누르면 현재 경로와 query/hash를 `redirectedFrom`으로 보존해 로그인 페이지로 이동하도록 변경함
+  - `ProgramCard`의 별 버튼 직접 구현을 제거하고 공용 `ProgramBookmarkButton`으로 위임해 목록 카드에서도 같은 로그인 유도/찜 동작을 사용하도록 정리함
+  - 로그인 사용자의 기존 dashboard bookmark BFF 저장/삭제 흐름과 pending 중복 클릭 방어는 유지함
 - 2026-04-23: `backend/routers/admin.py`, `backend/tests/test_admin_router.py`, `backend/tests/test_programs_router.py`, `reports/work24-default-exposure-sync-result-2026-04-23.md`
   - 운영 Work24 서울 live sync를 재실행해 보류됐던 신규 row를 재시도했고, 1차 estimated new rows 2,434건과 2차 idempotency 0건을 확인함
   - admin sync upsert를 100건 단위 batch로 나눠 Supabase payload/timeout 리스크를 줄임
   - `/programs` 기본 노출은 창업/source 명시 필터가 없을 때 Work24 70% mix를 유지하고, 창업 필터에서는 mix를 적용하지 않는 회귀 테스트를 추가함
+- 2026-04-23: `frontend/lib/programs-page-layout.ts`, `frontend/lib/programs-page-layout.test.ts`, `frontend/app/(landing)/programs/page.tsx`, `reports/programs-page-layout-regression-tests-result.md`
+  - `/programs` 마감임박 섹션이 검색/필터와 독립적으로 조회되는 정책을 `buildUrgentProgramsParams()` helper로 분리하고 Vitest로 고정함
+  - 마감임박 압축 카드 chip 중복 제거를 `buildUrgentProgramChips()` helper로 분리해 React duplicate key 회귀를 테스트로 방어함
