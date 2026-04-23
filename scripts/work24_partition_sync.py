@@ -19,7 +19,7 @@ for path in (REPO_ROOT, BACKEND_ROOT):
     if path_text not in sys.path:
         sys.path.insert(0, path_text)
 
-from backend.rag.runtime_config import load_backend_dotenv  # noqa: E402
+from backend.rag.runtime_config import load_backend_dotenv, resolve_chroma_mode  # noqa: E402
 from backend.rag.source_adapters.work24_supplementary import Work24SupplementaryAdapter  # noqa: E402
 from backend.rag.source_adapters.work24_training import (  # noqa: E402
     DEFAULT_PAGE_SIZE,
@@ -31,6 +31,7 @@ from backend.rag.source_adapters.work24_training import (  # noqa: E402
 from backend.routers.admin import (  # noqa: E402
     _deduplicate_program_rows,
     _normalize_program_row,
+    _sync_program_batches,
     _upsert_program_payload,
 )
 
@@ -39,6 +40,12 @@ from backend.routers.admin import (  # noqa: E402
 class RegionPartition:
     code: str
     name: str
+
+
+@dataclass
+class PartitionSyncOutcome:
+    report: dict[str, Any]
+    upserted_rows: list[dict[str, Any]]
 
 
 REGION_PARTITIONS: tuple[RegionPartition, ...] = (
@@ -63,6 +70,19 @@ REGION_PARTITIONS: tuple[RegionPartition, ...] = (
 
 REGION_PARTITION_BY_CODE = {partition.code: partition for partition in REGION_PARTITIONS}
 REGION_PARTITION_BY_NAME = {partition.name: partition for partition in REGION_PARTITIONS}
+CHROMA_SYNC_FIELDS = (
+    "id",
+    "title",
+    "summary",
+    "description",
+    "category",
+    "location",
+    "provider",
+    "is_active",
+    "end_date",
+    "tags",
+    "skills",
+)
 
 
 def configure_stdout() -> None:
@@ -89,6 +109,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--sleep-seconds", dest="sleep_seconds", type=float, default=0.5)
     parser.add_argument("--region-pause-seconds", dest="region_pause_seconds", type=float, default=1.0)
     parser.add_argument("--upsert-retries", dest="upsert_retries", type=int, default=3)
+    parser.add_argument(
+        "--sync-chroma-at-end",
+        action="store_true",
+        help="After apply, sync upserted programs to persistent Chroma. Skips when CHROMA_MODE is not persistent.",
+    )
     parser.add_argument("--report-path", dest="report_path", default=None, help="Optional JSON report output path.")
     return parser.parse_args()
 
@@ -196,7 +221,7 @@ async def sync_partition(
     end_dt: str,
     max_pages: int | None,
     upsert_retries: int,
-) -> dict[str, Any]:
+) -> PartitionSyncOutcome:
     started_at = perf_counter()
     fetched_rows = adapter.fetch_all(
         start_dt=start_dt,
@@ -231,7 +256,7 @@ async def sync_partition(
             if attempt < max(upsert_retries, 1):
                 await asyncio.sleep(min(2 * attempt, 10))
     duration_seconds = round(perf_counter() - started_at, 3)
-    result = {
+    result: dict[str, Any] = {
         "code": partition.code,
         "name": partition.name,
         "fetched_rows": len(fetched_rows or []),
@@ -242,6 +267,57 @@ async def sync_partition(
     }
     if last_error:
         result["error"] = last_error
+    return PartitionSyncOutcome(report=result, upserted_rows=rows or [])
+
+
+def build_chroma_sync_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    chroma_rows: list[dict[str, Any]] = []
+    seen_ids: set[str] = set()
+    for row in rows:
+        program_id = str(row.get("id") or "").strip()
+        if not program_id or program_id in seen_ids:
+            continue
+        seen_ids.add(program_id)
+        chroma_rows.append({field: row.get(field) for field in CHROMA_SYNC_FIELDS if field in row})
+    return chroma_rows
+
+
+async def sync_chroma_rows_at_end(
+    rows: list[dict[str, Any]],
+    *,
+    apply_mode: bool,
+    sync_requested: bool,
+) -> dict[str, Any] | None:
+    if not sync_requested:
+        return None
+
+    chroma_mode = resolve_chroma_mode()
+    candidate_rows = build_chroma_sync_rows(rows)
+    result: dict[str, Any] = {
+        "requested": True,
+        "chroma_mode": chroma_mode,
+        "candidate_count": len(candidate_rows),
+    }
+    if not apply_mode:
+        result.update({"status": "skipped", "reason": "requires_apply"})
+        return result
+    if chroma_mode != "persistent":
+        result.update({"status": "skipped", "reason": "non_persistent_chroma_mode"})
+        return result
+    if not candidate_rows:
+        result.update({"status": "skipped", "reason": "no_upserted_rows"})
+        return result
+
+    started_at = perf_counter()
+    synced_count, skipped_count = await _sync_program_batches(candidate_rows)
+    result.update(
+        {
+            "status": "completed",
+            "synced_count": synced_count,
+            "skipped_count": skipped_count,
+            "duration_seconds": round(perf_counter() - started_at, 3),
+        }
+    )
     return result
 
 
@@ -289,9 +365,10 @@ async def main() -> None:
         "sync_results": [],
     }
 
+    chroma_source_rows: list[dict[str, Any]] = []
     if args.apply:
         for index, partition in enumerate(partitions):
-            sync_result = await sync_partition(
+            sync_outcome = await sync_partition(
                 adapter,
                 partition=partition,
                 start_dt=start_dt,
@@ -299,11 +376,23 @@ async def main() -> None:
                 max_pages=args.max_pages,
                 upsert_retries=args.upsert_retries,
             )
-            result["sync_results"].append(sync_result)
-            print(json.dumps({"event": "partition_synced", **sync_result}, ensure_ascii=False))
+            result["sync_results"].append(sync_outcome.report)
+            if args.sync_chroma_at_end:
+                chroma_source_rows.extend(sync_outcome.upserted_rows)
+            print(json.dumps({"event": "partition_synced", **sync_outcome.report}, ensure_ascii=False))
             write_json_report(args.report_path, result)
             if index + 1 < len(partitions) and args.region_pause_seconds > 0:
                 await asyncio.sleep(args.region_pause_seconds)
+
+    if args.sync_chroma_at_end:
+        chroma_sync_result = await sync_chroma_rows_at_end(
+            chroma_source_rows,
+            apply_mode=args.apply,
+            sync_requested=args.sync_chroma_at_end,
+        )
+        if chroma_sync_result is not None:
+            result["chroma_sync"] = chroma_sync_result
+            print(json.dumps({"event": "chroma_sync", **chroma_sync_result}, ensure_ascii=False))
 
     write_json_report(args.report_path, result)
 

@@ -81,6 +81,14 @@ backend\venv\Scripts\python.exe scripts\work24_partition_sync.py --include-seoul
 backend\venv\Scripts\python.exe scripts\work24_partition_sync.py --apply --stop-after 대전 --report-path reports\work24_partition_sync_to_daejeon_YYYYMMDD.json
 ```
 
+DB upsert가 끝난 뒤 추천 인덱스까지 함께 갱신하려면 persistent Chroma 환경에서 `--sync-chroma-at-end`를 붙입니다. 이 옵션은 `--apply` 실행 뒤 실제 upsert된 row만 dedupe해서 Chroma programs collection에 sync합니다. `CHROMA_MODE`가 `persistent`가 아니면 인덱스가 프로세스 종료 후 유지되지 않으므로 report에 `status=skipped`, `reason=non_persistent_chroma_mode`를 남기고 Chroma sync를 실행하지 않습니다.
+
+```powershell
+$env:CHROMA_MODE="persistent"
+$env:CHROMA_PERSIST_DIR="D:\isoser-chroma-store"
+backend\venv\Scripts\python.exe scripts\work24_partition_sync.py --apply --sync-chroma-at-end --report-path reports\work24_partition_sync_with_chroma_YYYYMMDD.json
+```
+
 ## Region Normalization
 
 Work24 응답의 `address`와 `trngAreaCd`를 사용해 `programs.region`과 `programs.region_detail`을 채웁니다.

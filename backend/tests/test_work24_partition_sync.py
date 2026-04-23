@@ -1,6 +1,15 @@
 from __future__ import annotations
 
-from scripts.work24_partition_sync import REGION_PARTITIONS, ordered_region_partitions
+import asyncio
+from typing import Any
+
+from scripts import work24_partition_sync
+from scripts.work24_partition_sync import (
+    REGION_PARTITIONS,
+    build_chroma_sync_rows,
+    ordered_region_partitions,
+    sync_chroma_rows_at_end,
+)
 
 
 def test_work24_region_partition_order_covers_17_regions_once() -> None:
@@ -30,3 +39,88 @@ def test_work24_region_partition_order_can_stop_after_region() -> None:
     partitions = ordered_region_partitions(include_seoul=False, stop_after="대전")
 
     assert [partition.code for partition in partitions] == ["41", "28", "51", "43", "44", "36", "30"]
+
+
+def test_build_chroma_sync_rows_deduplicates_by_program_id() -> None:
+    rows = [
+        {"id": "program-1", "title": "첫 과정", "description": "설명", "ignored": "value"},
+        {"id": "program-1", "title": "중복 과정"},
+        {"id": "", "title": "id 없는 과정"},
+        {"id": "program-2", "title": "둘째 과정", "skills": ["AI"]},
+    ]
+
+    chroma_rows = build_chroma_sync_rows(rows)
+
+    assert [row["id"] for row in chroma_rows] == ["program-1", "program-2"]
+    assert "ignored" not in chroma_rows[0]
+    assert chroma_rows[1]["skills"] == ["AI"]
+
+
+def test_chroma_sync_at_end_requires_apply_mode(monkeypatch) -> None:
+    monkeypatch.setattr(work24_partition_sync, "resolve_chroma_mode", lambda: "persistent")
+
+    result = asyncio.run(
+        sync_chroma_rows_at_end(
+            [{"id": "program-1", "title": "과정"}],
+            apply_mode=False,
+            sync_requested=True,
+        )
+    )
+
+    assert result == {
+        "requested": True,
+        "chroma_mode": "persistent",
+        "candidate_count": 1,
+        "status": "skipped",
+        "reason": "requires_apply",
+    }
+
+
+def test_chroma_sync_at_end_skips_non_persistent_mode(monkeypatch) -> None:
+    monkeypatch.setattr(work24_partition_sync, "resolve_chroma_mode", lambda: "ephemeral")
+
+    result = asyncio.run(
+        sync_chroma_rows_at_end(
+            [{"id": "program-1", "title": "과정"}],
+            apply_mode=True,
+            sync_requested=True,
+        )
+    )
+
+    assert result == {
+        "requested": True,
+        "chroma_mode": "ephemeral",
+        "candidate_count": 1,
+        "status": "skipped",
+        "reason": "non_persistent_chroma_mode",
+    }
+
+
+def test_chroma_sync_at_end_runs_in_persistent_mode(monkeypatch) -> None:
+    captured_rows: list[dict[str, Any]] = []
+
+    async def fake_sync_program_batches(rows: list[dict[str, Any]]) -> tuple[int, int]:
+        captured_rows.extend(rows)
+        return len(rows), 0
+
+    monkeypatch.setattr(work24_partition_sync, "resolve_chroma_mode", lambda: "persistent")
+    monkeypatch.setattr(work24_partition_sync, "_sync_program_batches", fake_sync_program_batches)
+
+    result = asyncio.run(
+        sync_chroma_rows_at_end(
+            [
+                {"id": "program-1", "title": "첫 과정"},
+                {"id": "program-1", "title": "중복 과정"},
+                {"id": "program-2", "title": "둘째 과정"},
+            ],
+            apply_mode=True,
+            sync_requested=True,
+        )
+    )
+
+    assert [row["id"] for row in captured_rows] == ["program-1", "program-2"]
+    assert result is not None
+    assert result["status"] == "completed"
+    assert result["candidate_count"] == 2
+    assert result["synced_count"] == 2
+    assert result["skipped_count"] == 0
