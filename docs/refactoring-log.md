@@ -1,5 +1,20 @@
 # 리팩토링 로그
 
+- 2026-04-24: `backend/rag/collector/quality_validator.py`, `scripts/html_collector_diagnostic.py`, `backend/tests/test_collector_quality_validator.py`, `backend/tests/test_html_collector_diagnostic_cli.py`, `docs/current-state.md`, `docs/refactoring-log.md`
+  - OCR preflight `field_gap_audit`에 source별 `rows_with_warning_or_error`, `warning_or_error_follow_up_needed`, `field_gap_follow_up_bucket`을 추가해 info-only gap과 실제 warning/error 후속 조치 대상을 명시적으로 분리함
+  - 집계 `field_gap_summary`에도 `source_count_with_warning_or_error_follow_up`를 추가하고 Markdown 표/요약에서 같은 bucket을 그대로 노출해 operator가 raw issue code를 다시 해석하지 않아도 되게 함
+  - `missing_provider` 같은 info-only gap은 `info_only` bucket으로 남고, warning/error가 하나라도 있으면 `warning_or_error_follow_up_needed` bucket으로 승격되는 회귀 테스트를 추가함
+
+- 2026-04-24: `cowork_watcher.py`, `tests/test_cowork_watcher.py`, `docs/current-state.md`
+  - cowork packet review에서 optional `planned_worktree_fingerprint` mismatch를 더 이상 승격 전 하드 blocker로 쓰지 않도록 완화함
+  - dirty worktree나 packet 바깥 변경이 있어도 review/approval 흐름은 계속 진행하고, fingerprint는 reviewer 참고 정보로만 취급하도록 prompt와 gate를 정리함
+  - 검증: `python -m pytest tests/test_cowork_watcher.py -q` (repo root를 `PYTHONPATH`에 추가한 환경) 통과
+
+- 2026-04-24: `scripts/html_collector_diagnostic.py`, `backend/tests/test_html_collector_diagnostic_cli.py`, `docs/refactoring-log.md`
+  - HTML diagnostic source summary가 현재 단일 실행 기준 `repeated_parse_empty_in_run` boolean을 JSON/Markdown에 함께 노출하도록 보강함
+  - 이 신호는 기존 `classification`을 대체하지 않고, structured `url_diagnostics` 우선 집계 기준 `parse_empty >= 2`일 때만 true가 되도록 고정함
+  - 검증: `backend\venv\Scripts\python.exe -m pytest backend/tests/test_html_collector_diagnostic_cli.py -q` 통과 (`12 passed`), `backend\venv\Scripts\python.exe -m pytest backend/tests/test_tier2_collectors.py backend/tests/test_tier3_collectors.py backend/tests/test_tier4_collectors.py backend/tests/test_scheduler_collectors.py -q` 통과 (`37 passed`)
+
 - 2026-04-24: `backend/tests/test_html_collector_diagnostic_cli.py`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-scheduler-summary-consumer-smoke-test-result.md`
   - scheduler summary bundle이 가리키는 `docs/schemas/html-collector-scheduler-summary.schema.json`을 test consumer가 직접 읽어, 직렬화된 JSON 리포트의 `scheduler_dry_run` / `sources[*].scheduler_dry_run` / nested `quality` payload가 schema contract와 어긋나지 않는지 smoke test로 고정함
   - 외부 `jsonschema` 의존성을 새로 넣지 않고, 현재 schema에서 쓰는 `const`, `required`, `additionalProperties`, `oneOf`, primitive type/minimum만 읽는 가벼운 validator를 테스트 내부에 두어 Windows 로컬 환경에서도 바로 검증 가능하게 함
@@ -2893,3 +2908,18 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - `/programs` 페이지와 필터 바에 흩어져 있던 정렬 라벨/허용값/기본값/정규화 로직을 `program-sort.ts`로 모아 `popular` 누락 재발 위험을 줄임
   - 필터 바 정렬 메뉴가 공용 계약을 직접 사용하도록 바꿔, backend/URL에서 이미 지원하던 `popular` 정렬을 UI에서도 바로 선택할 수 있게 맞춤
   - `program-sort.test.ts`로 허용값과 라벨 동기화, query sort 정규화 fallback을 고정함
+## 2026-04-24 cowork review-failed 중복 알림 억제
+
+- 변경 이유
+  - 같은 packet을 짧은 시간에 반복 review하면 의미가 같은 `review-failed` dispatch와 Slack 알림이 누적되어 stale 실패를 현재 상태로 오해하기 쉬웠음
+- 영향 범위
+  - `cowork_watcher.py`
+  - `tests/test_cowork_watcher.py`
+  - `docs/current-state.md`
+- 리스크
+  - 비교 기준에서 `created_at`과 supersede 메타를 제외하므로, 시각만 달라진 동일 실패는 새 알림으로 발행되지 않음
+- 테스트 포인트
+  - 같은 내용의 `review-failed` 재발행 시 dispatch/ledger/Slack 중복이 생기지 않는지
+  - `review-ready` 전환 시 이전 `review-failed` dispatch가 제거되고 supersede 메타가 남는지
+- 추가 리팩토링 후보
+  - Slack thread update API를 써서 이미 전송된 과거 실패 메시지도 stale 표기로 갱신하는 경로 검토

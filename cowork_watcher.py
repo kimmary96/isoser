@@ -411,7 +411,8 @@ def build_review_prompt(packet_filename: str, task_id: str) -> str:
         f"Do not implement code. Do not edit source files. "
         f"Review only the task packet for execution readiness against the current repository. "
         f"Check frontmatter completeness, repository path accuracy, drift risk, ambiguity, acceptance clarity, and missing references. "
-        f"If the packet contains optional planned_files or planned_worktree_fingerprint metadata, verify that those fields still match the current worktree. "
+        f"If the packet contains optional planned_files or planned_worktree_fingerprint metadata, treat them as advisory context only. "
+        f"Mention a mismatch when it materially affects the touched area, but do not mark the packet not ready solely because the repository worktree is dirty or changed outside the packet review flow. "
         f"If needed, inspect only directly relevant local files. "
         f"Write the review to cowork/reviews/{task_id}-review.md. "
         f"Use short sections: Overall assessment, Findings, Recommendation. "
@@ -449,19 +450,61 @@ def run_codex_review(packet_filename: str, task_id: str) -> tuple[int, Optional[
 
 def write_dispatch(task_id: str, stage: str, lines: list[str]) -> str:
     dispatch_path = os.path.join(COWORK_DISPATCH_DIR, f"{task_id}-{stage}.md")
-    if stage == "review-ready" and os.path.exists(dispatch_path):
-        existing_lines = read_markdown(dispatch_path).splitlines()
-        previous_created_at = ""
+
+    def previous_created_at_for(path: str) -> str:
+        if not os.path.exists(path):
+            return ""
+        existing_lines = read_markdown(path).splitlines()
         for existing_line in existing_lines:
             stripped = existing_line.strip()
             if stripped.startswith("created_at:"):
-                previous_created_at = stripped.removeprefix("created_at:").strip()
-                break
-        if previous_created_at:
+                return stripped.removeprefix("created_at:").strip()
+        return ""
+
+    def comparable_dispatch_lines(raw_lines: list[str]) -> list[str]:
+        comparable: list[str] = []
+        for raw_line in raw_lines:
+            stripped = raw_line.strip()
+            if (
+                stripped.startswith("created_at:")
+                or stripped.startswith("- supersedes_previous_review_ready:")
+                or stripped.startswith("- supersedes_previous_review_failed:")
+            ):
+                continue
+            comparable.append(stripped)
+        return comparable
+
+    if stage == "review-failed" and os.path.exists(dispatch_path):
+        existing_lines = read_markdown(dispatch_path).splitlines()
+        if comparable_dispatch_lines(existing_lines) == comparable_dispatch_lines(lines):
+            return dispatch_path
+        previous_failed_created_at = previous_created_at_for(dispatch_path)
+        if previous_failed_created_at:
             lines = [
                 *lines,
-                f"- supersedes_previous_review_ready: {previous_created_at}",
+                f"- supersedes_previous_review_failed: {previous_failed_created_at}",
             ]
+
+    if stage == "review-ready":
+        previous_ready_created_at = previous_created_at_for(dispatch_path)
+        if previous_ready_created_at:
+            lines = [
+                *lines,
+                f"- supersedes_previous_review_ready: {previous_ready_created_at}",
+            ]
+
+        previous_failed_path = os.path.join(COWORK_DISPATCH_DIR, f"{task_id}-review-failed.md")
+        previous_failed_created_at = previous_created_at_for(previous_failed_path)
+        if previous_failed_created_at:
+            lines = [
+                *lines,
+                f"- supersedes_previous_review_failed: {previous_failed_created_at}",
+            ]
+            try:
+                os.remove(previous_failed_path)
+            except OSError:
+                pass
+
     write_markdown(dispatch_path, "\n".join(lines))
     append_run_ledger(
         task_id,
@@ -698,6 +741,7 @@ def format_slack_dispatch_message(*, task_id: str, stage: str, lines: list[str])
         "- freshness:",
         "- note:",
         "- supersedes_previous_review_ready:",
+        "- supersedes_previous_review_failed:",
     )
     for line in lines:
         stripped = line.strip()
@@ -729,6 +773,16 @@ def format_slack_dispatch_message(*, task_id: str, stage: str, lines: list[str])
                     "*최신본 안내*",
                     f"- 이 알림은 이전 검토 준비 메시지를 대체합니다.",
                     f"- 기준 시각: {previous_created_at}",
+                ]
+            )
+        elif stripped.startswith("- supersedes_previous_review_failed:"):
+            previous_created_at = stripped.removeprefix("- supersedes_previous_review_failed:").strip()
+            message_lines.extend(
+                [
+                    "",
+                    "*최신 상태 안내*",
+                    "- 이 알림 기준으로 이전 검토 실패 상태는 더 이상 최신 상태가 아닙니다.",
+                    f"- 이전 실패 시각: {previous_created_at}",
                 ]
             )
 
@@ -1101,47 +1155,10 @@ def handle_packet_review(packet_path: str) -> None:
 
     fingerprint_details = worktree_fingerprint_details(PROJECT_PATH, metadata)
     if fingerprint_details and not bool(fingerprint_details["matches"]):
-        reset_stale_promotion_state(task_id)
-        write_markdown(
-            review_path,
-            "\n".join(
-                [
-                    f"# Review: {task_id}",
-                    "",
-                    "## Overall assessment",
-                    "",
-                    "아직 승격 준비가 되지 않았습니다.",
-                    "",
-                    "## Findings",
-                    "",
-                    "- Worktree fingerprint mismatch: packet의 optional fingerprint가 현재 planned files 상태와 다릅니다.",
-                    f"- planned_files: {', '.join(f'`{path}`' for path in fingerprint_details['planned_files'])}",
-                    f"- planned_worktree_fingerprint: `{fingerprint_details['planned_fingerprint']}`",
-                    f"- actual_worktree_fingerprint: `{fingerprint_details['actual_fingerprint']}`",
-                    "",
-                    "## Recommendation",
-                    "",
-                    "planned files 기준으로 packet fingerprint를 다시 고정한 뒤 review를 재생성하세요.",
-                ]
-            ),
+        print(
+            "경고: packet review 시 optional worktree fingerprint mismatch 감지 "
+            f"(task={task_id})"
         )
-        write_dispatch(
-            task_id,
-            "review-ready",
-            [
-                f"# Dispatch: {task_id}",
-                "",
-                "stage: review-ready",
-                "status: action-required",
-                f"packet: `cowork/packets/{filename}`",
-                f"review: `cowork/reviews/{task_id}-review.md`",
-                f"created_at: `{datetime.now().isoformat(timespec='seconds')}`",
-                "- freshness: review is aligned with the current packet contents",
-                "- note: optional planned worktree fingerprint is stale and must be refreshed before promotion",
-            ],
-        )
-        print(f"review 생성: {filename} (worktree fingerprint mismatch)")
-        return
 
     try:
         exit_code, token_count = run_codex_review(filename, task_id)

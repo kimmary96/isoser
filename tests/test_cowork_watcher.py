@@ -718,6 +718,23 @@ def test_format_slack_dispatch_message_localizes_review_failed_note() -> None:
     assert "Codex review 프로세스가 기대한 review 파일을 만들기 전에 실패했습니다." in message
 
 
+def test_format_slack_dispatch_message_marks_review_failed_as_stale_when_ready() -> None:
+    message = cowork_watcher.format_slack_dispatch_message(
+        task_id="TASK-TEST",
+        stage="review-ready",
+        lines=[
+            "# Dispatch: TASK-TEST",
+            "",
+            "stage: review-ready",
+            "status: pending-approval",
+            "- supersedes_previous_review_failed: `2026-04-24T00:40:01`",
+        ],
+    )
+
+    assert "*최신 상태 안내*" in message
+    assert "이전 검토 실패 상태는 더 이상 최신 상태가 아닙니다." in message
+
+
 def test_build_slack_dispatch_payload_adds_buttons_for_review_ready() -> None:
     payload = cowork_watcher.build_slack_dispatch_payload(
         task_id="TASK-TEST",
@@ -801,7 +818,7 @@ def test_write_local_approval_from_remote_preserves_slack_thread_metadata(tmp_pa
     assert "slack_channel_id: C123" in text
 
 
-def test_handle_packet_review_blocks_stale_optional_worktree_fingerprint(tmp_path: Path, monkeypatch) -> None:
+def test_handle_packet_review_does_not_block_stale_optional_worktree_fingerprint(tmp_path: Path, monkeypatch) -> None:
     packets_dir = tmp_path / "packets"
     reviews_dir = tmp_path / "reviews"
     dispatch_dir = tmp_path / "dispatch"
@@ -847,12 +864,33 @@ def test_handle_packet_review_blocks_stale_optional_worktree_fingerprint(tmp_pat
     monkeypatch.setattr(cowork_watcher, "TASKS_REMOTE_DIR", str(remote_dir))
     monkeypatch.setattr(cowork_watcher, "current_head", lambda: "abc123")
 
+    def fake_run_codex_review(_filename: str, task_id: str) -> tuple[int, int | None]:
+        (reviews_dir / f"{task_id}-review.md").write_text(
+            "\n".join(
+                [
+                    "# Overall assessment",
+                    "",
+                    "Packet is aligned.",
+                    "",
+                    "# Recommendation",
+                    "",
+                    "Promote as-is.",
+                ]
+            ),
+            encoding="utf-8",
+        )
+        return (0, 77)
+
+    monkeypatch.setattr(cowork_watcher, "run_codex_review", fake_run_codex_review)
+    monkeypatch.setattr(cowork_watcher, "notify_slack_for_dispatch", lambda **kwargs: None)
+
     cowork_watcher.handle_packet_review(str(packet))
 
     review_text = (reviews_dir / "TASK-TEST-FP-REVIEW-review.md").read_text(encoding="utf-8")
-    assert "Worktree fingerprint mismatch" in review_text
+    assert "Promote as-is." in review_text
     dispatch_text = (dispatch_dir / "TASK-TEST-FP-REVIEW-review-ready.md").read_text(encoding="utf-8")
-    assert "optional planned worktree fingerprint is stale" in dispatch_text
+    assert "status: pending-approval" in dispatch_text
+    assert "optional planned worktree fingerprint is stale" not in dispatch_text
 
 
 def test_stamp_commit_placeholder_only_updates_frontmatter_field(tmp_path: Path, monkeypatch) -> None:
@@ -920,3 +958,81 @@ def test_safe_run_packet_handler_keeps_cowork_watcher_alive_after_runtime_except
     assert "cowork loop crash" in dispatch_body
     ledger_body = ledger_path.read_text(encoding="utf-8")
     assert '"stage": "runtime-error"' in ledger_body
+
+
+def test_write_dispatch_skips_duplicate_review_failed_notification(tmp_path: Path, monkeypatch) -> None:
+    dispatch_dir = tmp_path / "dispatch"
+    dispatch_dir.mkdir(parents=True, exist_ok=True)
+
+    notified: list[tuple[str, str, list[str]]] = []
+    ledger_events: list[tuple[str, str, str]] = []
+
+    monkeypatch.setattr(cowork_watcher, "COWORK_DISPATCH_DIR", str(dispatch_dir))
+    monkeypatch.setattr(
+        cowork_watcher,
+        "notify_slack_for_dispatch",
+        lambda *, task_id, stage, lines: notified.append((task_id, stage, lines)),
+    )
+    monkeypatch.setattr(
+        cowork_watcher,
+        "append_run_ledger",
+        lambda task_id, stage, status, **_kwargs: ledger_events.append((task_id, stage, status)),
+    )
+
+    lines = [
+        "# Dispatch: TASK-TEST-DEDUPE",
+        "",
+        "stage: review-failed",
+        "status: action-required",
+        "packet: `cowork/packets/TASK-TEST-DEDUPE.md`",
+        "- note: review states the packet is not ready for promotion",
+    ]
+
+    cowork_watcher.write_dispatch("TASK-TEST-DEDUPE", "review-failed", lines)
+    first_body = (dispatch_dir / "TASK-TEST-DEDUPE-review-failed.md").read_text(encoding="utf-8")
+    cowork_watcher.write_dispatch("TASK-TEST-DEDUPE", "review-failed", lines)
+    second_body = (dispatch_dir / "TASK-TEST-DEDUPE-review-failed.md").read_text(encoding="utf-8")
+
+    assert first_body == second_body
+    assert len(notified) == 1
+    assert ledger_events == [("TASK-TEST-DEDUPE", "review-failed", "recorded")]
+
+
+def test_write_dispatch_review_ready_supersedes_old_review_failed(tmp_path: Path, monkeypatch) -> None:
+    dispatch_dir = tmp_path / "dispatch"
+    dispatch_dir.mkdir(parents=True, exist_ok=True)
+
+    monkeypatch.setattr(cowork_watcher, "COWORK_DISPATCH_DIR", str(dispatch_dir))
+    monkeypatch.setattr(cowork_watcher, "notify_slack_for_dispatch", lambda **_kwargs: None)
+    monkeypatch.setattr(cowork_watcher, "append_run_ledger", lambda *args, **kwargs: None)
+
+    failed_path = dispatch_dir / "TASK-TEST-SUPERSEDE-review-failed.md"
+    failed_path.write_text(
+        "\n".join(
+            [
+                "# Dispatch: TASK-TEST-SUPERSEDE",
+                "",
+                "stage: review-failed",
+                "status: action-required",
+                "created_at: `2026-04-24T00:40:01`",
+                "- note: review states the packet is not ready for promotion",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    cowork_watcher.write_dispatch(
+        "TASK-TEST-SUPERSEDE",
+        "review-ready",
+        [
+            "# Dispatch: TASK-TEST-SUPERSEDE",
+            "",
+            "stage: review-ready",
+            "status: pending-approval",
+            "created_at: `2026-04-24T00:43:56`",
+        ],
+    )
+
+    ready_body = (dispatch_dir / "TASK-TEST-SUPERSEDE-review-ready.md").read_text(encoding="utf-8")
+    assert "- supersedes_previous_review_failed: `2026-04-24T00:40:01`" in ready_body
+    assert not failed_path.exists()

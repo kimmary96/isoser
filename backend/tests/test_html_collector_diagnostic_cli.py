@@ -203,7 +203,44 @@ def test_build_html_collector_report_summarizes_html_sources_only() -> None:
         "playwright_probe_candidate": 1,
     }
     assert len(report["playwright_probe_candidates"]) == 1
+    assert report["sources"][0]["repeated_parse_empty_in_run"] is False
+    assert report["sources"][1]["repeated_parse_empty_in_run"] is False
     assert report["sources"][0]["normalized_count"] == 1
+
+
+def test_build_html_collector_report_marks_repeated_parse_empty_in_run_for_current_run() -> None:
+    collector = _FixtureHtmlCollector(
+        status="success",
+        message="Fixture HTML collected 1 items from 3/3 urls; request_failed=0; parse_empty=2",
+        items=[_raw_item()],
+        url_diagnostics=[
+            {
+                "url": "https://example.com/list-a",
+                "request_status": "success",
+                "parse_status": "parse_empty",
+                "item_count": 0,
+            },
+            {
+                "url": "https://example.com/list-b",
+                "request_status": "success",
+                "parse_status": "parse_failed",
+                "item_count": 0,
+                "error": "selector drift",
+            },
+            {
+                "url": "https://example.com/list-c",
+                "request_status": "success",
+                "parse_status": "success",
+                "item_count": 1,
+            },
+        ],
+    )
+
+    report = build_html_collector_report([collector])
+
+    assert report["summary"] == {"partial_parse_empty_monitor": 1}
+    assert report["sources"][0]["classification"] == "partial_parse_empty_monitor"
+    assert report["sources"][0]["repeated_parse_empty_in_run"] is True
 
 
 def test_build_html_collector_report_can_attach_scheduler_summary() -> None:
@@ -330,9 +367,14 @@ def test_build_html_collector_report_can_include_ocr_preflight() -> None:
     assert report["ocr_summary"] == {"ocr_probe_candidate": 1}
     assert len(report["ocr_probe_candidates"]) == 1
     assert report["field_gap_summary"]["source_count_with_any_issues"] == 1
+    assert report["field_gap_summary"]["source_count_with_warning_or_error_follow_up"] == 0
+    assert report["field_gap_summary"]["source_count_with_only_info_issues"] == 1
     assert report["field_gap_summary"]["issue_fields"]["provider"] == 1
     assert report["sources"][0]["ocr_probe"]["detail_low_text_image_count"] == 1
     assert report["sources"][0]["field_gap_audit"]["rows_with_any_issues"] == 1
+    assert report["sources"][0]["field_gap_audit"]["rows_with_warning_or_error"] == 0
+    assert report["sources"][0]["field_gap_audit"]["warning_or_error_follow_up_needed"] is False
+    assert report["sources"][0]["field_gap_audit"]["field_gap_follow_up_bucket"] == "info_only"
     assert report["sources"][0]["field_gap_audit"]["issue_codes"]["missing_provider"] == 1
     assert report["sources"][0]["ocr_probe"]["source_image_url_samples"] == [
         "https://example.com/poster.png"
@@ -477,6 +519,7 @@ def test_render_and_write_reports(tmp_path: Path) -> None:
         "field_gap_summary": {
             "enabled": True,
             "source_count_with_any_issues": 1,
+            "source_count_with_warning_or_error_follow_up": 0,
             "source_count_with_only_info_issues": 1,
             "issue_codes": {"missing_provider": 1},
             "issue_fields": {"provider": 1},
@@ -490,6 +533,7 @@ def test_render_and_write_reports(tmp_path: Path) -> None:
                 "duration_ms": 12.3,
                 "last_collect_status": "success",
                 "classification": "healthy_static_html",
+                "repeated_parse_empty_in_run": False,
                 "evidence": ["status=success"],
                 "recommendation": "ok",
                 "scheduler_dry_run": {
@@ -532,6 +576,9 @@ def test_render_and_write_reports(tmp_path: Path) -> None:
                     "checked_rows": 1,
                     "rows_with_any_issues": 1,
                     "rows_with_info_only": 1,
+                    "rows_with_warning_or_error": 0,
+                    "warning_or_error_follow_up_needed": False,
+                    "field_gap_follow_up_bucket": "info_only",
                     "issue_codes": {"missing_provider": 1},
                     "issue_fields": {"provider": 1},
                     "sample_limit": 1,
@@ -589,11 +636,14 @@ def test_render_and_write_reports(tmp_path: Path) -> None:
 
     assert json.loads(json_path.read_text(encoding="utf-8"))["collector_count"] == 1
     markdown = markdown_path.read_text(encoding="utf-8")
-    assert "| Fixture HTML | `_FixtureHtmlCollector` | 1 | 1 | 12.3 | success | healthy_static_html |" in markdown
+    assert "| Fixture HTML | `_FixtureHtmlCollector` | 1 | 1 | 12.3 | success | healthy_static_html | false |" in markdown
     assert "## HTML Snapshots" in markdown
     assert "## Scheduler Dry-Run Summary" in markdown
     assert "## OCR / Image Preflight" in markdown
     assert "Sources with any field gaps: `1`" in markdown
+    assert "Sources with warning/error follow-up needed: `0`" in markdown
+    assert "repeated_parse_empty_in_run" in markdown
+    assert "info_only" in markdown
     assert "field gap sample: `Fixture HTML` issues=missing_provider" in markdown
     assert "Schema path: `docs/schemas/html-collector-scheduler-summary.schema.json`" in markdown
     assert render_markdown_report(report).startswith("# HTML Collector Dynamic Retrieve Diagnostic")
