@@ -2492,3 +2492,15 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-23: `frontend/app/(landing)/programs/page.tsx`, `reports/TASK-2026-04-23-0557-programs-listing-page-restructure-result.md`
   - 프로그램 목록의 비용 active filter chip 제거 URL이 운영 기관, 추천 대상, 선발 절차, 채용 연계 필터를 함께 보존하도록 보완함
   - `/programs` 구조 개편 잔여 보완 결과와 검증 결과를 task result report로 기록함
+- 2026-04-23: `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/program-card.tsx`, `frontend/app/(landing)/programs/program-bookmark-button.tsx`, `frontend/app/(landing)/programs/program-utils.ts`, `docs/current-state.md`, `reports/programs-table-list-restructure-result.md`
+  - `/programs`의 맞춤 추천 섹션을 제거하고 전체 프로그램 탐색이 바로 이어지도록 구조를 단순화함
+  - 마감 임박 프로그램은 기존 카드 컴포넌트를 유지하되 1줄 가로 스크롤 레일로 축소함
+  - 전체 프로그램 결과는 카드 그리드에서 교육기관/프로그램명, 과정, 모집상태, 비용, 온·오프라인, 기간, 참여 시간, 선발절차·키워드, 채용연계, 운영기관을 비교하는 테이블로 전환함
+  - 카드와 테이블이 공유하는 D-day, 관련도, 텍스트 리스트 helper를 `program-utils.ts`로 분리하고 테이블 행용 찜 버튼을 별도 client component로 추가함
+- 2026-04-23: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/app/dashboard/page.tsx`, `frontend/lib/types/index.ts`, `docs/current-state.md`, `reports/dashboard-recommend-calendar-relevance-result.md`
+  - 캘린더 추천 응답에 기존 맞춤 추천 카드에서 쓰던 `fit_keywords`, `relevance_reasons`, `score_breakdown`, `relevance_grade`, `relevance_badge`를 추가함
+  - 대시보드 추천 캘린더 카드가 관련도 배지, 관련도 퍼센트, 맞춤 추천 키워드, 추천 근거 목록을 표시하도록 보강함
+  - fallback 공개 프로그램은 개인화 근거 없이 기존 마감순 보호 동작을 유지하도록 빈 추천 필드를 내려준다
+- 2026-04-23: `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/app/dashboard/page.tsx`, `docs/current-state.md`, `reports/dashboard-recommend-calendar-relevance-result.md`
+  - 대시보드 추천 캘린더 BFF의 백엔드 추천 fetch에 3.5초 timeout, backend 목록 fallback에 2.5초 timeout을 추가해 상류 지연 시 공개 프로그램 fallback으로 빠르게 전환되도록 함
+  - 대시보드 기본 추천 목록을 15분 localStorage cache로 저장하고 재진입 시 즉시 표시한 뒤 최신 추천으로 갱신하도록 함

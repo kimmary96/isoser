@@ -6,7 +6,8 @@ import { useEffect, useState } from "react";
 import { getRecommendedPrograms } from "@/lib/api/app";
 import type { Program } from "@/lib/types";
 
-import ProgramCard, { isDisplayableProgram } from "./program-card";
+import ProgramCard from "./program-card";
+import { isDisplayableProgram } from "./program-utils";
 
 type RecommendedProgramsSectionProps = {
   isLoggedIn: boolean;

@@ -6,7 +6,7 @@ The profile address migration, profile API normalization, address edit UI, norma
 
 The backend region scoring work partially matches the handoff: explicit delivery method handling, online/hybrid scoring, adjacent region scoring, region-safe reason text, and address/no-address score breakdown weights are present in `backend/routers/programs.py`.
 
-However, the program region source priority is not fully verified as implemented. `_compute_region_match()` passes `program.region`, `program.location`, `program.region_detail`, and `compare_meta` region/location/address into `_normalize_region_name()` together, and `_normalize_region_name()` concatenates all candidates before selecting the first alias by dictionary order. This can choose a lower-priority source when multiple sources contain conflicting regions, instead of enforcing the packet priority of `region` before display `location` before `compare_meta`.
+The original verification found one blocking issue: program region source priority was not enforced when fields conflicted. Manual follow-up fixed this by resolving program region one source at a time before falling back to lower-priority fields.
 
 ## Checks Reviewed
 
@@ -14,9 +14,12 @@ However, the program region source priority is not fully verified as implemented
   - Result: passed.
 - Re-ran: `python -m pytest backend/tests/test_programs_router.py`
   - Result: blocked by repository Python guard: Python 3.10.x required, current shell uses Python 3.13.2.
+- Re-ran after manual follow-up: `backend\venv\Scripts\python.exe -m pytest backend\tests\test_programs_router.py -q`
+  - Result: passed, `40 passed`.
+- Re-ran after manual follow-up: `git diff --check -- backend/routers/programs.py backend/tests/test_programs_router.py`
+  - Result: passed with LF-to-CRLF warnings only.
 - Reviewed focused tests in `backend/tests/test_programs_router.py`.
-  - Present coverage includes exact region match, adjacent region match, online scoring, hybrid scoring, explicit `teaching_method` precedence over fallback text, compare metadata region normalization, sparse profile fallback, and address/no-address breakdown expectations.
-  - Missing coverage for conflicting region source priority, such as `program.region = "경기"` with `program.location = "서울 강남구"`.
+  - Present coverage includes exact region match, adjacent region match, online scoring, hybrid scoring, explicit `teaching_method` precedence over fallback text, compare metadata region normalization, sparse profile fallback, address/no-address breakdown expectations, and conflicting region source priority.
 
 ## Result Report Consistency
 
@@ -24,18 +27,16 @@ The result report's changed-file list is consistent with the direct task impleme
 
 The result report accurately records that profile address migration/UI/API work already existed and was not reimplemented. It also accurately records that pytest was blocked by the Python 3.10 guard.
 
-One result-report claim is overstated: it says program region source normalization keeps the required priority centered on `region`, display `location`, then compare metadata. The current code shape does not enforce that priority when sources conflict because all region source candidates are normalized as one combined text blob.
+The result report was updated after manual follow-up to record the priority fix and passing Python 3.10 venv pytest run.
 
 ## Residual Risks
 
-- Region source conflicts can produce incorrect matched region output and incorrect `score_breakdown.region` values.
-- The focused backend test suite could not be executed in this shell, so verification relies on static inspection plus `py_compile`.
 - Region and delivery classification remains keyword-based and may miss unusual provider wording.
-- The worktree contains unrelated dirty changes from adjacent tasks, so final integration should still isolate this task's backend/test/report changes before commit.
+- The worktree contains an unrelated watcher log modification, so final commit should isolate backend/test/report changes from workflow logs.
 
 ## Final Verdict
 
-- verdict: review-required
+- verdict: pass
 
 ## Run Metadata
 

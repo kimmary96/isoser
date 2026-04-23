@@ -748,6 +748,28 @@ def test_compute_region_match_scores_adjacent_and_online_programs() -> None:
         profile_region_detail=None,
         program={"compare_meta": {"region": "충청북도 청주시"}},
     ) == (["충북"], 1.0)
+    assert programs._compute_region_match(
+        profile_region="경기",
+        profile_region_detail=None,
+        program={
+            "region": "경기",
+            "location": "서울 강남구",
+            "compare_meta": {"region": "부산"},
+        },
+    ) == (["경기"], 1.0)
+    assert programs._compute_region_match(
+        profile_region="부산",
+        profile_region_detail=None,
+        program={
+            "location": "서울 강남구",
+            "compare_meta": {"region": "부산"},
+        },
+    ) == ([], 0.0)
+    assert programs._compute_region_match(
+        profile_region="부산",
+        profile_region_detail=None,
+        program={"compare_meta": {"region": "부산광역시 해운대구"}},
+    ) == (["부산"], 1.0)
 
 
 def test_compute_program_relevance_items_handles_sparse_profile_without_failure(
@@ -1098,6 +1120,10 @@ def test_recommend_calendar_anonymous_returns_contract_shape(
     assert item["urgency_score"] > 0
     assert item["final_score"] == programs._recalculate_final_score(0.0, item["urgency_score"])
     assert item["reason"]
+    assert item["fit_keywords"] == []
+    assert item["relevance_reasons"] == [item["reason"]]
+    assert item["relevance_badge"] is None
+    assert item["relevance_grade"] == "none"
     assert item["program"]["id"] == "program-1"
 
 
@@ -1190,6 +1216,10 @@ def test_recommend_calendar_uses_fresh_path_when_cache_rows_are_stale(
     payload = response.json()
     assert payload["items"][0]["final_score"] == programs._recalculate_final_score(0.7, 0.4)
     assert payload["items"][0]["relevance_score"] == 0.7
+    assert payload["items"][0]["fit_keywords"] == ["기획"]
+    assert payload["items"][0]["relevance_reasons"] == ["기획 키워드와 연관", "프로필과 잘 맞는 과정입니다."]
+    assert payload["items"][0]["relevance_badge"] == "추천"
+    assert payload["items"][0]["relevance_grade"] == "medium"
 
 
 def test_recommend_calendar_sorts_by_final_score_then_deadline_and_excludes_expired(

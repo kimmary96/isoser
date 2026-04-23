@@ -3,6 +3,22 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { CalendarRecommendResponse, Program } from "@/lib/types";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+const BACKEND_RECOMMEND_TIMEOUT_MS = 3500;
+const BACKEND_FALLBACK_TIMEOUT_MS = 2500;
+
+async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit, timeoutMs: number): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(input, {
+      ...init,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
 function toFallbackCalendarResponse(programs: Program[], topK: number): CalendarRecommendResponse {
   return {
@@ -17,6 +33,11 @@ function toFallbackCalendarResponse(programs: Program[], topK: number): Calendar
         deadline: program.deadline ?? null,
         d_day_label: typeof program.days_left === "number" ? `D-${program.days_left}` : "",
         reason: "추천 데이터가 비어 있어 모집 마감이 가까운 공개 프로그램을 우선 노출합니다.",
+        fit_keywords: [],
+        relevance_reasons: [],
+        score_breakdown: {},
+        relevance_grade: "none",
+        relevance_badge: null,
         program,
       })),
   };
@@ -69,12 +90,13 @@ export async function GET(request: Request) {
     }
 
     const query = backendSearchParams.toString();
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${BACKEND_URL}/programs/recommend/calendar${query ? `?${query}` : ""}`,
       {
         method: "GET",
         headers,
-      }
+      },
+      BACKEND_RECOMMEND_TIMEOUT_MS
     );
 
     if (!response.ok) {
@@ -89,9 +111,10 @@ export async function GET(request: Request) {
 
     const fallbackLimit = Number(topK || "9") || 9;
     try {
-      const fallbackResponse = await fetch(
+      const fallbackResponse = await fetchWithTimeout(
         `${BACKEND_URL}/programs?recruiting_only=true&sort=deadline&limit=${fallbackLimit}`,
-        { method: "GET" }
+        { method: "GET" },
+        BACKEND_FALLBACK_TIMEOUT_MS
       );
 
       if (fallbackResponse.ok) {

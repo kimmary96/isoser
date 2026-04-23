@@ -12,6 +12,13 @@ import {
 import type { Program } from "@/lib/types";
 
 const APPLIED_CALENDAR_PROGRAMS_KEY = "isoser:applied-calendar-programs";
+const RECOMMEND_CALENDAR_CACHE_KEY = "isoser:recommend-calendar-programs";
+const RECOMMEND_CALENDAR_CACHE_TTL_MS = 1000 * 60 * 15;
+
+type RecommendCalendarCache = {
+  savedAt: number;
+  programs: Program[];
+};
 
 const CATEGORY_OPTIONS = [
   { label: "전체", value: null },
@@ -95,12 +102,51 @@ function getRecommendedReason(value: string | null | undefined): string | null {
   return trimmed || null;
 }
 
+function getRelevanceReasons(program: Program): string[] {
+  const reasons = Array.isArray(program.relevance_reasons) ? program.relevance_reasons : [];
+  const fallback = getRecommendedReason(program._reason);
+  return (reasons.length > 0 ? reasons : fallback ? [fallback] : []).slice(0, 3);
+}
+
 function getFitKeywords(value: string[] | null | undefined): string[] {
   if (!Array.isArray(value)) {
     return [];
   }
 
   return value.map((keyword) => keyword.trim()).filter(Boolean).slice(0, 3);
+}
+
+function readRecommendCalendarCache(): Program[] {
+  if (typeof window === "undefined") return [];
+
+  const raw = window.localStorage.getItem(RECOMMEND_CALENDAR_CACHE_KEY);
+  if (!raw) return [];
+
+  try {
+    const parsed = JSON.parse(raw) as Partial<RecommendCalendarCache>;
+    if (
+      typeof parsed.savedAt !== "number" ||
+      !Array.isArray(parsed.programs) ||
+      Date.now() - parsed.savedAt > RECOMMEND_CALENDAR_CACHE_TTL_MS
+    ) {
+      window.localStorage.removeItem(RECOMMEND_CALENDAR_CACHE_KEY);
+      return [];
+    }
+    return parsed.programs.filter((program) => program && program.id);
+  } catch {
+    window.localStorage.removeItem(RECOMMEND_CALENDAR_CACHE_KEY);
+    return [];
+  }
+}
+
+function writeRecommendCalendarCache(programs: Program[]) {
+  if (typeof window === "undefined" || programs.length === 0) return;
+
+  const cache: RecommendCalendarCache = {
+    savedAt: Date.now(),
+    programs,
+  };
+  window.localStorage.setItem(RECOMMEND_CALENDAR_CACHE_KEY, JSON.stringify(cache));
 }
 
 function formatSource(source: string | null | undefined): string {
@@ -183,8 +229,9 @@ function ProgramCard({
   const ddayBadge = getDdayBadge(program.days_left);
   const cardBorderClass = getCardBorderClass(program.days_left);
   const programLink = program.link || program.application_url || program.source_url;
-  const recommendedReason = getRecommendedReason(program._reason);
+  const relevanceReasons = getRelevanceReasons(program);
   const fitKeywords = getFitKeywords(program._fit_keywords);
+  const relevanceBadge = program.relevance_badge || null;
 
   return (
     <article
@@ -206,9 +253,16 @@ function ProgramCard({
       </div>
 
       <div className="mb-2 text-sm text-slate-600">훈련 기간: {trainingPeriodLabel}</div>
-      <div className="mb-3 text-sm text-slate-600">신청 마감: {deadlineLabel}</div>
-      <div className="mb-3 text-sm font-medium text-slate-800">
-        {formatRelevance(program._relevance_score ?? program.relevance_score ?? program._score ?? program.final_score)}
+      <div className="mb-3 text-sm text-slate-600">{"\uc2e0\uccad \ub9c8\uac10"}: {deadlineLabel}</div>
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        {relevanceBadge ? (
+          <span className="inline-flex rounded-full bg-orange-50 px-2.5 py-1 text-xs font-semibold text-orange-700">
+            {relevanceBadge}
+          </span>
+        ) : null}
+        <span className="text-sm font-semibold text-slate-800">
+          {formatRelevance(program._relevance_score ?? program.relevance_score ?? program._score ?? program.final_score)}
+        </span>
       </div>
 
       {fitKeywords.length > 0 ? (
@@ -224,8 +278,14 @@ function ProgramCard({
         </div>
       ) : null}
 
-      {recommendedReason ? (
-        <p className="mb-6 line-clamp-2 text-sm text-slate-600">{recommendedReason}</p>
+      {relevanceReasons.length > 0 ? (
+        <ul className="mb-6 space-y-1.5">
+          {relevanceReasons.map((reason) => (
+            <li key={reason} className="line-clamp-2 text-sm leading-5 text-slate-600">
+              - {reason}
+            </li>
+          ))}
+        </ul>
       ) : null}
 
       <div className="mt-auto flex flex-wrap items-center gap-3">
@@ -323,7 +383,15 @@ export default function DashboardPage() {
 
   const loadPrograms = useCallback(
     async (options?: { category?: string | null; region?: string | null }) => {
-      setLoading(true);
+      const canUseCache = !options?.category && !options?.region;
+      const cachedPrograms = canUseCache ? readRecommendCalendarCache() : [];
+
+      if (cachedPrograms.length > 0) {
+        setPrograms(cachedPrograms);
+        setLoading(false);
+      } else {
+        setLoading(true);
+      }
       setError(null);
 
       try {
@@ -331,21 +399,32 @@ export default function DashboardPage() {
           category: options?.category ?? undefined,
           region: options?.region ?? undefined,
         });
-        setPrograms(
-          result.items.map((item) => ({
+        const nextPrograms = result.items.map((item) => ({
             ...item.program,
             deadline: item.deadline ?? item.program.deadline,
             _reason: item.reason,
+            _fit_keywords: item.fit_keywords ?? item.program._fit_keywords ?? [],
             _score: item.final_score,
             _relevance_score: item.relevance_score,
             final_score: item.final_score,
             relevance_score: item.relevance_score,
             urgency_score: item.urgency_score,
-          }))
-        );
+            relevance_reasons: item.relevance_reasons ?? item.program.relevance_reasons ?? [],
+            score_breakdown: item.score_breakdown ?? item.program.score_breakdown ?? {},
+            relevance_grade: item.relevance_grade ?? item.program.relevance_grade ?? "none",
+            relevance_badge: item.relevance_badge ?? item.program.relevance_badge ?? null,
+          }));
+        setPrograms(nextPrograms);
+        if (canUseCache) {
+          writeRecommendCalendarCache(nextPrograms);
+        }
       } catch (e) {
-        setPrograms([]);
-        setError(e instanceof Error ? e.message : "추천 프로그램을 불러오지 못했습니다.");
+        if (cachedPrograms.length === 0) {
+          setPrograms([]);
+          setError(e instanceof Error ? e.message : "추천 프로그램을 불러오지 못했습니다.");
+        } else {
+          setError(null);
+        }
       } finally {
         setLoading(false);
       }
