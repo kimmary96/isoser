@@ -31,6 +31,7 @@ class KobiaCollector(BaseHtmlCollector):
     list_urls = [
         "http://www.kobia.or.kr/board/list.do?board_kind=KNOTICE",
     ]
+    snapshot_probe_selectors = ("tbody tr", ".board-list tr", ".board_list tr", "table tr")
 
     def collect_items(self) -> List[Dict]:
         return self.collect_url_items(
@@ -166,6 +167,7 @@ class KisedCollector(BaseHtmlCollector):
     list_urls = [
         "https://www.kised.or.kr/misAnnouncement/index.es?mid=a10302000000",
     ]
+    snapshot_probe_selectors = ("tbody tr", "li", ".board-list-item", ".list-item", ".card", "article")
 
     def collect_items(self) -> List[Dict]:
         return self.collect_url_items(

@@ -8,6 +8,7 @@ import time
 from time import perf_counter
 from pathlib import Path
 from typing import Any, Iterable
+from urllib.parse import urljoin
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 BACKEND_ROOT = REPO_ROOT / "backend"
@@ -79,6 +80,12 @@ IMAGE_KEYWORDS = ("포스터", "홍보물", "카드뉴스", "이미지", "poster
 SHORT_LIST_TEXT_THRESHOLD = 120
 LOW_DETAIL_TEXT_THRESHOLD = 300
 SUFFICIENT_DETAIL_TEXT_THRESHOLD = 700
+DETAIL_URL_SAMPLE_LIMIT = 3
+SOURCE_URL_SAMPLE_LIMIT = 6
+SCHEDULER_SUMMARY_SCHEMA_RELATIVE_PATH = "docs/schemas/html-collector-scheduler-summary.schema.json"
+SCHEDULER_SOURCE_SUMMARY_SCHEMA_ID = "scheduler_source_summary_v1"
+SCHEDULER_DRY_RUN_SUMMARY_SCHEMA_ID = "scheduler_dry_run_summary_v1"
+PROGRAM_QUALITY_SUMMARY_SCHEMA_ID = "program_quality_summary_v1"
 
 
 def configure_stdout() -> None:
@@ -145,6 +152,7 @@ def build_html_collector_report(
 
     report = {
         "mode": "read-only-live-diagnostic",
+        "schema_version": "html_collector_diagnostic_report_v1",
         "started_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         "duration_ms": round((perf_counter() - started) * 1000, 2),
         "collector_count": len(rows),
@@ -162,6 +170,7 @@ def build_html_collector_report(
         "sources": rows,
     }
     if include_scheduler_summary:
+        report["schemas"] = build_scheduler_schema_refs()
         report["scheduler_dry_run"] = build_scheduler_dry_run_summary(
             rows,
             normalized_rows=all_normalized_rows,
@@ -308,6 +317,17 @@ def sanitize_url_diagnostics(url_diagnostics: Iterable[Any]) -> list[dict[str, A
     return cleaned
 
 
+def build_scheduler_schema_refs() -> dict[str, Any]:
+    return {
+        "scheduler_summary_bundle": {
+            "schema_path": SCHEDULER_SUMMARY_SCHEMA_RELATIVE_PATH,
+            "program_quality_summary_schema": PROGRAM_QUALITY_SUMMARY_SCHEMA_ID,
+            "scheduler_source_summary_schema": SCHEDULER_SOURCE_SUMMARY_SCHEMA_ID,
+            "scheduler_dry_run_summary_schema": SCHEDULER_DRY_RUN_SUMMARY_SCHEMA_ID,
+        }
+    }
+
+
 def build_scheduler_source_summary(
     *,
     raw_count: int,
@@ -315,19 +335,29 @@ def build_scheduler_source_summary(
     source_status: str,
     source_message: str,
 ) -> dict[str, Any]:
+    quality_summary = summarize_program_quality(normalized_rows) if normalized_rows else None
     if normalized_rows:
         return {
+            "schema_id": SCHEDULER_SOURCE_SUMMARY_SCHEMA_ID,
+            "schema_path": SCHEDULER_SUMMARY_SCHEMA_RELATIVE_PATH,
             "status": "dry_run",
+            "raw_count": raw_count,
+            "deduped_row_count": len(normalized_rows),
             "message": _format_dry_run_message(
                 raw_count,
                 len(normalized_rows),
                 source_message,
             ),
-            "quality": summarize_program_quality(normalized_rows),
+            "quality": quality_summary,
         }
     return {
+        "schema_id": SCHEDULER_SOURCE_SUMMARY_SCHEMA_ID,
+        "schema_path": SCHEDULER_SUMMARY_SCHEMA_RELATIVE_PATH,
         "status": source_status or "empty",
+        "raw_count": raw_count,
+        "deduped_row_count": len(normalized_rows),
         "message": source_message or "No rows to save after normalization",
+        "quality": quality_summary,
     }
 
 
@@ -351,13 +381,16 @@ def build_scheduler_dry_run_summary(
                 sources_with_quality_errors += 1
             if int(quality.get("rows_with_warnings") or 0) > 0:
                 sources_with_quality_warnings += 1
+    quality_summary = summarize_program_quality(normalized_rows)
     return {
+        "schema_id": SCHEDULER_DRY_RUN_SUMMARY_SCHEMA_ID,
+        "schema_path": SCHEDULER_SUMMARY_SCHEMA_RELATIVE_PATH,
         "enabled": True,
         "source_count": len(rows),
         "status_counts": dict(sorted(status_counts.items())),
         "sources_with_quality_errors": sources_with_quality_errors,
         "sources_with_quality_warnings": sources_with_quality_warnings,
-        "quality": summarize_program_quality(normalized_rows),
+        "quality": quality_summary,
     }
 
 
@@ -430,6 +463,15 @@ def write_html_snapshot_file(
     output_path = snapshot_output_dir / f"{safe_source}-{safe_label}.html"
     normalized_html = html_preview.replace("\r\n", "\n").replace("\r", "\n")
     normalized_html = "\n".join(line.rstrip() for line in normalized_html.split("\n"))
+    selector_matches = metadata.get("selector_matches") or []
+    selector_summary = "; ".join(
+        "{selector}:{count}".format(
+            selector=str(match.get("selector") or ""),
+            count=int(match.get("match_count") or 0),
+        )
+        for match in selector_matches
+        if isinstance(match, dict)
+    )
     metadata_lines = [
         f"url={url}",
         f"html_length={metadata.get('html_length', 0)}",
@@ -437,6 +479,9 @@ def write_html_snapshot_file(
         f"noscript_tag_count={metadata.get('noscript_tag_count', 0)}",
         f"iframe_tag_count={metadata.get('iframe_tag_count', 0)}",
         f"form_tag_count={metadata.get('form_tag_count', 0)}",
+        f"selectors_checked={metadata.get('selectors_checked', 0)}",
+        f"selectors_with_matches={metadata.get('selectors_with_matches', 0)}",
+        f"selector_matches={selector_summary}",
         f"title_text={metadata.get('title_text', '')}",
     ]
     output_path.write_text(
@@ -490,6 +535,16 @@ def build_ocr_probe(
         if result["status"] == "fetched"
         and int(result.get("visible_text_length") or 0) >= SUFFICIENT_DETAIL_TEXT_THRESHOLD
     )
+    source_attachment_url_samples = _collect_probe_url_samples(
+        detail_results,
+        key="attachment_urls",
+        limit=SOURCE_URL_SAMPLE_LIMIT,
+    )
+    source_image_url_samples = _collect_probe_url_samples(
+        detail_results,
+        key="image_urls",
+        limit=SOURCE_URL_SAMPLE_LIMIT,
+    )
 
     classification, evidence, recommendation = classify_ocr_probe(
         item_count=len(raw_items),
@@ -515,6 +570,8 @@ def build_ocr_probe(
         "detail_attachment_count": detail_attachment_count,
         "detail_low_text_image_count": detail_low_text_image_count,
         "detail_text_sufficient_count": detail_text_sufficient_count,
+        "source_attachment_url_samples": source_attachment_url_samples,
+        "source_image_url_samples": source_image_url_samples,
         "samples": detail_results,
     }
 
@@ -623,6 +680,8 @@ def _probe_detail_html_for_ocr(
         "list_text_length": profile.get("list_text_length", 0),
         "attachment_signal": bool(profile.get("attachment_signal")),
         "image_signal": bool(profile.get("image_signal")),
+        "attachment_urls": [],
+        "image_urls": [],
     }
     if not link.startswith(("http://", "https://")):
         return {**result, "status": "skipped_non_http"}
@@ -633,6 +692,8 @@ def _probe_detail_html_for_ocr(
             "visible_text_length": 0,
             "image_count": 0,
             "attachment_link_count": 1,
+            "attachment_urls": [link],
+            "image_urls": [],
         }
     if _url_has_extension(link, IMAGE_EXTENSIONS):
         return {
@@ -641,6 +702,8 @@ def _probe_detail_html_for_ocr(
             "visible_text_length": 0,
             "image_count": 1,
             "attachment_link_count": 0,
+            "attachment_urls": [],
+            "image_urls": [link],
         }
 
     try:
@@ -652,19 +715,33 @@ def _probe_detail_html_for_ocr(
     for tag in soup.select("script, style, noscript"):
         tag.decompose()
     visible_text = _normalize_space(soup.get_text(" ", strip=True))
+    image_urls = _sample_unique_urls(
+        [
+            urljoin(link, str(node.get("src") or "").strip())
+            for node in soup.select("img[src]")
+            if str(node.get("src") or "").strip()
+        ],
+        limit=DETAIL_URL_SAMPLE_LIMIT,
+    )
     image_count = len([node for node in soup.select("img[src]") if node.get("src")])
     attachment_links = []
     for anchor in soup.select("a[href]"):
         href = str(anchor.get("href") or "")
         anchor_text = _normalize_space(anchor.get_text(" ", strip=True))
         if _has_attachment_signal(f"{href} {anchor_text}".lower()):
-            attachment_links.append(href)
+            attachment_links.append(urljoin(link, href.strip()))
+    attachment_urls = _sample_unique_urls(
+        attachment_links,
+        limit=DETAIL_URL_SAMPLE_LIMIT,
+    )
     return {
         **result,
         "status": "fetched",
         "visible_text_length": len(visible_text),
         "image_count": image_count,
         "attachment_link_count": len(attachment_links),
+        "attachment_urls": attachment_urls,
+        "image_urls": image_urls,
     }
 
 
@@ -699,6 +776,41 @@ def _url_has_extension(value: str, extensions: tuple[str, ...]) -> bool:
 
 def _normalize_space(value: str) -> str:
     return re.sub(r"\s+", " ", value or "").strip()
+
+
+def _sample_unique_urls(values: Iterable[str], *, limit: int) -> list[str]:
+    unique_values: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        cleaned = str(value or "").strip()
+        if not cleaned or cleaned in seen:
+            continue
+        seen.add(cleaned)
+        unique_values.append(cleaned)
+        if len(unique_values) >= limit:
+            break
+    return unique_values
+
+
+def _collect_probe_url_samples(
+    detail_results: Iterable[dict[str, Any]],
+    *,
+    key: str,
+    limit: int,
+) -> list[str]:
+    collected: list[str] = []
+    for result in detail_results:
+        values = result.get(key) or []
+        if not isinstance(values, list):
+            continue
+        for value in values:
+            cleaned = str(value or "").strip()
+            if not cleaned or cleaned in collected:
+                continue
+            collected.append(cleaned)
+            if len(collected) >= limit:
+                return collected
+    return collected
 
 
 def classify_source(
@@ -854,19 +966,22 @@ def render_markdown_report(report: dict[str, Any]) -> str:
                     continue
                 snapshot = diagnostic.get("html_snapshot") or {}
                 lines.append(
-                    "- `{parse_status}` `{url}` -> `{path}` (title=`{title}`, scripts={scripts}, noscript={noscript})".format(
+                    "- `{parse_status}` `{url}` -> `{path}` (title=`{title}`, scripts={scripts}, noscript={noscript}, selector_hits={selector_hits}/{selectors_checked})".format(
                         parse_status=diagnostic.get("parse_status", "snapshot"),
                         url=diagnostic.get("url", ""),
                         path=diagnostic.get("snapshot_path", ""),
                         title=snapshot.get("title_text", ""),
                         scripts=snapshot.get("script_tag_count", 0),
                         noscript=snapshot.get("noscript_tag_count", 0),
+                        selector_hits=snapshot.get("selectors_with_matches", 0),
+                        selectors_checked=snapshot.get("selectors_checked", 0),
                     )
                 )
             lines.append("")
 
     if report.get("scheduler_dry_run", {}).get("enabled"):
         scheduler_summary = report["scheduler_dry_run"]
+        schema_bundle = (report.get("schemas") or {}).get("scheduler_summary_bundle") or {}
         lines.extend(
             [
                 "## Scheduler Dry-Run Summary",
@@ -874,6 +989,7 @@ def render_markdown_report(report: dict[str, Any]) -> str:
                 f"- HTML sources: `{scheduler_summary['source_count']}`",
                 f"- Sources with quality warnings: `{scheduler_summary['sources_with_quality_warnings']}`",
                 f"- Sources with quality errors: `{scheduler_summary['sources_with_quality_errors']}`",
+                f"- Schema path: `{schema_bundle.get('schema_path', '')}`",
                 "",
             ]
         )
@@ -894,9 +1010,9 @@ def render_markdown_report(report: dict[str, Any]) -> str:
                 "| {source} | {status} | {checked_rows} | {warnings} | {errors} |".format(
                     source=_escape_table(str(row["source"])),
                     status=scheduler_source.get("status", ""),
-                    checked_rows=source_quality.get("checked_rows", 0),
-                    warnings=source_quality.get("rows_with_warnings", 0),
-                    errors=source_quality.get("rows_with_errors", 0),
+                    checked_rows=(source_quality or {}).get("checked_rows", 0),
+                    warnings=(source_quality or {}).get("rows_with_warnings", 0),
+                    errors=(source_quality or {}).get("rows_with_errors", 0),
                 )
             )
         lines.extend(
@@ -966,6 +1082,20 @@ def render_markdown_report(report: dict[str, Any]) -> str:
                 continue
             lines.append(f"#### {row['source']}")
             lines.append("")
+            attachment_samples = ocr_probe.get("source_attachment_url_samples") or []
+            image_samples = ocr_probe.get("source_image_url_samples") or []
+            if attachment_samples:
+                lines.append(
+                    "- Attachment URL samples: {}".format(
+                        ", ".join(f"`{value}`" for value in attachment_samples)
+                    )
+                )
+            if image_samples:
+                lines.append(
+                    "- Image URL samples: {}".format(
+                        ", ".join(f"`{value}`" for value in image_samples)
+                    )
+                )
             for sample in samples:
                 lines.append(
                     "- `{status}` `{link}` (text={text_len}, images={images}, attachments={attachments})".format(
@@ -976,6 +1106,20 @@ def render_markdown_report(report: dict[str, Any]) -> str:
                         attachments=sample.get("attachment_link_count", 0),
                     )
                 )
+                attachment_urls = sample.get("attachment_urls") or []
+                image_urls = sample.get("image_urls") or []
+                if attachment_urls:
+                    lines.append(
+                        "  attachment URLs: {}".format(
+                            ", ".join(f"`{value}`" for value in attachment_urls)
+                        )
+                    )
+                if image_urls:
+                    lines.append(
+                        "  image URLs: {}".format(
+                            ", ".join(f"`{value}`" for value in image_urls)
+                        )
+                    )
             lines.append("")
 
         lines.extend(["", "## OCR Decision", ""])

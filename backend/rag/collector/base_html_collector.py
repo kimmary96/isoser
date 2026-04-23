@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from html import unescape
-from typing import Callable, Dict, Iterable, List, Optional
+from typing import Any, Callable, Dict, Iterable, List, Optional
 from urllib.parse import urljoin
 from urllib.request import Request, urlopen
 
@@ -25,6 +25,7 @@ class BaseHtmlCollector(BaseCollector):
     timeout_seconds: int = 15
     html_snapshot_char_limit: int = 4000
     text_snapshot_char_limit: int = 400
+    snapshot_probe_selectors: tuple[str, ...] = ()
     user_agent: str = (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
         "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -99,7 +100,7 @@ class BaseHtmlCollector(BaseCollector):
             if parse_error is not None:
                 url_diagnostic["error"] = parse_error
             if parse_status in {"parse_empty", "parse_failed"}:
-                url_diagnostic["html_snapshot"] = self.build_html_snapshot(html)
+                url_diagnostic["html_snapshot"] = self.build_html_snapshot(html, url=url)
             url_diagnostics.append(url_diagnostic)
 
         self.last_collect_url_diagnostics = url_diagnostics
@@ -145,7 +146,7 @@ class BaseHtmlCollector(BaseCollector):
             charset = response.headers.get_content_charset() or "utf-8"
             return response.read().decode(charset, errors="ignore")
 
-    def build_html_snapshot(self, html: str) -> Dict[str, object]:
+    def build_html_snapshot(self, html: str, *, url: str = "") -> Dict[str, object]:
         soup = self.soup_from_html(html)
         title_text = ""
         if soup.title is not None and soup.title.string is not None:
@@ -153,6 +154,10 @@ class BaseHtmlCollector(BaseCollector):
         body_text = self._clean_text(soup.get_text(" ", strip=True))
         html_preview = html[: self.html_snapshot_char_limit]
         body_preview = body_text[: self.text_snapshot_char_limit]
+        selector_matches = self._build_selector_match_diagnostics(soup, url=url)
+        selectors_with_matches = sum(
+            1 for diagnostic in selector_matches if int(diagnostic.get("match_count") or 0) > 0
+        )
         return {
             "html_length": len(html),
             "html_preview": html_preview,
@@ -164,7 +169,34 @@ class BaseHtmlCollector(BaseCollector):
             "noscript_tag_count": len(soup.select("noscript")),
             "iframe_tag_count": len(soup.select("iframe")),
             "form_tag_count": len(soup.select("form")),
+            "selector_matches": selector_matches,
+            "selectors_checked": len(selector_matches),
+            "selectors_with_matches": selectors_with_matches,
         }
+
+    def get_snapshot_probe_selectors(self, *, url: str) -> list[str]:
+        return list(self.snapshot_probe_selectors)
+
+    def _build_selector_match_diagnostics(
+        self,
+        soup: BeautifulSoup,
+        *,
+        url: str,
+    ) -> list[dict[str, Any]]:
+        diagnostics: list[dict[str, Any]] = []
+        for selector in self.get_snapshot_probe_selectors(url=url):
+            try:
+                match_count = len(soup.select(selector))
+                diagnostics.append({"selector": selector, "match_count": match_count})
+            except Exception as exc:
+                diagnostics.append(
+                    {
+                        "selector": selector,
+                        "match_count": 0,
+                        "error": f"{type(exc).__name__}: {exc}",
+                    }
+                )
+        return diagnostics
 
     def absolute_url(self, base_url: str, maybe_relative: str) -> str:
         return urljoin(base_url, maybe_relative.strip())

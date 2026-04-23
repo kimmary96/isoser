@@ -98,6 +98,7 @@ class DistrictHtmlCollector(BaseHtmlCollector):
     current_year = datetime.now().year
     list_urls: List[str] = []
     empty_message = "district source returned 0 items"
+    snapshot_probe_selectors = ("tbody tr", "a[href]", "a[onclick]")
 
     def collect_items(self) -> List[Dict]:
         return self.collect_url_items(
@@ -146,6 +147,11 @@ class DobongStartupCollector(DistrictHtmlCollector):
         "https://dobongstartup.com/program/programlist.php",
     ]
     empty_message = "도봉창업센터 목록 0건 또는 경로 변경 의심"
+
+    def get_snapshot_probe_selectors(self, *, url: str) -> list[str]:
+        if "bo_table=donotic" in url:
+            return ["a.title[href*='bo_table=donotic'][href*='wr_id=']", "tr"]
+        return [".program_box li", "a[href*='programview.php?pg_id=']"]
 
     def parse_html(self, html: str, *, base_url: str) -> List[Dict]:
         if "bo_table=donotic" in base_url:
@@ -239,6 +245,11 @@ class GuroCollector(DistrictHtmlCollector):
         "http://youtheroom.kr/bbs/board.php?tbl=bbs41",
     ]
     empty_message = "구로 청년이룸 목록 0건 또는 경로 변경 의심"
+
+    def get_snapshot_probe_selectors(self, *, url: str) -> list[str]:
+        if "tbl=bbs41" in url:
+            return ["a[href*='mode=VIEW'][href*='num=']", "tbody tr", "tr"]
+        return ["li.gallery_Card1", "a[href*='item.php']"]
 
     def collect_items(self) -> List[Dict]:
         items = super().collect_items()
@@ -360,6 +371,11 @@ class SeongdongCollector(DistrictHtmlCollector):
     empty_message = "성동 센터 목록 0건 또는 경로 변경 의심"
     cntr_id = "CT00006"
     key = "2309210001"
+
+    def get_snapshot_probe_selectors(self, *, url: str) -> list[str]:
+        if "notice.do" in url:
+            return ["tbody tr", "a[onclick]", ".board", ".board-list"]
+        return [".gallery-list-st1 .list", "a[onclick]", ".list-info li"]
 
     def parse_html(self, html: str, *, base_url: str) -> List[Dict]:
         if "notice.do" in base_url:
@@ -487,6 +503,10 @@ class NowonCollector(DistrictHtmlCollector):
         "https://www.nwjob.kr/18",
     ]
     empty_message = "selector 오탐 의심"
+    snapshot_probe_selectors = (
+        "a[href*='bmode=view'][href*='idx='][href*='t=board']",
+        "ul.li_body",
+    )
 
     def parse_html(self, html: str, *, base_url: str) -> List[Dict]:
         soup = self.soup_from_html(html)
@@ -542,6 +562,7 @@ class DobongCollector(DistrictHtmlCollector):
     ]
     empty_message = "도봉구청 키워드 필터 결과 0건 또는 경로 변경 의심"
     include_keywords = ("취업", "일자리", "아카데미", "자격증", "교육", "창업", "지역경제과", "훈련")
+    snapshot_probe_selectors = ("tbody tr", "a[href*='bmode=D'][href*='pcode=']")
 
     def parse_html(self, html: str, *, base_url: str) -> List[Dict]:
         soup = self.soup_from_html(html)
@@ -596,6 +617,11 @@ class MapoCollector(DistrictHtmlCollector):
     ]
     empty_message = "마포 메인 기반 목록 0건 또는 경로 변경 의심"
     include_keywords = ("청년도전", "취업", "교육", "자격증", "컴퓨터", "일준비", "채용")
+    snapshot_probe_selectors = (
+        "ul.widgetZineA li",
+        "div[id^='easySlider_'] li a[href]",
+        "div.contRight .title a[href]",
+    )
 
     def parse_html(self, html: str, *, base_url: str) -> List[Dict]:
         soup = self.soup_from_html(html)

@@ -130,8 +130,11 @@ def test_build_html_collector_report_can_attach_scheduler_summary() -> None:
     )
 
     assert report["scheduler_dry_run"]["enabled"] is True
+    assert report["schemas"]["scheduler_summary_bundle"]["schema_path"] == "docs/schemas/html-collector-scheduler-summary.schema.json"
+    assert report["scheduler_dry_run"]["schema_id"] == "scheduler_dry_run_summary_v1"
     assert report["scheduler_dry_run"]["quality"]["checked_rows"] == 1
     assert report["scheduler_dry_run"]["quality"]["issue_counts"]["info"] == 1
+    assert report["sources"][0]["scheduler_dry_run"]["schema_id"] == "scheduler_source_summary_v1"
     assert report["sources"][0]["scheduler_dry_run"]["status"] == "dry_run"
 
 
@@ -191,6 +194,12 @@ def test_build_html_collector_report_can_include_ocr_preflight() -> None:
     assert report["ocr_summary"] == {"ocr_probe_candidate": 1}
     assert len(report["ocr_probe_candidates"]) == 1
     assert report["sources"][0]["ocr_probe"]["detail_low_text_image_count"] == 1
+    assert report["sources"][0]["ocr_probe"]["source_image_url_samples"] == [
+        "https://example.com/poster.png"
+    ]
+    assert report["sources"][0]["ocr_probe"]["samples"][0]["image_urls"] == [
+        "https://example.com/poster.png"
+    ]
 
 
 def test_ocr_preflight_keeps_text_sufficient_attachments_out_of_runtime_candidates() -> None:
@@ -217,6 +226,12 @@ def test_ocr_preflight_keeps_text_sufficient_attachments_out_of_runtime_candidat
     assert report["ocr_summary"] == {"poster_or_attachment_candidate": 1}
     assert report["ocr_probe_candidates"] == []
     assert len(report["poster_or_attachment_candidates"]) == 1
+    assert report["sources"][0]["ocr_probe"]["source_attachment_url_samples"] == [
+        "https://example.com/files/poster.pdf"
+    ]
+    assert report["sources"][0]["ocr_probe"]["samples"][0]["attachment_urls"] == [
+        "https://example.com/files/poster.pdf"
+    ]
 
 
 def test_build_html_collector_report_can_write_parse_empty_snapshots(tmp_path: Path) -> None:
@@ -241,6 +256,12 @@ def test_build_html_collector_report_can_write_parse_empty_snapshots(tmp_path: P
                     "noscript_tag_count": 0,
                     "iframe_tag_count": 0,
                     "form_tag_count": 0,
+                    "selector_matches": [
+                        {"selector": ".board-list-item", "match_count": 0},
+                        {"selector": "a[href]", "match_count": 0},
+                    ],
+                    "selectors_checked": 2,
+                    "selectors_with_matches": 0,
                 },
             },
             {
@@ -260,7 +281,10 @@ def test_build_html_collector_report_can_write_parse_empty_snapshots(tmp_path: P
     assert report["snapshot_capture"]["saved_count"] == 1
     snapshot_path = Path(report["sources"][0]["url_diagnostics"][0]["snapshot_path"])
     assert snapshot_path.exists()
-    assert "Fixture" in snapshot_path.read_text(encoding="utf-8")
+    snapshot_text = snapshot_path.read_text(encoding="utf-8")
+    assert "Fixture" in snapshot_text
+    assert "selectors_checked=2" in snapshot_text
+    assert "selector_matches=.board-list-item:0; a[href]:0" in snapshot_text
 
 
 def test_render_and_write_reports(tmp_path: Path) -> None:
@@ -271,6 +295,8 @@ def test_render_and_write_reports(tmp_path: Path) -> None:
         "summary": {"healthy_static_html": 1},
         "playwright_probe_candidates": [],
         "scheduler_dry_run": {
+            "schema_id": "scheduler_dry_run_summary_v1",
+            "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
             "enabled": True,
             "source_count": 1,
             "status_counts": {"dry_run": 1},
@@ -290,6 +316,14 @@ def test_render_and_write_reports(tmp_path: Path) -> None:
             "saved_count": 1,
             "saved_paths": [str(tmp_path / "snapshots" / "fixture.html")],
         },
+        "schemas": {
+            "scheduler_summary_bundle": {
+                "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+                "program_quality_summary_schema": "program_quality_summary_v1",
+                "scheduler_source_summary_schema": "scheduler_source_summary_v1",
+                "scheduler_dry_run_summary_schema": "scheduler_dry_run_summary_v1",
+            }
+        },
         "sources": [
             {
                 "source": "Fixture HTML",
@@ -302,7 +336,11 @@ def test_render_and_write_reports(tmp_path: Path) -> None:
                 "evidence": ["status=success"],
                 "recommendation": "ok",
                 "scheduler_dry_run": {
+                    "schema_id": "scheduler_source_summary_v1",
+                    "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
                     "status": "dry_run",
+                    "raw_count": 1,
+                    "deduped_row_count": 1,
                     "message": "Collected 1 rows; upsert skipped",
                     "quality": {
                         "checked_rows": 1,
@@ -332,6 +370,11 @@ def test_render_and_write_reports(tmp_path: Path) -> None:
                             "noscript_tag_count": 0,
                             "iframe_tag_count": 0,
                             "form_tag_count": 0,
+                            "selector_matches": [
+                                {"selector": ".board-list-item", "match_count": 0}
+                            ],
+                            "selectors_checked": 1,
+                            "selectors_with_matches": 0,
                         },
                         "snapshot_path": str(tmp_path / "snapshots" / "fixture.html"),
                     }
@@ -350,4 +393,5 @@ def test_render_and_write_reports(tmp_path: Path) -> None:
     assert "| Fixture HTML | `_FixtureHtmlCollector` | 1 | 1 | 12.3 | success | healthy_static_html |" in markdown
     assert "## HTML Snapshots" in markdown
     assert "## Scheduler Dry-Run Summary" in markdown
+    assert "Schema path: `docs/schemas/html-collector-scheduler-summary.schema.json`" in markdown
     assert render_markdown_report(report).startswith("# HTML Collector Dynamic Retrieve Diagnostic")

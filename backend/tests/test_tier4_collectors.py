@@ -102,6 +102,13 @@ def test_district_collector_records_url_level_diagnostics() -> None:
     assert parse_empty["item_count"] == 0
     assert parse_empty["html_snapshot"]["html_length"] > 0
     assert parse_empty["html_snapshot"]["body_text_preview"] == "https://example.com/empty"
+    assert parse_empty["html_snapshot"]["selectors_checked"] == 3
+    assert parse_empty["html_snapshot"]["selectors_with_matches"] == 0
+    assert parse_empty["html_snapshot"]["selector_matches"] == [
+        {"selector": "tbody tr", "match_count": 0},
+        {"selector": "a[href]", "match_count": 0},
+        {"selector": "a[onclick]", "match_count": 0},
+    ]
     request_failed = next(
         diagnostic
         for diagnostic in collector.last_collect_url_diagnostics

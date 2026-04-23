@@ -1,5 +1,11 @@
 # 리팩토링 로그
 
+- 2026-04-24: `backend/rag/collector/base_html_collector.py`, `backend/rag/collector/regional_html_collectors.py`, `backend/rag/collector/tier3_collectors.py`, `backend/rag/collector/tier4_collectors.py`, `scripts/html_collector_diagnostic.py`, `backend/tests/test_html_collector_diagnostic_cli.py`, `backend/tests/test_tier4_collectors.py`, `docs/schemas/html-collector-scheduler-summary.schema.json`, `docs/current-state.md`
+  - parse-empty snapshot 메타에 collector별 selector match count를 추가하고, HTML snapshot 파일에도 selector hit 요약을 함께 저장해 selector drift/JS 의존 판별 신호를 강화함
+  - OCR preflight sample에 source별 attachment/image URL sample을 추가해 poster/attachment 후보의 실제 증거 링크를 JSON/Markdown 리포트에서 바로 확인할 수 있게 함
+  - scheduler dry-run summary에 `scheduler_source_summary_v1`, `scheduler_dry_run_summary_v1` schema id/path를 붙이고 별도 JSON schema 파일로 포맷을 고정해 downstream 자동화 소비 안정성을 높임
+  - 검증: `backend\venv\Scripts\python.exe -m pytest backend/tests/test_tier2_collectors.py backend/tests/test_tier3_collectors.py backend/tests/test_tier4_collectors.py backend/tests/test_scheduler_collectors.py backend/tests/test_html_collector_diagnostic_cli.py -q` 통과 (`47 passed`)
+
 - 2026-04-23: `backend/routers/programs.py`, `backend/services/program_list_scoring.py`, `backend/tests/test_programs_router.py`, `frontend/app/(landing)/programs/page.tsx`, `frontend/lib/types/index.ts`, `scripts/benchmark_program_list_performance.py`, `docs/camps-list-refactor.md`, `docs/current-state.md`, `reports/program-list-hardening-performance-20260423.json`, `reports/TASK-2026-04-23-program-list-hardening-result.md`
   - `/programs/list` 응답에 `promoted_items`를 추가해 sponsored/promoted 노출을 organic `items`와 분리함
   - organic read-model query는 `is_ad=false`로 제한하고, 명시 `is_ad=true` row 또는 `PROGRAM_PROMOTED_PROVIDER_MATCHES` 기반 Fast Campus sponsored fallback row가 organic 결과에 중복 노출되지 않도록 제거함
@@ -2823,6 +2829,9 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-23: `scripts/program_quality_report.py`, `backend/tests/test_program_quality_report_cli.py`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/TASK-2026-04-23-1915-program-quality-report-cli-result.md`
   - collector quality validator를 재사용해 운영 `programs` row를 읽기 전용으로 샘플링하고 JSON 리포트를 저장하는 CLI를 추가함
   - Supabase 호출은 `GET /rest/v1/programs`만 사용하고, 테스트에서는 요청 파라미터와 리포트 생성 계약을 mock으로 고정함
+- 2026-04-23: `backend/tests/fixtures/program_quality_golden.json`, `backend/tests/test_program_quality_golden.py`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/TASK-2026-04-23-1930-program-quality-golden-result.md`
+  - Work24 `traStartDate` fallback, Work24 `deadline=end_date` 의심, K-Startup 정상 trace, SeSAC provider fallback 케이스를 골든 fixture로 추가함
+  - validator issue code와 전체 요약을 fixture 기대값으로 고정해 quality validation 정책 drift를 회귀 테스트로 감지하게 함
 - 2026-04-23: `backend/rag/collector/program_field_mapping.py`, `backend/tests/test_work24_kstartup_field_mapping.py`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/TASK-2026-04-23-1945-program-field-source-evidence-result.md`
   - Work24/K-Startup normalized field의 원천 raw field명을 `compare_meta.field_sources`에 보존하도록 추가함
   - deadline/start/end/provider/location/cost/source_url/source_unique_key/application_url 등 주요 필드의 source evidence를 mapping 테스트로 고정함

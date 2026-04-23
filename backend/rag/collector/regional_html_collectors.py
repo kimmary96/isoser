@@ -31,6 +31,7 @@ class SeoulJobPortalCollector(BaseHtmlCollector):
         "https://job.seoul.go.kr/hmpg/chjb/pvmg/pcmgListPgng.do",
         "https://job.seoul.go.kr/hmpg/chjb/prnt/prntListPgng.do",
     ]
+    snapshot_probe_selectors = ("a[href]", "a[onclick]", "tbody tr")
     title_keywords = ("매력일자리", "직무캠프", "취업", "일자리카페", "인턴", "청년")
 
     def collect_items(self) -> List[Dict]:
@@ -121,6 +122,7 @@ class SbaPostingCollector(BaseHtmlCollector):
     list_urls = [
         "https://www.sba.kr/Pages/BusinessApply/Posting.aspx",
     ]
+    snapshot_probe_selectors = ("tr", ".board-list-item", ".list-item", ".card")
     category_map = {
         "창업": "창업",
         "교육": "교육",
@@ -203,6 +205,13 @@ class SesacCollector(BaseHtmlCollector):
     list_urls = [
         "https://sesac.seoul.kr/sesac/course/offline/courseList.do",
     ]
+    snapshot_probe_selectors = (
+        "li",
+        ".course-card",
+        ".list-item",
+        ".course_list_item",
+        "a[href*='courseDetail.do']",
+    )
 
     def collect_items(self) -> List[Dict]:
         return self.collect_url_items(
@@ -319,6 +328,14 @@ class Seoul50PlusCollector(BaseHtmlCollector):
     list_urls = [
         "https://service1.50plus.or.kr/",
     ]
+    snapshot_probe_selectors = (
+        "a[href*='/in_appView.do?ANN_NO=']",
+        "li",
+        "tr",
+        ".list-item",
+        ".card",
+        "article",
+    )
 
     def collect_items(self) -> List[Dict]:
         return self.collect_url_items(
@@ -406,6 +423,10 @@ class CampusTownCollector(BaseHtmlCollector):
     list_urls = [
         "https://campustown.seoul.go.kr/site/main/board/university_news/list",
     ]
+    snapshot_probe_selectors = (
+        "[data-title][data-url]",
+        "a[href*='/site/main/board/university_news/']",
+    )
 
     def collect_items(self) -> List[Dict]:
         return self.collect_url_items(
@@ -468,6 +489,14 @@ class SeoulWomanUpCollector(BaseHtmlCollector):
     list_urls = [
         "https://project.seoulcareerup.or.kr/swm/internship/recruit/list.do?menu_no=02030200",
     ]
+    snapshot_probe_selectors = (
+        "tbody tr",
+        "li",
+        ".list-item",
+        ".card",
+        "article",
+        ".program-item",
+    )
 
     def collect_items(self) -> List[Dict]:
         return self.collect_url_items(

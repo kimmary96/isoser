@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://isoser.local/docs/schemas/html-collector-scheduler-summary.schema.json",
+  "title": "HTML Collector Scheduler Summary Schemas",
+  "$defs": {
+    "issue_counts_v1": {
+      "type": "object",
+      "required": ["error", "warning", "info"],
+      "properties": {
+        "error": { "type": "integer", "minimum": 0 },
+        "warning": { "type": "integer", "minimum": 0 },
+        "info": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "program_quality_summary_v1": {
+      "type": "object",
+      "required": [
+        "checked_rows",
+        "rows_with_errors",
+        "rows_with_warnings",
+        "issue_counts",
+        "issue_codes"
+      ],
+      "properties": {
+        "checked_rows": { "type": "integer", "minimum": 0 },
+        "rows_with_errors": { "type": "integer", "minimum": 0 },
+        "rows_with_warnings": { "type": "integer", "minimum": 0 },
+        "issue_counts": { "$ref": "#/$defs/issue_counts_v1" },
+        "issue_codes": {
+          "type": "object",
+          "additionalProperties": { "type": "integer", "minimum": 0 }
+        }
+      },
+      "additionalProperties": false
+    },
+    "scheduler_source_summary_v1": {
+      "type": "object",
+      "required": [
+        "schema_id",
+        "schema_path",
+        "status",
+        "raw_count",
+        "deduped_row_count",
+        "message",
+        "quality"
+      ],
+      "properties": {
+        "schema_id": { "const": "scheduler_source_summary_v1" },
+        "schema_path": {
+          "const": "docs/schemas/html-collector-scheduler-summary.schema.json"
+        },
+        "status": { "type": "string" },
+        "raw_count": { "type": "integer", "minimum": 0 },
+        "deduped_row_count": { "type": "integer", "minimum": 0 },
+        "message": { "type": "string" },
+        "quality": {
+          "oneOf": [
+            { "$ref": "#/$defs/program_quality_summary_v1" },
+            { "type": "null" }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "scheduler_dry_run_summary_v1": {
+      "type": "object",
+      "required": [
+        "schema_id",
+        "schema_path",
+        "enabled",
+        "source_count",
+        "status_counts",
+        "sources_with_quality_errors",
+        "sources_with_quality_warnings",
+        "quality"
+      ],
+      "properties": {
+        "schema_id": { "const": "scheduler_dry_run_summary_v1" },
+        "schema_path": {
+          "const": "docs/schemas/html-collector-scheduler-summary.schema.json"
+        },
+        "enabled": { "type": "boolean" },
+        "source_count": { "type": "integer", "minimum": 0 },
+        "status_counts": {
+          "type": "object",
+          "additionalProperties": { "type": "integer", "minimum": 0 }
+        },
+        "sources_with_quality_errors": { "type": "integer", "minimum": 0 },
+        "sources_with_quality_warnings": { "type": "integer", "minimum": 0 },
+        "quality": { "$ref": "#/$defs/program_quality_summary_v1" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

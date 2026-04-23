@@ -1,0 +1,3200 @@
+{
+  "collector_count": 14,
+  "detail_probe_inconclusive_sources": [
+    {
+      "class_name": "Seoul50PlusCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 485.97,
+      "evidence": [
+        "status=success",
+        "raw=12",
+        "normalized=12",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "서울시 50플러스 collected 16 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://service1.50plus.or.kr/"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 12,
+      "ocr_probe": {
+        "attachment_signal_count": 0,
+        "classification": "detail_probe_inconclusive",
+        "detail_attachment_count": 0,
+        "detail_checked": 0,
+        "detail_fetch_failed": 0,
+        "detail_low_text_image_count": 0,
+        "detail_text_sufficient_count": 0,
+        "evidence": [
+          "items=12",
+          "short_list_text=4",
+          "attachment_signals=0",
+          "image_signals=0"
+        ],
+        "image_signal_count": 0,
+        "item_count": 12,
+        "recommendation": "목록 텍스트가 짧지만 detail HTML 확인이 부족하다. OCR보다 detail page text/attachment snapshot 진단을 먼저 보강한다.",
+        "samples": [],
+        "short_list_text_count": 4,
+        "source_attachment_url_samples": [],
+        "source_image_url_samples": []
+      },
+      "playwright_probe_candidate": false,
+      "raw_count": 12,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 12,
+        "message": "Collected 12 rows; upsert skipped (raw_items=12, deduped_rows=12); collector_message=서울시 50플러스 collected 16 items from 1/1 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 12,
+          "issue_codes": {
+            "missing_provider": 12
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 12,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 12,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "서울시 50플러스",
+      "source_key": "seoul_50plus",
+      "source_type": "seoul_city",
+      "tier": 2,
+      "url_diagnostics": [
+        {
+          "item_count": 16,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://service1.50plus.or.kr/"
+        }
+      ]
+    },
+    {
+      "class_name": "SesacCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 221.04,
+      "evidence": [
+        "status=success",
+        "raw=12",
+        "normalized=12",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "청년취업사관학교 SeSAC collected 12 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://sesac.seoul.kr/sesac/course/offline/courseList.do"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 12,
+      "ocr_probe": {
+        "attachment_signal_count": 0,
+        "classification": "detail_probe_inconclusive",
+        "detail_attachment_count": 0,
+        "detail_checked": 0,
+        "detail_fetch_failed": 0,
+        "detail_low_text_image_count": 0,
+        "detail_text_sufficient_count": 0,
+        "evidence": [
+          "items=12",
+          "short_list_text=4",
+          "attachment_signals=0",
+          "image_signals=0"
+        ],
+        "image_signal_count": 0,
+        "item_count": 12,
+        "recommendation": "목록 텍스트가 짧지만 detail HTML 확인이 부족하다. OCR보다 detail page text/attachment snapshot 진단을 먼저 보강한다.",
+        "samples": [],
+        "short_list_text_count": 4,
+        "source_attachment_url_samples": [],
+        "source_image_url_samples": []
+      },
+      "playwright_probe_candidate": false,
+      "raw_count": 12,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 12,
+        "message": "Collected 12 rows; upsert skipped (raw_items=12, deduped_rows=12); collector_message=청년취업사관학교 SeSAC collected 12 items from 1/1 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 12,
+          "issue_codes": {},
+          "issue_counts": {
+            "error": 0,
+            "info": 0,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 12,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "청년취업사관학교 SeSAC",
+      "source_key": "sesac",
+      "source_type": "seoul_city",
+      "tier": 2,
+      "url_diagnostics": [
+        {
+          "item_count": 12,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://sesac.seoul.kr/sesac/course/offline/courseList.do"
+        }
+      ]
+    },
+    {
+      "class_name": "KisedCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 716.82,
+      "evidence": [
+        "status=success",
+        "raw=39",
+        "normalized=39",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "KISED collected 42 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://www.kised.or.kr/misAnnouncement/index.es?mid=a10302000000"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 39,
+      "ocr_probe": {
+        "attachment_signal_count": 0,
+        "classification": "detail_probe_inconclusive",
+        "detail_attachment_count": 0,
+        "detail_checked": 2,
+        "detail_fetch_failed": 0,
+        "detail_low_text_image_count": 0,
+        "detail_text_sufficient_count": 0,
+        "evidence": [
+          "items=39",
+          "short_list_text=37",
+          "attachment_signals=0",
+          "image_signals=0",
+          "detail_checked=2",
+          "detail_fetch_failed=0",
+          "detail_attachments=0",
+          "detail_low_text_images=0",
+          "detail_text_sufficient=0"
+        ],
+        "image_signal_count": 0,
+        "item_count": 39,
+        "recommendation": "목록 텍스트가 짧고 샘플 detail에서도 충분한 본문 텍스트를 확인하지 못했다. OCR보다 detail parser/selector 보강 가능성을 먼저 확인한다.",
+        "samples": [
+          {
+            "attachment_link_count": 0,
+            "attachment_signal": false,
+            "attachment_urls": [],
+            "image_count": 0,
+            "image_signal": false,
+            "image_urls": [],
+            "link": "https://www.k-startup.go.kr/web/contents/webDSCSN_MNG.do",
+            "list_text_length": 20,
+            "status": "fetched",
+            "title": "고객광장",
+            "visible_text_length": 34
+          },
+          {
+            "attachment_link_count": 0,
+            "attachment_signal": false,
+            "attachment_urls": [],
+            "image_count": 0,
+            "image_signal": false,
+            "image_urls": [],
+            "link": "https://www.open.go.kr",
+            "list_text_length": 20,
+            "status": "fetched",
+            "title": "정보공개",
+            "visible_text_length": 12
+          }
+        ],
+        "short_list_text_count": 37,
+        "source_attachment_url_samples": [],
+        "source_image_url_samples": []
+      },
+      "playwright_probe_candidate": false,
+      "raw_count": 39,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 39,
+        "message": "Collected 39 rows; upsert skipped (raw_items=39, deduped_rows=39); collector_message=KISED collected 42 items from 1/1 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 39,
+          "issue_codes": {
+            "missing_provider": 39
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 39,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 39,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "KISED",
+      "source_key": "KISED",
+      "source_type": "semi_public_crawl",
+      "tier": 3,
+      "url_diagnostics": [
+        {
+          "item_count": 42,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://www.kised.or.kr/misAnnouncement/index.es?mid=a10302000000"
+        }
+      ]
+    },
+    {
+      "class_name": "SeongdongCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 45579.41,
+      "evidence": [
+        "status=success",
+        "raw=3",
+        "normalized=3",
+        "parse_empty=0",
+        "request_failed=1"
+      ],
+      "last_collect_message": "서울청년센터 성동 collected 3 items from 1/2 urls; request_failed=1; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://youth.seoul.go.kr/orang/cntr/program.do?key=2309210001&cntrId=CT00006",
+        "https://youth.seoul.go.kr/orang/cntr/notice.do?key=2309210001&cntrId=CT00006"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 3,
+      "ocr_probe": {
+        "attachment_signal_count": 0,
+        "classification": "detail_probe_inconclusive",
+        "detail_attachment_count": 0,
+        "detail_checked": 0,
+        "detail_fetch_failed": 2,
+        "detail_low_text_image_count": 0,
+        "detail_text_sufficient_count": 0,
+        "evidence": [
+          "items=3",
+          "short_list_text=3",
+          "attachment_signals=0",
+          "image_signals=0",
+          "detail_checked=0",
+          "detail_fetch_failed=2",
+          "detail_attachments=0",
+          "detail_low_text_images=0",
+          "detail_text_sufficient=0"
+        ],
+        "image_signal_count": 0,
+        "item_count": 3,
+        "recommendation": "목록 텍스트가 짧지만 detail HTML 확인이 부족하다. OCR보다 detail page text/attachment snapshot 진단을 먼저 보강한다.",
+        "samples": [
+          {
+            "attachment_signal": false,
+            "attachment_urls": [],
+            "error": "TimeoutError: The read operation timed out",
+            "image_signal": false,
+            "image_urls": [],
+            "link": "https://youth.seoul.go.kr/orang/cntr/programView.do?key=2309210001&cntrId=CT00006&sprtInfoId=69292",
+            "list_text_length": 105,
+            "status": "fetch_failed",
+            "title": "서울청년센터 성동 성동청년일경험 | 타겟 고객 기반 상품 라인업 설계 챌린지 참여자 모집"
+          },
+          {
+            "attachment_signal": false,
+            "attachment_urls": [],
+            "error": "TimeoutError: The read operation timed out",
+            "image_signal": false,
+            "image_urls": [],
+            "link": "https://youth.seoul.go.kr/orang/cntr/programView.do?key=2309210001&cntrId=CT00006&sprtInfoId=69382",
+            "list_text_length": 115,
+            "status": "fetch_failed",
+            "title": "서울청년센터 성동 성동청년일경험 | 웹디자인 직무경험:사용자 행동 기반 랜딩페이지 설계 챌린지 참여자 모집"
+          }
+        ],
+        "short_list_text_count": 3,
+        "source_attachment_url_samples": [],
+        "source_image_url_samples": []
+      },
+      "playwright_probe_candidate": false,
+      "raw_count": 3,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 3,
+        "message": "Collected 3 rows; upsert skipped (raw_items=3, deduped_rows=3); collector_message=서울청년센터 성동 collected 3 items from 1/2 urls; request_failed=1; parse_empty=0",
+        "quality": {
+          "checked_rows": 3,
+          "issue_codes": {
+            "missing_provider": 3
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 3,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 3,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "서울청년센터 성동",
+      "source_key": "seongdong_youth_center",
+      "source_type": "district_crawl",
+      "tier": 4,
+      "url_diagnostics": [
+        {
+          "item_count": 3,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://youth.seoul.go.kr/orang/cntr/program.do?key=2309210001&cntrId=CT00006"
+        },
+        {
+          "error": "The read operation timed out",
+          "item_count": 0,
+          "parse_status": "not_attempted",
+          "request_status": "request_failed",
+          "url": "https://youth.seoul.go.kr/orang/cntr/notice.do?key=2309210001&cntrId=CT00006"
+        }
+      ]
+    }
+  ],
+  "duration_ms": 59756.44,
+  "mode": "read-only-live-diagnostic",
+  "ocr_probe": {
+    "enabled": true,
+    "mode": "read-only-detail-html-preflight",
+    "sample_limit": 2
+  },
+  "ocr_probe_candidates": [],
+  "ocr_summary": {
+    "detail_probe_inconclusive": 4,
+    "poster_or_attachment_candidate": 7,
+    "text_sufficient_no_ocr": 3
+  },
+  "partial_parse_empty_sources": [
+    {
+      "class_name": "DobongCollector",
+      "classification": "partial_parse_empty_monitor",
+      "collection_method": "web_crawl",
+      "duration_ms": 3253.6,
+      "evidence": [
+        "status=success",
+        "raw=1",
+        "normalized=1",
+        "parse_empty=1",
+        "request_failed=0"
+      ],
+      "last_collect_message": "도봉구청 일자리경제과 collected 1 items from 2/2 urls; request_failed=0; parse_empty=1",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://www.dobong.go.kr/bbs.asp?code=10008769",
+        "https://www.dobong.go.kr/bbs.asp?code=10008770"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 1,
+      "ocr_probe": {
+        "attachment_signal_count": 0,
+        "classification": "poster_or_attachment_candidate",
+        "detail_attachment_count": 1,
+        "detail_checked": 1,
+        "detail_fetch_failed": 0,
+        "detail_low_text_image_count": 0,
+        "detail_text_sufficient_count": 1,
+        "evidence": [
+          "items=1",
+          "short_list_text=1",
+          "attachment_signals=0",
+          "image_signals=0",
+          "detail_checked=1",
+          "detail_fetch_failed=0",
+          "detail_attachments=1",
+          "detail_low_text_images=0",
+          "detail_text_sufficient=1"
+        ],
+        "image_signal_count": 0,
+        "item_count": 1,
+        "recommendation": "목록 또는 detail HTML에서 이미지/첨부 신호가 있다. OCR은 source별 opt-in으로 두고, 먼저 해당 첨부/이미지에서 필수 필드가 실제로 빠지는지 샘플 검증한다.",
+        "samples": [
+          {
+            "attachment_link_count": 1,
+            "attachment_signal": false,
+            "attachment_urls": [
+              "https://www.hancom.com/cs_center/csDownload.do"
+            ],
+            "image_count": 41,
+            "image_signal": false,
+            "image_urls": [
+              "https://www.dobong.go.kr/images/2025/main/ico_gonfalon.png",
+              "https://www.dobong.go.kr/images/2025/main/ico_login.png",
+              "https://www.dobong.go.kr/images/2023/main/logo.png"
+            ],
+            "link": "https://www.dobong.go.kr/bbs.asp?bmode=D&pcode=12742709&code=10008770",
+            "list_text_length": 68,
+            "status": "fetched",
+            "title": "2026년 5월 구민정보화교육 수강생 모집 안내",
+            "visible_text_length": 9906
+          }
+        ],
+        "short_list_text_count": 1,
+        "source_attachment_url_samples": [
+          "https://www.hancom.com/cs_center/csDownload.do"
+        ],
+        "source_image_url_samples": [
+          "https://www.dobong.go.kr/images/2025/main/ico_gonfalon.png",
+          "https://www.dobong.go.kr/images/2025/main/ico_login.png",
+          "https://www.dobong.go.kr/images/2023/main/logo.png"
+        ]
+      },
+      "playwright_probe_candidate": false,
+      "raw_count": 1,
+      "recommendation": "일부 URL은 비었지만 같은 source에서 수집 성공도 있다. Playwright 도입 전 빈 URL의 HTML snapshot/selector drift를 확인한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 1,
+        "message": "Collected 1 rows; upsert skipped (raw_items=1, deduped_rows=1); collector_message=도봉구청 일자리경제과 collected 1 items from 2/2 urls; request_failed=0; parse_empty=1",
+        "quality": {
+          "checked_rows": 1,
+          "issue_codes": {
+            "missing_provider": 1
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 1,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 1,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "snapshot_capture": {
+        "saved_count": 1,
+        "saved_paths": [
+          "reports\\html-collector-snapshots-2026-04-24\\dobong_district_jobs-list-1-parse_empty.html"
+        ]
+      },
+      "source": "도봉구청 일자리경제과",
+      "source_key": "dobong_district_jobs",
+      "source_type": "district_crawl",
+      "tier": 4,
+      "url_diagnostics": [
+        {
+          "html_snapshot": {
+            "body_text_preview": "열린행정>알림마당>공지사항(목록) 본문바로가기 본문바로가기 이 누리집은 대한민국 공식 전자정부 누리집입니다. 도봉구청 도봉배움e 통합예약 문화관광 구의회 도봉구 구청장실 디비디비맵 보건소 스마트도시 로그인 Language English 中文 日本語 Tiếng Việt 화면크기 검색입력란 종합민원 종합민원 변화 성장 미래 함께해요 도봉 민원안내 민원실 안내 민원별수수료 안내 구민편의서비스 무인민원발급기 민원관련FAQ 민원사무분류/용어 복합민원 안내 관련법령/기준표 행정정보공동이용 통합인터넷민원창구 통합민원창구 나의 민원 분야별민원 정부24(보조금24) 안내 가족관계등록 세무 여권 청소/쓰레기/재활용 안내 교통/주차 부동산/지적 건축/주택/정보통신 도로건설 주민센터 민원 전세사기피해 토지거래허가 민원상담/신고 ",
+            "body_text_preview_truncated": true,
+            "form_tag_count": 4,
+            "html_length": 147653,
+            "html_preview_truncated": true,
+            "iframe_tag_count": 2,
+            "noscript_tag_count": 0,
+            "script_tag_count": 25,
+            "selector_matches": [
+              {
+                "match_count": 10,
+                "selector": "tbody tr"
+              },
+              {
+                "match_count": 10,
+                "selector": "a[href*='bmode=D'][href*='pcode=']"
+              }
+            ],
+            "selectors_checked": 2,
+            "selectors_with_matches": 2,
+            "title_text": "열린행정>알림마당>공지사항(목록)"
+          },
+          "item_count": 0,
+          "parse_status": "parse_empty",
+          "request_status": "success",
+          "snapshot_path": "reports\\html-collector-snapshots-2026-04-24\\dobong_district_jobs-list-1-parse_empty.html",
+          "url": "https://www.dobong.go.kr/bbs.asp?code=10008769"
+        },
+        {
+          "item_count": 1,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://www.dobong.go.kr/bbs.asp?code=10008770"
+        }
+      ]
+    }
+  ],
+  "playwright_probe_candidates": [],
+  "poster_or_attachment_candidates": [
+    {
+      "class_name": "SeoulJobPortalCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 2108.6,
+      "evidence": [
+        "status=success",
+        "raw=10",
+        "normalized=10",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "서울일자리포털 collected 11 items from 3/3 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://job.seoul.go.kr/hmpg/chjb/prmg/prmgListPgng.do",
+        "https://job.seoul.go.kr/hmpg/chjb/pvmg/pcmgListPgng.do",
+        "https://job.seoul.go.kr/hmpg/chjb/prnt/prntListPgng.do"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 10,
+      "ocr_probe": {
+        "attachment_signal_count": 0,
+        "classification": "poster_or_attachment_candidate",
+        "detail_attachment_count": 4,
+        "detail_checked": 2,
+        "detail_fetch_failed": 0,
+        "detail_low_text_image_count": 0,
+        "detail_text_sufficient_count": 2,
+        "evidence": [
+          "items=10",
+          "short_list_text=8",
+          "attachment_signals=0",
+          "image_signals=0",
+          "detail_checked=2",
+          "detail_fetch_failed=0",
+          "detail_attachments=4",
+          "detail_low_text_images=0",
+          "detail_text_sufficient=2"
+        ],
+        "image_signal_count": 0,
+        "item_count": 10,
+        "recommendation": "목록 또는 detail HTML에서 이미지/첨부 신호가 있다. OCR은 source별 opt-in으로 두고, 먼저 해당 첨부/이미지에서 필수 필드가 실제로 빠지는지 샘플 검증한다.",
+        "samples": [
+          {
+            "attachment_link_count": 4,
+            "attachment_signal": false,
+            "attachment_urls": [
+              "https://job.seoul.go.kr/hmpg/comm/file/fileDownLoad.do?file_no=4699D1094E3E06ECE063C0A8A0286D49",
+              "https://job.seoul.go.kr/hmpg/comm/file/fileDownLoad.do?file_no=47D6CBB8FE9504B0E063C0A8A0284F4C",
+              "https://job.seoul.go.kr/hmpg/comm/file/fileDownLoad.do?file_no=4699D1094E4006ECE063C0A8A0286D49"
+            ],
+            "image_count": 5,
+            "image_signal": false,
+            "image_urls": [
+              "https://job.seoul.go.kr/images/hmpg/logo.png",
+              "https://job.seoul.go.kr/images/hmpg/logo_bottom.png",
+              "https://job.seoul.go.kr/images/hmpg/WA_Mark.png"
+            ],
+            "link": "https://job.seoul.go.kr/hmpg/chjb/prmg/prmgDetail.do?recmnt_pbanc_no=4680960E0D970230E063C0A8A0281CEB",
+            "list_text_length": 63,
+            "status": "fetched",
+            "title": "청년취업사관학교 새싹(SeSAC) 교육운영 주니어 매니저",
+            "visible_text_length": 7548
+          },
+          {
+            "attachment_link_count": 0,
+            "attachment_signal": false,
+            "attachment_urls": [],
+            "image_count": 13,
+            "image_signal": false,
+            "image_urls": [
+              "https://framerusercontent.com/images/wL3gFGdvFKnBDEAtALgd21nxY.png?width=925&height=858",
+              "https://framerusercontent.com/images/KFODyDPMf85CInVsmz95yO4c.png?width=856&height=820",
+              "https://framerusercontent.com/images/pkRgS6EqUrjkbv3C1CJ7RRwj4.png?width=875&height=802"
+            ],
+            "link": "https://newdeal.koraia.org/",
+            "list_text_length": 83,
+            "status": "fetched",
+            "title": "생성형 AI 리터러시 중심 기획·콘텐츠 실무 인재 양성 교육 및 취업 과정",
+            "visible_text_length": 1935
+          }
+        ],
+        "short_list_text_count": 8,
+        "source_attachment_url_samples": [
+          "https://job.seoul.go.kr/hmpg/comm/file/fileDownLoad.do?file_no=4699D1094E3E06ECE063C0A8A0286D49",
+          "https://job.seoul.go.kr/hmpg/comm/file/fileDownLoad.do?file_no=47D6CBB8FE9504B0E063C0A8A0284F4C",
+          "https://job.seoul.go.kr/hmpg/comm/file/fileDownLoad.do?file_no=4699D1094E4006ECE063C0A8A0286D49"
+        ],
+        "source_image_url_samples": [
+          "https://job.seoul.go.kr/images/hmpg/logo.png",
+          "https://job.seoul.go.kr/images/hmpg/logo_bottom.png",
+          "https://job.seoul.go.kr/images/hmpg/WA_Mark.png",
+          "https://framerusercontent.com/images/wL3gFGdvFKnBDEAtALgd21nxY.png?width=925&height=858",
+          "https://framerusercontent.com/images/KFODyDPMf85CInVsmz95yO4c.png?width=856&height=820",
+          "https://framerusercontent.com/images/pkRgS6EqUrjkbv3C1CJ7RRwj4.png?width=875&height=802"
+        ]
+      },
+      "playwright_probe_candidate": false,
+      "raw_count": 10,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 10,
+        "message": "Collected 10 rows; upsert skipped (raw_items=10, deduped_rows=10); collector_message=서울일자리포털 collected 11 items from 3/3 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 10,
+          "issue_codes": {
+            "missing_provider": 10
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 10,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 10,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "서울일자리포털",
+      "source_key": "seoul_job_portal",
+      "source_type": "seoul_city",
+      "tier": 2,
+      "url_diagnostics": [
+        {
+          "item_count": 1,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://job.seoul.go.kr/hmpg/chjb/prmg/prmgListPgng.do"
+        },
+        {
+          "item_count": 3,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://job.seoul.go.kr/hmpg/chjb/pvmg/pcmgListPgng.do"
+        },
+        {
+          "item_count": 7,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://job.seoul.go.kr/hmpg/chjb/prnt/prntListPgng.do"
+        }
+      ]
+    },
+    {
+      "class_name": "CampusTownCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 653.57,
+      "evidence": [
+        "status=success",
+        "raw=20",
+        "normalized=20",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "서울캠퍼스타운 collected 20 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://campustown.seoul.go.kr/site/main/board/university_news/list"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 20,
+      "ocr_probe": {
+        "attachment_signal_count": 0,
+        "classification": "poster_or_attachment_candidate",
+        "detail_attachment_count": 2,
+        "detail_checked": 2,
+        "detail_fetch_failed": 0,
+        "detail_low_text_image_count": 0,
+        "detail_text_sufficient_count": 2,
+        "evidence": [
+          "items=20",
+          "short_list_text=10",
+          "attachment_signals=0",
+          "image_signals=0",
+          "detail_checked=2",
+          "detail_fetch_failed=0",
+          "detail_attachments=2",
+          "detail_low_text_images=0",
+          "detail_text_sufficient=2"
+        ],
+        "image_signal_count": 0,
+        "item_count": 20,
+        "recommendation": "목록 또는 detail HTML에서 이미지/첨부 신호가 있다. OCR은 source별 opt-in으로 두고, 먼저 해당 첨부/이미지에서 필수 필드가 실제로 빠지는지 샘플 검증한다.",
+        "samples": [
+          {
+            "attachment_link_count": 1,
+            "attachment_signal": false,
+            "attachment_urls": [
+              "https://campustown.seoul.go.kr/site/main/file/download/uu/e1f020a77c004d21b407ab535cdf9cbf"
+            ],
+            "image_count": 5,
+            "image_signal": false,
+            "image_urls": [
+              "https://campustown.seoul.go.kr/design/theme/campustown/images/logo.png",
+              "https://campustown.seoul.go.kr/design/theme/campustown/images/footer_logo.png",
+              "https://campustown.seoul.go.kr/design/theme/campustown/images/up_arrow.png"
+            ],
+            "link": "https://campustown.seoul.go.kr/site/main/board/university_news/3003?cp=1&sortOrder=BA_REGDATE&sortDirection=DESC&listType=list&bcId=university_news&baNotice=false&baCommSelec=false&baOpenDay=false&baUse=true",
+            "list_text_length": 257,
+            "status": "fetched",
+            "title": "[국민대학교 캠퍼스타운] 2026 국민대학교 캠퍼스타운 CLUB HOUSE IR 자료 고도화 워크샵(~04.27(월), 23시 30분까지)",
+            "visible_text_length": 1743
+          },
+          {
+            "attachment_link_count": 1,
+            "attachment_signal": false,
+            "attachment_urls": [
+              "https://campustown.seoul.go.kr/site/main/file/download/uu/73b56f7f1f904de09b5e3b6a60effbd9"
+            ],
+            "image_count": 6,
+            "image_signal": false,
+            "image_urls": [
+              "https://campustown.seoul.go.kr/design/theme/campustown/images/logo.png",
+              "https://campustown.seoul.go.kr/design/theme/campustown/images/footer_logo.png",
+              "https://campustown.seoul.go.kr/site/main/file/image/uu/3275e73c4f24415d9c17e2a885ad787a"
+            ],
+            "link": "https://campustown.seoul.go.kr/site/main/board/university_news/2993?cp=1&sortOrder=BA_REGDATE&sortDirection=DESC&listType=list&bcId=university_news&baNotice=false&baCommSelec=false&baOpenDay=false&baUse=true",
+            "list_text_length": 205,
+            "status": "fetched",
+            "title": "2026년 서울대학교 RISE 사업단(캠퍼스타운) 추가 입주기업 모집(마감일: ~4월 10일 13:00까지)",
+            "visible_text_length": 2659
+          }
+        ],
+        "short_list_text_count": 10,
+        "source_attachment_url_samples": [
+          "https://campustown.seoul.go.kr/site/main/file/download/uu/e1f020a77c004d21b407ab535cdf9cbf",
+          "https://campustown.seoul.go.kr/site/main/file/download/uu/73b56f7f1f904de09b5e3b6a60effbd9"
+        ],
+        "source_image_url_samples": [
+          "https://campustown.seoul.go.kr/design/theme/campustown/images/logo.png",
+          "https://campustown.seoul.go.kr/design/theme/campustown/images/footer_logo.png",
+          "https://campustown.seoul.go.kr/design/theme/campustown/images/up_arrow.png",
+          "https://campustown.seoul.go.kr/site/main/file/image/uu/3275e73c4f24415d9c17e2a885ad787a"
+        ]
+      },
+      "playwright_probe_candidate": false,
+      "raw_count": 20,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 20,
+        "message": "Collected 20 rows; upsert skipped (raw_items=20, deduped_rows=20); collector_message=서울캠퍼스타운 collected 20 items from 1/1 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 20,
+          "issue_codes": {
+            "missing_provider": 20
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 20,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 20,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "서울캠퍼스타운",
+      "source_key": "campus_town",
+      "source_type": "seoul_city",
+      "tier": 2,
+      "url_diagnostics": [
+        {
+          "item_count": 20,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://campustown.seoul.go.kr/site/main/board/university_news/list"
+        }
+      ]
+    },
+    {
+      "class_name": "KobiaCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 196.89,
+      "evidence": [
+        "status=success",
+        "raw=10",
+        "normalized=10",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "KOBIA collected 11 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "http://www.kobia.or.kr/board/list.do?board_kind=KNOTICE"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 10,
+      "ocr_probe": {
+        "attachment_signal_count": 0,
+        "classification": "poster_or_attachment_candidate",
+        "detail_attachment_count": 2,
+        "detail_checked": 2,
+        "detail_fetch_failed": 0,
+        "detail_low_text_image_count": 0,
+        "detail_text_sufficient_count": 2,
+        "evidence": [
+          "items=10",
+          "short_list_text=10",
+          "attachment_signals=0",
+          "image_signals=0",
+          "detail_checked=2",
+          "detail_fetch_failed=0",
+          "detail_attachments=2",
+          "detail_low_text_images=0",
+          "detail_text_sufficient=2"
+        ],
+        "image_signal_count": 0,
+        "item_count": 10,
+        "recommendation": "목록 또는 detail HTML에서 이미지/첨부 신호가 있다. OCR은 source별 opt-in으로 두고, 먼저 해당 첨부/이미지에서 필수 필드가 실제로 빠지는지 샘플 검증한다.",
+        "samples": [
+          {
+            "attachment_link_count": 1,
+            "attachment_signal": false,
+            "attachment_urls": [
+              "http://www.kobia.or.kr/organ/ci.do"
+            ],
+            "image_count": 9,
+            "image_signal": false,
+            "image_urls": [
+              "http://www.kobia.or.kr/images/common/kobia_ci_kor_eng_1.png",
+              "http://www.kobia.or.kr/KobiaAdmin/upload/board/images/20260416133201-217-6ed32ef02a0e.jpg",
+              "http://www.kobia.or.kr/KobiaAdmin/upload/board/images/20260416133207-216-4a22097332e2.jpg"
+            ],
+            "link": "http://www.kobia.or.kr/board/view.do?idx=2870&board_kind=KNOTICE&page=1",
+            "list_text_length": 105,
+            "status": "fetched",
+            "title": "공고 [채용공고] (사)한국창업보육협회 2026년 제2차 직원 채용 공고",
+            "visible_text_length": 1085
+          },
+          {
+            "attachment_link_count": 1,
+            "attachment_signal": false,
+            "attachment_urls": [
+              "http://www.kobia.or.kr/organ/ci.do"
+            ],
+            "image_count": 3,
+            "image_signal": false,
+            "image_urls": [
+              "http://www.kobia.or.kr/images/common/kobia_ci_kor_eng_1.png",
+              "http://www.kobia.or.kr/KobiaAdmin/upload/board/images/20260423131351-cfd-d7112ea67d64.jpg",
+              "http://www.kobia.or.kr/images/common/kobia_ci_kor_eng_white_1.png"
+            ],
+            "link": "http://www.kobia.or.kr/board/view.do?idx=2874&board_kind=KNOTICE&page=1",
+            "list_text_length": 70,
+            "status": "fetched",
+            "title": "안내 한국여성경제인협회 2026년 펨테크 산업 육성 지원기업 모집 통합 공고",
+            "visible_text_length": 999
+          }
+        ],
+        "short_list_text_count": 10,
+        "source_attachment_url_samples": [
+          "http://www.kobia.or.kr/organ/ci.do"
+        ],
+        "source_image_url_samples": [
+          "http://www.kobia.or.kr/images/common/kobia_ci_kor_eng_1.png",
+          "http://www.kobia.or.kr/KobiaAdmin/upload/board/images/20260416133201-217-6ed32ef02a0e.jpg",
+          "http://www.kobia.or.kr/KobiaAdmin/upload/board/images/20260416133207-216-4a22097332e2.jpg",
+          "http://www.kobia.or.kr/KobiaAdmin/upload/board/images/20260423131351-cfd-d7112ea67d64.jpg",
+          "http://www.kobia.or.kr/images/common/kobia_ci_kor_eng_white_1.png"
+        ]
+      },
+      "playwright_probe_candidate": false,
+      "raw_count": 10,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 10,
+        "message": "Collected 10 rows; upsert skipped (raw_items=10, deduped_rows=10); collector_message=KOBIA collected 11 items from 1/1 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 10,
+          "issue_codes": {
+            "missing_provider": 10
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 10,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 10,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "KOBIA",
+      "source_key": "KOBIA",
+      "source_type": "semi_public_crawl",
+      "tier": 3,
+      "url_diagnostics": [
+        {
+          "item_count": 11,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "http://www.kobia.or.kr/board/list.do?board_kind=KNOTICE"
+        }
+      ]
+    },
+    {
+      "class_name": "NowonCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 1912.14,
+      "evidence": [
+        "status=success",
+        "raw=10",
+        "normalized=10",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "노원구 청년일자리센터 청년내일 collected 10 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://www.nwjob.kr/18"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 10,
+      "ocr_probe": {
+        "attachment_signal_count": 0,
+        "classification": "poster_or_attachment_candidate",
+        "detail_attachment_count": 3,
+        "detail_checked": 2,
+        "detail_fetch_failed": 0,
+        "detail_low_text_image_count": 0,
+        "detail_text_sufficient_count": 2,
+        "evidence": [
+          "items=10",
+          "short_list_text=6",
+          "attachment_signals=0",
+          "image_signals=0",
+          "detail_checked=2",
+          "detail_fetch_failed=0",
+          "detail_attachments=3",
+          "detail_low_text_images=0",
+          "detail_text_sufficient=2"
+        ],
+        "image_signal_count": 0,
+        "item_count": 10,
+        "recommendation": "목록 또는 detail HTML에서 이미지/첨부 신호가 있다. OCR은 source별 opt-in으로 두고, 먼저 해당 첨부/이미지에서 필수 필드가 실제로 빠지는지 샘플 검증한다.",
+        "samples": [
+          {
+            "attachment_link_count": 2,
+            "attachment_signal": false,
+            "attachment_urls": [
+              "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIxNTVmNjY0ZDg3NTMwNyI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMWU2NzNlN2MwOTIyNTMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzNmJmYTRlYTYiO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30=",
+              "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIxNTVmNjY0ZDg3NTMwNyI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMWViMjQ4NmZlMTI4NTMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzNmJmYTU5YmYiO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30="
+            ],
+            "image_count": 16,
+            "image_signal": false,
+            "image_urls": [
+              "https://www.nwjob.kr/common/img/default_profile.png",
+              "https://cdn.imweb.me/thumbnail/20230322/068b03ab88ff0.png",
+              "https://cdn.imweb.me/thumbnail/20230311/f34de9b5802f0.png"
+            ],
+            "link": "https://www.nwjob.kr/18/?q=YToxOntzOjEyOiJrZXl3b3JkX3R5cGUiO3M6MzoiYWxsIjt9&bmode=view&idx=170956396&t=board",
+            "list_text_length": 132,
+            "status": "fetched",
+            "title": "[~4/27] 2026년 노원구 『경춘스테이션 북&커피 카페』 초단시간 기간제근로자 채용 공고",
+            "visible_text_length": 763
+          },
+          {
+            "attachment_link_count": 1,
+            "attachment_signal": false,
+            "attachment_urls": [
+              "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIwYTM3N2VkNjUzOWNhZSI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMGYwZTBmOGVmOGQ2ODMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzNmMwNWQ1NDciO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30="
+            ],
+            "image_count": 12,
+            "image_signal": false,
+            "image_urls": [
+              "https://www.nwjob.kr/common/img/default_profile.png",
+              "https://cdn.imweb.me/thumbnail/20230322/068b03ab88ff0.png",
+              "https://cdn.imweb.me/thumbnail/20230311/f34de9b5802f0.png"
+            ],
+            "link": "https://www.nwjob.kr/18/?q=YToxOntzOjEyOiJrZXl3b3JkX3R5cGUiO3M6MzoiYWxsIjt9&bmode=view&idx=170938349&t=board",
+            "list_text_length": 111,
+            "status": "fetched",
+            "title": "[~4/26] 서울시 매력일자리 서울통신원(10명) 모집",
+            "visible_text_length": 1087
+          }
+        ],
+        "short_list_text_count": 6,
+        "source_attachment_url_samples": [
+          "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIxNTVmNjY0ZDg3NTMwNyI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMWU2NzNlN2MwOTIyNTMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzNmJmYTRlYTYiO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30=",
+          "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIxNTVmNjY0ZDg3NTMwNyI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMWViMjQ4NmZlMTI4NTMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzNmJmYTU5YmYiO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30=",
+          "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIwYTM3N2VkNjUzOWNhZSI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMGYwZTBmOGVmOGQ2ODMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzNmMwNWQ1NDciO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30="
+        ],
+        "source_image_url_samples": [
+          "https://www.nwjob.kr/common/img/default_profile.png",
+          "https://cdn.imweb.me/thumbnail/20230322/068b03ab88ff0.png",
+          "https://cdn.imweb.me/thumbnail/20230311/f34de9b5802f0.png"
+        ]
+      },
+      "playwright_probe_candidate": false,
+      "raw_count": 10,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 10,
+        "message": "Collected 10 rows; upsert skipped (raw_items=10, deduped_rows=10); collector_message=노원구 청년일자리센터 청년내일 collected 10 items from 1/1 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 10,
+          "issue_codes": {
+            "missing_provider": 10
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 10,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 10,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "노원구 청년일자리센터 청년내일",
+      "source_key": "nowon_youth_tomorrow",
+      "source_type": "district_crawl",
+      "tier": 4,
+      "url_diagnostics": [
+        {
+          "item_count": 10,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://www.nwjob.kr/18"
+        }
+      ]
+    },
+    {
+      "class_name": "DobongCollector",
+      "classification": "partial_parse_empty_monitor",
+      "collection_method": "web_crawl",
+      "duration_ms": 3253.6,
+      "evidence": [
+        "status=success",
+        "raw=1",
+        "normalized=1",
+        "parse_empty=1",
+        "request_failed=0"
+      ],
+      "last_collect_message": "도봉구청 일자리경제과 collected 1 items from 2/2 urls; request_failed=0; parse_empty=1",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://www.dobong.go.kr/bbs.asp?code=10008769",
+        "https://www.dobong.go.kr/bbs.asp?code=10008770"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 1,
+      "ocr_probe": {
+        "attachment_signal_count": 0,
+        "classification": "poster_or_attachment_candidate",
+        "detail_attachment_count": 1,
+        "detail_checked": 1,
+        "detail_fetch_failed": 0,
+        "detail_low_text_image_count": 0,
+        "detail_text_sufficient_count": 1,
+        "evidence": [
+          "items=1",
+          "short_list_text=1",
+          "attachment_signals=0",
+          "image_signals=0",
+          "detail_checked=1",
+          "detail_fetch_failed=0",
+          "detail_attachments=1",
+          "detail_low_text_images=0",
+          "detail_text_sufficient=1"
+        ],
+        "image_signal_count": 0,
+        "item_count": 1,
+        "recommendation": "목록 또는 detail HTML에서 이미지/첨부 신호가 있다. OCR은 source별 opt-in으로 두고, 먼저 해당 첨부/이미지에서 필수 필드가 실제로 빠지는지 샘플 검증한다.",
+        "samples": [
+          {
+            "attachment_link_count": 1,
+            "attachment_signal": false,
+            "attachment_urls": [
+              "https://www.hancom.com/cs_center/csDownload.do"
+            ],
+            "image_count": 41,
+            "image_signal": false,
+            "image_urls": [
+              "https://www.dobong.go.kr/images/2025/main/ico_gonfalon.png",
+              "https://www.dobong.go.kr/images/2025/main/ico_login.png",
+              "https://www.dobong.go.kr/images/2023/main/logo.png"
+            ],
+            "link": "https://www.dobong.go.kr/bbs.asp?bmode=D&pcode=12742709&code=10008770",
+            "list_text_length": 68,
+            "status": "fetched",
+            "title": "2026년 5월 구민정보화교육 수강생 모집 안내",
+            "visible_text_length": 9906
+          }
+        ],
+        "short_list_text_count": 1,
+        "source_attachment_url_samples": [
+          "https://www.hancom.com/cs_center/csDownload.do"
+        ],
+        "source_image_url_samples": [
+          "https://www.dobong.go.kr/images/2025/main/ico_gonfalon.png",
+          "https://www.dobong.go.kr/images/2025/main/ico_login.png",
+          "https://www.dobong.go.kr/images/2023/main/logo.png"
+        ]
+      },
+      "playwright_probe_candidate": false,
+      "raw_count": 1,
+      "recommendation": "일부 URL은 비었지만 같은 source에서 수집 성공도 있다. Playwright 도입 전 빈 URL의 HTML snapshot/selector drift를 확인한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 1,
+        "message": "Collected 1 rows; upsert skipped (raw_items=1, deduped_rows=1); collector_message=도봉구청 일자리경제과 collected 1 items from 2/2 urls; request_failed=0; parse_empty=1",
+        "quality": {
+          "checked_rows": 1,
+          "issue_codes": {
+            "missing_provider": 1
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 1,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 1,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "snapshot_capture": {
+        "saved_count": 1,
+        "saved_paths": [
+          "reports\\html-collector-snapshots-2026-04-24\\dobong_district_jobs-list-1-parse_empty.html"
+        ]
+      },
+      "source": "도봉구청 일자리경제과",
+      "source_key": "dobong_district_jobs",
+      "source_type": "district_crawl",
+      "tier": 4,
+      "url_diagnostics": [
+        {
+          "html_snapshot": {
+            "body_text_preview": "열린행정>알림마당>공지사항(목록) 본문바로가기 본문바로가기 이 누리집은 대한민국 공식 전자정부 누리집입니다. 도봉구청 도봉배움e 통합예약 문화관광 구의회 도봉구 구청장실 디비디비맵 보건소 스마트도시 로그인 Language English 中文 日本語 Tiếng Việt 화면크기 검색입력란 종합민원 종합민원 변화 성장 미래 함께해요 도봉 민원안내 민원실 안내 민원별수수료 안내 구민편의서비스 무인민원발급기 민원관련FAQ 민원사무분류/용어 복합민원 안내 관련법령/기준표 행정정보공동이용 통합인터넷민원창구 통합민원창구 나의 민원 분야별민원 정부24(보조금24) 안내 가족관계등록 세무 여권 청소/쓰레기/재활용 안내 교통/주차 부동산/지적 건축/주택/정보통신 도로건설 주민센터 민원 전세사기피해 토지거래허가 민원상담/신고 ",
+            "body_text_preview_truncated": true,
+            "form_tag_count": 4,
+            "html_length": 147653,
+            "html_preview_truncated": true,
+            "iframe_tag_count": 2,
+            "noscript_tag_count": 0,
+            "script_tag_count": 25,
+            "selector_matches": [
+              {
+                "match_count": 10,
+                "selector": "tbody tr"
+              },
+              {
+                "match_count": 10,
+                "selector": "a[href*='bmode=D'][href*='pcode=']"
+              }
+            ],
+            "selectors_checked": 2,
+            "selectors_with_matches": 2,
+            "title_text": "열린행정>알림마당>공지사항(목록)"
+          },
+          "item_count": 0,
+          "parse_status": "parse_empty",
+          "request_status": "success",
+          "snapshot_path": "reports\\html-collector-snapshots-2026-04-24\\dobong_district_jobs-list-1-parse_empty.html",
+          "url": "https://www.dobong.go.kr/bbs.asp?code=10008769"
+        },
+        {
+          "item_count": 1,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://www.dobong.go.kr/bbs.asp?code=10008770"
+        }
+      ]
+    },
+    {
+      "class_name": "DobongStartupCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 686.04,
+      "evidence": [
+        "status=success",
+        "raw=33",
+        "normalized=33",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "도봉구청년창업센터 collected 33 items from 2/2 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://dobongstartup.com/bbs/board.php?bo_table=donotic",
+        "https://dobongstartup.com/program/programlist.php"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 33,
+      "ocr_probe": {
+        "attachment_signal_count": 0,
+        "classification": "poster_or_attachment_candidate",
+        "detail_attachment_count": 1,
+        "detail_checked": 2,
+        "detail_fetch_failed": 0,
+        "detail_low_text_image_count": 0,
+        "detail_text_sufficient_count": 2,
+        "evidence": [
+          "items=33",
+          "short_list_text=27",
+          "attachment_signals=0",
+          "image_signals=0",
+          "detail_checked=2",
+          "detail_fetch_failed=0",
+          "detail_attachments=1",
+          "detail_low_text_images=0",
+          "detail_text_sufficient=2"
+        ],
+        "image_signal_count": 0,
+        "item_count": 33,
+        "recommendation": "목록 또는 detail HTML에서 이미지/첨부 신호가 있다. OCR은 source별 opt-in으로 두고, 먼저 해당 첨부/이미지에서 필수 필드가 실제로 빠지는지 샘플 검증한다.",
+        "samples": [
+          {
+            "attachment_link_count": 0,
+            "attachment_signal": false,
+            "attachment_urls": [],
+            "image_count": 5,
+            "image_signal": false,
+            "image_urls": [
+              "https://dobongstartup.com/data/common/clogo_img",
+              "https://dobongstartup.com/data/common/mobile_clogo_img",
+              "https://dobongstartup.com/theme/webon/img/sub_menu_tel.png"
+            ],
+            "link": "https://dobongstartup.com/bbs/board.php?bo_table=donotic&wr_id=148",
+            "list_text_length": 64,
+            "status": "fetched",
+            "title": "4월 '전문가 창업상담' 참여자 모집(04.24.)(마감)",
+            "visible_text_length": 1602
+          },
+          {
+            "attachment_link_count": 1,
+            "attachment_signal": false,
+            "attachment_urls": [
+              "https://dobongstartup.com/bbs/download.php?bo_table=donotic&wr_id=147&no=0"
+            ],
+            "image_count": 7,
+            "image_signal": false,
+            "image_urls": [
+              "https://dobongstartup.com/data/common/clogo_img",
+              "https://dobongstartup.com/data/common/mobile_clogo_img",
+              "https://dobongstartup.com/theme/webon/img/sub_menu_tel.png"
+            ],
+            "link": "https://dobongstartup.com/bbs/board.php?bo_table=donotic&wr_id=147",
+            "list_text_length": 74,
+            "status": "fetched",
+            "title": "[스타아카데미2] '외주 없이 AI로 홍보 영상 만들기' 수강생 모집(마감)",
+            "visible_text_length": 1256
+          }
+        ],
+        "short_list_text_count": 27,
+        "source_attachment_url_samples": [
+          "https://dobongstartup.com/bbs/download.php?bo_table=donotic&wr_id=147&no=0"
+        ],
+        "source_image_url_samples": [
+          "https://dobongstartup.com/data/common/clogo_img",
+          "https://dobongstartup.com/data/common/mobile_clogo_img",
+          "https://dobongstartup.com/theme/webon/img/sub_menu_tel.png"
+        ]
+      },
+      "playwright_probe_candidate": false,
+      "raw_count": 33,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 33,
+        "message": "Collected 33 rows; upsert skipped (raw_items=33, deduped_rows=33); collector_message=도봉구청년창업센터 collected 33 items from 2/2 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 33,
+          "issue_codes": {
+            "missing_provider": 33
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 33,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 33,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "도봉구청년창업센터",
+      "source_key": "dobong_startup",
+      "source_type": "district_crawl",
+      "tier": 4,
+      "url_diagnostics": [
+        {
+          "item_count": 15,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://dobongstartup.com/bbs/board.php?bo_table=donotic"
+        },
+        {
+          "item_count": 18,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://dobongstartup.com/program/programlist.php"
+        }
+      ]
+    },
+    {
+      "class_name": "MapoCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 1071.11,
+      "evidence": [
+        "status=success",
+        "raw=6",
+        "normalized=6",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "마포구고용복지지원센터 collected 6 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://mapoworkfare.or.kr/"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 6,
+      "ocr_probe": {
+        "attachment_signal_count": 0,
+        "classification": "poster_or_attachment_candidate",
+        "detail_attachment_count": 6,
+        "detail_checked": 2,
+        "detail_fetch_failed": 0,
+        "detail_low_text_image_count": 0,
+        "detail_text_sufficient_count": 2,
+        "evidence": [
+          "items=6",
+          "short_list_text=6",
+          "attachment_signals=0",
+          "image_signals=0",
+          "detail_checked=2",
+          "detail_fetch_failed=0",
+          "detail_attachments=6",
+          "detail_low_text_images=0",
+          "detail_text_sufficient=2"
+        ],
+        "image_signal_count": 0,
+        "item_count": 6,
+        "recommendation": "목록 또는 detail HTML에서 이미지/첨부 신호가 있다. OCR은 source별 opt-in으로 두고, 먼저 해당 첨부/이미지에서 필수 필드가 실제로 빠지는지 샘플 검증한다.",
+        "samples": [
+          {
+            "attachment_link_count": 1,
+            "attachment_signal": false,
+            "attachment_urls": [
+              "https://mapoworkfare.or.kr/index.php?module=file&act=procFileDownload&file_srl=1136101&sid=aab7b6e6d731f9afeccf2f715d36f814"
+            ],
+            "image_count": 45,
+            "image_signal": false,
+            "image_urls": [
+              "https://mapoworkfare.or.kr/layouts/NewInclude/img/mapo_sms.jpg",
+              "https://mapoworkfare.or.kr/files/attach/images/1125363/99b983892094b5c6d2fc3736e15da7d1.png",
+              "https://mapoworkfare.or.kr/layouts/NewSubLayoutNew/img/title_arrow.png"
+            ],
+            "link": "https://mapoworkfare.or.kr/1136099",
+            "list_text_length": 48,
+            "status": "fetched",
+            "title": "2026 [느린학습자 아동을 위한 디지털 교육 강사 양성 사업]",
+            "visible_text_length": 5474
+          },
+          {
+            "attachment_link_count": 5,
+            "attachment_signal": false,
+            "attachment_urls": [
+              "https://mapoworkfare.or.kr/?document_srl=1136037&act=zip",
+              "https://mapoworkfare.or.kr/index.php?module=file&act=procFileDownload&file_srl=1136057&sid=a1bb23c37a3aa85dd0164241f53b2b19",
+              "https://mapoworkfare.or.kr/index.php?module=file&act=procFileDownload&file_srl=1136058&sid=546294083f09a153832959f5d33f0bf9"
+            ],
+            "image_count": 48,
+            "image_signal": false,
+            "image_urls": [
+              "https://mapoworkfare.or.kr/layouts/NewInclude/img/mapo_sms.jpg",
+              "https://mapoworkfare.or.kr/files/attach/images/1125363/99b983892094b5c6d2fc3736e15da7d1.png",
+              "https://mapoworkfare.or.kr/layouts/NewSubLayoutNew/img/title_arrow.png"
+            ],
+            "link": "https://mapoworkfare.or.kr/1136037",
+            "list_text_length": 43,
+            "status": "fetched",
+            "title": "[2026청년도전지원사업]중.단기 프로그램 참여자 모집",
+            "visible_text_length": 5498
+          }
+        ],
+        "short_list_text_count": 6,
+        "source_attachment_url_samples": [
+          "https://mapoworkfare.or.kr/index.php?module=file&act=procFileDownload&file_srl=1136101&sid=aab7b6e6d731f9afeccf2f715d36f814",
+          "https://mapoworkfare.or.kr/?document_srl=1136037&act=zip",
+          "https://mapoworkfare.or.kr/index.php?module=file&act=procFileDownload&file_srl=1136057&sid=a1bb23c37a3aa85dd0164241f53b2b19",
+          "https://mapoworkfare.or.kr/index.php?module=file&act=procFileDownload&file_srl=1136058&sid=546294083f09a153832959f5d33f0bf9"
+        ],
+        "source_image_url_samples": [
+          "https://mapoworkfare.or.kr/layouts/NewInclude/img/mapo_sms.jpg",
+          "https://mapoworkfare.or.kr/files/attach/images/1125363/99b983892094b5c6d2fc3736e15da7d1.png",
+          "https://mapoworkfare.or.kr/layouts/NewSubLayoutNew/img/title_arrow.png"
+        ]
+      },
+      "playwright_probe_candidate": false,
+      "raw_count": 6,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 6,
+        "message": "Collected 6 rows; upsert skipped (raw_items=6, deduped_rows=6); collector_message=마포구고용복지지원센터 collected 6 items from 1/1 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 6,
+          "issue_codes": {
+            "missing_provider": 6
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 6,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 6,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "마포구고용복지지원센터",
+      "source_key": "mapo_workfare_center",
+      "source_type": "district_crawl",
+      "tier": 4,
+      "url_diagnostics": [
+        {
+          "item_count": 6,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://mapoworkfare.or.kr/"
+        }
+      ]
+    }
+  ],
+  "scheduler_dry_run": {
+    "enabled": true,
+    "quality": {
+      "checked_rows": 187,
+      "issue_codes": {
+        "missing_provider": 175
+      },
+      "issue_counts": {
+        "error": 0,
+        "info": 175,
+        "warning": 0
+      },
+      "rows_with_errors": 0,
+      "rows_with_warnings": 0
+    },
+    "schema_id": "scheduler_dry_run_summary_v1",
+    "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+    "source_count": 14,
+    "sources_with_quality_errors": 0,
+    "sources_with_quality_warnings": 0,
+    "status_counts": {
+      "dry_run": 14
+    }
+  },
+  "schema_version": "html_collector_diagnostic_report_v1",
+  "schemas": {
+    "scheduler_summary_bundle": {
+      "program_quality_summary_schema": "program_quality_summary_v1",
+      "scheduler_dry_run_summary_schema": "scheduler_dry_run_summary_v1",
+      "scheduler_source_summary_schema": "scheduler_source_summary_v1",
+      "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json"
+    }
+  },
+  "snapshot_capture": {
+    "enabled": true,
+    "output_dir": "reports\\html-collector-snapshots-2026-04-24",
+    "saved_count": 1,
+    "saved_paths": [
+      "reports\\html-collector-snapshots-2026-04-24\\dobong_district_jobs-list-1-parse_empty.html"
+    ]
+  },
+  "sources": [
+    {
+      "class_name": "SbaPostingCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 2304.25,
+      "evidence": [
+        "status=success",
+        "raw=10",
+        "normalized=10",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "서울경제진흥원 사업신청 collected 10 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://www.sba.kr/Pages/BusinessApply/Posting.aspx"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 10,
+      "ocr_probe": {
+        "attachment_signal_count": 0,
+        "classification": "text_sufficient_no_ocr",
+        "detail_attachment_count": 0,
+        "detail_checked": 0,
+        "detail_fetch_failed": 0,
+        "detail_low_text_image_count": 0,
+        "detail_text_sufficient_count": 0,
+        "evidence": [
+          "items=10",
+          "short_list_text=0",
+          "attachment_signals=0",
+          "image_signals=0"
+        ],
+        "image_signal_count": 0,
+        "item_count": 10,
+        "recommendation": "현재 목록/detail HTML 텍스트로 수집 근거가 충분하거나 이미지/첨부 신호가 없다. OCR opt-in 대상에서 제외한다.",
+        "samples": [],
+        "short_list_text_count": 0,
+        "source_attachment_url_samples": [],
+        "source_image_url_samples": []
+      },
+      "playwright_probe_candidate": false,
+      "raw_count": 10,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 10,
+        "message": "Collected 10 rows; upsert skipped (raw_items=10, deduped_rows=10); collector_message=서울경제진흥원 사업신청 collected 10 items from 1/1 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 10,
+          "issue_codes": {
+            "missing_provider": 10
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 10,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 10,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "서울경제진흥원 사업신청",
+      "source_key": "sba_posting",
+      "source_type": "seoul_city",
+      "tier": 2,
+      "url_diagnostics": [
+        {
+          "item_count": 10,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://www.sba.kr/Pages/BusinessApply/Posting.aspx"
+        }
+      ]
+    },
+    {
+      "class_name": "Seoul50PlusCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 485.97,
+      "evidence": [
+        "status=success",
+        "raw=12",
+        "normalized=12",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "서울시 50플러스 collected 16 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://service1.50plus.or.kr/"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 12,
+      "ocr_probe": {
+        "attachment_signal_count": 0,
+        "classification": "detail_probe_inconclusive",
+        "detail_attachment_count": 0,
+        "detail_checked": 0,
+        "detail_fetch_failed": 0,
+        "detail_low_text_image_count": 0,
+        "detail_text_sufficient_count": 0,
+        "evidence": [
+          "items=12",
+          "short_list_text=4",
+          "attachment_signals=0",
+          "image_signals=0"
+        ],
+        "image_signal_count": 0,
+        "item_count": 12,
+        "recommendation": "목록 텍스트가 짧지만 detail HTML 확인이 부족하다. OCR보다 detail page text/attachment snapshot 진단을 먼저 보강한다.",
+        "samples": [],
+        "short_list_text_count": 4,
+        "source_attachment_url_samples": [],
+        "source_image_url_samples": []
+      },
+      "playwright_probe_candidate": false,
+      "raw_count": 12,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 12,
+        "message": "Collected 12 rows; upsert skipped (raw_items=12, deduped_rows=12); collector_message=서울시 50플러스 collected 16 items from 1/1 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 12,
+          "issue_codes": {
+            "missing_provider": 12
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 12,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 12,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "서울시 50플러스",
+      "source_key": "seoul_50plus",
+      "source_type": "seoul_city",
+      "tier": 2,
+      "url_diagnostics": [
+        {
+          "item_count": 16,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://service1.50plus.or.kr/"
+        }
+      ]
+    },
+    {
+      "class_name": "SeoulJobPortalCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 2108.6,
+      "evidence": [
+        "status=success",
+        "raw=10",
+        "normalized=10",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "서울일자리포털 collected 11 items from 3/3 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://job.seoul.go.kr/hmpg/chjb/prmg/prmgListPgng.do",
+        "https://job.seoul.go.kr/hmpg/chjb/pvmg/pcmgListPgng.do",
+        "https://job.seoul.go.kr/hmpg/chjb/prnt/prntListPgng.do"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 10,
+      "ocr_probe": {
+        "attachment_signal_count": 0,
+        "classification": "poster_or_attachment_candidate",
+        "detail_attachment_count": 4,
+        "detail_checked": 2,
+        "detail_fetch_failed": 0,
+        "detail_low_text_image_count": 0,
+        "detail_text_sufficient_count": 2,
+        "evidence": [
+          "items=10",
+          "short_list_text=8",
+          "attachment_signals=0",
+          "image_signals=0",
+          "detail_checked=2",
+          "detail_fetch_failed=0",
+          "detail_attachments=4",
+          "detail_low_text_images=0",
+          "detail_text_sufficient=2"
+        ],
+        "image_signal_count": 0,
+        "item_count": 10,
+        "recommendation": "목록 또는 detail HTML에서 이미지/첨부 신호가 있다. OCR은 source별 opt-in으로 두고, 먼저 해당 첨부/이미지에서 필수 필드가 실제로 빠지는지 샘플 검증한다.",
+        "samples": [
+          {
+            "attachment_link_count": 4,
+            "attachment_signal": false,
+            "attachment_urls": [
+              "https://job.seoul.go.kr/hmpg/comm/file/fileDownLoad.do?file_no=4699D1094E3E06ECE063C0A8A0286D49",
+              "https://job.seoul.go.kr/hmpg/comm/file/fileDownLoad.do?file_no=47D6CBB8FE9504B0E063C0A8A0284F4C",
+              "https://job.seoul.go.kr/hmpg/comm/file/fileDownLoad.do?file_no=4699D1094E4006ECE063C0A8A0286D49"
+            ],
+            "image_count": 5,
+            "image_signal": false,
+            "image_urls": [
+              "https://job.seoul.go.kr/images/hmpg/logo.png",
+              "https://job.seoul.go.kr/images/hmpg/logo_bottom.png",
+              "https://job.seoul.go.kr/images/hmpg/WA_Mark.png"
+            ],
+            "link": "https://job.seoul.go.kr/hmpg/chjb/prmg/prmgDetail.do?recmnt_pbanc_no=4680960E0D970230E063C0A8A0281CEB",
+            "list_text_length": 63,
+            "status": "fetched",
+            "title": "청년취업사관학교 새싹(SeSAC) 교육운영 주니어 매니저",
+            "visible_text_length": 7548
+          },
+          {
+            "attachment_link_count": 0,
+            "attachment_signal": false,
+            "attachment_urls": [],
+            "image_count": 13,
+            "image_signal": false,
+            "image_urls": [
+              "https://framerusercontent.com/images/wL3gFGdvFKnBDEAtALgd21nxY.png?width=925&height=858",
+              "https://framerusercontent.com/images/KFODyDPMf85CInVsmz95yO4c.png?width=856&height=820",
+              "https://framerusercontent.com/images/pkRgS6EqUrjkbv3C1CJ7RRwj4.png?width=875&height=802"
+            ],
+            "link": "https://newdeal.koraia.org/",
+            "list_text_length": 83,
+            "status": "fetched",
+            "title": "생성형 AI 리터러시 중심 기획·콘텐츠 실무 인재 양성 교육 및 취업 과정",
+            "visible_text_length": 1935
+          }
+        ],
+        "short_list_text_count": 8,
+        "source_attachment_url_samples": [
+          "https://job.seoul.go.kr/hmpg/comm/file/fileDownLoad.do?file_no=4699D1094E3E06ECE063C0A8A0286D49",
+          "https://job.seoul.go.kr/hmpg/comm/file/fileDownLoad.do?file_no=47D6CBB8FE9504B0E063C0A8A0284F4C",
+          "https://job.seoul.go.kr/hmpg/comm/file/fileDownLoad.do?file_no=4699D1094E4006ECE063C0A8A0286D49"
+        ],
+        "source_image_url_samples": [
+          "https://job.seoul.go.kr/images/hmpg/logo.png",
+          "https://job.seoul.go.kr/images/hmpg/logo_bottom.png",
+          "https://job.seoul.go.kr/images/hmpg/WA_Mark.png",
+          "https://framerusercontent.com/images/wL3gFGdvFKnBDEAtALgd21nxY.png?width=925&height=858",
+          "https://framerusercontent.com/images/KFODyDPMf85CInVsmz95yO4c.png?width=856&height=820",
+          "https://framerusercontent.com/images/pkRgS6EqUrjkbv3C1CJ7RRwj4.png?width=875&height=802"
+        ]
+      },
+      "playwright_probe_candidate": false,
+      "raw_count": 10,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 10,
+        "message": "Collected 10 rows; upsert skipped (raw_items=10, deduped_rows=10); collector_message=서울일자리포털 collected 11 items from 3/3 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 10,
+          "issue_codes": {
+            "missing_provider": 10
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 10,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 10,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "서울일자리포털",
+      "source_key": "seoul_job_portal",
+      "source_type": "seoul_city",
+      "tier": 2,
+      "url_diagnostics": [
+        {
+          "item_count": 1,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://job.seoul.go.kr/hmpg/chjb/prmg/prmgListPgng.do"
+        },
+        {
+          "item_count": 3,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://job.seoul.go.kr/hmpg/chjb/pvmg/pcmgListPgng.do"
+        },
+        {
+          "item_count": 7,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://job.seoul.go.kr/hmpg/chjb/prnt/prntListPgng.do"
+        }
+      ]
+    },
+    {
+      "class_name": "CampusTownCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 653.57,
+      "evidence": [
+        "status=success",
+        "raw=20",
+        "normalized=20",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "서울캠퍼스타운 collected 20 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://campustown.seoul.go.kr/site/main/board/university_news/list"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 20,
+      "ocr_probe": {
+        "attachment_signal_count": 0,
+        "classification": "poster_or_attachment_candidate",
+        "detail_attachment_count": 2,
+        "detail_checked": 2,
+        "detail_fetch_failed": 0,
+        "detail_low_text_image_count": 0,
+        "detail_text_sufficient_count": 2,
+        "evidence": [
+          "items=20",
+          "short_list_text=10",
+          "attachment_signals=0",
+          "image_signals=0",
+          "detail_checked=2",
+          "detail_fetch_failed=0",
+          "detail_attachments=2",
+          "detail_low_text_images=0",
+          "detail_text_sufficient=2"
+        ],
+        "image_signal_count": 0,
+        "item_count": 20,
+        "recommendation": "목록 또는 detail HTML에서 이미지/첨부 신호가 있다. OCR은 source별 opt-in으로 두고, 먼저 해당 첨부/이미지에서 필수 필드가 실제로 빠지는지 샘플 검증한다.",
+        "samples": [
+          {
+            "attachment_link_count": 1,
+            "attachment_signal": false,
+            "attachment_urls": [
+              "https://campustown.seoul.go.kr/site/main/file/download/uu/e1f020a77c004d21b407ab535cdf9cbf"
+            ],
+            "image_count": 5,
+            "image_signal": false,
+            "image_urls": [
+              "https://campustown.seoul.go.kr/design/theme/campustown/images/logo.png",
+              "https://campustown.seoul.go.kr/design/theme/campustown/images/footer_logo.png",
+              "https://campustown.seoul.go.kr/design/theme/campustown/images/up_arrow.png"
+            ],
+            "link": "https://campustown.seoul.go.kr/site/main/board/university_news/3003?cp=1&sortOrder=BA_REGDATE&sortDirection=DESC&listType=list&bcId=university_news&baNotice=false&baCommSelec=false&baOpenDay=false&baUse=true",
+            "list_text_length": 257,
+            "status": "fetched",
+            "title": "[국민대학교 캠퍼스타운] 2026 국민대학교 캠퍼스타운 CLUB HOUSE IR 자료 고도화 워크샵(~04.27(월), 23시 30분까지)",
+            "visible_text_length": 1743
+          },
+          {
+            "attachment_link_count": 1,
+            "attachment_signal": false,
+            "attachment_urls": [
+              "https://campustown.seoul.go.kr/site/main/file/download/uu/73b56f7f1f904de09b5e3b6a60effbd9"
+            ],
+            "image_count": 6,
+            "image_signal": false,
+            "image_urls": [
+              "https://campustown.seoul.go.kr/design/theme/campustown/images/logo.png",
+              "https://campustown.seoul.go.kr/design/theme/campustown/images/footer_logo.png",
+              "https://campustown.seoul.go.kr/site/main/file/image/uu/3275e73c4f24415d9c17e2a885ad787a"
+            ],
+            "link": "https://campustown.seoul.go.kr/site/main/board/university_news/2993?cp=1&sortOrder=BA_REGDATE&sortDirection=DESC&listType=list&bcId=university_news&baNotice=false&baCommSelec=false&baOpenDay=false&baUse=true",
+            "list_text_length": 205,
+            "status": "fetched",
+            "title": "2026년 서울대학교 RISE 사업단(캠퍼스타운) 추가 입주기업 모집(마감일: ~4월 10일 13:00까지)",
+            "visible_text_length": 2659
+          }
+        ],
+        "short_list_text_count": 10,
+        "source_attachment_url_samples": [
+          "https://campustown.seoul.go.kr/site/main/file/download/uu/e1f020a77c004d21b407ab535cdf9cbf",
+          "https://campustown.seoul.go.kr/site/main/file/download/uu/73b56f7f1f904de09b5e3b6a60effbd9"
+        ],
+        "source_image_url_samples": [
+          "https://campustown.seoul.go.kr/design/theme/campustown/images/logo.png",
+          "https://campustown.seoul.go.kr/design/theme/campustown/images/footer_logo.png",
+          "https://campustown.seoul.go.kr/design/theme/campustown/images/up_arrow.png",
+          "https://campustown.seoul.go.kr/site/main/file/image/uu/3275e73c4f24415d9c17e2a885ad787a"
+        ]
+      },
+      "playwright_probe_candidate": false,
+      "raw_count": 20,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 20,
+        "message": "Collected 20 rows; upsert skipped (raw_items=20, deduped_rows=20); collector_message=서울캠퍼스타운 collected 20 items from 1/1 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 20,
+          "issue_codes": {
+            "missing_provider": 20
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 20,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 20,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "서울캠퍼스타운",
+      "source_key": "campus_town",
+      "source_type": "seoul_city",
+      "tier": 2,
+      "url_diagnostics": [
+        {
+          "item_count": 20,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://campustown.seoul.go.kr/site/main/board/university_news/list"
+        }
+      ]
+    },
+    {
+      "class_name": "SeoulWomanUpCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 316.81,
+      "evidence": [
+        "status=success",
+        "raw=18",
+        "normalized=18",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "서울커리업 collected 42 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://project.seoulcareerup.or.kr/swm/internship/recruit/list.do?menu_no=02030200"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 18,
+      "ocr_probe": {
+        "attachment_signal_count": 0,
+        "classification": "text_sufficient_no_ocr",
+        "detail_attachment_count": 0,
+        "detail_checked": 2,
+        "detail_fetch_failed": 0,
+        "detail_low_text_image_count": 0,
+        "detail_text_sufficient_count": 2,
+        "evidence": [
+          "items=18",
+          "short_list_text=18",
+          "attachment_signals=0",
+          "image_signals=0",
+          "detail_checked=2",
+          "detail_fetch_failed=0",
+          "detail_attachments=0",
+          "detail_low_text_images=0",
+          "detail_text_sufficient=2"
+        ],
+        "image_signal_count": 0,
+        "item_count": 18,
+        "recommendation": "현재 목록/detail HTML 텍스트로 수집 근거가 충분하거나 이미지/첨부 신호가 없다. OCR opt-in 대상에서 제외한다.",
+        "samples": [
+          {
+            "attachment_link_count": 0,
+            "attachment_signal": false,
+            "attachment_urls": [],
+            "image_count": 5,
+            "image_signal": false,
+            "image_urls": [
+              "https://project.seoulcareerup.or.kr/uploads/data/swm/management/popup/202604/F2026040810142651337255.png",
+              "https://project.seoulcareerup.or.kr/images/swm/common/logo.png",
+              "https://project.seoulcareerup.or.kr/images/swm/common/logo_footer.png"
+            ],
+            "link": "https://project.seoulcareerup.or.kr/swm/internship/recruit/view.do?jobDescriptionId=872&menu_no=02030200",
+            "list_text_length": 80,
+            "status": "fetched",
+            "title": "링켄리브 기획, 마케팅, 홍보 조사 인턴십",
+            "visible_text_length": 2259
+          },
+          {
+            "attachment_link_count": 0,
+            "attachment_signal": false,
+            "attachment_urls": [],
+            "image_count": 5,
+            "image_signal": false,
+            "image_urls": [
+              "https://project.seoulcareerup.or.kr/uploads/data/swm/management/popup/202604/F2026040810142651337255.png",
+              "https://project.seoulcareerup.or.kr/images/swm/common/logo.png",
+              "https://project.seoulcareerup.or.kr/images/swm/common/logo_footer.png"
+            ],
+            "link": "https://project.seoulcareerup.or.kr/swm/internship/recruit/view.do?jobDescriptionId=870&menu_no=02030200",
+            "list_text_length": 75,
+            "status": "fetched",
+            "title": "마크클라우드 IT, 연구, R&D 인턴십",
+            "visible_text_length": 2259
+          }
+        ],
+        "short_list_text_count": 18,
+        "source_attachment_url_samples": [],
+        "source_image_url_samples": [
+          "https://project.seoulcareerup.or.kr/uploads/data/swm/management/popup/202604/F2026040810142651337255.png",
+          "https://project.seoulcareerup.or.kr/images/swm/common/logo.png",
+          "https://project.seoulcareerup.or.kr/images/swm/common/logo_footer.png"
+        ]
+      },
+      "playwright_probe_candidate": false,
+      "raw_count": 18,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 18,
+        "message": "Collected 18 rows; upsert skipped (raw_items=18, deduped_rows=18); collector_message=서울커리업 collected 42 items from 1/1 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 18,
+          "issue_codes": {
+            "missing_provider": 18
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 18,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 18,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "서울커리업",
+      "source_key": "seoul_womanup",
+      "source_type": "seoul_city",
+      "tier": 2,
+      "url_diagnostics": [
+        {
+          "item_count": 42,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://project.seoulcareerup.or.kr/swm/internship/recruit/list.do?menu_no=02030200"
+        }
+      ]
+    },
+    {
+      "class_name": "SesacCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 221.04,
+      "evidence": [
+        "status=success",
+        "raw=12",
+        "normalized=12",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "청년취업사관학교 SeSAC collected 12 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://sesac.seoul.kr/sesac/course/offline/courseList.do"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 12,
+      "ocr_probe": {
+        "attachment_signal_count": 0,
+        "classification": "detail_probe_inconclusive",
+        "detail_attachment_count": 0,
+        "detail_checked": 0,
+        "detail_fetch_failed": 0,
+        "detail_low_text_image_count": 0,
+        "detail_text_sufficient_count": 0,
+        "evidence": [
+          "items=12",
+          "short_list_text=4",
+          "attachment_signals=0",
+          "image_signals=0"
+        ],
+        "image_signal_count": 0,
+        "item_count": 12,
+        "recommendation": "목록 텍스트가 짧지만 detail HTML 확인이 부족하다. OCR보다 detail page text/attachment snapshot 진단을 먼저 보강한다.",
+        "samples": [],
+        "short_list_text_count": 4,
+        "source_attachment_url_samples": [],
+        "source_image_url_samples": []
+      },
+      "playwright_probe_candidate": false,
+      "raw_count": 12,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 12,
+        "message": "Collected 12 rows; upsert skipped (raw_items=12, deduped_rows=12); collector_message=청년취업사관학교 SeSAC collected 12 items from 1/1 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 12,
+          "issue_codes": {},
+          "issue_counts": {
+            "error": 0,
+            "info": 0,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 12,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "청년취업사관학교 SeSAC",
+      "source_key": "sesac",
+      "source_type": "seoul_city",
+      "tier": 2,
+      "url_diagnostics": [
+        {
+          "item_count": 12,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://sesac.seoul.kr/sesac/course/offline/courseList.do"
+        }
+      ]
+    },
+    {
+      "class_name": "KisedCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 716.82,
+      "evidence": [
+        "status=success",
+        "raw=39",
+        "normalized=39",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "KISED collected 42 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://www.kised.or.kr/misAnnouncement/index.es?mid=a10302000000"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 39,
+      "ocr_probe": {
+        "attachment_signal_count": 0,
+        "classification": "detail_probe_inconclusive",
+        "detail_attachment_count": 0,
+        "detail_checked": 2,
+        "detail_fetch_failed": 0,
+        "detail_low_text_image_count": 0,
+        "detail_text_sufficient_count": 0,
+        "evidence": [
+          "items=39",
+          "short_list_text=37",
+          "attachment_signals=0",
+          "image_signals=0",
+          "detail_checked=2",
+          "detail_fetch_failed=0",
+          "detail_attachments=0",
+          "detail_low_text_images=0",
+          "detail_text_sufficient=0"
+        ],
+        "image_signal_count": 0,
+        "item_count": 39,
+        "recommendation": "목록 텍스트가 짧고 샘플 detail에서도 충분한 본문 텍스트를 확인하지 못했다. OCR보다 detail parser/selector 보강 가능성을 먼저 확인한다.",
+        "samples": [
+          {
+            "attachment_link_count": 0,
+            "attachment_signal": false,
+            "attachment_urls": [],
+            "image_count": 0,
+            "image_signal": false,
+            "image_urls": [],
+            "link": "https://www.k-startup.go.kr/web/contents/webDSCSN_MNG.do",
+            "list_text_length": 20,
+            "status": "fetched",
+            "title": "고객광장",
+            "visible_text_length": 34
+          },
+          {
+            "attachment_link_count": 0,
+            "attachment_signal": false,
+            "attachment_urls": [],
+            "image_count": 0,
+            "image_signal": false,
+            "image_urls": [],
+            "link": "https://www.open.go.kr",
+            "list_text_length": 20,
+            "status": "fetched",
+            "title": "정보공개",
+            "visible_text_length": 12
+          }
+        ],
+        "short_list_text_count": 37,
+        "source_attachment_url_samples": [],
+        "source_image_url_samples": []
+      },
+      "playwright_probe_candidate": false,
+      "raw_count": 39,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 39,
+        "message": "Collected 39 rows; upsert skipped (raw_items=39, deduped_rows=39); collector_message=KISED collected 42 items from 1/1 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 39,
+          "issue_codes": {
+            "missing_provider": 39
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 39,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 39,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "KISED",
+      "source_key": "KISED",
+      "source_type": "semi_public_crawl",
+      "tier": 3,
+      "url_diagnostics": [
+        {
+          "item_count": 42,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://www.kised.or.kr/misAnnouncement/index.es?mid=a10302000000"
+        }
+      ]
+    },
+    {
+      "class_name": "KobiaCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 196.89,
+      "evidence": [
+        "status=success",
+        "raw=10",
+        "normalized=10",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "KOBIA collected 11 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "http://www.kobia.or.kr/board/list.do?board_kind=KNOTICE"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 10,
+      "ocr_probe": {
+        "attachment_signal_count": 0,
+        "classification": "poster_or_attachment_candidate",
+        "detail_attachment_count": 2,
+        "detail_checked": 2,
+        "detail_fetch_failed": 0,
+        "detail_low_text_image_count": 0,
+        "detail_text_sufficient_count": 2,
+        "evidence": [
+          "items=10",
+          "short_list_text=10",
+          "attachment_signals=0",
+          "image_signals=0",
+          "detail_checked=2",
+          "detail_fetch_failed=0",
+          "detail_attachments=2",
+          "detail_low_text_images=0",
+          "detail_text_sufficient=2"
+        ],
+        "image_signal_count": 0,
+        "item_count": 10,
+        "recommendation": "목록 또는 detail HTML에서 이미지/첨부 신호가 있다. OCR은 source별 opt-in으로 두고, 먼저 해당 첨부/이미지에서 필수 필드가 실제로 빠지는지 샘플 검증한다.",
+        "samples": [
+          {
+            "attachment_link_count": 1,
+            "attachment_signal": false,
+            "attachment_urls": [
+              "http://www.kobia.or.kr/organ/ci.do"
+            ],
+            "image_count": 9,
+            "image_signal": false,
+            "image_urls": [
+              "http://www.kobia.or.kr/images/common/kobia_ci_kor_eng_1.png",
+              "http://www.kobia.or.kr/KobiaAdmin/upload/board/images/20260416133201-217-6ed32ef02a0e.jpg",
+              "http://www.kobia.or.kr/KobiaAdmin/upload/board/images/20260416133207-216-4a22097332e2.jpg"
+            ],
+            "link": "http://www.kobia.or.kr/board/view.do?idx=2870&board_kind=KNOTICE&page=1",
+            "list_text_length": 105,
+            "status": "fetched",
+            "title": "공고 [채용공고] (사)한국창업보육협회 2026년 제2차 직원 채용 공고",
+            "visible_text_length": 1085
+          },
+          {
+            "attachment_link_count": 1,
+            "attachment_signal": false,
+            "attachment_urls": [
+              "http://www.kobia.or.kr/organ/ci.do"
+            ],
+            "image_count": 3,
+            "image_signal": false,
+            "image_urls": [
+              "http://www.kobia.or.kr/images/common/kobia_ci_kor_eng_1.png",
+              "http://www.kobia.or.kr/KobiaAdmin/upload/board/images/20260423131351-cfd-d7112ea67d64.jpg",
+              "http://www.kobia.or.kr/images/common/kobia_ci_kor_eng_white_1.png"
+            ],
+            "link": "http://www.kobia.or.kr/board/view.do?idx=2874&board_kind=KNOTICE&page=1",
+            "list_text_length": 70,
+            "status": "fetched",
+            "title": "안내 한국여성경제인협회 2026년 펨테크 산업 육성 지원기업 모집 통합 공고",
+            "visible_text_length": 999
+          }
+        ],
+        "short_list_text_count": 10,
+        "source_attachment_url_samples": [
+          "http://www.kobia.or.kr/organ/ci.do"
+        ],
+        "source_image_url_samples": [
+          "http://www.kobia.or.kr/images/common/kobia_ci_kor_eng_1.png",
+          "http://www.kobia.or.kr/KobiaAdmin/upload/board/images/20260416133201-217-6ed32ef02a0e.jpg",
+          "http://www.kobia.or.kr/KobiaAdmin/upload/board/images/20260416133207-216-4a22097332e2.jpg",
+          "http://www.kobia.or.kr/KobiaAdmin/upload/board/images/20260423131351-cfd-d7112ea67d64.jpg",
+          "http://www.kobia.or.kr/images/common/kobia_ci_kor_eng_white_1.png"
+        ]
+      },
+      "playwright_probe_candidate": false,
+      "raw_count": 10,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 10,
+        "message": "Collected 10 rows; upsert skipped (raw_items=10, deduped_rows=10); collector_message=KOBIA collected 11 items from 1/1 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 10,
+          "issue_codes": {
+            "missing_provider": 10
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 10,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 10,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "KOBIA",
+      "source_key": "KOBIA",
+      "source_type": "semi_public_crawl",
+      "tier": 3,
+      "url_diagnostics": [
+        {
+          "item_count": 11,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "http://www.kobia.or.kr/board/list.do?board_kind=KNOTICE"
+        }
+      ]
+    },
+    {
+      "class_name": "GuroCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 248.2,
+      "evidence": [
+        "status=success",
+        "raw=3",
+        "normalized=3"
+      ],
+      "last_collect_message": "구로 청년이룸 collected 3 items (HTTP fixed due TLS issues)",
+      "last_collect_status": "success",
+      "list_urls": [
+        "http://youtheroom.kr/product/list.php?ca_id=10",
+        "http://youtheroom.kr/bbs/board.php?tbl=bbs41"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 3,
+      "ocr_probe": {
+        "attachment_signal_count": 0,
+        "classification": "text_sufficient_no_ocr",
+        "detail_attachment_count": 0,
+        "detail_checked": 2,
+        "detail_fetch_failed": 0,
+        "detail_low_text_image_count": 0,
+        "detail_text_sufficient_count": 2,
+        "evidence": [
+          "items=3",
+          "short_list_text=3",
+          "attachment_signals=0",
+          "image_signals=0",
+          "detail_checked=2",
+          "detail_fetch_failed=0",
+          "detail_attachments=0",
+          "detail_low_text_images=0",
+          "detail_text_sufficient=2"
+        ],
+        "image_signal_count": 0,
+        "item_count": 3,
+        "recommendation": "현재 목록/detail HTML 텍스트로 수집 근거가 충분하거나 이미지/첨부 신호가 없다. OCR opt-in 대상에서 제외한다.",
+        "samples": [
+          {
+            "attachment_link_count": 0,
+            "attachment_signal": false,
+            "attachment_urls": [],
+            "image_count": 35,
+            "image_signal": false,
+            "image_urls": [
+              "http://youtheroom.kr/images/main/logo.jpg",
+              "http://youtheroom.kr/images/main/logo_tab.jpg",
+              "http://youtheroom.kr/images/main/logo_mob.jpg"
+            ],
+            "link": "http://youtheroom.kr/product/item.php?ca_id=10&ca_id2=&page=1&sort1=&sort2=&status=&search=&year=&it_id=1774861600&PHPSESSID=ca958be186d1d58d87a08a6d030caf05",
+            "list_text_length": 79,
+            "status": "fetched",
+            "title": "청년성장프로젝트「AI·VR면접 이루JOB」참여자 모집 (상시모집)",
+            "visible_text_length": 1568
+          },
+          {
+            "attachment_link_count": 0,
+            "attachment_signal": false,
+            "attachment_urls": [],
+            "image_count": 35,
+            "image_signal": false,
+            "image_urls": [
+              "http://youtheroom.kr/images/main/logo.jpg",
+              "http://youtheroom.kr/images/main/logo_tab.jpg",
+              "http://youtheroom.kr/images/main/logo_mob.jpg"
+            ],
+            "link": "http://youtheroom.kr/product/item.php?ca_id=10&ca_id2=&page=1&sort1=&sort2=&status=&search=&year=&it_id=1774860743&PHPSESSID=ca958be186d1d58d87a08a6d030caf05",
+            "list_text_length": 79,
+            "status": "fetched",
+            "title": "청년성장프로젝트「1:1 진로 및 정책상담」참여자 모집 (상시모집)",
+            "visible_text_length": 1582
+          }
+        ],
+        "short_list_text_count": 3,
+        "source_attachment_url_samples": [],
+        "source_image_url_samples": [
+          "http://youtheroom.kr/images/main/logo.jpg",
+          "http://youtheroom.kr/images/main/logo_tab.jpg",
+          "http://youtheroom.kr/images/main/logo_mob.jpg"
+        ]
+      },
+      "playwright_probe_candidate": false,
+      "raw_count": 3,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 3,
+        "message": "Collected 3 rows; upsert skipped (raw_items=3, deduped_rows=3); collector_message=구로 청년이룸 collected 3 items (HTTP fixed due TLS issues)",
+        "quality": {
+          "checked_rows": 3,
+          "issue_codes": {
+            "missing_provider": 3
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 3,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 3,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "구로 청년이룸",
+      "source_key": "guro_youtheroom",
+      "source_type": "district_crawl",
+      "tier": 4,
+      "url_diagnostics": [
+        {
+          "item_count": 2,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "http://youtheroom.kr/product/list.php?ca_id=10"
+        },
+        {
+          "item_count": 1,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "http://youtheroom.kr/bbs/board.php?tbl=bbs41"
+        }
+      ]
+    },
+    {
+      "class_name": "NowonCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 1912.14,
+      "evidence": [
+        "status=success",
+        "raw=10",
+        "normalized=10",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "노원구 청년일자리센터 청년내일 collected 10 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://www.nwjob.kr/18"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 10,
+      "ocr_probe": {
+        "attachment_signal_count": 0,
+        "classification": "poster_or_attachment_candidate",
+        "detail_attachment_count": 3,
+        "detail_checked": 2,
+        "detail_fetch_failed": 0,
+        "detail_low_text_image_count": 0,
+        "detail_text_sufficient_count": 2,
+        "evidence": [
+          "items=10",
+          "short_list_text=6",
+          "attachment_signals=0",
+          "image_signals=0",
+          "detail_checked=2",
+          "detail_fetch_failed=0",
+          "detail_attachments=3",
+          "detail_low_text_images=0",
+          "detail_text_sufficient=2"
+        ],
+        "image_signal_count": 0,
+        "item_count": 10,
+        "recommendation": "목록 또는 detail HTML에서 이미지/첨부 신호가 있다. OCR은 source별 opt-in으로 두고, 먼저 해당 첨부/이미지에서 필수 필드가 실제로 빠지는지 샘플 검증한다.",
+        "samples": [
+          {
+            "attachment_link_count": 2,
+            "attachment_signal": false,
+            "attachment_urls": [
+              "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIxNTVmNjY0ZDg3NTMwNyI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMWU2NzNlN2MwOTIyNTMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzNmJmYTRlYTYiO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30=",
+              "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIxNTVmNjY0ZDg3NTMwNyI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMWViMjQ4NmZlMTI4NTMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzNmJmYTU5YmYiO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30="
+            ],
+            "image_count": 16,
+            "image_signal": false,
+            "image_urls": [
+              "https://www.nwjob.kr/common/img/default_profile.png",
+              "https://cdn.imweb.me/thumbnail/20230322/068b03ab88ff0.png",
+              "https://cdn.imweb.me/thumbnail/20230311/f34de9b5802f0.png"
+            ],
+            "link": "https://www.nwjob.kr/18/?q=YToxOntzOjEyOiJrZXl3b3JkX3R5cGUiO3M6MzoiYWxsIjt9&bmode=view&idx=170956396&t=board",
+            "list_text_length": 132,
+            "status": "fetched",
+            "title": "[~4/27] 2026년 노원구 『경춘스테이션 북&커피 카페』 초단시간 기간제근로자 채용 공고",
+            "visible_text_length": 763
+          },
+          {
+            "attachment_link_count": 1,
+            "attachment_signal": false,
+            "attachment_urls": [
+              "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIwYTM3N2VkNjUzOWNhZSI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMGYwZTBmOGVmOGQ2ODMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzNmMwNWQ1NDciO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30="
+            ],
+            "image_count": 12,
+            "image_signal": false,
+            "image_urls": [
+              "https://www.nwjob.kr/common/img/default_profile.png",
+              "https://cdn.imweb.me/thumbnail/20230322/068b03ab88ff0.png",
+              "https://cdn.imweb.me/thumbnail/20230311/f34de9b5802f0.png"
+            ],
+            "link": "https://www.nwjob.kr/18/?q=YToxOntzOjEyOiJrZXl3b3JkX3R5cGUiO3M6MzoiYWxsIjt9&bmode=view&idx=170938349&t=board",
+            "list_text_length": 111,
+            "status": "fetched",
+            "title": "[~4/26] 서울시 매력일자리 서울통신원(10명) 모집",
+            "visible_text_length": 1087
+          }
+        ],
+        "short_list_text_count": 6,
+        "source_attachment_url_samples": [
+          "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIxNTVmNjY0ZDg3NTMwNyI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMWU2NzNlN2MwOTIyNTMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzNmJmYTRlYTYiO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30=",
+          "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIxNTVmNjY0ZDg3NTMwNyI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMWViMjQ4NmZlMTI4NTMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzNmJmYTU5YmYiO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30=",
+          "https://www.nwjob.kr/post_file_download.cm?c=YTo1OntzOjEwOiJib2FyZF9jb2RlIjtzOjIyOiJiMjAyMzAyMTkyOTI2OGMwNWUxMzliIjtzOjk6InBvc3RfY29kZSI7czoyMjoicDIwMjYwNDIwYTM3N2VkNjUzOWNhZSI7czo5OiJmaWxlX2NvZGUiO3M6MjI6InAyMDI2MDQyMGYwZTBmOGVmOGQ2ODMiO3M6MTk6InBvc3RfZG93bmxvYWRfdG9rZW4iO3M6MTM6IjY5ZWEzNmMwNWQ1NDciO3M6MTE6Im1lbWJlcl9jb2RlIjtOO30="
+        ],
+        "source_image_url_samples": [
+          "https://www.nwjob.kr/common/img/default_profile.png",
+          "https://cdn.imweb.me/thumbnail/20230322/068b03ab88ff0.png",
+          "https://cdn.imweb.me/thumbnail/20230311/f34de9b5802f0.png"
+        ]
+      },
+      "playwright_probe_candidate": false,
+      "raw_count": 10,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 10,
+        "message": "Collected 10 rows; upsert skipped (raw_items=10, deduped_rows=10); collector_message=노원구 청년일자리센터 청년내일 collected 10 items from 1/1 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 10,
+          "issue_codes": {
+            "missing_provider": 10
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 10,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 10,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "노원구 청년일자리센터 청년내일",
+      "source_key": "nowon_youth_tomorrow",
+      "source_type": "district_crawl",
+      "tier": 4,
+      "url_diagnostics": [
+        {
+          "item_count": 10,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://www.nwjob.kr/18"
+        }
+      ]
+    },
+    {
+      "class_name": "DobongCollector",
+      "classification": "partial_parse_empty_monitor",
+      "collection_method": "web_crawl",
+      "duration_ms": 3253.6,
+      "evidence": [
+        "status=success",
+        "raw=1",
+        "normalized=1",
+        "parse_empty=1",
+        "request_failed=0"
+      ],
+      "last_collect_message": "도봉구청 일자리경제과 collected 1 items from 2/2 urls; request_failed=0; parse_empty=1",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://www.dobong.go.kr/bbs.asp?code=10008769",
+        "https://www.dobong.go.kr/bbs.asp?code=10008770"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 1,
+      "ocr_probe": {
+        "attachment_signal_count": 0,
+        "classification": "poster_or_attachment_candidate",
+        "detail_attachment_count": 1,
+        "detail_checked": 1,
+        "detail_fetch_failed": 0,
+        "detail_low_text_image_count": 0,
+        "detail_text_sufficient_count": 1,
+        "evidence": [
+          "items=1",
+          "short_list_text=1",
+          "attachment_signals=0",
+          "image_signals=0",
+          "detail_checked=1",
+          "detail_fetch_failed=0",
+          "detail_attachments=1",
+          "detail_low_text_images=0",
+          "detail_text_sufficient=1"
+        ],
+        "image_signal_count": 0,
+        "item_count": 1,
+        "recommendation": "목록 또는 detail HTML에서 이미지/첨부 신호가 있다. OCR은 source별 opt-in으로 두고, 먼저 해당 첨부/이미지에서 필수 필드가 실제로 빠지는지 샘플 검증한다.",
+        "samples": [
+          {
+            "attachment_link_count": 1,
+            "attachment_signal": false,
+            "attachment_urls": [
+              "https://www.hancom.com/cs_center/csDownload.do"
+            ],
+            "image_count": 41,
+            "image_signal": false,
+            "image_urls": [
+              "https://www.dobong.go.kr/images/2025/main/ico_gonfalon.png",
+              "https://www.dobong.go.kr/images/2025/main/ico_login.png",
+              "https://www.dobong.go.kr/images/2023/main/logo.png"
+            ],
+            "link": "https://www.dobong.go.kr/bbs.asp?bmode=D&pcode=12742709&code=10008770",
+            "list_text_length": 68,
+            "status": "fetched",
+            "title": "2026년 5월 구민정보화교육 수강생 모집 안내",
+            "visible_text_length": 9906
+          }
+        ],
+        "short_list_text_count": 1,
+        "source_attachment_url_samples": [
+          "https://www.hancom.com/cs_center/csDownload.do"
+        ],
+        "source_image_url_samples": [
+          "https://www.dobong.go.kr/images/2025/main/ico_gonfalon.png",
+          "https://www.dobong.go.kr/images/2025/main/ico_login.png",
+          "https://www.dobong.go.kr/images/2023/main/logo.png"
+        ]
+      },
+      "playwright_probe_candidate": false,
+      "raw_count": 1,
+      "recommendation": "일부 URL은 비었지만 같은 source에서 수집 성공도 있다. Playwright 도입 전 빈 URL의 HTML snapshot/selector drift를 확인한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 1,
+        "message": "Collected 1 rows; upsert skipped (raw_items=1, deduped_rows=1); collector_message=도봉구청 일자리경제과 collected 1 items from 2/2 urls; request_failed=0; parse_empty=1",
+        "quality": {
+          "checked_rows": 1,
+          "issue_codes": {
+            "missing_provider": 1
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 1,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 1,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "snapshot_capture": {
+        "saved_count": 1,
+        "saved_paths": [
+          "reports\\html-collector-snapshots-2026-04-24\\dobong_district_jobs-list-1-parse_empty.html"
+        ]
+      },
+      "source": "도봉구청 일자리경제과",
+      "source_key": "dobong_district_jobs",
+      "source_type": "district_crawl",
+      "tier": 4,
+      "url_diagnostics": [
+        {
+          "html_snapshot": {
+            "body_text_preview": "열린행정>알림마당>공지사항(목록) 본문바로가기 본문바로가기 이 누리집은 대한민국 공식 전자정부 누리집입니다. 도봉구청 도봉배움e 통합예약 문화관광 구의회 도봉구 구청장실 디비디비맵 보건소 스마트도시 로그인 Language English 中文 日本語 Tiếng Việt 화면크기 검색입력란 종합민원 종합민원 변화 성장 미래 함께해요 도봉 민원안내 민원실 안내 민원별수수료 안내 구민편의서비스 무인민원발급기 민원관련FAQ 민원사무분류/용어 복합민원 안내 관련법령/기준표 행정정보공동이용 통합인터넷민원창구 통합민원창구 나의 민원 분야별민원 정부24(보조금24) 안내 가족관계등록 세무 여권 청소/쓰레기/재활용 안내 교통/주차 부동산/지적 건축/주택/정보통신 도로건설 주민센터 민원 전세사기피해 토지거래허가 민원상담/신고 ",
+            "body_text_preview_truncated": true,
+            "form_tag_count": 4,
+            "html_length": 147653,
+            "html_preview_truncated": true,
+            "iframe_tag_count": 2,
+            "noscript_tag_count": 0,
+            "script_tag_count": 25,
+            "selector_matches": [
+              {
+                "match_count": 10,
+                "selector": "tbody tr"
+              },
+              {
+                "match_count": 10,
+                "selector": "a[href*='bmode=D'][href*='pcode=']"
+              }
+            ],
+            "selectors_checked": 2,
+            "selectors_with_matches": 2,
+            "title_text": "열린행정>알림마당>공지사항(목록)"
+          },
+          "item_count": 0,
+          "parse_status": "parse_empty",
+          "request_status": "success",
+          "snapshot_path": "reports\\html-collector-snapshots-2026-04-24\\dobong_district_jobs-list-1-parse_empty.html",
+          "url": "https://www.dobong.go.kr/bbs.asp?code=10008769"
+        },
+        {
+          "item_count": 1,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://www.dobong.go.kr/bbs.asp?code=10008770"
+        }
+      ]
+    },
+    {
+      "class_name": "DobongStartupCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 686.04,
+      "evidence": [
+        "status=success",
+        "raw=33",
+        "normalized=33",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "도봉구청년창업센터 collected 33 items from 2/2 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://dobongstartup.com/bbs/board.php?bo_table=donotic",
+        "https://dobongstartup.com/program/programlist.php"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 33,
+      "ocr_probe": {
+        "attachment_signal_count": 0,
+        "classification": "poster_or_attachment_candidate",
+        "detail_attachment_count": 1,
+        "detail_checked": 2,
+        "detail_fetch_failed": 0,
+        "detail_low_text_image_count": 0,
+        "detail_text_sufficient_count": 2,
+        "evidence": [
+          "items=33",
+          "short_list_text=27",
+          "attachment_signals=0",
+          "image_signals=0",
+          "detail_checked=2",
+          "detail_fetch_failed=0",
+          "detail_attachments=1",
+          "detail_low_text_images=0",
+          "detail_text_sufficient=2"
+        ],
+        "image_signal_count": 0,
+        "item_count": 33,
+        "recommendation": "목록 또는 detail HTML에서 이미지/첨부 신호가 있다. OCR은 source별 opt-in으로 두고, 먼저 해당 첨부/이미지에서 필수 필드가 실제로 빠지는지 샘플 검증한다.",
+        "samples": [
+          {
+            "attachment_link_count": 0,
+            "attachment_signal": false,
+            "attachment_urls": [],
+            "image_count": 5,
+            "image_signal": false,
+            "image_urls": [
+              "https://dobongstartup.com/data/common/clogo_img",
+              "https://dobongstartup.com/data/common/mobile_clogo_img",
+              "https://dobongstartup.com/theme/webon/img/sub_menu_tel.png"
+            ],
+            "link": "https://dobongstartup.com/bbs/board.php?bo_table=donotic&wr_id=148",
+            "list_text_length": 64,
+            "status": "fetched",
+            "title": "4월 '전문가 창업상담' 참여자 모집(04.24.)(마감)",
+            "visible_text_length": 1602
+          },
+          {
+            "attachment_link_count": 1,
+            "attachment_signal": false,
+            "attachment_urls": [
+              "https://dobongstartup.com/bbs/download.php?bo_table=donotic&wr_id=147&no=0"
+            ],
+            "image_count": 7,
+            "image_signal": false,
+            "image_urls": [
+              "https://dobongstartup.com/data/common/clogo_img",
+              "https://dobongstartup.com/data/common/mobile_clogo_img",
+              "https://dobongstartup.com/theme/webon/img/sub_menu_tel.png"
+            ],
+            "link": "https://dobongstartup.com/bbs/board.php?bo_table=donotic&wr_id=147",
+            "list_text_length": 74,
+            "status": "fetched",
+            "title": "[스타아카데미2] '외주 없이 AI로 홍보 영상 만들기' 수강생 모집(마감)",
+            "visible_text_length": 1256
+          }
+        ],
+        "short_list_text_count": 27,
+        "source_attachment_url_samples": [
+          "https://dobongstartup.com/bbs/download.php?bo_table=donotic&wr_id=147&no=0"
+        ],
+        "source_image_url_samples": [
+          "https://dobongstartup.com/data/common/clogo_img",
+          "https://dobongstartup.com/data/common/mobile_clogo_img",
+          "https://dobongstartup.com/theme/webon/img/sub_menu_tel.png"
+        ]
+      },
+      "playwright_probe_candidate": false,
+      "raw_count": 33,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 33,
+        "message": "Collected 33 rows; upsert skipped (raw_items=33, deduped_rows=33); collector_message=도봉구청년창업센터 collected 33 items from 2/2 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 33,
+          "issue_codes": {
+            "missing_provider": 33
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 33,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 33,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "도봉구청년창업센터",
+      "source_key": "dobong_startup",
+      "source_type": "district_crawl",
+      "tier": 4,
+      "url_diagnostics": [
+        {
+          "item_count": 15,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://dobongstartup.com/bbs/board.php?bo_table=donotic"
+        },
+        {
+          "item_count": 18,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://dobongstartup.com/program/programlist.php"
+        }
+      ]
+    },
+    {
+      "class_name": "MapoCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 1071.11,
+      "evidence": [
+        "status=success",
+        "raw=6",
+        "normalized=6",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "마포구고용복지지원센터 collected 6 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://mapoworkfare.or.kr/"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 6,
+      "ocr_probe": {
+        "attachment_signal_count": 0,
+        "classification": "poster_or_attachment_candidate",
+        "detail_attachment_count": 6,
+        "detail_checked": 2,
+        "detail_fetch_failed": 0,
+        "detail_low_text_image_count": 0,
+        "detail_text_sufficient_count": 2,
+        "evidence": [
+          "items=6",
+          "short_list_text=6",
+          "attachment_signals=0",
+          "image_signals=0",
+          "detail_checked=2",
+          "detail_fetch_failed=0",
+          "detail_attachments=6",
+          "detail_low_text_images=0",
+          "detail_text_sufficient=2"
+        ],
+        "image_signal_count": 0,
+        "item_count": 6,
+        "recommendation": "목록 또는 detail HTML에서 이미지/첨부 신호가 있다. OCR은 source별 opt-in으로 두고, 먼저 해당 첨부/이미지에서 필수 필드가 실제로 빠지는지 샘플 검증한다.",
+        "samples": [
+          {
+            "attachment_link_count": 1,
+            "attachment_signal": false,
+            "attachment_urls": [
+              "https://mapoworkfare.or.kr/index.php?module=file&act=procFileDownload&file_srl=1136101&sid=aab7b6e6d731f9afeccf2f715d36f814"
+            ],
+            "image_count": 45,
+            "image_signal": false,
+            "image_urls": [
+              "https://mapoworkfare.or.kr/layouts/NewInclude/img/mapo_sms.jpg",
+              "https://mapoworkfare.or.kr/files/attach/images/1125363/99b983892094b5c6d2fc3736e15da7d1.png",
+              "https://mapoworkfare.or.kr/layouts/NewSubLayoutNew/img/title_arrow.png"
+            ],
+            "link": "https://mapoworkfare.or.kr/1136099",
+            "list_text_length": 48,
+            "status": "fetched",
+            "title": "2026 [느린학습자 아동을 위한 디지털 교육 강사 양성 사업]",
+            "visible_text_length": 5474
+          },
+          {
+            "attachment_link_count": 5,
+            "attachment_signal": false,
+            "attachment_urls": [
+              "https://mapoworkfare.or.kr/?document_srl=1136037&act=zip",
+              "https://mapoworkfare.or.kr/index.php?module=file&act=procFileDownload&file_srl=1136057&sid=a1bb23c37a3aa85dd0164241f53b2b19",
+              "https://mapoworkfare.or.kr/index.php?module=file&act=procFileDownload&file_srl=1136058&sid=546294083f09a153832959f5d33f0bf9"
+            ],
+            "image_count": 48,
+            "image_signal": false,
+            "image_urls": [
+              "https://mapoworkfare.or.kr/layouts/NewInclude/img/mapo_sms.jpg",
+              "https://mapoworkfare.or.kr/files/attach/images/1125363/99b983892094b5c6d2fc3736e15da7d1.png",
+              "https://mapoworkfare.or.kr/layouts/NewSubLayoutNew/img/title_arrow.png"
+            ],
+            "link": "https://mapoworkfare.or.kr/1136037",
+            "list_text_length": 43,
+            "status": "fetched",
+            "title": "[2026청년도전지원사업]중.단기 프로그램 참여자 모집",
+            "visible_text_length": 5498
+          }
+        ],
+        "short_list_text_count": 6,
+        "source_attachment_url_samples": [
+          "https://mapoworkfare.or.kr/index.php?module=file&act=procFileDownload&file_srl=1136101&sid=aab7b6e6d731f9afeccf2f715d36f814",
+          "https://mapoworkfare.or.kr/?document_srl=1136037&act=zip",
+          "https://mapoworkfare.or.kr/index.php?module=file&act=procFileDownload&file_srl=1136057&sid=a1bb23c37a3aa85dd0164241f53b2b19",
+          "https://mapoworkfare.or.kr/index.php?module=file&act=procFileDownload&file_srl=1136058&sid=546294083f09a153832959f5d33f0bf9"
+        ],
+        "source_image_url_samples": [
+          "https://mapoworkfare.or.kr/layouts/NewInclude/img/mapo_sms.jpg",
+          "https://mapoworkfare.or.kr/files/attach/images/1125363/99b983892094b5c6d2fc3736e15da7d1.png",
+          "https://mapoworkfare.or.kr/layouts/NewSubLayoutNew/img/title_arrow.png"
+        ]
+      },
+      "playwright_probe_candidate": false,
+      "raw_count": 6,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 6,
+        "message": "Collected 6 rows; upsert skipped (raw_items=6, deduped_rows=6); collector_message=마포구고용복지지원센터 collected 6 items from 1/1 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 6,
+          "issue_codes": {
+            "missing_provider": 6
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 6,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 6,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "마포구고용복지지원센터",
+      "source_key": "mapo_workfare_center",
+      "source_type": "district_crawl",
+      "tier": 4,
+      "url_diagnostics": [
+        {
+          "item_count": 6,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://mapoworkfare.or.kr/"
+        }
+      ]
+    },
+    {
+      "class_name": "SeongdongCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 45579.41,
+      "evidence": [
+        "status=success",
+        "raw=3",
+        "normalized=3",
+        "parse_empty=0",
+        "request_failed=1"
+      ],
+      "last_collect_message": "서울청년센터 성동 collected 3 items from 1/2 urls; request_failed=1; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://youth.seoul.go.kr/orang/cntr/program.do?key=2309210001&cntrId=CT00006",
+        "https://youth.seoul.go.kr/orang/cntr/notice.do?key=2309210001&cntrId=CT00006"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 3,
+      "ocr_probe": {
+        "attachment_signal_count": 0,
+        "classification": "detail_probe_inconclusive",
+        "detail_attachment_count": 0,
+        "detail_checked": 0,
+        "detail_fetch_failed": 2,
+        "detail_low_text_image_count": 0,
+        "detail_text_sufficient_count": 0,
+        "evidence": [
+          "items=3",
+          "short_list_text=3",
+          "attachment_signals=0",
+          "image_signals=0",
+          "detail_checked=0",
+          "detail_fetch_failed=2",
+          "detail_attachments=0",
+          "detail_low_text_images=0",
+          "detail_text_sufficient=0"
+        ],
+        "image_signal_count": 0,
+        "item_count": 3,
+        "recommendation": "목록 텍스트가 짧지만 detail HTML 확인이 부족하다. OCR보다 detail page text/attachment snapshot 진단을 먼저 보강한다.",
+        "samples": [
+          {
+            "attachment_signal": false,
+            "attachment_urls": [],
+            "error": "TimeoutError: The read operation timed out",
+            "image_signal": false,
+            "image_urls": [],
+            "link": "https://youth.seoul.go.kr/orang/cntr/programView.do?key=2309210001&cntrId=CT00006&sprtInfoId=69292",
+            "list_text_length": 105,
+            "status": "fetch_failed",
+            "title": "서울청년센터 성동 성동청년일경험 | 타겟 고객 기반 상품 라인업 설계 챌린지 참여자 모집"
+          },
+          {
+            "attachment_signal": false,
+            "attachment_urls": [],
+            "error": "TimeoutError: The read operation timed out",
+            "image_signal": false,
+            "image_urls": [],
+            "link": "https://youth.seoul.go.kr/orang/cntr/programView.do?key=2309210001&cntrId=CT00006&sprtInfoId=69382",
+            "list_text_length": 115,
+            "status": "fetch_failed",
+            "title": "서울청년센터 성동 성동청년일경험 | 웹디자인 직무경험:사용자 행동 기반 랜딩페이지 설계 챌린지 참여자 모집"
+          }
+        ],
+        "short_list_text_count": 3,
+        "source_attachment_url_samples": [],
+        "source_image_url_samples": []
+      },
+      "playwright_probe_candidate": false,
+      "raw_count": 3,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 3,
+        "message": "Collected 3 rows; upsert skipped (raw_items=3, deduped_rows=3); collector_message=서울청년센터 성동 collected 3 items from 1/2 urls; request_failed=1; parse_empty=0",
+        "quality": {
+          "checked_rows": 3,
+          "issue_codes": {
+            "missing_provider": 3
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 3,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 3,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "서울청년센터 성동",
+      "source_key": "seongdong_youth_center",
+      "source_type": "district_crawl",
+      "tier": 4,
+      "url_diagnostics": [
+        {
+          "item_count": 3,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://youth.seoul.go.kr/orang/cntr/program.do?key=2309210001&cntrId=CT00006"
+        },
+        {
+          "error": "The read operation timed out",
+          "item_count": 0,
+          "parse_status": "not_attempted",
+          "request_status": "request_failed",
+          "url": "https://youth.seoul.go.kr/orang/cntr/notice.do?key=2309210001&cntrId=CT00006"
+        }
+      ]
+    }
+  ],
+  "started_at": "2026-04-24T00:12:50+0900",
+  "summary": {
+    "healthy_static_html": 13,
+    "partial_parse_empty_monitor": 1
+  }
+}

@@ -1,0 +1,1141 @@
+{
+  "collector_count": 14,
+  "duration_ms": 12664.9,
+  "mode": "read-only-live-diagnostic",
+  "partial_parse_empty_sources": [
+    {
+      "class_name": "DobongCollector",
+      "classification": "partial_parse_empty_monitor",
+      "collection_method": "web_crawl",
+      "duration_ms": 1891.81,
+      "evidence": [
+        "status=success",
+        "raw=1",
+        "normalized=1",
+        "parse_empty=1",
+        "request_failed=0"
+      ],
+      "last_collect_message": "도봉구청 일자리경제과 collected 1 items from 2/2 urls; request_failed=0; parse_empty=1",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://www.dobong.go.kr/bbs.asp?code=10008769",
+        "https://www.dobong.go.kr/bbs.asp?code=10008770"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 1,
+      "playwright_probe_candidate": false,
+      "raw_count": 1,
+      "recommendation": "일부 URL은 비었지만 같은 source에서 수집 성공도 있다. Playwright 도입 전 빈 URL의 HTML snapshot/selector drift를 확인한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 1,
+        "message": "Collected 1 rows; upsert skipped (raw_items=1, deduped_rows=1); collector_message=도봉구청 일자리경제과 collected 1 items from 2/2 urls; request_failed=0; parse_empty=1",
+        "quality": {
+          "checked_rows": 1,
+          "issue_codes": {
+            "missing_provider": 1
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 1,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 1,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "snapshot_capture": {
+        "saved_count": 1,
+        "saved_paths": [
+          "reports\\html-collector-snapshots-2026-04-24\\dobong_district_jobs-list-1-parse_empty.html"
+        ]
+      },
+      "source": "도봉구청 일자리경제과",
+      "source_key": "dobong_district_jobs",
+      "source_type": "district_crawl",
+      "tier": 4,
+      "url_diagnostics": [
+        {
+          "html_snapshot": {
+            "body_text_preview": "열린행정>알림마당>공지사항(목록) 본문바로가기 본문바로가기 이 누리집은 대한민국 공식 전자정부 누리집입니다. 도봉구청 도봉배움e 통합예약 문화관광 구의회 도봉구 구청장실 디비디비맵 보건소 스마트도시 로그인 Language English 中文 日本語 Tiếng Việt 화면크기 검색입력란 종합민원 종합민원 변화 성장 미래 함께해요 도봉 민원안내 민원실 안내 민원별수수료 안내 구민편의서비스 무인민원발급기 민원관련FAQ 민원사무분류/용어 복합민원 안내 관련법령/기준표 행정정보공동이용 통합인터넷민원창구 통합민원창구 나의 민원 분야별민원 정부24(보조금24) 안내 가족관계등록 세무 여권 청소/쓰레기/재활용 안내 교통/주차 부동산/지적 건축/주택/정보통신 도로건설 주민센터 민원 전세사기피해 토지거래허가 민원상담/신고 ",
+            "body_text_preview_truncated": true,
+            "form_tag_count": 4,
+            "html_length": 147653,
+            "html_preview_truncated": true,
+            "iframe_tag_count": 2,
+            "noscript_tag_count": 0,
+            "script_tag_count": 25,
+            "selector_matches": [
+              {
+                "match_count": 10,
+                "selector": "tbody tr"
+              },
+              {
+                "match_count": 10,
+                "selector": "a[href*='bmode=D'][href*='pcode=']"
+              }
+            ],
+            "selectors_checked": 2,
+            "selectors_with_matches": 2,
+            "title_text": "열린행정>알림마당>공지사항(목록)"
+          },
+          "item_count": 0,
+          "parse_status": "parse_empty",
+          "request_status": "success",
+          "snapshot_path": "reports\\html-collector-snapshots-2026-04-24\\dobong_district_jobs-list-1-parse_empty.html",
+          "url": "https://www.dobong.go.kr/bbs.asp?code=10008769"
+        },
+        {
+          "item_count": 1,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://www.dobong.go.kr/bbs.asp?code=10008770"
+        }
+      ]
+    },
+    {
+      "class_name": "SeongdongCollector",
+      "classification": "partial_parse_empty_monitor",
+      "collection_method": "web_crawl",
+      "duration_ms": 3631.88,
+      "evidence": [
+        "status=success",
+        "raw=3",
+        "normalized=3",
+        "parse_empty=1",
+        "request_failed=0"
+      ],
+      "last_collect_message": "서울청년센터 성동 collected 3 items from 2/2 urls; request_failed=0; parse_empty=1",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://youth.seoul.go.kr/orang/cntr/program.do?key=2309210001&cntrId=CT00006",
+        "https://youth.seoul.go.kr/orang/cntr/notice.do?key=2309210001&cntrId=CT00006"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 3,
+      "playwright_probe_candidate": false,
+      "raw_count": 3,
+      "recommendation": "일부 URL은 비었지만 같은 source에서 수집 성공도 있다. Playwright 도입 전 빈 URL의 HTML snapshot/selector drift를 확인한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 3,
+        "message": "Collected 3 rows; upsert skipped (raw_items=3, deduped_rows=3); collector_message=서울청년센터 성동 collected 3 items from 2/2 urls; request_failed=0; parse_empty=1",
+        "quality": {
+          "checked_rows": 3,
+          "issue_codes": {
+            "missing_provider": 3
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 3,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 3,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "snapshot_capture": {
+        "saved_count": 1,
+        "saved_paths": [
+          "reports\\html-collector-snapshots-2026-04-24\\seongdong_youth_center-list-2-parse_empty.html"
+        ]
+      },
+      "source": "서울청년센터 성동",
+      "source_key": "seongdong_youth_center",
+      "source_type": "district_crawl",
+      "tier": 4,
+      "url_diagnostics": [
+        {
+          "item_count": 3,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://youth.seoul.go.kr/orang/cntr/program.do?key=2309210001&cntrId=CT00006"
+        },
+        {
+          "html_snapshot": {
+            "body_text_preview": "내 지역 센터 찾기 | 서울청년센터 본문영역 바로가기 메인메뉴 바로가기 하단링크 바로가기 주요메뉴 소개 서울청년센터는? 청년센터에서 준비 했어요! 소식ㆍ참여 공지사항 프로그램 신청 대관하기 동네정보퐁퐁 서울청년센터 자료집 청년지원정보 청년 상담 청년 상담 청년센터 찾기 내 지역 센터 찾기 문의 하기 로그인 모바일 메뉴 열기 모바일 메뉴 닫기 메인페이지로 이동 로그인 해주세요 청년센터 찾기 내 지역 센터 찾기 문의 하기 홈으로 이동 청년센터 찾기 소개 소식ㆍ참여 청년 상담 청년센터 찾기 내 지역 센터 찾기 내 지역 센터 찾기 문의 하기 내 지역 센터 찾기 공유하기 페이스북 트위터 카카오톡 닫기 프린트하기 서울청년센터 성동 서울청년센터 성동은 성동, 용산, 중구 권역 가까이, 청년 누구나 이용할 수 있는 곳입니",
+            "body_text_preview_truncated": true,
+            "form_tag_count": 2,
+            "html_length": 87594,
+            "html_preview_truncated": true,
+            "iframe_tag_count": 0,
+            "noscript_tag_count": 0,
+            "script_tag_count": 18,
+            "selector_matches": [
+              {
+                "match_count": 10,
+                "selector": "tbody tr"
+              },
+              {
+                "match_count": 24,
+                "selector": "a[onclick]"
+              },
+              {
+                "match_count": 1,
+                "selector": ".board"
+              },
+              {
+                "match_count": 0,
+                "selector": ".board-list"
+              }
+            ],
+            "selectors_checked": 4,
+            "selectors_with_matches": 3,
+            "title_text": "내 지역 센터 찾기 | 서울청년센터"
+          },
+          "item_count": 0,
+          "parse_status": "parse_empty",
+          "request_status": "success",
+          "snapshot_path": "reports\\html-collector-snapshots-2026-04-24\\seongdong_youth_center-list-2-parse_empty.html",
+          "url": "https://youth.seoul.go.kr/orang/cntr/notice.do?key=2309210001&cntrId=CT00006"
+        }
+      ]
+    }
+  ],
+  "playwright_probe_candidates": [],
+  "scheduler_dry_run": {
+    "enabled": true,
+    "quality": {
+      "checked_rows": 187,
+      "issue_codes": {
+        "missing_provider": 175
+      },
+      "issue_counts": {
+        "error": 0,
+        "info": 175,
+        "warning": 0
+      },
+      "rows_with_errors": 0,
+      "rows_with_warnings": 0
+    },
+    "schema_id": "scheduler_dry_run_summary_v1",
+    "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+    "source_count": 14,
+    "sources_with_quality_errors": 0,
+    "sources_with_quality_warnings": 0,
+    "status_counts": {
+      "dry_run": 14
+    }
+  },
+  "schema_version": "html_collector_diagnostic_report_v1",
+  "schemas": {
+    "scheduler_summary_bundle": {
+      "program_quality_summary_schema": "program_quality_summary_v1",
+      "scheduler_dry_run_summary_schema": "scheduler_dry_run_summary_v1",
+      "scheduler_source_summary_schema": "scheduler_source_summary_v1",
+      "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json"
+    }
+  },
+  "snapshot_capture": {
+    "enabled": true,
+    "output_dir": "reports\\html-collector-snapshots-2026-04-24",
+    "saved_count": 2,
+    "saved_paths": [
+      "reports\\html-collector-snapshots-2026-04-24\\dobong_district_jobs-list-1-parse_empty.html",
+      "reports\\html-collector-snapshots-2026-04-24\\seongdong_youth_center-list-2-parse_empty.html"
+    ]
+  },
+  "sources": [
+    {
+      "class_name": "SbaPostingCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 2281.98,
+      "evidence": [
+        "status=success",
+        "raw=10",
+        "normalized=10",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "서울경제진흥원 사업신청 collected 10 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://www.sba.kr/Pages/BusinessApply/Posting.aspx"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 10,
+      "playwright_probe_candidate": false,
+      "raw_count": 10,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 10,
+        "message": "Collected 10 rows; upsert skipped (raw_items=10, deduped_rows=10); collector_message=서울경제진흥원 사업신청 collected 10 items from 1/1 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 10,
+          "issue_codes": {
+            "missing_provider": 10
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 10,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 10,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "서울경제진흥원 사업신청",
+      "source_key": "sba_posting",
+      "source_type": "seoul_city",
+      "tier": 2,
+      "url_diagnostics": [
+        {
+          "item_count": 10,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://www.sba.kr/Pages/BusinessApply/Posting.aspx"
+        }
+      ]
+    },
+    {
+      "class_name": "Seoul50PlusCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 486.99,
+      "evidence": [
+        "status=success",
+        "raw=12",
+        "normalized=12",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "서울시 50플러스 collected 16 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://service1.50plus.or.kr/"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 12,
+      "playwright_probe_candidate": false,
+      "raw_count": 12,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 12,
+        "message": "Collected 12 rows; upsert skipped (raw_items=12, deduped_rows=12); collector_message=서울시 50플러스 collected 16 items from 1/1 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 12,
+          "issue_codes": {
+            "missing_provider": 12
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 12,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 12,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "서울시 50플러스",
+      "source_key": "seoul_50plus",
+      "source_type": "seoul_city",
+      "tier": 2,
+      "url_diagnostics": [
+        {
+          "item_count": 16,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://service1.50plus.or.kr/"
+        }
+      ]
+    },
+    {
+      "class_name": "SeoulJobPortalCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 1696.74,
+      "evidence": [
+        "status=success",
+        "raw=10",
+        "normalized=10",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "서울일자리포털 collected 11 items from 3/3 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://job.seoul.go.kr/hmpg/chjb/prmg/prmgListPgng.do",
+        "https://job.seoul.go.kr/hmpg/chjb/pvmg/pcmgListPgng.do",
+        "https://job.seoul.go.kr/hmpg/chjb/prnt/prntListPgng.do"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 10,
+      "playwright_probe_candidate": false,
+      "raw_count": 10,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 10,
+        "message": "Collected 10 rows; upsert skipped (raw_items=10, deduped_rows=10); collector_message=서울일자리포털 collected 11 items from 3/3 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 10,
+          "issue_codes": {
+            "missing_provider": 10
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 10,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 10,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "서울일자리포털",
+      "source_key": "seoul_job_portal",
+      "source_type": "seoul_city",
+      "tier": 2,
+      "url_diagnostics": [
+        {
+          "item_count": 1,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://job.seoul.go.kr/hmpg/chjb/prmg/prmgListPgng.do"
+        },
+        {
+          "item_count": 3,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://job.seoul.go.kr/hmpg/chjb/pvmg/pcmgListPgng.do"
+        },
+        {
+          "item_count": 7,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://job.seoul.go.kr/hmpg/chjb/prnt/prntListPgng.do"
+        }
+      ]
+    },
+    {
+      "class_name": "CampusTownCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 279.4,
+      "evidence": [
+        "status=success",
+        "raw=20",
+        "normalized=20",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "서울캠퍼스타운 collected 20 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://campustown.seoul.go.kr/site/main/board/university_news/list"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 20,
+      "playwright_probe_candidate": false,
+      "raw_count": 20,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 20,
+        "message": "Collected 20 rows; upsert skipped (raw_items=20, deduped_rows=20); collector_message=서울캠퍼스타운 collected 20 items from 1/1 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 20,
+          "issue_codes": {
+            "missing_provider": 20
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 20,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 20,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "서울캠퍼스타운",
+      "source_key": "campus_town",
+      "source_type": "seoul_city",
+      "tier": 2,
+      "url_diagnostics": [
+        {
+          "item_count": 20,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://campustown.seoul.go.kr/site/main/board/university_news/list"
+        }
+      ]
+    },
+    {
+      "class_name": "SeoulWomanUpCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 133.43,
+      "evidence": [
+        "status=success",
+        "raw=18",
+        "normalized=18",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "서울커리업 collected 42 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://project.seoulcareerup.or.kr/swm/internship/recruit/list.do?menu_no=02030200"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 18,
+      "playwright_probe_candidate": false,
+      "raw_count": 18,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 18,
+        "message": "Collected 18 rows; upsert skipped (raw_items=18, deduped_rows=18); collector_message=서울커리업 collected 42 items from 1/1 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 18,
+          "issue_codes": {
+            "missing_provider": 18
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 18,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 18,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "서울커리업",
+      "source_key": "seoul_womanup",
+      "source_type": "seoul_city",
+      "tier": 2,
+      "url_diagnostics": [
+        {
+          "item_count": 42,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://project.seoulcareerup.or.kr/swm/internship/recruit/list.do?menu_no=02030200"
+        }
+      ]
+    },
+    {
+      "class_name": "SesacCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 217.43,
+      "evidence": [
+        "status=success",
+        "raw=12",
+        "normalized=12",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "청년취업사관학교 SeSAC collected 12 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://sesac.seoul.kr/sesac/course/offline/courseList.do"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 12,
+      "playwright_probe_candidate": false,
+      "raw_count": 12,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 12,
+        "message": "Collected 12 rows; upsert skipped (raw_items=12, deduped_rows=12); collector_message=청년취업사관학교 SeSAC collected 12 items from 1/1 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 12,
+          "issue_codes": {},
+          "issue_counts": {
+            "error": 0,
+            "info": 0,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 12,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "청년취업사관학교 SeSAC",
+      "source_key": "sesac",
+      "source_type": "seoul_city",
+      "tier": 2,
+      "url_diagnostics": [
+        {
+          "item_count": 12,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://sesac.seoul.kr/sesac/course/offline/courseList.do"
+        }
+      ]
+    },
+    {
+      "class_name": "KisedCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 380.27,
+      "evidence": [
+        "status=success",
+        "raw=39",
+        "normalized=39",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "KISED collected 42 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://www.kised.or.kr/misAnnouncement/index.es?mid=a10302000000"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 39,
+      "playwright_probe_candidate": false,
+      "raw_count": 39,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 39,
+        "message": "Collected 39 rows; upsert skipped (raw_items=39, deduped_rows=39); collector_message=KISED collected 42 items from 1/1 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 39,
+          "issue_codes": {
+            "missing_provider": 39
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 39,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 39,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "KISED",
+      "source_key": "KISED",
+      "source_type": "semi_public_crawl",
+      "tier": 3,
+      "url_diagnostics": [
+        {
+          "item_count": 42,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://www.kised.or.kr/misAnnouncement/index.es?mid=a10302000000"
+        }
+      ]
+    },
+    {
+      "class_name": "KobiaCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 52.46,
+      "evidence": [
+        "status=success",
+        "raw=10",
+        "normalized=10",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "KOBIA collected 11 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "http://www.kobia.or.kr/board/list.do?board_kind=KNOTICE"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 10,
+      "playwright_probe_candidate": false,
+      "raw_count": 10,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 10,
+        "message": "Collected 10 rows; upsert skipped (raw_items=10, deduped_rows=10); collector_message=KOBIA collected 11 items from 1/1 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 10,
+          "issue_codes": {
+            "missing_provider": 10
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 10,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 10,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "KOBIA",
+      "source_key": "KOBIA",
+      "source_type": "semi_public_crawl",
+      "tier": 3,
+      "url_diagnostics": [
+        {
+          "item_count": 11,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "http://www.kobia.or.kr/board/list.do?board_kind=KNOTICE"
+        }
+      ]
+    },
+    {
+      "class_name": "GuroCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 108.15,
+      "evidence": [
+        "status=success",
+        "raw=3",
+        "normalized=3"
+      ],
+      "last_collect_message": "구로 청년이룸 collected 3 items (HTTP fixed due TLS issues)",
+      "last_collect_status": "success",
+      "list_urls": [
+        "http://youtheroom.kr/product/list.php?ca_id=10",
+        "http://youtheroom.kr/bbs/board.php?tbl=bbs41"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 3,
+      "playwright_probe_candidate": false,
+      "raw_count": 3,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 3,
+        "message": "Collected 3 rows; upsert skipped (raw_items=3, deduped_rows=3); collector_message=구로 청년이룸 collected 3 items (HTTP fixed due TLS issues)",
+        "quality": {
+          "checked_rows": 3,
+          "issue_codes": {
+            "missing_provider": 3
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 3,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 3,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "구로 청년이룸",
+      "source_key": "guro_youtheroom",
+      "source_type": "district_crawl",
+      "tier": 4,
+      "url_diagnostics": [
+        {
+          "item_count": 2,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "http://youtheroom.kr/product/list.php?ca_id=10"
+        },
+        {
+          "item_count": 1,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "http://youtheroom.kr/bbs/board.php?tbl=bbs41"
+        }
+      ]
+    },
+    {
+      "class_name": "NowonCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 616.77,
+      "evidence": [
+        "status=success",
+        "raw=10",
+        "normalized=10",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "노원구 청년일자리센터 청년내일 collected 10 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://www.nwjob.kr/18"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 10,
+      "playwright_probe_candidate": false,
+      "raw_count": 10,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 10,
+        "message": "Collected 10 rows; upsert skipped (raw_items=10, deduped_rows=10); collector_message=노원구 청년일자리센터 청년내일 collected 10 items from 1/1 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 10,
+          "issue_codes": {
+            "missing_provider": 10
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 10,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 10,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "노원구 청년일자리센터 청년내일",
+      "source_key": "nowon_youth_tomorrow",
+      "source_type": "district_crawl",
+      "tier": 4,
+      "url_diagnostics": [
+        {
+          "item_count": 10,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://www.nwjob.kr/18"
+        }
+      ]
+    },
+    {
+      "class_name": "DobongCollector",
+      "classification": "partial_parse_empty_monitor",
+      "collection_method": "web_crawl",
+      "duration_ms": 1891.81,
+      "evidence": [
+        "status=success",
+        "raw=1",
+        "normalized=1",
+        "parse_empty=1",
+        "request_failed=0"
+      ],
+      "last_collect_message": "도봉구청 일자리경제과 collected 1 items from 2/2 urls; request_failed=0; parse_empty=1",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://www.dobong.go.kr/bbs.asp?code=10008769",
+        "https://www.dobong.go.kr/bbs.asp?code=10008770"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 1,
+      "playwright_probe_candidate": false,
+      "raw_count": 1,
+      "recommendation": "일부 URL은 비었지만 같은 source에서 수집 성공도 있다. Playwright 도입 전 빈 URL의 HTML snapshot/selector drift를 확인한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 1,
+        "message": "Collected 1 rows; upsert skipped (raw_items=1, deduped_rows=1); collector_message=도봉구청 일자리경제과 collected 1 items from 2/2 urls; request_failed=0; parse_empty=1",
+        "quality": {
+          "checked_rows": 1,
+          "issue_codes": {
+            "missing_provider": 1
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 1,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 1,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "snapshot_capture": {
+        "saved_count": 1,
+        "saved_paths": [
+          "reports\\html-collector-snapshots-2026-04-24\\dobong_district_jobs-list-1-parse_empty.html"
+        ]
+      },
+      "source": "도봉구청 일자리경제과",
+      "source_key": "dobong_district_jobs",
+      "source_type": "district_crawl",
+      "tier": 4,
+      "url_diagnostics": [
+        {
+          "html_snapshot": {
+            "body_text_preview": "열린행정>알림마당>공지사항(목록) 본문바로가기 본문바로가기 이 누리집은 대한민국 공식 전자정부 누리집입니다. 도봉구청 도봉배움e 통합예약 문화관광 구의회 도봉구 구청장실 디비디비맵 보건소 스마트도시 로그인 Language English 中文 日本語 Tiếng Việt 화면크기 검색입력란 종합민원 종합민원 변화 성장 미래 함께해요 도봉 민원안내 민원실 안내 민원별수수료 안내 구민편의서비스 무인민원발급기 민원관련FAQ 민원사무분류/용어 복합민원 안내 관련법령/기준표 행정정보공동이용 통합인터넷민원창구 통합민원창구 나의 민원 분야별민원 정부24(보조금24) 안내 가족관계등록 세무 여권 청소/쓰레기/재활용 안내 교통/주차 부동산/지적 건축/주택/정보통신 도로건설 주민센터 민원 전세사기피해 토지거래허가 민원상담/신고 ",
+            "body_text_preview_truncated": true,
+            "form_tag_count": 4,
+            "html_length": 147653,
+            "html_preview_truncated": true,
+            "iframe_tag_count": 2,
+            "noscript_tag_count": 0,
+            "script_tag_count": 25,
+            "selector_matches": [
+              {
+                "match_count": 10,
+                "selector": "tbody tr"
+              },
+              {
+                "match_count": 10,
+                "selector": "a[href*='bmode=D'][href*='pcode=']"
+              }
+            ],
+            "selectors_checked": 2,
+            "selectors_with_matches": 2,
+            "title_text": "열린행정>알림마당>공지사항(목록)"
+          },
+          "item_count": 0,
+          "parse_status": "parse_empty",
+          "request_status": "success",
+          "snapshot_path": "reports\\html-collector-snapshots-2026-04-24\\dobong_district_jobs-list-1-parse_empty.html",
+          "url": "https://www.dobong.go.kr/bbs.asp?code=10008769"
+        },
+        {
+          "item_count": 1,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://www.dobong.go.kr/bbs.asp?code=10008770"
+        }
+      ]
+    },
+    {
+      "class_name": "DobongStartupCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 577.5,
+      "evidence": [
+        "status=success",
+        "raw=33",
+        "normalized=33",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "도봉구청년창업센터 collected 33 items from 2/2 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://dobongstartup.com/bbs/board.php?bo_table=donotic",
+        "https://dobongstartup.com/program/programlist.php"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 33,
+      "playwright_probe_candidate": false,
+      "raw_count": 33,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 33,
+        "message": "Collected 33 rows; upsert skipped (raw_items=33, deduped_rows=33); collector_message=도봉구청년창업센터 collected 33 items from 2/2 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 33,
+          "issue_codes": {
+            "missing_provider": 33
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 33,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 33,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "도봉구청년창업센터",
+      "source_key": "dobong_startup",
+      "source_type": "district_crawl",
+      "tier": 4,
+      "url_diagnostics": [
+        {
+          "item_count": 15,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://dobongstartup.com/bbs/board.php?bo_table=donotic"
+        },
+        {
+          "item_count": 18,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://dobongstartup.com/program/programlist.php"
+        }
+      ]
+    },
+    {
+      "class_name": "MapoCollector",
+      "classification": "healthy_static_html",
+      "collection_method": "web_crawl",
+      "duration_ms": 307.64,
+      "evidence": [
+        "status=success",
+        "raw=6",
+        "normalized=6",
+        "parse_empty=0",
+        "request_failed=0"
+      ],
+      "last_collect_message": "마포구고용복지지원센터 collected 6 items from 1/1 urls; request_failed=0; parse_empty=0",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://mapoworkfare.or.kr/"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 6,
+      "playwright_probe_candidate": false,
+      "raw_count": 6,
+      "recommendation": "현재 정적 HTML 수집으로 동작한다. Playwright fallback 대상에서 제외한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 6,
+        "message": "Collected 6 rows; upsert skipped (raw_items=6, deduped_rows=6); collector_message=마포구고용복지지원센터 collected 6 items from 1/1 urls; request_failed=0; parse_empty=0",
+        "quality": {
+          "checked_rows": 6,
+          "issue_codes": {
+            "missing_provider": 6
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 6,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 6,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "source": "마포구고용복지지원센터",
+      "source_key": "mapo_workfare_center",
+      "source_type": "district_crawl",
+      "tier": 4,
+      "url_diagnostics": [
+        {
+          "item_count": 6,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://mapoworkfare.or.kr/"
+        }
+      ]
+    },
+    {
+      "class_name": "SeongdongCollector",
+      "classification": "partial_parse_empty_monitor",
+      "collection_method": "web_crawl",
+      "duration_ms": 3631.88,
+      "evidence": [
+        "status=success",
+        "raw=3",
+        "normalized=3",
+        "parse_empty=1",
+        "request_failed=0"
+      ],
+      "last_collect_message": "서울청년센터 성동 collected 3 items from 2/2 urls; request_failed=0; parse_empty=1",
+      "last_collect_status": "success",
+      "list_urls": [
+        "https://youth.seoul.go.kr/orang/cntr/program.do?key=2309210001&cntrId=CT00006",
+        "https://youth.seoul.go.kr/orang/cntr/notice.do?key=2309210001&cntrId=CT00006"
+      ],
+      "normalize_failed": 0,
+      "normalized_count": 3,
+      "playwright_probe_candidate": false,
+      "raw_count": 3,
+      "recommendation": "일부 URL은 비었지만 같은 source에서 수집 성공도 있다. Playwright 도입 전 빈 URL의 HTML snapshot/selector drift를 확인한다.",
+      "scheduler_dry_run": {
+        "deduped_row_count": 3,
+        "message": "Collected 3 rows; upsert skipped (raw_items=3, deduped_rows=3); collector_message=서울청년센터 성동 collected 3 items from 2/2 urls; request_failed=0; parse_empty=1",
+        "quality": {
+          "checked_rows": 3,
+          "issue_codes": {
+            "missing_provider": 3
+          },
+          "issue_counts": {
+            "error": 0,
+            "info": 3,
+            "warning": 0
+          },
+          "rows_with_errors": 0,
+          "rows_with_warnings": 0
+        },
+        "raw_count": 3,
+        "schema_id": "scheduler_source_summary_v1",
+        "schema_path": "docs/schemas/html-collector-scheduler-summary.schema.json",
+        "status": "dry_run"
+      },
+      "snapshot_capture": {
+        "saved_count": 1,
+        "saved_paths": [
+          "reports\\html-collector-snapshots-2026-04-24\\seongdong_youth_center-list-2-parse_empty.html"
+        ]
+      },
+      "source": "서울청년센터 성동",
+      "source_key": "seongdong_youth_center",
+      "source_type": "district_crawl",
+      "tier": 4,
+      "url_diagnostics": [
+        {
+          "item_count": 3,
+          "parse_status": "success",
+          "request_status": "success",
+          "url": "https://youth.seoul.go.kr/orang/cntr/program.do?key=2309210001&cntrId=CT00006"
+        },
+        {
+          "html_snapshot": {
+            "body_text_preview": "내 지역 센터 찾기 | 서울청년센터 본문영역 바로가기 메인메뉴 바로가기 하단링크 바로가기 주요메뉴 소개 서울청년센터는? 청년센터에서 준비 했어요! 소식ㆍ참여 공지사항 프로그램 신청 대관하기 동네정보퐁퐁 서울청년센터 자료집 청년지원정보 청년 상담 청년 상담 청년센터 찾기 내 지역 센터 찾기 문의 하기 로그인 모바일 메뉴 열기 모바일 메뉴 닫기 메인페이지로 이동 로그인 해주세요 청년센터 찾기 내 지역 센터 찾기 문의 하기 홈으로 이동 청년센터 찾기 소개 소식ㆍ참여 청년 상담 청년센터 찾기 내 지역 센터 찾기 내 지역 센터 찾기 문의 하기 내 지역 센터 찾기 공유하기 페이스북 트위터 카카오톡 닫기 프린트하기 서울청년센터 성동 서울청년센터 성동은 성동, 용산, 중구 권역 가까이, 청년 누구나 이용할 수 있는 곳입니",
+            "body_text_preview_truncated": true,
+            "form_tag_count": 2,
+            "html_length": 87594,
+            "html_preview_truncated": true,
+            "iframe_tag_count": 0,
+            "noscript_tag_count": 0,
+            "script_tag_count": 18,
+            "selector_matches": [
+              {
+                "match_count": 10,
+                "selector": "tbody tr"
+              },
+              {
+                "match_count": 24,
+                "selector": "a[onclick]"
+              },
+              {
+                "match_count": 1,
+                "selector": ".board"
+              },
+              {
+                "match_count": 0,
+                "selector": ".board-list"
+              }
+            ],
+            "selectors_checked": 4,
+            "selectors_with_matches": 3,
+            "title_text": "내 지역 센터 찾기 | 서울청년센터"
+          },
+          "item_count": 0,
+          "parse_status": "parse_empty",
+          "request_status": "success",
+          "snapshot_path": "reports\\html-collector-snapshots-2026-04-24\\seongdong_youth_center-list-2-parse_empty.html",
+          "url": "https://youth.seoul.go.kr/orang/cntr/notice.do?key=2309210001&cntrId=CT00006"
+        }
+      ]
+    }
+  ],
+  "started_at": "2026-04-24T00:12:03+0900",
+  "summary": {
+    "healthy_static_html": 12,
+    "partial_parse_empty_monitor": 2
+  }
+}
