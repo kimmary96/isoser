@@ -56,3 +56,4 @@ completed
 - cursor 조건과 region `or` 필터가 서로 덮어쓰는 문제를 다음 우선순위로 테스트/수정한다.
 - read model query builder를 별도 pure helper 모듈로 분리해 PostgREST params 조합 회귀를 더 작게 테스트한다.
 - offset 허용 정책을 browse pool 300 한정 decision으로 문서화하거나 cursor 기반 UX로 재전환한다.
+
