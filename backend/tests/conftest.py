@@ -22,7 +22,7 @@ import main  # noqa: E402
 
 @pytest.fixture
 def client(monkeypatch: pytest.MonkeyPatch) -> TestClient:
-    monkeypatch.setattr(main, "init_chroma", lambda: None)
+    monkeypatch.setattr(main, "init_chroma", lambda **_: None)
 
     with TestClient(main.app) as test_client:
         yield test_client

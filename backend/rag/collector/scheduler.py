@@ -78,14 +78,81 @@ class SupabaseClient:
             session.trust_env = False
             for index in range(0, len(rows), self.upsert_batch_size):
                 batch = rows[index : index + self.upsert_batch_size]
-                response = session.post(
+                response = self._post_program_batch(session, batch, headers, conflict_target="source_unique_key")
+                fallback_state = self._source_unique_key_fallback_state(response)
+                if fallback_state:
+                    fallback_batch = batch
+                    if fallback_state == "missing_column":
+                        fallback_batch = [
+                            {key: value for key, value in row.items() if key != "source_unique_key"}
+                            for row in batch
+                        ]
+                    response = self._post_program_batch(session, fallback_batch, headers, conflict_target="title,source")
+                if response.status_code == 409:
+                    self._upsert_rows_one_by_one(session, batch, headers)
+                    continue
+                response.raise_for_status()
+
+    def _post_program_batch(
+        self,
+        session: requests.Session,
+        batch: List[Dict],
+        headers: dict[str, str],
+        *,
+        conflict_target: str,
+    ) -> requests.Response:
+        return session.post(
+            f"{self.url}/rest/v1/programs",
+            params={"on_conflict": conflict_target},
+            json=batch,
+            headers=headers,
+            timeout=30,
+        )
+
+    def _upsert_rows_one_by_one(
+        self,
+        session: requests.Session,
+        rows: List[Dict],
+        headers: dict[str, str],
+    ) -> None:
+        for row in rows:
+            response = self._post_program_batch(session, [row], headers, conflict_target="source_unique_key")
+            fallback_state = self._source_unique_key_fallback_state(response)
+            if fallback_state:
+                if fallback_state == "missing_column":
+                    row = {key: value for key, value in row.items() if key != "source_unique_key"}
+                response = self._post_program_batch(session, [row], headers, conflict_target="title,source")
+            if response.status_code == 409 and row.get("hrd_id"):
+                response = session.patch(
                     f"{self.url}/rest/v1/programs",
-                    params={"on_conflict": "title,source"},
-                    json=batch,
+                    params={"hrd_id": f"eq.{row['hrd_id']}"},
+                    json=row,
                     headers=headers,
                     timeout=30,
                 )
-                response.raise_for_status()
+                if response.status_code == 409 and row.get("title") and row.get("source"):
+                    legacy_row = {key: value for key, value in row.items() if key != "hrd_id"}
+                    response = session.patch(
+                        f"{self.url}/rest/v1/programs",
+                        params={
+                            "title": f"eq.{row['title']}",
+                            "source": f"eq.{row['source']}",
+                        },
+                        json=legacy_row,
+                        headers=headers,
+                        timeout=30,
+                    )
+            response.raise_for_status()
+
+    def _source_unique_key_fallback_state(self, response: requests.Response) -> str | None:
+        if response.status_code != 400:
+            return None
+        text = response.text
+        if "source_unique_key" in text:
+            return "missing_column"
+        if "ON CONFLICT" in text or "on conflict" in text.lower():
+            return "unusable_conflict_target"
+        return None
 
 
 def _create_supabase_client() -> SupabaseClient:
@@ -136,9 +203,34 @@ def _maybe_skip_collector(collector) -> tuple[str, str] | None:
     return None
 
 
+DB_ALLOWED_CATEGORIES = {"AI", "IT", "디자인", "경영", "창업", "기타"}
+
+
+def _coerce_db_category(row: Dict) -> Dict:
+    category = str(row.get("category") or "").strip()
+    if category in DB_ALLOWED_CATEGORIES:
+        return row
+
+    title = str(row.get("title") or "")
+    if any(keyword in title for keyword in ("AI", "인공지능", "LLM", "ChatGPT", "생성형", "머신러닝", "딥러닝")):
+        row["category"] = "AI"
+    elif any(keyword in title for keyword in ("개발", "코딩", "프로그래밍", "SW", "소프트웨어", "클라우드", "데이터", "분석")):
+        row["category"] = "IT"
+    elif any(keyword in title for keyword in ("디자인", "영상", "콘텐츠", "그래픽", "UX", "UI", "일러스트", "포토샵")):
+        row["category"] = "디자인"
+    elif any(keyword in title for keyword in ("경영", "마케팅", "회계", "사무", "HR", "세무", "총무")):
+        row["category"] = "경영"
+    elif any(keyword in title for keyword in ("창업", "스타트업", "보육", "예비창업")):
+        row["category"] = "창업"
+    else:
+        row["category"] = "기타"
+    return row
+
+
 def _deduplicate_rows(rows: List[Dict]) -> List[Dict]:
     deduped: Dict[tuple[str, str], Dict] = {}
     for row in rows:
+        row = _coerce_db_category(row)
         title = str(row.get("title") or "").strip()
         source = str(row.get("source") or "").strip()
         if not title or not source:

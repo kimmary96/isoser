@@ -55,6 +55,22 @@ def _safe_text(value: Any) -> str:
     return str(value).strip() if value is not None else ""
 
 
+def _resolve_recruitment_deadline(program: Mapping[str, Any]) -> str | None:
+    close_date = program.get("close_date")
+    raw = close_date or program.get("deadline")
+    deadline = _safe_text(raw)
+    if not deadline:
+        return None
+
+    source_text = _safe_text(program.get("source")).casefold()
+    end_date = _safe_text(program.get("end_date"))
+    is_work24 = "고용24" in source_text or "work24" in source_text
+    if is_work24 and not close_date and end_date and deadline[:10] == end_date[:10]:
+        return None
+
+    return deadline
+
+
 def _program_document(program: Mapping[str, Any]) -> str:
     parts: list[str] = []
     for key in (
@@ -163,7 +179,7 @@ class ProgramsRAG:
     def _urgency_score(self, program: dict) -> float:
         from datetime import date
 
-        date_str = program.get("deadline") or program.get("end_date")
+        date_str = _resolve_recruitment_deadline(program)
         if not date_str:
             return 0.0
         try:
@@ -331,7 +347,7 @@ class ProgramsRAG:
             program_record = dict(program)
             from datetime import date
 
-            date_str = program_record.get("deadline") or program_record.get("end_date")
+            date_str = _resolve_recruitment_deadline(program_record)
             if date_str:
                 days_left = (date.fromisoformat(str(date_str)[:10]) - date.today()).days
             else:
@@ -339,6 +355,7 @@ class ProgramsRAG:
             matched_keywords, relevance_score = self._program_match_context(program_record, keywords)
             urgency_score = self._urgency_score(program_record)
             final_score = self._final_score(relevance_score, urgency_score)
+            program_record["deadline"] = date_str
             program_record["days_left"] = days_left
             program_record["similarity_score"] = relevance_score
             program_record["relevance_score"] = relevance_score
@@ -455,7 +472,7 @@ class ProgramsRAG:
             program_record = dict(program)
             from datetime import date
 
-            date_str = program_record.get("deadline") or program_record.get("end_date")
+            date_str = _resolve_recruitment_deadline(program_record)
             if date_str:
                 days_left = (date.fromisoformat(str(date_str)[:10]) - date.today()).days
             else:
@@ -463,6 +480,7 @@ class ProgramsRAG:
             urgency_score = self._urgency_score(program_record)
             semantic_score = self._semantic_score(result.score)
             final_score = self._final_score(semantic_score, urgency_score)
+            program_record["deadline"] = date_str
             program_record["days_left"] = days_left
             program_record["similarity_score"] = semantic_score
             program_record["relevance_score"] = semantic_score

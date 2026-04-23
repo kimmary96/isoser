@@ -15,6 +15,35 @@ def test_missing_program_column_name_parses_postgrest_schema_error() -> None:
     assert admin._missing_program_column_name(exc) == "is_certified"
 
 
+def test_normalize_program_row_does_not_copy_work24_end_date_to_deadline() -> None:
+    row = admin._normalize_program_row(
+        {
+            "hrd_id": "HRD-1",
+            "title": "고용24 훈련 과정",
+            "source": "고용24",
+            "start_date": "2026-05-01",
+            "end_date": "2026-06-30",
+        }
+    )
+
+    assert row["end_date"] == "2026-06-30"
+    assert row["deadline"] is None
+
+
+def test_normalize_program_row_keeps_distinct_work24_deadline() -> None:
+    row = admin._normalize_program_row(
+        {
+            "hrd_id": "HRD-1",
+            "title": "고용24 훈련 과정",
+            "source": "고용24",
+            "end_date": "2026-06-30",
+            "deadline": "2026-05-20",
+        }
+    )
+
+    assert row["deadline"] == "2026-05-20"
+
+
 @pytest.mark.asyncio
 async def test_upsert_program_payload_retries_without_missing_columns(monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[list[str]] = []

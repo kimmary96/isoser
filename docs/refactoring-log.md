@@ -1,5 +1,67 @@
 # 리팩토링 로그
 
+## 2026-04-23 프로필 주소 지역 필드 추가
+
+- 변경 파일
+  - `supabase/migrations/20260423100000_add_address_to_profiles.sql`
+  - `frontend/app/api/dashboard/profile/route.ts`
+  - `frontend/app/dashboard/profile/_components/profile-edit-modal.tsx`
+  - `frontend/app/dashboard/profile/_components/profile-hero-section.tsx`
+  - `frontend/app/dashboard/profile/_hooks/use-profile-page.ts`
+  - `frontend/app/dashboard/profile/page.tsx`
+  - `frontend/lib/types/index.ts`
+  - `docs/current-state.md`
+- 변경 내용
+  - `profiles`에 `address`, `region`, `region_detail` 컬럼을 추가하는 migration을 작성함
+  - 프로필 편집 모달에 주소 입력을 추가하고 저장 API에서 주소 텍스트를 시·도와 시·군·구 단위로 정규화해 함께 저장하도록 함
+  - 프로필 헤더에는 개인정보 노출을 줄이기 위해 원문 주소 대신 정규화된 지역 정보만 표시하도록 함
+- 보존한 동작
+  - 기존 이름, 희망 직무, 이메일, 전화번호, 포트폴리오, 프로필 이미지 저장 흐름은 유지함
+  - migration이 적용되지 않은 환경에서는 선택 프로필 컬럼을 제외하고 기존 프로필 저장이 이어지도록 fallback을 유지함
+- 리스크/후속 후보
+  - 주소 파싱은 사전 기반이므로 복잡한 주소나 해외 주소는 `region`이 비어 있을 수 있음
+  - 관련도 점수에 지역 가중치를 반영할 때는 서버 공용 `region_normalizer`로 분리하는 후속 리팩토링이 적합함
+
+## 2026-04-22 programs 상단 필터 바 개편
+
+- 변경 파일
+  - `frontend/app/(landing)/programs/page.tsx`
+  - `frontend/app/(landing)/programs/programs-filter-bar.tsx`
+  - `frontend/lib/api/backend.ts`
+  - `frontend/lib/types/index.ts`
+  - `backend/routers/programs.py`
+  - `backend/tests/test_programs_router.py`
+  - `supabase/migrations/20260422212000_add_programs_category_detail.sql`
+  - `docs/current-state.md`
+  - `reports/programs-filter-bar-redesign-result.md`
+- 변경 내용
+  - `/programs`의 기존 왼쪽 사이드 필터를 상단 검색 중심 필터 바로 재구성함
+  - 카테고리 선택은 기본 select 대신 참고 화면처럼 컬러 점, 선택 강조, 행 단위 항목을 가진 드롭다운 메뉴로 조정함
+  - 카테고리 메뉴는 `웹개발`, `모바일`, `데이터·AI`, `클라우드·보안`, `IoT·임베디드·반도체`, `게임·블록체인`, `기획·마케팅·기타`, `디자인·3D`, `프로젝트·취준·창업` 항목으로 구성하고 현재 API의 큰 분류에 매핑함
+  - 상단 필터 헤더의 `현재 결과` 요약 박스를 제거함
+  - `programs.category_detail` migration과 backend/frontend API 파라미터를 추가해 세부 카테고리를 별도 컬럼으로 필터링할 수 있게 함
+  - 카테고리 메뉴를 클라이언트 컴포넌트 상태로 전환해 항목 클릭 시 선택 표시와 hidden query 값이 즉시 바뀌게 함
+  - 카테고리, 온/오프라인, 지역, 정렬을 같은 커스텀 드롭다운 디자인으로 통일하고 항목 선택 시 메뉴가 즉시 닫히도록 변경함
+  - 운영 DB에 migration이 아직 적용되지 않은 환경에서는 backend가 `category_detail` 필터를 제거하고 큰 카테고리 필터로 fallback하도록 방어함
+  - 검색, 카테고리, 온/오프라인, 지역, 정렬을 1차 필터로 배치하고, 최근 마감 공고 포함은 추가 필터 영역으로 이동함
+  - 기존 백엔드가 지원하는 `teaching_methods`와 `sort=deadline|latest`를 URL query와 목록/count API 호출에 연결함
+  - 활성 필터 chip과 초기화 버튼을 상단 필터 바 안으로 모아 현재 조건이 더 잘 보이게 함
+- 보존한 동작
+  - 프로그램 카드 UI, 상세 보기 `/programs/[id]`, 비교 추가 `/compare?ids=`, 지원 링크 흐름은 유지함
+  - 기본값은 모집중 공고만 마감 임박순으로 노출하는 기존 정책을 유지함
+  - 지원되지 않는 비용순, 고급 추천 대상, 선발 절차 세부 필터는 UI에 추가하지 않음
+- 검증
+  - `frontend`: `npm run lint`
+  - `frontend`: `npx tsc --noEmit -p tsconfig.codex-check.json`
+  - `backend`: `backend\venv\Scripts\python.exe -m pytest backend\tests\test_programs_router.py -q`
+  - `agent-browser`: `http://localhost:3001/programs` 로드, Next 오류 overlay 없음, 필터/카드 주요 요소 렌더 확인
+  - `Invoke-WebRequest`: `http://localhost:3001/programs` 200 응답과 카테고리 메뉴 텍스트 포함 확인
+  - `Invoke-WebRequest`: `http://localhost:3000/programs` 200 응답, `현재 결과` 문구 제거, `웹개발`/`데이터·AI` 카테고리 텍스트 포함 확인
+  - `Invoke-WebRequest`: `http://localhost:3000/programs?category_detail=data-ai` 200 응답과 `카테고리: 데이터·AI` 활성 chip 확인
+- 추가 리팩토링 후보
+  - 운영 데이터에 `cost`, `support_type`, `source` 기반 필터를 안정적으로 쿼리할 수 있게 백엔드 계약을 확장한 뒤 UI에 단계적으로 추가
+  - 프로그램 카드 렌더링을 별도 `ProgramCard` 컴포넌트로 분리해 `page.tsx` 길이를 더 줄이기
+
 # 2026-04-22 고용24/K-Startup 수집 필드 매핑 보강
 
 - 변경 파일
@@ -2367,7 +2429,66 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-22: `frontend/app/(landing)/landing-c/page.tsx`, `docs/current-state.md`
   - landing-c의 기존 Journey 섹션을 제거하고 Circular flow 섹션을 해당 위치로 이동해 흐름 설명 섹션 중복을 줄임
   - Opportunity feed 다음에는 Career Asset Workspace가 바로 이어지고, 기능 미리보기 뒤에 Circular flow가 노출되도록 section order를 정리함
+- 2026-04-22: `frontend/components/landing/LandingHeader.tsx`, `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/[id]/page.tsx`, `frontend/app/(landing)/compare/page.tsx`, `frontend/app/(landing)/landing-b/page.tsx`, `frontend/app/dashboard/layout.tsx`, `docs/current-state.md`
+  - landing-c에서 쓰는 공통 `LandingHeader`를 프로그램 목록, 프로그램 상세, 비교, landing-b, 대시보드 레이아웃에도 적용해 상단 헤더 UI를 통일함
+  - `LandingHeader`에 자체 CSS 변수 fallback을 추가해 landing-c가 아닌 화면에서도 동일한 색상/보더/CTA 스타일을 유지하도록 보강함
+  - 대시보드 사이드바 sticky offset과 높이 계산을 단일 공통 헤더 높이에 맞춰 조정하고, 구형 `LandingATickerBar`/`LandingANavBar` 직접 렌더링을 제거함
 - 2026-04-22: `backend/rag/collector/work24_detail_parser.py`, `scripts/program_backfill.py`, `backend/tests/test_program_backfill.py`, `docs/current-state.md`
   - `program_backfill.py` 안에 있던 고용24 상세 HTML 파싱 책임을 `work24_detail_parser.py`로 분리함
   - 백필 스크립트는 source URL과 title을 넘겨 상세 필드 dict를 받아 `SourceRecord`로 감싸는 역할만 남겨 책임을 줄임
   - 기존 고용24 상세 fallback 테스트는 새 파서 모듈의 HTTP mock 경로를 사용하도록 갱신해 동작 유지 여부를 확인함
+- 2026-04-22: `backend/rag/collector/base_api_collector.py`, `backend/rag/collector/work24_collector.py`, `backend/rag/collector/program_field_mapping.py`, `backend/rag/collector/scheduler.py`, `backend/routers/programs.py`, `supabase/migrations/20260422190000_add_programs_source_unique_key.sql`
+  - 고용24 collector를 고정 page limit 대신 OpenAPI `scn_cnt` 기반 full sync로 전환해 수집 범위 밖 기관명 검색 누락을 줄임
+  - 고용24/K-Startup normalized row에 `source_unique_key`를 추가하고, scheduler는 이 키를 우선 upsert 기준으로 사용하며 migration 미적용 운영 DB에서는 legacy conflict fallback으로 저장을 계속하도록 보강함
+  - `/programs?q=` 검색은 Supabase 1,000건 반환 제한을 고려해 후보를 페이지 조회하고, title/provider/description/location/tags/compare_meta 순서로 null-safe 부분 검색 및 정렬하도록 확장함
+- 2026-04-22: `frontend/app/(landing)/programs/[id]/page.tsx`, `frontend/app/(landing)/programs/[id]/program-detail-client.tsx`
+  - 프로그램 상세 페이지를 서버 데이터 fetch와 클라이언트 상세 UI로 분리하고, 실제 `ProgramDetail` 값이 있는 섹션만 Hero, 탭, 본문/사이드바, 빠른 목차, 북마크/공유 UI에 표시하도록 정리함
+- 2026-04-22: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `supabase/migrations/20260422203000_add_programs_search_text_index.sql`, `docs/current-state.md`
+  - 프로그램 검색 후속으로 `programs.search_text` generated column과 trigram index migration을 추가해 title/provider/description/location/tags/skills/target/compare_meta 통합 검색 후보를 DB에서 먼저 줄일 수 있게 함
+  - 백엔드 `/programs?q=`는 `search_text.ilike`를 우선 사용하되, 아직 migration이 적용되지 않은 환경에서는 기존 1,000건 단위 후보 scan으로 자동 fallback하도록 보강함
+  - 기존 검색 결과 우선순위와 null-safe Python 정렬은 유지하고, 검색 인덱스 사용 및 fallback 동작을 `backend/tests/test_programs_router.py`로 고정함
+- 2026-04-22: `backend/routers/programs.py`, `backend/rag/programs_rag.py`, `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/[id]/program-detail-client.tsx`, `frontend/app/(landing)/landing-c/page.tsx`, `frontend/app/dashboard/page.tsx`, `frontend/components/MiniCalendar.tsx`, `backend/tests/test_programs_router.py`, `reports/TASK-2026-04-22-1900-program-dday-deadline-result.md`
+  - 프로그램 카드/상세/대시보드/추천 캘린더의 D-day 기준을 모집 마감일(`close_date` 또는 `deadline`)로 통일하고, 프론트의 `end_date` fallback을 제거함
+  - 고용24에서 훈련 종료일이 `deadline`과 같은 값으로 저장된 row는 모집 마감일로 보지 않고 D-day 계산에서 제외하도록 방어함
+  - 훈련/운영 기간 표시는 기존대로 `start_date`/`end_date`를 유지하고, backend router 회귀 테스트와 frontend lint/typecheck로 검증함
+- 2026-04-22: `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/programs-filter-bar.tsx`, `frontend/lib/api/backend.ts`, `frontend/lib/types/index.ts`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `supabase/migrations/20260422213000_add_programs_cost_time_filters.sql`, `docs/current-state.md`, `reports/programs-filter-bar-redesign-result.md`
+  - 프로그램 상단 필터에 시·도 지역, 비용, 참여 시간 다중 선택 드롭다운을 추가하고 URL query와 목록/count API 파라미터에 연결함
+  - 비용은 `내일배움카드`, `무료(내배카 X)`, `유료`, 참여 시간은 `파트타임`, `풀타임`으로 분류하며, DB 컬럼이 없는 환경에서도 기존 row의 비용/지원/기간/텍스트 정보를 기준으로 backend에서 보수적으로 필터링하도록 함
+  - 운영 DB 적용용 `cost_type`, `participation_time` migration과 trigger/index를 추가하고, 기존 카드 리스트와 상세 보기 흐름은 유지함
+- 2026-04-22: `backend/rag/collector/program_field_mapping.py`, `backend/routers/admin.py`, `scripts/program_backfill.py`, `backend/tests/test_work24_kstartup_field_mapping.py`, `backend/tests/test_admin_router.py`, `backend/tests/test_program_backfill.py`, `reports/TASK-2026-04-22-1915-work24-deadline-source-separation-result.md`
+  - 고용24 `traEndDate`를 `raw_deadline`으로 넘기지 않고 `end_date`와 `compare_meta.training_end_date`로만 보존하도록 분리함
+  - 관리자 sync도 별도 `deadline`/`close_date`가 없으면 고용24 `deadline=end_date`를 저장하지 않도록 수정함
+  - 운영 DB의 기존 의심 row를 직접 수정하지 않고 `scripts/program_backfill.py --work24-deadline-audit` dry-run 리포트로 먼저 식별하도록 추가함
+- 2026-04-22: `backend/main.py`, `backend/rag/chroma_client.py`, `backend/tests/test_chroma_client.py`, `backend/tests/test_main_chroma_startup.py`, `docs/current-state.md`, `reports/backend-startup-chroma-quota-result.md`
+  - `CHROMA_MODE=ephemeral` 로컬 개발 모드에서는 기본 startup seed를 생략해 서버 기동이 Gemini embedding quota 초과 재시도에 묶이지 않도록 조정함
+  - Gemini embedding 429를 한 번 감지하면 같은 프로세스의 이후 embedding function도 즉시 local deterministic fallback을 사용하도록 전역 fallback 플래그를 추가함
+  - 필요 시 `ISOSER_CHROMA_SEED_ON_STARTUP=true`, `ISOSER_EMBEDDING_LOCAL_FALLBACK=true`로 운영/개발 동작을 명시 override할 수 있게 함
+- 2026-04-23: `frontend/app/(landing)/compare/page.tsx`, `frontend/app/(landing)/compare/programs-compare-client.tsx`, `frontend/app/(landing)/compare/compare-table-sections.tsx`, `frontend/app/(landing)/compare/compare-relevance-section.tsx`, `docs/current-state.md`, `reports/compare-page-detail-fields-result.md`
+  - 비교 페이지가 목록용 `Program`만 쓰던 구조에서 상세 API `ProgramDetail`을 함께 조회해 비용, 지원금, 지원 대상, 정원, 만족도, 문의 같은 공통 상세 필드를 표에 반영하도록 개선함
+  - 비교 표를 기본 정보, 일정, 비용·지원, 대상·모집, 소개로 재구성하고, 상세 API 실패 시 기존 목록 필드 fallback으로 화면이 유지되도록 함
+  - `programs.skills`가 운영 DB에서 비어 있을 수 있는 현실을 반영해 AI 적합도와 표 라벨을 기술 스택/스킬 확정 표현 대신 프로필 키워드/수집 키워드 중심으로 완화함
+- 2026-04-23: `backend/routers/programs.py`, `backend/rag/collector/program_field_mapping.py`, `backend/rag/collector/normalizer.py`, `frontend/lib/api/backend.ts`, `frontend/lib/types/index.ts`, `frontend/app/(landing)/compare/page.tsx`, `frontend/app/(landing)/compare/compare-relevance-section.tsx`, `backend/tests/conftest.py`, `backend/tests/test_programs_router.py`, `backend/tests/test_work24_kstartup_field_mapping.py`, `docs/current-state.md`
+  - 비교 페이지 상세 호출 리스크를 줄이기 위해 `POST /programs/details/batch`를 추가하고, 프론트 비교 페이지는 상세 정보를 슬롯별 단건 호출 대신 batch로 조회하도록 변경함
+  - compare relevance 응답에 `region_match_score`, `matched_regions`를 추가해 주소/지역 기반 신호를 기술 키워드와 분리해 표시함
+  - 고용24/K-Startup mapping과 normalizer에 보수적인 `skills` 추출/저장 흐름을 추가해 `programs.skills`가 계속 비어 남는 문제를 줄임
+- 2026-04-23: `backend/routers/programs.py`, `backend/rag/collector/regional_html_collectors.py`, `frontend/app/(landing)/compare/page.tsx`, `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/program-card.tsx`, `frontend/app/(landing)/programs/programs-filter-bar.tsx`, `frontend/app/(landing)/programs/recommended-programs-section.tsx`, `frontend/app/api/dashboard/bookmarks/[programId]/route.ts`, `frontend/app/api/dashboard/recommended-programs/route.ts`, `frontend/lib/api/backend.ts`, `frontend/lib/types/index.ts`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `reports/compare-page-detail-fields-result.md`
+  - 비교 페이지 기본 프로그램 조회도 `POST /programs/batch`로 통합해 상세/기본 조회 모두 batch 경로를 사용하도록 정리함
+  - 지역 매칭을 문자열 포함 수준에서 시/도 정규화, 인접권역, 온라인/혼합형 판정으로 보강하고 `score_breakdown`, `relevance_reasons`, `relevance_grade`, `relevance_badge`를 relevance/recommend 응답에 추가함
+  - `/programs`를 맞춤 추천, 마감 임박, 전체 프로그램 섹션으로 나누고, 목록 카드는 상세 이동 본문과 BFF 경유 찜 버튼만 남기는 구조로 조정함
+  - 후속으로 선발 절차/채용 연계 필터를 텍스트 fallback 기반으로 추가하고, 스킬 키워드 사전을 보안/모바일/게임/반도체 등으로 확장함
+  - 목록/추천 카드 초기 렌더링 시 기존 `program_bookmarks`를 서버에서 읽어 찜 별 상태가 비어 보이지 않도록 prefetch를 추가함
+- 2026-04-23: `backend/rag/collector/program_field_mapping.py`, `backend/rag/collector/normalizer.py`, `backend/tests/test_work24_kstartup_field_mapping.py`
+  - 고용24/K-Startup mapping에서 제목, 설명, 대상, NCS 코드 기반의 보수적 skill keyword 후보를 추출해 `programs.skills`가 항상 비어 있지 않도록 보강함
+  - normalizer가 `skills` 입력을 중복 제거된 문자열 배열로 정리하도록 추가하고, Work24/K-Startup mapping 테스트로 기대 skill 후보를 고정함
+- 2026-04-23: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/lib/types/index.ts`
+  - compare relevance 응답에 `region_match_score`, `matched_regions`를 추가하고, 프로필 지역 정보가 있을 때만 지역 일치 신호를 관련도에 보수적으로 반영하도록 함
+  - 프로필 지역 정보가 없는 기존 사용자의 관련도 점수는 기존 계산값을 유지하도록 회귀 테스트로 고정함
+- 2026-04-23: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `reports/TASK-2026-04-23-0556-address-field-and-region-matching-result.md`
+  - 지역 매칭에서 명시 `teaching_method`를 먼저 판정하고, 온라인+오프라인/지역명 조합은 혼합형으로 분류하도록 보강함
+  - 주소 미입력 프로필의 `score_breakdown`은 지역 가중치를 제외한 임시 가중치로 계산하고, 주소가 있는 프로필은 최종 지역 가중치를 유지하도록 테스트 기대값을 추가함
+- 2026-04-23: `frontend/app/(landing)/programs/bookmark-state-provider.tsx`, `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/program-card.tsx`, `docs/current-state.md`, `reports/compare-page-detail-fields-result.md`
+  - `/programs` 화면에 program id 기준 bookmark state provider를 추가해 맞춤 추천, 마감 임박, 전체 프로그램에 같은 카드가 중복 노출될 때 찜 상태가 즉시 동기화되도록 함
+  - `ProgramCard`는 provider가 없는 위치에서는 기존 `initialBookmarked` 기반 로컬 상태로 계속 동작하게 해 재사용 범위의 기존 동작을 유지함
+- 2026-04-23: `frontend/app/(landing)/programs/page.tsx`, `reports/TASK-2026-04-23-0557-programs-listing-page-restructure-result.md`
+  - 프로그램 목록의 비용 active filter chip 제거 URL이 운영 기관, 추천 대상, 선발 절차, 채용 연계 필터를 함께 보존하도록 보완함
+  - `/programs` 구조 개편 잔여 보완 결과와 검증 결과를 task result report로 기록함

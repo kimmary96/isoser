@@ -1,6 +1,8 @@
 from scripts.program_backfill import (
     build_patch,
+    build_work24_deadline_audit_report,
     fetch_work24_record_from_detail_url,
+    is_work24_deadline_copied_from_end_date,
     kstartup_key,
     sesac_key,
     work24_key,
@@ -43,6 +45,52 @@ def test_work24_key_falls_back_to_training_url_params() -> None:
     }
 
     assert work24_key(row) == "work24:url:AIG202500001:2:5000"
+
+
+def test_detects_work24_deadline_copied_from_training_end_date() -> None:
+    assert is_work24_deadline_copied_from_end_date(
+        {
+            "source": "고용24",
+            "deadline": "2026-06-30",
+            "end_date": "2026-06-30",
+        }
+    )
+    assert not is_work24_deadline_copied_from_end_date(
+        {
+            "source": "K-Startup 창업진흥원",
+            "deadline": "2026-06-30",
+            "end_date": "2026-06-30",
+        }
+    )
+
+
+def test_work24_deadline_audit_report_is_dry_run(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "scripts.program_backfill.fetch_work24_deadline_audit_rows",
+        lambda limit: [
+            {
+                "id": "program-1",
+                "title": "고용24 의심 과정",
+                "source": "고용24",
+                "deadline": "2026-06-30",
+                "end_date": "2026-06-30",
+            },
+            {
+                "id": "program-2",
+                "title": "고용24 정상 과정",
+                "source": "고용24",
+                "deadline": "2026-05-20",
+                "end_date": "2026-06-30",
+            },
+        ],
+    )
+
+    report = build_work24_deadline_audit_report(limit=10)
+
+    assert report["mode"] == "dry-run"
+    assert report["candidate_count"] == 2
+    assert report["suspect_count"] == 1
+    assert report["items"][0]["recommended_patch"] == {"deadline": None}
 
 
 def test_sesac_key_uses_course_id_before_cleaned_title() -> None:

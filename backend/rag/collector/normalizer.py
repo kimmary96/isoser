@@ -50,11 +50,13 @@ def normalize(raw_item: Dict) -> Optional[Dict]:
         "location": _clean_optional(raw_item.get("location")),
         "provider": _clean_optional(raw_item.get("provider")),
         "description": _clean_optional(raw_item.get("description")),
+        "skills": _clean_text_list(raw_item.get("skills")),
         "start_date": _parse_deadline(raw_item.get("start_date", "")),
         "end_date": _parse_deadline(raw_item.get("end_date", "")),
         "cost": _to_int(raw_item.get("cost")),
         "subsidy_amount": _to_int(raw_item.get("subsidy_amount")),
         "source_url": _clean_optional(raw_item.get("source_url")),
+        "source_unique_key": _clean_optional(raw_item.get("source_unique_key")),
         "compare_meta": _clean_compare_meta(raw_item.get("compare_meta")),
     }
     for key, value in optional_fields.items():
@@ -68,6 +70,26 @@ def _clean_optional(value: Any) -> Optional[str]:
         return None
     text = str(value).strip()
     return text or None
+
+
+def _clean_text_list(value: Any) -> list[str] | None:
+    if value is None:
+        return None
+    if isinstance(value, list):
+        source_items = value
+    else:
+        source_items = str(value).split(",")
+
+    items: list[str] = []
+    seen: set[str] = set()
+    for item in source_items:
+        text = str(item).strip()
+        if not text or text in seen:
+            continue
+        seen.add(text)
+        items.append(text)
+
+    return items or None
 
 
 def _to_int(value: Any) -> int | None:

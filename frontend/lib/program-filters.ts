@@ -11,7 +11,6 @@ export const PROGRAM_FILTER_CHIPS = [
   "서울",
   "경기",
   "온라인",
-  "국비100%",
 ];
 
 export const PROGRAM_CATEGORY_FILTER_MAP: Record<string, string> = {
@@ -52,10 +51,5 @@ export function buildProgramFilterParams(activeChip: string, keyword: string, li
     return params;
   }
 
-  if (activeChip === "국비100%") {
-    params.q = keyword ? `${keyword} 국비 100%` : "국비 100%";
-  }
-
   return params;
 }
-

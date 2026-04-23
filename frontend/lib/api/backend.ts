@@ -14,8 +14,10 @@ import type {
   MatchResult,
   ParsePdfResponse,
   Program,
+  ProgramBatchResponse,
   ProgramCountResponse,
   ProgramDetail,
+  ProgramDetailBatchResponse,
   ProgramListParams,
   ProgramRecommendResponse,
   SkillSuggestResponse,
@@ -231,13 +233,32 @@ export async function listPrograms(params?: ProgramListParams): Promise<Program[
   const searchParams = new URLSearchParams();
   if (params?.q) searchParams.set("q", params.q);
   if (params?.category) searchParams.set("category", params.category);
+  if (params?.category_detail) searchParams.set("category_detail", params.category_detail);
   if (params?.scope) searchParams.set("scope", params.scope);
   if (params?.region_detail) searchParams.set("region_detail", params.region_detail);
   if (params?.regions?.length) {
     params.regions.forEach((region) => searchParams.append("regions", region));
   }
+  if (params?.sources?.length) {
+    params.sources.forEach((source) => searchParams.append("sources", source));
+  }
   if (params?.teaching_methods?.length) {
     params.teaching_methods.forEach((method) => searchParams.append("teaching_methods", method));
+  }
+  if (params?.cost_types?.length) {
+    params.cost_types.forEach((costType) => searchParams.append("cost_types", costType));
+  }
+  if (params?.participation_times?.length) {
+    params.participation_times.forEach((time) => searchParams.append("participation_times", time));
+  }
+  if (params?.targets?.length) {
+    params.targets.forEach((target) => searchParams.append("targets", target));
+  }
+  if (params?.selection_processes?.length) {
+    params.selection_processes.forEach((process) => searchParams.append("selection_processes", process));
+  }
+  if (params?.employment_links?.length) {
+    params.employment_links.forEach((link) => searchParams.append("employment_links", link));
   }
   if (params?.recruiting_only) searchParams.set("recruiting_only", "true");
   if (params?.include_closed_recent) searchParams.set("include_closed_recent", "true");
@@ -259,13 +280,32 @@ export async function getProgramCount(params?: ProgramListParams): Promise<numbe
   const searchParams = new URLSearchParams();
   if (params?.q) searchParams.set("q", params.q);
   if (params?.category) searchParams.set("category", params.category);
+  if (params?.category_detail) searchParams.set("category_detail", params.category_detail);
   if (params?.scope) searchParams.set("scope", params.scope);
   if (params?.region_detail) searchParams.set("region_detail", params.region_detail);
   if (params?.regions?.length) {
     params.regions.forEach((region) => searchParams.append("regions", region));
   }
+  if (params?.sources?.length) {
+    params.sources.forEach((source) => searchParams.append("sources", source));
+  }
   if (params?.teaching_methods?.length) {
     params.teaching_methods.forEach((method) => searchParams.append("teaching_methods", method));
+  }
+  if (params?.cost_types?.length) {
+    params.cost_types.forEach((costType) => searchParams.append("cost_types", costType));
+  }
+  if (params?.participation_times?.length) {
+    params.participation_times.forEach((time) => searchParams.append("participation_times", time));
+  }
+  if (params?.targets?.length) {
+    params.targets.forEach((target) => searchParams.append("targets", target));
+  }
+  if (params?.selection_processes?.length) {
+    params.selection_processes.forEach((process) => searchParams.append("selection_processes", process));
+  }
+  if (params?.employment_links?.length) {
+    params.employment_links.forEach((link) => searchParams.append("employment_links", link));
   }
   if (params?.recruiting_only) searchParams.set("recruiting_only", "true");
   if (params?.include_closed_recent) searchParams.set("include_closed_recent", "true");
@@ -291,6 +331,21 @@ export async function getProgram(programId: string): Promise<Program> {
   );
 }
 
+export async function getPrograms(programIds: string[]): Promise<Program[]> {
+  const response = await requestJson<ProgramBatchResponse>(
+    "/programs/batch",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ program_ids: programIds }),
+    },
+    "Failed to load programs."
+  );
+  return response.items;
+}
+
 export async function getProgramDetail(programId: string): Promise<ProgramDetail> {
   return requestJson<ProgramDetail>(
     `/programs/${programId}/detail`,
@@ -299,6 +354,21 @@ export async function getProgramDetail(programId: string): Promise<ProgramDetail
     },
     "Failed to load the program detail."
   );
+}
+
+export async function getProgramDetails(programIds: string[]): Promise<ProgramDetail[]> {
+  const response = await requestJson<ProgramDetailBatchResponse>(
+    "/programs/details/batch",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ program_ids: programIds }),
+    },
+    "Failed to load program details."
+  );
+  return response.items;
 }
 
 export async function recommendPrograms(

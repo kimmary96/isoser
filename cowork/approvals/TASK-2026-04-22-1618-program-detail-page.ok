@@ -1,0 +1,5 @@
+approved_by: local:codex
+approved_by_name: Codex manual fallback after Slack timeout
+approved_at: 2026-04-22T16:32:00+09:00
+target: inbox
+source: local-manual-approval-after-slack-timeout

@@ -73,6 +73,7 @@ def _normalize_program_row(row: dict[str, Any]) -> dict[str, Any]:
     provider = provider_name or str(row.get("provider") or "").strip() or None
     end_date = str(row.get("end_date") or "").strip() or None
     start_date = str(row.get("start_date") or "").strip() or None
+    deadline = _normalize_program_deadline(row, end_date)
     target_text = str(row.get("target") or "").strip()
     target = [target_text] if target_text else []
     category = str(row.get("category_label") or "").strip() or str(row.get("category") or "").strip()
@@ -80,28 +81,52 @@ def _normalize_program_row(row: dict[str, Any]) -> dict[str, Any]:
     support_type = str(row.get("support_type") or "").strip() or None
     teaching_method = str(row.get("teaching_method") or "").strip() or None
     raw_data = row.get("raw")
+    source_unique_key = str(row.get("source_unique_key") or "").strip() or None
+    if not source_unique_key and hrd_id:
+        source_unique_key = f"work24:{hrd_id}"
 
     return {
         "hrd_id": hrd_id,
         "title": title,
-        "category": category or _classify_category(title),
+        "category": _coerce_program_category(category or _classify_category(title), title),
         "location": str(row.get("location") or "").strip() or None,
         "provider": provider,
         "description": description,
         "start_date": start_date,
         "end_date": end_date,
-        "deadline": end_date,
+        "deadline": deadline,
         "cost": row.get("cost"),
         "subsidy_amount": row.get("subsidy_amount"),
         "target": target or None,
         "source_url": str(row.get("source_url") or "").strip() or None,
         "source": str(row.get("source") or "").strip() or "고용24",
+        "source_unique_key": source_unique_key,
         "support_type": support_type,
         "teaching_method": teaching_method,
         "is_certified": bool(row.get("is_certified")),
         "raw_data": raw_data if isinstance(raw_data, dict) else None,
         "is_active": True,
     }
+
+
+def _normalize_program_deadline(row: dict[str, Any], end_date: str | None) -> str | None:
+    raw_deadline = str(row.get("deadline") or row.get("close_date") or "").strip() or None
+    if not raw_deadline:
+        return None
+
+    source_text = str(row.get("source") or "고용24").casefold()
+    is_work24 = "고용24" in source_text or "work24" in source_text
+    if is_work24 and end_date and raw_deadline[:10] == end_date[:10]:
+        return None
+    return raw_deadline
+
+
+def _coerce_program_category(category: str, title: str) -> str:
+    normalized = str(category or "").strip()
+    if normalized in {"AI", "IT", "디자인", "경영", "창업", "기타"}:
+        return normalized
+    classified = _classify_category(title)
+    return classified if classified in {"AI", "IT", "디자인", "경영", "창업", "기타"} else "기타"
 
 
 def _deduplicate_program_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -135,9 +160,25 @@ def _unique_constraint_name(exc: HTTPException) -> str | None:
 
 
 async def _find_existing_program_id(row: dict[str, Any]) -> str | None:
+    source_unique_key = str(row.get("source_unique_key") or "").strip()
     hrd_id = str(row.get("hrd_id") or "").strip()
     title = str(row.get("title") or "").strip()
     source = str(row.get("source") or "").strip()
+
+    if source_unique_key:
+        rows = await request_supabase(
+            method="GET",
+            path="/rest/v1/programs",
+            params={
+                "select": "id",
+                "source_unique_key": f"eq.{source_unique_key}",
+                "limit": "1",
+            },
+        )
+        if isinstance(rows, list) and rows:
+            existing_id = str(rows[0].get("id") or "").strip()
+            if existing_id:
+                return existing_id
 
     if hrd_id:
         rows = await request_supabase(
@@ -175,7 +216,7 @@ async def _find_existing_program_id(row: dict[str, Any]) -> str | None:
 
 async def _upsert_single_program_row(row: dict[str, Any]) -> list[dict[str, Any]]:
     candidate = dict(row)
-    conflict_target = "hrd_id"
+    conflict_target = "source_unique_key" if candidate.get("source_unique_key") else "hrd_id"
     existing_id = await _find_existing_program_id(candidate)
     if existing_id:
         candidate["id"] = existing_id
@@ -191,6 +232,11 @@ async def _upsert_single_program_row(row: dict[str, Any]) -> list[dict[str, Any]
         )
         return rows if isinstance(rows, list) else []
     except HTTPException as exc:
+        missing_column = _missing_program_column_name(exc)
+        if missing_column and missing_column in candidate:
+            candidate.pop(missing_column, None)
+            conflict_target = "hrd_id" if conflict_target == missing_column else conflict_target
+            return await _upsert_single_program_row(candidate)
         unique_constraint = _unique_constraint_name(exc)
         if unique_constraint != "programs_unique" or conflict_target == "title,source":
             raise
@@ -224,7 +270,7 @@ async def _upsert_program_payload_row_by_row(payload: list[dict[str, Any]]) -> l
 async def _upsert_program_payload(payload: list[dict[str, Any]]) -> list[dict[str, Any]]:
     working_payload = [dict(row) for row in payload]
     skipped_columns: list[str] = []
-    conflict_target = "hrd_id"
+    conflict_target = "source_unique_key" if any(row.get("source_unique_key") for row in working_payload) else "hrd_id"
 
     while True:
         try:
@@ -267,6 +313,8 @@ async def _upsert_program_payload(payload: list[dict[str, Any]]) -> list[dict[st
                 {key: value for key, value in row.items() if key != missing_column}
                 for row in working_payload
             ]
+            if missing_column == conflict_target:
+                conflict_target = "hrd_id"
 
             log_event(
                 logger,

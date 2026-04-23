@@ -7,6 +7,7 @@ from urllib.request import Request, urlopen
 from bs4 import BeautifulSoup, Tag
 
 from .base_html_collector import BaseHtmlCollector
+from .program_field_mapping import extract_skill_keywords
 
 
 def _text(node: Tag | None) -> str:
@@ -263,6 +264,7 @@ class SesacCollector(BaseHtmlCollector):
                     item["location"] = location
                 item["provider"] = self.source_name
                 item["description"] = self._clean_live_title(title, raw_text)
+                item["skills"] = extract_skill_keywords(title, raw_text)
                 item["cost"] = 0
                 items.append(item)
         return items

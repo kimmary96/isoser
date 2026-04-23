@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
-import { LandingANavBar, LandingATickerBar } from "@/app/(landing)/landing-a/_components";
-import { getProgram, listPrograms } from "@/lib/api/backend";
+import { LandingHeader } from "@/components/landing/LandingHeader";
+import { getProgramDetails, getPrograms, listPrograms } from "@/lib/api/backend";
 import { getSiteUrl } from "@/lib/seo";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Program } from "@/lib/types";
 
 import ProgramsCompareClient from "./programs-compare-client";
+import type { CompareProgram } from "./compare-table-sections";
 
 export const metadata: Metadata = {
   title: "취업 지원 프로그램 비교 | 이소서",
@@ -76,28 +77,43 @@ function parseRequestedIds(value?: string | string[]) {
   };
 }
 
-async function getOptionalProgram(programId: string | null): Promise<Program | null> {
-  if (!programId) {
-    return null;
-  }
-
-  try {
-    return await getProgram(programId);
-  } catch {
-    return null;
-  }
-}
-
 export default async function ProgramsComparePage({ searchParams }: ProgramsComparePageProps) {
   const resolvedSearchParams = await searchParams;
   const { slotIds, needsNormalization: parsedNeedsNormalization } = parseRequestedIds(resolvedSearchParams.ids);
 
-  const slotPrograms = await Promise.all(slotIds.map((programId) => getOptionalProgram(programId)));
-  const activePrograms = slotPrograms.filter((program): program is Program => program !== null);
+  const requestedProgramIds = slotIds.filter((programId): programId is string => Boolean(programId));
+  const programsById = new Map<string, CompareProgram>();
+  if (requestedProgramIds.length > 0) {
+    try {
+      const items = await getPrograms(requestedProgramIds);
+      items.forEach((program) => {
+        if (typeof program.id === "string") programsById.set(program.id, program);
+      });
+    } catch {
+      // Keep invalid or unavailable slots empty.
+    }
+  }
+  const slotPrograms = slotIds.map((programId) => (programId ? programsById.get(programId) ?? null : null));
+  const activePrograms = slotPrograms.filter((program): program is CompareProgram => program !== null);
   const canonicalIds = activePrograms
     .map((program) => (typeof program.id === "string" ? program.id : null))
     .filter((programId): programId is string => Boolean(programId));
   const needsNormalization = parsedNeedsNormalization || canonicalIds.length !== slotIds.filter(Boolean).length;
+  const detailsById = new Map<string, CompareProgram["detail"]>();
+  if (canonicalIds.length > 0) {
+    try {
+      const detailItems = await getProgramDetails(canonicalIds);
+      detailItems.forEach((detail) => {
+        if (typeof detail.id === "string") detailsById.set(detail.id, detail);
+      });
+    } catch {
+      // Detail fields are additive for compare; keep the page renderable with list data.
+    }
+  }
+  const enrichedSlotPrograms = slotPrograms.map((program) => {
+    if (!program || typeof program.id !== "string") return program;
+    return { ...program, detail: detailsById.get(program.id) ?? null };
+  });
 
   let suggestions: Program[] = [];
   let suggestionsError: string | null = null;
@@ -128,10 +144,9 @@ export default async function ProgramsComparePage({ searchParams }: ProgramsComp
 
   return (
     <>
-      <LandingATickerBar />
-      <LandingANavBar />
+      <LandingHeader />
       <ProgramsCompareClient
-        initialSlots={slotPrograms}
+        initialSlots={enrichedSlotPrograms}
         canonicalIds={canonicalIds}
         needsNormalization={needsNormalization}
         suggestions={suggestions}

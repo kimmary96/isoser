@@ -85,8 +85,10 @@ class FakeClient:
 def isolate_chroma_manager() -> None:
     manager = get_chroma_manager()
     manager.reset()
+    GeminiEmbeddingFunction._global_force_local_fallback = False
     yield
     manager.reset()
+    GeminiEmbeddingFunction._global_force_local_fallback = False
 
 
 def _attach_fake_client() -> FakeClient:
@@ -207,3 +209,42 @@ def test_gemini_embedding_function_uses_local_fallback_after_rate_limit(monkeypa
     assert len(vectors) == 2
     assert len(vectors[0]) == 3072
     assert any(value != 0 for value in vectors[0])
+
+
+def test_gemini_embedding_rate_limit_enables_process_local_fallback(monkeypatch: pytest.MonkeyPatch) -> None:
+    del monkeypatch
+    first_embedding_fn = object.__new__(GeminiEmbeddingFunction)
+    first_embedding_fn._force_local_fallback = False
+
+    class _RateLimitedModels:
+        def embed_content(self, *args, **kwargs):  # noqa: ANN002, ANN003
+            raise RuntimeError("429 RESOURCE_EXHAUSTED")
+
+    class _RateLimitedClient:
+        models = _RateLimitedModels()
+
+    first_embedding_fn.client = _RateLimitedClient()
+    first_embedding_fn(["alpha beta"])
+
+    second_embedding_fn = object.__new__(GeminiEmbeddingFunction)
+    second_embedding_fn._force_local_fallback = False
+    second_embedding_fn.client = None
+
+    vectors = second_embedding_fn(["gamma delta"])
+
+    assert second_embedding_fn._force_local_fallback is True
+    assert len(vectors) == 1
+    assert len(vectors[0]) == 3072
+
+
+def test_gemini_embedding_local_fallback_env_skips_remote_call(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ISOSER_EMBEDDING_LOCAL_FALLBACK", "true")
+    embedding_fn = object.__new__(GeminiEmbeddingFunction)
+    embedding_fn._force_local_fallback = False
+    embedding_fn.client = None
+
+    vectors = embedding_fn(["alpha beta"])
+
+    assert embedding_fn._force_local_fallback is True
+    assert len(vectors) == 1
+    assert len(vectors[0]) == 3072

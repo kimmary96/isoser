@@ -242,6 +242,54 @@ def fetch_candidate_rows(limit: int, *, deadline_from: str | None = None) -> lis
     return rows if isinstance(rows, list) else []
 
 
+def fetch_work24_deadline_audit_rows(limit: int) -> list[dict[str, Any]]:
+    rows = supabase_request(
+        "GET",
+        "/rest/v1/programs",
+        params={
+            "select": "*",
+            "or": "(source.ilike.*고용24*,source.ilike.*work24*)",
+            "deadline": "not.is.null",
+            "end_date": "not.is.null",
+            "order": "deadline.asc.nullslast",
+            "limit": str(limit),
+        },
+    )
+    return rows if isinstance(rows, list) else []
+
+
+def is_work24_deadline_copied_from_end_date(row: dict[str, Any]) -> bool:
+    source = str(row.get("source") or "").casefold()
+    if "고용24" not in source and "work24" not in source:
+        return False
+    deadline = str(row.get("deadline") or "").strip()
+    end_date = str(row.get("end_date") or "").strip()
+    return bool(deadline and end_date and deadline[:10] == end_date[:10])
+
+
+def build_work24_deadline_audit_report(*, limit: int) -> dict[str, Any]:
+    db_rows = fetch_work24_deadline_audit_rows(limit)
+    suspects = [row for row in db_rows if is_work24_deadline_copied_from_end_date(row)]
+    return {
+        "mode": "dry-run",
+        "report": "work24-deadline-end-date-conflicts",
+        "candidate_count": len(db_rows),
+        "suspect_count": len(suspects),
+        "items": [
+            {
+                "id": row.get("id"),
+                "title": row.get("title"),
+                "source": row.get("source"),
+                "deadline": row.get("deadline"),
+                "end_date": row.get("end_date"),
+                "reason": "고용24 deadline이 훈련 종료일 end_date와 같아 모집 마감일로 신뢰하기 어렵습니다.",
+                "recommended_patch": {"deadline": None},
+            }
+            for row in suspects
+        ],
+    }
+
+
 def collect_source_records(max_pages: int) -> dict[str, SourceRecord]:
     records: dict[str, SourceRecord] = {}
     collectors = [Work24Collector(), KstartupApiCollector(), SesacCollector()]
@@ -430,6 +478,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--overwrite", action="store_true", help="Overwrite existing values. Default fills blank fields only.")
     parser.add_argument("--deadline-from", default=None, help="Only inspect DB rows with deadline >= this YYYY-MM-DD value.")
     parser.add_argument("--apply", action="store_true", help="Apply patches to Supabase. Default is dry-run.")
+    parser.add_argument(
+        "--work24-deadline-audit",
+        action="store_true",
+        help="Dry-run report for Work24 rows whose deadline appears copied from training end_date.",
+    )
     parser.add_argument("--format", choices=("json", "markdown"), default="json")
     parser.add_argument("--sample", type=int, default=3, help="Rows to print in markdown mode.")
     return parser
@@ -438,13 +491,16 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     load_backend_env()
     args = build_parser().parse_args()
-    report = build_report(
-        limit=args.limit,
-        max_pages=args.max_pages,
-        overwrite=args.overwrite,
-        deadline_from=args.deadline_from,
-    )
-    if args.apply:
+    if args.work24_deadline_audit:
+        report = build_work24_deadline_audit_report(limit=args.limit)
+    else:
+        report = build_report(
+            limit=args.limit,
+            max_pages=args.max_pages,
+            overwrite=args.overwrite,
+            deadline_from=args.deadline_from,
+        )
+    if args.apply and not args.work24_deadline_audit:
         report = apply_report(report)
     if args.format == "markdown":
         print_markdown_table(report, sample=args.sample)

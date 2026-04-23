@@ -1,0 +1,9 @@
+# Dispatch: TASK-2026-04-22-1618-program-detail-page
+
+stage: review-ready
+status: pending-approval
+packet: `cowork/packets/TASK-2026-04-22-1618-program-detail-page.md`
+review: `cowork/reviews/TASK-2026-04-22-1618-program-detail-page-review.md`
+created_at: `2026-04-22T16:28:12`
+- freshness: review is aligned with the current packet contents
+- next_step: reviewer approves in Slack and the shared approval queue is consumed by the local cowork watcher

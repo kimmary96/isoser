@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { LandingANavBar, LandingATickerBar } from '@/app/(landing)/landing-a/_components'
+import { LandingHeader } from '@/components/landing/LandingHeader'
 import { getDashboardMe, signOutDashboard } from '@/lib/api/app'
 
 const navGroups = [
@@ -95,10 +95,9 @@ export default function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-white">
-      <LandingATickerBar />
-      <LandingANavBar />
-      <div className="flex min-h-[calc(100vh-73px)] bg-white">
-        <aside className="sticky top-[73px] flex h-[calc(100vh-73px)] w-[230px] flex-shrink-0 flex-col justify-between overflow-y-auto border-r border-gray-100 bg-white">
+      <LandingHeader />
+      <div className="flex min-h-[calc(100vh-57px)] bg-white">
+        <aside className="sticky top-[57px] flex h-[calc(100vh-57px)] w-[230px] flex-shrink-0 flex-col justify-between overflow-y-auto border-r border-gray-100 bg-white">
           <div className="p-6">
             <p className="text-lg font-bold tracking-tight text-gray-900">Isoser</p>
             <p className="mt-0.5 text-[10px] tracking-widest text-gray-400">CAREER CURATOR</p>

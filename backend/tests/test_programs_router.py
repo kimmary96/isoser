@@ -24,6 +24,7 @@ def test_build_program_query_params_for_filtered_list() -> None:
     params = programs._build_program_query_params(
         select="*",
         category="IT",
+        category_detail="web-development",
         q="부트캠프",
         regions=["서울", "대전·충청"],
         recruiting_only=True,
@@ -34,12 +35,26 @@ def test_build_program_query_params_for_filtered_list() -> None:
 
     assert params["select"] == "*"
     assert params["category"] == "eq.IT"
-    assert params["title"] == "ilike.*부트캠프*"
+    assert params["category_detail"] == "eq.web-development"
+    assert "title" not in params
+    assert params["search_text"] == "ilike.*부트캠프*"
+    assert params["limit"] == "20"
     assert params["deadline"] == f"gte.{date.today().isoformat()}"
     assert params["order"] == "created_at.desc.nullslast"
     assert params["limit"] == "20"
     assert params["offset"] == "40"
     assert params["or"] == "(location.ilike.*서울*,location.ilike.*대전*,location.ilike.*충청*,location.ilike.*세종*)"
+
+
+def test_build_program_query_params_expands_scan_limit_for_backend_search() -> None:
+    params = programs._build_program_query_params(
+        select="*",
+        q="패스트캠퍼스",
+    )
+
+    assert params["limit"] == str(programs.PROGRAM_SEARCH_SCAN_LIMIT)
+    assert "title" not in params
+    assert params["search_text"] == "ilike.*패스트캠퍼스*"
 
 
 def test_build_program_query_params_deadline_sort_only_includes_active_programs() -> None:
@@ -65,6 +80,97 @@ def test_build_program_query_params_include_closed_recent_uses_90_day_cutoff() -
 def test_normalize_regions_param_splits_csv_values() -> None:
     normalized = programs._normalize_regions_param(["서울,경기", "온라인"])
     assert normalized == ["서울", "경기", "온라인"]
+
+
+def test_program_extra_filters_classify_cost_types() -> None:
+    deadline = (date.today() + timedelta(days=10)).isoformat()
+    rows = programs._postprocess_program_list_rows(
+        [
+            {
+                "id": "card",
+                "title": "국민내일배움카드 AI 과정",
+                "cost": 0,
+                "deadline": deadline,
+                "compare_meta": {"naeilbaeumcard_required": True},
+            },
+            {
+                "id": "free",
+                "title": "무료 창업 특강",
+                "cost": 0,
+                "deadline": deadline,
+            },
+            {
+                "id": "paid",
+                "title": "유료 디자인 과정",
+                "cost": 150000,
+                "deadline": deadline,
+            },
+        ],
+        cost_types=["free-no-card"],
+        sort="deadline",
+        include_closed_recent=False,
+        limit=10,
+        offset=0,
+    )
+
+    assert [row["id"] for row in rows] == ["free"]
+
+
+def test_program_extra_filters_classify_participation_times() -> None:
+    deadline = (date.today() + timedelta(days=10)).isoformat()
+    rows = programs._postprocess_program_list_rows(
+        [
+            {
+                "id": "part-time",
+                "title": "주말 데이터 특강",
+                "start_date": "2026-05-01",
+                "end_date": "2026-05-02",
+                "deadline": deadline,
+            },
+            {
+                "id": "full-time",
+                "title": "웹개발 부트캠프",
+                "start_date": "2026-05-01",
+                "end_date": "2026-06-30",
+                "deadline": deadline,
+            },
+        ],
+        participation_times=["full-time"],
+        sort="deadline",
+        include_closed_recent=False,
+        limit=10,
+        offset=0,
+    )
+
+    assert [row["id"] for row in rows] == ["full-time"]
+
+
+@pytest.mark.asyncio
+async def test_fetch_program_list_rows_falls_back_when_category_detail_is_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[dict] = []
+
+    async def fake_request_supabase(*, method: str, path: str, params: dict, **_: object) -> list[dict]:
+        calls.append(dict(params))
+        if "category_detail" in params:
+            raise RuntimeError("column programs.category_detail does not exist")
+        return [{"id": "fallback-row"}]
+
+    monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
+
+    rows = await programs._fetch_program_list_rows(
+        {
+            "select": "*",
+            "category": "eq.IT",
+            "category_detail": "eq.web-development",
+        },
+        q=None,
+    )
+
+    assert rows == [{"id": "fallback-row"}]
+    assert "category_detail" in calls[0]
+    assert "category_detail" not in calls[1]
 
 
 def test_parse_content_range_total_reads_exact_count() -> None:
@@ -131,6 +237,73 @@ def test_serialize_program_list_row_adds_normalized_rating_fields() -> None:
     assert row["rating_normalized"] == 5.0
     assert row["rating_scale"] == 5
     assert row["rating_display"] == "5.0"
+
+
+def test_serialize_program_list_row_uses_deadline_not_training_end_date_for_d_day() -> None:
+    deadline = (date.today() + timedelta(days=4)).isoformat()
+    training_end_date = (date.today() + timedelta(days=30)).isoformat()
+
+    row = programs._serialize_program_list_row(
+        {
+            "id": "program-1",
+            "deadline": deadline,
+            "end_date": training_end_date,
+        }
+    )
+
+    assert row["deadline"] == deadline
+    assert row["days_left"] == 4
+    assert row["end_date"] == training_end_date
+
+
+def test_serialize_program_list_row_does_not_fallback_to_training_end_date_for_d_day() -> None:
+    training_end_date = (date.today() + timedelta(days=30)).isoformat()
+
+    row = programs._serialize_program_list_row(
+        {
+            "id": "program-1",
+            "deadline": None,
+            "end_date": training_end_date,
+        }
+    )
+
+    assert row["deadline"] is None
+    assert row["days_left"] is None
+    assert row["end_date"] == training_end_date
+
+
+def test_serialize_program_list_row_ignores_work24_deadline_copied_from_training_end_date() -> None:
+    training_end_date = (date.today() + timedelta(days=30)).isoformat()
+
+    row = programs._serialize_program_list_row(
+        {
+            "id": "program-1",
+            "source": "고용24",
+            "deadline": training_end_date,
+            "end_date": training_end_date,
+        }
+    )
+
+    assert row["deadline"] is None
+    assert row["days_left"] is None
+    assert row["end_date"] == training_end_date
+
+
+def test_serialize_program_list_row_uses_close_date_when_deadline_is_missing() -> None:
+    close_date = (date.today() + timedelta(days=6)).isoformat()
+    training_end_date = (date.today() + timedelta(days=20)).isoformat()
+
+    row = programs._serialize_program_list_row(
+        {
+            "id": "program-1",
+            "close_date": close_date,
+            "end_date": training_end_date,
+        }
+    )
+
+    assert row["deadline"] == close_date
+    assert row["days_left"] == 6
+    assert row["end_date"] == training_end_date
 
 
 def test_build_program_detail_response_maps_kstartup_dates_as_application_period() -> None:
@@ -222,6 +395,63 @@ def test_build_program_detail_response_maps_work24_dates_as_program_period() -> 
     assert detail.phone == "02-722-2111"
 
 
+@pytest.mark.asyncio
+async def test_get_program_details_batch_reuses_detail_mapping(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_fetch_programs_by_ids(program_ids: list[str]) -> dict[str, dict[str, object]]:
+        assert program_ids == ["program-1", "program-2"]
+        return {
+            "program-1": {
+                "id": "program-1",
+                "source": "고용24",
+                "title": "Python 과정",
+                "provider": "훈련기관",
+                "location": "서울",
+                "start_date": "2026-05-01",
+                "end_date": "2026-06-01",
+            },
+            "program-2": {
+                "id": "program-2",
+                "source": "K-Startup",
+                "title": "창업 멘토링",
+                "provider": "창업진흥원",
+                "start_date": "2026-05-10",
+                "end_date": "2026-05-20",
+            },
+        }
+
+    monkeypatch.setattr(programs, "_fetch_programs_by_ids", fake_fetch_programs_by_ids)
+
+    response = await programs.get_program_details_batch(
+        programs.ProgramDetailBatchRequest(program_ids=["program-1", "program-2", "program-1"])
+    )
+
+    assert [item.id for item in response.items] == ["program-1", "program-2"]
+    assert response.items[0].program_start_date == "2026-05-01"
+    assert response.items[1].application_end_date == "2026-05-20"
+
+
+@pytest.mark.asyncio
+async def test_get_programs_batch_preserves_requested_order(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_fetch_programs_by_ids(program_ids: list[str]) -> dict[str, dict[str, object]]:
+        assert program_ids == ["program-2", "program-1"]
+        return {
+            "program-1": {"id": "program-1", "title": "첫 번째", "deadline": "2026-06-01", "source": "고용24"},
+            "program-2": {"id": "program-2", "title": "두 번째", "deadline": "2026-05-01", "source": "K-Startup"},
+        }
+
+    monkeypatch.setattr(programs, "_fetch_programs_by_ids", fake_fetch_programs_by_ids)
+
+    response = await programs.get_programs_batch(
+        programs.ProgramDetailBatchRequest(program_ids=["program-2", "program-1", "program-2"])
+    )
+
+    assert [item.id for item in response.items] == ["program-2", "program-1"]
+
+
 def test_normalize_cached_recommendation_rows_marks_missing_component_scores_stale() -> None:
     normalized = programs._normalize_cached_recommendation_rows(
         [
@@ -257,6 +487,130 @@ def test_postprocess_program_list_rows_keeps_active_first_then_recent_closed() -
     assert [row["id"] for row in rows] == ["active", "closed-recent", "closed-older"]
     assert rows[0]["is_active"] is True
     assert rows[1]["is_active"] is False
+
+
+def test_postprocess_program_list_rows_searches_provider_and_orders_by_match_field() -> None:
+    deadline = (date.today() + timedelta(days=10)).isoformat()
+
+    rows = programs._postprocess_program_list_rows(
+        [
+            {
+                "id": "description-match",
+                "title": "AI 심화 캠프",
+                "provider": "다른 기관",
+                "description": "패스트캠퍼스 연계 과정",
+                "deadline": deadline,
+            },
+            {
+                "id": "provider-match",
+                "title": "Business Analyst Course",
+                "provider": "패스트캠퍼스강남학원",
+                "description": "",
+                "deadline": deadline,
+            },
+            {
+                "id": "title-match",
+                "title": "패스트캠퍼스 데이터 과정",
+                "provider": "다른 기관",
+                "description": "",
+                "deadline": deadline,
+            },
+            {
+                "id": "no-match",
+                "title": "그래픽 디자인",
+                "provider": "다른 기관",
+                "description": "",
+                "deadline": deadline,
+            },
+        ],
+        q="패스트 캠퍼스",
+        sort="deadline",
+        include_closed_recent=False,
+        limit=10,
+        offset=0,
+    )
+
+    assert [row["id"] for row in rows] == ["title-match", "provider-match", "description-match"]
+
+
+def test_postprocess_program_list_rows_searches_compare_meta_values() -> None:
+    deadline = (date.today() + timedelta(days=10)).isoformat()
+
+    rows = programs._postprocess_program_list_rows(
+        [
+            {
+                "id": "meta-match",
+                "title": "AI 심화 캠프",
+                "provider": "다른 기관",
+                "compare_meta": {"training_institution": "패스트캠퍼스강남학원"},
+                "deadline": deadline,
+            },
+            {
+                "id": "no-match",
+                "title": "그래픽 디자인",
+                "provider": "다른 기관",
+                "compare_meta": {"training_institution": "다른 학원"},
+                "deadline": deadline,
+            },
+        ],
+        q="패스트캠퍼스",
+        sort="deadline",
+        include_closed_recent=False,
+        limit=10,
+        offset=0,
+    )
+
+    assert [row["id"] for row in rows] == ["meta-match"]
+
+
+@pytest.mark.asyncio
+async def test_fetch_program_list_rows_paginates_search_candidates(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[dict] = []
+
+    async def fake_request_supabase(*, method: str, path: str, params: dict, **_: object) -> list[dict]:
+        calls.append(dict(params))
+        offset = int(params.get("offset", 0))
+        if offset == 0:
+            return [{"id": f"row-{index}"} for index in range(programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE)]
+        if offset == programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE:
+            return [{"id": "row-last"}]
+        return []
+
+    monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
+
+    rows = await programs._fetch_program_list_rows({"select": "*"}, q="패스트캠퍼스")
+
+    assert len(rows) == programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE + 1
+    assert calls[0]["limit"] == str(programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE)
+    assert calls[0]["offset"] == "0"
+    assert calls[1]["offset"] == str(programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE)
+
+
+@pytest.mark.asyncio
+async def test_fetch_program_list_rows_falls_back_when_search_index_is_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[dict] = []
+
+    async def fake_request_supabase(*, method: str, path: str, params: dict, **_: object) -> list[dict]:
+        calls.append(dict(params))
+        if programs.PROGRAM_SEARCH_INDEX_COLUMN in params:
+            raise RuntimeError("column programs.search_text does not exist")
+        return [{"id": "fallback-row"}]
+
+    monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
+
+    rows = await programs._fetch_program_list_rows(
+        {
+            "select": "*",
+            programs.PROGRAM_SEARCH_INDEX_COLUMN: "ilike.*패스트캠퍼스*",
+        },
+        q="패스트캠퍼스",
+    )
+
+    assert rows == [{"id": "fallback-row"}]
+    assert programs.PROGRAM_SEARCH_INDEX_COLUMN in calls[0]
+    assert programs.PROGRAM_SEARCH_INDEX_COLUMN not in calls[1]
 
 
 def test_compute_program_relevance_items_adds_fit_interpretation_fields(
@@ -310,6 +664,90 @@ def test_compute_program_relevance_items_adds_fit_interpretation_fields(
     assert item.readiness_label == "바로 지원 추천"
     assert "전반적으로 잘 맞습니다." in item.fit_summary
     assert item.gap_tags == []
+    assert item.score_breakdown["region"] == 0
+    assert item.score_breakdown["skills"] == 20
+    assert item.score_breakdown["experience"] == 20
+
+
+def test_compute_program_relevance_items_adds_region_signal(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        programs.programs_rag,
+        "_profile_keywords",
+        lambda profile, activities: ["ai"],
+    )
+    monkeypatch.setattr(
+        programs.programs_rag,
+        "_program_match_context",
+        lambda program, profile_keywords: (["AI"], 0.5),
+    )
+    monkeypatch.setattr(
+        programs.programs_rag,
+        "_tokenize_text",
+        lambda value: [token.lower() for token in str(value).replace(",", " ").split() if token.strip()],
+    )
+
+    items = programs._compute_program_relevance_items(
+        profile={
+            "skills": ["AI"],
+            "region": "서울",
+            "region_detail": "서울 강남구",
+            "self_intro": "AI 프로젝트 경험을 바탕으로 교육 과정을 찾고 있습니다.",
+            "career": ["AI 서비스 개발"],
+        },
+        activities=[{"id": "act-1", "title": "AI 프로젝트", "skills": ["AI"]}],
+        programs_by_id={
+            "program-1": {
+                "id": "program-1",
+                "title": "AI 부트캠프",
+                "skills": ["AI"],
+                "location": "서울 강남구",
+            }
+        },
+        program_ids=["program-1"],
+    )
+
+    item = items[0]
+    assert item.region_match_score == 1.0
+    assert item.matched_regions == ["서울"]
+    assert item.relevance_score == 0.575
+    assert item.score_breakdown["region"] == 15
+    assert item.score_breakdown["skills"] == 25
+    assert item.score_breakdown["experience"] == 15
+
+
+def test_compute_region_match_scores_adjacent_and_online_programs() -> None:
+    assert programs._compute_region_match(
+        profile_region="서울",
+        profile_region_detail=None,
+        program={"location": "경기 성남시"},
+    ) == (["경기"], 0.6667)
+    assert programs._compute_region_match(
+        profile_region="전북",
+        profile_region_detail=None,
+        program={"teaching_method": "온라인"},
+    ) == (["온라인"], 0.8)
+    assert programs._compute_region_match(
+        profile_region="전북",
+        profile_region_detail=None,
+        program={"teaching_method": "온라인/오프라인 병행"},
+    ) == (["혼합"], 0.6667)
+    assert programs._compute_region_match(
+        profile_region="전북",
+        profile_region_detail=None,
+        program={"teaching_method": "온라인", "summary": "혼합형 실습 과정"},
+    ) == (["온라인"], 0.8)
+    assert programs._compute_region_match(
+        profile_region="서울",
+        profile_region_detail=None,
+        program={"title": "온라인 AI 과정", "location": "서울 강남구"},
+    ) == (["혼합"], 0.6667)
+    assert programs._compute_region_match(
+        profile_region="충북",
+        profile_region_detail=None,
+        program={"compare_meta": {"region": "충청북도 청주시"}},
+    ) == (["충북"], 1.0)
 
 
 def test_compute_program_relevance_items_handles_sparse_profile_without_failure(

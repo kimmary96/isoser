@@ -9,6 +9,11 @@
 - `frontend/lib/program-filters.ts`
 - `frontend/lib/program-filters.test.ts`
 - `frontend/components/landing/LandingHeader.tsx`
+- `frontend/app/(landing)/programs/page.tsx`
+- `frontend/app/(landing)/programs/[id]/page.tsx`
+- `frontend/app/(landing)/compare/page.tsx`
+- `frontend/app/(landing)/landing-b/page.tsx`
+- `frontend/app/dashboard/layout.tsx`
 - `frontend/components/landing/program-card-helpers.ts`
 - `frontend/package.json`
 - `frontend/package-lock.json`
@@ -39,6 +44,7 @@
 - Landing C hero now includes a `내 이력 등록` CTA next to the programs CTA and routes unauthenticated users through login back to `/onboarding` for PDF resume parsing.
 - Landing C now includes the landing-A-style six-step circular flow section between Opportunity feed and Career Asset Workspace, restyled to match landing C.
 - Landing C removed the separate Journey section and moved Circular flow into that former position after the feature preview section.
+- The landing C common header is now applied to programs, program detail, compare, landing B, and dashboard layout pages.
 
 ## Preserved behaviors
 
@@ -59,7 +65,7 @@
 ## Risks / possible regressions
 
 - A browser-typed `/dashboard#recommend-calendar` direct request cannot expose the hash to middleware because URL fragments are not sent to servers; CTA links preserve the hash by putting the encoded target in `redirectedFrom`.
-- `frontend/app/dashboard/layout.tsx` still uses the dashboard shell plus landing-style header pattern; this task only unified public landing headers.
+- Dashboard layout now uses the shared landing header; its sidebar offset assumes the current shared header height, so future header height changes should update the layout offset together.
 - `next lint` is deprecated in Next.js 15.5.15 and prints a migration notice toward the ESLint CLI; the command still passes and remains the current repo script.
 - `npm install` reported a Windows cleanup warning for an old SWC binary temp folder, but install completed and all subsequent checks passed.
 
@@ -87,6 +93,8 @@
 - `npm test -- --run lib/routes.test.ts` passed after adding the onboarding redirect expectation.
 - `npm run lint -- --file "app/(landing)/landing-c/page.tsx"` passed after adding the circular flow section.
 - `npm run lint -- --file "app/(landing)/landing-c/page.tsx"` passed after moving Circular flow and removing Journey.
+- `npm run lint -- --file "components/landing/LandingHeader.tsx" --file "app/(landing)/programs/page.tsx" --file "app/(landing)/programs/[id]/page.tsx" --file "app/(landing)/compare/page.tsx" --file "app/(landing)/landing-b/page.tsx" --file "app/dashboard/layout.tsx"` passed after applying the shared header.
+- `npx tsc -p tsconfig.codex-check.json --noEmit` passed after applying the shared header.
 
 ## Follow-up refactoring candidates
 

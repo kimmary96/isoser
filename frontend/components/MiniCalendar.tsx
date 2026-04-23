@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 type MiniCalendarProgram = {
-  end_date?: string;
+  deadline?: string;
   title: string;
   isApplied?: boolean;
 };
@@ -63,8 +63,8 @@ export default function MiniCalendar({
   const markedDates = new Set(
     programs
       .map((program) => {
-        if (!program.end_date) return null;
-        const date = new Date(program.end_date);
+        if (!program.deadline) return null;
+        const date = new Date(program.deadline);
         if (Number.isNaN(date.getTime())) return null;
         if (date.getFullYear() !== currentYear || date.getMonth() !== currentMonth) return null;
         return toDateKey(date);
@@ -72,8 +72,8 @@ export default function MiniCalendar({
       .filter((value): value is string => Boolean(value))
   );
   const programsByDate = programs.reduce<Record<string, MiniCalendarProgram[]>>((acc, program) => {
-    if (!program.end_date) return acc;
-    const date = new Date(program.end_date);
+    if (!program.deadline) return acc;
+    const date = new Date(program.deadline);
     if (Number.isNaN(date.getTime())) return acc;
     if (date.getFullYear() !== currentYear || date.getMonth() !== currentMonth) return acc;
 

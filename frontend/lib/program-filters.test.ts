@@ -6,7 +6,7 @@ describe("program filters", () => {
   it("keeps shared landing chips available", () => {
     expect(PROGRAM_FILTER_CHIPS).toContain("AI·데이터");
     expect(PROGRAM_FILTER_CHIPS).toContain("IT·개발");
-    expect(PROGRAM_FILTER_CHIPS).toContain("국비100%");
+    expect(PROGRAM_FILTER_CHIPS).not.toContain("국비100%");
   });
 
   it("maps display category chips to backend category values", () => {
@@ -24,9 +24,8 @@ describe("program filters", () => {
     expect(buildProgramFilterParams("마감임박", "")).toMatchObject({ recruiting_only: true });
   });
 
-  it("turns the funding chip into a keyword query", () => {
-    expect(buildProgramFilterParams("국비100%", "")).toMatchObject({ q: "국비 100%" });
-    expect(buildProgramFilterParams("국비100%", "AI")).toMatchObject({ q: "AI 국비 100%" });
+  it("keeps removed or unknown chips from adding hidden filters", () => {
+    expect(buildProgramFilterParams("국비100%", "")).toMatchObject({ sort: "deadline", limit: 6 });
+    expect(buildProgramFilterParams("국비100%", "AI")).toMatchObject({ q: "AI", sort: "deadline", limit: 6 });
   });
 });
-

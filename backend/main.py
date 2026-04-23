@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from check_python_version import main as assert_python_version
 from logging_config import configure_logging
-from rag.runtime_config import load_backend_dotenv
+from rag.runtime_config import load_backend_dotenv, resolve_chroma_mode
 
 configure_logging()
 load_backend_dotenv()
@@ -16,13 +16,26 @@ assert_python_version()
 from routers import activities, admin, assistant, bookmarks, coach, company, match, parse, programs, skills, slack
 from rag.chroma_client import get_chroma_health_summary, init_chroma
 
+TRUE_ENV_VALUES = {"1", "true", "yes", "on"}
+
+
+def _is_env_enabled(name: str) -> bool:
+    return os.getenv(name, "").strip().lower() in TRUE_ENV_VALUES
+
+
+def _should_seed_chroma_on_startup() -> bool:
+    raw_value = os.getenv("ISOSER_CHROMA_SEED_ON_STARTUP")
+    if raw_value is not None:
+        return raw_value.strip().lower() in TRUE_ENV_VALUES
+    return resolve_chroma_mode() != "ephemeral"
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """서버 시작/종료 생명주기 관리."""
     # 시작 시: ChromaDB 초기화
-    if os.getenv("ISOSER_SKIP_CHROMA_INIT", "").strip().lower() not in {"1", "true", "yes"}:
-        init_chroma()
+    if not _is_env_enabled("ISOSER_SKIP_CHROMA_INIT"):
+        init_chroma(seed_data=_should_seed_chroma_on_startup())
     yield
     # 종료 시: 정리 작업 (필요 시 추가)
 
