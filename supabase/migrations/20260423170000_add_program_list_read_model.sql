@@ -2,7 +2,29 @@ create extension if not exists pg_trgm;
 
 alter table public.programs
 add column if not exists close_date text,
-add column if not exists thumbnail_url text;
+add column if not exists thumbnail_url text,
+add column if not exists provider text,
+add column if not exists summary text,
+add column if not exists description text,
+add column if not exists location text,
+add column if not exists region text,
+add column if not exists region_detail text,
+add column if not exists category_detail text,
+add column if not exists teaching_method text,
+add column if not exists cost integer,
+add column if not exists cost_type text,
+add column if not exists participation_time text,
+add column if not exists source_url text,
+add column if not exists link text,
+add column if not exists start_date text,
+add column if not exists end_date text,
+add column if not exists is_active boolean,
+add column if not exists is_ad boolean default false,
+add column if not exists is_certified boolean default false,
+add column if not exists tags text[] default '{}'::text[],
+add column if not exists skills text[] default '{}'::text[],
+add column if not exists target text[] default '{}'::text[],
+add column if not exists compare_meta jsonb default '{}'::jsonb;
 
 create table if not exists public.program_list_index (
   id uuid primary key references public.programs(id) on delete cascade,
@@ -116,10 +138,19 @@ begin
     select
       p.*,
       coalesce(p.compare_meta, '{}'::jsonb) as meta,
-      public.program_list_try_date(coalesce(p.close_date, p.compare_meta ->> 'application_deadline', p.compare_meta ->> 'recruitment_deadline', p.compare_meta ->> 'application_end_date', p.compare_meta ->> 'recruitment_end_date', p.deadline::text)) as resolved_deadline,
-      public.program_list_try_date(p.close_date) as parsed_close_date,
-      public.program_list_try_date(p.start_date) as parsed_start_date,
-      public.program_list_try_date(p.end_date) as parsed_end_date
+      public.program_list_try_date(
+        coalesce(
+          p.close_date::text,
+          p.compare_meta ->> 'application_deadline',
+          p.compare_meta ->> 'recruitment_deadline',
+          p.compare_meta ->> 'application_end_date',
+          p.compare_meta ->> 'recruitment_end_date',
+          p.deadline::text
+        )
+      ) as resolved_deadline,
+      public.program_list_try_date(p.close_date::text) as parsed_close_date,
+      public.program_list_try_date(p.start_date::text) as parsed_start_date,
+      public.program_list_try_date(p.end_date::text) as parsed_end_date
     from public.programs p
   ),
   scored as (
