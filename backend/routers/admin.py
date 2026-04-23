@@ -14,7 +14,7 @@ from rag.source_adapters.work24_training import Work24TrainingAdapter
 from rag.source_adapters.work24_supplementary import Work24SupplementaryAdapter
 from utils.supabase_admin import request_supabase
 from rag.collector.normalizer import _classify_category
-from rag.collector.program_field_mapping import derive_korean_region
+from rag.collector.program_field_mapping import derive_korean_region, map_work24_training_item
 
 try:
     from backend.logging_config import get_logger, log_event
@@ -70,28 +70,33 @@ def _normalize_program_row(row: dict[str, Any]) -> dict[str, Any]:
     if not hrd_id:
         return {}
 
+    raw_data = row.get("raw")
+    mapped_from_raw = map_work24_training_item(raw_data) if isinstance(raw_data, dict) else {}
     title = str(row.get("title") or "").strip() or hrd_id
     provider_name = str(row.get("provider_name") or "").strip()
-    provider = provider_name or str(row.get("provider") or "").strip() or None
+    provider = provider_name or str(row.get("provider") or "").strip() or mapped_from_raw.get("provider") or None
     end_date = str(row.get("end_date") or "").strip() or None
     start_date = str(row.get("start_date") or "").strip() or None
     deadline = _normalize_program_deadline(row, end_date)
     target_text = str(row.get("target") or "").strip()
     target = [target_text] if target_text else []
     category = str(row.get("category_label") or "").strip() or str(row.get("category") or "").strip()
-    location = str(row.get("location") or "").strip() or None
-    region = str(row.get("region") or "").strip() or None
-    region_detail = str(row.get("region_detail") or "").strip() or None
+    location = str(row.get("location") or "").strip() or mapped_from_raw.get("location") or None
+    region = str(row.get("region") or "").strip() or mapped_from_raw.get("region") or None
+    region_detail = str(row.get("region_detail") or "").strip() or mapped_from_raw.get("region_detail") or None
     if not region:
         region, derived_region_detail = derive_korean_region(location)
         region_detail = region_detail or derived_region_detail
-    description = str(row.get("summary") or "").strip() or None
+    description = str(row.get("summary") or "").strip() or mapped_from_raw.get("description") or None
     support_type = str(row.get("support_type") or "").strip() or None
     teaching_method = str(row.get("teaching_method") or "").strip() or None
-    raw_data = row.get("raw")
-    source_unique_key = str(row.get("source_unique_key") or "").strip() or None
+    source_unique_key = str(row.get("source_unique_key") or "").strip() or mapped_from_raw.get("source_unique_key") or None
     if not source_unique_key and hrd_id:
         source_unique_key = f"work24:{hrd_id}"
+    source_url = str(row.get("source_url") or "").strip() or mapped_from_raw.get("source_url") or None
+    link = mapped_from_raw.get("link") or source_url
+    skills = mapped_from_raw.get("skills")
+    compare_meta = mapped_from_raw.get("compare_meta")
 
     return {
         "hrd_id": hrd_id,
@@ -108,12 +113,15 @@ def _normalize_program_row(row: dict[str, Any]) -> dict[str, Any]:
         "cost": row.get("cost"),
         "subsidy_amount": row.get("subsidy_amount"),
         "target": target or None,
-        "source_url": str(row.get("source_url") or "").strip() or None,
+        "source_url": source_url,
+        "link": link,
         "source": str(row.get("source") or "").strip() or "고용24",
         "source_unique_key": source_unique_key,
         "support_type": support_type,
         "teaching_method": teaching_method,
         "is_certified": bool(row.get("is_certified")),
+        "skills": skills if isinstance(skills, list) and skills else None,
+        "compare_meta": compare_meta if isinstance(compare_meta, dict) and compare_meta else None,
         "raw_data": raw_data if isinstance(raw_data, dict) else None,
         "is_active": True,
     }
@@ -140,13 +148,15 @@ def _coerce_program_category(category: str, title: str) -> str:
 
 
 def _deduplicate_program_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    deduped_by_hrd_id: dict[str, dict[str, Any]] = {}
+    deduped: dict[str, dict[str, Any]] = {}
     for row in rows:
+        source_unique_key = str(row.get("source_unique_key") or "").strip()
         hrd_id = str(row.get("hrd_id") or "").strip()
-        if not hrd_id:
+        key = source_unique_key or (f"hrd:{hrd_id}" if hrd_id else "")
+        if not key:
             continue
-        deduped_by_hrd_id[hrd_id] = row
-    return list(deduped_by_hrd_id.values())
+        deduped[key] = row
+    return list(deduped.values())
 
 
 _MISSING_COLUMN_PATTERN = re.compile(r"Could not find the '([^']+)' column", flags=re.IGNORECASE)

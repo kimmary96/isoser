@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import MiniCalendar from "@/components/MiniCalendar";
 import {
   getCalendarSelections,
+  getDashboardBookmarks,
   getDashboardMe,
   getRecommendCalendar,
   saveCalendarSelections,
@@ -317,9 +319,55 @@ function ProgramCard({
   );
 }
 
+function BookmarkedProgramCard({ program }: { program: Program }) {
+  const programId = String(program.id ?? "").trim();
+  const detailHref = programId ? `/programs/${encodeURIComponent(programId)}` : null;
+  const deadlineLabel = formatDeadline(program.deadline);
+  const programLink = program.link || program.application_url || program.source_url;
+
+  return (
+    <article className="flex min-h-[178px] flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="min-w-0">
+        <p className="text-xs font-semibold text-amber-600">찜한 훈련</p>
+        <h3 className="mt-2 line-clamp-2 text-sm font-semibold leading-5 text-slate-950">
+          {program.title || "제목 없음"}
+        </h3>
+        <p className="mt-2 text-xs text-slate-500">{program.provider || formatSource(program.source)}</p>
+      </div>
+      <div className="mt-3 space-y-1 text-xs text-slate-600">
+        <p>신청 마감: {deadlineLabel}</p>
+        <p>훈련 기간: {formatTrainingPeriod(program.start_date, program.end_date)}</p>
+      </div>
+      <div className="mt-auto flex flex-wrap items-center gap-3 pt-4">
+        {detailHref ? (
+          <Link
+            href={detailHref}
+            className="inline-flex rounded-full bg-slate-950 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-800"
+          >
+            상세 보기
+          </Link>
+        ) : null}
+        {programLink ? (
+          <a
+            href={programLink}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex text-xs font-semibold text-blue-600 hover:text-blue-700"
+          >
+            원문 열기
+          </a>
+        ) : null}
+      </div>
+    </article>
+  );
+}
+
 export default function DashboardPage() {
   const [userName, setUserName] = useState("사용자");
   const [programs, setPrograms] = useState<Program[]>([]);
+  const [bookmarkedPrograms, setBookmarkedPrograms] = useState<Program[]>([]);
+  const [bookmarksLoading, setBookmarksLoading] = useState(true);
+  const [bookmarksError, setBookmarksError] = useState<string | null>(null);
   const [appliedCalendarPrograms, setAppliedCalendarPrograms] = useState<Program[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -454,6 +502,38 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
+    let mounted = true;
+
+    const loadBookmarks = async () => {
+      setBookmarksLoading(true);
+      setBookmarksError(null);
+      try {
+        const result = await getDashboardBookmarks();
+        if (!mounted) return;
+        setBookmarkedPrograms(
+          result.items
+            .map((item) => item.program)
+            .filter((program): program is Program => Boolean(program && program.id))
+        );
+      } catch (error) {
+        if (!mounted) return;
+        setBookmarkedPrograms([]);
+        setBookmarksError(error instanceof Error ? error.message : "찜한 훈련을 불러오지 못했습니다.");
+      } finally {
+        if (mounted) {
+          setBookmarksLoading(false);
+        }
+      }
+    };
+
+    void loadBookmarks();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
     if (typeof window === "undefined") return;
 
     const raw = window.localStorage.getItem(APPLIED_CALENDAR_PROGRAMS_KEY);
@@ -528,6 +608,48 @@ export default function DashboardPage() {
             onDateClick={handleDateClick}
             focusDate={appliedCalendarPrograms[0]?.deadline ?? null}
           />
+        </section>
+
+        <section className="mb-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight text-slate-950">찜한 훈련</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                프로그램 목록과 상세 페이지에서 북마크한 훈련이 여기에 저장됩니다.
+              </p>
+            </div>
+            <Link href="/compare" className="text-sm font-semibold text-blue-600 hover:text-blue-700">
+              비교 페이지에서 보기
+            </Link>
+          </div>
+
+          {bookmarksLoading ? (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <SkeletonCard key={`bookmark-skeleton-${index}`} />
+              ))}
+            </div>
+          ) : bookmarksError ? (
+            <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-8 text-center">
+              <p className="text-sm text-slate-500">찜한 훈련을 불러오지 못했습니다.</p>
+            </div>
+          ) : bookmarkedPrograms.length > 0 ? (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {bookmarkedPrograms.slice(0, 6).map((program) => (
+                <BookmarkedProgramCard key={`bookmarked-${String(program.id)}`} program={program} />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-8 text-center">
+              <p className="text-sm text-slate-500">아직 찜한 훈련이 없습니다.</p>
+              <Link
+                href="/programs"
+                className="mt-4 inline-flex rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+              >
+                프로그램 찾기
+              </Link>
+            </div>
+          )}
         </section>
 
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">

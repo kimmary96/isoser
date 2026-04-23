@@ -247,7 +247,7 @@ export default function ProgramSelectModal({
   }, [open]);
 
   useEffect(() => {
-    if (!open || activeTab !== "bookmarks" || !isLoggedIn || bookmarksLoading) {
+    if (!open || activeTab !== "bookmarks" || !isLoggedIn || bookmarksLoaded || bookmarksLoading) {
       return;
     }
 

@@ -146,6 +146,15 @@ PROGRAM_SEARCH_SCAN_LIMIT = 10000
 PROGRAM_SEARCH_SCAN_PAGE_SIZE = 1000
 PROGRAM_SEARCH_INDEX_COLUMN = "search_text"
 PROGRAM_SHORT_ASCII_SEARCH_MAX_LENGTH = 2
+PROGRAM_DEFAULT_WORK24_TARGET_RATIO = 0.7
+PROGRAM_STARTUP_FILTER_KEYWORDS = (
+    "창업",
+    "스타트업",
+    "startup",
+    "k-startup",
+    "kstartup",
+    "project-career-startup",
+)
 PROGRAM_SEARCHABLE_COMPARE_META_KEYS = {
     "address",
     "application_deadline",
@@ -631,13 +640,92 @@ def _resolve_program_deadline(program: dict[str, Any]) -> str | None:
     if not text:
         return None
 
-    source_text = str(program.get("source") or "").casefold()
-    is_work24 = "고용24" in source_text or "work24" in source_text
     end_date = str(program.get("end_date") or "").strip()
-    if is_work24 and not close_date and not meta_deadline and end_date and text[:10] == end_date[:10]:
+    if _is_work24_program(program) and not close_date and not meta_deadline and end_date and text[:10] == end_date[:10]:
         return None
 
     return text
+
+
+def _is_work24_source_value(value: Any) -> bool:
+    source_text = str(value or "").casefold()
+    return "고용24" in source_text or "work24" in source_text
+
+
+def _is_work24_program(program: Mapping[str, Any]) -> bool:
+    return _is_work24_source_value(program.get("source"))
+
+
+def _is_active_work24_with_unknown_deadline(row: Mapping[str, Any]) -> bool:
+    return (
+        _is_work24_program(row)
+        and row.get("is_active") is True
+        and row.get("deadline") is None
+        and row.get("days_left") is None
+    )
+
+
+def _contains_startup_filter_value(value: Any) -> bool:
+    text = _normalize_search_text(value).casefold()
+    return bool(text) and any(keyword in text for keyword in PROGRAM_STARTUP_FILTER_KEYWORDS)
+
+
+def _should_apply_work24_default_mix(
+    *,
+    category: str | None = None,
+    category_detail: str | None = None,
+    q: str | None = None,
+    sources: list[str] | None = None,
+    targets: list[str] | None = None,
+) -> bool:
+    if sources:
+        return False
+    if any(_contains_startup_filter_value(value) for value in (category, category_detail, q)):
+        return False
+    if any(_contains_startup_filter_value(value) for value in (targets or [])):
+        return False
+    return True
+
+
+def _mix_work24_default_rows(
+    rows: list[dict[str, Any]],
+    *,
+    target_ratio: float = PROGRAM_DEFAULT_WORK24_TARGET_RATIO,
+) -> list[dict[str, Any]]:
+    if not rows or target_ratio <= 0 or target_ratio >= 1:
+        return rows
+
+    work24_rows = [row for row in rows if _is_work24_program(row)]
+    other_rows = [row for row in rows if not _is_work24_program(row)]
+    if not work24_rows or not other_rows:
+        return rows
+
+    mixed: list[dict[str, Any]] = []
+    work24_index = 0
+    other_index = 0
+    total = len(rows)
+    for position in range(total):
+        desired_work24_count = round((position + 1) * target_ratio)
+        should_take_work24 = (
+            work24_index < len(work24_rows)
+            and (
+                work24_index < desired_work24_count
+                or other_index >= len(other_rows)
+            )
+        )
+        if should_take_work24:
+            mixed.append(work24_rows[work24_index])
+            work24_index += 1
+            continue
+        if other_index < len(other_rows):
+            mixed.append(other_rows[other_index])
+            other_index += 1
+            continue
+        if work24_index < len(work24_rows):
+            mixed.append(work24_rows[work24_index])
+            work24_index += 1
+
+    return mixed
 
 
 def _parse_program_deadline(value: str | None) -> date | None:
@@ -1500,7 +1588,8 @@ def _filter_program_rows_by_deadline_window(
     return [
         row
         for row in rows
-        if isinstance(row.get("days_left"), int) and row["days_left"] >= 0
+        if (isinstance(row.get("days_left"), int) and row["days_left"] >= 0)
+        or _is_active_work24_with_unknown_deadline(row)
     ]
 
 
@@ -1518,6 +1607,7 @@ def _postprocess_program_list_rows(
     include_closed_recent: bool,
     limit: int,
     offset: int,
+    prefer_work24_default_mix: bool = False,
 ) -> list[dict[str, Any]]:
     serialized_rows = _filter_program_rows_by_deadline_window(
         _filter_program_rows_by_extra_filters(
@@ -1549,6 +1639,8 @@ def _postprocess_program_list_rows(
             sort=sort,
             include_closed_recent=include_closed_recent,
         )
+    if prefer_work24_default_mix:
+        sorted_rows = _mix_work24_default_rows(sorted_rows)
     return sorted_rows[offset : offset + limit]
 
 
@@ -1815,6 +1907,7 @@ def _build_default_recommendation_items(
     *,
     top_k: int,
     reason: str,
+    prefer_work24_default_mix: bool = False,
 ) -> list[ProgramRecommendItem]:
     scored_programs: list[dict[str, Any]] = []
     for program in programs:
@@ -1836,6 +1929,8 @@ def _build_default_recommendation_items(
             _parse_program_deadline(program.get("deadline")) or date.max,
         )
     )
+    if prefer_work24_default_mix:
+        scored_programs = _mix_work24_default_rows(scored_programs)
 
     return [
         ProgramRecommendItem(
@@ -2662,6 +2757,13 @@ async def list_programs(
         sort=sort,
     )
     rows = await _fetch_program_list_rows(params, q=q)
+    prefer_work24_default_mix = _should_apply_work24_default_mix(
+        category=category,
+        category_detail=category_detail,
+        q=q,
+        sources=sources,
+        targets=targets,
+    )
     return _postprocess_program_list_rows(
         rows,
         q=q,
@@ -2675,6 +2777,7 @@ async def list_programs(
         include_closed_recent=include_closed_recent,
         limit=limit,
         offset=offset,
+        prefer_work24_default_mix=prefer_work24_default_mix,
     )
 
 
@@ -2760,15 +2863,24 @@ async def get_program_filter_options(
 
 @programs_router.get("/popular")
 async def list_popular_programs() -> Any:
-    return await request_supabase(
+    rows = await request_supabase(
         method="GET",
         path="/rest/v1/programs",
         params={
             "select": "*",
             "is_ad": "eq.false",
             "order": "deadline.asc.nullslast",
-            "limit": "10",
+            "limit": "100",
         },
+    )
+    return _postprocess_program_list_rows(
+        rows if isinstance(rows, list) else [],
+        recruiting_only=True,
+        sort="deadline",
+        include_closed_recent=False,
+        limit=10,
+        offset=0,
+        prefer_work24_default_mix=True,
     )
 
 
@@ -2861,6 +2973,7 @@ async def recommend_programs(
     payload: ProgramRecommendRequest,
     authorization: str | None = Header(default=None),
 ) -> ProgramRecommendResponse:
+    prefer_work24_default_mix = _should_apply_work24_default_mix(category=payload.category)
     raw_programs = await _fetch_program_rows(
         limit=PROGRAM_SEARCH_SCAN_LIMIT,
         category=payload.category,
@@ -2873,6 +2986,7 @@ async def recommend_programs(
         include_closed_recent=False,
         limit=PROGRAM_SEARCH_SCAN_LIMIT,
         offset=0,
+        prefer_work24_default_mix=prefer_work24_default_mix,
     )
     if not programs:
         return ProgramRecommendResponse(items=[])
@@ -2883,6 +2997,7 @@ async def recommend_programs(
                 programs,
                 top_k=payload.top_k,
                 reason="최근 마감 일정과 공개 정보 기준으로 우선 노출한 프로그램입니다.",
+                prefer_work24_default_mix=prefer_work24_default_mix,
             )
         )
 
@@ -2958,6 +3073,7 @@ async def recommend_programs(
                 programs,
                 top_k=payload.top_k,
                 reason="프로필 기반 추천 데이터가 충분하지 않아 기본 프로그램 목록을 보여줍니다.",
+                prefer_work24_default_mix=prefer_work24_default_mix,
             )
         )
 
@@ -2976,6 +3092,7 @@ async def recommend_programs(
                 programs,
                 top_k=payload.top_k,
                 reason="프로필 기반 추천 데이터가 충분하지 않아 기본 프로그램 목록을 보여줍니다.",
+                prefer_work24_default_mix=prefer_work24_default_mix,
             )
         )
 
@@ -2999,6 +3116,7 @@ async def recommend_programs_calendar(
     region: str | None = None,
     force_refresh: bool = False,
 ) -> CalendarRecommendResponse:
+    prefer_work24_default_mix = _should_apply_work24_default_mix(category=category)
     raw_programs = await _fetch_program_rows(
         limit=PROGRAM_SEARCH_SCAN_LIMIT,
         category=category,
@@ -3011,6 +3129,7 @@ async def recommend_programs_calendar(
         include_closed_recent=False,
         limit=PROGRAM_SEARCH_SCAN_LIMIT,
         offset=0,
+        prefer_work24_default_mix=prefer_work24_default_mix,
     )
     if not programs:
         return CalendarRecommendResponse(items=[])

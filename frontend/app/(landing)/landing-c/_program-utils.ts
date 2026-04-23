@@ -5,8 +5,15 @@ import type { Program } from "@/lib/types";
 
 import { OPPORTUNITY_FEED_SIZE, SEOUL_DISTRICTS, liveBoardSources } from "./_content";
 
+const DEFAULT_WORK24_TARGET_RATIO = 0.7;
+
 export function sourceLabel(program: Program): string {
   return [program.source || program.provider, locationLabel(program)].filter(Boolean).join(" · ") || "프로그램 정보";
+}
+
+export function isWork24Program(program: Program): boolean {
+  const sourceText = [program.source, program.provider].filter(Boolean).join(" ").toLowerCase();
+  return sourceText.includes("고용24") || sourceText.includes("work24");
 }
 
 export function providerLabel(program: Program): string {
@@ -229,15 +236,65 @@ function opportunityCompletenessScore(program: Program): number {
   return score;
 }
 
-export function orderOpportunityPrograms(programs: Program[]): Program[] {
-  return programs
+type Work24ExposureOptions = {
+  preferWork24?: boolean;
+  limit?: number;
+};
+
+function balanceWork24Exposure(
+  programs: Program[],
+  { preferWork24 = true, limit = programs.length }: Work24ExposureOptions = {},
+): Program[] {
+  const cappedLimit = Math.max(0, limit);
+  if (!preferWork24 || cappedLimit === 0) {
+    return programs.slice(0, cappedLimit);
+  }
+
+  const work24Programs = programs.filter(isWork24Program);
+  const otherPrograms = programs.filter((program) => !isWork24Program(program));
+  if (work24Programs.length === 0 || otherPrograms.length === 0) {
+    return programs.slice(0, cappedLimit);
+  }
+
+  const mixed: Program[] = [];
+  let work24Index = 0;
+  let otherIndex = 0;
+  while (mixed.length < programs.length) {
+    const desiredWork24Count = Math.round((mixed.length + 1) * DEFAULT_WORK24_TARGET_RATIO);
+    const shouldTakeWork24 =
+      work24Index < work24Programs.length &&
+      (work24Index < desiredWork24Count || otherIndex >= otherPrograms.length);
+
+    if (shouldTakeWork24) {
+      mixed.push(work24Programs[work24Index]);
+      work24Index += 1;
+    } else if (otherIndex < otherPrograms.length) {
+      mixed.push(otherPrograms[otherIndex]);
+      otherIndex += 1;
+    } else if (work24Index < work24Programs.length) {
+      mixed.push(work24Programs[work24Index]);
+      work24Index += 1;
+    } else {
+      break;
+    }
+  }
+
+  return mixed.slice(0, cappedLimit);
+}
+
+export function orderOpportunityPrograms(programs: Program[], options?: Work24ExposureOptions): Program[] {
+  const ordered = programs
     .map((program, index) => ({ program, index }))
     .toSorted((a, b) => {
       const scoreDiff = opportunityCompletenessScore(b.program) - opportunityCompletenessScore(a.program);
       return scoreDiff || a.index - b.index;
     })
-    .map(({ program }) => program)
-    .slice(0, OPPORTUNITY_FEED_SIZE);
+    .map(({ program }) => program);
+
+  return balanceWork24Exposure(ordered, {
+    ...options,
+    limit: options?.limit ?? OPPORTUNITY_FEED_SIZE,
+  });
 }
 
 function liveBoardSourceText(program: Program): string {
@@ -254,14 +311,16 @@ function parseDeadlineTime(program: Program): number {
   return Number.isNaN(timestamp) ? Number.MAX_SAFE_INTEGER : timestamp;
 }
 
-export function getLiveBoardPrograms(programs: Program[]): Program[] {
-  return liveBoardSources.flatMap((source) => {
-    const sourcePrograms = programs
-      .filter((program) => isLiveBoardSource(program, source.matches))
-      .filter((program) => typeof program.days_left !== "number" || program.days_left >= 0)
-      .toSorted((a, b) => parseDeadlineTime(a) - parseDeadlineTime(b));
+export function getLiveBoardPrograms(programs: Program[], options?: Work24ExposureOptions): Program[] {
+  const sourceMatches = liveBoardSources.flatMap((source) => [...source.matches]);
+  const eligiblePrograms = programs
+    .filter((program) => isLiveBoardSource(program, sourceMatches))
+    .filter((program) => typeof program.days_left !== "number" || program.days_left >= 0)
+    .toSorted((a, b) => parseDeadlineTime(a) - parseDeadlineTime(b));
 
-    return sourcePrograms[0] ? [sourcePrograms[0]] : [];
+  return balanceWork24Exposure(eligiblePrograms, {
+    ...options,
+    limit: options?.limit ?? liveBoardSources.length,
   });
 }
 
