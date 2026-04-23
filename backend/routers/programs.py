@@ -739,6 +739,8 @@ def _build_calendar_item(
     relevance_badge: str | None = None,
 ) -> CalendarRecommendItem | None:
     deadline = _resolve_program_deadline(program)
+    if not deadline:
+        return None
     if _is_expired_program(program):
         return None
 
@@ -882,6 +884,15 @@ def _program_order_clause(sort: str) -> str:
     return "deadline.asc.nullslast"
 
 
+def _requires_resolved_deadline_scan(
+    *,
+    recruiting_only: bool,
+    include_closed_recent: bool,
+    sort: str,
+) -> bool:
+    return include_closed_recent or recruiting_only or sort == "deadline"
+
+
 def _build_program_query_params(
     *,
     select: str,
@@ -905,11 +916,16 @@ def _build_program_query_params(
         "order": _program_order_clause(effective_sort),
     }
 
+    should_scan_resolved_deadline = _requires_resolved_deadline_scan(
+        recruiting_only=recruiting_only,
+        include_closed_recent=include_closed_recent,
+        sort=effective_sort,
+    )
     if limit is not None:
-        params["limit"] = str(limit)
-    elif q or (recruiting_only and effective_sort == "latest"):
+        params["limit"] = str(PROGRAM_SEARCH_SCAN_LIMIT if should_scan_resolved_deadline else limit)
+    elif q or should_scan_resolved_deadline:
         params["limit"] = str(PROGRAM_SEARCH_SCAN_LIMIT)
-    if offset is not None:
+    if offset is not None and not should_scan_resolved_deadline:
         params["offset"] = str(offset)
     if category:
         params["category"] = f"eq.{category}"
@@ -919,12 +935,6 @@ def _build_program_query_params(
         params["scope"] = f"eq.{scope}"
     if region_detail:
         params["region_detail"] = f"eq.{region_detail}"
-    today_iso = date.today().isoformat()
-    recent_cutoff_iso = (date.today() - timedelta(days=90)).isoformat()
-    if include_closed_recent:
-        params["deadline"] = f"gte.{recent_cutoff_iso}"
-    elif recruiting_only or effective_sort == "deadline":
-        params["deadline"] = f"gte.{today_iso}"
     normalized_teaching_methods = _normalize_teaching_methods_param(teaching_methods)
     if normalized_teaching_methods:
         quoted_values = ",".join(f'"{value}"' for value in normalized_teaching_methods)
@@ -1468,12 +1478,24 @@ def _sort_program_list_rows(
     return sorted(rows, key=sort_key)
 
 
-def _filter_program_rows_by_recruiting_state(
+def _filter_program_rows_by_deadline_window(
     rows: list[dict[str, Any]],
     *,
     recruiting_only: bool,
+    include_closed_recent: bool,
+    sort: str,
 ) -> list[dict[str, Any]]:
-    if not recruiting_only:
+    if include_closed_recent:
+        recent_cutoff = date.today() - timedelta(days=90)
+        return [
+            row
+            for row in rows
+            if (
+                (parsed_deadline := _parse_program_deadline(str(row.get("deadline") or "")))
+                and parsed_deadline >= recent_cutoff
+            )
+        ]
+    if not recruiting_only and sort != "deadline":
         return rows
     return [
         row
@@ -1497,7 +1519,7 @@ def _postprocess_program_list_rows(
     limit: int,
     offset: int,
 ) -> list[dict[str, Any]]:
-    serialized_rows = _filter_program_rows_by_recruiting_state(
+    serialized_rows = _filter_program_rows_by_deadline_window(
         _filter_program_rows_by_extra_filters(
             _filter_program_rows_by_query(
                 [_serialize_program_list_row(row) for row in rows],
@@ -1510,6 +1532,8 @@ def _postprocess_program_list_rows(
             employment_links=employment_links,
         ),
         recruiting_only=recruiting_only,
+        include_closed_recent=include_closed_recent,
+        sort=sort,
     )
     if _normalize_search_text(q):
         sorted_rows = sorted(
@@ -1558,12 +1582,34 @@ async def _fetch_program_rows(
     if region:
         params["location"] = f"ilike.*{region}*"
 
-    rows = await request_supabase(
-        method="GET",
-        path="/rest/v1/programs",
-        params=params,
-    )
-    return rows if isinstance(rows, list) else []
+    if limit <= PROGRAM_SEARCH_SCAN_PAGE_SIZE:
+        rows = await request_supabase(
+            method="GET",
+            path="/rest/v1/programs",
+            params=params,
+        )
+        return rows if isinstance(rows, list) else []
+
+    rows: list[dict[str, Any]] = []
+    offset = 0
+    while len(rows) < limit:
+        page_params = {
+            **params,
+            "limit": str(min(PROGRAM_SEARCH_SCAN_PAGE_SIZE, limit - len(rows))),
+            "offset": str(offset),
+        }
+        page = await request_supabase(
+            method="GET",
+            path="/rest/v1/programs",
+            params=page_params,
+        )
+        if not isinstance(page, list) or not page:
+            break
+        rows.extend(page)
+        if len(page) < PROGRAM_SEARCH_SCAN_PAGE_SIZE:
+            break
+        offset += PROGRAM_SEARCH_SCAN_PAGE_SIZE
+    return rows
 
 
 async def _fetch_programs_by_ids(program_ids: list[str]) -> dict[str, dict[str, Any]]:
@@ -1973,7 +2019,7 @@ async def _count_program_rows(
         select=(
             "*"
             if _normalize_search_text(q) or has_extra_filters
-            else "id,source,deadline,close_date,end_date,is_active,created_at"
+            else "id,source,deadline,close_date,end_date,compare_meta,is_active,created_at"
         ),
         category=category,
         category_detail=category_detail,
@@ -1989,7 +2035,7 @@ async def _count_program_rows(
     rows = await _fetch_program_list_rows(params, q=q)
     return len(
         _sort_program_list_rows(
-            _filter_program_rows_by_recruiting_state(
+            _filter_program_rows_by_deadline_window(
                 _filter_program_rows_by_extra_filters(
                     _filter_program_rows_by_query([_serialize_program_list_row(row) for row in rows], q),
                     cost_types=cost_types,
@@ -1999,6 +2045,8 @@ async def _count_program_rows(
                     employment_links=employment_links,
                 ),
                 recruiting_only=recruiting_only,
+                include_closed_recent=include_closed_recent,
+                sort="deadline",
             ),
             sort="deadline",
             include_closed_recent=include_closed_recent,
@@ -2193,7 +2241,7 @@ def _build_program_detail_response(program: dict[str, Any]) -> ProgramDetailResp
         program_end_date = None
     elif is_work24:
         application_start_date = _first_text(program.get("reg_start_date"))
-        application_end_date = _first_text(program.get("close_date"))
+        application_end_date = _first_text(program.get("close_date"), _resolve_program_deadline(program))
         program_start_date = _first_text(program.get("start_date"))
         program_end_date = _first_text(program.get("end_date"))
 
@@ -2701,7 +2749,12 @@ async def get_program_filter_options(
         fallback_params["select"] = select_fields.replace("target,", "")
         rows = await _fetch_program_list_rows(fallback_params, q=q)
     return _extract_program_filter_options(
-        _filter_program_rows_by_query([_serialize_program_list_row(row) for row in rows], q)
+        _filter_program_rows_by_deadline_window(
+            _filter_program_rows_by_query([_serialize_program_list_row(row) for row in rows], q),
+            recruiting_only=recruiting_only,
+            include_closed_recent=include_closed_recent,
+            sort="deadline",
+        )
     )
 
 
@@ -2808,10 +2861,18 @@ async def recommend_programs(
     payload: ProgramRecommendRequest,
     authorization: str | None = Header(default=None),
 ) -> ProgramRecommendResponse:
-    programs = await _fetch_program_rows(
-        limit=max(payload.top_k * 10, 50),
+    raw_programs = await _fetch_program_rows(
+        limit=PROGRAM_SEARCH_SCAN_LIMIT,
         category=payload.category,
         region=payload.region,
+    )
+    programs = _postprocess_program_list_rows(
+        raw_programs,
+        recruiting_only=True,
+        sort="deadline",
+        include_closed_recent=False,
+        limit=PROGRAM_SEARCH_SCAN_LIMIT,
+        offset=0,
     )
     if not programs:
         return ProgramRecommendResponse(items=[])
@@ -2938,10 +2999,18 @@ async def recommend_programs_calendar(
     region: str | None = None,
     force_refresh: bool = False,
 ) -> CalendarRecommendResponse:
-    programs = await _fetch_program_rows(
-        limit=max(top_k * 10, 50),
+    raw_programs = await _fetch_program_rows(
+        limit=PROGRAM_SEARCH_SCAN_LIMIT,
         category=category,
         region=region,
+    )
+    programs = _postprocess_program_list_rows(
+        raw_programs,
+        recruiting_only=True,
+        sort="deadline",
+        include_closed_recent=False,
+        limit=PROGRAM_SEARCH_SCAN_LIMIT,
+        offset=0,
     )
     if not programs:
         return CalendarRecommendResponse(items=[])

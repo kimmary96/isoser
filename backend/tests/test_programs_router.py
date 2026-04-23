@@ -38,11 +38,10 @@ def test_build_program_query_params_for_filtered_list() -> None:
     assert params["category_detail"] == "eq.web-development"
     assert "title" not in params
     assert params["search_text"] == "ilike.*부트캠프*"
-    assert params["limit"] == "20"
-    assert params["deadline"] == f"gte.{date.today().isoformat()}"
+    assert params["limit"] == str(programs.PROGRAM_SEARCH_SCAN_LIMIT)
+    assert "deadline" not in params
     assert params["order"] == "created_at.desc.nullslast"
-    assert params["limit"] == "20"
-    assert params["offset"] == "40"
+    assert "offset" not in params
     assert params["or"] == "(location.ilike.*서울*,location.ilike.*대전*,location.ilike.*충청*,location.ilike.*세종*)"
 
 
@@ -108,7 +107,7 @@ def test_build_program_query_params_expands_latest_recruiting_scan_limit() -> No
     )
 
     assert params["limit"] == str(programs.PROGRAM_SEARCH_SCAN_LIMIT)
-    assert params["deadline"] == f"gte.{date.today().isoformat()}"
+    assert "deadline" not in params
     assert params["order"] == "created_at.desc.nullslast"
 
 
@@ -119,7 +118,8 @@ def test_build_program_query_params_deadline_sort_only_includes_active_programs(
     )
 
     assert params["order"] == "deadline.asc.nullslast"
-    assert params["deadline"] == f"gte.{date.today().isoformat()}"
+    assert params["limit"] == str(programs.PROGRAM_SEARCH_SCAN_LIMIT)
+    assert "deadline" not in params
 
 
 def test_build_program_query_params_include_closed_recent_uses_90_day_cutoff() -> None:
@@ -129,7 +129,8 @@ def test_build_program_query_params_include_closed_recent_uses_90_day_cutoff() -
         sort="deadline",
     )
 
-    assert params["deadline"] == f"gte.{(date.today() - timedelta(days=90)).isoformat()}"
+    assert params["limit"] == str(programs.PROGRAM_SEARCH_SCAN_LIMIT)
+    assert "deadline" not in params
 
 
 def test_normalize_regions_param_splits_csv_values() -> None:
@@ -544,10 +545,10 @@ def test_build_program_detail_response_maps_work24_dates_as_program_period() -> 
     assert detail.provider == "그린컴퓨터아트학원"
     assert detail.location == "서울 종로구"
     assert detail.application_start_date is None
-    assert detail.application_end_date is None
+    assert detail.application_end_date == "2026-05-01"
     assert detail.program_start_date == "2026-04-23"
     assert detail.program_end_date == "2026-05-12"
-    assert detail.schedule_text == "운영 2026-04-23 ~ 2026-05-12"
+    assert detail.schedule_text == "신청 시작일 미정 ~ 2026-05-01"
     assert detail.source_url == "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20230000419940"
     assert detail.fee == 0
     assert detail.support_amount == 238320
@@ -559,6 +560,25 @@ def test_build_program_detail_response_maps_work24_dates_as_program_period() -> 
     assert detail.capacity_total == 20
     assert detail.capacity_remaining == 17
     assert detail.phone == "02-722-2111"
+
+
+def test_build_program_detail_response_uses_work24_application_deadline_from_meta() -> None:
+    detail = programs._build_program_detail_response(
+        {
+            "id": "work24-application-deadline",
+            "source": "고용24",
+            "title": "고용24 신청기간 보강 과정",
+            "start_date": "2026-04-23",
+            "end_date": "2026-05-12",
+            "deadline": "2026-05-12",
+            "compare_meta": {"application_deadline": "2026-04-20"},
+        }
+    )
+
+    assert detail.application_end_date == "2026-04-20"
+    assert detail.program_start_date == "2026-04-23"
+    assert detail.program_end_date == "2026-05-12"
+    assert detail.schedule_text == "신청 시작일 미정 ~ 2026-04-20"
 
 
 @pytest.mark.asyncio
@@ -643,6 +663,7 @@ def test_postprocess_program_list_rows_keeps_active_first_then_recent_closed() -
           {"id": "closed-older", "title": "closed-older", "deadline": older_closed_deadline, "is_active": True},
           {"id": "closed-recent", "title": "closed-recent", "deadline": closed_deadline, "is_active": True},
           {"id": "active", "title": "active", "deadline": active_deadline, "is_active": True},
+          {"id": "unknown", "title": "unknown", "source": "고용24", "deadline": active_deadline, "end_date": active_deadline, "is_active": True},
         ],
         sort="deadline",
         include_closed_recent=True,
@@ -854,6 +875,31 @@ async def test_fetch_program_list_rows_paginates_large_non_search_candidates(
         {"select": "*", "limit": str(programs.PROGRAM_SEARCH_SCAN_LIMIT)},
         q=None,
     )
+
+    assert len(rows) == programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE + 1
+    assert calls[0]["limit"] == str(programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE)
+    assert calls[0]["offset"] == "0"
+    assert calls[1]["offset"] == str(programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE)
+
+
+@pytest.mark.asyncio
+async def test_fetch_program_rows_paginates_large_recommendation_candidates(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[dict] = []
+
+    async def fake_request_supabase(*, method: str, path: str, params: dict, **_: object) -> list[dict]:
+        calls.append(dict(params))
+        offset = int(params.get("offset", 0))
+        if offset == 0:
+            return [{"id": f"row-{index}"} for index in range(programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE)]
+        if offset == programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE:
+            return [{"id": "row-last"}]
+        return []
+
+    monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
+
+    rows = await programs._fetch_program_rows(limit=programs.PROGRAM_SEARCH_SCAN_LIMIT)
 
     assert len(rows) == programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE + 1
     assert calls[0]["limit"] == str(programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE)
@@ -1622,3 +1668,23 @@ def test_recommend_calendar_sorts_by_final_score_then_deadline_and_excludes_expi
     assert [item["program_id"] for item in payload["items"]] == ["program-1", "program-2"]
     assert payload["items"][0]["deadline"] == earlier_deadline
     assert payload["items"][1]["deadline"] == later_deadline
+
+
+def test_build_calendar_item_drops_unresolved_work24_deadline() -> None:
+    training_end_date = (date.today() + timedelta(days=30)).isoformat()
+
+    item = programs._build_calendar_item(
+        program_id="work24-training-end-only",
+        reason="fallback",
+        program={
+            "id": "work24-training-end-only",
+            "source": "고용24",
+            "title": "훈련 종료일만 있는 과정",
+            "deadline": training_end_date,
+            "end_date": training_end_date,
+        },
+        relevance_score=0,
+        urgency_score=0,
+    )
+
+    assert item is None

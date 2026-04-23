@@ -5,6 +5,7 @@ import type { CalendarRecommendResponse, Program } from "@/lib/types";
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 const BACKEND_RECOMMEND_TIMEOUT_MS = 3500;
 const BACKEND_FALLBACK_TIMEOUT_MS = 2500;
+const SUPABASE_FALLBACK_SCAN_LIMIT = 1000;
 
 async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit, timeoutMs: number): Promise<Response> {
   const controller = new AbortController();
@@ -43,6 +44,29 @@ function toFallbackCalendarResponse(programs: Program[], topK: number): Calendar
   };
 }
 
+function isWork24Program(program: Program): boolean {
+  const source = String(program.source ?? "").toLowerCase();
+  return source.includes("고용24") || source.includes("work24");
+}
+
+function hasTrustedDeadline(program: Program): boolean {
+  if (!program.deadline) return false;
+  const deadline = String(program.deadline).slice(0, 10);
+  const endDate = String(program.end_date ?? "").slice(0, 10);
+  const compareMeta = program.compare_meta ?? {};
+  const metaDeadline =
+    compareMeta.application_deadline ||
+    compareMeta.application_end_date ||
+    compareMeta.recruitment_deadline ||
+    compareMeta.recruitment_end_date;
+
+  if (isWork24Program(program) && endDate && deadline === endDate && !metaDeadline) {
+    return false;
+  }
+
+  return true;
+}
+
 async function loadSupabaseFallbackPrograms(topK: number): Promise<CalendarRecommendResponse> {
   const supabase = await createServerSupabaseClient();
   const today = new Date().toISOString().slice(0, 10);
@@ -50,14 +74,15 @@ async function loadSupabaseFallbackPrograms(topK: number): Promise<CalendarRecom
     .from("programs")
     .select("*")
     .gte("deadline", today)
+    .not("source", "in", '("고용24","work24_training")')
     .order("deadline", { ascending: true, nullsFirst: false })
-    .limit(topK);
+    .limit(SUPABASE_FALLBACK_SCAN_LIMIT);
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return toFallbackCalendarResponse((data ?? []) as Program[], topK);
+  return toFallbackCalendarResponse(((data ?? []) as Program[]).filter(hasTrustedDeadline), topK);
 }
 
 export async function GET(request: Request) {

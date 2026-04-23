@@ -1,7 +1,7 @@
 import type { Program } from "@/lib/types";
 
 export function isDisplayableProgram(program: Program): boolean {
-  return Boolean(program.title?.trim() && program.source?.trim() && program.deadline);
+  return Boolean(program.title?.trim() && program.source?.trim());
 }
 
 export function normalizeTextList(value: string[] | string | null | undefined): string[] {

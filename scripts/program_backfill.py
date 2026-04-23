@@ -32,12 +32,17 @@ BACKFILL_FIELDS = (
     "location",
     "description",
     "deadline",
+    "close_date",
     "start_date",
     "end_date",
     "source_url",
+    "source_unique_key",
     "cost",
     "subsidy_amount",
+    "tags",
+    "skills",
     "compare_meta",
+    "raw_data",
 )
 
 
@@ -195,9 +200,20 @@ def build_patch(db_row: dict[str, Any], normalized: dict[str, Any], *, overwrite
         if is_blank(incoming):
             continue
         current = db_row.get(field)
-        if overwrite or is_blank(current):
+        should_replace_copied_work24_deadline = (
+            field == "deadline"
+            and is_work24_deadline_copied_from_end_date(db_row)
+            and _date_prefix(incoming) != _date_prefix(db_row.get("end_date"))
+        )
+        if overwrite or is_blank(current) or should_replace_copied_work24_deadline:
             if incoming != current:
                 patch[field] = incoming
+    if (
+        source_family(db_row) == "work24"
+        and not is_blank(patch.get("deadline"))
+        and is_blank(db_row.get("close_date"))
+    ):
+        patch["close_date"] = patch["deadline"]
     return patch
 
 

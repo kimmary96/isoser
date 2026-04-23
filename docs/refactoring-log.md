@@ -2574,3 +2574,7 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - 운영 DB에 누락될 수 있는 `category_detail`, `support_type`, `teaching_method`, `raw_data`, `search_text` 등 programs metadata 컬럼을 최신 migration 시작부에서 `add column if not exists`로 보강하도록 정리함
   - collector normalized row가 원본 `raw` payload를 `raw_data`로 넘기도록 추가해 신규 수집/재수집 row에서 원본 API 필드 비교가 가능하게 함
   - `scripts/program_source_diff.py`의 추적 필드에 `raw_data`를 포함해 live raw, DB raw_data, API/UI 매핑 차이를 같은 진단 리포트에서 볼 수 있게 함
+- 2026-04-23: `backend/routers/programs.py`, `scripts/program_backfill.py`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/program-utils.ts`, `backend/tests/test_programs_router.py`, `backend/tests/test_program_backfill.py`, `docs/current-state.md`, `reports/work24-deadline-risk-mitigation-result.md`
+  - 운영 DB에서 고용24 계열 3346개 row가 `deadline=end_date`로 확인된 상태를 반영해, 목록/count/filter-options/recommendation 경로가 DB `deadline >= today` 단일 필터를 먼저 걸지 않고 후보 scan 후 resolved deadline으로 후처리하도록 보강함
+  - 고용24 `deadline=end_date` row는 모집 마감일 미확인으로 처리하고, 캘린더 추천은 resolved deadline이 없는 프로그램을 날짜형 추천에서 제외하도록 조정함
+  - backfill은 기존 고용24 오염 deadline을 상세 페이지에서 찾은 실제 신청 마감일로 `overwrite` 없이 교체하고, 빈 `close_date`, `source_unique_key`, `skills`, `tags`, `raw_data`도 보강 후보로 포함함

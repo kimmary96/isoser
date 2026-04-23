@@ -297,3 +297,35 @@ def test_build_patch_can_overwrite_when_requested() -> None:
     normalized = {"provider": "새 기관"}
 
     assert build_patch(db_row, normalized, overwrite=True)["provider"] == "새 기관"
+
+
+def test_build_patch_replaces_copied_work24_deadline_with_detail_deadline() -> None:
+    db_row = {
+        "source": "고용24",
+        "deadline": "2026-06-30",
+        "end_date": "2026-06-30",
+        "close_date": None,
+    }
+    normalized = {"deadline": "2026-06-01"}
+
+    patch = build_patch(db_row, normalized, overwrite=False)
+
+    assert patch["deadline"] == "2026-06-01"
+    assert patch["close_date"] == "2026-06-01"
+
+
+def test_build_patch_backfills_identity_and_keyword_fields() -> None:
+    db_row = {
+        "source": "고용24",
+        "source_unique_key": None,
+        "skills": [],
+    }
+    normalized = {
+        "source_unique_key": "work24:AIG202500001:1:5000",
+        "skills": ["Python", "AI"],
+    }
+
+    patch = build_patch(db_row, normalized, overwrite=False)
+
+    assert patch["source_unique_key"] == "work24:AIG202500001:1:5000"
+    assert patch["skills"] == ["Python", "AI"]

@@ -411,7 +411,7 @@ function formatMethodAndRegion(program: Program): string {
 
 function formatRecruitingStatus(program: Program): string {
   const label = deadlineLabel(program);
-  if (!label) return "-";
+  if (!label) return "마감일 미확인";
   if (typeof program.days_left === "number" && program.days_left < 0) return "마감";
   return label;
 }
