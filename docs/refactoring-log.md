@@ -2591,3 +2591,6 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - 고용24 국민내일배움카드 목록 API 요청을 문서 기준 필수 파라미터(`srchTraStDt`, `srchTraEndDt`, `sort`, `sortCol` 포함)와 맞추고, scheduler/admin sync가 같은 `build_training_list_params` helper를 쓰도록 정리함
   - `srchNcsCd` 대신 문서 기준 `srchNcs1~4`를 지원하고, 기존 `ncs_code` 입력은 코드 길이에 따라 `srchNcs1~4`로 후방 호환 매핑함
   - scheduler는 env로 `wkendSe`, 지역 중분류, NCS 1~4차, 훈련유형/구분/종류, 과정명, 기관명, 정렬값을 넘길 수 있고, admin sync는 같은 파라미터를 query alias로 받을 수 있게 함
+- 2026-04-23: `backend/rag/collector/program_field_mapping.py`, `backend/rag/collector/normalizer.py`, `backend/rag/source_adapters/work24_training.py`, `backend/routers/admin.py`, `docs/data/work24-training-sync.md`, `reports/work24-region-normalization-refactoring-summary-2026-04-23.md`
+  - Work24 row의 `address`와 `trngAreaCd`에서 `region`/`region_detail`을 정규화해 전국 수집 시에도 프로그램이 서울 source meta에 고정되지 않도록 보강함
+  - collector normalizer와 admin sync payload가 row-level region 값을 보존하도록 연결하고, Work24 scheduler/admin sync env/query 사용법을 데이터 문서로 분리함

@@ -13,6 +13,7 @@ from rag.programs_rag import ProgramsRAG
 from rag.source_adapters.work24_training import Work24TrainingAdapter
 from utils.supabase_admin import request_supabase
 from rag.collector.normalizer import _classify_category
+from rag.collector.program_field_mapping import derive_korean_region
 
 try:
     from backend.logging_config import get_logger, log_event
@@ -77,6 +78,12 @@ def _normalize_program_row(row: dict[str, Any]) -> dict[str, Any]:
     target_text = str(row.get("target") or "").strip()
     target = [target_text] if target_text else []
     category = str(row.get("category_label") or "").strip() or str(row.get("category") or "").strip()
+    location = str(row.get("location") or "").strip() or None
+    region = str(row.get("region") or "").strip() or None
+    region_detail = str(row.get("region_detail") or "").strip() or None
+    if not region:
+        region, derived_region_detail = derive_korean_region(location)
+        region_detail = region_detail or derived_region_detail
     description = str(row.get("summary") or "").strip() or None
     support_type = str(row.get("support_type") or "").strip() or None
     teaching_method = str(row.get("teaching_method") or "").strip() or None
@@ -89,7 +96,9 @@ def _normalize_program_row(row: dict[str, Any]) -> dict[str, Any]:
         "hrd_id": hrd_id,
         "title": title,
         "category": _coerce_program_category(category or _classify_category(title), title),
-        "location": str(row.get("location") or "").strip() or None,
+        "location": location,
+        "region": region,
+        "region_detail": region_detail,
         "provider": provider,
         "description": description,
         "start_date": start_date,

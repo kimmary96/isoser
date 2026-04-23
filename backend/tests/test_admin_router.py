@@ -44,6 +44,20 @@ def test_normalize_program_row_keeps_distinct_work24_deadline() -> None:
     assert row["deadline"] == "2026-05-20"
 
 
+def test_normalize_program_row_preserves_work24_region_fields() -> None:
+    row = admin._normalize_program_row(
+        {
+            "hrd_id": "HRD-1",
+            "title": "고용24 훈련 과정",
+            "source": "고용24",
+            "location": "경기도 성남시 분당구",
+        }
+    )
+
+    assert row["region"] == "경기"
+    assert row["region_detail"] == "성남시"
+
+
 @pytest.mark.asyncio
 async def test_upsert_program_payload_retries_without_missing_columns(monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[list[str]] = []

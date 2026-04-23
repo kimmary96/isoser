@@ -3,6 +3,7 @@ from __future__ import annotations
 from backend.rag.collector.kstartup_collector import KstartupApiCollector
 from backend.rag.collector.normalizer import normalize
 from backend.rag.collector.program_field_mapping import (
+    derive_korean_region,
     map_kstartup_announcement_item,
     map_work24_training_item,
 )
@@ -22,6 +23,7 @@ def test_work24_collector_preserves_detail_fields_for_program_pages() -> None:
             "trainstCstId": "500012345678",
             "trainTarget": "국민내일배움카드(일반)",
             "address": "서울 강남구",
+            "trngAreaCd": "11680",
             "subTitle": "테스트 훈련기관",
             "contents": "훈련 과정 소개",
             "courseMan": "1,000,000",
@@ -40,6 +42,8 @@ def test_work24_collector_preserves_detail_fields_for_program_pages() -> None:
     assert row["hrd_id"] == "AIG202500001"
     assert row["source_unique_key"] == "work24:AIG202500001:7:500012345678"
     assert row["location"] == "서울 강남구"
+    assert row["region"] == "서울"
+    assert row["region_detail"] == "강남구"
     assert row["provider"] == "테스트 훈련기관"
     assert row["description"] == "훈련 과정 소개"
     assert row["start_date"] == "2026-04-22"
@@ -52,6 +56,8 @@ def test_work24_collector_preserves_detail_fields_for_program_pages() -> None:
     assert row["raw_data"]["title"] == "AI 데이터 분석 과정"
     assert row["skills"] == ["AI", "데이터", "IT", "소프트웨어", "정보기술"]
     assert row["compare_meta"]["ncs_code"] == "20010201"
+    assert row["compare_meta"]["address"] == "서울 강남구"
+    assert row["compare_meta"]["trng_area_code"] == "11680"
     assert row["compare_meta"]["trpr_degr"] == "7"
     assert row["compare_meta"]["trainst_cstmr_id"] == "500012345678"
     assert row["compare_meta"]["contact_phone"] == "02-1234-5678"
@@ -75,6 +81,26 @@ def test_work24_field_mapping_can_be_used_without_collector_state() -> None:
     assert mapped["description"] == "훈련기관"
     assert mapped["cost"] == 120000
     assert mapped["subsidy_amount"] == 0
+
+
+def test_work24_field_mapping_derives_non_seoul_region() -> None:
+    mapped = map_work24_training_item(
+        {
+            "title": "클라우드 과정",
+            "address": "부산광역시 해운대구 센텀로",
+            "trngAreaCd": "26350",
+        }
+    )
+
+    assert mapped["region"] == "부산"
+    assert mapped["region_detail"] == "해운대구"
+
+
+def test_derive_korean_region_falls_back_to_area_code() -> None:
+    region, region_detail = derive_korean_region("", "41135")
+
+    assert region == "경기"
+    assert region_detail == "경기"
 
 
 def test_kstartup_collector_preserves_description_provider_and_trace_meta() -> None:

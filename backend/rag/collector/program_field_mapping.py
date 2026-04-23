@@ -24,6 +24,46 @@ NCS_SKILL_PREFIXES = {
     "200102": ["정보기술"],
 }
 
+REGION_CODE_PREFIXES = {
+    "11": "서울",
+    "26": "부산",
+    "27": "대구",
+    "28": "인천",
+    "29": "광주",
+    "30": "대전",
+    "31": "울산",
+    "36": "세종",
+    "41": "경기",
+    "43": "충북",
+    "44": "충남",
+    "45": "전북",
+    "46": "전남",
+    "47": "경북",
+    "48": "경남",
+    "50": "제주",
+    "51": "강원",
+}
+
+REGION_ALIASES: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("서울", ("서울특별시", "서울시", "서울")),
+    ("부산", ("부산광역시", "부산시", "부산")),
+    ("대구", ("대구광역시", "대구시", "대구")),
+    ("인천", ("인천광역시", "인천시", "인천")),
+    ("광주", ("광주광역시", "광주시", "광주")),
+    ("대전", ("대전광역시", "대전시", "대전")),
+    ("울산", ("울산광역시", "울산시", "울산")),
+    ("세종", ("세종특별자치시", "세종시", "세종")),
+    ("경기", ("경기도", "경기")),
+    ("충북", ("충청북도", "충북")),
+    ("충남", ("충청남도", "충남")),
+    ("전북", ("전북특별자치도", "전라북도", "전북")),
+    ("전남", ("전라남도", "전남")),
+    ("경북", ("경상북도", "경북")),
+    ("경남", ("경상남도", "경남")),
+    ("제주", ("제주특별자치도", "제주도", "제주")),
+    ("강원", ("강원특별자치도", "강원도", "강원")),
+)
+
 
 def clean_text(value: object) -> str:
     return str(value or "").strip()
@@ -85,6 +125,46 @@ def query_param(value: str, key: str) -> str:
     return clean_text(values[0]) if values else ""
 
 
+def derive_korean_region(address: object = None, region_code: object = None) -> tuple[str | None, str | None]:
+    address_text = clean_text(address)
+    compact_address = address_text.replace(" ", "")
+    region = _region_from_address(compact_address) or _region_from_code(region_code)
+    detail = _region_detail_from_address(address_text, region) if region else None
+    return region, detail or region
+
+
+def _region_from_address(compact_address: str) -> str | None:
+    if not compact_address:
+        return None
+    for region, aliases in REGION_ALIASES:
+        if any(alias.replace(" ", "") in compact_address for alias in aliases):
+            return region
+    return None
+
+
+def _region_from_code(value: object) -> str | None:
+    digits = "".join(ch for ch in clean_text(value) if ch.isdigit())
+    if not digits:
+        return None
+    return REGION_CODE_PREFIXES.get(digits[:2])
+
+
+def _region_detail_from_address(address: str, region: str) -> str | None:
+    aliases = {
+        alias.replace(" ", "")
+        for known_region, known_aliases in REGION_ALIASES
+        if known_region == region
+        for alias in (known_region, *known_aliases)
+    }
+    for token in address.split():
+        normalized = token.strip().replace(",", "").replace("(", "").replace(")", "")
+        if not normalized or normalized.replace(" ", "") in aliases:
+            continue
+        if len(normalized) >= 2 and normalized.endswith(("시", "군", "구")):
+            return normalized
+    return None
+
+
 def work24_source_unique_key(item: dict[str, Any], source_url: str) -> str | None:
     hrd_id = clean_text(item.get("trprId")) or query_param(source_url, "tracseId")
     degree = clean_text(item.get("trprDegr")) or query_param(source_url, "tracseTme")
@@ -102,11 +182,14 @@ def work24_source_unique_key(item: dict[str, Any], source_url: str) -> str | Non
 
 def map_work24_training_item(item: dict[str, Any]) -> dict[str, Any]:
     source_url = clean_text(item.get("titleLink"))
+    address = clean_text(item.get("address")) or clean_text(item.get("ADDRESS"))
     provider_name = clean_text(item.get("subTitle"))
     start_date = clean_text(item.get("traStartDate"))
     end_date = clean_text(item.get("traEndDate"))
     description = clean_text(item.get("contents"))
     ncs_code = clean_text(item.get("ncsCd"))
+    training_area_code = clean_text(item.get("trngAreaCd")) or clean_text(item.get("TRNG_AREA_CD"))
+    region, region_detail = derive_korean_region(address, training_area_code)
 
     return {
         "title": clean_text(item.get("title")),
@@ -114,7 +197,9 @@ def map_work24_training_item(item: dict[str, Any]) -> dict[str, Any]:
         "target": [clean_text(item.get("trainTarget"))] if clean_text(item.get("trainTarget")) else None,
         "hrd_id": clean_text(item.get("trprId")) or None,
         "source_unique_key": work24_source_unique_key(item, source_url),
-        "location": clean_text(item.get("address")) or None,
+        "location": address or None,
+        "region": region,
+        "region_detail": region_detail,
         "provider": provider_name or None,
         "description": description or provider_name or None,
         "skills": [
@@ -137,6 +222,8 @@ def map_work24_training_item(item: dict[str, Any]) -> dict[str, Any]:
                     or None
                 ),
                 "ncs_code": ncs_code or None,
+                "address": address or None,
+                "trng_area_code": training_area_code or None,
                 "certificate": clean_text(item.get("certificate")) or None,
                 "contact_phone": clean_text(item.get("telNo")) or None,
                 "weekend_code": clean_text(item.get("wkendSe")) or None,

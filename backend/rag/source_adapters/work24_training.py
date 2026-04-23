@@ -15,10 +15,12 @@ try:
     from backend.rag.runtime_config import load_backend_dotenv
     from backend.rag.source_adapters.base import ApiSourceAdapter
     from backend.rag.collector.normalizer import _classify_category
+    from backend.rag.collector.program_field_mapping import derive_korean_region
 except ImportError:
     from rag.runtime_config import load_backend_dotenv
     from rag.source_adapters.base import ApiSourceAdapter
     from rag.collector.normalizer import _classify_category
+    from rag.collector.program_field_mapping import derive_korean_region
 
 SOURCE = ApiSourceAdapter(
     source_name="work24_training",
@@ -509,12 +511,17 @@ class Work24TrainingAdapter:
         title = _pick_first(row, ("TITLE", "title"))
         provider_name = _pick_first(row, ("SUB_TITLE", "subTitle"))
         target = _pick_first(row, ("TRAIN_TARGET", "trainTarget"))
+        location = _pick_first(row, ("ADDRESS", "address"))
+        training_area_code = _pick_first(row, ("TRNG_AREA_CD", "trngAreaCd"))
+        region, region_detail = derive_korean_region(location, training_area_code)
         return {
             "hrd_id": _pick_first(row, ("TRPR_ID", "trprId")),
             "title": title,
             "category": _pick_first(row, ("NCS_CD", "ncsCd")),
             "category_label": _classify_category(title),
-            "location": _pick_first(row, ("ADDRESS", "address")),
+            "location": location,
+            "region": region,
+            "region_detail": region_detail,
             "start_date": _pick_first(row, ("TRA_START_DATE", "traStartDate")),
             "end_date": _pick_first(row, ("TRA_END_DATE", "traEndDate")),
             "cost": _to_int(row.get("COURSE_MAN") if "COURSE_MAN" in row else row.get("courseMan")),
