@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 import type { ProgramSort } from "@/lib/types";
@@ -27,8 +27,6 @@ type ProgramsFilterBarProps = {
   selectedParticipationTimes: string[];
   selectedSources: string[];
   selectedTargets: string[];
-  selectedSelectionProcesses: string[];
-  selectedEmploymentLinks: string[];
   showClosedRecent: boolean;
   sort: ProgramSort;
   activeFilters: ProgramsFilterChip[];
@@ -38,8 +36,6 @@ type ProgramsFilterBarProps = {
   participationTimeOptions: readonly NamedFilterOption[];
   sourceOptions: readonly NamedFilterOption[];
   targetOptions: readonly NamedFilterOption[];
-  selectionProcessOptions: readonly NamedFilterOption[];
-  employmentLinkOptions: readonly NamedFilterOption[];
 };
 
 type FilterMenuOption = {
@@ -160,9 +156,11 @@ function MultiFilterMenu({
   function toggleValue(value: string) {
     if (values.includes(value)) {
       onChange(values.filter((item) => item !== value));
+      setIsOpen(false);
       return;
     }
     onChange([...values, value]);
+    setIsOpen(false);
   }
 
   return (
@@ -201,7 +199,10 @@ function MultiFilterMenu({
           <div className="mt-2 border-t border-slate-100 px-3 pt-2">
             <button
               type="button"
-              onClick={() => onChange([])}
+              onClick={() => {
+                onChange([]);
+                setIsOpen(false);
+              }}
               className="flex w-full items-center gap-2 rounded-xl px-2 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-50"
             >
               <input
@@ -229,8 +230,6 @@ export function ProgramsFilterBar({
   selectedParticipationTimes,
   selectedSources,
   selectedTargets,
-  selectedSelectionProcesses,
-  selectedEmploymentLinks,
   showClosedRecent,
   sort,
   activeFilters,
@@ -240,8 +239,6 @@ export function ProgramsFilterBar({
   participationTimeOptions,
   sourceOptions,
   targetOptions,
-  selectionProcessOptions,
-  employmentLinkOptions,
 }: ProgramsFilterBarProps) {
   const [pendingCategoryId, setPendingCategoryId] = useState(selectedCategoryId);
   const [pendingTeachingMethod, setPendingTeachingMethod] = useState(selectedTeachingMethods[0] || "");
@@ -250,9 +247,9 @@ export function ProgramsFilterBar({
   const [pendingParticipationTimes, setPendingParticipationTimes] = useState<string[]>(selectedParticipationTimes);
   const [pendingSources, setPendingSources] = useState<string[]>(selectedSources);
   const [pendingTargets, setPendingTargets] = useState<string[]>(selectedTargets);
-  const [pendingSelectionProcesses, setPendingSelectionProcesses] = useState<string[]>(selectedSelectionProcesses);
-  const [pendingEmploymentLinks, setPendingEmploymentLinks] = useState<string[]>(selectedEmploymentLinks);
   const [pendingSort, setPendingSort] = useState<ProgramSort>(sort);
+  const formRef = useRef<HTMLFormElement>(null);
+  const sortInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setPendingCategoryId(selectedCategoryId);
@@ -262,8 +259,6 @@ export function ProgramsFilterBar({
     setPendingParticipationTimes(selectedParticipationTimes);
     setPendingSources(selectedSources);
     setPendingTargets(selectedTargets);
-    setPendingSelectionProcesses(selectedSelectionProcesses);
-    setPendingEmploymentLinks(selectedEmploymentLinks);
     setPendingSort(sort);
   }, [
     selectedCategoryId,
@@ -273,8 +268,6 @@ export function ProgramsFilterBar({
     selectedParticipationTimes,
     selectedSources,
     selectedTargets,
-    selectedSelectionProcesses,
-    selectedEmploymentLinks,
     sort,
   ]);
 
@@ -309,24 +302,11 @@ export function ProgramsFilterBar({
         <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
           지원 가능한 프로그램 찾기
         </h1>
-        <p className="mt-2 text-sm leading-6 text-slate-500">
-          검색어와 핵심 조건을 먼저 고르고, 필요한 경우 추가 필터를 열어 좁혀보세요.
-        </p>
+        <p className="mt-2 text-sm leading-6 text-slate-500">핵심 조건을 먼저 고르고, 아래 검색창에서 키워드를 입력하세요.</p>
       </div>
 
-      <form method="GET" action="/programs" className="mt-6">
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(240px,1.5fr)_repeat(10,minmax(116px,0.74fr))_auto]">
-          <label className="block">
-            <span className="sr-only">검색</span>
-            <input
-              name="q"
-              type="search"
-              defaultValue={q}
-              placeholder="제목, 기관, 설명, 지역, 태그 검색"
-              className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-slate-900"
-            />
-          </label>
-
+      <form ref={formRef} method="GET" action="/programs" className="mt-6">
+        <div className="grid gap-3 md:grid-cols-4 lg:grid-cols-[repeat(8,minmax(116px,1fr))]">
           <input type="hidden" name="category_detail" value={pendingCategoryId === "all" ? "" : pendingCategoryId} />
           <input type="hidden" name="category" value={selectedCategory.category === "전체" ? "" : selectedCategory.category} />
           <FilterMenu
@@ -402,46 +382,50 @@ export function ProgramsFilterBar({
             onChange={setPendingTargets}
           />
 
-          {pendingSelectionProcesses.map((process) => (
-            <input key={process} type="hidden" name="selection_processes" value={process} />
-          ))}
-          <MultiFilterMenu
-            label="선발 절차"
-            values={pendingSelectionProcesses}
-            options={selectionProcessOptions}
-            placeholder="절차 전체"
-            onChange={setPendingSelectionProcesses}
-          />
-
-          {pendingEmploymentLinks.map((link) => (
-            <input key={link} type="hidden" name="employment_links" value={link} />
-          ))}
-          <MultiFilterMenu
-            label="채용 연계"
-            values={pendingEmploymentLinks}
-            options={employmentLinkOptions}
-            placeholder="연계 전체"
-            onChange={setPendingEmploymentLinks}
-          />
-
-          <input type="hidden" name="sort" value={pendingSort} />
+          <input ref={sortInputRef} type="hidden" name="sort" value={pendingSort} readOnly />
           <FilterMenu
             label="정렬"
             value={pendingSort}
             options={sortMenuOptions}
             placeholder="마감 임박순"
-            onChange={(value) => setPendingSort(value === "latest" ? "latest" : "deadline")}
+            onChange={(value) => {
+              const nextSort = value === "latest" ? "latest" : "deadline";
+              if (sortInputRef.current) {
+                sortInputRef.current.value = nextSort;
+              }
+              setPendingSort(nextSort);
+              formRef.current?.requestSubmit();
+            }}
           />
+        </div>
 
+        <div className="mt-4 grid gap-3 border-t border-slate-100 pt-4 md:grid-cols-4 md:items-center lg:grid-cols-8">
+          <label className="block md:col-span-2 lg:col-span-6">
+            <span className="sr-only">검색</span>
+            <input
+              name="q"
+              type="search"
+              defaultValue={q}
+              placeholder="제목, 기관, 설명, 지역, 태그 검색"
+              className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-slate-900"
+            />
+          </label>
           <button
             type="submit"
-            className="h-12 rounded-2xl bg-slate-950 px-5 text-sm font-semibold text-white transition hover:bg-slate-800"
+            className="h-12 w-full rounded-2xl bg-slate-950 px-3 text-sm font-semibold text-white transition hover:bg-slate-800"
           >
             검색
           </button>
+
+          <Link
+            href="/programs"
+            className="inline-flex h-12 w-full items-center justify-center rounded-2xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-800 transition hover:bg-slate-50"
+          >
+            초기화
+          </Link>
         </div>
 
-        <div className="mt-4 flex flex-col gap-3 border-t border-slate-100 pt-4 md:flex-row md:items-center md:justify-between">
+        <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <details className="group">
             <summary className="inline-flex cursor-pointer list-none items-center rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
               추가 필터 펼치기
@@ -465,13 +449,6 @@ export function ProgramsFilterBar({
               </label>
             </div>
           </details>
-
-          <Link
-            href="/programs"
-            className="inline-flex h-10 items-center justify-center rounded-full border border-slate-300 px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
-          >
-            초기화
-          </Link>
         </div>
       </form>
 

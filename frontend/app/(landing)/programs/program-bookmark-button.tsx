@@ -10,6 +10,7 @@ type ProgramBookmarkButtonProps = {
   isLoggedIn: boolean;
   initialBookmarked?: boolean;
   className?: string;
+  showLabel?: boolean;
 };
 
 export default function ProgramBookmarkButton({
@@ -17,6 +18,7 @@ export default function ProgramBookmarkButton({
   isLoggedIn,
   initialBookmarked = false,
   className = "",
+  showLabel = false,
 }: ProgramBookmarkButtonProps) {
   const bookmarkState = useProgramBookmarkState();
   const [localBookmarked, setLocalBookmarked] = useState(initialBookmarked);
@@ -55,7 +57,7 @@ export default function ProgramBookmarkButton({
         bookmarked ? "border-amber-200 bg-amber-50 text-amber-500" : "border-slate-200 bg-white text-slate-400 hover:text-amber-500"
       } ${!isLoggedIn ? "cursor-not-allowed opacity-60" : ""} ${className}`}
     >
-      ★
+      {showLabel ? (bookmarked ? "북마크됨" : "북마크") : "★"}
     </button>
   );
 }

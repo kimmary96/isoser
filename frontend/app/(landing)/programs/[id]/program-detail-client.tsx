@@ -7,8 +7,12 @@ import { useEffect, useMemo, useState } from "react";
 import AdSlot from "@/components/AdSlot";
 import type { ProgramDetail } from "@/lib/types";
 
+import ProgramBookmarkButton from "../program-bookmark-button";
+
 type ProgramDetailClientProps = {
   program: ProgramDetail;
+  isLoggedIn: boolean;
+  initialBookmarked?: boolean;
 };
 
 type DetailSection = {
@@ -162,8 +166,12 @@ function getRecordText(record: Record<string, unknown>, keys: string[]): string 
   return null;
 }
 
-export default function ProgramDetailClient({ program }: ProgramDetailClientProps) {
-  const [bookmarked, setBookmarked] = useState(false);
+export default function ProgramDetailClient({
+  program,
+  isLoggedIn,
+  initialBookmarked = false,
+}: ProgramDetailClientProps) {
+  const [shareStatus, setShareStatus] = useState<"idle" | "copied" | "failed">("idle");
   const eligibility = textList(program.eligibility);
   const tags = textList(program.tags);
   const techStack = textList(program.tech_stack);
@@ -458,6 +466,15 @@ export default function ProgramDetailClient({ program }: ProgramDetailClientProp
     return () => window.removeEventListener("scroll", handleScroll);
   }, [sections]);
 
+  async function handleShare() {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setShareStatus("copied");
+    } catch {
+      setShareStatus("failed");
+    }
+  }
+
   return (
     <main className="min-h-screen bg-slate-50 text-slate-950">
       <section className="border-b border-slate-200 bg-white">
@@ -575,23 +592,30 @@ export default function ProgramDetailClient({ program }: ProgramDetailClientProp
                 </a>
               ) : null}
               <div className="mt-3 grid grid-cols-2 gap-2">
+                {program.id ? (
+                  <ProgramBookmarkButton
+                    programId={String(program.id)}
+                    isLoggedIn={isLoggedIn}
+                    initialBookmarked={initialBookmarked}
+                    className="h-auto w-auto rounded-full px-4 py-2.5 text-sm font-bold"
+                    showLabel
+                  />
+                ) : null}
                 <button
                   type="button"
-                  onClick={() => setBookmarked((value) => !value)}
-                  className={`rounded-full border px-4 py-2.5 text-sm font-bold transition ${
-                    bookmarked ? "border-amber-300 bg-amber-50 text-amber-700" : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
-                  }`}
-                >
-                  {bookmarked ? "북마크됨" : "북마크"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => navigator.clipboard?.writeText(window.location.href)}
+                  onClick={handleShare}
                   className="rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 transition hover:border-slate-300"
                 >
                   공유
                 </button>
               </div>
+              <p className="mt-2 min-h-5 text-center text-xs font-medium text-slate-500" aria-live="polite">
+                {shareStatus === "copied"
+                  ? "상세 페이지 링크가 복사되었습니다."
+                  : shareStatus === "failed"
+                    ? "링크 복사에 실패했습니다. 주소창의 URL을 복사해 주세요."
+                    : ""}
+              </p>
             </div>
           </section>
 

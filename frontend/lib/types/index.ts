@@ -245,6 +245,14 @@ export interface CompareMeta {
   portfolio_required?: boolean | CompareStatus | null;
   interview_required?: boolean | CompareStatus | null;
   target_job?: string | null;
+  application_deadline?: string | null;
+  recruitment_deadline?: string | null;
+  recruitment_end_date?: string | null;
+  application_end_date?: string | null;
+  training_type?: string | null;
+  schedule_text?: string | null;
+  weekday_text?: string | null;
+  training_time?: string | null;
 }
 
 export interface Program {
@@ -281,6 +289,11 @@ export interface Program {
   rating_scale?: number | null;
   rating_display?: string | null;
   review_count?: number | null;
+  display_categories?: string[] | null;
+  participation_mode_label?: string | null;
+  participation_time_text?: string | null;
+  selection_process_label?: string | null;
+  extracted_keywords?: string[] | null;
   relevance_score?: number | null;
   relevance_reasons?: string[] | null;
   score_breakdown?: RelevanceScoreBreakdown | null;
@@ -345,6 +358,18 @@ export interface ProgramDetailBatchResponse {
 
 export interface ProgramBatchResponse {
   items: Program[];
+}
+
+export interface ProgramFilterOption {
+  value: string;
+  label: string;
+}
+
+export interface ProgramFilterOptionsResponse {
+  sources: ProgramFilterOption[];
+  targets: ProgramFilterOption[];
+  selection_processes: ProgramFilterOption[];
+  employment_links: ProgramFilterOption[];
 }
 
 export type ProgramSort = "deadline" | "latest";

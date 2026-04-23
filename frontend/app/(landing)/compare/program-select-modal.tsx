@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { listPrograms } from "@/lib/api/backend";
+import { getProgramFilterOptions, listPrograms } from "@/lib/api/backend";
 import { getDashboardBookmarks } from "@/lib/api/app";
-import type { Program } from "@/lib/types";
+import type { Program, ProgramFilterOption } from "@/lib/types";
 
 type ProgramSelectModalProps = {
   open: boolean;
@@ -33,6 +33,54 @@ function normalizePrograms(programs: Program[]): Program[] {
 
 function getProgramId(program: Program | null | undefined): string {
   return typeof program?.id === "string" ? program.id : "";
+}
+
+function sanitizeFilterOptions(options: ProgramFilterOption[]): ProgramFilterOption[] {
+  const seen = new Set<string>();
+  return options
+    .map((option) => ({
+      value: String(option.value || "").trim(),
+      label: String(option.label || option.value || "").trim(),
+    }))
+    .filter((option) => {
+      if (!option.value || seen.has(option.value)) return false;
+      seen.add(option.value);
+      return true;
+    });
+}
+
+function FilterSelect({
+  label,
+  value,
+  options,
+  placeholder,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: ProgramFilterOption[];
+  placeholder: string;
+  onChange: (value: string) => void;
+}) {
+  if (options.length === 0) return null;
+
+  return (
+    <label className="block min-w-0">
+      <span className="sr-only">{label}</span>
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 outline-none transition focus:border-blue-600"
+      >
+        <option value="">{placeholder}</option>
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
 }
 
 function getDeadlineLabel(daysLeft?: number | null): string {
@@ -127,6 +175,21 @@ export default function ProgramSelectModal({
   const [searchResults, setSearchResults] = useState<Program[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [sourceFilter, setSourceFilter] = useState("");
+  const [targetFilter, setTargetFilter] = useState("");
+  const [selectionProcessFilter, setSelectionProcessFilter] = useState("");
+  const [employmentLinkFilter, setEmploymentLinkFilter] = useState("");
+  const [filterOptions, setFilterOptions] = useState<{
+    sources: ProgramFilterOption[];
+    targets: ProgramFilterOption[];
+    selectionProcesses: ProgramFilterOption[];
+    employmentLinks: ProgramFilterOption[];
+  }>({
+    sources: [],
+    targets: [],
+    selectionProcesses: [],
+    employmentLinks: [],
+  });
   const [bookmarksLoaded, setBookmarksLoaded] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -163,6 +226,10 @@ export default function ProgramSelectModal({
       setSearchResults([]);
       setSearchError(null);
       setSearchLoading(false);
+      setSourceFilter("");
+      setTargetFilter("");
+      setSelectionProcessFilter("");
+      setEmploymentLinkFilter("");
       return;
     }
 
@@ -216,14 +283,32 @@ export default function ProgramSelectModal({
       setSearchLoading(true);
       setSearchError(null);
       try {
-        const programs = await listPrograms({
-          q: query.trim() || undefined,
-          limit: 20,
-          sort: "deadline",
-          recruiting_only: true,
-        });
+        const [programs, options] = await Promise.all([
+          listPrograms({
+            q: query.trim() || undefined,
+            sources: sourceFilter ? [sourceFilter] : undefined,
+            targets: targetFilter ? [targetFilter] : undefined,
+            selection_processes: selectionProcessFilter ? [selectionProcessFilter] : undefined,
+            employment_links: employmentLinkFilter ? [employmentLinkFilter] : undefined,
+            limit: 20,
+            sort: "deadline",
+            recruiting_only: true,
+          }),
+          getProgramFilterOptions({
+            q: query.trim() || undefined,
+            recruiting_only: true,
+          }).catch(() => null),
+        ]);
         if (cancelled) return;
         setSearchResults(normalizePrograms(programs));
+        if (options) {
+          setFilterOptions({
+            sources: sanitizeFilterOptions(options.sources),
+            targets: sanitizeFilterOptions(options.targets),
+            selectionProcesses: sanitizeFilterOptions(options.selection_processes),
+            employmentLinks: sanitizeFilterOptions(options.employment_links),
+          });
+        }
       } catch (error) {
         if (cancelled) return;
         setSearchError(
@@ -241,7 +326,7 @@ export default function ProgramSelectModal({
       cancelled = true;
       window.clearTimeout(timeoutId);
     };
-  }, [activeTab, open, query]);
+  }, [activeTab, employmentLinkFilter, open, query, selectionProcessFilter, sourceFilter, targetFilter]);
 
   if (!isMounted || !open || slotIndex === null) return null;
 
@@ -365,6 +450,36 @@ export default function ProgramSelectModal({
                   placeholder="프로그램명, 카테고리, 기관 검색..."
                   className="w-full rounded-lg border border-[1.5px] border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-600"
                 />
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <FilterSelect
+                    label="운영 기관"
+                    value={sourceFilter}
+                    options={filterOptions.sources}
+                    placeholder="기관 전체"
+                    onChange={setSourceFilter}
+                  />
+                  <FilterSelect
+                    label="추천 대상"
+                    value={targetFilter}
+                    options={filterOptions.targets}
+                    placeholder="대상 전체"
+                    onChange={setTargetFilter}
+                  />
+                  <FilterSelect
+                    label="선발 절차"
+                    value={selectionProcessFilter}
+                    options={filterOptions.selectionProcesses}
+                    placeholder="절차 전체"
+                    onChange={setSelectionProcessFilter}
+                  />
+                  <FilterSelect
+                    label="채용 연계"
+                    value={employmentLinkFilter}
+                    options={filterOptions.employmentLinks}
+                    placeholder="연계 전체"
+                    onChange={setEmploymentLinkFilter}
+                  />
+                </div>
                 <div className="mt-4">
                   {searchLoading ? (
                     <div className="flex items-center justify-center py-12 text-sm text-slate-500">
