@@ -136,6 +136,31 @@ def test_read_model_query_limits_default_browse_pool() -> None:
     assert params["order"].startswith("recommended_score.desc")
 
 
+def test_read_model_query_supports_offset_pagination() -> None:
+    params, mode = programs._build_read_model_params(
+        category=None,
+        category_detail=None,
+        scope=None,
+        region_detail=None,
+        q=None,
+        regions=None,
+        sources=None,
+        teaching_methods=None,
+        cost_types=None,
+        participation_times=None,
+        targets=None,
+        recruiting_only=True,
+        include_closed_recent=False,
+        sort="default",
+        limit=20,
+        offset=40,
+    )
+
+    assert mode == "browse"
+    assert params["limit"] == "21"
+    assert params["offset"] == "40"
+
+
 def test_read_model_summary_select_excludes_heavy_detail_fields() -> None:
     selected = set(programs.PROGRAM_LIST_SUMMARY_SELECT.split(","))
 
@@ -245,6 +270,43 @@ async def test_list_programs_page_uses_read_model_and_cursor(monkeypatch: pytest
     assert len(response.items) == 1
     assert response.next_cursor is not None
     assert response.count == 1
+
+
+@pytest.mark.asyncio
+async def test_list_programs_page_forwards_offset_to_read_model(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[dict[str, object]] = []
+
+    async def fake_request_supabase(**kwargs: object) -> list[dict[str, object]]:
+        calls.append(kwargs)
+        params = kwargs.get("params")
+        assert isinstance(params, dict)
+        if params.get("select") == "id":
+            return [{"id": "program-1"}]
+        return [
+            {
+                "id": "00000000-0000-0000-0000-000000000021",
+                "title": "21번째 과정",
+                "source": "고용24",
+                "recommended_score": 0.7,
+            }
+        ]
+
+    monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
+    monkeypatch.setenv("ENABLE_PROGRAM_LIST_READ_MODEL", "true")
+
+    response = await programs.list_programs_page(
+        regions=None,
+        sources=None,
+        teaching_methods=None,
+        cost_types=None,
+        participation_times=None,
+        targets=None,
+        offset=20,
+        limit=20,
+    )
+
+    assert response.source == "read_model"
+    assert calls[0]["params"]["offset"] == "20"  # type: ignore[index]
 
 
 def test_promoted_and_organic_read_model_params_do_not_mix_scores() -> None:

@@ -2572,6 +2572,7 @@ def _build_read_model_params(
     include_closed_recent: bool,
     sort: str,
     limit: int,
+    offset: int = 0,
     cursor: str | None = None,
     count: bool = False,
 ) -> tuple[dict[str, Any], Literal["browse", "search", "archive"]]:
@@ -2583,7 +2584,10 @@ def _build_read_model_params(
     }
     if not count:
         params["limit"] = str(limit + 1)
-        _apply_read_model_cursor(params, cursor=cursor, sort=effective_sort)
+        if cursor:
+            _apply_read_model_cursor(params, cursor=cursor, sort=effective_sort)
+        elif offset > 0:
+            params["offset"] = str(offset)
 
     effective_category = category or PROGRAM_CATEGORY_PARENT_CATEGORIES.get(str(category_detail or "").strip())
     if effective_category:
@@ -2652,6 +2656,7 @@ async def _fetch_program_list_read_model_rows(
     include_closed_recent: bool = False,
     sort: str = "default",
     limit: int = 20,
+    offset: int = 0,
     cursor: str | None = None,
 ) -> ProgramListPageResponse:
     started = time.perf_counter()
@@ -2671,6 +2676,7 @@ async def _fetch_program_list_read_model_rows(
         include_closed_recent=include_closed_recent,
         sort=sort,
         limit=limit,
+        offset=offset,
         cursor=cursor,
     )
     rows = await request_supabase(method="GET", path=f"/rest/v1/{PROGRAM_LIST_INDEX_TABLE}", params=params)
@@ -3414,7 +3420,8 @@ async def list_programs_page(
     include_closed_recent: bool = False,
     sort: str = Query(default="default"),
     limit: int = Query(default=20, ge=1, le=100),
-    cursor: str | None = Query(default=None),
+    offset: int = 0,
+    cursor: str | None = None,
 ) -> ProgramListPageResponse:
     if _program_list_read_model_enabled():
         try:
@@ -3434,6 +3441,7 @@ async def list_programs_page(
                 include_closed_recent=include_closed_recent,
                 sort=sort,
                 limit=limit,
+                offset=offset,
                 cursor=cursor,
             )
             response.count = await _count_program_read_model_rows(
@@ -3473,7 +3481,7 @@ async def list_programs_page(
         include_closed_recent=include_closed_recent,
         sort=sort,
         limit=limit,
-        offset=0,
+        offset=offset,
         cursor=None,
     )
     return ProgramListPageResponse(

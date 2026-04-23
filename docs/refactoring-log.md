@@ -1,5 +1,25 @@
 # 리팩토링 로그
 
+## 2026-04-23 programs 페이지 숫자 페이지네이션 복구
+
+- 변경 파일
+  - `backend/routers/programs.py`
+  - `backend/tests/test_programs_router.py`
+  - `frontend/app/(landing)/programs/page.tsx`
+  - `frontend/lib/api/backend.ts`
+  - `docs/current-state.md`
+  - `reports/programs-pagination-result.md`
+- 변경 내용
+  - `/programs/list` read-model 경로에 `offset` query를 지원해 cursor 없이도 `page` 기반 페이지 이동이 가능하게 함
+  - 프론트 프로그램 페이지의 cursor 전용 `처음/다음` 분기를 제거하고 기존 숫자 페이지네이션(`이전 1 2 3 다음`)을 항상 사용하도록 복구함
+  - `listProgramsPage` frontend helper가 `offset`을 API query로 전달하도록 수정함
+  - 기존 URL 필터/정렬/카테고리/모집중 조건은 페이지 번호 링크에 그대로 유지함
+- 검증
+  - 운영 Supabase read-model 직접 호출 기준 `offset=0`과 `offset=20` 모두 `items=20`, `count=300`, `source=read_model`이며 첫 item id가 달라 실제 페이지 내용이 바뀜
+  - `backend\venv\Scripts\python.exe -m pytest backend\tests\test_programs_router.py -q` 통과 (`91 passed`)
+  - `npx --prefix frontend tsc -p frontend/tsconfig.codex-check.json --noEmit` 통과
+  - `npm --prefix frontend run lint` 통과
+
 ## 2026-04-23 programs read model 품질 보강
 
 - 변경 파일

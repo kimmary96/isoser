@@ -124,7 +124,6 @@ type ProgramsPageSearchParams = {
   targets?: string | string[];
   closed?: string | string[];
   scope?: string | string[];
-  cursor?: string | string[];
   sort?: string | string[];
   page?: string | string[];
 };
@@ -241,7 +240,6 @@ type ProgramsHrefParams = {
   sources?: string[];
   targets?: string[];
   closed?: boolean;
-  cursor?: string;
   sort?: ProgramSort;
   page?: number;
 };
@@ -271,7 +269,6 @@ function buildProgramsHref(params: ProgramsHrefParams): string {
   }
   if (params.q) searchParams.set("scope", "all");
   if (params.closed) searchParams.set("closed", "true");
-  if (params.cursor) searchParams.set("cursor", params.cursor);
   if (params.sort && params.sort !== DEFAULT_SORT) searchParams.set("sort", params.sort);
   if (params.page && params.page > 1) searchParams.set("page", String(params.page));
 
@@ -724,9 +721,8 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
   const selectedSources = normalizeNamedOptions(resolvedSearchParams.sources, sourceOptions);
   const selectedTargets = normalizeNamedOptions(resolvedSearchParams.targets, targetOptions);
   const sort = normalizeSort(resolvedSearchParams.sort);
-  const cursor = normalizeQuery(resolvedSearchParams.cursor);
   const page = normalizePage(resolvedSearchParams.page);
-  const offset = cursor ? 0 : (page - 1) * PAGE_SIZE;
+  const offset = (page - 1) * PAGE_SIZE;
   const activeFilters = renderActiveFilters({
     q,
     categoryId: selectedCategory.id,
@@ -746,7 +742,6 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
   let programs: Program[] = [];
   let urgentPrograms: Program[] = [];
   let totalCount = 0;
-  let nextCursor: string | null = null;
   let error: string | null = null;
   let isLoggedIn = false;
   let bookmarkedProgramIds: string[] = [];
@@ -759,10 +754,10 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
     teaching_methods: selectedTeachingMethods,
     cost_types: selectedCostTypes,
     participation_times: selectedParticipationTimes,
-      targets: selectedTargets,
-      recruiting_only: recruitingOnly,
-      include_closed_recent: showClosedRecent,
-      scope: q ? "all" : showClosedRecent ? "archive" : "default",
+    targets: selectedTargets,
+    recruiting_only: recruitingOnly,
+    include_closed_recent: showClosedRecent,
+    scope: q ? "all" : showClosedRecent ? "archive" : "default",
   };
 
   try {
@@ -791,7 +786,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
         ...currentFilterParams,
         sort,
         limit: PAGE_SIZE,
-        cursor: cursor || undefined,
+        offset,
       }),
       listPrograms({
         ...currentFilterParams,
@@ -803,7 +798,6 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
       }),
     ]);
     programs = programsPage.items;
-    nextCursor = programsPage.next_cursor;
     totalCount = programsPage.count ?? programsPage.items.length;
     urgentPrograms = urgentRows;
   } catch (e) {
@@ -836,7 +830,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
     .filter(isDisplayableProgram)
     .filter((program) => typeof program.days_left === "number" && program.days_left >= 0 && program.days_left <= 7)
     .slice(0, 6);
-  const safePage = cursor ? 1 : Math.min(page, totalPages);
+  const safePage = Math.min(page, totalPages);
   const visiblePages = Array.from({ length: totalPages }, (_, index) => index + 1).filter(
     (pageNumber) => pageNumber >= Math.max(1, safePage - 2) && pageNumber <= Math.min(totalPages, safePage + 2)
   );
@@ -964,68 +958,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                       bookmarkedProgramIds={bookmarkedProgramIds}
                     />
 
-                    {cursor || nextCursor ? (
-                      <nav className="mt-8 flex flex-wrap items-center justify-center gap-2" aria-label="커서 페이지네이션">
-                        <Link
-                          href={buildProgramsHref({
-                            q,
-                            categoryId: selectedCategory.id,
-                            regions: selectedRegions,
-                            teachingMethods: selectedTeachingMethods,
-                            costTypes: selectedCostTypes,
-                            participationTimes: selectedParticipationTimes,
-                            sources: selectedSources,
-                            targets: selectedTargets,
-                            closed: showClosedRecent,
-                            sort,
-                          })}
-                          className={`rounded-xl border px-3 py-2 text-sm font-medium transition ${
-                            cursor
-                              ? "border-slate-300 text-slate-700 hover:bg-slate-100"
-                              : "pointer-events-none border-slate-200 text-slate-300"
-                          }`}
-                        >
-                          처음
-                        </Link>
-                        <Link
-                          href={
-                            nextCursor
-                              ? buildProgramsHref({
-                                  q,
-                                  categoryId: selectedCategory.id,
-                                  regions: selectedRegions,
-                                  teachingMethods: selectedTeachingMethods,
-                                  costTypes: selectedCostTypes,
-                                  participationTimes: selectedParticipationTimes,
-                                  sources: selectedSources,
-                                  targets: selectedTargets,
-                                  closed: showClosedRecent,
-                                  sort,
-                                  cursor: nextCursor,
-                                })
-                              : buildProgramsHref({
-                                  q,
-                                  categoryId: selectedCategory.id,
-                                  regions: selectedRegions,
-                                  teachingMethods: selectedTeachingMethods,
-                                  costTypes: selectedCostTypes,
-                                  participationTimes: selectedParticipationTimes,
-                                  sources: selectedSources,
-                                  targets: selectedTargets,
-                                  closed: showClosedRecent,
-                                  sort,
-                                })
-                          }
-                          className={`rounded-xl border px-3 py-2 text-sm font-medium transition ${
-                            nextCursor
-                              ? "border-slate-300 text-slate-700 hover:bg-slate-100"
-                              : "pointer-events-none border-slate-200 text-slate-300"
-                          }`}
-                        >
-                          다음
-                        </Link>
-                      </nav>
-                    ) : totalPages > 1 ? (
+                    {totalPages > 1 ? (
                       <nav className="mt-8 flex flex-wrap items-center justify-center gap-2" aria-label="페이지네이션">
                         <Link
                           href={buildProgramsHref({

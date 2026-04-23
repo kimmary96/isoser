@@ -296,6 +296,7 @@ export async function listProgramsPage(params?: ProgramListParams): Promise<Prog
   if (params?.include_closed_recent) searchParams.set("include_closed_recent", "true");
   if (params?.sort) searchParams.set("sort", params.sort);
   if (typeof params?.limit === "number") searchParams.set("limit", String(params.limit));
+  if (typeof params?.offset === "number") searchParams.set("offset", String(params.offset));
   if (params?.cursor) searchParams.set("cursor", params.cursor);
 
   const query = searchParams.toString();

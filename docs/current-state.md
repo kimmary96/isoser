@@ -8,11 +8,12 @@ Update 2026-04-23:
 - The read-model list select excludes heavy `compare_meta` and detail fields; detail pages still read those from `programs`.
 - `supabase/migrations/20260423191000_program_list_read_model_runtime_indexes.sql` adds runtime browse/deadline/facet indexes, and `20260423192000_optimize_program_list_refresh.sql` keeps read-model search text on allowlisted summary fields instead of full `compare_meta` JSON.
 - `supabase/migrations/20260423192000_optimize_program_list_refresh.sql` replaces the read-model refresh function with an explicit-column projection so refresh CTEs do not carry large source/detail columns such as raw collector payloads through scoring and ranking.
+- `frontend/app/(landing)/programs/page.tsx` uses offset-based `page` query pagination for the main table, so the read-model path renders numbered controls like `이전 1 2 3 다음` and the displayed page number changes with the list contents.
 - `supabase/migrations/20260423170000_add_program_list_read_model.sql` adds `program_list_index`, `program_list_facet_snapshots`, indexes, and `refresh_program_list_index(pool_limit)` so the public program list can use a summary read model instead of scanning source/detail rows for default browse traffic.
 - `backend/routers/programs.py` now prefers the read model for `GET /programs`, `GET /programs/list`, `GET /programs/count`, and `GET /programs/facets` when `ENABLE_PROGRAM_LIST_READ_MODEL` is enabled, with legacy fallback logging if the read model is unavailable.
 - Default browse mode is bounded by `PROGRAM_BROWSE_POOL_LIMIT` (default 300), search mode activates for `q` or `scope=all`, and archive mode activates for recent closed/closed scope. Cursor pagination uses stable sort value + id cursors on the read-model path.
 - `backend/services/program_list_scoring.py` contains the testable recommended score calculation. Deadline urgency only contributes when deadline confidence is high, and list items expose recommendation reason badges such as 우수기관, 만족도 상위, 마감임박, 최근 등록, and 상세정보 충실.
-- `frontend/app/(landing)/programs/page.tsx` now uses `listProgramsPage` for the main list, syncs cursor/scope through URL query, and renders recommendation reason badges from the API while keeping legacy fallback list loading.
+- `frontend/app/(landing)/programs/page.tsx` now uses `listProgramsPage` for the main list, syncs scope/page state through URL query, and renders recommendation reason badges from the API while keeping legacy fallback list loading.
 
 Update 2026-04-20:
 - `backend/routers/assistant.py` now adds `POST /assistant/message`, a thin deterministic assistant layer that routes one message into the existing coach, recommendation, or calendar recommendation flows.
