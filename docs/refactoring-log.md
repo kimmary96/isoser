@@ -1,5 +1,28 @@
 # 리팩토링 로그
 
+## 2026-04-23 blocked 문서 재점검 및 programs 필터/태그 보정
+
+- 변경 파일
+  - `backend/routers/programs.py`
+  - `backend/tests/test_programs_router.py`
+  - `docs/current-state.md`
+  - `reports/programs-filter-tags-ad-hoc-result.md`
+- 변경 내용
+  - `reports/program-detail-page-ad-hoc-blocked.md`는 이후 `TASK-2026-04-22-1618-program-detail-page`로 구현/검증 완료된 항목으로 분류함
+  - `reports/programs-filter-tags-ad-hoc-blocked.md`는 현재 backend에서 `category_detail=data-ai&category=AI`가 빈 결과를 반환하는 미반영 항목으로 확인해 보정함
+  - 세부 카테고리 필터가 운영 DB의 `category_detail` exact 값에만 의존하지 않고 큰 카테고리 후보 조회 후 파생 표시 카테고리와 alias로 후처리 매칭하도록 조정함
+  - 고용24 `근로자원격훈련` 같은 원천 target/raw 값을 목록 응답의 `teaching_method=온라인` 표시로 보정해 전체 목록에서도 온/오프라인 정보가 보이도록 함
+- 보존한 동작
+  - 기존 큰 카테고리, 검색어, 마감/모집중, 비용/참여시간/기관/대상 필터 흐름은 유지함
+  - 명시적으로 저장된 `teaching_method` 값은 우선 사용함
+- 검증
+  - `backend\venv\Scripts\python.exe -m pytest backend/tests/test_programs_router.py -q` 통과 (`78 passed`)
+  - `backend\venv\Scripts\python.exe -m py_compile backend\routers\programs.py` 통과
+  - 로컬 backend에서 `GET /programs/?category_detail=data-ai&category=AI&recruiting_only=true&limit=3`가 3건을 반환하고 첫 row의 `teaching_method=온라인`을 확인함
+- 리스크/후속 후보
+  - 세부 카테고리 alias 매칭은 보수적 문자열 규칙이라 운영 샘플이 늘면 false positive/negative를 계속 조정해야 함
+  - 장기적으로는 collector/backfill에서 `category_detail`과 `teaching_method`를 저장 시점에 채워 backend 후처리 비용을 줄이는 편이 좋음
+
 ## 2026-04-23 프로그램 검색/deadline audit/추천 캐시 정합화
 
 - 변경 파일
@@ -2650,3 +2673,7 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-23: `reports/work24-region-partition-sync-result-2026-04-23.md`
   - 후속 리스크 관리로 Chroma programs 후보 200건을 직접 sync해 200 synced, 0 skipped를 확인함
   - Gemini embedding 429 발생 후 local fallback으로 완료됐고, 현재 `CHROMA_MODE=ephemeral` 환경에서는 persistent index 보강이 아니라 프로세스 단위 smoke 검증임을 보고서에 명시함
+- 2026-04-23: `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/programs-filter-bar.tsx`, `frontend/lib/types/index.ts`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `reports/programs-sort-options-result.md`
+  - `/programs` 정렬 드롭다운을 `기본 정렬`, `마감 임박순`, `개강 빠른순`, `비용 낮은순`, `비용 높은순`, `짧은 기간순`, `긴 기간순` 순서로 재구성함
+  - `ProgramSort`와 backend `sort` 계약에 `default`, `start_soon`, `cost_low`, `cost_high`, `duration_short`, `duration_long`을 추가하고, legacy `latest`는 API 호환용으로 유지함
+  - 명시 정렬 선택 시 백엔드 후처리에서 개강일, 비용, 기간 기준으로 실제 정렬되도록 회귀 테스트를 추가함

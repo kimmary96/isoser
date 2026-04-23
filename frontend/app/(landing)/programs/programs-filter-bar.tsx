@@ -51,9 +51,24 @@ export type NamedFilterOption = {
 };
 
 const SORT_OPTIONS: Array<{ value: ProgramSort; label: string }> = [
+  { value: "default", label: "기본 정렬" },
   { value: "deadline", label: "마감 임박순" },
-  { value: "latest", label: "최신순" },
+  { value: "start_soon", label: "개강 빠른순" },
+  { value: "cost_low", label: "비용 낮은순" },
+  { value: "cost_high", label: "비용 높은순" },
+  { value: "duration_short", label: "짧은 기간순" },
+  { value: "duration_long", label: "긴 기간순" },
 ];
+const DEFAULT_SORT: ProgramSort = "default";
+const SORT_DOT_COLORS = [
+  "bg-violet-500",
+  "bg-amber-500",
+  "bg-emerald-500",
+  "bg-sky-500",
+  "bg-blue-500",
+  "bg-teal-500",
+  "bg-indigo-500",
+] as const;
 
 const FALLBACK_CATEGORY_OPTION: ProgramCategoryMenuOption = {
   id: "all",
@@ -292,7 +307,7 @@ export function ProgramsFilterBar({
   const sortMenuOptions: FilterMenuOption[] = SORT_OPTIONS.map((option, index) => ({
     value: option.value,
     label: option.label,
-    dotClassName: index === 0 ? "bg-violet-500" : "bg-blue-500",
+    dotClassName: SORT_DOT_COLORS[index] || "bg-slate-400",
   }));
 
   return (
@@ -382,15 +397,26 @@ export function ProgramsFilterBar({
             onChange={setPendingTargets}
           />
 
-          <input ref={sortInputRef} type="hidden" name="sort" value={pendingSort} readOnly />
+          <input
+            ref={sortInputRef}
+            type="hidden"
+            name={pendingSort === DEFAULT_SORT ? undefined : "sort"}
+            value={pendingSort}
+            readOnly
+          />
           <FilterMenu
             label="정렬"
             value={pendingSort}
             options={sortMenuOptions}
-            placeholder="마감 임박순"
+            placeholder="기본 정렬"
             onChange={(value) => {
-              const nextSort = value === "latest" ? "latest" : "deadline";
+              const nextSort = SORT_OPTIONS.some((option) => option.value === value) ? (value as ProgramSort) : DEFAULT_SORT;
               if (sortInputRef.current) {
+                if (nextSort === DEFAULT_SORT) {
+                  sortInputRef.current.removeAttribute("name");
+                } else {
+                  sortInputRef.current.name = "sort";
+                }
                 sortInputRef.current.value = nextSort;
               }
               setPendingSort(nextSort);

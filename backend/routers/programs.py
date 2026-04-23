@@ -42,7 +42,9 @@ programs_router = APIRouter(prefix="/programs", tags=["programs"])
 router = programs_router
 programs_rag = ProgramsRAG()
 
-PROGRAM_SORT_OPTIONS = {"deadline", "latest"}
+PROGRAM_DEADLINE_SORTS = {"default", "deadline"}
+PROGRAM_COMPUTED_SORTS = {"start_soon", "cost_low", "cost_high", "duration_short", "duration_long"}
+PROGRAM_SORT_OPTIONS = PROGRAM_DEADLINE_SORTS | PROGRAM_COMPUTED_SORTS | {"latest"}
 PROGRAM_TEACHING_METHODS = {"온라인", "오프라인", "혼합"}
 PROGRAM_COST_TYPES = {"naeil-card", "free-no-card", "paid"}
 PROGRAM_PARTICIPATION_TIMES = {"part-time", "full-time"}
@@ -63,13 +65,41 @@ PROGRAM_CATEGORY_LABELS: dict[str, str] = {
 PROGRAM_CATEGORY_SEARCH_ALIASES: dict[str, tuple[str, ...]] = {
     "web-development": ("웹개발", "웹 개발", "웹 풀스택", "fullstack"),
     "mobile": ("모바일", "앱", "프론트엔드"),
-    "data-ai": ("데이터", "데이터AI", "데이터 AI", "AI서비스", "인공지능"),
+    "data-ai": ("ai", "데이터", "데이터AI", "데이터 AI", "AI서비스", "인공지능", "llm", "rag"),
     "cloud-security": ("클라우드", "보안", "클라우드보안"),
     "iot-embedded-semiconductor": ("IoT", "임베디드", "반도체"),
     "game-blockchain": ("게임", "블록체인"),
     "planning-marketing-other": ("기획", "마케팅", "PM", "기타"),
     "design-3d": ("디자인", "3D", "UX", "UI"),
     "project-career-startup": ("프로젝트", "취준", "창업", "스타트업"),
+}
+PROGRAM_CATEGORY_PARENT_CATEGORIES: dict[str, str] = {
+    "web-development": "IT",
+    "mobile": "IT",
+    "data-ai": "AI",
+    "cloud-security": "IT",
+    "iot-embedded-semiconductor": "IT",
+    "game-blockchain": "IT",
+    "planning-marketing-other": "경영",
+    "design-3d": "디자인",
+    "project-career-startup": "창업",
+}
+PROGRAM_CATEGORY_DETAIL_DISPLAY_MATCHES: dict[str, tuple[str, ...]] = {
+    "web-development": ("웹 풀스택", "백엔드", "프론트엔드"),
+    "mobile": ("프론트엔드",),
+    "data-ai": ("AI서비스", "AI역량강화", "데이터분석", "데이터엔지니어링"),
+    "cloud-security": ("클라우드", "보안", "인프라"),
+    "iot-embedded-semiconductor": ("반도체", "임베디드"),
+    "game-blockchain": ("게임", "블록체인"),
+    "planning-marketing-other": ("PM/기획",),
+    "design-3d": ("UX/UI/디자인",),
+    "project-career-startup": ("PM/기획",),
+}
+PROGRAM_CATEGORY_DETAIL_BROAD_FALLBACKS: dict[str, tuple[str, ...]] = {
+    "data-ai": ("AI",),
+    "planning-marketing-other": ("경영",),
+    "design-3d": ("디자인",),
+    "project-career-startup": ("창업",),
 }
 PROGRAM_CATEGORY_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("AI서비스", ("ai", "인공지능", "llm", "rag", "생성형", "챗봇", "머신러닝", "딥러닝", "mcp")),
@@ -984,6 +1014,12 @@ def _expand_region_keywords(regions: list[str]) -> list[str]:
 def _program_order_clause(sort: str) -> str:
     if sort == "latest":
         return "created_at.desc.nullslast"
+    if sort == "start_soon":
+        return "start_date.asc.nullslast"
+    if sort == "cost_low":
+        return "cost.asc.nullslast"
+    if sort == "cost_high":
+        return "cost.desc.nullslast"
     return "deadline.asc.nullslast"
 
 
@@ -993,7 +1029,7 @@ def _requires_resolved_deadline_scan(
     include_closed_recent: bool,
     sort: str,
 ) -> bool:
-    return include_closed_recent or recruiting_only or sort == "deadline"
+    return include_closed_recent or recruiting_only or sort in PROGRAM_DEADLINE_SORTS or sort in PROGRAM_COMPUTED_SORTS
 
 
 def _build_program_query_params(
@@ -1009,7 +1045,7 @@ def _build_program_query_params(
     teaching_methods: list[str] | None = None,
     recruiting_only: bool = False,
     include_closed_recent: bool = False,
-    sort: str = "deadline",
+    sort: str = "default",
     limit: int | None = None,
     offset: int | None = None,
 ) -> dict[str, Any]:
@@ -1030,10 +1066,9 @@ def _build_program_query_params(
         params["limit"] = str(PROGRAM_SEARCH_SCAN_LIMIT)
     if offset is not None and not should_scan_resolved_deadline:
         params["offset"] = str(offset)
-    if category:
-        params["category"] = f"eq.{category}"
-    if category_detail:
-        params["category_detail"] = f"eq.{category_detail}"
+    effective_category = category or PROGRAM_CATEGORY_PARENT_CATEGORIES.get(str(category_detail or "").strip())
+    if effective_category:
+        params["category"] = f"eq.{effective_category}"
     if scope:
         params["scope"] = f"eq.{scope}"
     if region_detail:
@@ -1174,6 +1209,45 @@ def _filter_program_rows_by_query(rows: list[dict[str, Any]], q: str | None) -> 
     return [row for row in rows if _program_search_match_rank(row, q) is not None]
 
 
+def _row_matches_category_detail(row: dict[str, Any], category_detail: str | None) -> bool:
+    target = str(category_detail or "").strip()
+    if not target:
+        return True
+
+    if str(row.get("category_detail") or "").strip() == target:
+        return True
+
+    display_labels = _flatten_search_values(row.get("display_categories"))
+    if any(label in PROGRAM_CATEGORY_DETAIL_DISPLAY_MATCHES.get(target, ()) for label in display_labels):
+        return True
+
+    broad_categories = PROGRAM_CATEGORY_DETAIL_BROAD_FALLBACKS.get(target, ())
+    if broad_categories and str(row.get("category") or "").strip() in broad_categories:
+        return True
+
+    values = (
+        _program_source_text_values(row)
+        + _flatten_search_values(row.get("category"))
+        + display_labels
+    )
+    text = " ".join(values).casefold()
+    aliases = (
+        PROGRAM_CATEGORY_SEARCH_ALIASES.get(target, ())
+        + PROGRAM_CATEGORY_DETAIL_DISPLAY_MATCHES.get(target, ())
+        + ((PROGRAM_CATEGORY_LABELS[target],) if target in PROGRAM_CATEGORY_LABELS else ())
+    )
+    return any(_text_has_keyword(text, alias) for alias in aliases)
+
+
+def _filter_program_rows_by_category_detail(
+    rows: list[dict[str, Any]],
+    category_detail: str | None,
+) -> list[dict[str, Any]]:
+    if not str(category_detail or "").strip():
+        return rows
+    return [row for row in rows if _row_matches_category_detail(row, category_detail)]
+
+
 def _program_text_blob(row: dict[str, Any]) -> str:
     values = (
         _flatten_search_values(row.get("title"))
@@ -1207,14 +1281,17 @@ def _dedupe_preserve_order(values: list[str], *, limit: int | None = None) -> li
 
 
 def _program_source_text_values(row: dict[str, Any]) -> list[str]:
+    raw_data = row.get("raw_data") if isinstance(row.get("raw_data"), dict) else {}
     return (
         _flatten_search_values(row.get("title"))
         + _flatten_search_values(row.get("summary"))
         + _flatten_search_values(row.get("description"))
+        + _flatten_search_values(row.get("target"))
         + _flatten_search_values(row.get("tags"))
         + _flatten_search_values(row.get("skills"))
         + _flatten_search_values(row.get("support_type"))
         + _flatten_search_values(row.get("teaching_method"))
+        + _flatten_search_values(raw_data.get("trainTarget"))
         + _searchable_compare_meta_values(row.get("compare_meta"))
     )
 
@@ -1225,6 +1302,42 @@ def _text_has_keyword(text: str, keyword: str) -> bool:
         escaped = re.escape(normalized_keyword)
         return re.search(rf"(?<![a-z0-9]){escaped}(?![a-z0-9])", text) is not None
     return normalized_keyword in text
+
+
+def _derive_teaching_method(row: dict[str, Any]) -> str | None:
+    explicit = str(row.get("teaching_method") or "").strip()
+    if explicit in PROGRAM_TEACHING_METHODS:
+        return explicit
+
+    raw_data = row.get("raw_data") if isinstance(row.get("raw_data"), dict) else {}
+    compare_meta = row.get("compare_meta") if isinstance(row.get("compare_meta"), dict) else {}
+    values = (
+        _flatten_search_values(explicit)
+        + _flatten_search_values(row.get("title"))
+        + _flatten_search_values(row.get("summary"))
+        + _flatten_search_values(row.get("description"))
+        + _flatten_search_values(row.get("target"))
+        + _flatten_search_values(raw_data.get("trainTarget"))
+        + _flatten_search_values(compare_meta.get("training_type"))
+        + _flatten_search_values(compare_meta.get("teaching_method"))
+    )
+    text = " ".join(values).casefold()
+    if not text:
+        return explicit or None
+
+    online_keywords = ONLINE_KEYWORDS + ("원격훈련", "원격 교육", "원격교육", "이러닝", "e-learning")
+    offline_keywords = OFFLINE_KEYWORDS + ("집체훈련", "집체 교육", "집체교육")
+    has_online = any(keyword.casefold() in text for keyword in online_keywords)
+    has_offline = any(keyword.casefold() in text for keyword in offline_keywords)
+    has_hybrid = any(keyword.casefold() in text for keyword in HYBRID_KEYWORDS)
+
+    if has_hybrid or (has_online and has_offline):
+        return "혼합"
+    if has_online:
+        return "온라인"
+    if has_offline:
+        return "오프라인"
+    return explicit or None
 
 
 def _infer_display_categories(row: dict[str, Any]) -> list[str]:
@@ -1415,6 +1528,65 @@ def _program_duration_days(row: dict[str, Any]) -> int | None:
     return (end - start).days + 1
 
 
+def _program_sort_date(
+    row: dict[str, Any],
+    *,
+    row_keys: Sequence[str],
+    meta_keys: Sequence[str],
+) -> date | None:
+    compare_meta = row.get("compare_meta") if isinstance(row.get("compare_meta"), dict) else {}
+    for key in row_keys:
+        parsed = _parse_program_deadline(_first_text(row.get(key)))
+        if parsed:
+            return parsed
+    for key in meta_keys:
+        parsed = _parse_program_deadline(_first_text(compare_meta.get(key)))
+        if parsed:
+            return parsed
+    return None
+
+
+def _program_start_sort_date(row: dict[str, Any]) -> date | None:
+    return _program_sort_date(
+        row,
+        row_keys=("program_start_date", "start_date"),
+        meta_keys=("program_start_date", "training_start_date", "tra_start_date", "traStartDate", "course_start_date"),
+    )
+
+
+def _program_end_sort_date(row: dict[str, Any]) -> date | None:
+    return _program_sort_date(
+        row,
+        row_keys=("program_end_date", "end_date"),
+        meta_keys=("program_end_date", "training_end_date", "tra_end_date", "traEndDate", "course_end_date"),
+    )
+
+
+def _program_sort_duration_days(row: dict[str, Any]) -> int | None:
+    start = _program_start_sort_date(row)
+    end = _program_end_sort_date(row)
+    if start is None or end is None or end < start:
+        return None
+    return (end - start).days + 1
+
+
+def _program_sort_cost_amount(row: dict[str, Any]) -> int | None:
+    direct_cost = _int_or_none(row.get("cost"))
+    if direct_cost is not None:
+        return max(0, direct_cost)
+
+    compare_meta = row.get("compare_meta") if isinstance(row.get("compare_meta"), dict) else {}
+    for key in ("cost", "fee", "tuition", "course_fee", "training_fee", "self_payment", "out_of_pocket"):
+        parsed = _int_or_none(compare_meta.get(key))
+        if parsed is not None:
+            return max(0, parsed)
+
+    cost_type = _program_cost_type(row)
+    if cost_type in {"free-no-card", "naeil-card"}:
+        return 0
+    return None
+
+
 def _program_participation_time(row: dict[str, Any]) -> str | None:
     explicit_participation_time = str(row.get("participation_time") or "").strip()
     if explicit_participation_time in PROGRAM_PARTICIPATION_TIMES:
@@ -1545,6 +1717,7 @@ def _serialize_program_list_row(program: dict[str, Any]) -> dict[str, Any]:
     record = dict(program)
     compare_meta = record.get("compare_meta") if isinstance(record.get("compare_meta"), dict) else {}
     record.update(_normalize_rating_fields(record.get("rating") or compare_meta.get("satisfaction_score")))
+    record["teaching_method"] = _derive_teaching_method(record)
     deadline = _resolve_program_deadline(record)
     days_left = _calculate_days_left(deadline)
     participation_mode_label, participation_time_text = _derive_participation_display(record)
@@ -1566,10 +1739,10 @@ def _sort_program_list_rows(
     sort: str,
     include_closed_recent: bool,
 ) -> list[dict[str, Any]]:
-    if sort != "deadline":
+    if sort == "latest":
         return rows
 
-    def sort_key(row: dict[str, Any]) -> tuple[int, int]:
+    def deadline_sort_key(row: dict[str, Any]) -> tuple[int, int]:
         parsed_deadline = _parse_program_deadline(str(row.get("deadline") or ""))
         is_active = bool(row.get("is_active"))
         if include_closed_recent and not is_active:
@@ -1578,7 +1751,44 @@ def _sort_program_list_rows(
             return (1, date.max.toordinal())
         return (0, parsed_deadline.toordinal())
 
-    return sorted(rows, key=sort_key)
+    if sort in PROGRAM_DEADLINE_SORTS:
+        return sorted(rows, key=deadline_sort_key)
+
+    if sort == "start_soon":
+        return sorted(
+            rows,
+            key=lambda row: (
+                1 if _program_start_sort_date(row) is None else 0,
+                (_program_start_sort_date(row) or date.max).toordinal(),
+                deadline_sort_key(row),
+            ),
+        )
+
+    if sort in {"cost_low", "cost_high"}:
+        reverse_cost = sort == "cost_high"
+        return sorted(
+            rows,
+            key=lambda row: (
+                1 if _program_sort_cost_amount(row) is None else 0,
+                -(_program_sort_cost_amount(row) or 0) if reverse_cost else (_program_sort_cost_amount(row) or 0),
+                deadline_sort_key(row),
+            ),
+        )
+
+    if sort in {"duration_short", "duration_long"}:
+        reverse_duration = sort == "duration_long"
+        return sorted(
+            rows,
+            key=lambda row: (
+                1 if _program_sort_duration_days(row) is None else 0,
+                -(_program_sort_duration_days(row) or 0)
+                if reverse_duration
+                else (_program_sort_duration_days(row) or 0),
+                deadline_sort_key(row),
+            ),
+        )
+
+    return sorted(rows, key=deadline_sort_key)
 
 
 def _filter_program_rows_by_deadline_window(
@@ -1598,7 +1808,7 @@ def _filter_program_rows_by_deadline_window(
                 and parsed_deadline >= recent_cutoff
             )
         ]
-    if not recruiting_only and sort != "deadline":
+    if not recruiting_only and sort not in PROGRAM_DEADLINE_SORTS:
         return rows
     return [
         row
@@ -1611,6 +1821,7 @@ def _filter_program_rows_by_deadline_window(
 def _postprocess_program_list_rows(
     rows: list[dict[str, Any]],
     *,
+    category_detail: str | None = None,
     q: str | None = None,
     cost_types: list[str] | None = None,
     participation_times: list[str] | None = None,
@@ -1626,9 +1837,12 @@ def _postprocess_program_list_rows(
 ) -> list[dict[str, Any]]:
     serialized_rows = _filter_program_rows_by_deadline_window(
         _filter_program_rows_by_extra_filters(
-            _filter_program_rows_by_query(
-                [_serialize_program_list_row(row) for row in rows],
-                q,
+            _filter_program_rows_by_category_detail(
+                _filter_program_rows_by_query(
+                    [_serialize_program_list_row(row) for row in rows],
+                    q,
+                ),
+                category_detail,
             ),
             cost_types=cost_types,
             participation_times=participation_times,
@@ -1640,7 +1854,7 @@ def _postprocess_program_list_rows(
         include_closed_recent=include_closed_recent,
         sort=sort,
     )
-    if _normalize_search_text(q):
+    if _normalize_search_text(q) and sort == "default":
         sorted_rows = sorted(
             serialized_rows,
             key=lambda row: (
@@ -2128,7 +2342,7 @@ async def _count_program_rows(
     params = _build_program_query_params(
         select=(
             "*"
-            if _normalize_search_text(q) or has_extra_filters
+            if _normalize_search_text(q) or has_extra_filters or category_detail
             else "id,source,deadline,close_date,end_date,compare_meta,is_active,created_at"
         ),
         category=category,
@@ -2147,7 +2361,10 @@ async def _count_program_rows(
         _sort_program_list_rows(
             _filter_program_rows_by_deadline_window(
                 _filter_program_rows_by_extra_filters(
-                    _filter_program_rows_by_query([_serialize_program_list_row(row) for row in rows], q),
+                    _filter_program_rows_by_category_detail(
+                        _filter_program_rows_by_query([_serialize_program_list_row(row) for row in rows], q),
+                        category_detail,
+                    ),
                     cost_types=cost_types,
                     participation_times=participation_times,
                     targets=targets,
@@ -2753,7 +2970,7 @@ async def list_programs(
     employment_links: list[str] | None = Query(default=None),
     recruiting_only: bool = False,
     include_closed_recent: bool = False,
-    sort: str = Query(default="deadline"),
+    sort: str = Query(default="default"),
     limit: int = Query(default=20, ge=1),
     offset: int = Query(default=0, ge=0),
 ) -> Any:
@@ -2772,7 +2989,7 @@ async def list_programs(
         sort=sort,
     )
     rows = await _fetch_program_list_rows(params, q=q)
-    prefer_work24_default_mix = _should_apply_work24_default_mix(
+    prefer_work24_default_mix = sort == "default" and _should_apply_work24_default_mix(
         category=category,
         category_detail=category_detail,
         q=q,
@@ -2781,6 +2998,7 @@ async def list_programs(
     )
     return _postprocess_program_list_rows(
         rows,
+        category_detail=category_detail,
         q=q,
         cost_types=cost_types,
         participation_times=participation_times,
@@ -2868,7 +3086,10 @@ async def get_program_filter_options(
         rows = await _fetch_program_list_rows(fallback_params, q=q)
     return _extract_program_filter_options(
         _filter_program_rows_by_deadline_window(
-            _filter_program_rows_by_query([_serialize_program_list_row(row) for row in rows], q),
+            _filter_program_rows_by_category_detail(
+                _filter_program_rows_by_query([_serialize_program_list_row(row) for row in rows], q),
+                category_detail,
+            ),
             recruiting_only=recruiting_only,
             include_closed_recent=include_closed_recent,
             sort="deadline",

@@ -381,7 +381,14 @@ export interface ProgramFilterOptionsResponse {
   employment_links: ProgramFilterOption[];
 }
 
-export type ProgramSort = "deadline" | "latest";
+export type ProgramSort =
+  | "default"
+  | "deadline"
+  | "start_soon"
+  | "cost_low"
+  | "cost_high"
+  | "duration_short"
+  | "duration_long";
 
 export type RelevanceGrade = "high" | "medium" | "low" | "none";
 

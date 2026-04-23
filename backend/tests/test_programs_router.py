@@ -35,7 +35,7 @@ def test_build_program_query_params_for_filtered_list() -> None:
 
     assert params["select"] == "*"
     assert params["category"] == "eq.IT"
-    assert params["category_detail"] == "eq.web-development"
+    assert "category_detail" not in params
     assert "title" not in params
     assert params["search_text"] == "ilike.*부트캠프*"
     assert params["limit"] == str(programs.PROGRAM_SEARCH_SCAN_LIMIT)
@@ -43,6 +43,19 @@ def test_build_program_query_params_for_filtered_list() -> None:
     assert params["order"] == "created_at.desc.nullslast"
     assert "offset" not in params
     assert params["or"] == "(location.ilike.*서울*,location.ilike.*대전*,location.ilike.*충청*,location.ilike.*세종*)"
+
+
+def test_build_program_query_params_uses_parent_category_for_category_detail() -> None:
+    params = programs._build_program_query_params(
+        select="*",
+        category_detail="data-ai",
+        recruiting_only=True,
+        sort="default",
+        limit=20,
+    )
+
+    assert params["category"] == "eq.AI"
+    assert "category_detail" not in params
 
 
 def test_build_program_query_params_expands_scan_limit_for_backend_search() -> None:
@@ -99,6 +112,31 @@ def test_program_query_filter_matches_category_label_without_middle_dot() -> Non
     assert [row["id"] for row in programs._filter_program_rows_by_query(rows, "데이터AI")] == ["program-1"]
 
 
+def test_category_detail_filter_matches_inferred_ai_programs() -> None:
+    rows = [
+        programs._serialize_program_list_row(
+            {
+                "id": "program-ai",
+                "title": "AI 서비스 개발 과정",
+                "category": "AI",
+                "category_detail": None,
+                "deadline": (date.today() + timedelta(days=3)).isoformat(),
+            }
+        ),
+        programs._serialize_program_list_row(
+            {
+                "id": "program-business",
+                "title": "ESG 경영 실무",
+                "category": "경영",
+                "category_detail": None,
+                "deadline": (date.today() + timedelta(days=3)).isoformat(),
+            }
+        ),
+    ]
+
+    assert [row["id"] for row in programs._filter_program_rows_by_category_detail(rows, "data-ai")] == ["program-ai"]
+
+
 def test_build_program_query_params_expands_latest_recruiting_scan_limit() -> None:
     params = programs._build_program_query_params(
         select="*",
@@ -114,12 +152,33 @@ def test_build_program_query_params_expands_latest_recruiting_scan_limit() -> No
 def test_build_program_query_params_deadline_sort_only_includes_active_programs() -> None:
     params = programs._build_program_query_params(
         select="*",
-        sort="deadline",
+        sort="default",
     )
 
     assert params["order"] == "deadline.asc.nullslast"
     assert params["limit"] == str(programs.PROGRAM_SEARCH_SCAN_LIMIT)
     assert "deadline" not in params
+
+
+def test_build_program_query_params_default_sort_preserves_deadline_scan() -> None:
+    params = programs._build_program_query_params(
+        select="*",
+        sort="default",
+    )
+
+    assert params["order"] == "deadline.asc.nullslast"
+    assert params["limit"] == str(programs.PROGRAM_SEARCH_SCAN_LIMIT)
+    assert "deadline" not in params
+
+
+def test_build_program_query_params_computed_sort_expands_scan_limit() -> None:
+    params = programs._build_program_query_params(
+        select="*",
+        sort="cost_low",
+    )
+
+    assert params["order"] == "cost.asc.nullslast"
+    assert params["limit"] == str(programs.PROGRAM_SEARCH_SCAN_LIMIT)
 
 
 def test_build_program_query_params_include_closed_recent_uses_90_day_cutoff() -> None:
@@ -387,6 +446,21 @@ def test_serialize_program_list_row_derives_display_metadata_from_real_text() ->
     assert row["participation_time_text"] == "월,화,수,목,금 / 09:00 ~ 18:00"
     assert row["selection_process_label"] == "포트폴리오 / 면접 / 서류"
     assert {"Python", "RAG", "LLM", "MCP", "머신러닝"}.issubset(set(row["extracted_keywords"]))
+
+
+def test_serialize_program_list_row_derives_online_method_from_work24_target() -> None:
+    row = programs._serialize_program_list_row(
+        {
+            "id": "program-online",
+            "title": "인공지능 실무",
+            "category": "AI",
+            "target": ["근로자원격훈련"],
+            "raw_data": {"trainTarget": "근로자원격훈련"},
+            "deadline": (date.today() + timedelta(days=3)).isoformat(),
+        }
+    )
+
+    assert row["teaching_method"] == "온라인"
 
 
 def test_serialize_program_list_row_derives_weekend_and_semiconductor_metadata() -> None:
@@ -836,13 +910,105 @@ def test_postprocess_program_list_rows_searches_provider_and_orders_by_match_fie
             },
         ],
         q="패스트 캠퍼스",
-        sort="deadline",
+        sort="default",
         include_closed_recent=False,
         limit=10,
         offset=0,
     )
 
     assert [row["id"] for row in rows] == ["title-match", "provider-match", "description-match"]
+
+
+def test_postprocess_program_list_rows_sorts_by_start_date() -> None:
+    deadline = (date.today() + timedelta(days=30)).isoformat()
+
+    rows = programs._postprocess_program_list_rows(
+        [
+            {"id": "later", "title": "later", "start_date": "2026-06-10", "end_date": "2026-07-01", "deadline": deadline},
+            {"id": "unknown", "title": "unknown", "deadline": deadline},
+            {"id": "earlier", "title": "earlier", "start_date": "2026-05-01", "end_date": "2026-05-20", "deadline": deadline},
+        ],
+        sort="start_soon",
+        include_closed_recent=False,
+        limit=10,
+        offset=0,
+    )
+
+    assert [row["id"] for row in rows] == ["earlier", "later", "unknown"]
+
+
+def test_postprocess_program_list_rows_sorts_by_cost_low_and_high() -> None:
+    deadline = (date.today() + timedelta(days=30)).isoformat()
+    source_rows = [
+        {"id": "paid-high", "title": "paid-high", "cost": 500000, "deadline": deadline},
+        {"id": "free", "title": "무료 특강", "cost": 0, "deadline": deadline},
+        {"id": "paid-low", "title": "paid-low", "cost": 100000, "deadline": deadline},
+        {"id": "unknown", "title": "unknown", "deadline": deadline},
+    ]
+
+    low_rows = programs._postprocess_program_list_rows(
+        source_rows,
+        sort="cost_low",
+        include_closed_recent=False,
+        limit=10,
+        offset=0,
+    )
+    high_rows = programs._postprocess_program_list_rows(
+        source_rows,
+        sort="cost_high",
+        include_closed_recent=False,
+        limit=10,
+        offset=0,
+    )
+
+    assert [row["id"] for row in low_rows] == ["free", "paid-low", "paid-high", "unknown"]
+    assert [row["id"] for row in high_rows] == ["paid-high", "paid-low", "free", "unknown"]
+
+
+def test_postprocess_program_list_rows_sorts_by_duration_short_and_long() -> None:
+    deadline = (date.today() + timedelta(days=30)).isoformat()
+    source_rows = [
+        {"id": "medium", "title": "medium", "start_date": "2026-05-01", "end_date": "2026-05-20", "deadline": deadline},
+        {"id": "short", "title": "short", "start_date": "2026-05-01", "end_date": "2026-05-02", "deadline": deadline},
+        {"id": "long", "title": "long", "start_date": "2026-05-01", "end_date": "2026-07-31", "deadline": deadline},
+        {"id": "unknown", "title": "unknown", "deadline": deadline},
+    ]
+
+    short_rows = programs._postprocess_program_list_rows(
+        source_rows,
+        sort="duration_short",
+        include_closed_recent=False,
+        limit=10,
+        offset=0,
+    )
+    long_rows = programs._postprocess_program_list_rows(
+        source_rows,
+        sort="duration_long",
+        include_closed_recent=False,
+        limit=10,
+        offset=0,
+    )
+
+    assert [row["id"] for row in short_rows] == ["short", "medium", "long", "unknown"]
+    assert [row["id"] for row in long_rows] == ["long", "medium", "short", "unknown"]
+
+
+def test_postprocess_program_list_rows_honors_explicit_sort_with_search_query() -> None:
+    deadline = (date.today() + timedelta(days=30)).isoformat()
+
+    rows = programs._postprocess_program_list_rows(
+        [
+            {"id": "expensive", "title": "AI 과정", "cost": 500000, "deadline": deadline},
+            {"id": "cheap", "title": "AI 과정", "cost": 100000, "deadline": deadline},
+        ],
+        q="AI",
+        sort="cost_low",
+        include_closed_recent=False,
+        limit=10,
+        offset=0,
+    )
+
+    assert [row["id"] for row in rows] == ["cheap", "expensive"]
 
 
 def test_postprocess_program_list_rows_searches_compare_meta_values() -> None:

@@ -36,7 +36,7 @@ export const metadata: Metadata = {
 };
 
 const PAGE_SIZE = 20;
-const DEFAULT_SORT: ProgramSort = "deadline";
+const DEFAULT_SORT: ProgramSort = "default";
 const REGION_OPTIONS = [
   "서울",
   "경기",
@@ -94,9 +94,23 @@ const PROGRAM_CATEGORY_OPTIONS: readonly ProgramCategoryMenuOption[] = [
   { id: "project-career-startup", label: "프로젝트·취준·창업", category: "창업", dotClassName: "bg-lime-600" },
 ];
 const SORT_LABELS: Record<ProgramSort, string> = {
+  default: "기본 정렬",
   deadline: "마감 임박순",
-  latest: "최신순",
+  start_soon: "개강 빠른순",
+  cost_low: "비용 낮은순",
+  cost_high: "비용 높은순",
+  duration_short: "짧은 기간순",
+  duration_long: "긴 기간순",
 };
+const SORT_VALUES = new Set<ProgramSort>([
+  "default",
+  "deadline",
+  "start_soon",
+  "cost_low",
+  "cost_high",
+  "duration_short",
+  "duration_long",
+]);
 
 type ProgramsPageSearchParams = {
   q?: string | string[];
@@ -207,7 +221,7 @@ function normalizeShowClosed(value?: string | string[]): boolean {
 
 function normalizeSort(value?: string | string[]): ProgramSort {
   const sort = takeFirst(value);
-  return sort === "latest" ? "latest" : DEFAULT_SORT;
+  return SORT_VALUES.has(sort as ProgramSort) ? (sort as ProgramSort) : DEFAULT_SORT;
 }
 
 function normalizePage(value?: string | string[]): number {
