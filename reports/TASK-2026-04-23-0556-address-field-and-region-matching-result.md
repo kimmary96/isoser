@@ -31,14 +31,19 @@ Supervisor inspection handoff was treated as the approved implementation scope. 
 ## Verification
 
 - Passed: `python -m py_compile backend/routers/programs.py`
-- Blocked: `python -m pytest backend/tests/test_programs_router.py`
-  - Reason: repository Python guard requires Python 3.10.x, but the available `python` is 3.13.2.
+- Passed after manual follow-up: `backend\venv\Scripts\python.exe -m pytest backend\tests\test_programs_router.py -q`
+  - Result: `40 passed`
 - Blocked: direct helper smoke import
   - Reason: local Python environment is missing backend runtime dependency `bs4`.
 
+## Manual follow-up resolution
+
+- Fixed the review-required finding by enforcing program region source priority one field at a time.
+- `_compute_region_match()` now resolves program region with `program.region`, then `program.location`, then `program.region_detail`, then `compare_meta.region`, `compare_meta.location`, and `compare_meta.address`.
+- Added conflict tests proving `program.region` wins over conflicting `location` and `compare_meta`, and `location` wins over conflicting `compare_meta`.
+
 ## Risks / possible regressions
 
-- Pytest was not runnable in this shell because the required Python 3.10 runtime is unavailable.
 - Delivery-method classification remains conservative and keyword-based, so unusual provider wording can still be missed.
 - Existing relevance score blending still depends on the upstream RAG score as the non-region base; this was intentionally preserved to avoid broad scoring rewrites.
 
