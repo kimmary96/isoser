@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import asdict
 from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any, Literal
@@ -107,6 +108,51 @@ def summarize_program_quality(rows: list[Mapping[str, Any]]) -> dict[str, Any]:
             "info": severity_counts["info"],
         },
         "issue_codes": dict(sorted(issue_codes.items())),
+    }
+
+
+def summarize_program_field_gaps(
+    rows: list[Mapping[str, Any]],
+    *,
+    sample_limit: int = 3,
+) -> dict[str, Any]:
+    reports = [validate_program_row(row) for row in rows]
+    issue_codes: dict[str, int] = {}
+    issue_fields: dict[str, int] = {}
+    rows_with_any_issues = 0
+    rows_with_info_only = 0
+    samples: list[dict[str, Any]] = []
+
+    for row, report in zip(rows, reports):
+        if not report.issues:
+            continue
+        rows_with_any_issues += 1
+        if all(issue.severity == "info" for issue in report.issues):
+            rows_with_info_only += 1
+        for issue in report.issues:
+            issue_codes[issue.code] = issue_codes.get(issue.code, 0) + 1
+            issue_fields[issue.field] = issue_fields.get(issue.field, 0) + 1
+        if len(samples) >= sample_limit:
+            continue
+        samples.append(
+            {
+                "title": report.title,
+                "source": report.source,
+                "source_unique_key": _text(row.get("source_unique_key")),
+                "issue_codes": sorted({issue.code for issue in report.issues}),
+                "issue_fields": sorted({issue.field for issue in report.issues}),
+                "issues": [asdict(issue) for issue in report.issues],
+            }
+        )
+
+    return {
+        "checked_rows": len(reports),
+        "rows_with_any_issues": rows_with_any_issues,
+        "rows_with_info_only": rows_with_info_only,
+        "issue_codes": dict(sorted(issue_codes.items())),
+        "issue_fields": dict(sorted(issue_fields.items())),
+        "sample_limit": sample_limit,
+        "samples": samples,
     }
 
 

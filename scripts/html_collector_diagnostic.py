@@ -20,7 +20,10 @@ for path in (REPO_ROOT, BACKEND_ROOT):
 try:
     from rag.collector.base_html_collector import BaseHtmlCollector  # type: ignore  # noqa: E402
     from rag.collector.normalizer import normalize  # type: ignore  # noqa: E402
-    from rag.collector.quality_validator import summarize_program_quality  # type: ignore  # noqa: E402
+    from rag.collector.quality_validator import (  # type: ignore  # noqa: E402
+        summarize_program_field_gaps,
+        summarize_program_quality,
+    )
     from rag.collector.scheduler import (  # type: ignore  # noqa: E402
         COLLECTORS,
         _deduplicate_rows,
@@ -29,7 +32,10 @@ try:
 except ModuleNotFoundError:
     from backend.rag.collector.base_html_collector import BaseHtmlCollector  # noqa: E402
     from backend.rag.collector.normalizer import normalize  # noqa: E402
-    from backend.rag.collector.quality_validator import summarize_program_quality  # noqa: E402
+    from backend.rag.collector.quality_validator import (  # noqa: E402
+        summarize_program_field_gaps,
+        summarize_program_quality,
+    )
     from backend.rag.collector.scheduler import (  # noqa: E402
         COLLECTORS,
         _deduplicate_rows,
@@ -86,6 +92,7 @@ SCHEDULER_SUMMARY_SCHEMA_RELATIVE_PATH = "docs/schemas/html-collector-scheduler-
 SCHEDULER_SOURCE_SUMMARY_SCHEMA_ID = "scheduler_source_summary_v1"
 SCHEDULER_DRY_RUN_SUMMARY_SCHEMA_ID = "scheduler_dry_run_summary_v1"
 PROGRAM_QUALITY_SUMMARY_SCHEMA_ID = "program_quality_summary_v1"
+FIELD_GAP_SAMPLE_LIMIT = 3
 
 
 def configure_stdout() -> None:
@@ -186,6 +193,7 @@ def build_html_collector_report(
             "sample_limit": ocr_sample_limit,
             "mode": "read-only-detail-html-preflight",
         }
+        report["field_gap_summary"] = build_field_gap_summary(rows)
         report["ocr_summary"] = dict(sorted(ocr_summary.items()))
         report["ocr_probe_candidates"] = [
             row
@@ -257,6 +265,10 @@ def build_source_diagnostic(
                 collector,
                 raw_items,
                 sample_limit=ocr_sample_limit,
+            )
+            row["field_gap_audit"] = summarize_program_field_gaps(
+                normalized_rows,
+                sample_limit=FIELD_GAP_SAMPLE_LIMIT,
             )
     except Exception as exc:
         row["raw_count"] = 0
