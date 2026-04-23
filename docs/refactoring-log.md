@@ -2582,3 +2582,8 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - 운영 Supabase 읽기 전용 재점검 결과를 기준으로 Work24/K-Startup 남은 리스크를 source identity, deadline 복구, skills/raw_data 보강, API scan latency로 분류함
   - Work24 상세 페이지 10건 dry-run에서 deadline patch는 0건이고 compare_meta patch만 가능함을 확인해 broad deadline apply를 보류하기로 기록함
   - 운영 적용 전 backup, source_unique_key preview/apply, post-apply verification, rollback SQL과 go/no-go 기준을 정리함
+- 2026-04-23: `backend/rag/collector/normalizer.py`, `backend/rag/collector/scheduler.py`, `backend/routers/admin.py`, `supabase/migrations/20260423143000_relax_programs_legacy_unique_constraints.sql`, `reports/work24-kstartup-db-risk-apply-2026-04-23.md`
+  - 운영 DB에서 Work24/K-Startup `source_unique_key` 526건, live source 기존 row patch 3,382건, 신규 row 48건, HTML source key 110건을 안전 적용하고 최종 `source_unique_key` 누락 0건을 확인함
+  - scheduler dedupe 기준을 `source_unique_key` 우선으로 바꾸고, normalizer가 source/link/title 기반 fallback key를 생성해 legacy unique 제거 후에도 반복 sync 중복을 줄이도록 함
+  - `source_unique_key`가 있는 row는 admin/scheduler fallback에서 legacy `hrd_id`나 `(title, source)` row로 병합하지 않게 해 같은 제목의 다른 회차가 덮이지 않도록 방어함
+  - `programs_unique(title, source)`와 `hrd_id` unique 제약이 남아 있으면 live 후보 2,560건은 여전히 저장 불가하므로, legacy unique 제거 migration 적용 후 backfill/sync 재실행이 필요함

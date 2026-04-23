@@ -179,6 +179,7 @@ async def _find_existing_program_id(row: dict[str, Any]) -> str | None:
             existing_id = str(rows[0].get("id") or "").strip()
             if existing_id:
                 return existing_id
+        return None
 
     if hrd_id:
         rows = await request_supabase(
@@ -238,7 +239,11 @@ async def _upsert_single_program_row(row: dict[str, Any]) -> list[dict[str, Any]
             conflict_target = "hrd_id" if conflict_target == missing_column else conflict_target
             return await _upsert_single_program_row(candidate)
         unique_constraint = _unique_constraint_name(exc)
-        if unique_constraint != "programs_unique" or conflict_target == "title,source":
+        if (
+            candidate.get("source_unique_key")
+            or unique_constraint != "programs_unique"
+            or conflict_target == "title,source"
+        ):
             raise
 
         rows = await request_supabase(

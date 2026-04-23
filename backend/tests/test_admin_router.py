@@ -133,3 +133,51 @@ async def test_upsert_program_payload_retries_row_by_row_with_existing_id(
             "is_active": True,
         }
     ]
+
+
+@pytest.mark.asyncio
+async def test_upsert_single_source_unique_key_does_not_merge_by_hrd_id(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    get_params: list[dict] = []
+    post_conflict_targets: list[str] = []
+
+    async def fake_request_supabase(*, method, path, params=None, payload=None, prefer=None):
+        assert path == "/rest/v1/programs"
+        if method == "GET":
+            get_params.append(params or {})
+            return []
+
+        assert method == "POST"
+        post_conflict_targets.append(str((params or {}).get("on_conflict")))
+        return payload
+
+    monkeypatch.setattr(admin, "request_supabase", fake_request_supabase)
+
+    rows = await admin._upsert_single_program_row(
+        {
+            "hrd_id": "HRD-2",
+            "source_unique_key": "work24:HRD-2:2:5000",
+            "title": "중복 제약 테스트",
+            "source": "고용24",
+            "is_active": True,
+        }
+    )
+
+    assert get_params == [
+        {
+            "select": "id",
+            "source_unique_key": "eq.work24:HRD-2:2:5000",
+            "limit": "1",
+        }
+    ]
+    assert post_conflict_targets == ["source_unique_key"]
+    assert rows == [
+        {
+            "hrd_id": "HRD-2",
+            "source_unique_key": "work24:HRD-2:2:5000",
+            "title": "중복 제약 테스트",
+            "source": "고용24",
+            "is_active": True,
+        }
+    ]

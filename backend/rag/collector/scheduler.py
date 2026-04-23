@@ -122,7 +122,7 @@ class SupabaseClient:
                 if fallback_state == "missing_column":
                     row = {key: value for key, value in row.items() if key != "source_unique_key"}
                 response = self._post_program_batch(session, [row], headers, conflict_target="title,source")
-            if response.status_code == 409 and row.get("hrd_id"):
+            if response.status_code == 409 and not row.get("source_unique_key") and row.get("hrd_id"):
                 response = session.patch(
                     f"{self.url}/rest/v1/programs",
                     params={"hrd_id": f"eq.{row['hrd_id']}"},
@@ -228,14 +228,16 @@ def _coerce_db_category(row: Dict) -> Dict:
 
 
 def _deduplicate_rows(rows: List[Dict]) -> List[Dict]:
-    deduped: Dict[tuple[str, str], Dict] = {}
+    deduped: Dict[tuple[str, ...], Dict] = {}
     for row in rows:
         row = _coerce_db_category(row)
         title = str(row.get("title") or "").strip()
         source = str(row.get("source") or "").strip()
         if not title or not source:
             continue
-        deduped[(title, source)] = row
+        source_unique_key = str(row.get("source_unique_key") or "").strip()
+        key = ("source_unique_key", source_unique_key) if source_unique_key else ("title_source", title, source)
+        deduped[key] = row
     return list(deduped.values())
 
 

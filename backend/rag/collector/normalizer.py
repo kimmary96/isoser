@@ -1,4 +1,5 @@
 from datetime import datetime
+from hashlib import sha256
 from typing import Any, Dict, Optional
 import re
 
@@ -29,9 +30,17 @@ def normalize(raw_item: Dict) -> Optional[Dict]:
     if not title:
         return None
     category_hint = raw_item.get("category_hint")
+    source = meta.get("source_key") or meta.get("source_name", "")
+    link = raw_item.get("link", "")
+    source_url = _clean_optional(raw_item.get("source_url"))
+    source_unique_key = _clean_optional(raw_item.get("source_unique_key")) or _derive_source_unique_key(
+        source=source,
+        title=title,
+        url=source_url or link,
+    )
 
     row = {
-        "source": meta.get("source_key") or meta.get("source_name", ""),
+        "source": source,
         "source_type": meta.get("source_type", "national_api"),
         "collection_method": meta.get("collection_method", "public_api"),
         "scope": meta.get("scope", "national"),
@@ -41,7 +50,7 @@ def normalize(raw_item: Dict) -> Optional[Dict]:
         "region": meta.get("region", "전국"),
         "region_detail": meta.get("region_detail", ""),
         "deadline": _parse_deadline(raw_item.get("raw_deadline", "")),
-        "link": raw_item.get("link", ""),
+        "link": link,
         "is_ad": False,
         "sponsor_name": raw_item.get("sponsor_name"),
     }
@@ -55,8 +64,8 @@ def normalize(raw_item: Dict) -> Optional[Dict]:
         "end_date": _parse_deadline(raw_item.get("end_date", "")),
         "cost": _to_int(raw_item.get("cost")),
         "subsidy_amount": _to_int(raw_item.get("subsidy_amount")),
-        "source_url": _clean_optional(raw_item.get("source_url")),
-        "source_unique_key": _clean_optional(raw_item.get("source_unique_key")),
+        "source_url": source_url,
+        "source_unique_key": source_unique_key,
         "compare_meta": _clean_compare_meta(raw_item.get("compare_meta")),
         "raw_data": _clean_raw_data(raw_item.get("raw")),
     }
@@ -71,6 +80,16 @@ def _clean_optional(value: Any) -> Optional[str]:
         return None
     text = str(value).strip()
     return text or None
+
+
+def _derive_source_unique_key(*, source: object, title: str, url: object) -> str | None:
+    clean_source = _clean_optional(source)
+    clean_title = _clean_optional(title)
+    clean_url = _clean_optional(url)
+    if not clean_source or not clean_title or not clean_url:
+        return None
+    digest = sha256(f"{clean_source}\n{clean_url}\n{clean_title}".encode("utf-8")).hexdigest()[:24]
+    return f"urltitle:{clean_source}:{digest}"
 
 
 def _clean_text_list(value: Any) -> list[str] | None:

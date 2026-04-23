@@ -1,7 +1,8 @@
 from backend.rag.collector.base_collector import BaseCollector
 from backend.rag.collector.base_api_collector import BaseApiCollector
 from backend.rag.collector.hrd_collector import HrdCollector
-from backend.rag.collector.scheduler import _coerce_db_category, run_all_collectors
+from backend.rag.collector.normalizer import normalize
+from backend.rag.collector.scheduler import _coerce_db_category, _deduplicate_rows, run_all_collectors
 from backend.rag.collector.work24_collector import Work24Collector
 from backend.rag.collector.tier3_collectors import KisedCollector, KobiaCollector
 from backend.rag.collector.tier4_collectors import (
@@ -197,6 +198,51 @@ def test_scheduler_coerces_categories_to_db_allowed_values() -> None:
     assert _coerce_db_category({"title": "AI 심화 캠프", "category": "훈련"})["category"] == "AI"
     assert _coerce_db_category({"title": "재직자 데이터 분석 Course", "category": "훈련"})["category"] == "IT"
     assert _coerce_db_category({"title": "그래픽 디자인 과정", "category": "교육"})["category"] == "디자인"
+
+
+def test_normalizer_derives_source_unique_key_from_source_link_and_title() -> None:
+    row = normalize(
+        {
+            "title": "서울 AI 실무 교육",
+            "link": "https://example.com/program/1",
+            "source_meta": {"source_key": "sba_posting"},
+        }
+    )
+
+    assert row is not None
+    assert row["source_unique_key"].startswith("urltitle:sba_posting:")
+
+
+def test_scheduler_deduplicates_by_source_unique_key_before_title_source() -> None:
+    deduped = _deduplicate_rows(
+        [
+            {
+                "title": "같은 제목 과정",
+                "source": "고용24",
+                "category": "기타",
+                "source_unique_key": "work24:AIG1:1:5000",
+            },
+            {
+                "title": "같은 제목 과정",
+                "source": "고용24",
+                "category": "기타",
+                "source_unique_key": "work24:AIG1:2:5000",
+            },
+        ]
+    )
+
+    assert len(deduped) == 2
+
+
+def test_scheduler_keeps_title_source_dedupe_for_rows_without_source_unique_key() -> None:
+    deduped = _deduplicate_rows(
+        [
+            {"title": "중복 공고", "source": "legacy", "category": "기타"},
+            {"title": "중복 공고", "source": "legacy", "category": "기타"},
+        ]
+    )
+
+    assert len(deduped) == 1
 
 
 def test_scheduler_preserves_source_unique_key_for_upsert(monkeypatch) -> None:
