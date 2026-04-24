@@ -27,17 +27,22 @@
 - `bookmarks` / `calendar-selections` BFF는 이제 `program_list_index` summary read를 우선 사용하고, read model 미적용/누락 row만 `programs` fallback으로 읽는다.
 - `get_program_detail()` / `get_program_details_batch()`는 이제 `programs + program_source_records`를 함께 읽어 상세 응답을 조립하고, compare 상단 카드용 `POST /programs/batch`도 `program_list_index` summary read 우선 구조로 넘어갔다.
 - `docs/specs/program-surface-contract-v2.md`, `docs/specs/user-recommendation-serializer-contract-v1.md`, `docs/specs/final-refactor-axis-map-v1.md`는 이미 상위 계약으로 고정돼 있다.
+- 2026-04-24 live read-only 재확인 기준 `program_list_index`, `program_source_records`, additive `programs` canonical 컬럼, `program_list_index` surface-contract 컬럼은 실제 live DB에서 보였다.
+- 2026-04-24 SQL Editor 확인과 후속 read-only probe 기준 `profiles.target_job/target_job_normalized`, `user_program_preferences`, `user_recommendation_profile`, `refresh_user_recommendation_profile(p_user_id uuid)`, `recommendations.query_hash/profile_hash/expires_at/fit_keywords`도 실제 live DB에서 확인됐다.
+- 같은 날 `scripts/refresh_program_validation_sample.py --preset free-plan-50 --output reports/program-validation-sample-latest.json` 실행이 성공했고, `program_list_index` sample refresh 50건 + `program_source_records` sample backfill 50건이 fallback 없이 완료됐다.
+- 따라서 “저장소 코드 기준 현재 패키지”와 “live DB 구조 상태”는 모두 package-5 validation 단계까지 맞춰진 상태로 보는 것이 맞다.
+- 현재 셸은 service-role REST read와 이미 존재하는 RPC 호출은 가능하지만, `supabase` CLI와 direct DB connection 설정이 없어 DDL apply 자체를 이 셸에서 확정 실행할 수는 없다.
 
 ## 3. 전체 패키지 순서
 
 | 패키지 | 목적 | 상태 |
 | --- | --- | --- |
 | 패키지 0 | 계약 고정 | 완료 |
-| 패키지 1 | 사용자 추천 정본 additive migration | SQL draft 완료, write 연결은 진행 중 |
-| 패키지 2 | 프로그램 정본/provenance additive migration | draft SQL 체인 + sample validation helper 완료 |
+| 패키지 1 | 사용자 추천 정본 additive migration | live 결과물 기준 적용 확인 |
+| 패키지 2 | 프로그램 정본/provenance additive migration | live 구조 확인 + bounded sample validation 성공 |
 | 패키지 3 | backfill + dual write + serializer/API/BFF transition seed | 저장소 seed 기준 완료 |
 | 패키지 4 | read switch | 저장소 코드 기준 완료 |
-| 패키지 5 | cleanup / validation / 문서 정합성 | 진행 중 |
+| 패키지 5 | cleanup / validation / 문서 정합성 | 완료 판정 가능, 남은 cleanup은 후보 메모 수준 |
 
 ## 4. 단계별 로드맵
 
@@ -167,6 +172,19 @@
 - 남은 private field 제거와 미사용 helper 축소는 package-5 cleanup 범위로 본다.
 
 ## 4.5 패키지 5: cleanup / validation / 문서 정합성
+
+### 2026-04-24 live follow-up 메모
+
+- 현재 저장소 코드 기준 현재 패키지는 package-5가 맞다.
+- live 결과물 기준으로도 사용자 추천 축과 프로그램 축의 핵심 구조가 모두 보이며, `free-plan-50` bounded sample validation도 성공했다.
+- 후속 read-only 확인에서도 `program_list_index` row count `50`, `program_source_records` row count `50`, 대표 sample row의 핵심 컬럼이 정상 조회됐다.
+- 따라서 package-5의 필수 close-out 기준은 사실상 닫혔고, 아래 항목은 “다음에 반드시 해야 하는 작업”이 아니라 “원하면 추가로 줄일 수 있는 후보”에 가깝다.
+
+1. `supabase/README.md`, `supabase/SQL.md`, `docs/current-state.md`, `docs/refactoring-log.md` stale 문구를 현재 판정에 맞게 정리
+2. 현재 패키지 완료에 직접 필요한 최소 cleanup 1건만 남아 있으면 그때만 수행
+3. package-5 완료 판정과 다음 패키지 진입 조건을 문서에 명확히 남김
+
+즉, 현재 package-5의 핵심은 “검증 결과와 문서를 같은 현실로 닫는 것”이었고, 그 필수 범위는 이번 follow-up으로 충족됐다.
 
 ### cleanup 대상
 

@@ -1,8 +1,16 @@
 # 리팩토링 로그
 
-- 2026-04-24: `supabase/README.md`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-5-live-db-ops-recheck-result.md`
+- 2026-04-24: `scripts/check_package5_live_state.py`, `supabase/README.md`, `supabase/SQL.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-5-live-validation-followup-result.md`
+  - SQL Editor 확인 결과와 read-only probe를 합쳐 `profiles.target_job`, `user_program_preferences`, `user_recommendation_profile`, `refresh_user_recommendation_profile(p_user_id uuid)`, `recommendations.query_hash/profile_hash/expires_at/fit_keywords`가 live에 실제로 존재함을 package-5 문서에 반영함
+  - `reports/program-validation-sample-latest.json` 기준 `free-plan-50` bounded sample validation이 `program_list_index` 50건 / `program_source_records` 50건으로 성공했음을 current-state, roadmap, Supabase 운영 문서에 같이 고정함
+  - 후속 read-only 확인으로 두 테이블 row count가 실제로 `50 / 50`인지와 대표 sample row의 핵심 컬럼이 정상인지까지 다시 확인했고, roadmap status를 `package-5 완료 판정 가능` 수준으로 올림
+  - `scripts/check_package5_live_state.py`의 다음 단계 안내도 live 구조 정렬 완료 상태에서는 더 이상 migration apply를 먼저 요구하지 않고, `bounded validation -> row/sample 확인 -> 문서/cleanup 마감` 순서로 바뀌게 보정함
+
+- 2026-04-24: `scripts/check_package5_live_state.py`, `supabase/README.md`, `supabase/SQL.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-5-live-db-ops-recheck-result.md`
   - package-5 운영 재점검으로 live Supabase를 read-only로 다시 확인한 결과, `program_list_index`, `program_source_records`, additive `programs` canonical 컬럼, `program_list_index` surface-contract 컬럼은 보이지만 `user_program_preferences`, `user_recommendation_profile`, `recommendations.query_hash/profile_hash/expires_at/fit_keywords`는 아직 live에 없음을 문서로 고정함
-  - 현재 셸에는 `supabase` CLI와 direct DB connection 설정이 없어 DDL apply는 실행 불가하다는 점도 함께 명시하고, 다음 안전한 순서를 `user recommendation migrations 적용 -> SQL 확인 -> bounded sample validation`으로 정리함
+  - 현재 셸에는 `supabase` CLI와 direct DB connection 설정이 없어 DDL apply는 실행 불가하다는 점도 함께 명시하고, stale이던 roadmap 문서도 `코드 기준 package-5 / live DB mixed state`에 맞춰 `user recommendation migrations 적용 -> SQL 확인 -> bounded sample validation` 순서를 먼저 따르도록 보정함
+  - `supabase/SQL.md` 맨 앞에도 이 문서가 수동 스냅샷이며 package-5 live apply 판정용 정본이 아니라는 경고와 최신 재점검 요약을 추가함
+  - 같은 판정을 누구나 다시 돌릴 수 있도록 `scripts/check_package5_live_state.py` 읽기 전용 점검 스크립트를 추가하고, README/current-state에서 그 진입점을 함께 연결함
 
 - 2026-04-24: `frontend/app/dashboard/page.tsx`, `docs/current-state.md`, `docs/refactoring-log.md`
   - 병합 회귀로 `RecCard` 내부에서 호출하던 `getProgramCardScore` import가 빠져 `/dashboard` 추천/찜 카드 strip이 `ReferenceError`로 깨지던 문제를 최소 수정으로 복구함
