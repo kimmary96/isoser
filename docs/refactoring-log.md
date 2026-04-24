@@ -1,5 +1,9 @@
 # 리팩토링 로그
 
+- 2026-04-24: `supabase/SQL.md`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-live-bookmarks-drop-and-sql-sync-result.md`
+  - 운영 SQL Editor 후속 확인에서 legacy `public.bookmarks`가 `0` row, inbound 참조 없음 상태임을 다시 확인한 뒤 실제로 삭제됐고, bookmark 정본 테이블은 계속 `public.program_bookmarks`로 유지됨을 문서에 고정함
+  - `supabase/SQL.md`에서 더 이상 live에 존재하지 않는 `bookmarks` 스냅샷을 제거하고, `docs/current-state.md`에도 현재 운영 기준 북마크 정본이 `program_bookmarks`뿐이라는 점을 반영함
+
 - 2026-04-24: `scripts/check_package5_live_state.py`, `supabase/README.md`, `supabase/SQL.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-5-live-validation-followup-result.md`
   - SQL Editor 확인 결과와 read-only probe를 합쳐 `profiles.target_job`, `user_program_preferences`, `user_recommendation_profile`, `refresh_user_recommendation_profile(p_user_id uuid)`, `recommendations.query_hash/profile_hash/expires_at/fit_keywords`가 live에 실제로 존재함을 package-5 문서에 반영함
   - `reports/program-validation-sample-latest.json` 기준 `free-plan-50` bounded sample validation이 `program_list_index` 50건 / `program_source_records` 50건으로 성공했음을 current-state, roadmap, Supabase 운영 문서에 같이 고정함

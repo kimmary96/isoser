@@ -6,6 +6,7 @@
   - `program_list_index`, `program_source_records`, additive `programs` canonical 컬럼은 live DB에서 확인됐습니다.
   - `profiles.target_job/target_job_normalized`, `user_program_preferences`, `user_recommendation_profile`, `refresh_user_recommendation_profile(p_user_id uuid)`, `recommendations.query_hash/profile_hash/expires_at/fit_keywords`도 live DB에서 확인됐습니다.
   - `reports/program-validation-sample-latest.json` 기준 `free-plan-50` bounded sample validation은 `program_list_index` 50건, `program_source_records` 50건으로 성공했습니다.
+  - 같은 날 운영 SQL Editor 확인에서 `public.bookmarks`는 `0` row / inbound 참조 없음 상태로 확인된 뒤 삭제됐고, 북마크 정본 테이블은 계속 `public.program_bookmarks`입니다.
 - 현재 live migration apply 상태를 판정할 때는 이 문서보다 `supabase/README.md`와 `supabase_migrations.schema_migrations` 확인을 우선합니다.
 
 ## Table `activities`
@@ -35,17 +36,6 @@
 | `my_role`          | `text`        | Nullable    |
 | `contributions`    | `_text`       | Nullable    |
 | `image_urls`       | `_text`       | Nullable    |
-
-## Table `bookmarks`
-
-### Columns
-
-| Name           | Type            | Constraints |
-| -------------- | --------------- | ----------- |
-| `id`         | `uuid`        | Primary     |
-| `user_id`    | `uuid`        | Nullable    |
-| `program_id` | `uuid`        | Nullable    |
-| `created_at` | `timestamptz` | Nullable    |
 
 ## Table `calendar_program_selections`
 
