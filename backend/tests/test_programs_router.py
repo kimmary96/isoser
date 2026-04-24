@@ -1627,6 +1627,10 @@ async def test_get_program_details_batch_reuses_detail_mapping(
 async def test_get_programs_batch_preserves_requested_order(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    async def fake_fetch_program_list_summary_rows_by_ids(program_ids: list[str]) -> dict[str, dict[str, object]]:
+        assert program_ids == ["program-2", "program-1"]
+        return {}
+
     async def fake_fetch_programs_by_ids(program_ids: list[str]) -> dict[str, dict[str, object]]:
         assert program_ids == ["program-2", "program-1"]
         return {
@@ -1634,6 +1638,11 @@ async def test_get_programs_batch_preserves_requested_order(
             "program-2": {"id": "program-2", "title": "두 번째", "deadline": "2026-05-01", "source": "K-Startup"},
         }
 
+    monkeypatch.setattr(
+        programs,
+        "_fetch_program_list_summary_rows_by_ids",
+        fake_fetch_program_list_summary_rows_by_ids,
+    )
     monkeypatch.setattr(programs, "_fetch_programs_by_ids", fake_fetch_programs_by_ids)
 
     response = await programs.get_programs_batch(
@@ -1641,6 +1650,61 @@ async def test_get_programs_batch_preserves_requested_order(
     )
 
     assert [item.id for item in response.items] == ["program-2", "program-1"]
+
+
+@pytest.mark.asyncio
+async def test_get_programs_batch_prefers_read_model_rows_and_falls_back_for_missing_ids(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_fetch_program_list_summary_rows_by_ids(program_ids: list[str]) -> dict[str, dict[str, object]]:
+        assert program_ids == ["program-2", "program-1"]
+        return {
+            "program-2": {
+                "id": "program-2",
+                "title": "읽기 모델 두 번째",
+                "provider": "read-model 기관",
+                "location": "서울",
+                "summary": "읽기 모델 요약",
+                "source": "K-Startup",
+                "deadline": "2026-05-01",
+                "days_left": 7,
+                "deadline_confidence": "high",
+                "recommended_score": 0.91,
+            }
+        }
+
+    async def fake_fetch_programs_by_ids(program_ids: list[str]) -> dict[str, dict[str, object]]:
+        assert program_ids == ["program-1"]
+        return {
+            "program-1": {
+                "id": "program-1",
+                "title": "legacy 첫 번째",
+                "provider": "legacy 기관",
+                "location": "부산",
+                "deadline": "2026-06-01",
+                "source": "고용24",
+            }
+        }
+
+    monkeypatch.setattr(
+        programs,
+        "_fetch_program_list_summary_rows_by_ids",
+        fake_fetch_program_list_summary_rows_by_ids,
+    )
+    monkeypatch.setattr(programs, "_fetch_programs_by_ids", fake_fetch_programs_by_ids)
+    monkeypatch.setattr(programs, "_program_list_read_model_enabled", lambda: True)
+
+    response = await programs.get_programs_batch(
+        programs.ProgramDetailBatchRequest(program_ids=["program-2", "program-1"])
+    )
+
+    assert [item.id for item in response.items] == ["program-2", "program-1"]
+    assert response.items[0].title == "읽기 모델 두 번째"
+    assert response.items[0].provider == "read-model 기관"
+    assert response.items[0].days_left == 7
+    assert response.items[0].recommended_score == 0.91
+    assert response.items[1].title == "legacy 첫 번째"
+    assert response.items[1].provider == "legacy 기관"
 
 
 def test_normalize_cached_recommendation_rows_marks_missing_component_scores_stale() -> None:

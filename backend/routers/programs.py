@@ -2333,6 +2333,34 @@ async def _fetch_programs_by_ids(program_ids: list[str]) -> dict[str, dict[str, 
     }
 
 
+async def _fetch_program_list_summary_rows_by_ids(
+    program_ids: list[str],
+) -> dict[str, dict[str, Any]]:
+    if not program_ids or not _program_list_read_model_enabled():
+        return {}
+
+    quoted_ids = ",".join(f'"{program_id}"' for program_id in program_ids if program_id)
+    if not quoted_ids:
+        return {}
+
+    rows = await request_supabase(
+        method="GET",
+        path=f"/rest/v1/{PROGRAM_LIST_INDEX_TABLE}",
+        params={
+            "select": PROGRAM_LIST_SUMMARY_SELECT,
+            "id": f"in.({quoted_ids})",
+        },
+    )
+    if not isinstance(rows, list):
+        return {}
+
+    return {
+        str(row.get("id")): dict(row)
+        for row in rows
+        if str(row.get("id") or "").strip()
+    }
+
+
 async def _load_recommendation_rule(condition_keys: Sequence[str]) -> dict[str, Any] | None:
     for condition_key in condition_keys:
         try:
@@ -4428,12 +4456,25 @@ async def get_programs_batch(payload: ProgramDetailBatchRequest) -> ProgramBatch
         seen_program_ids.add(normalized)
         deduped_program_ids.append(normalized)
 
-    programs_by_id = await _fetch_programs_by_ids(deduped_program_ids)
+    read_model_rows_by_id: dict[str, dict[str, Any]] = {}
+    if _program_list_read_model_enabled():
+        try:
+            read_model_rows_by_id = await _fetch_program_list_summary_rows_by_ids(deduped_program_ids)
+        except Exception as exc:
+            log_event(logger, logging.WARNING, "program_batch_read_model_fallback", error=str(exc))
+
+    missing_program_ids = [
+        program_id for program_id in deduped_program_ids if program_id not in read_model_rows_by_id
+    ]
+    programs_by_id = await _fetch_programs_by_ids(missing_program_ids)
+
     return ProgramBatchResponse(
         items=[
-            ProgramListItem.model_validate(_serialize_program_list_row(programs_by_id[program_id]))
+            ProgramListItem.model_validate(read_model_rows_by_id[program_id])
+            if program_id in read_model_rows_by_id
+            else ProgramListItem.model_validate(_serialize_program_list_row(programs_by_id[program_id]))
             for program_id in deduped_program_ids
-            if program_id in programs_by_id
+            if program_id in read_model_rows_by_id or program_id in programs_by_id
         ]
     )
 

@@ -17,7 +17,7 @@
 - `backend/routers/programs.py` 한 파일에 목록 요약, 추천 요약, 캘린더 추천, 상세 응답 serializer가 함께 들어 있다.
 - `ProgramListItem`이 카드형/테이블형/추천형 요약을 모두 겸하고 있다.
 - 목록 경로와 추천 경로가 모두 `ProgramListItem.model_validate(...)`를 공용으로 쓴다.
-- 상세는 별도 `ProgramDetailResponse`가 있지만, 목록/추천과 공유되는 base summary 계층이 아직 없다.
+- 상세는 별도 `ProgramDetailResponse`가 있고, 최근 단건/배치 상세는 `programs + program_source_records` 조합을 읽기 시작했다. 다만 목록/추천과 공유되는 base summary 계층 공용화와 compare consumer cleanup은 아직 남아 있다.
 
 ### frontend shared types/helper
 
@@ -44,8 +44,8 @@
 | `backend/routers/programs.py` | `_build_program_detail_response()` | raw row -> 상세 응답 | 상세만 독립 구현 | canonical detail serializer의 직접 후보 |
 | `backend/routers/programs.py` | `list_programs()` | legacy/기본 목록 GET | 오래된 plain list 경로 | 새 row serializer 준비 전까지 유지, 이후 축소 후보 |
 | `backend/routers/programs.py` | `list_programs_page()` | read-model 목록 페이지 응답 | `ProgramListItem.model_validate(row)` 직접 사용 | `ProgramListRowItem` 전환의 첫 backend endpoint |
-| `backend/routers/programs.py` | `get_programs_batch()` | 비교/선택 모달용 기본 목록 batch | monolith `ProgramListItem` 반환 | 카드형/비교형 summary 분리 필요 |
-| `backend/routers/programs.py` | `get_program_details_batch()`, `get_program_detail()` | 상세 batch / 단건 상세 | 상세 응답 전환 핵심 | `programs + program_source_records` 조립 규칙 이식 필요 |
+| `backend/routers/programs.py` | `get_programs_batch()` | 비교/선택 모달용 기본 목록 batch | 이제 `program_list_index` summary read 우선 + `programs` fallback, 하지만 응답은 아직 `ProgramListItem` monolith | compare summary 전용 타입/consumer cleanup |
+| `backend/routers/programs.py` | `get_program_details_batch()`, `get_program_detail()` | 상세 batch / 단건 상세 | `programs + program_source_records` 조합 이식이 시작됨 | consumer와 남은 legacy helper cleanup |
 | `backend/routers/programs.py` | `recommend_programs()` | 추천 카드 backend | 추천 item에 현재 summary를 직접 포함 | `ProgramCardSummary + ProgramSurfaceContext` 방향으로 전환 |
 | `backend/routers/programs.py` | `recommend_programs_calendar()` | 캘린더 추천 backend | 추천 카드와 유사한 중복 wrapper | 카드형 summary 공유 후 캘린더 전용 context만 유지 |
 
@@ -168,7 +168,7 @@
 
 이유:
 
-- 이 단계는 `programs` canonical detail과 `program_source_records` provenance 역할이 실제 코드에 반영된 뒤에야 안전하다.
+- 이 단계는 `programs` canonical detail과 `program_source_records` provenance 역할이 실제 코드에 반영된 뒤 consumer까지 정리해야 마무리된다.
 
 ## 7. 이번 문서에서 고정하는 판단
 
@@ -178,6 +178,7 @@
 - `dashboard/bookmarks`와 `dashboard/calendar-selections`는 이미 `program_list_index` 우선 read로 옮겨졌다.
 - backend recommendation/compare read도 이제 `user_recommendation_profile` 우선 구조로 넘어갔다.
 - `dashboard/recommend-calendar`의 마지막 direct Supabase fallback도 `program_list_index` 우선 helper로 정리됐다.
+- `get_programs_batch()`도 compare 상단 카드 기준 `program_list_index` 우선으로 넘어갔고, 상세 단건/배치는 `program_source_records` 보강을 받기 시작했다.
 - 이제 남은 직접 전환 우선순위는 추천 BFF cleanup과 비교/상세 read 쪽이다.
 - `compare-relevance`는 먼저 만들 대상이 아니라, 앞 단계가 끝난 뒤 맞춰 들어가야 하는 얇은 proxy다.
 

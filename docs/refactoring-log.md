@@ -1,5 +1,10 @@
 # 리팩토링 로그
 
+- 2026-04-24: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-4-detail-compare-read-switch-result.md`
+  - 패키지 4의 다음 read switch로 상세 단건/배치 응답이 `programs` row만 보지 않고 `program_source_records` primary row를 함께 읽어, `application_url/detail_url/source_specific`와 additive canonical detail 필드를 우선 사용하도록 전환함
+  - compare 상단 카드가 쓰는 `POST /programs/batch`도 `program_list_index` summary read를 먼저 사용하고, read model에 없는 id만 legacy `programs`로 fallback 하도록 바꿔 비교 기본 카드 read의 legacy 의존을 더 줄임
+  - 기존 public 응답 shape `ProgramDetailResponse`와 `ProgramBatchResponse`는 유지했고, read model/table 미적용 또는 일부 id 누락 환경에서도 fallback으로 계속 동작하도록 보수적으로 연결함
+
 - 2026-04-24: `frontend/lib/server/program-card-summary.ts`, `frontend/lib/server/program-card-summary.test.ts`, `frontend/lib/program-card-items.ts`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-4-recommend-calendar-fallback-read-model-result.md`
   - 패키지 4의 연속 read switch로 추천 캘린더의 마지막 direct Supabase fallback도 `program_list_index` open/deadline summary read를 먼저 쓰고, read model이 없을 때만 `programs`로 내려가도록 정리함
   - fallback 카드 adapter는 `Program`뿐 아니라 `ProgramCardSummary`도 그대로 받을 수 있게 넓혀, fallback reason과 응답 shape를 유지한 채 `programs` direct read 의존을 더 줄임

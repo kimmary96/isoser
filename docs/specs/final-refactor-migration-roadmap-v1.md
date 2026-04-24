@@ -25,6 +25,7 @@
 - `POST /admin/sync/programs`와 collector scheduler 모두 `program_source_records` best-effort dual write와 additive canonical `programs` column seed를 같은 규칙으로 쓰기 시작했다.
 - 따라서 저장소 코드 기준 패키지 3의 dual write seed 공백은 닫혔고, 다음 현재 패키지는 read switch 중심의 패키지 4다.
 - `bookmarks` / `calendar-selections` BFF는 이제 `program_list_index` summary read를 우선 사용하고, read model 미적용/누락 row만 `programs` fallback으로 읽는다.
+- `get_program_detail()` / `get_program_details_batch()`는 이제 `programs + program_source_records`를 함께 읽어 상세 응답을 조립하고, compare 상단 카드용 `POST /programs/batch`도 `program_list_index` summary read 우선 구조로 넘어갔다.
 - `docs/specs/program-surface-contract-v2.md`, `docs/specs/user-recommendation-serializer-contract-v1.md`, `docs/specs/final-refactor-axis-map-v1.md`는 이미 상위 계약으로 고정돼 있다.
 
 ## 3. 전체 패키지 순서
@@ -124,6 +125,8 @@
 - 대시보드 recommendation/calendar/bookmark/selection BFF는 이미 `items: ProgramCardItem[]` 응답으로 일부 전환됐다.
 - backend recommendation/compare read는 이제 `user_recommendation_profile`을 우선 읽고, derived row가 없을 때만 legacy `profiles`로 fallback한다. raw `activities`는 아직 compare breakdown과 RAG 보조 입력 용도로 함께 읽는다.
 - bookmarks/calendar BFF 내부 read도 이미 `program_list_index` summary read 우선 구조로 넘어갔다.
+- compare 상단 카드 batch도 `program_list_index` summary read 우선, legacy `programs` fallback 구조로 전환됐다.
+- 단건/배치 상세는 `programs + program_source_records` 조합을 읽기 시작했고, additive canonical detail 필드를 우선 사용한다.
 - 따라서 패키지 4의 남은 핵심은 추천 BFF cleanup과 detail/compare read를 `program_list_index` / `program_source_records` 축에 더 맞추는 일이다.
 
 ### backend
@@ -133,7 +136,7 @@
 2. 목록/card read를 `program_list_index` 명시 컬럼 serializer로 전환  
    현재 상태: 대부분 seed 완료, remaining cleanup 위주
 3. 상세 read를 `programs + program_source_records` 조합으로 전환
-   현재 상태: 미완료
+   현재 상태: 단건/배치 상세는 진행 중, compare/detail cleanup 남음
 
 ### BFF
 
