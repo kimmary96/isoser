@@ -15,6 +15,7 @@ import type {
   ParsePdfResponse,
   Program,
   ProgramBatchResponse,
+  ProgramCardSummary,
   ProgramCountResponse,
   ProgramDetail,
   ProgramDetailBatchResponse,
@@ -399,7 +400,7 @@ export async function getProgram(programId: string): Promise<Program> {
   );
 }
 
-export async function getPrograms(programIds: string[]): Promise<Program[]> {
+export async function getPrograms(programIds: string[]): Promise<ProgramCardSummary[]> {
   const response = await requestJson<ProgramBatchResponse>(
     "/programs/batch",
     {

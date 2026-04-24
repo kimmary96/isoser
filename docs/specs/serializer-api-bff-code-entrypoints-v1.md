@@ -27,7 +27,7 @@
 ### frontend BFF
 
 - `frontend/app/api/dashboard/recommended-programs/route.ts`는 backend 추천 응답의 `item.program`을 그대로 복사한 뒤 `_reason`, `_fit_keywords`, `_score`, `_relevance_score`를 덧붙인다.
-- `frontend/app/api/dashboard/recommend-calendar/route.ts`는 fallback 응답을 만들 때 `program: Program` 구조를 그대로 유지한다.
+- `frontend/app/api/dashboard/recommend-calendar/route.ts`는 이미 `ProgramCardItem[]` 응답을 유지하지만, fallback 내부에는 아직 transition 경로가 남아 있다. 최근 intermediate fallback은 flat `/programs` 대신 `/programs/list` summary rows를 먼저 쓰게 됐다.
 - `frontend/app/api/dashboard/bookmarks/route.ts`와 `frontend/app/api/dashboard/calendar-selections/route.ts`는 이제 `program_list_index` summary read를 우선 사용하고, read model 미적용/누락 row만 `programs`로 fallback한다.
 - `frontend/app/api/programs/compare-relevance/route.ts`는 얇은 proxy지만, 이후 새 summary/context 타입이 들어오면 같이 맞춰야 한다.
 
@@ -59,7 +59,7 @@
 | `frontend/lib/types/index.ts` | `ProgramRecommendItem`, `CalendarRecommendItem` | 추천 wrapper | 내부 `program: Program` 구조 유지 | `program + context` 구조로 정리 필요 |
 | `frontend/lib/api/backend.ts` | `listPrograms()` | plain list helper | `Program[]` 반환 | legacy helper로 축소하거나 row helper로 교체 |
 | `frontend/lib/api/backend.ts` | `listProgramsPage()` | 메인 목록 helper | 목록이 아직 monolith 타입 | `ProgramListRowItem` 전환 첫 helper |
-| `frontend/lib/api/backend.ts` | `getProgram()`, `getPrograms()` | 기본 program fetch helper | 상세/비교/북마크에서 monolith 확산 | base summary 또는 compare summary helper로 축소 필요 |
+| `frontend/lib/api/backend.ts` | `getProgram()`, `getPrograms()` | 기본 program fetch helper | `getProgram()`은 여전히 monolith, `getPrograms()`는 compare top card용 `ProgramCardSummary`로 축소 시작 | `getProgram()` 축소와 compare helper 분리 계속 필요 |
 | `frontend/lib/api/backend.ts` | `getProgramDetail()`, `getProgramDetails()` | 상세 helper | 타입명은 있지만 summary 계층과 연결이 약함 | detail 계약 전환 시 유지하되 payload shape만 교체 |
 
 ## 5. frontend BFF 실제 진입점
@@ -67,7 +67,7 @@
 | 파일 | 현재 역할 | 실제 확인한 문제 | 전환 우선순위 |
 | --- | --- | --- | --- |
 | `frontend/app/api/dashboard/recommended-programs/route.ts` | 대시보드 추천 카드 BFF | `item.program`에 `_reason`, `_fit_keywords`, `_score`, `_relevance_score`를 직접 붙임 | 1순위 |
-| `frontend/app/api/dashboard/recommend-calendar/route.ts` | 캘린더 추천 + fallback BFF | fallback도 `program: Program` 그대로 사용 | 1순위 |
+| `frontend/app/api/dashboard/recommend-calendar/route.ts` | 캘린더 추천 + fallback BFF | 응답은 구조형으로 정리됐지만 fallback 내부 cleanup이 아직 남아 있음 | 1순위 |
 | `frontend/app/api/dashboard/bookmarks/route.ts` | 찜한 프로그램 조회 | `program_list_index` summary read 우선, `programs` fallback 유지 | 완료 |
 | `frontend/app/api/dashboard/calendar-selections/route.ts` | 캘린더 적용 프로그램 조회/저장 | 조회 시 `program_list_index` summary read 우선, `programs` fallback 유지 | 완료 |
 | `frontend/app/api/programs/compare-relevance/route.ts` | 비교 관련도 proxy | 응답 자체는 얇지만 새 summary/context 구조 영향 받음 | 3순위 |

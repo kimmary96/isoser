@@ -1,5 +1,13 @@
 # 리팩토링 로그
 
+- 2026-04-24: `frontend/lib/types/index.ts`, `frontend/lib/api/backend.ts`, `frontend/app/(landing)/compare/compare-table-sections.tsx`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-4-compare-summary-type-shrink-result.md`
+  - 패키지 4의 compare consumer cleanup으로 `ProgramBatchResponse`와 `getPrograms()`를 compare top-card 기준 `ProgramCardSummary[]`로 축소하고, compare 화면 타입도 full `Program` 대신 `ProgramCardSummary + ProgramDetail` 조합을 쓰도록 정리함
+  - 런타임 비교 동작은 유지하면서 compare 페이지가 더 이상 목록/추천/상세 private 필드를 모두 품은 monolith `Program`에 직접 기대지 않게 한 단계 정리함
+
+- 2026-04-24: `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/app/api/dashboard/recommend-calendar/route.test.ts`, `frontend/lib/server/recommend-calendar-fallback.ts`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-4-recommend-calendar-list-fallback-cleanup-result.md`
+  - 패키지 4의 추천 BFF cleanup으로 recommend-calendar의 intermediate fallback이 더 이상 flat backend `/programs` 계약을 직접 쓰지 않고, `GET /programs/list`의 summary row item을 먼저 풀어 `ProgramCardItem` fallback 응답을 만들도록 정리함
+  - 마지막 direct Supabase fallback은 그대로 유지해 운영 안전성을 지켰고, 새 helper test로 promoted row를 섞지 않고 organic `items` 순서를 그대로 쓰는 동작을 고정함
+
 - 2026-04-24: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-4-detail-compare-read-switch-result.md`
   - 패키지 4의 다음 read switch로 상세 단건/배치 응답이 `programs` row만 보지 않고 `program_source_records` primary row를 함께 읽어, `application_url/detail_url/source_specific`와 additive canonical detail 필드를 우선 사용하도록 전환함
   - compare 상단 카드가 쓰는 `POST /programs/batch`도 `program_list_index` summary read를 먼저 사용하고, read model에 없는 id만 legacy `programs`로 fallback 하도록 바꿔 비교 기본 카드 read의 legacy 의존을 더 줄임

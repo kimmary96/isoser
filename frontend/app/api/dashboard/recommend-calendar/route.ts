@@ -3,6 +3,7 @@ import {
   toCalendarProgramCardItem,
   toFallbackCalendarProgramCardItem,
 } from "@/lib/program-card-items";
+import { extractBackendFallbackPrograms } from "@/lib/server/recommend-calendar-fallback";
 import {
   loadDeadlineOrderedProgramCardRenderables,
   type ProgramCardDeadlineRouteClient,
@@ -15,6 +16,7 @@ import type {
   Program,
   ProgramCardItem,
   ProgramCardRenderable,
+  ProgramListPageResponse,
 } from "@/lib/types";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
@@ -158,13 +160,14 @@ export async function GET(request: Request) {
     const fallbackLimit = Number(topK || "9") || 9;
     try {
       const fallbackResponse = await fetchWithTimeout(
-        `${BACKEND_URL}/programs?recruiting_only=true&sort=deadline&limit=${fallbackLimit}`,
+        `${BACKEND_URL}/programs/list?recruiting_only=true&sort=deadline&limit=${fallbackLimit}`,
         { method: "GET" },
         BACKEND_FALLBACK_TIMEOUT_MS
       );
 
       if (fallbackResponse.ok) {
-        const fallbackPrograms = (await fallbackResponse.json().catch(() => [])) as ProgramCardRenderable[];
+        const fallbackPage = (await fallbackResponse.json().catch(() => null)) as ProgramListPageResponse | null;
+        const fallbackPrograms = fallbackPage ? extractBackendFallbackPrograms(fallbackPage) : [];
         return apiOk(toFallbackCalendarResponse(fallbackPrograms, fallbackLimit));
       }
     } catch {

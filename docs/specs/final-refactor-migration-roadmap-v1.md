@@ -125,7 +125,9 @@
 - 대시보드 recommendation/calendar/bookmark/selection BFF는 이미 `items: ProgramCardItem[]` 응답으로 일부 전환됐다.
 - backend recommendation/compare read는 이제 `user_recommendation_profile`을 우선 읽고, derived row가 없을 때만 legacy `profiles`로 fallback한다. raw `activities`는 아직 compare breakdown과 RAG 보조 입력 용도로 함께 읽는다.
 - bookmarks/calendar BFF 내부 read도 이미 `program_list_index` summary read 우선 구조로 넘어갔다.
+- recommend-calendar BFF의 intermediate fallback도 이제 flat `/programs` 대신 `/programs/list` summary rows를 먼저 쓰고, 그마저 실패할 때만 direct Supabase helper로 내려간다.
 - compare 상단 카드 batch도 `program_list_index` summary read 우선, legacy `programs` fallback 구조로 전환됐다.
+- compare frontend top card consumer도 이제 `ProgramCardSummary + ProgramDetail` 조합을 쓰기 시작해, compare 쪽 `Program` monolith 의존이 줄어드는 중이다.
 - 단건/배치 상세는 `programs + program_source_records` 조합을 읽기 시작했고, additive canonical detail 필드를 우선 사용한다.
 - 따라서 패키지 4의 남은 핵심은 추천 BFF cleanup과 detail/compare read를 `program_list_index` / `program_source_records` 축에 더 맞추는 일이다.
 
