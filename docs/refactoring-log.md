@@ -3127,3 +3127,12 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - recommend-calendar direct fallback용 deadline loader도 `ProgramCardSummary` 기준으로 줄여, `program_list_index` 미적용 시 legacy `programs` row를 읽더라도 route 진입 전에 카드 summary shape로 축소되게 정리함
   - Work24 모집마감 신뢰도 판정을 `frontend/lib/program-display.ts::hasTrustedProgramDeadline(...)` 공용 helper로 옮겨 route-local `compare_meta` 파싱을 제거하고, 같은 규칙을 독립 테스트로 고정함
   - fallback calendar card helper도 summary 입력으로 좁혀 dashboard 보조 경로의 `Program` monolith 직접 의존을 한 단계 더 줄였고, recommend-calendar route는 기존 `ProgramCardItem[]` 응답과 timeout/fallback 순서는 그대로 유지함
+- 2026-04-24: `frontend/lib/types/index.ts`, `frontend/app/api/dashboard/recommended-programs/route.ts`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `docs/current-state.md`, `reports/SESSION-2026-04-24-recommendation-summary-contract-tightening-result.md`
+  - 프런트 타입에서 `ProgramRecommendItem.program`과 `CalendarRecommendItem.program`을 full `Program` 대신 `ProgramCardSummary`로 축소해, 실제 backend recommendation payload가 summary 위주라는 현재 계약과 맞춤
+  - dashboard recommendation/calendar BFF의 런타임 응답 shape는 그대로 `ProgramCardItem[]`를 유지하고, 변경은 주로 과도하게 넓게 남아 있던 타입 의존을 줄이는 정합성 정리에 가깝다
+- 2026-04-24: `frontend/app/(landing)/programs/program-card.tsx`, `frontend/app/(landing)/programs/recommended-programs-section.tsx`, `docs/current-state.md`, `reports/SESSION-2026-04-24-dead-landing-recommend-preview-cleanup-result.md`
+  - dashboard recommendation BFF 전환 이후 더 이상 import되지 않던 landing personalized preview 전용 컴포넌트 두 개를 삭제해 dead code를 정리함
+  - 현재 `/programs` 런타임 경로는 이 파일들을 참조하지 않으므로 동작 변화 없이 monolith transition 잔재만 줄이는 cleanup 성격이다
+- 2026-04-24: `frontend/lib/program-display.ts`, `frontend/app/(landing)/programs/program-utils.ts`, `docs/current-state.md`, `reports/SESSION-2026-04-24-recommendation-summary-contract-tightening-result.md`
+  - compare selection helper와 `/programs` page helper에서 더 이상 broad `ProgramCardRenderable` 전이 별칭이 필요하지 않도록 입력 타입을 summary/list 범위로 좁힘
+  - 결과적으로 `ProgramCardRenderable`는 central adapter(`program-card-items.ts`)와 legacy browser cache migration(`recommend-calendar-cache.ts`)처럼 실제 과도기 호환이 필요한 경로에만 남게 됨

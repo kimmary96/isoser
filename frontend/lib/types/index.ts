@@ -588,7 +588,7 @@ export interface ProgramRecommendItem {
   score_breakdown: RelevanceScoreBreakdown;
   relevance_grade: RelevanceGrade;
   relevance_badge: string | null;
-  program: Program;
+  program: ProgramCardSummary;
 }
 
 export interface ProgramRecommendResponse {
@@ -608,7 +608,7 @@ export interface CalendarRecommendItem {
   score_breakdown?: RelevanceScoreBreakdown;
   relevance_grade?: RelevanceGrade;
   relevance_badge?: string | null;
-  program: Program;
+  program: ProgramCardSummary;
 }
 
 export interface CalendarRecommendResponse {

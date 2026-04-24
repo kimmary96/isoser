@@ -11,7 +11,6 @@ import {
 } from "@/lib/server/program-card-summary";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type {
-  CalendarRecommendItem,
   CalendarRecommendResponse,
   DashboardRecommendCalendarResponse,
   ProgramCardItem,

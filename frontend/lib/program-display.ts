@@ -1,7 +1,6 @@
 import type {
   CompareMeta,
   ProgramBaseSummary,
-  ProgramCardRenderable,
   ProgramCardSummary,
   ProgramListRow,
   ProgramListRowItem,
@@ -431,7 +430,15 @@ export function getProgramSelectionKeywords(program: ProgramListRow): string[] {
 }
 
 export function toProgramSelectSummary(
-  program: ProgramCardRenderable | null | undefined
+  program:
+    | (Pick<
+        ProgramBaseSummary,
+        "id" | "title" | "category" | "provider" | "source" | "days_left" | "support_type"
+      > & {
+        tags?: string[] | string | null;
+      })
+    | null
+    | undefined
 ): ProgramSelectSummary | null {
   if (!program) {
     return null;
@@ -455,7 +462,16 @@ export function toProgramSelectSummary(
 }
 
 export function toProgramSelectSummaries(
-  programs: Array<ProgramCardRenderable | null | undefined>
+  programs: Array<
+    | (Pick<
+        ProgramBaseSummary,
+        "id" | "title" | "category" | "provider" | "source" | "days_left" | "support_type"
+      > & {
+        tags?: string[] | string | null;
+      })
+    | null
+    | undefined
+  >
 ): ProgramSelectSummary[] {
   return programs
     .map((program) => toProgramSelectSummary(program))

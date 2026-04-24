@@ -4,7 +4,6 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type {
   DashboardRecommendedProgramsResponse,
   ProgramCardItem,
-  ProgramRecommendItem,
   ProgramRecommendResponse,
 } from "@/lib/types";
 

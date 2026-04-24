@@ -5,9 +5,9 @@ import {
   normalizeProgramTextList,
 } from "@/lib/program-display";
 import { getProgramCardScore, toProgramCardItem } from "@/lib/program-card-items";
-import type { ProgramCardRenderable, ProgramSurfaceContext } from "@/lib/types";
+import type { ProgramListRow, ProgramSurfaceContext } from "@/lib/types";
 
-export function isDisplayableProgram(program: ProgramCardRenderable): boolean {
+export function isDisplayableProgram(program: ProgramListRow): boolean {
   return isDisplayableProgramSummary(program);
 }
 
@@ -16,7 +16,7 @@ export function normalizeTextList(value: string[] | string | null | undefined): 
 }
 
 export function scorePercent(
-  program: ProgramCardRenderable,
+  program: ProgramListRow,
   context?: ProgramSurfaceContext | null
 ): number | null {
   const score = getProgramCardScore(toProgramCardItem(program, context ?? null));
@@ -24,7 +24,7 @@ export function scorePercent(
   return Math.max(0, Math.min(100, Math.round(score <= 1 ? score * 100 : score)));
 }
 
-export function deadlineLabel(program: ProgramCardRenderable): string | null {
+export function deadlineLabel(program: ProgramListRow): string | null {
   if (typeof program.days_left === "number") {
     return formatProgramDeadlineCountdown(program.days_left);
   }
@@ -34,6 +34,6 @@ export function deadlineLabel(program: ProgramCardRenderable): string | null {
   return date.toLocaleDateString("ko-KR", { month: "long", day: "numeric" });
 }
 
-export function deadlineTone(program: ProgramCardRenderable): string {
+export function deadlineTone(program: ProgramListRow): string {
   return getProgramDeadlineTone(program.days_left);
 }
