@@ -16,6 +16,8 @@ import type {
   ProgramRecommendResponse,
 } from "@/lib/types";
 
+const BACKEND_RECOMMEND_TIMEOUT_MS = 3500;
+
 async function loadFallbackRecommendedPrograms(limit: number): Promise<DashboardRecommendedProgramsResponse> {
   let supabase: ProgramCardDeadlineRouteClient;
   try {
@@ -61,16 +63,20 @@ export async function GET(request: Request) {
       headers.Authorization = `Bearer ${accessToken}`;
     }
 
-    const response = await fetchBackendResponse("/programs/recommend", {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        top_k: 9,
-        category,
-        region,
-        force_refresh: forceRefresh,
-      }),
-    });
+    const response = await fetchBackendResponse(
+      "/programs/recommend",
+      {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          top_k: 9,
+          category,
+          region,
+          force_refresh: forceRefresh,
+        }),
+      },
+      { timeoutMs: BACKEND_RECOMMEND_TIMEOUT_MS },
+    );
 
     if (!response.ok) {
       if (response.status >= 500) {
