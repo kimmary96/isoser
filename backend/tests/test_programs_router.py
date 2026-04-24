@@ -1492,6 +1492,82 @@ def test_build_program_detail_response_uses_work24_application_deadline_from_met
     assert detail.schedule_text == "신청 시작일 미정 ~ 2026-04-20"
 
 
+def test_build_program_detail_response_prefers_canonical_and_source_record_fields() -> None:
+    detail = programs._build_program_detail_response(
+        {
+            "id": "program-detail-1",
+            "source": "고용24",
+            "title": "정본 상세 보강 과정",
+            "provider": "기존 기관명",
+            "provider_name": "정본 기관명",
+            "organizer_name": "정본 주관기관",
+            "location": "기존 위치",
+            "location_text": "정본 위치",
+            "summary": "기존 요약",
+            "business_type": "훈련비 지원",
+            "application_start_date": "2026-04-20",
+            "application_end_date": "2026-04-29",
+            "program_start_date": "2026-05-10",
+            "program_end_date": "2026-06-10",
+            "fee_amount": 0,
+            "support_amount": 120000,
+            "eligibility_labels": ["청년", "초급 개발자"],
+            "contact_phone": "02-0000-0000",
+            "contact_email": "hello@example.com",
+            "capacity_total": 30,
+            "capacity_current": 12,
+            "curriculum_items": ["Python 기초", "FastAPI 실습"],
+            "certifications": ["수료증"],
+            "service_meta": {
+                "career_support": ["멘토링"],
+                "learning_outcomes": ["포트폴리오 완성"],
+            },
+            "compare_meta": {
+                "contact_phone": "02-9999-9999",
+                "application_method_email": "legacy@example.com",
+            },
+        },
+        {
+            "program_id": "program-detail-1",
+            "application_url": "https://example.com/apply",
+            "detail_url": "https://example.com/detail",
+            "source_url": "https://example.com/source",
+            "source_specific": {
+                "faq": [{"question": "질문", "answer": "답변"}],
+                "reviews": [{"author": "수강생", "content": "좋았어요"}],
+                "recommended_for": ["백엔드 입문자"],
+                "learning_outcomes": ["실무 API 제작"],
+                "career_support": ["취업 컨설팅"],
+                "event_banner": "얼리버드 신청 가능",
+                "ai_matching_summary": "백엔드 전환 준비자에게 특히 적합합니다.",
+            },
+            "is_primary": True,
+        },
+    )
+
+    assert detail.provider == "정본 기관명"
+    assert detail.organizer == "정본 주관기관"
+    assert detail.location == "정본 위치"
+    assert detail.support_type == "훈련비 지원"
+    assert detail.source_url == "https://example.com/apply"
+    assert detail.fee == 0
+    assert detail.support_amount == 120000
+    assert detail.eligibility == ["청년", "초급 개발자"]
+    assert detail.capacity_total == 30
+    assert detail.capacity_remaining == 18
+    assert detail.phone == "02-0000-0000"
+    assert detail.email == "hello@example.com"
+    assert detail.curriculum == ["Python 기초", "FastAPI 실습"]
+    assert detail.certifications == ["수료증"]
+    assert detail.faq == [{"question": "질문", "answer": "답변"}]
+    assert detail.reviews == [{"author": "수강생", "content": "좋았어요"}]
+    assert detail.recommended_for == ["백엔드 입문자"]
+    assert detail.learning_outcomes == ["실무 API 제작", "포트폴리오 완성"]
+    assert detail.career_support == ["취업 컨설팅", "멘토링"]
+    assert detail.event_banner == "얼리버드 신청 가능"
+    assert detail.ai_matching_summary == "백엔드 전환 준비자에게 특히 적합합니다."
+
+
 @pytest.mark.asyncio
 async def test_get_program_details_batch_reuses_detail_mapping(
     monkeypatch: pytest.MonkeyPatch,
@@ -1519,6 +1595,22 @@ async def test_get_program_details_batch_reuses_detail_mapping(
         }
 
     monkeypatch.setattr(programs, "_fetch_programs_by_ids", fake_fetch_programs_by_ids)
+    async def fake_fetch_primary_source_records_by_program_ids(program_ids: list[str]) -> dict[str, dict[str, object]]:
+        assert program_ids == ["program-1", "program-2"]
+        return {
+            "program-1": {
+                "program_id": "program-1",
+                "application_url": "https://example.com/program-1/apply",
+                "source_specific": {"recommended_for": ["입문자"]},
+                "is_primary": True,
+            }
+        }
+
+    monkeypatch.setattr(
+        programs,
+        "_fetch_primary_source_records_by_program_ids",
+        fake_fetch_primary_source_records_by_program_ids,
+    )
 
     response = await programs.get_program_details_batch(
         programs.ProgramDetailBatchRequest(program_ids=["program-1", "program-2", "program-1"])
@@ -1526,6 +1618,8 @@ async def test_get_program_details_batch_reuses_detail_mapping(
 
     assert [item.id for item in response.items] == ["program-1", "program-2"]
     assert response.items[0].program_start_date == "2026-05-01"
+    assert response.items[0].source_url == "https://example.com/program-1/apply"
+    assert response.items[0].recommended_for == ["입문자"]
     assert response.items[1].application_end_date == "2026-05-20"
 
 
@@ -2356,6 +2450,31 @@ async def test_fetch_profile_row_falls_back_to_profiles_when_recommendation_prof
     assert calls == ["/rest/v1/user_recommendation_profile", "/rest/v1/profiles"]
     assert profile["job_title"] == "백엔드 개발자"
     assert profile["skills"] == ["FastAPI"]
+
+
+@pytest.mark.asyncio
+async def test_fetch_primary_source_records_by_program_ids_soft_fails_when_table_is_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_request_supabase(
+        *,
+        method: str,
+        path: str,
+        params: dict[str, object] | None = None,
+        payload: object | None = None,
+        prefer: str | None = None,
+    ) -> list[dict[str, object]]:
+        assert method == "GET"
+        assert path == "/rest/v1/program_source_records"
+        assert payload is None
+        assert prefer is None
+        raise RuntimeError('Supabase request failed: relation "program_source_records" does not exist')
+
+    monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
+
+    rows = await programs._fetch_primary_source_records_by_program_ids(["program-1"])
+
+    assert rows == {}
 
 
 @pytest.mark.asyncio
