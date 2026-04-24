@@ -26,8 +26,8 @@
 
 ### frontend BFF
 
-- `frontend/app/api/dashboard/recommended-programs/route.ts`는 backend 추천 응답의 `item.program`을 그대로 복사한 뒤 `_reason`, `_fit_keywords`, `_score`, `_relevance_score`를 덧붙인다.
-- `frontend/app/api/dashboard/recommend-calendar/route.ts`는 이미 `ProgramCardItem[]` 응답을 유지하지만, fallback 내부에는 아직 transition 경로가 남아 있다. 최근 intermediate fallback은 flat `/programs` 대신 `/programs/list` summary rows를 먼저 쓰게 됐다.
+- `frontend/app/api/dashboard/recommended-programs/route.ts`는 이미 backend 추천 응답을 `ProgramCardItem`으로 조립하고, 더 이상 `_reason`, `_fit_keywords`, `_score`, `_relevance_score`를 평탄하게 직접 주입하지 않는다.
+- `frontend/app/api/dashboard/recommend-calendar/route.ts`는 이미 `ProgramCardItem[]` 응답을 유지하고, intermediate fallback도 flat `/programs` 대신 `/programs/list` summary rows를 먼저 쓴다. direct Supabase fallback은 남아 있지만 `Program` monolith 타입 직접 의존은 shared helper 쪽으로 더 밀어 넣은 상태다.
 - `frontend/app/api/dashboard/bookmarks/route.ts`와 `frontend/app/api/dashboard/calendar-selections/route.ts`는 이제 `program_list_index` summary read를 우선 사용하고, read model 미적용/누락 row만 `programs`로 fallback한다.
 - `frontend/app/api/programs/compare-relevance/route.ts`는 얇은 proxy지만, 이후 새 summary/context 타입이 들어오면 같이 맞춰야 한다.
 
@@ -53,12 +53,12 @@
 
 | 파일 | 실제 심볼 | 현재 역할 | 남은 문제 | 1차 조치 |
 | --- | --- | --- | --- | --- |
-| `frontend/lib/types/index.ts` | `Program` | 거의 모든 화면의 공용 프로그램 타입 | 카드/목록/상세/추천/BFF 임시 필드가 뒤섞임 | 새 타입 추가 후 신규 화면부터 의존 끊기 |
+| `frontend/lib/types/index.ts` | `Program` | 거의 모든 화면의 공용 프로그램 타입 | 카드/목록/상세/추천/BFF 임시 필드가 뒤섞임 | 신규 경로 의존은 대부분 정리됐고, 남은 private field 제거는 cleanup 단계 |
 | `frontend/lib/types/index.ts` | `ProgramDetail` | 상세 응답 타입 | backend `ProgramDetailResponse`와 이름/구조 drift 가능성 | backend 계약과 동기화 필요 |
-| `frontend/lib/types/index.ts` | `ProgramListPageResponse` | 목록 페이지 응답 | `items`, `promoted_items`가 둘 다 `Program[]` | `ProgramListRowItem[]` 방향으로 변경 필요 |
+| `frontend/lib/types/index.ts` | `ProgramListPageResponse` | 목록 페이지 응답 | `ProgramListRowItem[]` wrapper 전환은 반영됐고, 남은 일은 consumer cleanup 위주 | cleanup 단계 |
 | `frontend/lib/types/index.ts` | `ProgramRecommendItem`, `CalendarRecommendItem` | 추천 wrapper | 내부 `program: Program` 구조 유지 | `program + context` 구조로 정리 필요 |
-| `frontend/lib/api/backend.ts` | `listPrograms()` | plain list helper | `Program[]` 반환 | legacy helper로 축소하거나 row helper로 교체 |
-| `frontend/lib/api/backend.ts` | `listProgramsPage()` | 메인 목록 helper | 목록이 아직 monolith 타입 | `ProgramListRowItem` 전환 첫 helper |
+| `frontend/lib/api/backend.ts` | `listPrograms()` | plain list helper | 주 경로는 대부분 `listProgramsPage()`로 이동, 현재는 legacy fallback 성격이 강함 | cleanup 단계에서 축소 여부 판단 |
+| `frontend/lib/api/backend.ts` | `listProgramsPage()` | 메인 목록 helper | 메인 목록/urgent strip read-model path의 기준 helper가 됨 | 완료 |
 | `frontend/lib/api/backend.ts` | `getProgram()`, `getPrograms()` | 기본 program fetch helper | `getProgram()`은 여전히 monolith, `getPrograms()`는 compare top card용 `ProgramCardSummary`로 축소 시작 | `getProgram()` 축소와 compare helper 분리 계속 필요 |
 | `frontend/lib/api/backend.ts` | `getProgramDetail()`, `getProgramDetails()` | 상세 helper | 타입명은 있지만 summary 계층과 연결이 약함 | detail 계약 전환 시 유지하되 payload shape만 교체 |
 
@@ -66,8 +66,8 @@
 
 | 파일 | 현재 역할 | 실제 확인한 문제 | 전환 우선순위 |
 | --- | --- | --- | --- |
-| `frontend/app/api/dashboard/recommended-programs/route.ts` | 대시보드 추천 카드 BFF | `item.program`에 `_reason`, `_fit_keywords`, `_score`, `_relevance_score`를 직접 붙임 | 1순위 |
-| `frontend/app/api/dashboard/recommend-calendar/route.ts` | 캘린더 추천 + fallback BFF | 응답은 구조형으로 정리됐지만 fallback 내부 cleanup이 아직 남아 있음 | 1순위 |
+| `frontend/app/api/dashboard/recommended-programs/route.ts` | 대시보드 추천 카드 BFF | 구조형 `ProgramCardItem` 응답으로 전환 완료 | 완료 |
+| `frontend/app/api/dashboard/recommend-calendar/route.ts` | 캘린더 추천 + fallback BFF | 구조형 응답 전환 완료, 남은 direct fallback은 cleanup 단계 | 저장소 코드 기준 완료 |
 | `frontend/app/api/dashboard/bookmarks/route.ts` | 찜한 프로그램 조회 | `program_list_index` summary read 우선, `programs` fallback 유지 | 완료 |
 | `frontend/app/api/dashboard/calendar-selections/route.ts` | 캘린더 적용 프로그램 조회/저장 | 조회 시 `program_list_index` summary read 우선, `programs` fallback 유지 | 완료 |
 | `frontend/app/api/programs/compare-relevance/route.ts` | 비교 관련도 proxy | 응답 자체는 얇지만 새 summary/context 구조 영향 받음 | 3순위 |
@@ -172,23 +172,23 @@
 
 ## 7. 이번 문서에서 고정하는 판단
 
-- 실제 첫 진입점은 `backend/routers/programs.py::_serialize_program_list_row()`다.
-- frontend 첫 진입점은 `frontend/lib/types/index.ts::Program` 해체 준비다.
-- BFF 첫 교체 대상은 `dashboard/recommended-programs`와 `dashboard/recommend-calendar`다.
+- 실제 첫 진입점은 `backend/routers/programs.py::_serialize_program_list_row()`였고, 저장소 코드 기준 주 경로 전환은 이미 반영됐다.
+- frontend 첫 진입점은 `frontend/lib/types/index.ts::Program` 해체 준비였고, 새 surface 타입 병행 도입과 주요 consumer 전환은 반영됐다.
+- BFF 첫 교체 대상이던 `dashboard/recommended-programs`와 `dashboard/recommend-calendar`도 구조형 응답 기준으로 정리됐다.
 - `dashboard/bookmarks`와 `dashboard/calendar-selections`는 이미 `program_list_index` 우선 read로 옮겨졌다.
 - backend recommendation/compare read도 이제 `user_recommendation_profile` 우선 구조로 넘어갔다.
 - `dashboard/recommend-calendar`의 마지막 direct Supabase fallback도 `program_list_index` 우선 helper로 정리됐다.
 - `get_programs_batch()`도 compare 상단 카드 기준 `program_list_index` 우선으로 넘어갔고, 상세 단건/배치는 `program_source_records` 보강을 받기 시작했다.
-- 이제 남은 직접 전환 우선순위는 추천 BFF cleanup과 비교/상세 read 쪽이다.
+- `landing /programs`의 `Closing Soon` strip도 이제 read-model-first 경로로 정리됐다.
+- 따라서 저장소 코드 기준으로 package-4 read switch의 주 경로는 닫힌 상태다.
 - `compare-relevance`는 먼저 만들 대상이 아니라, 앞 단계가 끝난 뒤 맞춰 들어가야 하는 얇은 proxy다.
 
 ## 8. 바로 다음 구현 턴에서 건드릴 최소 묶음
 
-가장 안전한 다음 구현 묶음은 아래다.
+가장 안전한 다음 구현 묶음은 이제 package-5 cleanup / validation이다.
 
-1. backend 내부 serializer helper 추가
-2. frontend 새 surface 타입 추가
-3. `dashboard/recommended-programs/route.ts`에서 `_reason/_fit_keywords/_score` 직접 주입 제거 준비
-4. `dashboard/recommend-calendar/route.ts` fallback `program: Program` 구조 축소 준비
+1. `Program` monolith의 남은 private field와 legacy helper 정리 범위 확정
+2. 운영 DB migration apply / backfill / row count / sample validation 절차 확정
+3. stale 문서와 fallback-only helper 목록 정리
 
-이 순서면 기존 동작을 최대한 유지하면서도, 가장 큰 drift 두 군데부터 줄일 수 있다.
+즉, 다음 턴부터는 “read switch 구현”보다 “cleanup / validation / 문서 정합성”이 맞다.

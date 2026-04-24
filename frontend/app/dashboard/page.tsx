@@ -933,7 +933,7 @@ function RecCard({
   const { program } = item;
   const bg = isWhite ? "" : CARD_BG_CLASS[CARD_BG_CYCLE[index % CARD_BG_CYCLE.length]];
   const badge = BADGE_CYCLE[index % BADGE_CYCLE.length];
-  const score = item.context?.score ?? item.context?.relevance_score ?? program.relevance_score;
+  const score = getProgramCardScore(item);
   const percent =
     typeof score === "number"
       ? Math.max(0, Math.min(100, Math.round(score <= 1 ? score * 100 : score)))

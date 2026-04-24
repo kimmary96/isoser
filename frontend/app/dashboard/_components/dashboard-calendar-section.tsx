@@ -13,7 +13,11 @@ import {
   formatProgramSourceLabel,
   toProgramDateKey,
 } from "@/lib/program-display";
-import { getProgramCardReason, getProgramCardScore } from "@/lib/program-card-items";
+import {
+  getProgramCardReason,
+  getProgramCardRelevanceReasons,
+  getProgramCardScore,
+} from "@/lib/program-card-items";
 import type { ProgramCardItem } from "@/lib/types";
 
 function resolveRecommendationScore(item: ProgramCardItem): number {
@@ -25,7 +29,7 @@ function resolveRelevanceScore(item: ProgramCardItem): number {
 }
 
 function resolveReason(item: ProgramCardItem): string {
-  return getProgramCardReason(item) ?? item.context?.relevance_reasons?.[0] ?? "추천 근거 없음";
+  return getProgramCardRelevanceReasons(item)[0] ?? getProgramCardReason(item) ?? "추천 근거 없음";
 }
 
 function getDdayLabel(daysLeft: number | null | undefined): string {

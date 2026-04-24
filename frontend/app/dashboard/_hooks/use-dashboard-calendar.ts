@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { getRecommendedCalendar } from "@/lib/api/app";
+import { getProgramCardScore } from "@/lib/program-card-items";
 import type { ProgramCardItem } from "@/lib/types";
 
 const REQUEST_TIMEOUT_MS = 5_000;
@@ -18,7 +19,7 @@ function resolveDeadlineTime(value: string | null | undefined): number {
 }
 
 function resolveItemScore(item: ProgramCardItem): number {
-  return item.context?.score ?? item.context?.relevance_score ?? item.program.final_score ?? item.program.relevance_score ?? 0;
+  return getProgramCardScore(item) ?? 0;
 }
 
 function sortCalendarItems(items: ProgramCardItem[]): ProgramCardItem[] {
