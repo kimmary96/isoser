@@ -1492,6 +1492,82 @@ def test_build_program_detail_response_uses_work24_application_deadline_from_met
     assert detail.schedule_text == "신청 시작일 미정 ~ 2026-04-20"
 
 
+def test_build_program_detail_response_prefers_canonical_and_source_record_fields() -> None:
+    detail = programs._build_program_detail_response(
+        {
+            "id": "program-detail-1",
+            "source": "고용24",
+            "title": "정본 상세 보강 과정",
+            "provider": "기존 기관명",
+            "provider_name": "정본 기관명",
+            "organizer_name": "정본 주관기관",
+            "location": "기존 위치",
+            "location_text": "정본 위치",
+            "summary": "기존 요약",
+            "business_type": "훈련비 지원",
+            "application_start_date": "2026-04-20",
+            "application_end_date": "2026-04-29",
+            "program_start_date": "2026-05-10",
+            "program_end_date": "2026-06-10",
+            "fee_amount": 0,
+            "support_amount": 120000,
+            "eligibility_labels": ["청년", "초급 개발자"],
+            "contact_phone": "02-0000-0000",
+            "contact_email": "hello@example.com",
+            "capacity_total": 30,
+            "capacity_current": 12,
+            "curriculum_items": ["Python 기초", "FastAPI 실습"],
+            "certifications": ["수료증"],
+            "service_meta": {
+                "career_support": ["멘토링"],
+                "learning_outcomes": ["포트폴리오 완성"],
+            },
+            "compare_meta": {
+                "contact_phone": "02-9999-9999",
+                "application_method_email": "legacy@example.com",
+            },
+        },
+        {
+            "program_id": "program-detail-1",
+            "application_url": "https://example.com/apply",
+            "detail_url": "https://example.com/detail",
+            "source_url": "https://example.com/source",
+            "source_specific": {
+                "faq": [{"question": "질문", "answer": "답변"}],
+                "reviews": [{"author": "수강생", "content": "좋았어요"}],
+                "recommended_for": ["백엔드 입문자"],
+                "learning_outcomes": ["실무 API 제작"],
+                "career_support": ["취업 컨설팅"],
+                "event_banner": "얼리버드 신청 가능",
+                "ai_matching_summary": "백엔드 전환 준비자에게 특히 적합합니다.",
+            },
+            "is_primary": True,
+        },
+    )
+
+    assert detail.provider == "정본 기관명"
+    assert detail.organizer == "정본 주관기관"
+    assert detail.location == "정본 위치"
+    assert detail.support_type == "훈련비 지원"
+    assert detail.source_url == "https://example.com/apply"
+    assert detail.fee == 0
+    assert detail.support_amount == 120000
+    assert detail.eligibility == ["청년", "초급 개발자"]
+    assert detail.capacity_total == 30
+    assert detail.capacity_remaining == 18
+    assert detail.phone == "02-0000-0000"
+    assert detail.email == "hello@example.com"
+    assert detail.curriculum == ["Python 기초", "FastAPI 실습"]
+    assert detail.certifications == ["수료증"]
+    assert detail.faq == [{"question": "질문", "answer": "답변"}]
+    assert detail.reviews == [{"author": "수강생", "content": "좋았어요"}]
+    assert detail.recommended_for == ["백엔드 입문자"]
+    assert detail.learning_outcomes == ["실무 API 제작", "포트폴리오 완성"]
+    assert detail.career_support == ["취업 컨설팅", "멘토링"]
+    assert detail.event_banner == "얼리버드 신청 가능"
+    assert detail.ai_matching_summary == "백엔드 전환 준비자에게 특히 적합합니다."
+
+
 @pytest.mark.asyncio
 async def test_get_program_details_batch_reuses_detail_mapping(
     monkeypatch: pytest.MonkeyPatch,
@@ -1519,6 +1595,22 @@ async def test_get_program_details_batch_reuses_detail_mapping(
         }
 
     monkeypatch.setattr(programs, "_fetch_programs_by_ids", fake_fetch_programs_by_ids)
+    async def fake_fetch_primary_source_records_by_program_ids(program_ids: list[str]) -> dict[str, dict[str, object]]:
+        assert program_ids == ["program-1", "program-2"]
+        return {
+            "program-1": {
+                "program_id": "program-1",
+                "application_url": "https://example.com/program-1/apply",
+                "source_specific": {"recommended_for": ["입문자"]},
+                "is_primary": True,
+            }
+        }
+
+    monkeypatch.setattr(
+        programs,
+        "_fetch_primary_source_records_by_program_ids",
+        fake_fetch_primary_source_records_by_program_ids,
+    )
 
     response = await programs.get_program_details_batch(
         programs.ProgramDetailBatchRequest(program_ids=["program-1", "program-2", "program-1"])
@@ -1526,6 +1618,8 @@ async def test_get_program_details_batch_reuses_detail_mapping(
 
     assert [item.id for item in response.items] == ["program-1", "program-2"]
     assert response.items[0].program_start_date == "2026-05-01"
+    assert response.items[0].source_url == "https://example.com/program-1/apply"
+    assert response.items[0].recommended_for == ["입문자"]
     assert response.items[1].application_end_date == "2026-05-20"
 
 
@@ -1533,6 +1627,10 @@ async def test_get_program_details_batch_reuses_detail_mapping(
 async def test_get_programs_batch_preserves_requested_order(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    async def fake_fetch_program_list_summary_rows_by_ids(program_ids: list[str]) -> dict[str, dict[str, object]]:
+        assert program_ids == ["program-2", "program-1"]
+        return {}
+
     async def fake_fetch_programs_by_ids(program_ids: list[str]) -> dict[str, dict[str, object]]:
         assert program_ids == ["program-2", "program-1"]
         return {
@@ -1540,6 +1638,11 @@ async def test_get_programs_batch_preserves_requested_order(
             "program-2": {"id": "program-2", "title": "두 번째", "deadline": "2026-05-01", "source": "K-Startup"},
         }
 
+    monkeypatch.setattr(
+        programs,
+        "_fetch_program_list_summary_rows_by_ids",
+        fake_fetch_program_list_summary_rows_by_ids,
+    )
     monkeypatch.setattr(programs, "_fetch_programs_by_ids", fake_fetch_programs_by_ids)
 
     response = await programs.get_programs_batch(
@@ -1547,6 +1650,61 @@ async def test_get_programs_batch_preserves_requested_order(
     )
 
     assert [item.id for item in response.items] == ["program-2", "program-1"]
+
+
+@pytest.mark.asyncio
+async def test_get_programs_batch_prefers_read_model_rows_and_falls_back_for_missing_ids(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_fetch_program_list_summary_rows_by_ids(program_ids: list[str]) -> dict[str, dict[str, object]]:
+        assert program_ids == ["program-2", "program-1"]
+        return {
+            "program-2": {
+                "id": "program-2",
+                "title": "읽기 모델 두 번째",
+                "provider": "read-model 기관",
+                "location": "서울",
+                "summary": "읽기 모델 요약",
+                "source": "K-Startup",
+                "deadline": "2026-05-01",
+                "days_left": 7,
+                "deadline_confidence": "high",
+                "recommended_score": 0.91,
+            }
+        }
+
+    async def fake_fetch_programs_by_ids(program_ids: list[str]) -> dict[str, dict[str, object]]:
+        assert program_ids == ["program-1"]
+        return {
+            "program-1": {
+                "id": "program-1",
+                "title": "legacy 첫 번째",
+                "provider": "legacy 기관",
+                "location": "부산",
+                "deadline": "2026-06-01",
+                "source": "고용24",
+            }
+        }
+
+    monkeypatch.setattr(
+        programs,
+        "_fetch_program_list_summary_rows_by_ids",
+        fake_fetch_program_list_summary_rows_by_ids,
+    )
+    monkeypatch.setattr(programs, "_fetch_programs_by_ids", fake_fetch_programs_by_ids)
+    monkeypatch.setattr(programs, "_program_list_read_model_enabled", lambda: True)
+
+    response = await programs.get_programs_batch(
+        programs.ProgramDetailBatchRequest(program_ids=["program-2", "program-1"])
+    )
+
+    assert [item.id for item in response.items] == ["program-2", "program-1"]
+    assert response.items[0].title == "읽기 모델 두 번째"
+    assert response.items[0].provider == "read-model 기관"
+    assert response.items[0].days_left == 7
+    assert response.items[0].recommended_score == 0.91
+    assert response.items[1].title == "legacy 첫 번째"
+    assert response.items[1].provider == "legacy 기관"
 
 
 def test_normalize_cached_recommendation_rows_marks_missing_component_scores_stale() -> None:
@@ -2255,6 +2413,132 @@ async def test_build_cached_recommendation_items_recalculates_final_score_and_pr
     assert items[0].program.final_score == 0.44
     assert items[0].program.relevance_score == 0.4
     assert items[0].program.urgency_score == 0.5
+
+
+def test_build_profile_hash_prefers_recommendation_profile_hash_when_present() -> None:
+    profile_hash = programs._build_profile_hash(
+        {
+            "job_title": "백엔드 개발자",
+            "skills": ["Python"],
+            "recommendation_profile_hash": "derived-hash-123",
+        },
+        [],
+    )
+
+    assert profile_hash == "derived-hash-123"
+
+
+@pytest.mark.asyncio
+async def test_fetch_profile_row_prefers_user_recommendation_profile(monkeypatch: pytest.MonkeyPatch) -> None:
+    async def fake_request_supabase(
+        *,
+        method: str,
+        path: str,
+        params: dict[str, object] | None = None,
+        payload: object | None = None,
+        prefer: str | None = None,
+    ) -> list[dict[str, object]]:
+        assert method == "GET"
+        assert payload is None
+        assert prefer is None
+        assert params is not None
+        if path == "/rest/v1/user_recommendation_profile":
+            assert params["select"] == programs.USER_RECOMMENDATION_PROFILE_SELECT
+            return [
+                {
+                    "user_id": "user-1",
+                    "effective_target_job": "데이터 분석가",
+                    "profile_keywords": ["데이터 분석", "sql"],
+                    "evidence_skills": ["Python", "SQL"],
+                    "desired_skills": ["Tableau"],
+                    "activity_keywords": ["프로젝트"],
+                    "preferred_regions": ["서울"],
+                    "profile_completeness_score": 0.7,
+                    "recommendation_ready": True,
+                    "recommendation_profile_hash": "derived-hash",
+                    "derivation_version": 1,
+                    "source_snapshot": {
+                        "profile": {
+                            "region": "서울",
+                            "region_detail": "강남구",
+                        }
+                    },
+                    "last_derived_at": "2026-04-24T12:00:00+00:00",
+                }
+            ]
+        raise AssertionError(f"unexpected path: {path}")
+
+    monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
+
+    profile = await programs._fetch_profile_row("user-1")
+
+    assert profile["job_title"] == "데이터 분석가"
+    assert profile["target_job"] == "데이터 분석가"
+    assert profile["skills"] == ["Python", "SQL"]
+    assert profile["desired_skills"] == ["Tableau"]
+    assert profile["region"] == "서울"
+    assert profile["region_detail"] == "강남구"
+    assert profile["recommendation_profile_hash"] == "derived-hash"
+    assert profile["recommendation_ready"] is True
+
+
+@pytest.mark.asyncio
+async def test_fetch_profile_row_falls_back_to_profiles_when_recommendation_profile_is_unavailable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+
+    async def fake_request_supabase(
+        *,
+        method: str,
+        path: str,
+        params: dict[str, object] | None = None,
+        payload: object | None = None,
+        prefer: str | None = None,
+    ) -> list[dict[str, object]]:
+        assert method == "GET"
+        assert payload is None
+        assert prefer is None
+        assert params is not None
+        calls.append(path)
+        if path == "/rest/v1/user_recommendation_profile":
+            raise RuntimeError('Supabase request failed: relation "user_recommendation_profile" does not exist')
+        if path == "/rest/v1/profiles":
+            return [{"id": "user-1", "job_title": "백엔드 개발자", "skills": ["FastAPI"]}]
+        raise AssertionError(f"unexpected path: {path}")
+
+    monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
+
+    profile = await programs._fetch_profile_row("user-1")
+
+    assert calls == ["/rest/v1/user_recommendation_profile", "/rest/v1/profiles"]
+    assert profile["job_title"] == "백엔드 개발자"
+    assert profile["skills"] == ["FastAPI"]
+
+
+@pytest.mark.asyncio
+async def test_fetch_primary_source_records_by_program_ids_soft_fails_when_table_is_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_request_supabase(
+        *,
+        method: str,
+        path: str,
+        params: dict[str, object] | None = None,
+        payload: object | None = None,
+        prefer: str | None = None,
+    ) -> list[dict[str, object]]:
+        assert method == "GET"
+        assert path == "/rest/v1/program_source_records"
+        assert payload is None
+        assert prefer is None
+        raise RuntimeError('Supabase request failed: relation "program_source_records" does not exist')
+
+    monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
+
+    rows = await programs._fetch_primary_source_records_by_program_ids(["program-1"])
+
+    assert rows == {}
 
 
 @pytest.mark.asyncio

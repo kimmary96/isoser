@@ -15,6 +15,7 @@ import type {
   ParsePdfResponse,
   Program,
   ProgramBatchResponse,
+  ProgramCardSummary,
   ProgramCountResponse,
   ProgramDetail,
   ProgramDetailBatchResponse,
@@ -25,7 +26,7 @@ import type {
   ProgramRecommendResponse,
   SkillSuggestResponse,
 } from "@/lib/types";
-import { toProgramSelectSummaries } from "@/lib/program-display";
+import { toProgramSelectSummaries, unwrapProgramListRows } from "@/lib/program-display";
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
@@ -284,8 +285,8 @@ export async function listPrograms(params?: ProgramListParams): Promise<Program[
 export async function listProgramSelectSummaries(
   params?: ProgramListParams
 ): Promise<ProgramSelectSummary[]> {
-  const programs = await listPrograms(params);
-  return toProgramSelectSummaries(programs);
+  const page = await listProgramsPage(params);
+  return toProgramSelectSummaries(unwrapProgramListRows(page.items));
 }
 
 export async function listProgramsPage(params?: ProgramListParams): Promise<ProgramListPageResponse> {
@@ -399,7 +400,7 @@ export async function getProgram(programId: string): Promise<Program> {
   );
 }
 
-export async function getPrograms(programIds: string[]): Promise<Program[]> {
+export async function getPrograms(programIds: string[]): Promise<ProgramCardSummary[]> {
   const response = await requestJson<ProgramBatchResponse>(
     "/programs/batch",
     {

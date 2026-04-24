@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 
-import type { Program, ProgramDetail } from "@/lib/types";
+import type { ProgramCardSummary, ProgramDetail } from "@/lib/types";
 
-export type CompareProgram = Program & {
+export type CompareProgram = ProgramCardSummary & {
   detail?: ProgramDetail | null;
 };
 

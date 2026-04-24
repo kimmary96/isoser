@@ -3,6 +3,11 @@ import {
   toCalendarProgramCardItem,
   toFallbackCalendarProgramCardItem,
 } from "@/lib/program-card-items";
+import { extractBackendFallbackPrograms } from "@/lib/server/recommend-calendar-fallback";
+import {
+  loadDeadlineOrderedProgramCardRenderables,
+  type ProgramCardDeadlineRouteClient,
+} from "@/lib/server/program-card-summary";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type {
   CalendarRecommendItem,
@@ -10,6 +15,8 @@ import type {
   DashboardRecommendCalendarResponse,
   Program,
   ProgramCardItem,
+  ProgramCardRenderable,
+  ProgramListPageResponse,
 } from "@/lib/types";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
@@ -31,7 +38,7 @@ async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit, tim
   }
 }
 
-function toFallbackCalendarResponse(programs: Program[], topK: number): DashboardRecommendCalendarResponse {
+function toFallbackCalendarResponse(programs: ProgramCardRenderable[], topK: number): DashboardRecommendCalendarResponse {
   const reason = "추천 데이터가 비어 있어 모집 마감이 가까운 공개 프로그램을 우선 노출합니다.";
   return {
     items: programs
@@ -41,16 +48,24 @@ function toFallbackCalendarResponse(programs: Program[], topK: number): Dashboar
   };
 }
 
-function isWork24Program(program: Program): boolean {
+function isWork24Program(program: ProgramCardRenderable): boolean {
   const source = String(program.source ?? "").toLowerCase();
   return source.includes("고용24") || source.includes("work24");
 }
 
-function hasTrustedDeadline(program: Program): boolean {
+function hasTrustedDeadline(program: ProgramCardRenderable): boolean {
   if (!program.deadline) return false;
+
+  if ("deadline_confidence" in program && program.deadline_confidence === "low") {
+    return false;
+  }
+
   const deadline = String(program.deadline).slice(0, 10);
   const endDate = String(program.end_date ?? "").slice(0, 10);
-  const compareMeta = program.compare_meta ?? {};
+  const compareMeta: NonNullable<Program["compare_meta"]> =
+    "compare_meta" in program
+      ? ((program.compare_meta ?? {}) as NonNullable<Program["compare_meta"]>)
+      : {};
   const metaDeadline =
     compareMeta.application_deadline ||
     compareMeta.application_end_date ||
@@ -79,18 +94,15 @@ function hasTrustedDeadline(program: Program): boolean {
 async function loadSupabaseFallbackPrograms(topK: number): Promise<DashboardRecommendCalendarResponse> {
   const supabase = await createServerSupabaseClient();
   const today = new Date().toISOString().slice(0, 10);
-  const { data, error } = await supabase
-    .from("programs")
-    .select("*")
-    .gte("deadline", today)
-    .order("deadline", { ascending: true, nullsFirst: false })
-    .limit(SUPABASE_FALLBACK_SCAN_LIMIT);
+  const items = await loadDeadlineOrderedProgramCardRenderables(
+    supabase as unknown as ProgramCardDeadlineRouteClient,
+    {
+      today,
+      limit: SUPABASE_FALLBACK_SCAN_LIMIT,
+    }
+  );
 
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return toFallbackCalendarResponse(((data ?? []) as Program[]).filter(hasTrustedDeadline), topK);
+  return toFallbackCalendarResponse(items.filter(hasTrustedDeadline), topK);
 }
 
 export async function GET(request: Request) {
@@ -148,13 +160,14 @@ export async function GET(request: Request) {
     const fallbackLimit = Number(topK || "9") || 9;
     try {
       const fallbackResponse = await fetchWithTimeout(
-        `${BACKEND_URL}/programs?recruiting_only=true&sort=deadline&limit=${fallbackLimit}`,
+        `${BACKEND_URL}/programs/list?recruiting_only=true&sort=deadline&limit=${fallbackLimit}`,
         { method: "GET" },
         BACKEND_FALLBACK_TIMEOUT_MS
       );
 
       if (fallbackResponse.ok) {
-        const fallbackPrograms = (await fallbackResponse.json().catch(() => [])) as Program[];
+        const fallbackPage = (await fallbackResponse.json().catch(() => null)) as ProgramListPageResponse | null;
+        const fallbackPrograms = fallbackPage ? extractBackendFallbackPrograms(fallbackPage) : [];
         return apiOk(toFallbackCalendarResponse(fallbackPrograms, fallbackLimit));
       }
     } catch {

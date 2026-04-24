@@ -59,6 +59,21 @@ except ModuleNotFoundError as error:
     )
     from backend.rag.collector.work24_collector import Work24Collector
 
+try:
+    from services.program_dual_write import (
+        build_program_source_record_rows,
+        is_missing_schema_error,
+        merge_program_dual_write_fields,
+        missing_program_column_name,
+    )
+except ImportError:
+    from backend.services.program_dual_write import (
+        build_program_source_record_rows,
+        is_missing_schema_error,
+        merge_program_dual_write_fields,
+        missing_program_column_name,
+    )
+
 
 class SupabaseClient:
     def __init__(self, url: str, service_key: str) -> None:
@@ -66,34 +81,25 @@ class SupabaseClient:
         self.service_key = service_key
         self.upsert_batch_size = 100
 
-    def upsert_programs(self, rows: List[Dict]) -> None:
+    def upsert_programs(self, rows: List[Dict]) -> List[Dict]:
         if not rows:
-            return
+            return []
 
         headers = {
             "apikey": self.service_key,
             "Authorization": f"Bearer {self.service_key}",
             "Content-Type": "application/json",
-            "Prefer": "resolution=merge-duplicates,return=minimal",
+            "Prefer": "resolution=merge-duplicates,return=representation",
         }
+        upserted_rows: List[Dict] = []
         with requests.Session() as session:
             session.trust_env = False
             for index in range(0, len(rows), self.upsert_batch_size):
-                batch = rows[index : index + self.upsert_batch_size]
-                response = self._post_program_batch(session, batch, headers, conflict_target="source_unique_key")
-                fallback_state = self._source_unique_key_fallback_state(response)
-                if fallback_state:
-                    fallback_batch = batch
-                    if fallback_state == "missing_column":
-                        fallback_batch = [
-                            {key: value for key, value in row.items() if key != "source_unique_key"}
-                            for row in batch
-                        ]
-                    response = self._post_program_batch(session, fallback_batch, headers, conflict_target="title,source")
-                if response.status_code == 409:
-                    self._upsert_rows_one_by_one(session, batch, headers)
-                    continue
-                response.raise_for_status()
+                batch = [merge_program_dual_write_fields(dict(row)) for row in rows[index : index + self.upsert_batch_size]]
+                upserted_batch = self._upsert_program_batch_with_fallback(session, batch, headers)
+                upserted_rows.extend(upserted_batch)
+                self._sync_program_source_records_best_effort(session, headers, upserted_batch, batch)
+        return upserted_rows
 
     def _post_program_batch(
         self,
@@ -111,40 +117,148 @@ class SupabaseClient:
             timeout=30,
         )
 
+    def _response_json_list(self, response: requests.Response) -> List[Dict]:
+        if not response.content:
+            return []
+        payload = response.json()
+        if isinstance(payload, list):
+            return payload
+        if isinstance(payload, dict):
+            return [payload]
+        return []
+
+    def _upsert_program_batch_with_fallback(
+        self,
+        session: requests.Session,
+        rows: List[Dict],
+        headers: dict[str, str],
+    ) -> List[Dict]:
+        working_rows = [dict(row) for row in rows]
+        conflict_target = "source_unique_key" if any(row.get("source_unique_key") for row in working_rows) else "title,source"
+
+        while True:
+            response = self._post_program_batch(session, working_rows, headers, conflict_target=conflict_target)
+            if response.ok:
+                return self._response_json_list(response)
+
+            missing_column = missing_program_column_name(response.text)
+            if response.status_code == 400 and missing_column and any(missing_column in row for row in working_rows):
+                working_rows = [
+                    {key: value for key, value in row.items() if key != missing_column}
+                    for row in working_rows
+                ]
+                if missing_column == conflict_target:
+                    conflict_target = "title,source"
+                continue
+
+            fallback_state = self._source_unique_key_fallback_state(response)
+            if fallback_state:
+                if fallback_state == "missing_column":
+                    working_rows = [
+                        {key: value for key, value in row.items() if key != "source_unique_key"}
+                        for row in working_rows
+                    ]
+                conflict_target = "title,source"
+                continue
+
+            if response.status_code == 409:
+                return self._upsert_rows_one_by_one(session, working_rows, headers)
+
+            response.raise_for_status()
+
     def _upsert_rows_one_by_one(
         self,
         session: requests.Session,
         rows: List[Dict],
         headers: dict[str, str],
-    ) -> None:
-        for row in rows:
-            response = self._post_program_batch(session, [row], headers, conflict_target="source_unique_key")
-            fallback_state = self._source_unique_key_fallback_state(response)
-            if fallback_state:
-                if fallback_state == "missing_column":
-                    row = {key: value for key, value in row.items() if key != "source_unique_key"}
-                response = self._post_program_batch(session, [row], headers, conflict_target="title,source")
-            if response.status_code == 409 and not row.get("source_unique_key") and row.get("hrd_id"):
-                response = session.patch(
-                    f"{self.url}/rest/v1/programs",
-                    params={"hrd_id": f"eq.{row['hrd_id']}"},
-                    json=row,
-                    headers=headers,
-                    timeout=30,
-                )
-                if response.status_code == 409 and row.get("title") and row.get("source"):
-                    legacy_row = {key: value for key, value in row.items() if key != "hrd_id"}
+    ) -> List[Dict]:
+        upserted_rows: List[Dict] = []
+        for original_row in rows:
+            row = dict(original_row)
+            conflict_target = "source_unique_key" if row.get("source_unique_key") else "title,source"
+
+            while True:
+                response = self._post_program_batch(session, [row], headers, conflict_target=conflict_target)
+                if response.ok:
+                    upserted_rows.extend(self._response_json_list(response))
+                    break
+
+                missing_column = missing_program_column_name(response.text)
+                if response.status_code == 400 and missing_column and missing_column in row:
+                    row = {key: value for key, value in row.items() if key != missing_column}
+                    if missing_column == conflict_target:
+                        conflict_target = "title,source"
+                    continue
+
+                fallback_state = self._source_unique_key_fallback_state(response)
+                if fallback_state:
+                    if fallback_state == "missing_column":
+                        row = {key: value for key, value in row.items() if key != "source_unique_key"}
+                    conflict_target = "title,source"
+                    continue
+
+                if response.status_code == 409 and not row.get("source_unique_key") and row.get("hrd_id"):
                     response = session.patch(
                         f"{self.url}/rest/v1/programs",
-                        params={
-                            "title": f"eq.{row['title']}",
-                            "source": f"eq.{row['source']}",
-                        },
-                        json=legacy_row,
+                        params={"hrd_id": f"eq.{row['hrd_id']}"},
+                        json=row,
                         headers=headers,
                         timeout=30,
                     )
-            response.raise_for_status()
+                    if response.ok:
+                        upserted_rows.extend(self._response_json_list(response))
+                        break
+                    if response.status_code == 409 and row.get("title") and row.get("source"):
+                        legacy_row = {key: value for key, value in row.items() if key != "hrd_id"}
+                        response = session.patch(
+                            f"{self.url}/rest/v1/programs",
+                            params={
+                                "title": f"eq.{row['title']}",
+                                "source": f"eq.{row['source']}",
+                            },
+                            json=legacy_row,
+                            headers=headers,
+                            timeout=30,
+                        )
+                        if response.ok:
+                            upserted_rows.extend(self._response_json_list(response))
+                            break
+                response.raise_for_status()
+        return upserted_rows
+
+    def _post_program_source_records_batch(
+        self,
+        session: requests.Session,
+        batch: List[Dict],
+        headers: dict[str, str],
+    ) -> requests.Response:
+        source_headers = dict(headers)
+        source_headers["Prefer"] = "resolution=merge-duplicates,return=minimal"
+        return session.post(
+            f"{self.url}/rest/v1/program_source_records",
+            params={"on_conflict": "source_code,source_record_key"},
+            json=batch,
+            headers=source_headers,
+            timeout=30,
+        )
+
+    def _sync_program_source_records_best_effort(
+        self,
+        session: requests.Session,
+        headers: dict[str, str],
+        program_rows: List[Dict],
+        source_rows: List[Dict],
+    ) -> None:
+        source_record_rows = build_program_source_record_rows(program_rows, source_rows)
+        if not source_record_rows:
+            return
+
+        response = self._post_program_source_records_batch(session, source_record_rows, headers)
+        if response.ok:
+            return
+        if is_missing_schema_error(response.text, "program_source_records"):
+            return
+        response.raise_for_status()
 
     def _source_unique_key_fallback_state(self, response: requests.Response) -> str | None:
         if response.status_code != 400:
@@ -385,9 +499,10 @@ def run_all_collectors(*, upsert: bool = True) -> Dict:
             continue
 
         try:
-            supabase.upsert_programs(normalized_rows)
-            saved_count += len(normalized_rows)
-            source_saved += len(normalized_rows)
+            upsert_rows = [merge_program_dual_write_fields(dict(row)) for row in normalized_rows]
+            supabase.upsert_programs(upsert_rows)
+            saved_count += len(upsert_rows)
+            source_saved += len(upsert_rows)
             source_status = "saved"
             source_message = ""
         except Exception as exc:

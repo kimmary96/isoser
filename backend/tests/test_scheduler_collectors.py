@@ -1,3 +1,6 @@
+import requests
+
+from backend.rag.collector import scheduler
 from backend.rag.collector.base_collector import BaseCollector
 from backend.rag.collector.base_api_collector import BaseApiCollector
 from backend.rag.collector.hrd_collector import HrdCollector
@@ -18,6 +21,7 @@ from backend.rag.collector.tier4_collectors import (
 class _DummySupabase:
     def upsert_programs(self, rows):
         self.rows = list(rows)
+        return list(rows)
 
 
 class _EmptyCollector(BaseCollector):
@@ -304,6 +308,87 @@ def test_scheduler_preserves_source_unique_key_for_upsert(monkeypatch) -> None:
 
     assert result["saved_count"] == 1
     assert supabase.rows[0]["source_unique_key"] == "tier1:program:1"
+    assert supabase.rows[0]["primary_source_code"] == "tier1"
+    assert supabase.rows[0]["primary_source_label"] == "tier1"
+    assert supabase.rows[0]["application_end_date"] == "2026-05-01"
+
+
+def test_supabase_client_soft_fails_missing_program_source_records_table(monkeypatch) -> None:
+    created_sessions: list["_FakeSession"] = []
+
+    class _FakeResponse:
+        def __init__(self, *, status_code: int, json_data=None, text: str = "") -> None:
+            self.status_code = status_code
+            self._json_data = json_data
+            self.text = text
+            self.content = b"" if json_data is None else b"[]"
+
+        @property
+        def ok(self) -> bool:
+            return 200 <= self.status_code < 300
+
+        def json(self):
+            return self._json_data
+
+        def raise_for_status(self) -> None:
+            raise requests.HTTPError(self.text)
+
+    class _FakeSession:
+        def __init__(self) -> None:
+            self.trust_env = False
+            self.calls: list[dict[str, object]] = []
+
+        def __enter__(self):
+            created_sessions.append(self)
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def post(self, url, *, params=None, json=None, headers=None, timeout=None):
+            self.calls.append({"url": url, "params": params, "json": json, "headers": headers, "timeout": timeout})
+            if url.endswith("/rest/v1/programs"):
+                assert isinstance(json, list)
+                return _FakeResponse(
+                    status_code=201,
+                    json_data=[{"id": "program-1", **json[0]}],
+                )
+            if url.endswith("/rest/v1/program_source_records"):
+                return _FakeResponse(
+                    status_code=404,
+                    text='relation "public.program_source_records" does not exist',
+                )
+            raise AssertionError(f"unexpected post url: {url}")
+
+        def patch(self, url, *, params=None, json=None, headers=None, timeout=None):
+            raise AssertionError(f"unexpected patch url: {url}")
+
+    monkeypatch.setattr("backend.rag.collector.scheduler.requests.Session", _FakeSession)
+
+    client = scheduler.SupabaseClient("https://example.supabase.co", "service-key")
+    rows = client.upsert_programs(
+        [
+            {
+                "title": "테스트 프로그램",
+                "source": "고용24",
+                "category": "IT",
+                "source_unique_key": "work24:TEST:1:1000",
+                "deadline": "2026-05-01",
+                "compare_meta": {
+                    "field_sources": {"deadline": "traEndDate"},
+                    "application_url": "https://example.com/apply",
+                },
+                "raw_data": {"id": "raw-1"},
+            }
+        ]
+    )
+
+    assert rows[0]["id"] == "program-1"
+    assert created_sessions
+    assert len(created_sessions[0].calls) == 2
+    assert created_sessions[0].calls[0]["url"] == "https://example.supabase.co/rest/v1/programs"
+    assert created_sessions[0].calls[1]["url"] == "https://example.supabase.co/rest/v1/program_source_records"
+    assert created_sessions[0].calls[0]["json"][0]["primary_source_code"] == "work24"
 
 
 def test_scheduler_adds_quality_summary_to_dry_run(monkeypatch) -> None:

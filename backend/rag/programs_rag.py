@@ -146,10 +146,23 @@ def _profile_document(profile: Mapping[str, Any]) -> str:
 
     append_text("bio", repeat=2)
     append_text("education")
+    append_text("target_job", repeat=2)
+    append_text("desired_job")
     append_text("job_title")
+    append_text("effective_target_job", repeat=2)
     append_text("self_intro", repeat=2)
 
-    for key in ("career", "education_history", "awards", "certifications", "languages"):
+    for key in (
+        "career",
+        "education_history",
+        "awards",
+        "certifications",
+        "languages",
+        "desired_skills",
+        "preferred_regions",
+        "profile_keywords",
+        "activity_keywords",
+    ):
         value = profile.get(key)
         if isinstance(value, list):
             normalized = [str(item).strip() for item in value if str(item).strip()]
@@ -267,11 +280,18 @@ class ProgramsRAG:
 
         for key, weight in (
             ("skills", 1.5),
+            ("desired_skills", 1.3),
             ("career", 1.0),
             ("education_history", 1.0),
             ("certifications", 1.0),
+            ("target_job", 1.4),
+            ("desired_job", 1.4),
+            ("job_title", 1.3),
+            ("effective_target_job", 1.4),
             ("bio", 1.0),
             ("self_intro", 1.2),
+            ("profile_keywords", 1.1),
+            ("activity_keywords", 1.0),
         ):
             value = profile.get(key)
             if isinstance(value, list):

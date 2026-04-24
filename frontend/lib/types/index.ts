@@ -492,7 +492,7 @@ export interface ProgramDetailBatchResponse {
 }
 
 export interface ProgramBatchResponse {
-  items: Program[];
+  items: ProgramCardSummary[];
 }
 
 export interface ProgramFilterOption {

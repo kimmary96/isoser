@@ -1,5 +1,50 @@
 # 리팩토링 로그
 
+- 2026-04-24: `frontend/app/dashboard/_hooks/recommend-calendar-cache.ts`, `frontend/app/dashboard/_hooks/recommend-calendar-cache.test.ts`, `frontend/app/dashboard/_hooks/use-dashboard-recommendations.ts`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-4-dashboard-cache-shape-cleanup-result.md`
+  - 패키지 4의 dashboard cleanup으로 추천 캘린더 로컬 캐시 정본을 `ProgramCardItem[]`로 고정하고, 브라우저에 남아 있을 수 있는 예전 `programs[]` 캐시는 읽는 순간 새 item 구조로 자동 승격하도록 정리함
+  - 기존 15분 TTL과 캐시 fallback 동작은 유지하면서, dashboard hook이 더 이상 old flat cache contract를 계속 퍼뜨리지 않도록 경계를 분리하고 helper test로 승격/만료 동작을 고정함
+
+- 2026-04-24: `frontend/lib/types/index.ts`, `frontend/lib/api/backend.ts`, `frontend/app/(landing)/compare/compare-table-sections.tsx`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-4-compare-summary-type-shrink-result.md`
+  - 패키지 4의 compare consumer cleanup으로 `ProgramBatchResponse`와 `getPrograms()`를 compare top-card 기준 `ProgramCardSummary[]`로 축소하고, compare 화면 타입도 full `Program` 대신 `ProgramCardSummary + ProgramDetail` 조합을 쓰도록 정리함
+  - 런타임 비교 동작은 유지하면서 compare 페이지가 더 이상 목록/추천/상세 private 필드를 모두 품은 monolith `Program`에 직접 기대지 않게 한 단계 정리함
+
+- 2026-04-24: `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/app/api/dashboard/recommend-calendar/route.test.ts`, `frontend/lib/server/recommend-calendar-fallback.ts`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-4-recommend-calendar-list-fallback-cleanup-result.md`
+  - 패키지 4의 추천 BFF cleanup으로 recommend-calendar의 intermediate fallback이 더 이상 flat backend `/programs` 계약을 직접 쓰지 않고, `GET /programs/list`의 summary row item을 먼저 풀어 `ProgramCardItem` fallback 응답을 만들도록 정리함
+  - 마지막 direct Supabase fallback은 그대로 유지해 운영 안전성을 지켰고, 새 helper test로 promoted row를 섞지 않고 organic `items` 순서를 그대로 쓰는 동작을 고정함
+
+- 2026-04-24: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-4-detail-compare-read-switch-result.md`
+  - 패키지 4의 다음 read switch로 상세 단건/배치 응답이 `programs` row만 보지 않고 `program_source_records` primary row를 함께 읽어, `application_url/detail_url/source_specific`와 additive canonical detail 필드를 우선 사용하도록 전환함
+  - compare 상단 카드가 쓰는 `POST /programs/batch`도 `program_list_index` summary read를 먼저 사용하고, read model에 없는 id만 legacy `programs`로 fallback 하도록 바꿔 비교 기본 카드 read의 legacy 의존을 더 줄임
+  - 기존 public 응답 shape `ProgramDetailResponse`와 `ProgramBatchResponse`는 유지했고, read model/table 미적용 또는 일부 id 누락 환경에서도 fallback으로 계속 동작하도록 보수적으로 연결함
+
+- 2026-04-24: `frontend/lib/server/program-card-summary.ts`, `frontend/lib/server/program-card-summary.test.ts`, `frontend/lib/program-card-items.ts`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-4-recommend-calendar-fallback-read-model-result.md`
+  - 패키지 4의 연속 read switch로 추천 캘린더의 마지막 direct Supabase fallback도 `program_list_index` open/deadline summary read를 먼저 쓰고, read model이 없을 때만 `programs`로 내려가도록 정리함
+  - fallback 카드 adapter는 `Program`뿐 아니라 `ProgramCardSummary`도 그대로 받을 수 있게 넓혀, fallback reason과 응답 shape를 유지한 채 `programs` direct read 의존을 더 줄임
+
+- 2026-04-24: `backend/routers/programs.py`, `backend/rag/programs_rag.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/program-recommendation-backend-touchpoints-v1.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-4-recommendation-profile-read-switch-result.md`
+  - 패키지 4의 다음 read switch로 추천/캘린더 추천/비교 관련도가 더 이상 raw `profiles`만 직접 신뢰하지 않고, `user_recommendation_profile`을 우선 읽은 뒤 없을 때만 legacy profile로 fallback 하도록 전환함
+  - 추천 cache hash는 `user_recommendation_profile.recommendation_profile_hash`를 우선 사용하고, 요청에서 `job_title`을 덮어쓴 경우에만 local hash를 다시 계산하도록 바꿔 캐시 키를 새 정본과 맞춤
+  - `programs_rag`는 `target_job`, `desired_skills`, `profile_keywords`, `activity_keywords`도 키워드/문서 입력에 반영하도록 보강해, 기존 응답 shape를 유지한 채 derived recommendation profile이 실제 추천/비교 계산에 쓰이기 시작함
+
+- 2026-04-24: `frontend/lib/server/program-card-summary.ts`, `frontend/lib/server/program-card-summary.test.ts`, `frontend/lib/program-card-items.ts`, `frontend/app/api/dashboard/bookmarks/route.ts`, `frontend/app/api/dashboard/calendar-selections/route.ts`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-4-bookmarks-calendar-read-switch-result.md`
+  - 패키지 4의 첫 read switch로 북마크/캘린더 선택 BFF가 더 이상 `programs`를 1차 읽기 원본으로 쓰지 않고, `program_list_index` summary read를 우선 사용하도록 전환함
+  - 새 server helper가 id 목록 기준으로 read-model row를 `ProgramCardSummary`로 정리하고, read model이 없거나 일부 id가 비어 있으면 그 경우에만 `programs` fallback을 사용해 기존 카드 응답 shape를 유지함
+  - 카드 adapter는 `Program`뿐 아니라 `ProgramCardSummary`도 그대로 받을 수 있게 정리했고, 관련 문서도 package 4 진행 상태에 맞춰 보정함
+
+- 2026-04-24: `backend/services/program_dual_write.py`, `backend/routers/admin.py`, `backend/rag/collector/scheduler.py`, `backend/tests/test_admin_router.py`, `backend/tests/test_scheduler_collectors.py`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-3-dual-write-completion-result.md`
+  - 패키지 3의 남은 적재 공백을 닫기 위해 `programs` additive canonical 컬럼 seed와 `program_source_records` provenance seed를 공용 helper로 정리하고, admin sync와 collector scheduler가 같은 dual write 규칙을 쓰도록 맞춤
+  - collector 저장은 새 additive 컬럼이 없는 구형 스키마에서도 missing column만 개별 제거하며 계속 진행하고, `program_source_records` 테이블이나 conflict index가 아직 없으면 provenance 경로만 soft-fail 하도록 해 기존 동작을 유지함
+  - 이로써 저장소 코드 기준 패키지 3의 `profile/resume/activity refresh + admin dual write + collector dual write` seed가 모두 채워졌고, 다음 현재 패키지는 read switch 중심의 패키지 4로 올림
+
+- 2026-04-24: `backend/routers/admin.py`, `backend/tests/test_admin_router.py`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-admin-program-source-records-dual-write-seed-result.md`
+  - 패키지 3의 남은 프로그램 적재 축 중 가장 작은 안전 작업으로 `POST /admin/sync/programs` 직후 `program_source_records` best-effort dual write seed를 연결함
+  - 기존 `programs` upsert 성공 여부는 그대로 유지하고, 같은 normalized payload를 `raw_payload`, `field_evidence`, `normalized_snapshot` 중심의 provenance row로 다시 조립해 additive `program_source_records`에 upsert 시도하도록 함
+  - 새 provenance 테이블이나 unique index가 아직 적용되지 않은 환경에서는 경고만 남기고 계속 진행하도록 soft-fail 처리해 현재 운영 sync 경로를 깨지 않게 유지함
+
+- 2026-04-24: `frontend/lib/api/backend.ts`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-compare-summary-read-model-followup-result.md`
+  - compare 검색 BFF와 compare 페이지 추천 카드가 공통으로 쓰는 `listProgramSelectSummaries(...)`를 raw `/programs`가 아니라 `/programs/list` summary 계약 기반으로 바꿔, 같은 UI 동작을 유지한 채 server-to-backend payload도 줄임
+  - compare 요약 경로는 계속 `ProgramSelectSummary`만 외부에 노출하고, promoted browse layer를 섞지 않은 organic `items`만 downcast 하도록 유지함
+
 - 2026-04-24: `frontend/app/api/programs/compare-search/route.ts`, `frontend/lib/api/app.ts`, `frontend/app/(landing)/compare/program-select-modal.tsx`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/lib/types/index.ts`, `frontend/lib/program-display.ts`, `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/page-helpers.ts`, `frontend/app/(landing)/landing-a/page.tsx`, `frontend/app/(landing)/landing-a/_hero.tsx`, `frontend/app/(landing)/landing-a/_program-feed.tsx`, `frontend/app/(landing)/landing-c/page.tsx`, `frontend/app/(landing)/landing-c/_hero.tsx`, `frontend/app/(landing)/landing-c/_program-feed.tsx`, `frontend/app/(landing)/landing-c/_program-utils.ts`, `frontend/components/landing/program-card-helpers.ts`, `frontend/components/MiniCalendar.tsx`, `frontend/app/dashboard/_components/dashboard-calendar-mini-calendar.tsx`, `frontend/app/dashboard/_hooks/use-dashboard-recommendations.ts`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-program-list-contract-bff-datekey-result.md`
   - compare 검색 탭에 전용 BFF를 추가해 브라우저가 더 이상 무거운 `/programs` 원본 배열을 직접 받지 않고, 필요한 `ProgramSelectSummary`만 받도록 정리함
   - `/programs/list`를 `ProgramListRowItem(program + context)` 계약으로 전환하고, `/programs`·landing-a·landing-c 소비 경로는 페이지 경계에서만 `program`을 풀어 쓰게 바꿔 목록 축의 monolith 의존을 줄임

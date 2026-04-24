@@ -10,18 +10,13 @@ import {
   saveCalendarSelections,
 } from "@/lib/api/app";
 import { toProgramDateKey } from "@/lib/program-display";
-import { isProgramCardItem, toProgramCardItem } from "@/lib/program-card-items";
-import type { Program, ProgramCardItem, ProgramCardSummary } from "@/lib/types";
+import type { ProgramCardItem, ProgramCardSummary } from "@/lib/types";
+import {
+  readRecommendCalendarCache,
+  writeRecommendCalendarCache,
+} from "./recommend-calendar-cache";
 
 const APPLIED_CALENDAR_PROGRAMS_KEY = "isoser:applied-calendar-programs";
-const RECOMMEND_CALENDAR_CACHE_KEY = "isoser:recommend-calendar-programs";
-const RECOMMEND_CALENDAR_CACHE_TTL_MS = 1000 * 60 * 15;
-
-type RecommendCalendarCache = {
-  savedAt: number;
-  items?: ProgramCardItem[];
-  programs?: Program[];
-};
 
 export const DASHBOARD_CATEGORY_OPTIONS = [
   { label: "전체", value: null },
@@ -41,50 +36,6 @@ export const DASHBOARD_REGION_OPTIONS = [
 function formatUserName(value: string | null | undefined): string {
   const trimmed = value?.trim();
   return trimmed || "사용자";
-}
-
-function readRecommendCalendarCache(): ProgramCardItem[] {
-  if (typeof window === "undefined") return [];
-
-  const raw = window.localStorage.getItem(RECOMMEND_CALENDAR_CACHE_KEY);
-  if (!raw) return [];
-
-  try {
-    const parsed = JSON.parse(raw) as Partial<RecommendCalendarCache>;
-    if (
-      typeof parsed.savedAt !== "number" ||
-      (!Array.isArray(parsed.items) && !Array.isArray(parsed.programs)) ||
-      Date.now() - parsed.savedAt > RECOMMEND_CALENDAR_CACHE_TTL_MS
-    ) {
-      window.localStorage.removeItem(RECOMMEND_CALENDAR_CACHE_KEY);
-      return [];
-    }
-
-    if (Array.isArray(parsed.items)) {
-      return parsed.items.filter(isProgramCardItem);
-    }
-
-    if (Array.isArray(parsed.programs)) {
-      return parsed.programs
-        .filter((program): program is Program => Boolean(program && program.id))
-        .map((program) => toProgramCardItem(program));
-    }
-
-    return [];
-  } catch {
-    window.localStorage.removeItem(RECOMMEND_CALENDAR_CACHE_KEY);
-    return [];
-  }
-}
-
-function writeRecommendCalendarCache(items: ProgramCardItem[]) {
-  if (typeof window === "undefined" || items.length === 0) return;
-
-  const cache: RecommendCalendarCache = {
-    savedAt: Date.now(),
-    items,
-  };
-  window.localStorage.setItem(RECOMMEND_CALENDAR_CACHE_KEY, JSON.stringify(cache));
 }
 
 export function useDashboardRecommendations() {
@@ -154,7 +105,10 @@ export function useDashboardRecommendations() {
   const loadPrograms = useCallback(
     async (options?: { category?: string | null; region?: string | null }) => {
       const canUseCache = !options?.category && !options?.region;
-      const cachedPrograms = canUseCache ? readRecommendCalendarCache() : [];
+      const cachedPrograms =
+        canUseCache && typeof window !== "undefined"
+          ? readRecommendCalendarCache(window.localStorage)
+          : [];
 
       if (cachedPrograms.length > 0) {
         setPrograms(cachedPrograms);
@@ -170,8 +124,8 @@ export function useDashboardRecommendations() {
           region: options?.region ?? undefined,
         });
         setPrograms(result.items);
-        if (canUseCache) {
-          writeRecommendCalendarCache(result.items);
+        if (canUseCache && typeof window !== "undefined") {
+          writeRecommendCalendarCache(window.localStorage, result.items);
         }
       } catch (fetchError) {
         if (cachedPrograms.length === 0) {

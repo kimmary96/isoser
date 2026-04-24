@@ -199,6 +199,14 @@ PROGRAM_LIST_SUMMARY_SELECT = (
     "deadline_confidence,recommended_score,recommendation_reasons,detail_view_count,detail_view_count_7d,"
     "click_hotness_score,last_detail_viewed_at,promoted_rank,updated_at"
 )
+USER_RECOMMENDATION_PROFILE_SELECT = (
+    "user_id,effective_target_job,effective_target_job_normalized,profile_keywords,evidence_skills,"
+    "desired_skills,activity_keywords,preferred_regions,profile_completeness_score,"
+    "recommendation_ready,recommendation_profile_hash,derivation_version,source_snapshot,last_derived_at"
+)
+PROGRAM_SOURCE_RECORD_DETAIL_SELECT = (
+    "program_id,source_url,detail_url,application_url,source_specific,is_primary"
+)
 PROGRAM_DEFAULT_WORK24_TARGET_RATIO = 0.7
 PROGRAM_STARTUP_FILTER_KEYWORDS = (
     "창업",
@@ -761,14 +769,27 @@ def _build_query_hash(payload: ProgramRecommendRequest) -> str:
 def _build_profile_hash(
     profile: Mapping[str, Any],
     activities: Sequence[Mapping[str, Any]],
+    *,
+    prefer_stored_hash: bool = True,
 ) -> str:
+    if prefer_stored_hash:
+        stored_hash = _clean_text(
+            profile.get("recommendation_profile_hash")
+            or profile.get("profile_hash")
+        )
+        if stored_hash:
+            return stored_hash
+
     profile_snapshot = {
         key: profile.get(key)
         for key in (
             "name",
             "bio",
             "education",
+            "target_job",
+            "desired_job",
             "job_title",
+            "effective_target_job",
             "self_intro",
             "portfolio_url",
             "career",
@@ -777,6 +798,10 @@ def _build_profile_hash(
             "certifications",
             "languages",
             "skills",
+            "desired_skills",
+            "preferred_regions",
+            "profile_keywords",
+            "activity_keywords",
         )
     }
     activity_snapshot = [
@@ -793,6 +818,9 @@ def _has_personalization_input(
     profile: Mapping[str, Any],
     activities: Sequence[Mapping[str, Any]],
 ) -> bool:
+    if profile.get("recommendation_ready") is True:
+        return True
+
     if activities:
         return True
 
@@ -800,7 +828,10 @@ def _has_personalization_input(
         "name",
         "bio",
         "education",
+        "target_job",
+        "desired_job",
         "job_title",
+        "effective_target_job",
         "self_intro",
         "portfolio_url",
         "career",
@@ -809,6 +840,10 @@ def _has_personalization_input(
         "certifications",
         "languages",
         "skills",
+        "desired_skills",
+        "preferred_regions",
+        "profile_keywords",
+        "activity_keywords",
     ):
         value = profile.get(key)
         if isinstance(value, list):
@@ -1948,20 +1983,20 @@ def _build_program_detail_schedule_fields(program: Mapping[str, Any]) -> dict[st
     is_kstartup = "k-startup" in source or "kstartup" in source
     is_work24 = "고용24" in source or "work24" in source
 
-    application_start_date = _first_text(record.get("reg_start_date"))
-    application_end_date = _first_text(record.get("close_date"), record.get("deadline"))
-    program_start_date = _first_text(record.get("start_date"))
-    program_end_date = _first_text(record.get("end_date"))
+    application_start_date = _first_text(record.get("application_start_date"), record.get("reg_start_date"))
+    application_end_date = _first_text(record.get("application_end_date"), record.get("close_date"), record.get("deadline"))
+    program_start_date = _first_text(record.get("program_start_date"), record.get("start_date"))
+    program_end_date = _first_text(record.get("program_end_date"), record.get("end_date"))
     if is_kstartup:
-        application_start_date = _first_text(record.get("start_date"), record.get("reg_start_date"))
-        application_end_date = _first_text(record.get("end_date"), record.get("deadline"), record.get("close_date"))
-        program_start_date = None
-        program_end_date = None
+        application_start_date = _first_text(record.get("application_start_date"), record.get("start_date"), record.get("reg_start_date"))
+        application_end_date = _first_text(record.get("application_end_date"), record.get("end_date"), record.get("deadline"), record.get("close_date"))
+        program_start_date = _first_text(record.get("program_start_date"))
+        program_end_date = _first_text(record.get("program_end_date"))
     elif is_work24:
-        application_start_date = _first_text(record.get("reg_start_date"))
-        application_end_date = _first_text(record.get("close_date"), _resolve_program_deadline(record))
-        program_start_date = _first_text(record.get("start_date"))
-        program_end_date = _first_text(record.get("end_date"))
+        application_start_date = _first_text(record.get("application_start_date"), record.get("reg_start_date"))
+        application_end_date = _first_text(record.get("application_end_date"), record.get("close_date"), _resolve_program_deadline(record))
+        program_start_date = _first_text(record.get("program_start_date"), record.get("start_date"))
+        program_end_date = _first_text(record.get("program_end_date"), record.get("end_date"))
 
     return {
         "application_start_date": application_start_date,
@@ -1981,6 +2016,69 @@ def _calculate_program_click_hotness_score(*, recent_count: int, total_count: in
     safe_recent_count = max(recent_count, 0)
     safe_total_count = min(max(total_count, 0), PROGRAM_CLICK_HOTNESS_TOTAL_CAP)
     return safe_recent_count * PROGRAM_CLICK_HOTNESS_RECENT_WEIGHT + safe_total_count + recommended
+
+
+def _is_ignorable_program_source_records_read_error(error: Exception) -> bool:
+    message = str(getattr(error, "detail", "") or error).lower()
+    return (
+        "program_source_records" in message
+        or "primary_source_record_id" in message
+        or "source_specific" in message
+        or "application_url" in message
+    )
+
+
+async def _fetch_primary_source_records_by_program_ids(
+    program_ids: list[str],
+) -> dict[str, dict[str, Any]]:
+    if not program_ids:
+        return {}
+
+    quoted_ids = ",".join(f'"{program_id}"' for program_id in program_ids if program_id)
+    if not quoted_ids:
+        return {}
+
+    try:
+        rows = await request_supabase(
+            method="GET",
+            path="/rest/v1/program_source_records",
+            params={
+                "select": PROGRAM_SOURCE_RECORD_DETAIL_SELECT,
+                "program_id": f"in.({quoted_ids})",
+                "is_primary": "eq.true",
+            },
+        )
+    except Exception as exc:
+        if _is_ignorable_program_source_records_read_error(exc):
+            return {}
+        raise
+
+    if not isinstance(rows, list):
+        return {}
+
+    return {
+        str(row.get("program_id")): dict(row)
+        for row in rows
+        if str(row.get("program_id") or "").strip()
+    }
+
+
+def _detail_text_list(*values: Any) -> list[str]:
+    return _compact_text_list(*values)
+
+
+def _detail_dict_list(value: Any) -> list[dict[str, Any]]:
+    if not isinstance(value, list):
+        return []
+    return [item for item in value if isinstance(item, dict)]
+
+
+def _first_int(*values: Any) -> int | None:
+    for value in values:
+        parsed = _int_or_none(value)
+        if parsed is not None:
+            return parsed
+    return None
 
 
 def _program_click_hotness_score(row: Mapping[str, Any]) -> float:
@@ -2230,6 +2328,34 @@ async def _fetch_programs_by_ids(program_ids: list[str]) -> dict[str, dict[str, 
 
     return {
         str(row.get("id")): row
+        for row in rows
+        if str(row.get("id") or "").strip()
+    }
+
+
+async def _fetch_program_list_summary_rows_by_ids(
+    program_ids: list[str],
+) -> dict[str, dict[str, Any]]:
+    if not program_ids or not _program_list_read_model_enabled():
+        return {}
+
+    quoted_ids = ",".join(f'"{program_id}"' for program_id in program_ids if program_id)
+    if not quoted_ids:
+        return {}
+
+    rows = await request_supabase(
+        method="GET",
+        path=f"/rest/v1/{PROGRAM_LIST_INDEX_TABLE}",
+        params={
+            "select": PROGRAM_LIST_SUMMARY_SELECT,
+            "id": f"in.({quoted_ids})",
+        },
+    )
+    if not isinstance(rows, list):
+        return {}
+
+    return {
+        str(row.get("id")): dict(row)
         for row in rows
         if str(row.get("id") or "").strip()
     }
@@ -3221,6 +3347,14 @@ async def _fetch_program_list_rows(params: dict[str, Any], *, q: str | None) -> 
 
 
 async def _fetch_profile_row(user_id: str) -> dict[str, Any]:
+    recommendation_profile = await _fetch_user_recommendation_profile_row(user_id)
+    if recommendation_profile:
+        return _build_profile_row_from_recommendation_profile(recommendation_profile)
+
+    return await _fetch_raw_profile_row(user_id)
+
+
+async def _fetch_raw_profile_row(user_id: str) -> dict[str, Any]:
     rows = await request_supabase(
         method="GET",
         path="/rest/v1/profiles",
@@ -3233,6 +3367,83 @@ async def _fetch_profile_row(user_id: str) -> dict[str, Any]:
     if isinstance(rows, list) and rows:
         return dict(rows[0])
     return {}
+
+
+def _is_ignorable_recommendation_profile_read_error(error: Exception) -> bool:
+    message = str(getattr(error, "detail", "") or error).lower()
+    return (
+        "user_recommendation_profile" in message
+        or "recommendation_profile_hash" in message
+        or "effective_target_job" in message
+        or "profile_keywords" in message
+        or "preferred_regions" in message
+    )
+
+
+async def _fetch_user_recommendation_profile_row(user_id: str) -> dict[str, Any] | None:
+    try:
+        rows = await request_supabase(
+            method="GET",
+            path="/rest/v1/user_recommendation_profile",
+            params={
+                "select": USER_RECOMMENDATION_PROFILE_SELECT,
+                "user_id": f"eq.{user_id}",
+                "limit": "1",
+            },
+        )
+    except Exception as exc:
+        if _is_ignorable_recommendation_profile_read_error(exc):
+            return None
+        raise
+
+    if isinstance(rows, list) and rows:
+        return dict(rows[0])
+    return None
+
+
+def _build_profile_row_from_recommendation_profile(
+    recommendation_profile: Mapping[str, Any],
+) -> dict[str, Any]:
+    effective_target_job = _clean_text(recommendation_profile.get("effective_target_job"))
+    evidence_skills = _normalize_text_list(recommendation_profile.get("evidence_skills"))
+    desired_skills = _normalize_text_list(recommendation_profile.get("desired_skills"))
+    activity_keywords = _normalize_text_list(recommendation_profile.get("activity_keywords"))
+    profile_keywords = _normalize_text_list(recommendation_profile.get("profile_keywords"))
+    preferred_regions = _normalize_text_list(recommendation_profile.get("preferred_regions"))
+    source_snapshot = (
+        recommendation_profile.get("source_snapshot")
+        if isinstance(recommendation_profile.get("source_snapshot"), Mapping)
+        else {}
+    )
+    profile_snapshot = (
+        source_snapshot.get("profile")
+        if isinstance(source_snapshot.get("profile"), Mapping)
+        else {}
+    )
+    region_detail = _first_text(profile_snapshot.get("region_detail"))
+    region = _first_text(*(preferred_regions[:1]), profile_snapshot.get("region"))
+
+    return {
+        "id": recommendation_profile.get("user_id"),
+        "target_job": effective_target_job,
+        "desired_job": effective_target_job,
+        "job_title": effective_target_job,
+        "effective_target_job": effective_target_job,
+        "skills": evidence_skills,
+        "desired_skills": desired_skills,
+        "profile_keywords": profile_keywords,
+        "activity_keywords": activity_keywords,
+        "preferred_regions": preferred_regions,
+        "region": region,
+        "region_detail": region_detail,
+        "address": _first_text(region_detail, region),
+        "recommendation_ready": bool(recommendation_profile.get("recommendation_ready")),
+        "profile_completeness_score": _coerce_score(recommendation_profile.get("profile_completeness_score")),
+        "recommendation_profile_hash": _clean_text(recommendation_profile.get("recommendation_profile_hash")),
+        "derivation_version": recommendation_profile.get("derivation_version"),
+        "last_derived_at": recommendation_profile.get("last_derived_at"),
+        "source_snapshot": source_snapshot,
+    }
 
 
 async def _fetch_activity_rows(user_id: str, limit: int = 50) -> list[dict[str, Any]]:
@@ -3323,39 +3534,98 @@ def _format_detail_schedule_text(
     return None
 
 
-def _build_program_detail_response(program: dict[str, Any]) -> ProgramDetailResponse:
+def _build_program_detail_response(
+    program: dict[str, Any],
+    source_record: Mapping[str, Any] | None = None,
+) -> ProgramDetailResponse:
     summary_record = _serialize_program_base_summary(program)
     compare_meta = program.get("compare_meta") if isinstance(program.get("compare_meta"), dict) else {}
+    service_meta = program.get("service_meta") if isinstance(program.get("service_meta"), dict) else {}
+    source_specific = (
+        source_record.get("source_specific")
+        if isinstance(source_record, Mapping) and isinstance(source_record.get("source_specific"), dict)
+        else {}
+    )
     schedule_fields = _build_program_detail_schedule_fields(summary_record)
     application_start_date = schedule_fields["application_start_date"]
     application_end_date = schedule_fields["application_end_date"]
     program_start_date = schedule_fields["program_start_date"]
     program_end_date = schedule_fields["program_end_date"]
 
-    capacity_total = _int_or_none(compare_meta.get("capacity"))
-    registered_count = _int_or_none(compare_meta.get("registered_count"))
+    capacity_total = _first_int(
+        program.get("capacity_total"),
+        compare_meta.get("capacity_total"),
+        compare_meta.get("capacity"),
+        compare_meta.get("quota"),
+    )
+    capacity_current = _first_int(
+        program.get("capacity_current"),
+        compare_meta.get("capacity_current"),
+        compare_meta.get("registered_count"),
+        compare_meta.get("current_capacity"),
+    )
     capacity_remaining = None
-    if capacity_total is not None and registered_count is not None:
-        capacity_remaining = max(0, capacity_total - registered_count)
+    if capacity_total is not None and capacity_current is not None:
+        capacity_remaining = max(0, capacity_total - capacity_current)
 
+    certification_values = _detail_text_list(
+        program.get("certifications"),
+        service_meta.get("certifications"),
+        source_specific.get("certifications"),
+        compare_meta.get("certifications"),
+    )
     certification = _first_text(compare_meta.get("certificate"))
+    if certification and certification not in certification_values:
+        certification_values.append(certification)
+
     return ProgramDetailResponse(
         id=summary_record.get("id"),
         title=_first_text(summary_record.get("title")),
-        provider=_first_text(summary_record.get("provider")),
-        organizer=_first_text(program.get("sponsor_name"), compare_meta.get("supervising_institution"), compare_meta.get("department")),
-        location=_first_text(summary_record.get("location"), summary_record.get("region_detail"), summary_record.get("region")),
+        provider=_first_text(program.get("provider_name"), summary_record.get("provider")),
+        organizer=_first_text(
+            program.get("organizer_name"),
+            program.get("sponsor_name"),
+            compare_meta.get("supervising_institution"),
+            compare_meta.get("department"),
+        ),
+        location=_first_text(
+            program.get("location_text"),
+            summary_record.get("location"),
+            summary_record.get("region_detail"),
+            summary_record.get("region"),
+        ),
         description=_first_text(summary_record.get("description"), summary_record.get("summary")),
         application_start_date=application_start_date,
         application_end_date=application_end_date,
         program_start_date=program_start_date,
         program_end_date=program_end_date,
         teaching_method=_first_text(summary_record.get("teaching_method"), compare_meta.get("teaching_method")),
-        support_type=_first_text(summary_record.get("support_type"), compare_meta.get("business_type"), compare_meta.get("subsidy_rate")),
-        source_url=_first_text(summary_record.get("application_url"), compare_meta.get("application_url"), summary_record.get("source_url"), summary_record.get("link")),
-        fee=_int_or_none(summary_record.get("cost")),
-        support_amount=_int_or_none(summary_record.get("subsidy_amount")),
-        eligibility=_compact_text_list(program.get("target"), compare_meta.get("target_group"), compare_meta.get("target_detail"), compare_meta.get("target_age")),
+        support_type=_first_text(
+            program.get("business_type"),
+            summary_record.get("support_type"),
+            compare_meta.get("business_type"),
+            compare_meta.get("subsidy_rate"),
+        ),
+        source_url=_first_text(
+            source_record.get("application_url") if isinstance(source_record, Mapping) else None,
+            source_record.get("detail_url") if isinstance(source_record, Mapping) else None,
+            source_record.get("source_url") if isinstance(source_record, Mapping) else None,
+            summary_record.get("application_url"),
+            compare_meta.get("application_url"),
+            summary_record.get("source_url"),
+            summary_record.get("link"),
+        ),
+        fee=_first_int(program.get("fee_amount"), summary_record.get("cost")),
+        support_amount=_first_int(program.get("support_amount"), summary_record.get("subsidy_amount")),
+        eligibility=_detail_text_list(
+            program.get("eligibility_labels"),
+            program.get("target_summary"),
+            program.get("target_detail"),
+            program.get("target"),
+            compare_meta.get("target_group"),
+            compare_meta.get("target_detail"),
+            compare_meta.get("target_age"),
+        ),
         schedule_text=_format_detail_schedule_text(
             application_start_date=application_start_date,
             application_end_date=application_end_date,
@@ -3370,12 +3640,54 @@ def _build_program_detail_response(program: dict[str, Any]) -> ProgramDetailResp
         job_placement_rate=_first_text(compare_meta.get("employment_rate_6m"), compare_meta.get("employment_rate_3m")),
         capacity_total=capacity_total,
         capacity_remaining=capacity_remaining,
-        manager_name=_first_text(compare_meta.get("manager_name"), compare_meta.get("department")),
-        phone=_first_text(compare_meta.get("contact_phone")),
-        email=_first_text(compare_meta.get("application_method_email")),
-        certifications=[certification] if certification else [],
+        manager_name=_first_text(
+            source_specific.get("manager_name"),
+            service_meta.get("manager_name"),
+            compare_meta.get("manager_name"),
+            compare_meta.get("department"),
+        ),
+        phone=_first_text(
+            program.get("contact_phone"),
+            source_specific.get("contact_phone"),
+            service_meta.get("contact_phone"),
+            compare_meta.get("contact_phone"),
+        ),
+        email=_first_text(
+            program.get("contact_email"),
+            source_specific.get("contact_email"),
+            service_meta.get("contact_email"),
+            compare_meta.get("application_method_email"),
+        ),
+        certifications=certification_values,
         tech_stack=_compact_text_list(summary_record.get("skills")),
         tags=_compact_text_list(summary_record.get("tags")),
+        curriculum=_detail_text_list(
+            program.get("curriculum_items"),
+            source_specific.get("curriculum_items"),
+            source_specific.get("curriculum"),
+            service_meta.get("curriculum_items"),
+            service_meta.get("curriculum"),
+            compare_meta.get("curriculum"),
+        ),
+        faq=_detail_dict_list(source_specific.get("faq")) or _detail_dict_list(service_meta.get("faq")),
+        reviews=_detail_dict_list(source_specific.get("reviews")) or _detail_dict_list(service_meta.get("reviews")),
+        recommended_for=_detail_text_list(
+            source_specific.get("recommended_for"),
+            service_meta.get("recommended_for"),
+        ),
+        learning_outcomes=_detail_text_list(
+            source_specific.get("learning_outcomes"),
+            service_meta.get("learning_outcomes"),
+        ),
+        career_support=_detail_text_list(
+            source_specific.get("career_support"),
+            service_meta.get("career_support"),
+        ),
+        event_banner=_first_text(source_specific.get("event_banner"), service_meta.get("event_banner")),
+        ai_matching_summary=_first_text(
+            source_specific.get("ai_matching_summary"),
+            service_meta.get("ai_matching_summary"),
+        ),
     )
 
 
@@ -4120,9 +4432,13 @@ async def get_program_details_batch(payload: ProgramDetailBatchRequest) -> Progr
         deduped_program_ids.append(normalized)
 
     programs_by_id = await _fetch_programs_by_ids(deduped_program_ids)
+    source_records_by_program_id = await _fetch_primary_source_records_by_program_ids(deduped_program_ids)
     return ProgramDetailBatchResponse(
         items=[
-            _build_program_detail_response(programs_by_id[program_id])
+            _build_program_detail_response(
+                programs_by_id[program_id],
+                source_records_by_program_id.get(program_id),
+            )
             for program_id in deduped_program_ids
             if program_id in programs_by_id
         ]
@@ -4140,12 +4456,25 @@ async def get_programs_batch(payload: ProgramDetailBatchRequest) -> ProgramBatch
         seen_program_ids.add(normalized)
         deduped_program_ids.append(normalized)
 
-    programs_by_id = await _fetch_programs_by_ids(deduped_program_ids)
+    read_model_rows_by_id: dict[str, dict[str, Any]] = {}
+    if _program_list_read_model_enabled():
+        try:
+            read_model_rows_by_id = await _fetch_program_list_summary_rows_by_ids(deduped_program_ids)
+        except Exception as exc:
+            log_event(logger, logging.WARNING, "program_batch_read_model_fallback", error=str(exc))
+
+    missing_program_ids = [
+        program_id for program_id in deduped_program_ids if program_id not in read_model_rows_by_id
+    ]
+    programs_by_id = await _fetch_programs_by_ids(missing_program_ids)
+
     return ProgramBatchResponse(
         items=[
-            ProgramListItem.model_validate(_serialize_program_list_row(programs_by_id[program_id]))
+            ProgramListItem.model_validate(read_model_rows_by_id[program_id])
+            if program_id in read_model_rows_by_id
+            else ProgramListItem.model_validate(_serialize_program_list_row(programs_by_id[program_id]))
             for program_id in deduped_program_ids
-            if program_id in programs_by_id
+            if program_id in read_model_rows_by_id or program_id in programs_by_id
         ]
     )
 
@@ -4168,7 +4497,11 @@ async def get_program_detail(program_id: str) -> ProgramDetailResponse:
     )
     if not rows:
         raise HTTPException(status_code=404, detail="Program not found")
-    return _build_program_detail_response(dict(rows[0]))
+    source_records_by_program_id = await _fetch_primary_source_records_by_program_ids([program_id])
+    return _build_program_detail_response(
+        dict(rows[0]),
+        source_records_by_program_id.get(program_id),
+    )
 
 
 @programs_router.post("/{program_id}/detail-view")
@@ -4241,8 +4574,15 @@ async def recommend_programs(
     if payload.job_title:
         profile = dict(profile)
         profile["job_title"] = payload.job_title
+        profile["target_job"] = payload.job_title
+        profile["desired_job"] = payload.job_title
+        profile["effective_target_job"] = payload.job_title
     activities = await _fetch_activity_rows(current_user.id)
-    profile_hash = _build_profile_hash(profile, activities)
+    profile_hash = _build_profile_hash(
+        profile,
+        activities,
+        prefer_stored_hash=not bool(payload.job_title),
+    )
     query_hash = _build_query_hash(payload)
 
     if payload.force_refresh:

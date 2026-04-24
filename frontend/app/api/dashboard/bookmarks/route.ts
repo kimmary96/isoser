@@ -1,11 +1,12 @@
 import { apiError, apiOk } from "@/lib/api/route-response";
 import { toBookmarkProgramCardItem } from "@/lib/program-card-items";
+import { loadProgramCardRenderablesByIds } from "@/lib/server/program-card-summary";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type {
   DashboardBookmarksResponse,
-  Program,
   ProgramCardItem,
 } from "@/lib/types";
+import type { ProgramCardRouteClient } from "@/lib/server/program-card-summary";
 
 type BookmarkRow = {
   program_id: string | null;
@@ -36,16 +37,12 @@ export async function GET() {
 
     const rows = ((bookmarkRows ?? []) as BookmarkRow[]).filter((row) => row.program_id);
     const programIds = rows.map((row) => String(row.program_id));
-    const { data: programs, error: programsError } = programIds.length
-      ? await supabase.from("programs").select("*").in("id", programIds)
-      : { data: [] as Program[], error: null };
-
-    if (programsError) {
-      throw new Error(programsError.message || "찜한 프로그램 정보를 불러오지 못했습니다.");
-    }
-
+    const programs = await loadProgramCardRenderablesByIds(
+      supabase as unknown as ProgramCardRouteClient,
+      programIds
+    );
     const programMap = new Map(
-      ((programs ?? []) as Program[]).map((program) => [String(program.id ?? ""), program])
+      programs.map((program) => [String(program.id ?? ""), program])
     );
     const items = rows
       .map((item) => {
