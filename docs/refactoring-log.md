@@ -1,5 +1,9 @@
 # 리팩토링 로그
 
+- 2026-04-24: `supabase/README.md`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-5-live-db-ops-recheck-result.md`
+  - package-5 운영 재점검으로 live Supabase를 read-only로 다시 확인한 결과, `program_list_index`, `program_source_records`, additive `programs` canonical 컬럼, `program_list_index` surface-contract 컬럼은 보이지만 `user_program_preferences`, `user_recommendation_profile`, `recommendations.query_hash/profile_hash/expires_at/fit_keywords`는 아직 live에 없음을 문서로 고정함
+  - 현재 셸에는 `supabase` CLI와 direct DB connection 설정이 없어 DDL apply는 실행 불가하다는 점도 함께 명시하고, 다음 안전한 순서를 `user recommendation migrations 적용 -> SQL 확인 -> bounded sample validation`으로 정리함
+
 - 2026-04-24: `frontend/app/dashboard/page.tsx`, `docs/current-state.md`, `docs/refactoring-log.md`
   - 병합 회귀로 `RecCard` 내부에서 호출하던 `getProgramCardScore` import가 빠져 `/dashboard` 추천/찜 카드 strip이 `ReferenceError`로 깨지던 문제를 최소 수정으로 복구함
   - 점수 계산 우선순위와 카드 렌더링 로직은 그대로 두고, 기존 공용 helper 연결만 되살려 최근 `ProgramCardItem` cleanup 이후 의도한 shared precedence를 다시 사용하게 맞춤
