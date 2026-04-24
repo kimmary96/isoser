@@ -54,6 +54,12 @@ function cleanText(value: unknown): string | null {
   return text || null;
 }
 
+function getLegacyProgramMeta(
+  program: { compare_meta?: CompareMeta | null } | null | undefined
+): CompareMeta | null {
+  return program?.compare_meta ?? null;
+}
+
 export function formatProgramMonthDay(value: string | null | undefined): string | null {
   if (!value) return null;
 
@@ -222,7 +228,7 @@ export function hasTrustedProgramDeadline(
 
   const deadline = String(program.deadline).slice(0, 10);
   const endDate = String(program.end_date ?? "").slice(0, 10);
-  const compareMeta = program.compare_meta;
+  const compareMeta = getLegacyProgramMeta(program);
   const metaDeadline =
     compareMeta?.application_deadline ||
     compareMeta?.application_end_date ||
@@ -300,6 +306,7 @@ function normalizeProgramRatingDisplay(value: string | number | null | undefined
 }
 
 export function formatProgramCostLabel(program: ProgramInsightSource): string | null {
+  const compareMeta = getLegacyProgramMeta(program);
   const directCost = parseMetricNumber(program.cost);
   if (directCost !== null) {
     return directCost === 0 ? "무료" : `${directCost.toLocaleString("ko-KR")}원`;
@@ -313,13 +320,14 @@ export function formatProgramCostLabel(program: ProgramInsightSource): string | 
     return program.support_type.trim();
   }
 
-  return normalizeMetaText(program.compare_meta?.subsidy_rate);
+  return normalizeMetaText(compareMeta?.subsidy_rate);
 }
 
 export function getProgramSupportBadge(program: ProgramInsightSource): string | null {
+  const compareMeta = getLegacyProgramMeta(program);
   const text = [
     program.support_type,
-    program.compare_meta?.training_type,
+    compareMeta?.training_type,
     program.summary,
     program.description,
     program.title,
@@ -337,7 +345,8 @@ export function getProgramSupportBadge(program: ProgramInsightSource): string | 
 }
 
 export function hasTomorrowLearningCardRequirement(program: ProgramInsightSource): boolean {
-  const explicit = program.compare_meta?.naeilbaeumcard_required;
+  const compareMeta = getLegacyProgramMeta(program);
+  const explicit = compareMeta?.naeilbaeumcard_required;
   if (explicit === true || explicit === "pass" || explicit === "block") {
     return true;
   }
@@ -346,7 +355,7 @@ export function hasTomorrowLearningCardRequirement(program: ProgramInsightSource
     program.support_type,
     program.description,
     program.summary,
-    program.compare_meta?.target_group,
+    compareMeta?.target_group,
   ]
     .filter(Boolean)
     .join(" ");
@@ -359,9 +368,10 @@ export function getProgramTrainingModeLabel(
     compare_meta?: CompareMeta | null;
   }
 ): "온라인" | "오프라인" | "온·오프라인" | null {
+  const compareMeta = getLegacyProgramMeta(program);
   const text = [
     program.teaching_method,
-    program.compare_meta?.teaching_method,
+    compareMeta?.teaching_method,
     program.application_method,
     program.location,
     program.title,
@@ -384,18 +394,20 @@ export function getProgramTrainingModeLabel(
 }
 
 export function getProgramRatingDisplay(program: ProgramInsightSource): string | null {
+  const compareMeta = getLegacyProgramMeta(program);
   return (
     cleanText(program.rating_display) ||
     normalizeProgramRatingDisplay(program.rating) ||
-    normalizeProgramRatingDisplay(program.compare_meta?.satisfaction_score)
+    normalizeProgramRatingDisplay(compareMeta?.satisfaction_score)
   );
 }
 
 export function getProgramRatingValue(program: ProgramInsightSource): number {
+  const compareMeta = getLegacyProgramMeta(program);
   const rating =
     parseMetricNumber(program.rating_display) ??
     parseMetricNumber(program.rating) ??
-    parseMetricNumber(program.compare_meta?.satisfaction_score);
+    parseMetricNumber(compareMeta?.satisfaction_score);
   if (rating === null || rating <= 0) {
     return 0;
   }
@@ -404,7 +416,7 @@ export function getProgramRatingValue(program: ProgramInsightSource): number {
 }
 
 export function getProgramSelectionKeywords(program: ProgramListRow): string[] {
-  const meta = program.compare_meta;
+  const meta = getLegacyProgramMeta(program);
   const candidates = [
     meta?.coding_skill_required ? "코딩역량" : null,
     meta?.portfolio_required ? "포트폴리오" : null,

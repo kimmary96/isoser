@@ -1,5 +1,9 @@
 # 리팩토링 로그
 
+- 2026-04-24: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/lib/program-display.ts`, `frontend/lib/program-display.test.ts`, `docs/specs/compare-meta-runtime-touchpoints-v1.md`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-program-surface-legacy-meta-cleanup-result.md`
+  - 목록/정렬/지역 매칭과 프런트 표시 helper 쪽에 흩어져 있던 direct `compare_meta` 읽기를 공용 legacy bridge helper 뒤로 모아, 정본 컬럼과 `service_meta`를 먼저 쓰고 sparse row에서만 fallback 하도록 정리함
+  - 검색 텍스트 조립이나 deadline source 판정처럼 아직 의미가 큰 경로는 의도적으로 그대로 두고, 관련 backend/frontend 테스트를 추가해 현재 우선순위와 legacy fallback 보존 동작을 고정함
+
 - 2026-04-24: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-program-detail-compare-meta-fallback-cleanup-result.md`
   - `ProgramDetailResponse` 조립부가 `service_meta` 우선 + sparse legacy `compare_meta` overlay helper를 한곳에서 거치도록 정리해, 상세 fallback 동작은 유지하면서 builder 안의 직접 `compare_meta` field-by-field 의존을 줄임
   - 관련 단위 테스트를 추가해 `service_meta`가 일부만 채워진 legacy row에서도 주관기관/지원 링크/자격 조건/취업률/문의 메일/커리큘럼 같은 상세 값이 계속 살아남는 동작을 고정함

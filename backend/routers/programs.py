@@ -542,8 +542,8 @@ class ProgramDetailBatchResponse(BaseModel):
 
 def _serialize_program_base_summary(program: Mapping[str, Any]) -> dict[str, Any]:
     record = dict(program)
-    compare_meta = record.get("compare_meta") if isinstance(record.get("compare_meta"), dict) else {}
-    record.update(_normalize_rating_fields(record.get("rating") or compare_meta.get("satisfaction_score")))
+    legacy_meta = _legacy_program_meta(record)
+    record.update(_normalize_rating_fields(record.get("rating") or legacy_meta.get("satisfaction_score")))
     record["teaching_method"] = _derive_teaching_method(record)
     deadline = _resolve_program_deadline(record)
     days_left = _calculate_days_left(deadline)
@@ -857,12 +857,12 @@ def _has_personalization_input(
 
 def _resolve_program_deadline(program: dict[str, Any]) -> str | None:
     close_date = program.get("close_date")
-    compare_meta = program.get("compare_meta") if isinstance(program.get("compare_meta"), dict) else {}
+    legacy_meta = _legacy_program_meta(program)
     meta_deadline = next(
         (
-            compare_meta.get(key)
+            legacy_meta.get(key)
             for key in PROGRAM_DEADLINE_COMPARE_META_KEYS
-            if str(compare_meta.get(key) or "").strip()
+            if str(legacy_meta.get(key) or "").strip()
         ),
         None,
     )
@@ -878,7 +878,7 @@ def _resolve_program_deadline(program: dict[str, Any]) -> str | None:
         and not meta_deadline
         and end_date
         and text[:10] == end_date[:10]
-        and not _uses_work24_training_start_deadline(compare_meta)
+        and not _uses_work24_training_start_deadline(legacy_meta)
     ):
         return None
 
@@ -898,10 +898,10 @@ def _program_deadline_confidence(program: Mapping[str, Any]) -> Literal["high", 
     if explicit in {"high", "medium", "low"}:
         return explicit  # type: ignore[return-value]
 
-    compare_meta = program.get("compare_meta") if isinstance(program.get("compare_meta"), Mapping) else {}
-    if program.get("close_date") or any(compare_meta.get(key) for key in PROGRAM_DEADLINE_COMPARE_META_KEYS):
+    legacy_meta = _legacy_program_meta(program)
+    if program.get("close_date") or any(legacy_meta.get(key) for key in PROGRAM_DEADLINE_COMPARE_META_KEYS):
         return "high"
-    if _uses_work24_training_start_deadline(compare_meta):
+    if _uses_work24_training_start_deadline(legacy_meta):
         return "medium"
     return "low"
 
@@ -1535,7 +1535,7 @@ def _derive_teaching_method(row: dict[str, Any]) -> str | None:
         return explicit
 
     raw_data = row.get("raw_data") if isinstance(row.get("raw_data"), dict) else {}
-    compare_meta = row.get("compare_meta") if isinstance(row.get("compare_meta"), dict) else {}
+    legacy_meta = _legacy_program_meta(row)
     values = (
         _flatten_search_values(explicit)
         + _flatten_search_values(row.get("title"))
@@ -1543,8 +1543,8 @@ def _derive_teaching_method(row: dict[str, Any]) -> str | None:
         + _flatten_search_values(row.get("description"))
         + _flatten_search_values(row.get("target"))
         + _flatten_search_values(raw_data.get("trainTarget"))
-        + _flatten_search_values(compare_meta.get("training_type"))
-        + _flatten_search_values(compare_meta.get("teaching_method"))
+        + _flatten_search_values(legacy_meta.get("training_type"))
+        + _flatten_search_values(legacy_meta.get("teaching_method"))
     )
     text = " ".join(values).casefold()
     if not text:
@@ -1681,13 +1681,13 @@ def _derive_participation_display(row: dict[str, Any]) -> tuple[str | None, str 
 
 
 def _derive_selection_process_label(row: dict[str, Any]) -> str | None:
-    compare_meta = row.get("compare_meta") if isinstance(row.get("compare_meta"), dict) else {}
+    legacy_meta = _legacy_program_meta(row)
     candidates: list[str] = []
-    if compare_meta.get("coding_skill_required") in (True, "pass", "warn") or "코딩테스트" in _program_text_blob(row):
+    if legacy_meta.get("coding_skill_required") in (True, "pass", "warn") or "코딩테스트" in _program_text_blob(row):
         candidates.append("코딩 테스트")
-    if compare_meta.get("portfolio_required") is True:
+    if legacy_meta.get("portfolio_required") is True:
         candidates.append("포트폴리오")
-    if compare_meta.get("interview_required") is True:
+    if legacy_meta.get("interview_required") is True:
         candidates.append("면접")
 
     text = _program_text_blob(row)
@@ -1741,7 +1741,7 @@ def _extract_program_keywords(row: dict[str, Any]) -> list[str]:
         if _is_useful_keyword(cleaned):
             keywords.append(cleaned)
 
-    for value in _flatten_search_values((row.get("compare_meta") if isinstance(row.get("compare_meta"), dict) else {}).get("target_job")):
+    for value in _flatten_search_values(_legacy_program_meta(row).get("target_job")):
         cleaned = value.strip()
         if _is_useful_keyword(cleaned):
             keywords.append(cleaned)
@@ -1755,8 +1755,8 @@ def _program_cost_type(row: dict[str, Any]) -> str | None:
         return explicit_cost_type
 
     text = _program_text_blob(row)
-    compare_meta = row.get("compare_meta") if isinstance(row.get("compare_meta"), dict) else {}
-    card_required = compare_meta.get("naeilbaeumcard_required")
+    legacy_meta = _legacy_program_meta(row)
+    card_required = legacy_meta.get("naeilbaeumcard_required")
     has_card_keyword = "내일배움" in text or "내배카" in text or "국민내일배움" in text
     if card_required is True or card_required == "pass" or has_card_keyword:
         return "naeil-card"
@@ -1778,13 +1778,13 @@ def _program_sort_date(
     row_keys: Sequence[str],
     meta_keys: Sequence[str],
 ) -> date | None:
-    compare_meta = row.get("compare_meta") if isinstance(row.get("compare_meta"), dict) else {}
+    legacy_meta = _legacy_program_meta(row)
     for key in row_keys:
         parsed = _parse_program_deadline(_first_text(row.get(key)))
         if parsed:
             return parsed
     for key in meta_keys:
-        parsed = _parse_program_deadline(_first_text(compare_meta.get(key)))
+        parsed = _parse_program_deadline(_first_text(legacy_meta.get(key)))
         if parsed:
             return parsed
     return None
@@ -1819,9 +1819,9 @@ def _program_sort_cost_amount(row: dict[str, Any]) -> int | None:
     if direct_cost is not None:
         return max(0, direct_cost)
 
-    compare_meta = row.get("compare_meta") if isinstance(row.get("compare_meta"), dict) else {}
+    legacy_meta = _legacy_program_meta(row)
     for key in ("cost", "fee", "tuition", "course_fee", "training_fee", "self_payment", "out_of_pocket"):
-        parsed = _int_or_none(compare_meta.get(key))
+        parsed = _int_or_none(legacy_meta.get(key))
         if parsed is not None:
             return max(0, parsed)
 
@@ -3517,6 +3517,10 @@ def _compact_text_list(*values: Any) -> list[str]:
 
 
 def _legacy_detail_meta(program: Mapping[str, Any]) -> dict[str, Any]:
+    return _legacy_program_meta(program)
+
+
+def _legacy_program_meta(program: Mapping[str, Any]) -> dict[str, Any]:
     compare_meta = program.get("compare_meta") if isinstance(program.get("compare_meta"), dict) else {}
     service_meta = program.get("service_meta") if isinstance(program.get("service_meta"), dict) else {}
 
@@ -3786,13 +3790,13 @@ def _compute_region_match(
     if not normalized_profile_region:
         return [], 0.0
 
-    compare_meta = program.get("compare_meta") if isinstance(program.get("compare_meta"), dict) else {}
+    legacy_meta = _legacy_program_meta(program)
     explicit_method_text = " ".join(
         _compact_text_list(
             program.get("teaching_method"),
-            compare_meta.get("teaching_method"),
-            compare_meta.get("method"),
-            compare_meta.get("delivery_method"),
+            legacy_meta.get("teaching_method"),
+            legacy_meta.get("method"),
+            legacy_meta.get("delivery_method"),
         )
     )
     explicit_delivery = _classify_delivery_region_signal(explicit_method_text)
@@ -3805,9 +3809,9 @@ def _compute_region_match(
         program.get("region"),
         program.get("location"),
         program.get("region_detail"),
-        compare_meta.get("region"),
-        compare_meta.get("location"),
-        compare_meta.get("address"),
+        legacy_meta.get("region"),
+        legacy_meta.get("location"),
+        legacy_meta.get("address"),
     )
 
     fallback_text = " ".join(
@@ -3818,7 +3822,7 @@ def _compute_region_match(
             program.get("location"),
             program.get("region_detail"),
             program.get("region"),
-            compare_meta,
+            legacy_meta,
         )
     )
     fallback_delivery = _classify_delivery_region_signal(fallback_text)

@@ -1,6 +1,7 @@
 # Current State
 
 Update 2026-04-24:
+- `backend/routers/programs.py`의 목록/정렬/지역 매칭 fallback과 `frontend/lib/program-display.ts`의 주요 표시 helper는 이제 direct `compare_meta` 파싱을 흩어 두지 않고 공용 legacy bridge helper를 먼저 거친다. `service_meta`가 있으면 그 값을 먼저 쓰고, sparse row일 때만 legacy `compare_meta`를 보완 입력으로 쓰도록 맞췄다. 다만 검색 텍스트 조립, deadline source 판정, 타입 선언처럼 아직 의도적으로 남겨둔 `compare_meta` 경로는 그대로 유지했다.
 - `backend/routers/programs.py::_build_program_detail_response()` now collapses legacy detail fallback metadata through one helper that prefers `service_meta` and only overlays sparse legacy `compare_meta` keys when needed. Current detail responses stay the same, but direct field-by-field `compare_meta` reads inside the detail builder are reduced, which makes later package-5 cleanup of detail fallback paths smaller and safer.
 - `docs/specs/compare-meta-runtime-touchpoints-v1.md` now separates the current runtime truth about `compare_meta` from older recommendation audit notes. The new doc fixes the current judgment that `compare_meta` is no longer canonical but still active as an ingest/detail/display fallback bridge, while `docs/recommendation/program-recommendation-checklist.md` is now marked as a 2026-04-16 historical audit snapshot rather than a current source of truth.
 - 운영 SQL Editor 후속 확인에서 빈 legacy `public.bookmarks` 테이블은 삭제됐고, 현재 북마크 정본은 계속 `public.program_bookmarks`다. 저장소 런타임 코드도 동일한 canonical table만 사용하며, `supabase/SQL.md` 스냅샷도 그 live 상태에 맞춰 정리됐다.

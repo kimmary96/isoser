@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { hasTrustedProgramDeadline } from "./program-display";
+import {
+  formatProgramCostLabel,
+  getProgramRatingDisplay,
+  getProgramTrainingModeLabel,
+  hasTomorrowLearningCardRequirement,
+  hasTrustedProgramDeadline,
+} from "./program-display";
 import type { CompareMeta } from "./types";
 
 function createProgram(
@@ -78,5 +84,35 @@ describe("program deadline trust helper", () => {
         })
       )
     ).toBe(true);
+  });
+});
+
+describe("program display legacy compare_meta bridge", () => {
+  it("keeps compare_meta-based display fallbacks through the shared helper", () => {
+    const program = {
+      cost: null,
+      support_type: null,
+      subsidy_amount: null,
+      teaching_method: null,
+      application_method: null,
+      location: null,
+      title: "청년 디지털 부트캠프",
+      summary: "내일배움 기반 실무 과정",
+      description: "기초부터 실무 프로젝트까지",
+      rating: null,
+      rating_display: null,
+      review_count: 0,
+      compare_meta: {
+        subsidy_rate: "전액 지원",
+        teaching_method: "온라인",
+        satisfaction_score: "91.4",
+        naeilbaeumcard_required: true,
+      } satisfies CompareMeta,
+    };
+
+    expect(formatProgramCostLabel(program)).toBe("전액 지원");
+    expect(getProgramTrainingModeLabel(program)).toBe("온라인");
+    expect(getProgramRatingDisplay(program)).toBe("4.6");
+    expect(hasTomorrowLearningCardRequirement(program)).toBe(true);
   });
 });

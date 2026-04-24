@@ -71,12 +71,14 @@
 - `backend/routers/programs.py`
   - 상세 응답 조립
     - 정본 컬럼이 있으면 먼저 쓰지만, 정원/자격/문의처/커리큘럼/지원 링크 같은 값은 여전히 `compare_meta` fallback이 남아 있다.
+    - 다만 현재는 상세 builder가 direct field-by-field read 대신 공용 legacy meta helper를 먼저 거치도록 정리돼, 이후 제거 범위를 더 작게 나눌 수 있다.
   - 모집 마감 판정
     - Work24의 `traStartDate` 오판 회피 같은 보수적 deadline 판정에 `compare_meta.deadline_source` 계열을 사용한다.
   - 목록 검색/필터 fallback
     - read-model이 아닌 fallback 경로에서는 `compare_meta` 안의 training type, region, selection 메타를 검색/필터 추론에 아직 사용한다.
   - 지역/참여 방식 추론
     - `teaching_method`, `region`, `address`가 정본 컬럼에 없거나 비어 있을 때 `compare_meta`를 보조 근거로 쓴다.
+    - 최근 cleanup으로 목록/정렬/지역 매칭은 `service_meta` 우선 + legacy bridge helper를 통하게 정리됐고, direct `compare_meta` 분산 읽기는 줄어든 상태다.
   - filter-options legacy fallback
     - browse facet snapshot을 못 쓰는 경우 `compare_meta`를 포함한 source row에서 옵션을 다시 뽑는다.
 
@@ -109,6 +111,7 @@
   - 수업 방식
   - 평점 표시
   - 선발 키워드 추출
+  - 현재는 이 helper들도 direct `program.compare_meta` 접근 대신 공용 `getLegacyProgramMeta(...)`를 통해 마지막 fallback만 읽도록 정리돼 있다.
 - `frontend/lib/types/index.ts`
   - `ProgramListRow.compare_meta`
   - legacy `Program.compare_meta`
@@ -150,8 +153,8 @@
 ## 6. 다음 cleanup 순서
 
 1. collector/admin/dual-write가 `compare_meta`에서 끌어오던 값을 정본 컬럼, `service_meta`, `program_source_records.field_evidence/source_specific`로 더 옮긴다.
-2. `backend/routers/programs.py`의 상세/검색/필터 fallback에서 정본 컬럼 우선 범위를 더 넓힌다.
-3. `frontend/lib/program-display.ts`의 표시 helper에서 정본 필드가 있는 항목부터 `compare_meta` fallback을 줄인다.
+2. `backend/routers/programs.py`의 검색/필터 텍스트 조립과 deadline source 판정처럼 아직 direct `compare_meta`가 필요한 경로를 작은 묶음으로 다시 나눈다.
+3. `frontend/lib/program-display.ts`의 표시 helper에서 정본 필드가 있는 항목부터 `compare_meta` fallback을 줄이고, 남은 helper가 실제로 어떤 화면에서 필요한지 다시 좁힌다.
 4. `ProgramListRow.compare_meta`를 제거 가능한지 다시 판정한다.
 5. 마지막에만 legacy `Program.compare_meta` 제거를 검토한다.
 

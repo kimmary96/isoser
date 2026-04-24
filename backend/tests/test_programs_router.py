@@ -1205,6 +1205,28 @@ def test_serialize_program_list_row_adds_normalized_rating_fields() -> None:
     assert row["rating_display"] == "5.0"
 
 
+def test_serialize_program_list_row_prefers_service_meta_over_compare_meta_for_base_fallbacks() -> None:
+    row = programs._serialize_program_list_row(
+        {
+            "id": "service-meta-priority",
+            "title": "원격 실무 과정",
+            "deadline": (date.today() + timedelta(days=3)).isoformat(),
+            "service_meta": {
+                "satisfaction_score": "100",
+                "teaching_method": "온라인",
+            },
+            "compare_meta": {
+                "satisfaction_score": "20",
+                "teaching_method": "오프라인",
+            },
+        }
+    )
+
+    assert row["rating_raw"] == "100"
+    assert row["rating_display"] == "5.0"
+    assert row["teaching_method"] == "온라인"
+
+
 def test_serialize_program_list_row_derives_display_metadata_from_real_text() -> None:
     row = programs._serialize_program_list_row(
         {
@@ -2359,6 +2381,22 @@ def test_compute_region_match_scores_adjacent_and_online_programs() -> None:
         profile_region="부산",
         profile_region_detail=None,
         program={"compare_meta": {"region": "부산광역시 해운대구"}},
+    ) == (["부산"], 1.0)
+    assert programs._compute_region_match(
+        profile_region="전북",
+        profile_region_detail=None,
+        program={
+            "service_meta": {"teaching_method": "온라인"},
+            "compare_meta": {"teaching_method": "오프라인"},
+        },
+    ) == (["온라인"], 0.8)
+    assert programs._compute_region_match(
+        profile_region="부산",
+        profile_region_detail=None,
+        program={
+            "service_meta": {"region": "부산"},
+            "compare_meta": {"region": "서울"},
+        },
     ) == (["부산"], 1.0)
 
 
