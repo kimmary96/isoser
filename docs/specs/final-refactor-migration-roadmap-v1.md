@@ -126,6 +126,7 @@
 - backend recommendation/compare read는 이제 `user_recommendation_profile`을 우선 읽고, derived row가 없을 때만 legacy `profiles`로 fallback한다. raw `activities`는 아직 compare breakdown과 RAG 보조 입력 용도로 함께 읽는다.
 - bookmarks/calendar BFF 내부 read도 이미 `program_list_index` summary read 우선 구조로 넘어갔다.
 - recommend-calendar BFF의 intermediate fallback도 이제 flat `/programs` 대신 `/programs/list` summary rows를 먼저 쓰고, 그마저 실패할 때만 direct Supabase helper로 내려간다.
+- dashboard recommendation hook의 local cache도 이제 `ProgramCardItem[]`를 정본으로 쓰고, 브라우저에 남아 있는 예전 `programs[]` cache는 읽는 순간 새 구조로 자동 승격한다.
 - compare 상단 카드 batch도 `program_list_index` summary read 우선, legacy `programs` fallback 구조로 전환됐다.
 - compare frontend top card consumer도 이제 `ProgramCardSummary + ProgramDetail` 조합을 쓰기 시작해, compare 쪽 `Program` monolith 의존이 줄어드는 중이다.
 - 단건/배치 상세는 `programs + program_source_records` 조합을 읽기 시작했고, additive canonical detail 필드를 우선 사용한다.

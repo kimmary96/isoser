@@ -1,5 +1,9 @@
 # 리팩토링 로그
 
+- 2026-04-24: `frontend/app/dashboard/_hooks/recommend-calendar-cache.ts`, `frontend/app/dashboard/_hooks/recommend-calendar-cache.test.ts`, `frontend/app/dashboard/_hooks/use-dashboard-recommendations.ts`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-4-dashboard-cache-shape-cleanup-result.md`
+  - 패키지 4의 dashboard cleanup으로 추천 캘린더 로컬 캐시 정본을 `ProgramCardItem[]`로 고정하고, 브라우저에 남아 있을 수 있는 예전 `programs[]` 캐시는 읽는 순간 새 item 구조로 자동 승격하도록 정리함
+  - 기존 15분 TTL과 캐시 fallback 동작은 유지하면서, dashboard hook이 더 이상 old flat cache contract를 계속 퍼뜨리지 않도록 경계를 분리하고 helper test로 승격/만료 동작을 고정함
+
 - 2026-04-24: `frontend/lib/types/index.ts`, `frontend/lib/api/backend.ts`, `frontend/app/(landing)/compare/compare-table-sections.tsx`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-4-compare-summary-type-shrink-result.md`
   - 패키지 4의 compare consumer cleanup으로 `ProgramBatchResponse`와 `getPrograms()`를 compare top-card 기준 `ProgramCardSummary[]`로 축소하고, compare 화면 타입도 full `Program` 대신 `ProgramCardSummary + ProgramDetail` 조합을 쓰도록 정리함
   - 런타임 비교 동작은 유지하면서 compare 페이지가 더 이상 목록/추천/상세 private 필드를 모두 품은 monolith `Program`에 직접 기대지 않게 한 단계 정리함
