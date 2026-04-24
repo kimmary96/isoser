@@ -1568,6 +1568,38 @@ def test_build_program_detail_response_prefers_canonical_and_source_record_field
     assert detail.ai_matching_summary == "백엔드 전환 준비자에게 특히 적합합니다."
 
 
+def test_build_program_detail_response_uses_legacy_compare_meta_overlay_when_service_meta_is_sparse() -> None:
+    detail = programs._build_program_detail_response(
+        {
+            "id": "program-detail-legacy-overlay",
+            "source": "고용24",
+            "title": "레거시 상세 보강 과정",
+            "compare_meta": {
+                "supervising_institution": "레거시 주관기관",
+                "department": "레거시 담당부서",
+                "application_url": "https://legacy.example/apply",
+                "target_group": "청년",
+                "employment_rate_6m": "62%",
+                "curriculum": ["실전 프로젝트"],
+                "application_method_email": "legacy@example.com",
+                "field_sources": {"department": "legacy"},
+            },
+            "service_meta": {
+                "contact_phone": "02-2222-2222",
+            },
+        }
+    )
+
+    assert detail.organizer == "레거시 주관기관"
+    assert detail.source_url == "https://legacy.example/apply"
+    assert detail.eligibility == ["청년"]
+    assert detail.job_placement_rate == "62%"
+    assert detail.phone == "02-2222-2222"
+    assert detail.email == "legacy@example.com"
+    assert detail.curriculum == ["실전 프로젝트"]
+    assert detail.manager_name == "레거시 담당부서"
+
+
 @pytest.mark.asyncio
 async def test_get_program_details_batch_reuses_detail_mapping(
     monkeypatch: pytest.MonkeyPatch,

@@ -3516,6 +3516,22 @@ def _compact_text_list(*values: Any) -> list[str]:
     return items
 
 
+def _legacy_detail_meta(program: Mapping[str, Any]) -> dict[str, Any]:
+    compare_meta = program.get("compare_meta") if isinstance(program.get("compare_meta"), dict) else {}
+    service_meta = program.get("service_meta") if isinstance(program.get("service_meta"), dict) else {}
+
+    merged: dict[str, Any] = {
+        str(key): value
+        for key, value in compare_meta.items()
+        if key != "field_sources" and value not in (None, "", [], {})
+    }
+    for key, value in service_meta.items():
+        if value in (None, "", [], {}):
+            continue
+        merged[str(key)] = value
+    return merged
+
+
 def _format_detail_schedule_text(
     *,
     application_start_date: str | None,
@@ -3539,8 +3555,7 @@ def _build_program_detail_response(
     source_record: Mapping[str, Any] | None = None,
 ) -> ProgramDetailResponse:
     summary_record = _serialize_program_base_summary(program)
-    compare_meta = program.get("compare_meta") if isinstance(program.get("compare_meta"), dict) else {}
-    service_meta = program.get("service_meta") if isinstance(program.get("service_meta"), dict) else {}
+    detail_meta = _legacy_detail_meta(program)
     source_specific = (
         source_record.get("source_specific")
         if isinstance(source_record, Mapping) and isinstance(source_record.get("source_specific"), dict)
@@ -3554,15 +3569,15 @@ def _build_program_detail_response(
 
     capacity_total = _first_int(
         program.get("capacity_total"),
-        compare_meta.get("capacity_total"),
-        compare_meta.get("capacity"),
-        compare_meta.get("quota"),
+        detail_meta.get("capacity_total"),
+        detail_meta.get("capacity"),
+        detail_meta.get("quota"),
     )
     capacity_current = _first_int(
         program.get("capacity_current"),
-        compare_meta.get("capacity_current"),
-        compare_meta.get("registered_count"),
-        compare_meta.get("current_capacity"),
+        detail_meta.get("capacity_current"),
+        detail_meta.get("registered_count"),
+        detail_meta.get("current_capacity"),
     )
     capacity_remaining = None
     if capacity_total is not None and capacity_current is not None:
@@ -3570,11 +3585,10 @@ def _build_program_detail_response(
 
     certification_values = _detail_text_list(
         program.get("certifications"),
-        service_meta.get("certifications"),
         source_specific.get("certifications"),
-        compare_meta.get("certifications"),
+        detail_meta.get("certifications"),
     )
-    certification = _first_text(compare_meta.get("certificate"))
+    certification = _first_text(detail_meta.get("certificate"))
     if certification and certification not in certification_values:
         certification_values.append(certification)
 
@@ -3585,8 +3599,8 @@ def _build_program_detail_response(
         organizer=_first_text(
             program.get("organizer_name"),
             program.get("sponsor_name"),
-            compare_meta.get("supervising_institution"),
-            compare_meta.get("department"),
+            detail_meta.get("supervising_institution"),
+            detail_meta.get("department"),
         ),
         location=_first_text(
             program.get("location_text"),
@@ -3599,19 +3613,19 @@ def _build_program_detail_response(
         application_end_date=application_end_date,
         program_start_date=program_start_date,
         program_end_date=program_end_date,
-        teaching_method=_first_text(summary_record.get("teaching_method"), compare_meta.get("teaching_method")),
+        teaching_method=_first_text(summary_record.get("teaching_method"), detail_meta.get("teaching_method")),
         support_type=_first_text(
             program.get("business_type"),
             summary_record.get("support_type"),
-            compare_meta.get("business_type"),
-            compare_meta.get("subsidy_rate"),
+            detail_meta.get("business_type"),
+            detail_meta.get("subsidy_rate"),
         ),
         source_url=_first_text(
             source_record.get("application_url") if isinstance(source_record, Mapping) else None,
             source_record.get("detail_url") if isinstance(source_record, Mapping) else None,
             source_record.get("source_url") if isinstance(source_record, Mapping) else None,
             summary_record.get("application_url"),
-            compare_meta.get("application_url"),
+            detail_meta.get("application_url"),
             summary_record.get("source_url"),
             summary_record.get("link"),
         ),
@@ -3622,9 +3636,9 @@ def _build_program_detail_response(
             program.get("target_summary"),
             program.get("target_detail"),
             program.get("target"),
-            compare_meta.get("target_group"),
-            compare_meta.get("target_detail"),
-            compare_meta.get("target_age"),
+            detail_meta.get("target_group"),
+            detail_meta.get("target_detail"),
+            detail_meta.get("target_age"),
         ),
         schedule_text=_format_detail_schedule_text(
             application_start_date=application_start_date,
@@ -3637,26 +3651,24 @@ def _build_program_detail_response(
         rating_normalized=summary_record.get("rating_normalized"),
         rating_scale=summary_record.get("rating_scale"),
         rating_display=summary_record.get("rating_display"),
-        job_placement_rate=_first_text(compare_meta.get("employment_rate_6m"), compare_meta.get("employment_rate_3m")),
+        job_placement_rate=_first_text(detail_meta.get("employment_rate_6m"), detail_meta.get("employment_rate_3m")),
         capacity_total=capacity_total,
         capacity_remaining=capacity_remaining,
         manager_name=_first_text(
             source_specific.get("manager_name"),
-            service_meta.get("manager_name"),
-            compare_meta.get("manager_name"),
-            compare_meta.get("department"),
+            detail_meta.get("manager_name"),
+            detail_meta.get("department"),
         ),
         phone=_first_text(
             program.get("contact_phone"),
             source_specific.get("contact_phone"),
-            service_meta.get("contact_phone"),
-            compare_meta.get("contact_phone"),
+            detail_meta.get("contact_phone"),
         ),
         email=_first_text(
             program.get("contact_email"),
             source_specific.get("contact_email"),
-            service_meta.get("contact_email"),
-            compare_meta.get("application_method_email"),
+            detail_meta.get("contact_email"),
+            detail_meta.get("application_method_email"),
         ),
         certifications=certification_values,
         tech_stack=_compact_text_list(summary_record.get("skills")),
@@ -3665,28 +3677,27 @@ def _build_program_detail_response(
             program.get("curriculum_items"),
             source_specific.get("curriculum_items"),
             source_specific.get("curriculum"),
-            service_meta.get("curriculum_items"),
-            service_meta.get("curriculum"),
-            compare_meta.get("curriculum"),
+            detail_meta.get("curriculum_items"),
+            detail_meta.get("curriculum"),
         ),
-        faq=_detail_dict_list(source_specific.get("faq")) or _detail_dict_list(service_meta.get("faq")),
-        reviews=_detail_dict_list(source_specific.get("reviews")) or _detail_dict_list(service_meta.get("reviews")),
+        faq=_detail_dict_list(source_specific.get("faq")) or _detail_dict_list(detail_meta.get("faq")),
+        reviews=_detail_dict_list(source_specific.get("reviews")) or _detail_dict_list(detail_meta.get("reviews")),
         recommended_for=_detail_text_list(
             source_specific.get("recommended_for"),
-            service_meta.get("recommended_for"),
+            detail_meta.get("recommended_for"),
         ),
         learning_outcomes=_detail_text_list(
             source_specific.get("learning_outcomes"),
-            service_meta.get("learning_outcomes"),
+            detail_meta.get("learning_outcomes"),
         ),
         career_support=_detail_text_list(
             source_specific.get("career_support"),
-            service_meta.get("career_support"),
+            detail_meta.get("career_support"),
         ),
-        event_banner=_first_text(source_specific.get("event_banner"), service_meta.get("event_banner")),
+        event_banner=_first_text(source_specific.get("event_banner"), detail_meta.get("event_banner")),
         ai_matching_summary=_first_text(
             source_specific.get("ai_matching_summary"),
-            service_meta.get("ai_matching_summary"),
+            detail_meta.get("ai_matching_summary"),
         ),
     )
 
