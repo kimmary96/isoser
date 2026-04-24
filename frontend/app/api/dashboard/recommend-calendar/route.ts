@@ -1,4 +1,5 @@
 import { apiError, apiOk } from "@/lib/api/route-response";
+import { buildPathWithSearchParams, buildRecommendationSearchParams } from "@/lib/api/program-query";
 import {
   toCalendarProgramCardItem,
   toFallbackCalendarProgramCardItem,
@@ -67,17 +68,16 @@ async function loadSupabaseFallbackPrograms(topK: number): Promise<DashboardReco
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const backendSearchParams = new URLSearchParams();
-
     const category = searchParams.get("category")?.trim();
     const region = searchParams.get("region")?.trim();
     const forceRefresh = searchParams.get("force_refresh") === "true";
     const topK = searchParams.get("top_k")?.trim();
-
-    if (category) backendSearchParams.set("category", category);
-    if (region) backendSearchParams.set("region", region);
-    if (forceRefresh) backendSearchParams.set("force_refresh", "true");
-    if (topK) backendSearchParams.set("top_k", topK);
+    const backendSearchParams = buildRecommendationSearchParams({
+      category,
+      region,
+      forceRefresh,
+      topK,
+    });
 
     const supabase = await createServerSupabaseClient();
     const {
@@ -93,9 +93,8 @@ export async function GET(request: Request) {
       headers.Authorization = `Bearer ${accessToken}`;
     }
 
-    const query = backendSearchParams.toString();
     const response = await fetchWithTimeout(
-      `${BACKEND_URL}/programs/recommend/calendar${query ? `?${query}` : ""}`,
+      `${BACKEND_URL}${buildPathWithSearchParams("/programs/recommend/calendar", backendSearchParams)}`,
       {
         method: "GET",
         headers,

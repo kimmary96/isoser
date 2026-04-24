@@ -27,6 +27,7 @@ import type {
   SkillSuggestResponse,
 } from "@/lib/types";
 import { toProgramSelectSummaries, unwrapProgramListRows } from "@/lib/program-display";
+import { buildPathWithSearchParams, buildProgramListSearchParams } from "./program-query";
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
@@ -235,46 +236,8 @@ export async function convertActivity(
 }
 
 export async function listPrograms(params?: ProgramListParams): Promise<Program[]> {
-  const searchParams = new URLSearchParams();
-  if (params?.q) searchParams.set("q", params.q);
-  if (params?.category) searchParams.set("category", params.category);
-  if (params?.category_detail) searchParams.set("category_detail", params.category_detail);
-  if (params?.scope) searchParams.set("scope", params.scope);
-  if (params?.region_detail) searchParams.set("region_detail", params.region_detail);
-  if (params?.regions?.length) {
-    params.regions.forEach((region) => searchParams.append("regions", region));
-  }
-  if (params?.sources?.length) {
-    params.sources.forEach((source) => searchParams.append("sources", source));
-  }
-  if (params?.teaching_methods?.length) {
-    params.teaching_methods.forEach((method) => searchParams.append("teaching_methods", method));
-  }
-  if (params?.cost_types?.length) {
-    params.cost_types.forEach((costType) => searchParams.append("cost_types", costType));
-  }
-  if (params?.participation_times?.length) {
-    params.participation_times.forEach((time) => searchParams.append("participation_times", time));
-  }
-  if (params?.targets?.length) {
-    params.targets.forEach((target) => searchParams.append("targets", target));
-  }
-  if (params?.selection_processes?.length) {
-    params.selection_processes.forEach((process) => searchParams.append("selection_processes", process));
-  }
-  if (params?.employment_links?.length) {
-    params.employment_links.forEach((link) => searchParams.append("employment_links", link));
-  }
-  if (params?.recruiting_only) searchParams.set("recruiting_only", "true");
-  if (params?.include_closed_recent) searchParams.set("include_closed_recent", "true");
-  if (params?.sort) searchParams.set("sort", params.sort);
-  if (typeof params?.limit === "number") searchParams.set("limit", String(params.limit));
-  if (typeof params?.offset === "number") searchParams.set("offset", String(params.offset));
-  if (params?.cursor) searchParams.set("cursor", params.cursor);
-
-  const query = searchParams.toString();
   return requestJson<Program[]>(
-    `/programs/${query ? `?${query}` : ""}`,
+    buildPathWithSearchParams("/programs/", buildProgramListSearchParams(params)),
     {
       method: "GET",
     },
@@ -290,28 +253,8 @@ export async function listProgramSelectSummaries(
 }
 
 export async function listProgramsPage(params?: ProgramListParams): Promise<ProgramListPageResponse> {
-  const searchParams = new URLSearchParams();
-  if (params?.q) searchParams.set("q", params.q);
-  if (params?.category) searchParams.set("category", params.category);
-  if (params?.category_detail) searchParams.set("category_detail", params.category_detail);
-  if (params?.scope) searchParams.set("scope", params.scope);
-  if (params?.region_detail) searchParams.set("region_detail", params.region_detail);
-  if (params?.regions?.length) params.regions.forEach((region) => searchParams.append("regions", region));
-  if (params?.sources?.length) params.sources.forEach((source) => searchParams.append("sources", source));
-  if (params?.teaching_methods?.length) params.teaching_methods.forEach((method) => searchParams.append("teaching_methods", method));
-  if (params?.cost_types?.length) params.cost_types.forEach((costType) => searchParams.append("cost_types", costType));
-  if (params?.participation_times?.length) params.participation_times.forEach((time) => searchParams.append("participation_times", time));
-  if (params?.targets?.length) params.targets.forEach((target) => searchParams.append("targets", target));
-  if (params?.recruiting_only) searchParams.set("recruiting_only", "true");
-  if (params?.include_closed_recent) searchParams.set("include_closed_recent", "true");
-  if (params?.sort) searchParams.set("sort", params.sort);
-  if (typeof params?.limit === "number") searchParams.set("limit", String(params.limit));
-  if (typeof params?.offset === "number") searchParams.set("offset", String(params.offset));
-  if (params?.cursor) searchParams.set("cursor", params.cursor);
-
-  const query = searchParams.toString();
   return requestJson<ProgramListPageResponse>(
-    `/programs/list${query ? `?${query}` : ""}`,
+    buildPathWithSearchParams("/programs/list", buildProgramListSearchParams(params)),
     {
       method: "GET",
     },
@@ -320,42 +263,8 @@ export async function listProgramsPage(params?: ProgramListParams): Promise<Prog
 }
 
 export async function getProgramCount(params?: ProgramListParams): Promise<number> {
-  const searchParams = new URLSearchParams();
-  if (params?.q) searchParams.set("q", params.q);
-  if (params?.category) searchParams.set("category", params.category);
-  if (params?.category_detail) searchParams.set("category_detail", params.category_detail);
-  if (params?.scope) searchParams.set("scope", params.scope);
-  if (params?.region_detail) searchParams.set("region_detail", params.region_detail);
-  if (params?.regions?.length) {
-    params.regions.forEach((region) => searchParams.append("regions", region));
-  }
-  if (params?.sources?.length) {
-    params.sources.forEach((source) => searchParams.append("sources", source));
-  }
-  if (params?.teaching_methods?.length) {
-    params.teaching_methods.forEach((method) => searchParams.append("teaching_methods", method));
-  }
-  if (params?.cost_types?.length) {
-    params.cost_types.forEach((costType) => searchParams.append("cost_types", costType));
-  }
-  if (params?.participation_times?.length) {
-    params.participation_times.forEach((time) => searchParams.append("participation_times", time));
-  }
-  if (params?.targets?.length) {
-    params.targets.forEach((target) => searchParams.append("targets", target));
-  }
-  if (params?.selection_processes?.length) {
-    params.selection_processes.forEach((process) => searchParams.append("selection_processes", process));
-  }
-  if (params?.employment_links?.length) {
-    params.employment_links.forEach((link) => searchParams.append("employment_links", link));
-  }
-  if (params?.recruiting_only) searchParams.set("recruiting_only", "true");
-  if (params?.include_closed_recent) searchParams.set("include_closed_recent", "true");
-
-  const query = searchParams.toString();
   const result = await requestJson<ProgramCountResponse>(
-    `/programs/count${query ? `?${query}` : ""}`,
+    buildPathWithSearchParams("/programs/count", buildProgramListSearchParams(params)),
     {
       method: "GET",
     },
@@ -365,24 +274,8 @@ export async function getProgramCount(params?: ProgramListParams): Promise<numbe
 }
 
 export async function getProgramFilterOptions(params?: ProgramListParams): Promise<ProgramFilterOptionsResponse> {
-  const searchParams = new URLSearchParams();
-  if (params?.q) searchParams.set("q", params.q);
-  if (params?.category) searchParams.set("category", params.category);
-  if (params?.category_detail) searchParams.set("category_detail", params.category_detail);
-  if (params?.scope) searchParams.set("scope", params.scope);
-  if (params?.region_detail) searchParams.set("region_detail", params.region_detail);
-  if (params?.regions?.length) {
-    params.regions.forEach((region) => searchParams.append("regions", region));
-  }
-  if (params?.teaching_methods?.length) {
-    params.teaching_methods.forEach((method) => searchParams.append("teaching_methods", method));
-  }
-  if (params?.recruiting_only) searchParams.set("recruiting_only", "true");
-  if (params?.include_closed_recent) searchParams.set("include_closed_recent", "true");
-
-  const query = searchParams.toString();
   return requestJson<ProgramFilterOptionsResponse>(
-    `/programs/filter-options${query ? `?${query}` : ""}`,
+    buildPathWithSearchParams("/programs/filter-options", buildProgramListSearchParams(params)),
     {
       method: "GET",
     },

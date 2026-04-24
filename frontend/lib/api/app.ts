@@ -27,6 +27,7 @@ import type {
   SavedPortfolio,
   SavedMatchAnalysis,
 } from "@/lib/types";
+import { buildCompareSearchParams, buildPathWithSearchParams, buildRecommendationSearchParams } from "./program-query";
 
 type OnboardingPayload = {
   profile: {
@@ -126,13 +127,10 @@ export interface RecommendProgramsParams {
 export async function getRecommendedPrograms(
   params?: RecommendProgramsParams
 ): Promise<DashboardRecommendedProgramsResponse> {
-  const searchParams = new URLSearchParams();
-  if (params?.category) searchParams.set("category", params.category);
-  if (params?.region) searchParams.set("region", params.region);
-  if (params?.forceRefresh) searchParams.set("force_refresh", "true");
-
-  const query = searchParams.toString();
-  const url = `/api/dashboard/recommended-programs${query ? `?${query}` : ""}`;
+  const url = buildPathWithSearchParams(
+    "/api/dashboard/recommended-programs",
+    buildRecommendationSearchParams(params)
+  );
 
   return requestAppJson<DashboardRecommendedProgramsResponse>(
     url,
@@ -152,13 +150,10 @@ export async function invalidateRecommendCache(): Promise<void> {
 export async function getRecommendCalendar(
   params?: RecommendProgramsParams
 ): Promise<DashboardRecommendCalendarResponse> {
-  const searchParams = new URLSearchParams();
-  if (params?.category) searchParams.set("category", params.category);
-  if (params?.region) searchParams.set("region", params.region);
-  if (params?.forceRefresh) searchParams.set("force_refresh", "true");
-
-  const query = searchParams.toString();
-  const url = `/api/dashboard/recommend-calendar${query ? `?${query}` : ""}`;
+  const url = buildPathWithSearchParams(
+    "/api/dashboard/recommend-calendar",
+    buildRecommendationSearchParams(params)
+  );
 
   return requestAppJson<DashboardRecommendCalendarResponse>(
     url,
@@ -215,14 +210,7 @@ export async function searchComparePrograms(params?: {
   sort?: ProgramSort;
   recruitingOnly?: boolean;
 }): Promise<ProgramCompareSearchResponse> {
-  const searchParams = new URLSearchParams();
-  if (params?.q) searchParams.set("q", params.q);
-  if (typeof params?.limit === "number") searchParams.set("limit", String(params.limit));
-  if (params?.sort) searchParams.set("sort", params.sort);
-  if (params?.recruitingOnly) searchParams.set("recruiting_only", "true");
-
-  const query = searchParams.toString();
-  const url = `/api/programs/compare-search${query ? `?${query}` : ""}`;
+  const url = buildPathWithSearchParams("/api/programs/compare-search", buildCompareSearchParams(params));
 
   return requestAppJson<ProgramCompareSearchResponse>(
     url,
