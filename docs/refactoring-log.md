@@ -1,5 +1,9 @@
 # 리팩토링 로그
 
+- 2026-04-24: `backend/utils/supabase_admin.py`, `frontend/lib/supabase/server.ts`, `docs/current-state.md`, `docs/refactoring-log.md`
+  - 로컬 터미널/서버 세션에서 프로세스 env가 비어 있어도 `backend/.env`, `frontend/.env.local` 쪽 값을 fallback으로 읽어 Supabase URL/key를 해석하도록 보강함
+  - 기존 env 우선순위와 런타임 API 계약은 유지하고, 설정 누락 시 local operator session에서만 보조 경로로 동작하게 정리함
+
 - 2026-04-24: `backend/services/program_list_filters.py`, `backend/routers/programs.py`, `frontend/app/(landing)/programs/programs-table.tsx`, `frontend/app/(landing)/programs/programs-table-helpers.ts`, `frontend/app/(landing)/programs/programs-urgent-card.tsx`, `frontend/app/(landing)/programs/page.tsx`, `backend/README.md`, `scripts/run-backend-checks.ps1`, `backend/tests/fixtures/program_list_api_examples.json`, `backend/tests/test_program_list_api_examples.py`, `docs/current-state.md`, `docs/API_STRUCTURE.md`, `docs/PROJECT_STRUCTURE.md`, `docs/REFACTORING_REPORT.md`
   - `backend/routers/programs.py` 안에 길게 붙어 있던 프로그램 목록 pure helper 묶음을 `backend/services/program_list_filters.py`로 분리해, 라우터는 endpoint/orchestration 중심으로 두고 검색/카테고리 매칭/표시 파생값/추가 필터/정렬/filter-options 로직은 서비스 모듈에서 재사용하게 정리함
   - `/programs` 페이지 안에 있던 테이블 렌더링과 포맷팅 로직을 `programs-table.tsx`, `programs-table-helpers.ts`, `programs-urgent-card.tsx`로 분리해 기존 화면 출력은 유지하면서 `page.tsx` 책임을 줄임
