@@ -1,4 +1,5 @@
 import { apiError, apiOk } from "@/lib/api/route-response";
+import { syncRecommendationProfileAfterUserMutation } from "@/lib/server/recommendation-profile";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 async function getAuthenticatedClient() {
@@ -61,6 +62,8 @@ export async function POST(request: Request) {
     if (error || !data) {
       throw new Error(error?.message ?? "활동 저장에 실패했습니다.");
     }
+
+    await syncRecommendationProfileAfterUserMutation(supabase, user.id);
 
     return apiOk({ activity: data });
   } catch (error) {

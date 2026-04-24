@@ -2257,6 +2257,107 @@ async def test_build_cached_recommendation_items_recalculates_final_score_and_pr
     assert items[0].program.urgency_score == 0.5
 
 
+def test_build_profile_hash_prefers_recommendation_profile_hash_when_present() -> None:
+    profile_hash = programs._build_profile_hash(
+        {
+            "job_title": "백엔드 개발자",
+            "skills": ["Python"],
+            "recommendation_profile_hash": "derived-hash-123",
+        },
+        [],
+    )
+
+    assert profile_hash == "derived-hash-123"
+
+
+@pytest.mark.asyncio
+async def test_fetch_profile_row_prefers_user_recommendation_profile(monkeypatch: pytest.MonkeyPatch) -> None:
+    async def fake_request_supabase(
+        *,
+        method: str,
+        path: str,
+        params: dict[str, object] | None = None,
+        payload: object | None = None,
+        prefer: str | None = None,
+    ) -> list[dict[str, object]]:
+        assert method == "GET"
+        assert payload is None
+        assert prefer is None
+        assert params is not None
+        if path == "/rest/v1/user_recommendation_profile":
+            assert params["select"] == programs.USER_RECOMMENDATION_PROFILE_SELECT
+            return [
+                {
+                    "user_id": "user-1",
+                    "effective_target_job": "데이터 분석가",
+                    "profile_keywords": ["데이터 분석", "sql"],
+                    "evidence_skills": ["Python", "SQL"],
+                    "desired_skills": ["Tableau"],
+                    "activity_keywords": ["프로젝트"],
+                    "preferred_regions": ["서울"],
+                    "profile_completeness_score": 0.7,
+                    "recommendation_ready": True,
+                    "recommendation_profile_hash": "derived-hash",
+                    "derivation_version": 1,
+                    "source_snapshot": {
+                        "profile": {
+                            "region": "서울",
+                            "region_detail": "강남구",
+                        }
+                    },
+                    "last_derived_at": "2026-04-24T12:00:00+00:00",
+                }
+            ]
+        raise AssertionError(f"unexpected path: {path}")
+
+    monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
+
+    profile = await programs._fetch_profile_row("user-1")
+
+    assert profile["job_title"] == "데이터 분석가"
+    assert profile["target_job"] == "데이터 분석가"
+    assert profile["skills"] == ["Python", "SQL"]
+    assert profile["desired_skills"] == ["Tableau"]
+    assert profile["region"] == "서울"
+    assert profile["region_detail"] == "강남구"
+    assert profile["recommendation_profile_hash"] == "derived-hash"
+    assert profile["recommendation_ready"] is True
+
+
+@pytest.mark.asyncio
+async def test_fetch_profile_row_falls_back_to_profiles_when_recommendation_profile_is_unavailable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+
+    async def fake_request_supabase(
+        *,
+        method: str,
+        path: str,
+        params: dict[str, object] | None = None,
+        payload: object | None = None,
+        prefer: str | None = None,
+    ) -> list[dict[str, object]]:
+        assert method == "GET"
+        assert payload is None
+        assert prefer is None
+        assert params is not None
+        calls.append(path)
+        if path == "/rest/v1/user_recommendation_profile":
+            raise RuntimeError('Supabase request failed: relation "user_recommendation_profile" does not exist')
+        if path == "/rest/v1/profiles":
+            return [{"id": "user-1", "job_title": "백엔드 개발자", "skills": ["FastAPI"]}]
+        raise AssertionError(f"unexpected path: {path}")
+
+    monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
+
+    profile = await programs._fetch_profile_row("user-1")
+
+    assert calls == ["/rest/v1/user_recommendation_profile", "/rest/v1/profiles"]
+    assert profile["job_title"] == "백엔드 개발자"
+    assert profile["skills"] == ["FastAPI"]
+
+
 @pytest.mark.asyncio
 async def test_recommend_programs_uses_rule_before_cache(monkeypatch: pytest.MonkeyPatch) -> None:
     async def fake_fetch_program_rows(**_: object) -> list[dict[str, object]]:

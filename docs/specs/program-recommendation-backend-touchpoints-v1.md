@@ -13,12 +13,12 @@
 ## 2. 현재 저장소 기준으로 확인한 사실
 
 - 추천/비교 핵심 로직은 현재 `backend/routers/programs.py`에 모여 있다.
-- 현재 추천 read는 `_fetch_profile_row()`와 `_fetch_activity_rows()`로 raw `profiles + activities`를 직접 읽는다.
-- 현재 추천 cache hash는 `_build_profile_hash()`가 raw profile snapshot을 그대로 써서 만든다.
+- 현재 추천 read는 `_fetch_profile_row()`가 `user_recommendation_profile`을 우선 읽고, 없을 때만 legacy `profiles`로 fallback한다. `_fetch_activity_rows()`는 아직 보조 evidence read로 함께 남아 있다.
+- 현재 추천 cache hash는 `_build_profile_hash()`가 `user_recommendation_profile.recommendation_profile_hash`를 우선 쓰고, 요청 단에서 `job_title` override가 있을 때만 로컬 hash를 다시 만든다.
 - 현재 목록 serializer는 `_serialize_program_list_row()`가 monolithic row를 직접 가공한다.
 - 현재 상세 serializer는 `_build_program_detail_response()`가 `programs` row를 직접 해석한다.
 - 현재 대시보드 추천 BFF는 `Program` 객체에 `_reason`, `_fit_keywords`, `score`를 섞는다.
-- 현재 프로필/이력서/활동 저장 API는 추천 파생 정본 refresh를 자동 호출하지 않는다.
+- 현재 프로필/이력서/활동 저장 API는 추천 파생 정본 refresh를 자동 호출한다.
 
 ## 3. 가장 먼저 바뀌어야 할 backend read 포인트
 
@@ -47,12 +47,12 @@
 
 | 현재 위치 | 현재 상태 | 바뀌어야 할 방향 |
 | --- | --- | --- |
-| `_fetch_profile_row()` | `profiles` 전체 row 직접 조회 | `_fetch_user_recommendation_profile()` 우선 구조로 전환 |
-| `_fetch_activity_rows()` | 활동 자체를 추천 입력 정본처럼 사용 | 파생 정본 갱신용 근거 데이터로만 사용 |
-| `_build_profile_hash()` | raw snapshot hash | `user_recommendation_profile.recommendation_profile_hash` 기준으로 단순화 |
-| `/programs/recommend` | raw profile + activities + programs 조합 | `user_recommendation_profile + program summary + context` 조합 |
+| `_fetch_profile_row()` | `user_recommendation_profile` 우선 + `profiles` fallback | 다음 단계에서는 legacy shape bridge를 줄이고 derived contract를 더 직접 쓰게 정리 |
+| `_fetch_activity_rows()` | compare breakdown / RAG 보조 입력으로 유지 | 파생 정본 보조 evidence 범위로만 축소 유지 |
+| `_build_profile_hash()` | derived hash 우선, override 시 local recompute | 이후 legacy snapshot fallback 분기 축소 |
+| `/programs/recommend` | derived profile 우선 + activities + programs 조합 | 추천 BFF/context cleanup과 함께 정리 |
 | `/programs/recommend/calendar` | 추천 캐시와 fallback이 섞여 있음 | 동일 파생 정본을 읽되, 캘린더 전용 정렬/context만 별도로 부여 |
-| `/programs/compare-relevance` | raw profile/activities에서 비교 점수 계산 | 파생 추천 정본 우선 + 프로그램 canonical field 우선 계산 |
+| `/programs/compare-relevance` | 파생 추천 정본 우선 + activities 보조 입력 | 프로그램 canonical field 우선 계산까지 확대 |
 
 ## 4. 가장 먼저 바뀌어야 할 backend write 포인트
 

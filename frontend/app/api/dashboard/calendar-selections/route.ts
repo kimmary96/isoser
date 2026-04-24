@@ -1,14 +1,15 @@
 import { apiError, apiOk } from "@/lib/api/route-response";
 import { toSelectionProgramCardItem } from "@/lib/program-card-items";
+import { loadProgramCardRenderablesByIds } from "@/lib/server/program-card-summary";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createClient } from "@supabase/supabase-js";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import type {
   DashboardCalendarSelectionsResponse,
-  Program,
   ProgramCardItem,
 } from "@/lib/types";
+import type { ProgramCardRouteClient } from "@/lib/server/program-card-summary";
 
 function readLocalBackendEnv(name: string): string | null {
   const candidates = [
@@ -89,19 +90,18 @@ export async function GET() {
       return apiOk<DashboardCalendarSelectionsResponse>({ items: [] });
     }
 
-    const { data: programRows, error: programError } = await supabase
-      .from("programs")
-      .select("*")
-      .in("id", programIds);
-
-    if (programError) throw new Error(programError.message);
-
-    const programMap = new Map((programRows ?? []).map((program) => [String(program.id), program]));
+    const programs = await loadProgramCardRenderablesByIds(
+      supabase as unknown as ProgramCardRouteClient,
+      programIds
+    );
+    const programMap = new Map(
+      programs.map((program) => [String(program.id ?? ""), program])
+    );
     const items = programIds
       .map((programId, index) => {
         const program = programMap.get(programId);
         const selectedAt = (selectionRows ?? [])[index]?.updated_at ?? null;
-        return program ? toSelectionProgramCardItem(program as Program, selectedAt) : null;
+        return program ? toSelectionProgramCardItem(program, selectedAt) : null;
       })
       .filter((item): item is ProgramCardItem => Boolean(item));
 

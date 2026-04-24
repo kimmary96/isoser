@@ -199,6 +199,11 @@ PROGRAM_LIST_SUMMARY_SELECT = (
     "deadline_confidence,recommended_score,recommendation_reasons,detail_view_count,detail_view_count_7d,"
     "click_hotness_score,last_detail_viewed_at,promoted_rank,updated_at"
 )
+USER_RECOMMENDATION_PROFILE_SELECT = (
+    "user_id,effective_target_job,effective_target_job_normalized,profile_keywords,evidence_skills,"
+    "desired_skills,activity_keywords,preferred_regions,profile_completeness_score,"
+    "recommendation_ready,recommendation_profile_hash,derivation_version,source_snapshot,last_derived_at"
+)
 PROGRAM_DEFAULT_WORK24_TARGET_RATIO = 0.7
 PROGRAM_STARTUP_FILTER_KEYWORDS = (
     "창업",
@@ -761,14 +766,27 @@ def _build_query_hash(payload: ProgramRecommendRequest) -> str:
 def _build_profile_hash(
     profile: Mapping[str, Any],
     activities: Sequence[Mapping[str, Any]],
+    *,
+    prefer_stored_hash: bool = True,
 ) -> str:
+    if prefer_stored_hash:
+        stored_hash = _clean_text(
+            profile.get("recommendation_profile_hash")
+            or profile.get("profile_hash")
+        )
+        if stored_hash:
+            return stored_hash
+
     profile_snapshot = {
         key: profile.get(key)
         for key in (
             "name",
             "bio",
             "education",
+            "target_job",
+            "desired_job",
             "job_title",
+            "effective_target_job",
             "self_intro",
             "portfolio_url",
             "career",
@@ -777,6 +795,10 @@ def _build_profile_hash(
             "certifications",
             "languages",
             "skills",
+            "desired_skills",
+            "preferred_regions",
+            "profile_keywords",
+            "activity_keywords",
         )
     }
     activity_snapshot = [
@@ -793,6 +815,9 @@ def _has_personalization_input(
     profile: Mapping[str, Any],
     activities: Sequence[Mapping[str, Any]],
 ) -> bool:
+    if profile.get("recommendation_ready") is True:
+        return True
+
     if activities:
         return True
 
@@ -800,7 +825,10 @@ def _has_personalization_input(
         "name",
         "bio",
         "education",
+        "target_job",
+        "desired_job",
         "job_title",
+        "effective_target_job",
         "self_intro",
         "portfolio_url",
         "career",
@@ -809,6 +837,10 @@ def _has_personalization_input(
         "certifications",
         "languages",
         "skills",
+        "desired_skills",
+        "preferred_regions",
+        "profile_keywords",
+        "activity_keywords",
     ):
         value = profile.get(key)
         if isinstance(value, list):
@@ -3221,6 +3253,14 @@ async def _fetch_program_list_rows(params: dict[str, Any], *, q: str | None) -> 
 
 
 async def _fetch_profile_row(user_id: str) -> dict[str, Any]:
+    recommendation_profile = await _fetch_user_recommendation_profile_row(user_id)
+    if recommendation_profile:
+        return _build_profile_row_from_recommendation_profile(recommendation_profile)
+
+    return await _fetch_raw_profile_row(user_id)
+
+
+async def _fetch_raw_profile_row(user_id: str) -> dict[str, Any]:
     rows = await request_supabase(
         method="GET",
         path="/rest/v1/profiles",
@@ -3233,6 +3273,83 @@ async def _fetch_profile_row(user_id: str) -> dict[str, Any]:
     if isinstance(rows, list) and rows:
         return dict(rows[0])
     return {}
+
+
+def _is_ignorable_recommendation_profile_read_error(error: Exception) -> bool:
+    message = str(getattr(error, "detail", "") or error).lower()
+    return (
+        "user_recommendation_profile" in message
+        or "recommendation_profile_hash" in message
+        or "effective_target_job" in message
+        or "profile_keywords" in message
+        or "preferred_regions" in message
+    )
+
+
+async def _fetch_user_recommendation_profile_row(user_id: str) -> dict[str, Any] | None:
+    try:
+        rows = await request_supabase(
+            method="GET",
+            path="/rest/v1/user_recommendation_profile",
+            params={
+                "select": USER_RECOMMENDATION_PROFILE_SELECT,
+                "user_id": f"eq.{user_id}",
+                "limit": "1",
+            },
+        )
+    except Exception as exc:
+        if _is_ignorable_recommendation_profile_read_error(exc):
+            return None
+        raise
+
+    if isinstance(rows, list) and rows:
+        return dict(rows[0])
+    return None
+
+
+def _build_profile_row_from_recommendation_profile(
+    recommendation_profile: Mapping[str, Any],
+) -> dict[str, Any]:
+    effective_target_job = _clean_text(recommendation_profile.get("effective_target_job"))
+    evidence_skills = _normalize_text_list(recommendation_profile.get("evidence_skills"))
+    desired_skills = _normalize_text_list(recommendation_profile.get("desired_skills"))
+    activity_keywords = _normalize_text_list(recommendation_profile.get("activity_keywords"))
+    profile_keywords = _normalize_text_list(recommendation_profile.get("profile_keywords"))
+    preferred_regions = _normalize_text_list(recommendation_profile.get("preferred_regions"))
+    source_snapshot = (
+        recommendation_profile.get("source_snapshot")
+        if isinstance(recommendation_profile.get("source_snapshot"), Mapping)
+        else {}
+    )
+    profile_snapshot = (
+        source_snapshot.get("profile")
+        if isinstance(source_snapshot.get("profile"), Mapping)
+        else {}
+    )
+    region_detail = _first_text(profile_snapshot.get("region_detail"))
+    region = _first_text(*(preferred_regions[:1]), profile_snapshot.get("region"))
+
+    return {
+        "id": recommendation_profile.get("user_id"),
+        "target_job": effective_target_job,
+        "desired_job": effective_target_job,
+        "job_title": effective_target_job,
+        "effective_target_job": effective_target_job,
+        "skills": evidence_skills,
+        "desired_skills": desired_skills,
+        "profile_keywords": profile_keywords,
+        "activity_keywords": activity_keywords,
+        "preferred_regions": preferred_regions,
+        "region": region,
+        "region_detail": region_detail,
+        "address": _first_text(region_detail, region),
+        "recommendation_ready": bool(recommendation_profile.get("recommendation_ready")),
+        "profile_completeness_score": _coerce_score(recommendation_profile.get("profile_completeness_score")),
+        "recommendation_profile_hash": _clean_text(recommendation_profile.get("recommendation_profile_hash")),
+        "derivation_version": recommendation_profile.get("derivation_version"),
+        "last_derived_at": recommendation_profile.get("last_derived_at"),
+        "source_snapshot": source_snapshot,
+    }
 
 
 async def _fetch_activity_rows(user_id: str, limit: int = 50) -> list[dict[str, Any]]:
@@ -4241,8 +4358,15 @@ async def recommend_programs(
     if payload.job_title:
         profile = dict(profile)
         profile["job_title"] = payload.job_title
+        profile["target_job"] = payload.job_title
+        profile["desired_job"] = payload.job_title
+        profile["effective_target_job"] = payload.job_title
     activities = await _fetch_activity_rows(current_user.id)
-    profile_hash = _build_profile_hash(profile, activities)
+    profile_hash = _build_profile_hash(
+        profile,
+        activities,
+        prefer_stored_hash=not bool(payload.job_title),
+    )
     query_hash = _build_query_hash(payload)
 
     if payload.force_refresh:

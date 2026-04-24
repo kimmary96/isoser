@@ -151,7 +151,7 @@ export function toCalendarProgramCardItem(item: CalendarRecommendItem): ProgramC
 }
 
 export function toFallbackCalendarSurfaceContext(
-  program: Program,
+  program: ProgramCardRenderable,
   reason: string
 ): ProgramSurfaceContext {
   const urgencyScore = Number(program.urgency_score ?? 0);
@@ -170,7 +170,7 @@ export function toFallbackCalendarSurfaceContext(
 }
 
 export function toFallbackCalendarProgramCardItem(
-  program: Program,
+  program: ProgramCardRenderable,
   reason: string
 ): ProgramCardItem | null {
   if (!program.id) {
@@ -186,7 +186,7 @@ export function toFallbackCalendarProgramCardItem(
 }
 
 export function toBookmarkProgramCardItem(
-  program: Program,
+  program: ProgramCardRenderable,
   bookmarkedAt: string | null
 ): ProgramCardItem {
   return toProgramCardItem(program, {
@@ -196,7 +196,7 @@ export function toBookmarkProgramCardItem(
 }
 
 export function toSelectionProgramCardItem(
-  program: Program,
+  program: ProgramCardRenderable,
   selectedAt: string | null
 ): ProgramCardItem {
   return toProgramCardItem(program, {

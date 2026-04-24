@@ -28,7 +28,7 @@
 
 - `frontend/app/api/dashboard/recommended-programs/route.ts`는 backend 추천 응답의 `item.program`을 그대로 복사한 뒤 `_reason`, `_fit_keywords`, `_score`, `_relevance_score`를 덧붙인다.
 - `frontend/app/api/dashboard/recommend-calendar/route.ts`는 fallback 응답을 만들 때 `program: Program` 구조를 그대로 유지한다.
-- `frontend/app/api/dashboard/bookmarks/route.ts`와 `frontend/app/api/dashboard/calendar-selections/route.ts`는 아직 Supabase `programs`를 직접 읽는다.
+- `frontend/app/api/dashboard/bookmarks/route.ts`와 `frontend/app/api/dashboard/calendar-selections/route.ts`는 이제 `program_list_index` summary read를 우선 사용하고, read model 미적용/누락 row만 `programs`로 fallback한다.
 - `frontend/app/api/programs/compare-relevance/route.ts`는 얇은 proxy지만, 이후 새 summary/context 타입이 들어오면 같이 맞춰야 한다.
 
 ## 3. backend 실제 진입점
@@ -68,8 +68,8 @@
 | --- | --- | --- | --- |
 | `frontend/app/api/dashboard/recommended-programs/route.ts` | 대시보드 추천 카드 BFF | `item.program`에 `_reason`, `_fit_keywords`, `_score`, `_relevance_score`를 직접 붙임 | 1순위 |
 | `frontend/app/api/dashboard/recommend-calendar/route.ts` | 캘린더 추천 + fallback BFF | fallback도 `program: Program` 그대로 사용 | 1순위 |
-| `frontend/app/api/dashboard/bookmarks/route.ts` | 찜한 프로그램 조회 | Supabase `programs` 직접 조회 | 2순위 |
-| `frontend/app/api/dashboard/calendar-selections/route.ts` | 캘린더 적용 프로그램 조회/저장 | 조회 시 Supabase `programs` 직접 조회 | 2순위 |
+| `frontend/app/api/dashboard/bookmarks/route.ts` | 찜한 프로그램 조회 | `program_list_index` summary read 우선, `programs` fallback 유지 | 완료 |
+| `frontend/app/api/dashboard/calendar-selections/route.ts` | 캘린더 적용 프로그램 조회/저장 | 조회 시 `program_list_index` summary read 우선, `programs` fallback 유지 | 완료 |
 | `frontend/app/api/programs/compare-relevance/route.ts` | 비교 관련도 proxy | 응답 자체는 얇지만 새 summary/context 구조 영향 받음 | 3순위 |
 
 ## 6. 실제 전환 순서
@@ -136,8 +136,8 @@
 
 이유:
 
-- 이 둘은 추천 로직은 없지만, 아직 `programs` 원본 row를 그대로 읽어 monolith 타입을 프론트로 밀어 넣고 있다.
-- 카드형 summary나 row summary를 재사용하도록 바꾸면 이후 상세/비교와의 drift도 줄어든다.
+- 이 둘은 이미 read-model-first + fallback으로 전환됐다.
+- 다음 단계는 같은 summary/context 구조를 다른 read path에도 넓혀 상세/비교와의 drift를 줄이는 것이다.
 
 ### 6.5 5단계: shared helper 교체
 
@@ -175,7 +175,10 @@
 - 실제 첫 진입점은 `backend/routers/programs.py::_serialize_program_list_row()`다.
 - frontend 첫 진입점은 `frontend/lib/types/index.ts::Program` 해체 준비다.
 - BFF 첫 교체 대상은 `dashboard/recommended-programs`와 `dashboard/recommend-calendar`다.
-- `dashboard/bookmarks`와 `dashboard/calendar-selections`는 추천보다 늦지만, `programs` direct read 제거 때문에 바로 다음 순서다.
+- `dashboard/bookmarks`와 `dashboard/calendar-selections`는 이미 `program_list_index` 우선 read로 옮겨졌다.
+- backend recommendation/compare read도 이제 `user_recommendation_profile` 우선 구조로 넘어갔다.
+- `dashboard/recommend-calendar`의 마지막 direct Supabase fallback도 `program_list_index` 우선 helper로 정리됐다.
+- 이제 남은 직접 전환 우선순위는 추천 BFF cleanup과 비교/상세 read 쪽이다.
 - `compare-relevance`는 먼저 만들 대상이 아니라, 앞 단계가 끝난 뒤 맞춰 들어가야 하는 얇은 proxy다.
 
 ## 8. 바로 다음 구현 턴에서 건드릴 최소 묶음

@@ -18,9 +18,13 @@
 ## 2. 현재 저장소 기준으로 확인한 출발점
 
 - 사용자 추천 축의 draft migration은 이미 `20260425103000` ~ `20260425112000`까지 내려와 있다.
-- `program_list_index`는 이미 운영 read-model로 사용 중이다.
-- `program_source_records`는 아직 없다.
-- `programs`는 아직 raw/source 혼합 구조다.
+- 프로그램 canonical/provenance draft migration도 `20260425113000` ~ `20260425117000`까지 저장소에 실제로 존재한다.
+- `program_list_index`는 이미 운영 read-model로 사용 중이고, free-plan 검증용 sample refresh / provenance sample backfill helper도 추가돼 있다.
+- backend `programs.py` 내부 serializer helper, frontend surface 타입, dashboard recommendation/calendar/bookmark/selection BFF의 `ProgramCardItem` seed도 이미 일부 반영돼 있다.
+- `profile/resume/activity -> refresh_user_recommendation_profile()` 공통 연결은 이미 들어갔다.
+- `POST /admin/sync/programs`와 collector scheduler 모두 `program_source_records` best-effort dual write와 additive canonical `programs` column seed를 같은 규칙으로 쓰기 시작했다.
+- 따라서 저장소 코드 기준 패키지 3의 dual write seed 공백은 닫혔고, 다음 현재 패키지는 read switch 중심의 패키지 4다.
+- `bookmarks` / `calendar-selections` BFF는 이제 `program_list_index` summary read를 우선 사용하고, read model 미적용/누락 row만 `programs` fallback으로 읽는다.
 - `docs/specs/program-surface-contract-v2.md`, `docs/specs/user-recommendation-serializer-contract-v1.md`, `docs/specs/final-refactor-axis-map-v1.md`는 이미 상위 계약으로 고정돼 있다.
 
 ## 3. 전체 패키지 순서
@@ -28,11 +32,11 @@
 | 패키지 | 목적 | 상태 |
 | --- | --- | --- |
 | 패키지 0 | 계약 고정 | 완료 |
-| 패키지 1 | 사용자 추천 정본 additive migration | draft 완료 |
-| 패키지 2 | 프로그램 정본/provenance additive migration | 이번 문서 이후 설계 |
-| 패키지 3 | dual write / dual refresh | 설계 필요 |
-| 패키지 4 | serializer / API / BFF read switch | 설계 필요 |
-| 패키지 5 | cleanup / validation / 문서 정합성 | 설계 필요 |
+| 패키지 1 | 사용자 추천 정본 additive migration | SQL draft 완료, write 연결은 진행 중 |
+| 패키지 2 | 프로그램 정본/provenance additive migration | draft SQL 체인 + sample validation helper 완료 |
+| 패키지 3 | backfill + dual write + serializer/API/BFF transition seed | 저장소 seed 기준 완료 |
+| 패키지 4 | read switch | 진행 중 |
+| 패키지 5 | cleanup / validation / 문서 정합성 | 부분 문서화만 반영, 미완료 |
 
 ## 4. 단계별 로드맵
 
@@ -87,6 +91,13 @@
 
 - 현재 운영/초안 구조와 최종 구조를 안전하게 같이 굴린다.
 
+### 현재 저장소 기준 메모
+
+- `refresh_program_list_index_sample(...)`, `backfill_program_source_records_sample(...)`, 관련 CLI bundle은 이미 있어 bounded validation seed는 시작된 상태다.
+- backend serializer helper와 dashboard BFF `ProgramCardItem` seed도 이미 일부 반영돼 있어, 패키지 3과 패키지 4의 경계가 문서보다 앞서 있다.
+- `profile/resume/activity` refresh bridge, admin dual write, collector dual write가 모두 seed 되어 저장소 코드 기준 패키지 3은 완료로 본다.
+- 남은 과제는 “새 구조를 읽는 쪽으로 전환”이므로, 현재 구현 중심 패키지는 패키지 4다.
+
 ### 해야 할 일
 
 1. 기존 `programs.raw_data`와 `compare_meta.field_sources`를 `program_source_records`로 backfill  
@@ -95,22 +106,41 @@
 4. admin/collector sync가 한동안은 legacy + new 구조를 같이 쓰는 dual write로 전환  
 5. profile/resume/activity write 이후 `refresh_user_recommendation_profile()`를 공통 연결
 
+현재 저장소 기준 추가 메모:
+
+- 1~3은 additive SQL / helper 초안이 모두 저장소에 있다.
+- 4는 admin/collector 양쪽 모두 best-effort dual write seed가 들어갔다.
+- 5는 완료됐다.
+- 운영 DB 실제 migration apply, backfill 실행, row count validation은 여전히 별도 운영 절차다.
+
 ### 핵심 판단
 
 - 프로그램 축과 사용자 추천 축 모두 “한 번에 read switch”가 아니라 “먼저 새 구조를 채우고, 그 다음 read를 옮긴다”가 맞다.
 
 ## 4.4 패키지 4: read switch
 
+### 현재 저장소 기준 메모
+
+- 대시보드 recommendation/calendar/bookmark/selection BFF는 이미 `items: ProgramCardItem[]` 응답으로 일부 전환됐다.
+- backend recommendation/compare read는 이제 `user_recommendation_profile`을 우선 읽고, derived row가 없을 때만 legacy `profiles`로 fallback한다. raw `activities`는 아직 compare breakdown과 RAG 보조 입력 용도로 함께 읽는다.
+- bookmarks/calendar BFF 내부 read도 이미 `program_list_index` summary read 우선 구조로 넘어갔다.
+- 따라서 패키지 4의 남은 핵심은 추천 BFF cleanup과 detail/compare read를 `program_list_index` / `program_source_records` 축에 더 맞추는 일이다.
+
 ### backend
 
 1. 추천/비교 read를 raw profile에서 `user_recommendation_profile`로 전환  
+   현재 상태: 완료, 단 raw `activities` 보조 read는 아직 유지
 2. 목록/card read를 `program_list_index` 명시 컬럼 serializer로 전환  
+   현재 상태: 대부분 seed 완료, remaining cleanup 위주
 3. 상세 read를 `programs + program_source_records` 조합으로 전환
+   현재 상태: 미완료
 
 ### BFF
 
 1. 대시보드 추천 BFF  
+   현재 상태: 응답 seed 완료, transition cleanup 남음
 2. 북마크/캘린더 BFF  
+   현재 상태: 완료, recommend-calendar direct Supabase fallback도 `program_list_index` 우선 구조로 정리됨
 3. landing/live board/opportunity BFF 또는 helper  
 4. 메인 목록 BFF  
 5. 상세/비교 BFF

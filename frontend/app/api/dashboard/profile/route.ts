@@ -4,6 +4,10 @@ import {
   MAX_AVATAR_IMAGE_SIZE_BYTES,
   validateImageFile,
 } from "@/lib/server/upload-validation";
+import {
+  buildLegacyTargetJobFields,
+  syncRecommendationProfileAfterUserMutation,
+} from "@/lib/server/recommendation-profile";
 import { logRouteError } from "@/lib/server/route-logging";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Profile } from "@/lib/types";
@@ -133,6 +137,7 @@ function isMissingProfileOptionalColumnError(error: { code?: string; message?: s
   return (
     error.code === "42703" ||
     message.includes("bio") ||
+    message.includes("target_job") ||
     message.includes("portfolio_url") ||
     message.includes("address") ||
     message.includes("region")
@@ -142,6 +147,8 @@ function isMissingProfileOptionalColumnError(error: { code?: string; message?: s
 function withoutOptionalProfileColumns(payload: Record<string, unknown>): Record<string, unknown> {
   const fallbackPayload = { ...payload };
   delete fallbackPayload.bio;
+  delete fallbackPayload.target_job;
+  delete fallbackPayload.target_job_normalized;
   delete fallbackPayload.portfolio_url;
   delete fallbackPayload.address;
   delete fallbackPayload.region;
@@ -233,7 +240,10 @@ export async function PATCH(request: Request) {
     if (patch.languages !== undefined) payload.languages = patch.languages;
     if (patch.skills !== undefined) payload.skills = patch.skills;
     if (patch.self_intro !== undefined) payload.self_intro = patch.self_intro;
-    if (patch.bio !== undefined) payload.bio = patch.bio;
+    if (patch.bio !== undefined) {
+      payload.bio = patch.bio;
+      Object.assign(payload, buildLegacyTargetJobFields(patch.bio));
+    }
     if (patch.email !== undefined) payload.email = patch.email;
     if (patch.phone !== undefined) payload.phone = patch.phone;
     if (patch.portfolio_url !== undefined) payload.portfolio_url = patch.portfolio_url;
@@ -253,6 +263,8 @@ export async function PATCH(request: Request) {
     }
 
     if (updateError) throw new Error(updateError.message);
+
+    await syncRecommendationProfileAfterUserMutation(supabase, user.id);
 
     const { data: profileRow, error: profileError } = await supabase
       .from("profiles")
@@ -297,6 +309,7 @@ export async function PUT(request: Request) {
     }
 
     const bio = String(formData.get("bio") ?? "").trim() || null;
+    const targetJobFields = buildLegacyTargetJobFields(bio);
     const email = String(formData.get("email") ?? "").trim() || null;
     const phone = String(formData.get("phone") ?? "").trim() || null;
     const portfolioUrl = String(formData.get("portfolio_url") ?? "").trim() || null;
@@ -336,6 +349,7 @@ export async function PUT(request: Request) {
         id: user.id,
         name,
         bio,
+        ...targetJobFields,
         email,
         phone,
         portfolio_url: portfolioUrl,
@@ -351,6 +365,7 @@ export async function PUT(request: Request) {
           id: user.id,
           name,
           bio,
+          ...targetJobFields,
           email,
           phone,
           portfolio_url: portfolioUrl,
@@ -363,6 +378,8 @@ export async function PUT(request: Request) {
     }
 
     if (upsertError) throw new Error(upsertError.message);
+
+    await syncRecommendationProfileAfterUserMutation(supabase, user.id);
 
     const { data: profileRow, error: profileError } = await supabase
       .from("profiles")
