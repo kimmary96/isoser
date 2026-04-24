@@ -66,12 +66,28 @@ def _rating_to_unit(value: Any) -> float | None:
     return None
 
 
+def _legacy_program_meta(row: Mapping[str, Any]) -> dict[str, Any]:
+    compare_meta = row.get("compare_meta") if isinstance(row.get("compare_meta"), Mapping) else {}
+    service_meta = row.get("service_meta") if isinstance(row.get("service_meta"), Mapping) else {}
+
+    merged: dict[str, Any] = {
+        str(key): value
+        for key, value in compare_meta.items()
+        if key != "field_sources" and value not in (None, "", [], {})
+    }
+    for key, value in service_meta.items():
+        if value in (None, "", [], {}):
+            continue
+        merged[str(key)] = value
+    return merged
+
+
 def _deadline_confidence(row: Mapping[str, Any]) -> str:
     explicit = str(row.get("deadline_confidence") or "").strip().lower()
     if explicit in {"high", "medium", "low"}:
         return explicit
 
-    meta = row.get("compare_meta") if isinstance(row.get("compare_meta"), Mapping) else {}
+    meta = _legacy_program_meta(row)
     if row.get("close_date") or any(meta.get(key) for key in ("application_deadline", "recruitment_deadline", "application_end_date", "recruitment_end_date")):
         return "high"
     source_text = " ".join(str(meta.get(key) or "") for key in ("deadline_source", "application_deadline_source", "recruitment_deadline_source"))
@@ -129,7 +145,7 @@ def _data_completeness(row: Mapping[str, Any]) -> float:
 def compute_recommended_score(row: Mapping[str, Any], *, today: date | None = None) -> ProgramScore:
     current_date = today or date.today()
     confidence = _deadline_confidence(row)
-    meta = row.get("compare_meta") if isinstance(row.get("compare_meta"), Mapping) else {}
+    meta = _legacy_program_meta(row)
     satisfaction = _rating_to_unit(
         row.get("satisfaction_avg")
         or row.get("rating_normalized")

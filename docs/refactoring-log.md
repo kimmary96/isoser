@@ -1,5 +1,9 @@
 # 리팩토링 로그
 
+- 2026-04-24: `backend/services/program_list_scoring.py`, `backend/rag/programs_rag.py`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `backend/tests/test_programs_rag.py`, `docs/specs/compare-meta-runtime-touchpoints-v1.md`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-compare-meta-score-search-cleanup-result.md`
+  - 검색 helper, 추천 마감일 해석, 추천 점수 계산이 direct `compare_meta` 대신 공용 legacy bridge helper를 먼저 거치도록 정리해 `service_meta` 우선 + sparse fallback 원칙을 backend 전반에 더 넓게 맞춤
+  - 관련 단위 테스트를 추가해 `service_meta`가 `compare_meta`보다 우선하는 검색/점수/추천 보조 동작과 Work24 training-start marker 보존 동작을 고정함
+
 - 2026-04-24: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/lib/program-display.ts`, `frontend/lib/program-display.test.ts`, `docs/specs/compare-meta-runtime-touchpoints-v1.md`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-program-surface-legacy-meta-cleanup-result.md`
   - 목록/정렬/지역 매칭과 프런트 표시 helper 쪽에 흩어져 있던 direct `compare_meta` 읽기를 공용 legacy bridge helper 뒤로 모아, 정본 컬럼과 `service_meta`를 먼저 쓰고 sparse row에서만 fallback 하도록 정리함
   - 검색 텍스트 조립이나 deadline source 판정처럼 아직 의미가 큰 경로는 의도적으로 그대로 두고, 관련 backend/frontend 테스트를 추가해 현재 우선순위와 legacy fallback 보존 동작을 고정함

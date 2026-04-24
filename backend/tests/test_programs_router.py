@@ -159,6 +159,30 @@ def test_recommended_score_accepts_read_model_cost_and_time_fields() -> None:
     assert "상세정보 충실" in score.reasons
 
 
+def test_recommended_score_prefers_service_meta_over_compare_meta_fallbacks() -> None:
+    score = compute_recommended_score(
+        {
+            "title": "AI 부트캠프",
+            "service_meta": {
+                "satisfaction_score": "100",
+                "review_count": "64",
+                "deadline_source": "traStartDate",
+            },
+            "compare_meta": {
+                "satisfaction_score": "20",
+                "review_count": "1",
+            },
+            "deadline": (date.today() + timedelta(days=1)).isoformat(),
+            "end_date": (date.today() + timedelta(days=1)).isoformat(),
+        },
+        today=date.today(),
+    )
+
+    assert score.bayesian_satisfaction > 0.9
+    assert score.review_confidence > 0.7
+    assert score.deadline_urgency == 0
+
+
 def test_program_cursor_round_trip_is_stable_for_recommended_sort() -> None:
     row = {"id": "00000000-0000-0000-0000-000000000001", "recommended_score": 0.92}
     cursor = programs._encode_program_cursor(row, sort="default")
@@ -903,6 +927,23 @@ def test_category_detail_filter_matches_inferred_ai_programs() -> None:
     ]
 
     assert [row["id"] for row in programs._filter_program_rows_by_category_detail(rows, "data-ai")] == ["program-ai"]
+
+
+def test_program_query_search_uses_service_meta_when_compare_meta_is_sparse() -> None:
+    rows = [
+        {
+            "id": "service-meta-search",
+            "title": "기본 과정",
+            "service_meta": {
+                "training_type": "온라인 특화 과정",
+            },
+            "compare_meta": {},
+        }
+    ]
+
+    filtered = programs._filter_program_rows_by_query(rows, "특화")
+
+    assert [row["id"] for row in filtered] == ["service-meta-search"]
 
 
 def test_build_program_query_params_expands_latest_recruiting_scan_limit() -> None:

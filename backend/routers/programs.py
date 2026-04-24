@@ -1407,6 +1407,7 @@ def _program_category_search_values(row: dict[str, Any]) -> list[str]:
 
 
 def _program_search_groups(row: dict[str, Any]) -> list[tuple[int, list[str]]]:
+    legacy_meta = _legacy_program_meta(row)
     return [
         (0, _flatten_search_values(row.get("title"))),
         (1, _flatten_search_values(row.get("provider"))),
@@ -1414,7 +1415,7 @@ def _program_search_groups(row: dict[str, Any]) -> list[tuple[int, list[str]]]:
         (3, _flatten_search_values(row.get("description")) + _flatten_search_values(row.get("summary"))),
         (4, _flatten_search_values(row.get("location")) + _flatten_search_values(row.get("region_detail")) + _flatten_search_values(row.get("region"))),
         (5, _flatten_search_values(row.get("tags")) + _flatten_search_values(row.get("skills"))),
-        (6, _searchable_compare_meta_values(row.get("compare_meta"))),
+        (6, _searchable_compare_meta_values(legacy_meta)),
     ]
 
 
@@ -1474,6 +1475,7 @@ def _filter_program_rows_by_category_detail(
 
 
 def _program_text_blob(row: dict[str, Any]) -> str:
+    legacy_meta = _legacy_program_meta(row)
     values = (
         _flatten_search_values(row.get("title"))
         + _flatten_search_values(row.get("provider"))
@@ -1483,7 +1485,7 @@ def _program_text_blob(row: dict[str, Any]) -> str:
         + _flatten_search_values(row.get("teaching_method"))
         + _flatten_search_values(row.get("tags"))
         + _flatten_search_values(row.get("skills"))
-        + _searchable_compare_meta_values(row.get("compare_meta"))
+        + _searchable_compare_meta_values(legacy_meta)
     )
     return " ".join(values).casefold()
 
@@ -1507,6 +1509,7 @@ def _dedupe_preserve_order(values: list[str], *, limit: int | None = None) -> li
 
 def _program_source_text_values(row: dict[str, Any]) -> list[str]:
     raw_data = row.get("raw_data") if isinstance(row.get("raw_data"), dict) else {}
+    legacy_meta = _legacy_program_meta(row)
     return (
         _flatten_search_values(row.get("title"))
         + _flatten_search_values(row.get("summary"))
@@ -1517,7 +1520,7 @@ def _program_source_text_values(row: dict[str, Any]) -> list[str]:
         + _flatten_search_values(row.get("support_type"))
         + _flatten_search_values(row.get("teaching_method"))
         + _flatten_search_values(raw_data.get("trainTarget"))
-        + _searchable_compare_meta_values(row.get("compare_meta"))
+        + _searchable_compare_meta_values(legacy_meta)
     )
 
 

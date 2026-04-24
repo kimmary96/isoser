@@ -76,6 +76,7 @@
     - Work24의 `traStartDate` 오판 회피 같은 보수적 deadline 판정에 `compare_meta.deadline_source` 계열을 사용한다.
   - 목록 검색/필터 fallback
     - read-model이 아닌 fallback 경로에서는 `compare_meta` 안의 training type, region, selection 메타를 검색/필터 추론에 아직 사용한다.
+    - 다만 검색 텍스트 조립 helper도 이제 direct `compare_meta` 대신 공용 legacy meta helper를 먼저 거친다.
   - 지역/참여 방식 추론
     - `teaching_method`, `region`, `address`가 정본 컬럼에 없거나 비어 있을 때 `compare_meta`를 보조 근거로 쓴다.
     - 최근 cleanup으로 목록/정렬/지역 매칭은 `service_meta` 우선 + legacy bridge helper를 통하게 정리됐고, direct `compare_meta` 분산 읽기는 줄어든 상태다.
@@ -92,9 +93,10 @@
 아래 파일도 아직 `compare_meta`를 보조 입력으로 쓴다.
 
 - `backend/services/program_list_scoring.py`
-  - 만족도 점수, 리뷰 수, 모집 마감 신뢰도를 `compare_meta` fallback으로 읽는다.
+  - 만족도 점수, 리뷰 수, 모집 마감 신뢰도는 이제 공용 legacy meta helper를 통해 `service_meta` 우선 + `compare_meta` fallback으로 읽는다.
 - `backend/rag/programs_rag.py`
-  - 추천 relevance 계산에서 모집 마감 해석과 일부 메타 텍스트를 `compare_meta`로 보완한다.
+  - 추천 relevance 계산에서 모집 마감 해석과 일부 메타 텍스트를 보완한다.
+  - 최근 cleanup으로 `_resolve_recruitment_deadline(...)`도 공용 legacy meta helper를 먼저 거치게 바뀌었다.
 
 정리:
 
@@ -153,8 +155,8 @@
 ## 6. 다음 cleanup 순서
 
 1. collector/admin/dual-write가 `compare_meta`에서 끌어오던 값을 정본 컬럼, `service_meta`, `program_source_records.field_evidence/source_specific`로 더 옮긴다.
-2. `backend/routers/programs.py`의 검색/필터 텍스트 조립과 deadline source 판정처럼 아직 direct `compare_meta`가 필요한 경로를 작은 묶음으로 다시 나눈다.
-3. `frontend/lib/program-display.ts`의 표시 helper에서 정본 필드가 있는 항목부터 `compare_meta` fallback을 줄이고, 남은 helper가 실제로 어떤 화면에서 필요한지 다시 좁힌다.
+2. `backend/routers/programs.py`의 Work24 deadline source 판정, select string, collector/dual-write 생산 경로처럼 아직 direct `compare_meta`가 필요한 구조적 묶음을 분리해서 다시 나눈다.
+3. `frontend/lib/program-display.ts`의 표시 helper에서 정본 필드가 있는 항목부터 `compare_meta` fallback을 더 줄일 수 있는지, 실제 화면 사용처 기준으로 다시 좁힌다.
 4. `ProgramListRow.compare_meta`를 제거 가능한지 다시 판정한다.
 5. 마지막에만 legacy `Program.compare_meta` 제거를 검토한다.
 
