@@ -1,6 +1,7 @@
 # Current State
 
 Update 2026-04-24:
+- `docs/specs/compare-meta-runtime-touchpoints-v1.md` now separates the current runtime truth about `compare_meta` from older recommendation audit notes. The new doc fixes the current judgment that `compare_meta` is no longer canonical but still active as an ingest/detail/display fallback bridge, while `docs/recommendation/program-recommendation-checklist.md` is now marked as a 2026-04-16 historical audit snapshot rather than a current source of truth.
 - 운영 SQL Editor 후속 확인에서 빈 legacy `public.bookmarks` 테이블은 삭제됐고, 현재 북마크 정본은 계속 `public.program_bookmarks`다. 저장소 런타임 코드도 동일한 canonical table만 사용하며, `supabase/SQL.md` 스냅샷도 그 live 상태에 맞춰 정리됐다.
 - `frontend/lib/program-card-items.ts`, `frontend/app/dashboard/_hooks/recommend-calendar-cache.ts`, and `frontend/lib/types/index.ts` no longer use or export the old `ProgramCardRenderable` transition alias. Central card adapters now take `ProgramCardSummary` directly, and the browser cache compatibility path now normalizes legacy `programs[]` JSON into summary rows before upgrading it to `ProgramCardItem[]`.
 - `frontend/app/(landing)/programs/program-card.tsx` and `recommended-programs-section.tsx` have been removed as unused dead code. After the dashboard recommendation surfaces moved to `ProgramCardItem[]`-based BFF reads, those old landing-only preview components no longer had any imports, so removing them does not change the current `/programs` runtime path.

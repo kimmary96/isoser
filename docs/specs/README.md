@@ -5,6 +5,7 @@
 - [program-surface-contract-v2.md](./program-surface-contract-v2.md)
 - [final-refactor-axis-map-v1.md](./final-refactor-axis-map-v1.md)
 - [program-canonical-schema-design-v1.md](./program-canonical-schema-design-v1.md)
+- [compare-meta-runtime-touchpoints-v1.md](./compare-meta-runtime-touchpoints-v1.md)
 - [program-canonical-validation-summary-v1.md](./program-canonical-validation-summary-v1.md)
 - [program-list-sample-refresh-helper-v1.md](./program-list-sample-refresh-helper-v1.md)
 - [program-source-records-sample-backfill-helper-v1.md](./program-source-records-sample-backfill-helper-v1.md)

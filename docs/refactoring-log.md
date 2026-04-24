@@ -1,5 +1,9 @@
 # 리팩토링 로그
 
+- 2026-04-24: `docs/specs/compare-meta-runtime-touchpoints-v1.md`, `docs/specs/README.md`, `docs/recommendation/program-recommendation-checklist.md`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-compare-meta-runtime-doc-split-result.md`
+  - 실제 저장소 코드 기준 `compare_meta`가 아직 남아 있는 생산/적재/상세 fallback/점수 보정/프런트 표시 helper 경로를 새 스펙 문서로 분리해, “지금 바로 삭제 가능한지”를 다시 판단할 수 있게 정리함
+  - `docs/recommendation/program-recommendation-checklist.md`는 2026-04-16 감사 기록이라는 점을 상단에 명시하고, 현재 정본 판단 문서를 따로 연결해 역사 문서와 현재 runtime truth가 섞이지 않게 정리함
+
 - 2026-04-24: `supabase/SQL.md`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-live-bookmarks-drop-and-sql-sync-result.md`
   - 운영 SQL Editor 후속 확인에서 legacy `public.bookmarks`가 `0` row, inbound 참조 없음 상태임을 다시 확인한 뒤 실제로 삭제됐고, bookmark 정본 테이블은 계속 `public.program_bookmarks`로 유지됨을 문서에 고정함
   - `supabase/SQL.md`에서 더 이상 live에 존재하지 않는 `bookmarks` 스냅샷을 제거하고, `docs/current-state.md`에도 현재 운영 기준 북마크 정본이 `program_bookmarks`뿐이라는 점을 반영함
