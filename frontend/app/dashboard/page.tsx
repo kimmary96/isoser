@@ -1,8 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import {
+  getDashboardProfile,
+  getDocuments,
+  listActivities,
+  listCoverLetters,
+} from "@/lib/api/app";
 import { formatProgramMonthDay, parseProgramDate, toProgramDateKey } from "@/lib/program-display";
 import type { ProgramCardItem, ProgramCardSummary } from "@/lib/types";
 
@@ -36,6 +42,7 @@ type CalendarEvent = {
   color: ColorKey;
   eventType: EventType;
   daysLeft: number | null;
+  isBookmarked: boolean;
 };
 
 type BgKey = "blue" | "teal" | "mint" | "lavender";
@@ -128,7 +135,7 @@ function pickEventType(color: ColorKey): EventType {
   return "start";
 }
 
-function toCalendarEvent(item: ProgramCardItem, index: number): CalendarEvent | null {
+function toCalendarEvent(item: ProgramCardItem, index: number, isBookmarked = false): CalendarEvent | null {
   const { program } = item;
   const dateKey = toProgramDateKey(program.deadline);
   if (!dateKey) return null;
@@ -142,6 +149,7 @@ function toCalendarEvent(item: ProgramCardItem, index: number): CalendarEvent | 
     color,
     eventType: pickEventType(color),
     daysLeft: program.days_left ?? null,
+    isBookmarked,
   };
 }
 
@@ -220,13 +228,76 @@ export default function DashboardPage() {
   });
   const [starred, setStarred] = useState<Record<string, boolean>>({});
 
+  const [achievement, setAchievement] = useState<{
+    profile: number;
+    activities: number;
+    resumes: number;
+    coverLetters: number;
+  }>({ profile: 0, activities: 0, resumes: 0, coverLetters: 0 });
+
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      const [profileRes, activitiesRes, documentsRes, coverLettersRes] = await Promise.allSettled([
+        getDashboardProfile(),
+        listActivities(),
+        getDocuments(),
+        listCoverLetters(),
+      ]);
+      if (!mounted) return;
+      const profileCount =
+        profileRes.status === "fulfilled" && profileRes.value.profile ? 1 : 0;
+      const activitiesCount =
+        activitiesRes.status === "fulfilled" ? activitiesRes.value.activities.length : 0;
+      const resumesCount =
+        documentsRes.status === "fulfilled" ? documentsRes.value.documents.length : 0;
+      const coverLettersCount =
+        coverLettersRes.status === "fulfilled"
+          ? coverLettersRes.value.coverLetters.length
+          : 0;
+      setAchievement({
+        profile: profileCount,
+        activities: activitiesCount,
+        resumes: resumesCount,
+        coverLetters: coverLettersCount,
+      });
+    };
+    void load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const effectiveSelectedDate = selectedDate ?? todayStr;
 
   const events = useMemo<CalendarEvent[]>(() => {
-    return programs
-      .map((item, idx) => toCalendarEvent(item, idx))
-      .filter((ev): ev is CalendarEvent => Boolean(ev));
-  }, [programs]);
+    const bookmarkedIds = new Set(
+      bookmarkedPrograms
+        .map((item) => String(item.program.id ?? ""))
+        .filter(Boolean)
+    );
+    const byId = new Map<string, CalendarEvent>();
+
+    programs.forEach((item, idx) => {
+      const ev = toCalendarEvent(item, idx, bookmarkedIds.has(String(item.program.id ?? "")));
+      if (!ev) return;
+      byId.set(ev.id, ev);
+    });
+
+    bookmarkedPrograms.forEach((item, idx) => {
+      const pid = String(item.program.id ?? "");
+      if (pid && byId.has(pid)) {
+        const existing = byId.get(pid)!;
+        byId.set(pid, { ...existing, isBookmarked: true });
+        return;
+      }
+      const ev = toCalendarEvent(item, idx, true);
+      if (!ev) return;
+      byId.set(ev.id, ev);
+    });
+
+    return Array.from(byId.values());
+  }, [programs, bookmarkedPrograms]);
 
   const eventsByDate = useMemo(() => groupEventsByDate(events), [events]);
   const eventDates = useMemo(() => new Set(Object.keys(eventsByDate)), [eventsByDate]);
@@ -280,10 +351,8 @@ export default function DashboardPage() {
   const recCardItems = programs.slice(0, 6);
   const bookmarkedCardItems = bookmarkedPrograms.slice(0, 6);
 
-  const bookmarkSummary = bookmarkedPrograms.slice(0, 3);
-
   return (
-    <div className="flex min-h-full flex-col bg-[#f4f5f7] font-sans">
+    <div className="flex h-[calc(100vh-57px)] flex-col overflow-hidden bg-[#f4f5f7] font-sans">
       {/* Topbar */}
       <div className="flex h-[52px] flex-shrink-0 items-center justify-between border-b border-[#e8eaed] bg-white px-7">
         <div>
@@ -301,9 +370,9 @@ export default function DashboardPage() {
       </div>
 
       {/* Body: left panel + right area */}
-      <div className="flex flex-1 min-w-0">
+      <div className="flex flex-1 min-h-0 min-w-0">
         {/* LEFT PANEL */}
-        <aside className="flex w-[240px] min-w-[240px] flex-shrink-0 flex-col border-r border-[#e8eaed] bg-white">
+        <aside className="flex w-[240px] min-w-[240px] flex-shrink-0 flex-col overflow-y-auto border-r border-[#e8eaed] bg-white">
           {/* Mini calendar */}
           <div className="border-b border-[#f0f0f0] p-4">
             <MiniCalendar
@@ -398,54 +467,80 @@ export default function DashboardPage() {
             </div>
           ) : null}
 
-          {/* Today's achievements (bookmarks) */}
+          {/* Today's achievements (dashboard counts) */}
           <div className="border-b border-[#f0f0f0] p-4">
             <div className="mb-2.5 text-[10.5px] font-semibold uppercase tracking-[0.8px] text-[#aaa]">
               오늘의 성과
             </div>
-            {bookmarkSummary.length === 0 ? (
-              <div className="py-2 text-[12px] text-[#bbb]">아직 찜한 훈련이 없습니다</div>
-            ) : (
-              bookmarkSummary.map((item, idx) => {
-                const { program } = item;
-                const palette = BOOKMARK_BADGE_PALETTE[idx % BOOKMARK_BADGE_PALETTE.length];
-                const letter = (program.title ?? "?").trim().charAt(0) || "?";
-                return (
-                  <div
-                    key={`bm-${String(program.id ?? idx)}`}
-                    className="flex cursor-pointer items-center gap-2.5 border-b border-[#f5f5f5] py-[7px] last:border-b-0"
-                  >
-                    <div
-                      className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-[10px] font-bold"
-                      style={{ background: palette.bg, color: palette.color }}
-                    >
-                      {letter}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="truncate text-[11.5px] font-medium leading-[1.3] text-[#333]">
-                        {program.title ?? "제목 없음"}
-                      </div>
-                      <div className="mt-[1px] text-[10px] text-[#e0621a]">
-                        {typeof program.days_left === "number"
-                          ? program.days_left === 0
-                            ? "D-Day"
-                            : program.days_left > 0
-                              ? `D-${program.days_left}`
-                              : "마감"
-                          : "마감일 미정"}
-                      </div>
-                    </div>
+            {(
+              [
+                {
+                  key: "profile",
+                  label: "프로필",
+                  href: "/dashboard/profile",
+                  count: achievement.profile,
+                  unit: "건",
+                  palette: BOOKMARK_BADGE_PALETTE[0],
+                  letter: "프",
+                },
+                {
+                  key: "activities",
+                  label: "성과",
+                  href: "/dashboard/activities",
+                  count: achievement.activities,
+                  unit: "건",
+                  palette: BOOKMARK_BADGE_PALETTE[1],
+                  letter: "성",
+                },
+                {
+                  key: "resumes",
+                  label: "이력서",
+                  href: "/dashboard/resume",
+                  count: achievement.resumes,
+                  unit: "건",
+                  palette: BOOKMARK_BADGE_PALETTE[2],
+                  letter: "이",
+                },
+                {
+                  key: "coverLetters",
+                  label: "자기소개서",
+                  href: "/dashboard/cover-letter",
+                  count: achievement.coverLetters,
+                  unit: "건",
+                  palette: BOOKMARK_BADGE_PALETTE[3],
+                  letter: "자",
+                },
+              ] as const
+            ).map((row) => (
+              <Link
+                key={row.key}
+                href={row.href}
+                className="flex items-center gap-2.5 border-b border-[#f5f5f5] py-[7px] last:border-b-0 hover:bg-[#fafbff]"
+              >
+                <div
+                  className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-[10px] font-bold"
+                  style={{ background: row.palette.bg, color: row.palette.color }}
+                >
+                  {row.letter}
+                </div>
+                <div className="flex min-w-0 flex-1 items-center justify-between">
+                  <div className="truncate text-[11.5px] font-medium leading-[1.3] text-[#333]">
+                    {row.label}
                   </div>
-                );
-              })
-            )}
+                  <div className="ml-2 flex-shrink-0 text-[11px] font-semibold text-[#4361ee]">
+                    {row.count}
+                    {row.unit}
+                  </div>
+                </div>
+              </Link>
+            ))}
           </div>
         </aside>
 
         {/* RIGHT AREA */}
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           {/* Calendar area */}
-          <div className="flex min-w-0 flex-col px-4 pt-2.5">
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col px-4 pt-2.5">
             {/* Toolbar */}
             <div className="relative flex flex-shrink-0 flex-nowrap items-center gap-1.5 py-2">
               <div className="flex flex-shrink-0 items-center gap-2">
@@ -533,7 +628,7 @@ export default function DashboardPage() {
             </div>
 
             {/* DOW header + grid */}
-            <div className="flex min-w-0 flex-col">
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col pb-2">
               <div className="grid flex-shrink-0 grid-cols-7 border border-[#e8eaed] border-b-0 bg-white">
                 {DOW_KR.map((d, i) => (
                   <div
@@ -547,8 +642,8 @@ export default function DashboardPage() {
                 ))}
               </div>
               <div
-                className="grid min-h-0 grid-cols-7 gap-px overflow-hidden border border-[#e8eaed] bg-[#e8eaed]"
-                style={{ gridTemplateRows: "repeat(6, minmax(60px, 1fr))", height: 343 }}
+                className="grid min-h-0 flex-1 grid-cols-7 gap-px overflow-hidden border border-[#e8eaed] bg-[#e8eaed]"
+                style={{ gridTemplateRows: "repeat(6, minmax(0, 1fr))" }}
               >
                 {monthCells.map((cell, idx) => {
                   const colIdx = idx % 7;
@@ -610,10 +705,13 @@ export default function DashboardPage() {
                                 toggleStar(e.id);
                               }}
                               className={`flex-shrink-0 cursor-pointer text-[11px] transition-colors ${
-                                starred[e.id] ? "text-[#f4b942]" : "text-[#ccc] hover:text-[#f4b942]"
+                                e.isBookmarked || starred[e.id]
+                                  ? "text-[#f4b942]"
+                                  : "text-[#ccc] hover:text-[#f4b942]"
                               }`}
+                              title={e.isBookmarked ? "찜한 프로그램" : undefined}
                             >
-                              {starred[e.id] ? "★" : "☆"}
+                              {e.isBookmarked || starred[e.id] ? "★" : "☆"}
                             </span>
                           </div>
                         ))}
@@ -631,7 +729,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Bottom strip */}
-          <div className="flex-shrink-0 overflow-y-auto border-t border-[#e8eaed] bg-white px-6 pb-4 pt-3.5">
+          <div className="max-h-[42vh] flex-shrink-0 overflow-y-auto border-t border-[#e8eaed] bg-white px-6 pb-4 pt-3.5">
             {/* AI 추천 프로그램 */}
             <div className="mb-3 flex items-center justify-between">
               <div className="flex flex-col gap-0.5">
