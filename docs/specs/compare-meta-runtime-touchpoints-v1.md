@@ -58,6 +58,7 @@
 - `backend/services/program_dual_write.py`
   - 현재 `compare_meta`를 가장 많이 실제로 소비하는 bridge다.
   - `application_end_date`, `target_detail`, `eligibility_labels`, `selection_process_label`, `contact_phone`, `contact_email`, `capacity_total`, `rating_value`, `service_meta`, `field_evidence` 등을 여기서 뽑아낸다.
+  - 최근 cleanup으로 `program_source_records.source_specific`은 더 이상 `compare_meta` 전체 mirror가 아니라 curated detail key만 남기도록 줄었다.
 
 정리:
 
@@ -115,13 +116,12 @@
   - 선발 키워드 추출
   - 현재는 이 helper들도 direct `program.compare_meta` 접근 대신 공용 `getLegacyProgramMeta(...)`를 통해 마지막 fallback만 읽도록 정리돼 있다.
 - `frontend/lib/types/index.ts`
-  - `ProgramListRow.compare_meta`
-  - legacy `Program.compare_meta`
+  - 런타임 fallback에 필요한 `CompareMeta` shape는 남아 있지만, `ProgramListRow.compare_meta`와 legacy `Program.compare_meta`는 제거됐다.
 
 정리:
 
 - 프런트 주 경로는 이미 summary-first로 많이 줄었지만, 표시 문구 보정 helper에는 `compare_meta` fallback이 아직 남아 있다.
-- 따라서 타입에서 바로 제거하면 helper와 일부 landing/legacy consumer가 같이 깨질 수 있다.
+- 타입에서는 제거를 끝냈고, 남은 fallback은 helper 내부 carrier type으로만 읽는다.
 
 ## 4. 이미 의존이 줄어든 경로
 
@@ -157,8 +157,8 @@
 1. collector/admin/dual-write가 `compare_meta`에서 끌어오던 값을 정본 컬럼, `service_meta`, `program_source_records.field_evidence/source_specific`로 더 옮긴다.
 2. `backend/routers/programs.py`의 Work24 deadline source 판정, select string, collector/dual-write 생산 경로처럼 아직 direct `compare_meta`가 필요한 구조적 묶음을 분리해서 다시 나눈다.
 3. `frontend/lib/program-display.ts`의 표시 helper에서 정본 필드가 있는 항목부터 `compare_meta` fallback을 더 줄일 수 있는지, 실제 화면 사용처 기준으로 다시 좁힌다.
-4. `ProgramListRow.compare_meta`를 제거 가능한지 다시 판정한다.
-5. 마지막에만 legacy `Program.compare_meta` 제거를 검토한다.
+4. collector output 자체에서 `compare_meta`를 더 잘게 쪼개 `service_meta`/`field_evidence`/canonical field로 먼저 내릴 수 있는지 재판정한다.
+5. 마지막에만 backend 응답/DB 축에서 legacy `compare_meta` 제거를 검토한다.
 
 ## 7. 이번 문서에서 고정하는 판단
 

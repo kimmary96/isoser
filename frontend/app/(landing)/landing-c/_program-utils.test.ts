@@ -27,7 +27,6 @@ function createProgram(overrides: Partial<Program> = {}): Program {
     review_count: overrides.review_count ?? null,
     detail_view_count: overrides.detail_view_count ?? null,
     detail_view_count_7d: overrides.detail_view_count_7d ?? null,
-    compare_meta: overrides.compare_meta ?? null,
     ...overrides,
   };
 }

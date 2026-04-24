@@ -10,6 +10,7 @@ import type {
 type ProgramIdentity = Pick<ProgramBaseSummary, "id">;
 type ProgramVisibility = Pick<ProgramBaseSummary, "title" | "source">;
 type ProgramLinks = Pick<ProgramCardSummary, "application_url" | "link" | "source_url">;
+type ProgramLegacyMetaCarrier = { compare_meta?: CompareMeta | null };
 
 type SourceLabelOptions = {
   work24TrainingLabel?: string;
@@ -55,7 +56,7 @@ function cleanText(value: unknown): string | null {
 }
 
 function getLegacyProgramMeta(
-  program: { compare_meta?: CompareMeta | null } | null | undefined
+  program: ProgramLegacyMetaCarrier | null | undefined
 ): CompareMeta | null {
   return program?.compare_meta ?? null;
 }
@@ -194,9 +195,8 @@ export function getProgramPrimaryLink(program: ProgramLinks | null | undefined):
 type ProgramDeadlineTrustSource = Pick<
   ProgramBaseSummary,
   "deadline" | "end_date" | "source" | "deadline_confidence"
-> & {
-  compare_meta?: CompareMeta | null;
-};
+> &
+  ProgramLegacyMetaCarrier;
 
 function hasTrainingStartDeadlineSource(compareMeta: CompareMeta | null | undefined): boolean {
   const deadlineSource = String(
@@ -264,9 +264,8 @@ type ProgramInsightSource = Pick<
   | "rating"
   | "rating_display"
   | "review_count"
-> & {
-  compare_meta?: CompareMeta | null;
-};
+> &
+  ProgramLegacyMetaCarrier;
 
 function normalizeMetaText(value: string | boolean | null | undefined): string | null {
   if (typeof value === "boolean") {
@@ -415,7 +414,9 @@ export function getProgramRatingValue(program: ProgramInsightSource): number {
   return rating <= 5 ? rating : rating / 20;
 }
 
-export function getProgramSelectionKeywords(program: ProgramListRow): string[] {
+export function getProgramSelectionKeywords(
+  program: Pick<ProgramListRow, "extracted_keywords" | "tags" | "skills"> & ProgramLegacyMetaCarrier
+): string[] {
   const meta = getLegacyProgramMeta(program);
   const candidates = [
     meta?.coding_skill_required ? "코딩역량" : null,

@@ -175,6 +175,7 @@ def test_build_program_source_record_rows_preserves_primary_provenance_payload()
                 "compare_meta": {
                     "application_url": "https://example.com/apply",
                     "training_type": "국가기간전략산업직종",
+                    "contact_phone": "02-1234-5678",
                     "field_sources": {"title": "title", "deadline": "traStartDate"},
                 },
             }
@@ -187,7 +188,8 @@ def test_build_program_source_record_rows_preserves_primary_provenance_payload()
     assert rows[0]["source_record_key"] == "work24:AIG202500001:7:500012345678"
     assert rows[0]["raw_payload"] == {"trprId": "AIG202500001"}
     assert rows[0]["field_evidence"] == {"title": "title", "deadline": "traStartDate"}
-    assert rows[0]["source_specific"]["training_type"] == "국가기간전략산업직종"
+    assert "training_type" not in rows[0]["source_specific"]
+    assert rows[0]["source_specific"]["contact_phone"] == "02-1234-5678"
     assert rows[0]["source_specific"]["legacy_link"] == "https://example.com/detail"
     assert rows[0]["normalized_snapshot"]["application_url"] == "https://example.com/apply"
 

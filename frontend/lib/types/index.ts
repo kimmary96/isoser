@@ -320,9 +320,7 @@ export interface ProgramCardSummary extends ProgramBaseSummary {
   promoted_rank?: number | null;
 }
 
-export interface ProgramListRow extends ProgramCardSummary {
-  compare_meta?: CompareMeta | null;
-}
+export type ProgramListRow = ProgramCardSummary;
 
 export interface ProgramSelectSummary {
   id: string | number | null;
@@ -437,7 +435,6 @@ export interface Program {
   final_score?: number | null;
   urgency_score?: number | null;
   days_left?: number | null;
-  compare_meta?: CompareMeta | null;
 }
 
 export interface ProgramDetail {

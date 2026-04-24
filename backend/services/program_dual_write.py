@@ -153,6 +153,22 @@ def _compare_meta(source_row: dict[str, Any]) -> dict[str, Any]:
     return value if isinstance(value, dict) else {}
 
 
+def _legacy_source_meta(source_row: dict[str, Any]) -> dict[str, Any]:
+    compare_meta = _compare_meta(source_row)
+    service_meta = source_row.get("service_meta") if isinstance(source_row.get("service_meta"), dict) else {}
+
+    merged: dict[str, Any] = {
+        str(key): value
+        for key, value in compare_meta.items()
+        if key != "field_sources" and value not in (None, "", [], {})
+    }
+    for key, value in service_meta.items():
+        if value in (None, "", [], {}):
+            continue
+        merged[str(key)] = value
+    return merged
+
+
 def _detail_url_from_source_row(source_row: dict[str, Any], application_url: str | None, source_url: str | None) -> str | None:
     link = clean_text(source_row.get("link"))
     if link and link != application_url:
@@ -161,16 +177,24 @@ def _detail_url_from_source_row(source_row: dict[str, Any], application_url: str
 
 
 def _service_meta(source_row: dict[str, Any]) -> dict[str, Any] | None:
-    compare_meta = _compare_meta(source_row)
+    compare_meta = _legacy_source_meta(source_row)
     service_meta = {
         str(key): value
         for key, value in compare_meta.items()
-        if key != "field_sources" and value not in (None, "", [], {})
+        if value not in (None, "", [], {})
     }
     return service_meta or None
 
 
-def _uses_training_start_deadline(compare_meta: dict[str, Any], application_end_date: str | None) -> bool:
+def uses_training_start_deadline_marker(
+    compare_meta: dict[str, Any] | None,
+    *,
+    application_end_date: str | None,
+    start_date: str | None = None,
+) -> bool:
+    if not isinstance(compare_meta, dict):
+        return False
+
     markers = [
         compare_meta.get("deadline_source"),
         compare_meta.get("application_deadline_source"),
@@ -182,11 +206,22 @@ def _uses_training_start_deadline(compare_meta: dict[str, Any], application_end_
             return True
 
     training_start = parse_date_text(compare_meta.get("training_start_date"))
-    return bool(training_start and application_end_date and training_start == application_end_date)
+    if training_start and application_end_date and training_start == application_end_date:
+        return True
+
+    application_deadline = parse_date_text(compare_meta.get("application_deadline"))
+    if application_deadline and start_date and application_deadline == parse_date_text(start_date):
+        return True
+
+    return False
+
+
+def _uses_training_start_deadline(compare_meta: dict[str, Any], application_end_date: str | None) -> bool:
+    return uses_training_start_deadline_marker(compare_meta, application_end_date=application_end_date)
 
 
 def _eligibility_labels(source_row: dict[str, Any]) -> list[str] | None:
-    compare_meta = _compare_meta(source_row)
+    compare_meta = _legacy_source_meta(source_row)
     values: list[str] = []
     target_summary = clean_text_list(source_row.get("target")) or []
     values.extend(target_summary)
@@ -205,7 +240,7 @@ def _eligibility_labels(source_row: dict[str, Any]) -> list[str] | None:
 
 
 def _curriculum_items(source_row: dict[str, Any]) -> list[str] | None:
-    compare_meta = _compare_meta(source_row)
+    compare_meta = _legacy_source_meta(source_row)
     for key in ("curriculum_items", "curriculum"):
         value = compare_meta.get(key)
         if isinstance(value, list):
@@ -222,7 +257,7 @@ def _curriculum_items(source_row: dict[str, Any]) -> list[str] | None:
 
 
 def _certifications(source_row: dict[str, Any]) -> list[str] | None:
-    compare_meta = _compare_meta(source_row)
+    compare_meta = _legacy_source_meta(source_row)
     value = compare_meta.get("certifications")
     if isinstance(value, list):
         cleaned = clean_text_list(value)
@@ -232,7 +267,7 @@ def _certifications(source_row: dict[str, Any]) -> list[str] | None:
 
 
 def build_program_additive_fields(source_row: dict[str, Any]) -> dict[str, Any]:
-    compare_meta = _compare_meta(source_row)
+    compare_meta = _legacy_source_meta(source_row)
     source_label = clean_text(source_row.get("source")) or "미분류"
     source_code = program_source_code_from_label(source_label)
     application_url = pick_first_text(source_row.get("application_url"), compare_meta.get("application_url"))
@@ -256,7 +291,11 @@ def build_program_additive_fields(source_row: dict[str, Any]) -> dict[str, Any]:
     )
     deadline_confidence = "low"
     if application_end_date:
-        deadline_confidence = "medium" if _uses_training_start_deadline(compare_meta, application_end_date) else "high"
+        deadline_confidence = "medium" if uses_training_start_deadline_marker(
+            compare_meta,
+            application_end_date=application_end_date,
+            start_date=parse_date_text(source_row.get("start_date")),
+        ) else "high"
 
     fields = {
         "primary_source_code": source_code,
@@ -322,6 +361,40 @@ def merge_program_dual_write_fields(source_row: dict[str, Any]) -> dict[str, Any
     return merged
 
 
+PROGRAM_SOURCE_SPECIFIC_META_KEYS = {
+    "contact_phone",
+    "contact_email",
+    "email",
+    "manager_email",
+    "application_method_email",
+    "manager_name",
+    "curriculum_items",
+    "curriculum",
+    "course_content",
+    "training_content",
+    "education_content",
+    "certifications",
+    "certificate",
+    "faq",
+    "reviews",
+    "recommended_for",
+    "learning_outcomes",
+    "career_support",
+    "event_banner",
+    "ai_matching_summary",
+}
+
+
+def _source_specific(source_row: dict[str, Any]) -> dict[str, Any] | None:
+    legacy_meta = _legacy_source_meta(source_row)
+    source_specific = {
+        key: value
+        for key, value in legacy_meta.items()
+        if key in PROGRAM_SOURCE_SPECIFIC_META_KEYS and value not in (None, "", [], {})
+    }
+    return source_specific or None
+
+
 def _program_source_record_key(
     source_row: dict[str, Any],
     *,
@@ -365,7 +438,7 @@ def build_program_source_record_row(program_row: dict[str, Any], source_row: dic
     application_url = pick_first_text(source_row.get("application_url"), compare_meta.get("application_url"))
     source_url = clean_text(source_row.get("source_url"))
     detail_url = _detail_url_from_source_row(source_row, application_url, source_url)
-    source_specific = _service_meta(source_row) or {}
+    source_specific = _source_specific(source_row) or {}
     if detail_url:
         source_specific["legacy_link"] = detail_url
     if clean_text(source_row.get("source_unique_key")):

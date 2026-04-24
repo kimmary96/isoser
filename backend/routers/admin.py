@@ -26,12 +26,14 @@ try:
         build_program_source_record_rows,
         is_missing_schema_error,
         merge_program_dual_write_fields,
+        uses_training_start_deadline_marker,
     )
 except ImportError:
     from backend.services.program_dual_write import (
         build_program_source_record_rows,
         is_missing_schema_error,
         merge_program_dual_write_fields,
+        uses_training_start_deadline_marker,
     )
 
 router = APIRouter()
@@ -177,24 +179,14 @@ def _uses_work24_training_start_deadline(
     *,
     start_date: str | None,
 ) -> bool:
-    markers: list[Any] = [row.get("deadline_source")]
-    if isinstance(compare_meta, dict):
-        markers.extend(
-            [
-                compare_meta.get("deadline_source"),
-                compare_meta.get("application_deadline_source"),
-                compare_meta.get("recruitment_deadline_source"),
-            ]
-        )
-        application_deadline = str(compare_meta.get("application_deadline") or "").strip()
-        if application_deadline and start_date and application_deadline[:10] == start_date[:10]:
-            return True
-
-    for marker in markers:
-        normalized = str(marker or "").replace("_", "").replace("-", "").casefold()
-        if normalized in {"trastartdate", "trainingstartdate", "trainingstart"}:
-            return True
-    return False
+    merged_meta = dict(compare_meta) if isinstance(compare_meta, dict) else {}
+    if row.get("deadline_source") not in (None, ""):
+        merged_meta["deadline_source"] = row.get("deadline_source")
+    return uses_training_start_deadline_marker(
+        merged_meta,
+        application_end_date=str((compare_meta or {}).get("application_deadline") or "").strip() or None,
+        start_date=start_date,
+    )
 
 
 def _coerce_program_category(category: str, title: str) -> str:
