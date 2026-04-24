@@ -3,6 +3,8 @@ import type {
   ProgramBaseSummary,
   ProgramCardRenderable,
   ProgramCardSummary,
+  ProgramListRow,
+  ProgramListRowItem,
   ProgramSelectSummary,
 } from "@/lib/types";
 
@@ -81,16 +83,41 @@ export function formatProgramTrainingPeriod(
   return "정보 없음";
 }
 
-export function toProgramDateKey(value: string | null | undefined): string | null {
+export function parseProgramDate(value: string | Date | null | undefined): Date | null {
   if (!value) return null;
 
-  const date = new Date(value);
+  const date = value instanceof Date ? new Date(value.getTime()) : new Date(value);
   if (Number.isNaN(date.getTime())) return null;
+
+  return date;
+}
+
+export function toProgramDateKey(value: string | Date | null | undefined): string | null {
+  const date = parseProgramDate(value);
+  if (!date) return null;
 
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+export function isSameProgramDate(
+  left: string | Date | null | undefined,
+  right: string | Date | null | undefined
+): boolean {
+  const leftDate = parseProgramDate(left);
+  const rightDate = parseProgramDate(right);
+
+  if (!leftDate || !rightDate) {
+    return false;
+  }
+
+  return (
+    leftDate.getFullYear() === rightDate.getFullYear() &&
+    leftDate.getMonth() === rightDate.getMonth() &&
+    leftDate.getDate() === rightDate.getDate()
+  );
 }
 
 export function formatProgramDeadlineDate(value: string | null | undefined): string {
@@ -192,6 +219,14 @@ export function toProgramSelectSummaries(
   return programs
     .map((program) => toProgramSelectSummary(program))
     .filter((program): program is ProgramSelectSummary => Boolean(program));
+}
+
+export function unwrapProgramListRows(
+  items: Array<ProgramListRowItem | null | undefined>
+): ProgramListRow[] {
+  return items
+    .map((item) => item?.program ?? null)
+    .filter((program): program is ProgramListRow => Boolean(program));
 }
 
 export type ProgramSelectCardProgram = ProgramSelectSummary;

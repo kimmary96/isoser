@@ -14,9 +14,10 @@ import { chipOptions } from "./_content";
 import { landingAThemeVars } from "./_styles";
 import AdSlot from "@/components/AdSlot";
 import { listProgramsPage } from "@/lib/api/backend";
+import { unwrapProgramListRows } from "@/lib/program-display";
 import { buildProgramFilterParams } from "@/lib/program-filters";
 import { getSiteUrl } from "@/lib/seo";
-import type { Program } from "@/lib/types";
+import type { ProgramListRow } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "이소서 - 취업 지원 탐색부터 서류 준비까지 연결하는 커리어 SaaS",
@@ -62,7 +63,7 @@ export default async function LandingAPage({ searchParams }: LandingAPageProps) 
   const keyword = normalizeKeyword(resolvedSearchParams.q);
   const programParams = buildProgramFilterParams(activeChip, keyword);
 
-  let programs: Program[] = [];
+  let programs: ProgramListRow[] = [];
   let totalCount = 0;
   let error: string | null = null;
 
@@ -71,7 +72,7 @@ export default async function LandingAPage({ searchParams }: LandingAPageProps) 
       ...programParams,
       scope: programParams.q ? "all" : "default",
     });
-    programs = page.items;
+    programs = unwrapProgramListRows(page.items);
     totalCount = page.count ?? page.items.length;
   } catch (cause) {
     error = cause instanceof Error ? cause.message : "프로그램 정보를 불러오지 못했습니다.";

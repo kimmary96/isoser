@@ -530,6 +530,7 @@ async def test_list_programs_page_uses_read_model_and_cursor(monkeypatch: pytest
     assert response.source == "read_model"
     assert response.mode == "browse"
     assert len(response.items) == 1
+    assert response.items[0].program.id == "00000000-0000-0000-0000-000000000001"
     assert response.next_cursor is not None
     assert response.count == 1
 
@@ -579,14 +580,16 @@ async def test_list_popular_programs_prefers_read_model_popular_sort(monkeypatch
         assert kwargs["recruiting_only"] is True
         return programs.ProgramListPageResponse(
             items=[
-                programs.ProgramListItem(
-                    id="00000000-0000-0000-0000-000000000111",
-                    title="실제 클릭 인기 과정",
-                    source="고용24",
-                    detail_view_count_7d=7,
-                    detail_view_count=11,
-                    click_hotness_score=7_000_011.9,
-                    recommended_score=0.9,
+                programs.ProgramListRowItem(
+                    program=programs.ProgramListItem(
+                        id="00000000-0000-0000-0000-000000000111",
+                        title="실제 클릭 인기 과정",
+                        source="고용24",
+                        detail_view_count_7d=7,
+                        detail_view_count=11,
+                        click_hotness_score=7_000_011.9,
+                        recommended_score=0.9,
+                    )
                 )
             ],
             mode="browse",
@@ -679,10 +682,12 @@ async def test_list_programs_page_returns_fastcampus_promoted_layer_without_orga
         limit=1,
     )
 
-    assert [item.id for item in response.promoted_items] == ["program-fastcampus"]
-    assert response.promoted_items[0].is_ad is True
-    assert "광고" in response.promoted_items[0].recommendation_reasons
-    assert [item.id for item in response.items] == ["program-organic"]
+    assert [item.program.id for item in response.promoted_items] == ["program-fastcampus"]
+    assert response.promoted_items[0].program.is_ad is True
+    assert response.promoted_items[0].context is not None
+    assert response.promoted_items[0].context.promoted_rank == 1
+    assert "광고" in response.promoted_items[0].program.recommendation_reasons
+    assert [item.program.id for item in response.items] == ["program-organic"]
 
 
 @pytest.mark.asyncio
@@ -735,7 +740,7 @@ async def test_list_programs_page_skips_promoted_layer_for_filtered_browse(
 
     assert observed_ad_request["value"] is False
     assert response.promoted_items == []
-    assert [item.id for item in response.items] == ["program-organic"]
+    assert [item.program.id for item in response.items] == ["program-organic"]
 
 
 @pytest.mark.asyncio

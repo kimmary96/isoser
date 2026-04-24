@@ -3,8 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { listProgramSelectSummaries } from "@/lib/api/backend";
-import { getDashboardBookmarks } from "@/lib/api/app";
+import { getDashboardBookmarks, searchComparePrograms } from "@/lib/api/app";
 import {
   formatProgramDeadlineCountdown,
   getProgramId,
@@ -204,14 +203,14 @@ export default function ProgramSelectModal({
       setSearchLoading(true);
       setSearchError(null);
       try {
-        const programs = await listProgramSelectSummaries({
+        const response = await searchComparePrograms({
           q: query.trim() || undefined,
           limit: 20,
           sort: "deadline",
-          recruiting_only: true,
+          recruitingOnly: true,
         });
         if (cancelled) return;
-        setSearchResults(programs);
+        setSearchResults(response.items);
       } catch (error) {
         if (cancelled) return;
         setSearchError(

@@ -457,9 +457,19 @@ class ProgramFacetSnapshot(BaseModel):
     source: list[ProgramFacetBucket] = Field(default_factory=list)
 
 
+class ProgramSurfaceContextModel(BaseModel):
+    surface: str | None = None
+    promoted_rank: int | None = None
+
+
+class ProgramListRowItem(BaseModel):
+    program: ProgramListItem
+    context: ProgramSurfaceContextModel | None = None
+
+
 class ProgramListPageResponse(BaseModel):
-    promoted_items: list[ProgramListItem] = Field(default_factory=list)
-    items: list[ProgramListItem] = Field(default_factory=list)
+    promoted_items: list[ProgramListRowItem] = Field(default_factory=list)
+    items: list[ProgramListRowItem] = Field(default_factory=list)
     next_cursor: str | None = None
     count: int | None = None
     mode: Literal["browse", "search", "archive"] = "browse"
@@ -553,6 +563,26 @@ def _serialize_program_card_summary(program: Mapping[str, Any]) -> dict[str, Any
 
 def _serialize_program_list_row_summary(program: Mapping[str, Any]) -> dict[str, Any]:
     return _serialize_program_card_summary(program)
+
+
+def _serialize_program_list_row_item(
+    program: Mapping[str, Any],
+    *,
+    surface: str | None = None,
+    promoted_rank: int | None = None,
+    already_serialized: bool = False,
+) -> ProgramListRowItem:
+    context = None
+    if surface is not None or promoted_rank is not None:
+        context = ProgramSurfaceContextModel(
+            surface=surface,
+            promoted_rank=promoted_rank,
+        )
+    program_payload = dict(program) if already_serialized else _serialize_program_list_row_summary(program)
+    return ProgramListRowItem(
+        program=ProgramListItem.model_validate(program_payload),
+        context=context,
+    )
 
 
 def _build_program_surface_context(
@@ -3059,8 +3089,16 @@ async def _fetch_program_list_read_model_rows(
         cache_hit=False,
     )
     return ProgramListPageResponse(
-        promoted_items=promoted_items,
-        items=[ProgramListItem.model_validate(row) for row in page_rows],
+        promoted_items=[
+            _serialize_program_list_row_item(
+                item.model_dump(),
+                surface="program_list_promoted",
+                promoted_rank=item.promoted_rank,
+                already_serialized=True,
+            )
+            for item in promoted_items
+        ],
+        items=[_serialize_program_list_row_item(row) for row in page_rows],
         next_cursor=next_cursor,
         mode=mode,
         source="read_model",
@@ -3715,7 +3753,7 @@ async def list_programs(
                 limit=limit,
                 cursor=cursor,
             )
-            return [item.model_dump() for item in page.items]
+            return [item.program.model_dump() for item in page.items]
         except Exception as exc:
             log_event(
                 logger,
@@ -3847,7 +3885,7 @@ async def list_programs_page(
         cursor=None,
     )
     return ProgramListPageResponse(
-        items=[ProgramListItem.model_validate(row) for row in rows],
+        items=[_serialize_program_list_row_item(row, already_serialized=True) for row in rows],
         count=len(rows),
         mode=_program_list_mode(q=q, scope=scope, include_closed_recent=include_closed_recent),
         source="legacy",
@@ -4048,7 +4086,7 @@ async def list_popular_programs() -> Any:
                 sort="popular",
                 limit=10,
             )
-            return [item.model_dump() for item in page.items]
+            return [item.program.model_dump() for item in page.items]
         except Exception as exc:
             log_event(logger, logging.WARNING, "program_popular_read_model_fallback", error=str(exc))
 

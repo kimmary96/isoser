@@ -10,7 +10,7 @@ import {
   getProgramScore,
   normalizeTextList,
 } from "@/components/landing/program-card-helpers";
-import type { Program } from "@/lib/types";
+import type { ProgramListRow } from "@/lib/types";
 
 import { chipOptions } from "./_content";
 
@@ -85,7 +85,7 @@ export function LandingAFilterBar({ activeChip, keyword }: FilterBarProps) {
 }
 
 type LandingAProgramsSectionProps = {
-  programs: Program[];
+  programs: ProgramListRow[];
   totalCount: number;
   activeChip: string;
   keyword: string;
@@ -93,7 +93,7 @@ type LandingAProgramsSectionProps = {
 };
 
 type ProgramCardProps = {
-  program: Program;
+  program: ProgramListRow;
 };
 
 function ProgramCard({ program }: ProgramCardProps) {

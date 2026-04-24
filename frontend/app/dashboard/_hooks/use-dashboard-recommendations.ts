@@ -9,6 +9,7 @@ import {
   getRecommendCalendar,
   saveCalendarSelections,
 } from "@/lib/api/app";
+import { toProgramDateKey } from "@/lib/program-display";
 import { isProgramCardItem, toProgramCardItem } from "@/lib/program-card-items";
 import type { Program, ProgramCardItem, ProgramCardSummary } from "@/lib/types";
 
@@ -40,16 +41,6 @@ export const DASHBOARD_REGION_OPTIONS = [
 function formatUserName(value: string | null | undefined): string {
   const trimmed = value?.trim();
   return trimmed || "사용자";
-}
-
-function toDateKey(value: string): string | null {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
-
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
 }
 
 function readRecommendCalendarCache(): ProgramCardItem[] {
@@ -116,7 +107,7 @@ export function useDashboardRecommendations() {
     }
 
     return programs.filter((item) => {
-      const dateKey = item.program.deadline ? toDateKey(item.program.deadline) : null;
+      const dateKey = toProgramDateKey(item.program.deadline);
       return dateKey === selectedDate;
     });
   }, [programs, selectedDate]);

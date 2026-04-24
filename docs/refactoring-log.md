@@ -1,5 +1,15 @@
 # 리팩토링 로그
 
+- 2026-04-24: `frontend/app/api/programs/compare-search/route.ts`, `frontend/lib/api/app.ts`, `frontend/app/(landing)/compare/program-select-modal.tsx`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/lib/types/index.ts`, `frontend/lib/program-display.ts`, `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/page-helpers.ts`, `frontend/app/(landing)/landing-a/page.tsx`, `frontend/app/(landing)/landing-a/_hero.tsx`, `frontend/app/(landing)/landing-a/_program-feed.tsx`, `frontend/app/(landing)/landing-c/page.tsx`, `frontend/app/(landing)/landing-c/_hero.tsx`, `frontend/app/(landing)/landing-c/_program-feed.tsx`, `frontend/app/(landing)/landing-c/_program-utils.ts`, `frontend/components/landing/program-card-helpers.ts`, `frontend/components/MiniCalendar.tsx`, `frontend/app/dashboard/_components/dashboard-calendar-mini-calendar.tsx`, `frontend/app/dashboard/_hooks/use-dashboard-recommendations.ts`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-program-list-contract-bff-datekey-result.md`
+  - compare 검색 탭에 전용 BFF를 추가해 브라우저가 더 이상 무거운 `/programs` 원본 배열을 직접 받지 않고, 필요한 `ProgramSelectSummary`만 받도록 정리함
+  - `/programs/list`를 `ProgramListRowItem(program + context)` 계약으로 전환하고, `/programs`·landing-a·landing-c 소비 경로는 페이지 경계에서만 `program`을 풀어 쓰게 바꿔 목록 축의 monolith 의존을 줄임
+  - `program-display`에 날짜 parse/date-key/same-day helper를 모으고 MiniCalendar 및 dashboard calendar가 이를 재사용하도록 맞춰 날짜 계산 중복을 줄임
+
+- 2026-04-24: `frontend/lib/server/recommendation-profile.ts`, `frontend/lib/server/recommendation-profile.test.ts`, `frontend/app/api/dashboard/profile/route.ts`, `frontend/app/api/dashboard/resume/route.ts`, `frontend/app/api/dashboard/activities/route.ts`, `frontend/app/api/dashboard/activities/[id]/route.ts`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-recommendation-profile-refresh-write-bridge-result.md`
+  - roadmap 상태표가 실제 저장소 진척도보다 뒤처져 있어, 패키지 1/2 초안 완료와 패키지 3 진행 중 상태, 패키지 4 일부 seed 반영 상태를 문서에 먼저 반영함
+  - `profile/resume/activity` 저장 라우트에 공용 best-effort helper를 연결해 `refresh_user_recommendation_profile()` 호출과 `recommendations` 캐시 삭제를 한곳에서 처리하도록 정리함
+  - 현재 UI가 아직 `bio`를 희망 직무 입력으로 쓰는 현실은 유지하되, profile 저장 시 additive `profiles.target_job/target_job_normalized`도 같이 채워 새 추천 정본 경로가 stale 되지 않게 보강함
+
 - 2026-04-24: `frontend/lib/types/index.ts`, `frontend/lib/program-display.ts`, `frontend/lib/api/backend.ts`, `frontend/app/(landing)/compare/program-select-modal.tsx`, `frontend/app/(landing)/compare/page.tsx`, `frontend/app/(landing)/compare/programs-compare-client.tsx`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-compare-select-summary-transition-result.md`
   - compare 선택 경로에서 전체 `Program` row를 계속 들고 다니지 않도록 최소 선택 카드 계약 `ProgramSelectSummary`를 추가하고, `program-display`와 backend helper에서 이 요약 타입으로 바로 줄이는 adapter를 공용화함
   - compare 모달의 북마크/검색 결과와 compare 페이지 하단 추천 카드가 이제 같은 요약 타입을 사용해, 선택 UI가 실제로 쓰는 필드만 상태로 유지하도록 정리함

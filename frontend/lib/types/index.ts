@@ -376,6 +376,10 @@ export interface DashboardCalendarSelectionsResponse {
   items: ProgramCardItem[];
 }
 
+export interface ProgramCompareSearchResponse {
+  items: ProgramSelectSummary[];
+}
+
 export interface Program {
   id: string | number | null;
   title: string | null;
@@ -566,8 +570,8 @@ export interface ProgramFacetSnapshot {
 }
 
 export interface ProgramListPageResponse {
-  promoted_items: Program[];
-  items: Program[];
+  promoted_items: ProgramListRowItem[];
+  items: ProgramListRowItem[];
   next_cursor: string | null;
   count: number | null;
   mode: "browse" | "search" | "archive";

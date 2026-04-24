@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { listProgramsPage } from "@/lib/api/backend";
+import { unwrapProgramListRows } from "@/lib/program-display";
 import { buildProgramFilterParams } from "@/lib/program-filters";
 import { getSiteUrl } from "@/lib/seo";
-import type { Program } from "@/lib/types";
+import type { ProgramListRow } from "@/lib/types";
 
 import { LandingCHeroSection } from "./_hero";
 import { LandingCOpportunityFeed } from "./_program-feed";
@@ -42,8 +43,8 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
   const keyword = normalizeKeyword(resolvedSearchParams.q);
   const programParams = buildProgramFilterParams(activeChip, keyword, 48);
 
-  let programs: Program[] = [];
-  let liveBoardPrograms: Program[] = [];
+  let programs: ProgramListRow[] = [];
+  let liveBoardPrograms: ProgramListRow[] = [];
   let error: string | null = null;
 
   try {
@@ -59,8 +60,8 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
         scope: "default",
       }),
     ]);
-    programs = programsPage.items;
-    liveBoardPrograms = liveBoardPage.items;
+    programs = unwrapProgramListRows(programsPage.items);
+    liveBoardPrograms = unwrapProgramListRows(liveBoardPage.items);
   } catch (cause) {
     error = cause instanceof Error ? cause.message : "프로그램 정보를 불러오지 못했습니다.";
   }

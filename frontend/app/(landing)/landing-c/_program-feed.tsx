@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { getProgramCompareHref, getProgramDetailHref } from "@/components/landing/program-card-helpers";
-import type { Program } from "@/lib/types";
+import type { ProgramListRow } from "@/lib/types";
 
 import { chips } from "./_content";
 import { displayTitle, programTagItems, providerLabel, trainingPeriodLabel } from "./_program-utils";
@@ -9,11 +9,11 @@ import { displayTitle, programTagItems, providerLabel, trainingPeriodLabel } fro
 type LandingCOpportunityFeedProps = {
   activeChip: string;
   keyword: string;
-  programs: Program[];
+  programs: ProgramListRow[];
   error: string | null;
 };
 
-function ProgramCard({ program }: { program: Program }) {
+function ProgramCard({ program }: { program: ProgramListRow }) {
   const tagItems = programTagItems(program);
 
   return (

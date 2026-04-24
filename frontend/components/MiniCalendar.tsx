@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+import { isSameProgramDate, parseProgramDate, toProgramDateKey } from "@/lib/program-display";
+
 type MiniCalendarProgram = {
   deadline?: string;
   title: string;
@@ -16,21 +18,6 @@ type MiniCalendarProps = {
 };
 
 const WEEKDAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
-
-function toDateKey(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function isSameDate(a: Date, b: Date): boolean {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
-}
 
 export default function MiniCalendar({
   programs,
@@ -60,25 +47,23 @@ export default function MiniCalendar({
     setVisibleMonth((current) => new Date(current.getFullYear(), current.getMonth() + offset, 1));
   };
 
-  const markedDates = new Set(
-    programs
-      .map((program) => {
-        if (!program.deadline) return null;
-        const date = new Date(program.deadline);
-        if (Number.isNaN(date.getTime())) return null;
-        if (date.getFullYear() !== currentYear || date.getMonth() !== currentMonth) return null;
-        return toDateKey(date);
-      })
-      .filter((value): value is string => Boolean(value))
-  );
-  const programsByDate = programs.reduce<Record<string, MiniCalendarProgram[]>>((acc, program) => {
-    if (!program.deadline) return acc;
-    const date = new Date(program.deadline);
-    if (Number.isNaN(date.getTime())) return acc;
-    if (date.getFullYear() !== currentYear || date.getMonth() !== currentMonth) return acc;
+  const deadlineEntries = programs
+    .map((program) => {
+      const date = parseProgramDate(program.deadline);
+      const dateKey = toProgramDateKey(date);
+      if (!date || !dateKey) return null;
+      if (date.getFullYear() !== currentYear || date.getMonth() !== currentMonth) return null;
+      return { program, dateKey };
+    })
+    .filter(
+      (entry): entry is { program: MiniCalendarProgram; dateKey: string } => Boolean(entry)
+    );
 
-    const key = toDateKey(date);
-    acc[key] = [...(acc[key] ?? []), program];
+  const markedDates = new Set(
+    deadlineEntries.map((entry) => entry.dateKey)
+  );
+  const programsByDate = deadlineEntries.reduce<Record<string, MiniCalendarProgram[]>>((acc, entry) => {
+    acc[entry.dateKey] = [...(acc[entry.dateKey] ?? []), entry.program];
     return acc;
   }, {});
 
@@ -131,8 +116,11 @@ export default function MiniCalendar({
             return <div key={`empty-${index}`} className="h-14 rounded-lg bg-transparent" />;
           }
 
-          const dateKey = toDateKey(cell);
-          const isToday = isSameDate(cell, today);
+          const dateKey = toProgramDateKey(cell);
+          if (!dateKey) {
+            return <div key={`invalid-${index}`} className="h-14 rounded-lg bg-transparent" />;
+          }
+          const isToday = isSameProgramDate(cell, today);
           const hasProgram = markedDates.has(dateKey);
           const isSelected = selectedDate === dateKey;
           const dayPrograms = programsByDate[dateKey] ?? [];

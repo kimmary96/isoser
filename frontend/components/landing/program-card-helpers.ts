@@ -1,4 +1,4 @@
-import type { Program } from "@/lib/types";
+import type { ProgramListRow } from "@/lib/types";
 
 export function normalizeTextList(value: string[] | string | null | undefined): string[] {
   if (Array.isArray(value)) {
@@ -22,7 +22,7 @@ function formatDateLabel(value: string | null | undefined): string {
   return date.toLocaleDateString("ko-KR", { month: "long", day: "numeric" });
 }
 
-export function getProgramDeadline(program: Program): string {
+export function getProgramDeadline(program: ProgramListRow): string {
   if (typeof program.days_left === "number") {
     if (program.days_left < 0) return "마감";
     if (program.days_left === 0) return "D-Day";
@@ -36,7 +36,7 @@ export function getProgramDeadline(program: Program): string {
   return "일정 추후 공지";
 }
 
-export function getProgramDeadlineTone(program: Program): string {
+export function getProgramDeadlineTone(program: ProgramListRow): string {
   if (typeof program.days_left !== "number") return "text-[var(--green)]";
   if (program.days_left <= 3) return "text-[var(--red)]";
   if (program.days_left <= 7) return "text-[var(--fire)]";
@@ -44,18 +44,18 @@ export function getProgramDeadlineTone(program: Program): string {
   return "text-[var(--green)]";
 }
 
-export function getProgramDetailHref(program: Program): string {
+export function getProgramDetailHref(program: ProgramListRow): string {
   return typeof program.id === "string" || typeof program.id === "number" ? `/programs/${program.id}` : "/programs";
 }
 
-export function getProgramCompareHref(program: Program): string {
+export function getProgramCompareHref(program: ProgramListRow): string {
   return typeof program.id === "string" || typeof program.id === "number"
     ? `/compare?ids=${encodeURIComponent(String(program.id))}`
     : "/compare";
 }
 
-export function getProgramScore(program: Program): number {
-  const rawScore = program.relevance_score ?? program.final_score ?? program._score ?? 0;
+export function getProgramScore(program: ProgramListRow): number {
+  const rawScore = program.relevance_score ?? program.final_score ?? program.recommended_score ?? 0;
   return rawScore > 1 ? Math.round(rawScore) : Math.round(rawScore * 100);
 }
 

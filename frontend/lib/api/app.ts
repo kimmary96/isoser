@@ -5,11 +5,13 @@ import type {
   CoverLetter,
   DashboardBookmarksResponse,
   DashboardCalendarSelectionsResponse,
+  ProgramCompareSearchResponse,
   DashboardRecommendCalendarResponse,
   DashboardRecommendedProgramsResponse,
   Profile,
   Program,
   ProgramCompareRelevanceResponse,
+  ProgramSort,
   Resume,
   ActivityDetailResponse,
   ActivityListResponse,
@@ -205,6 +207,28 @@ export async function getProgramCompareRelevance(
       body: JSON.stringify({ programIds }),
     },
     "관련도 비교 데이터를 불러오지 못했습니다."
+  );
+}
+
+export async function searchComparePrograms(params?: {
+  q?: string;
+  limit?: number;
+  sort?: ProgramSort;
+  recruitingOnly?: boolean;
+}): Promise<ProgramCompareSearchResponse> {
+  const searchParams = new URLSearchParams();
+  if (params?.q) searchParams.set("q", params.q);
+  if (typeof params?.limit === "number") searchParams.set("limit", String(params.limit));
+  if (params?.sort) searchParams.set("sort", params.sort);
+  if (params?.recruitingOnly) searchParams.set("recruiting_only", "true");
+
+  const query = searchParams.toString();
+  const url = `/api/programs/compare-search${query ? `?${query}` : ""}`;
+
+  return requestAppJson<ProgramCompareSearchResponse>(
+    url,
+    { method: "GET" },
+    "프로그램 검색 결과를 불러오지 못했습니다."
   );
 }
 

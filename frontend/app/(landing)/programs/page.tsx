@@ -4,10 +4,11 @@ import Link from "next/link";
 import AdSlot from "@/components/AdSlot";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { getProgramFilterOptions, listPrograms, listProgramsPage } from "@/lib/api/backend";
+import { unwrapProgramListRows } from "@/lib/program-display";
 import { buildUrgentProgramChips, buildUrgentProgramsParams } from "@/lib/programs-page-layout";
 import { getSiteUrl } from "@/lib/seo";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import type { Program, ProgramSort } from "@/lib/types";
+import type { ProgramListRow, ProgramSort } from "@/lib/types";
 
 import {
   ProgramsFilterBar,
@@ -377,7 +378,7 @@ function formatDateRange(start?: string | null, end?: string | null): string {
   return `${startText} ~ ${endText}`;
 }
 
-function formatCost(program: Program): string {
+function formatCost(program: ProgramListRow): string {
   if (typeof program.cost === "number") {
     return program.cost === 0 ? "무료" : `${program.cost.toLocaleString("ko-KR")}원`;
   }
@@ -389,7 +390,7 @@ function formatCost(program: Program): string {
   return "-";
 }
 
-function getSupportBadge(program: Program): string | null {
+function getSupportBadge(program: ProgramListRow): string | null {
   const text = [program.support_type, program.compare_meta?.training_type, program.summary, program.description, program.title]
     .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
     .join(" ");
@@ -401,26 +402,26 @@ function getSupportBadge(program: Program): string | null {
   return explicit && explicit.length <= 8 ? explicit : null;
 }
 
-function formatMethodAndRegion(program: Program): { method: string | null; region: string | null } {
+function formatMethodAndRegion(program: ProgramListRow): { method: string | null; region: string | null } {
   const method = program.teaching_method?.trim() || null;
   const region = program.location?.trim() || null;
   return { method, region };
 }
 
-function formatRecruitingStatus(program: Program): string {
+function formatRecruitingStatus(program: ProgramListRow): string {
   const label = deadlineLabel(program);
   if (!label) return "마감일 미확인";
   if (typeof program.days_left === "number" && program.days_left < 0) return "마감";
   return label;
 }
 
-function getDisplayCategories(program: Program): string[] {
+function getDisplayCategories(program: ProgramListRow): string[] {
   const derived = normalizeTextList(program.display_categories);
   if (derived.length) return derived.slice(0, 2);
   return [program.category, program.category_detail].filter((value): value is string => Boolean(value?.trim())).slice(0, 2);
 }
 
-function extractSelectionKeywords(program: Program): string[] {
+function extractSelectionKeywords(program: ProgramListRow): string[] {
   const meta = program.compare_meta;
   const candidates = [
     meta?.coding_skill_required ? "코딩역량" : null,
@@ -461,7 +462,7 @@ function ProgramKeywordList({ keywords }: { keywords: string[] }) {
   );
 }
 
-function UrgentProgramCompactCard({ program }: { program: Program }) {
+function UrgentProgramCompactCard({ program }: { program: ProgramListRow }) {
   const programId = String(program.id ?? "");
   const href = programId ? `/programs/${encodeURIComponent(programId)}` : "/programs";
   const chips = buildUrgentProgramChips(program);
@@ -507,7 +508,7 @@ function ProgramsTable({
   isLoggedIn,
   bookmarkedProgramIds,
 }: {
-  programs: Program[];
+  programs: ProgramListRow[];
   isLoggedIn: boolean;
   bookmarkedProgramIds: string[];
 }) {
@@ -708,9 +709,9 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
     sort,
   });
 
-  let programs: Program[] = [];
-  let promotedPrograms: Program[] = [];
-  let urgentPrograms: Program[] = [];
+  let programs: ProgramListRow[] = [];
+  let promotedPrograms: ProgramListRow[] = [];
+  let urgentPrograms: ProgramListRow[] = [];
   let totalCount = 0;
   let error: string | null = null;
   let isLoggedIn = false;
@@ -760,8 +761,8 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
       }),
       listPrograms(buildUrgentProgramsParams()),
     ]);
-    promotedPrograms = programsPage.promoted_items;
-    programs = programsPage.items;
+    promotedPrograms = unwrapProgramListRows(programsPage.promoted_items);
+    programs = unwrapProgramListRows(programsPage.items);
     totalCount = programsPage.count ?? programsPage.items.length;
     urgentPrograms = urgentRows;
   } catch (e) {
