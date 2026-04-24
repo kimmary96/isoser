@@ -20,7 +20,7 @@
 
 - backend `ProgramListItem` 하나에 카드/목록/추천 문맥이 섞여 있다.
 - frontend `Program` 타입 하나에 카드/목록/상세/추천/비교용 값이 모두 섞여 있다.
-- 대시보드 추천 BFF 주 경로는 이미 `ProgramCardItem`으로 옮겨졌지만, `ProgramCardRenderable` 전이 별칭과 일부 helper cleanup은 아직 남아 있다.
+- 대시보드 추천 BFF 주 경로는 이미 `ProgramCardItem`으로 옮겨졌고, 2026-04-24 후속 cleanup에서 `ProgramCardRenderable` 전이 별칭도 활성 코드에서 제거됐다.
 - 북마크/캘린더 BFF도 summary read 우선 구조로 옮겨졌지만, 미적용 환경용 `programs` fallback과 helper 경계 cleanup은 남아 있다.
 - 그래서 같은 `program_id`가 화면별로 다른 의미를 가질 위험이 남아 있다.
 

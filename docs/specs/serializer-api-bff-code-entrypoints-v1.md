@@ -124,7 +124,7 @@
 이유:
 
 - 추천 문맥이 가장 많이 섞여 있다.
-- `_reason` 같은 임시 필드는 주 경로에서 이미 제거됐고, 남은 일은 helper/transition alias cleanup이다.
+- `_reason` 같은 임시 필드는 주 경로에서 이미 제거됐고, 2026-04-24 후속 cleanup으로 helper/transition alias 정리도 활성 코드 기준으로 마감됐다.
 - 카드형 summary + context 구조가 안정되면 대시보드 카드와 캘린더 추천이 같이 정리된다.
 
 ### 6.4 4단계: direct `programs` 조회 BFF 교체

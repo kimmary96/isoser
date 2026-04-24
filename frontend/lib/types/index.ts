@@ -440,8 +440,6 @@ export interface Program {
   compare_meta?: CompareMeta | null;
 }
 
-export type ProgramCardRenderable = ProgramCardSummary | Program;
-
 export interface ProgramDetail {
   id: string | number | null;
   title: string | null;

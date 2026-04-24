@@ -3136,3 +3136,6 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-24: `frontend/lib/program-display.ts`, `frontend/app/(landing)/programs/program-utils.ts`, `docs/current-state.md`, `reports/SESSION-2026-04-24-recommendation-summary-contract-tightening-result.md`
   - compare selection helper와 `/programs` page helper에서 더 이상 broad `ProgramCardRenderable` 전이 별칭이 필요하지 않도록 입력 타입을 summary/list 범위로 좁힘
   - 결과적으로 `ProgramCardRenderable`는 central adapter(`program-card-items.ts`)와 legacy browser cache migration(`recommend-calendar-cache.ts`)처럼 실제 과도기 호환이 필요한 경로에만 남게 됨
+- 2026-04-24: `frontend/lib/program-card-items.ts`, `frontend/app/dashboard/_hooks/recommend-calendar-cache.ts`, `frontend/lib/types/index.ts`, `docs/current-state.md`, `reports/SESSION-2026-04-24-recommendation-summary-contract-tightening-result.md`
+  - central card adapter도 `ProgramCardSummary`만 받도록 좁히고, legacy browser cache migration은 옛 `programs[]` JSON을 summary로 보정한 뒤 `ProgramCardItem[]`로 승격하게 바꿔 과도기 호환을 유지함
+  - 그 결과 `ProgramCardRenderable = ProgramCardSummary | Program` 전이 별칭을 활성 코드와 타입 export에서 제거함

@@ -1,7 +1,6 @@
 import type {
   CalendarRecommendItem,
   ProgramCardItem,
-  ProgramCardRenderable,
   ProgramCardSummary,
   ProgramRecommendItem,
   ProgramSurfaceContext,
@@ -13,17 +12,17 @@ function trimNullableText(value: string | null | undefined): string | null {
 }
 
 function toProgramCardSummary(
-  program: ProgramCardRenderable,
+  program: ProgramCardSummary,
   overrides: Partial<ProgramCardSummary> = {}
 ): ProgramCardSummary {
   return {
-    ...(program as ProgramCardSummary),
+    ...program,
     ...overrides,
   };
 }
 
 export function toProgramCardItem(
-  program: ProgramCardRenderable,
+  program: ProgramCardSummary,
   context: ProgramSurfaceContext | null = null,
   overrides: Partial<ProgramCardSummary> = {}
 ): ProgramCardItem {
@@ -171,7 +170,7 @@ export function toFallbackCalendarProgramCardItem(
 }
 
 export function toBookmarkProgramCardItem(
-  program: ProgramCardRenderable,
+  program: ProgramCardSummary,
   bookmarkedAt: string | null
 ): ProgramCardItem {
   return toProgramCardItem(program, {
@@ -181,7 +180,7 @@ export function toBookmarkProgramCardItem(
 }
 
 export function toSelectionProgramCardItem(
-  program: ProgramCardRenderable,
+  program: ProgramCardSummary,
   selectedAt: string | null
 ): ProgramCardItem {
   return toProgramCardItem(program, {
