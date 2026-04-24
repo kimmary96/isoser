@@ -1,5 +1,23 @@
 # 리팩토링 로그
 
+- 2026-04-24: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/lib/types/index.ts`, `frontend/app/api/dashboard/recommended-programs/route.ts`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-program-surface-serializer-type-seed-result.md`
+  - `backend/routers/programs.py`에 `base -> card/list -> legacy wrapper` 방향의 내부 serializer transition helper를 추가해 추천/캘린더/상세 조립부가 공용 요약 뿌리를 먼저 통과하도록 정리함
+  - 공개 API 계약은 유지한 채 `frontend/lib/types/index.ts`에 `ProgramCardSummary`, `ProgramListRow`, `ProgramSurfaceContext` 등 새 surface 타입을 병행 추가했고, 대시보드 추천/캘린더 BFF도 내부적으로 이 구조를 먼저 조립한 뒤 현재 legacy 응답 shape로 다시 펼치도록 정리함
+- 2026-04-24: `scripts/refresh_program_validation_sample.py`, `backend/tests/test_program_validation_sample_script.py`, `docs/current-state.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/specs/supabase-free-plan-program-migration-ops-guide-v1.md`, `docs/specs/README.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-program-validation-preset-and-entrypoints-result.md`
+  - free plan 반복 검증을 더 단순하게 하기 위해 validation bundle 스크립트에 `--preset free-plan-50`, `--output`, `--source-record-fallback-min-batch-limit` 경로를 추가해 한 줄 명령과 결과 파일 저장을 같이 지원하도록 정리함
+  - 이와 함께 현재 저장소 기준 실제 serializer/API/BFF 전환 진입점을 별도 문서로 고정해, 추상 전환 순서가 아니라 `backend/routers/programs.py`, `frontend/lib/types/index.ts`, 대시보드 BFF 파일 단위로 다음 구현 순서를 바로 이어갈 수 있게 정리함
+- 2026-04-24: `supabase/migrations/20260425119000_add_program_source_records_sample_backfill_helper.sql`, `docs/specs/program-source-records-sample-backfill-helper-v1.md`, `docs/specs/program-canonical-validation-summary-v1.md`, `docs/specs/supabase-free-plan-program-migration-ops-guide-v1.md`, `docs/specs/README.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-program-source-records-sample-helper-result.md`
+  - `program_list_index` 샘플 helper와 스크립트 검증이 끝난 다음 단계로, free plan에서도 `program_source_records` provenance를 전체 3단계 대신 조금씩 검증할 수 있는 bounded sample backfill helper 초안을 추가함
+  - 새 helper `backfill_program_source_records_sample(...)`는 현재 `program_list_index` 샘플 program id를 우선 대상으로 provenance를 backfill하고, 초과 source row를 다시 trim하면서 잘린 row를 참조하던 `programs.primary_source_*` 링크도 함께 정리하도록 설계함
+  - 이후 실제 SQL Editor에서 `backfill_program_source_records_sample(50, 50)`를 실행해 `50건 후보 -> 50건 upsert -> 50건 primary source 연결`을 확인했고, 관련 spec/ops 문서도 검증 완료 상태로 보강함
+- 2026-04-24: `scripts/backfill_program_source_records.py`, `backend/tests/test_program_source_records_sample_backfill_script.py`, `docs/current-state.md`, `docs/specs/program-source-records-sample-backfill-helper-v1.md`, `docs/specs/program-canonical-validation-summary-v1.md`, `docs/specs/supabase-free-plan-program-migration-ops-guide-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-program-source-records-sample-script-result.md`
+  - `backfill_program_source_records_sample(...)`가 실제 DB에서 샘플 검증까지 끝난 뒤, 같은 provenance sample backfill을 SQL Editor 수동 실행 없이 다시 돌릴 수 있도록 전용 CLI 스크립트를 추가함
+  - 새 스크립트는 stringified JSONB 반환도 파싱해 `remaining_rows`, `linked_program_rows` 같은 요약 값을 같은 형태의 JSON 리포트로 출력하도록 맞춤
+  - 이후 실제 bundle 실행에서 provenance 단계만 statement timeout이 난 사례를 반영해, retryable timeout/lock 오류일 때는 batch/max_rows를 절반씩 줄이며 자동 재시도하는 fallback을 추가함
+- 2026-04-24: `scripts/refresh_program_validation_sample.py`, `backend/tests/test_program_validation_sample_script.py`, `docs/current-state.md`, `docs/specs/supabase-free-plan-program-migration-ops-guide-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-program-validation-sample-bundle-script-result.md`
+  - 이미 실검증된 `program_list_index` sample refresh와 `program_source_records` sample backfill을 매번 따로 실행하지 않도록, 두 RPC 경로를 순서대로 묶는 상위 validation sample bundle 스크립트를 추가함
+  - bundle 스크립트는 1단계 read-model sample refresh가 실패하면 provenance 단계로 가지 않고 즉시 멈추며, 두 단계가 모두 성공하면 결합 JSON 리포트를 반환해 free plan 반복 검증 경로를 단순화함
+  - 이후 직접 `python scripts/refresh_program_validation_sample.py ...` 실행에서 저장소 루트 import와 `.env` 부트스트랩이 빠져 `ModuleNotFoundError`가 난 문제가 확인되어, 스크립트가 루트/backend 경로를 먼저 잡고 기존 helper loader로 `.env`를 읽도록 보강함
 - 2026-04-24: `supabase/migrations/20260425113000_create_program_source_records.sql`, `supabase/migrations/20260425114000_add_program_canonical_columns.sql`, `supabase/migrations/20260425115000_backfill_program_source_records_from_programs.sql`, `supabase/migrations/20260425116000_backfill_program_canonical_fields.sql`, `supabase/migrations/20260425117000_extend_program_list_index_surface_contract.sql`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-program-canonical-sql-drafts-result.md`
   - 프로그램 정본/provenance 분리 패키지 2 초안으로 `program_source_records` 신설, `programs` canonical 컬럼 추가, 기존 `programs` 혼합 구조를 새 provenance/정본 컬럼으로 백필하는 draft SQL 체인을 추가함
   - 기존 `program_list_index`가 `program-surface-contract-v2`의 base/card/list summary를 직접 채울 수 있도록 surface contract용 additive 컬럼과 보조 helper/trigger 초안을 추가함
@@ -2957,6 +2975,21 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - Supabase SQL Editor 실실행 중 일부 환경에 `programs.application_url` legacy 컬럼이 없는 drift가 확인되어, draft migration이 해당 컬럼 존재를 강하게 가정하지 않도록 보강함
   - 3단계 source-record backfill, 4단계 canonical field backfill, 5단계 `program_list_index` surface trigger가 모두 `to_jsonb(row) ->> 'application_url'` 방식으로 optional legacy 필드를 읽도록 바꿔 이후 단계 연쇄 실패 가능성을 줄임
   - 추가로 일부 행의 `compare_meta`가 JSON object가 아니라 scalar여서 `- 'field_sources'` 연산이 실패하는 drift도 확인되어, 3/4단계 draft가 object가 아닐 때는 빈 객체 또는 `legacy_compare_meta_scalar` 래핑으로 안전하게 처리하도록 보강함
+  - 샘플 read-model 재생성 검증에서 `application_end_date`가 과거인 2026-01-25, 2026-04-23 row가 `open/closing_soon`으로 남는 문제가 확인되어, 5단계 모집 상태 계산이 legacy `is_open/days_left`보다 canonical `application_end_date`를 우선하도록 보정함
+  - 4단계 `summary_text`가 legacy `summary` 비어 있는 환경에서 전부 비는 문제도 확인되어 `description` 280자 fallback을 추가함
+  - 이후 샘플 100건 재확인에서 2026-04-23 마감 row가 한국 시간 2026-04-24 기준에도 `closing_soon`으로 남는 패턴이 확인되어, 5단계 모집 상태 계산 기준일을 DB `current_date`가 아니라 `Asia/Seoul` 기준 날짜로 고정함
+- 2026-04-24: `docs/specs/program-canonical-validation-summary-v1.md`, `docs/specs/supabase-free-plan-program-migration-ops-guide-v1.md`, `docs/specs/README.md`, `reports/SESSION-2026-04-24-program-canonical-validation-free-plan-guide-result.md`
+  - Supabase SQL Editor 실검증 결과를 단계별로 정리해, 어떤 SQL 초안이 통과했고 어떤 부분이 free plan 때문에 보류인지 비개발자도 읽을 수 있는 문서로 고정함
+  - free plan에서는 `programs` 원본은 남기고 `program_list_index`와 `program_source_records`를 필요 시 비우며 샘플만 다시 채워 검증하는 운영 기준을 별도 가이드로 정리함
+  - `refresh_program_list_index(pool_limit)`가 사실상 전체 적재에 가깝다는 점, `VACUUM FULL`은 단독 실행해야 한다는 점, 모집 상태는 KST 기준으로 봐야 한다는 점을 운영 메모로 남김
+- 2026-04-24: `supabase/migrations/20260425118000_add_program_list_sample_refresh_helper.sql`, `docs/specs/program-list-sample-refresh-helper-v1.md`, `docs/specs/supabase-free-plan-program-migration-ops-guide-v1.md`, `docs/specs/program-canonical-validation-summary-v1.md`, `reports/SESSION-2026-04-24-program-list-sample-refresh-helper-result.md`
+  - free plan DB에 여유 공간이 다시 생긴 이후의 다음 작업으로, `refresh_program_list_delta + refresh_program_list_browse_pool`를 수동으로 조합할 때 row 수가 다시 커질 수 있는 운영 리스크를 줄이기 위해 bounded sample refresh helper 초안을 추가함
+  - 새 helper `refresh_program_list_index_sample(...)`는 샘플 refresh 후 `program_list_index`와 browse facet snapshot을 다시 trim해 free plan 검증 환경을 작게 유지하도록 설계함
+  - 관련 spec/ops 문서도 helper 기준 예시로 갱신해 다음 세션에서 SQL Editor 실행 순서를 더 단순하게 재사용할 수 있게 맞춤
+- 2026-04-24: `scripts/refresh_program_list_index.py`, `backend/tests/test_program_list_refresh_fallback.py`, `docs/current-state.md`, `reports/SESSION-2026-04-24-program-list-sample-refresh-script-result.md`
+  - SQL Editor에서 helper를 수동 호출하던 흐름을 줄이기 위해 `scripts/refresh_program_list_index.py`에 `--sample-refresh` 경로를 추가함
+  - 새 경로는 `refresh_program_list_index_sample(...)` RPC를 호출하고, stringified JSONB 결과도 파싱해 남은 row 수와 trim 결과를 한 번에 리포트할 수 있게 맞춤
+  - 테스트는 sample helper RPC payload와 stringified JSON 결과 파싱을 고정했고, 현재 운영 문서에도 bounded sample refresh 경로를 반영함
 ## 2026-04-24 cowork review-failed 중복 알림 억제
 
 - 변경 이유

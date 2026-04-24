@@ -17,6 +17,9 @@
 - 추천 축과 다시 만날 수 있도록 `program_list_index`가 `program-surface-contract-v2`의 summary 구조를 직접 채울 준비도 함께 해둘 필요가 있었다.
 - 실제 Supabase SQL Editor 검증 중 일부 DB 환경에서 `programs.application_url` legacy 컬럼이 없다는 drift가 확인되어, 3/4/5단계 draft가 해당 컬럼을 직접 참조하지 않도록 보강할 필요가 있었다.
 - 추가 검증 중 일부 `programs.compare_meta` 값이 JSON object가 아니라 scalar라서 `- 'field_sources'` 연산이 실패하는 drift도 확인되어, 3/4단계 draft가 object 여부를 먼저 검사하도록 보강했다.
+- 샘플 `program_list_index` 50건 재생성 검증에서는 `application_end_date`가 2026-01-25, 2026-04-23처럼 현재 날짜(2026-04-24)보다 과거여도 `recruiting_status`가 `open/closing_soon`으로 남는 문제가 확인되어, 5단계 계산이 canonical 모집 마감일을 우선하도록 수정이 필요했다.
+- 같은 검증에서 4단계 `summary_text`가 `summary`만 보고 `description`을 fallback하지 않아 `summary_filled = 0`이 된 것도 확인되어, `description` 280자 fallback을 추가했다.
+- 샘플 100건 재확인에서는 `2026-04-23` 마감 row가 한국 시간 기준 `2026-04-24`에도 `closing_soon`으로 남아, DB 세션 날짜가 UTC `2026-04-23`일 가능성이 드러났다. 이에 모집 상태 함수의 기준일을 `timezone('Asia/Seoul', now())::date`로 고정했다.
 
 ## Preserved Behaviors
 
@@ -31,6 +34,8 @@
 - `compare_meta`와 `raw_data`를 아직 유지한 채 새 컬럼을 채우는 구조이므로, cleanup 이전까지는 legacy/new 혼합 상태가 남는다.
 - `application_url`는 문서상 legacy 컬럼이지만 실제 DB마다 존재 여부가 다를 수 있어, 이후 추가 draft에서도 optional legacy 필드는 직접 컬럼 참조보다 row JSON 접근을 우선해야 한다.
 - `compare_meta`도 object라고 단정할 수 없으므로, 이후 migration/함수 초안은 JSON key 제거 전에 `jsonb_typeof(...) = 'object'` 검사를 기본으로 넣는 편이 안전하다.
+- 모집 상태처럼 legacy 계산값(`is_open`, `days_left`)과 canonical 날짜(`application_end_date`)가 같이 있을 때는 canonical 값을 먼저 신뢰해야 한다. 그렇지 않으면 이미 지난 날짜도 모집중으로 남을 수 있다.
+- 날짜 비교가 사용자-facing 상태에 직접 영향을 주는 경우에는 DB 세션 기본 timezone을 그대로 믿지 말고, 서비스 기준 timezone을 명시해야 한다. 이 프로젝트는 한국 사용자 대상이므로 KST 기준 비교가 더 안전하다.
 
 ## Follow-up Refactoring Candidates
 

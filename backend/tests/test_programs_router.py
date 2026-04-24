@@ -23,6 +23,51 @@ def _sample_program(program_id: str = "program-1", *, deadline: str | None = Non
     }
 
 
+def test_program_surface_serializers_split_base_and_card_layers() -> None:
+    program = {
+        **_sample_program(),
+        "summary": "AI와 데이터 기초를 배우는 과정",
+        "description": "설명",
+        "tags": ["AI"],
+        "skills": ["Python"],
+        "compare_meta": {"satisfaction_score": "4.7"},
+    }
+
+    base = programs._serialize_program_base_summary(program)
+    card = programs._serialize_program_card_summary(program)
+    list_row = programs._serialize_program_list_row(program)
+
+    assert base["deadline"] is not None
+    assert base["days_left"] is not None
+    assert "display_categories" not in base
+    assert card["display_categories"] is not None
+    assert "selection_process_label" in card
+    assert card["deadline_confidence"] in {"high", "medium", "low"}
+    assert list_row == card
+
+
+def test_serialize_program_recommendation_uses_card_summary_serializer() -> None:
+    item = SimpleNamespace(
+        program_id="program-1",
+        score=0.82,
+        relevance_score=0.76,
+        reason="프로필과 잘 맞는 과정입니다.",
+        fit_keywords=["AI", "서울"],
+        program={
+            **_sample_program(),
+            "summary": "AI와 데이터 기초를 배우는 과정",
+        },
+    )
+
+    serialized = programs._serialize_program_recommendation(item)
+
+    assert serialized.program.id == "program-1"
+    assert serialized.program.days_left is not None
+    assert serialized.program.deadline_confidence in {"high", "medium", "low"}
+    assert serialized.program.display_categories is not None
+    assert serialized.relevance_reasons
+
+
 def test_build_program_query_params_for_filtered_list() -> None:
     params = programs._build_program_query_params(
         select="*",

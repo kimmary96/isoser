@@ -20,6 +20,7 @@ from utils.supabase_admin import request_supabase  # noqa: E402
 LEGACY_FULL_REFRESH_RPC = "refresh_program_list_index"
 DELTA_REFRESH_RPC = "refresh_program_list_delta"
 BROWSE_REFRESH_RPC = "refresh_program_list_browse_pool"
+SAMPLE_REFRESH_RPC = "refresh_program_list_index_sample"
 RETRYABLE_REFRESH_ERROR_TOKENS = (
     "canceling statement due to statement timeout",
     "deadlock detected",
@@ -76,6 +77,20 @@ def _coerce_int_result(result: object) -> int:
 def _is_retryable_refresh_error(detail: str) -> bool:
     lowered = detail.lower()
     return any(token in lowered for token in RETRYABLE_REFRESH_ERROR_TOKENS)
+
+
+def _coerce_json_result(result: object) -> dict[str, object]:
+    if isinstance(result, dict):
+        return result
+    if isinstance(result, str):
+        try:
+            parsed = json.loads(result)
+        except json.JSONDecodeError:
+            return {"raw_result": result}
+        if isinstance(parsed, dict):
+            return parsed
+        return {"raw_result": parsed}
+    return {"raw_result": result}
 
 
 async def _run_rpc_stage(
@@ -173,6 +188,29 @@ async def _run_browse_refresh_with_retries(
     return False, None, stages, last_error
 
 
+async def _run_sample_refresh(
+    *,
+    batch_limit: int,
+    browse_pool_limit: int,
+    max_rows: int,
+    keep_latest_snapshot_count: int,
+) -> tuple[bool, dict[str, object] | None, dict[str, object], str | None]:
+    succeeded, result, stage = await _run_rpc_stage(
+        SAMPLE_REFRESH_RPC,
+        {
+            "batch_limit": max(1, batch_limit),
+            "browse_pool_limit": max(1, browse_pool_limit),
+            "max_rows": max(1, max_rows),
+            "keep_latest_snapshot_count": max(1, keep_latest_snapshot_count),
+        },
+    )
+    if not succeeded:
+        return False, None, stage, str(stage.get("error") or "")
+    parsed = _coerce_json_result(result)
+    stage["result"] = parsed
+    return True, parsed, stage, None
+
+
 async def refresh(
     pool_limit: int,
     *,
@@ -183,9 +221,42 @@ async def refresh(
     delta_batch_limit: int = 500,
     max_delta_batches: int = 20,
     legacy_full_refresh: bool = False,
+    sample_refresh: bool = False,
+    sample_max_rows: int | None = None,
+    sample_keep_latest_snapshot_count: int = 1,
 ) -> dict[str, object]:
     started_at = time.perf_counter()
     stages: list[dict[str, object]] = []
+
+    if sample_refresh:
+        effective_sample_max_rows = max(
+            1,
+            sample_max_rows if sample_max_rows is not None else max(pool_limit, delta_batch_limit),
+        )
+        succeeded, result, sample_stage, sample_error = await _run_sample_refresh(
+            batch_limit=delta_batch_limit,
+            browse_pool_limit=pool_limit,
+            max_rows=effective_sample_max_rows,
+            keep_latest_snapshot_count=sample_keep_latest_snapshot_count,
+        )
+        stages.append(sample_stage)
+        if not succeeded:
+            return {
+                "pool_limit": pool_limit,
+                "status": "failed",
+                "error": sample_error,
+                "elapsed_ms": _elapsed_ms(started_at),
+                "stages": stages,
+            }
+        return {
+            "pool_limit": pool_limit,
+            "status": "sample_refresh",
+            "sample_max_rows": effective_sample_max_rows,
+            "affected_rows": result.get("remaining_rows", result.get("browse_rows", result.get("delta_rows", 0))),
+            "sample_result": result,
+            "elapsed_ms": _elapsed_ms(started_at),
+            "stages": stages,
+        }
 
     if browse_only:
         succeeded, result, browse_stages, browse_error = await _run_browse_refresh_with_retries(
@@ -383,7 +454,27 @@ def main() -> int:
         action="store_true",
         help="Use the legacy single refresh_program_list_index RPC before falling back to the browse-pool refresh.",
     )
+    parser.add_argument(
+        "--sample-refresh",
+        action="store_true",
+        help="Call refresh_program_list_index_sample to keep a bounded validation-sized read model on smaller DBs.",
+    )
+    parser.add_argument(
+        "--sample-max-rows",
+        type=int,
+        help="Maximum rows to keep in program_list_index after --sample-refresh trims extra rows.",
+    )
+    parser.add_argument(
+        "--sample-keep-latest-snapshot-count",
+        type=int,
+        default=1,
+        help="How many latest browse facet snapshots to keep per pool size during --sample-refresh.",
+    )
     args = parser.parse_args()
+    if args.sample_refresh and args.browse_only:
+        parser.error("--sample-refresh and --browse-only cannot be used together.")
+    if args.sample_refresh and args.legacy_full_refresh:
+        parser.error("--sample-refresh and --legacy-full-refresh cannot be used together.")
     try:
         report = asyncio.run(
             refresh(
@@ -395,6 +486,9 @@ def main() -> int:
                 delta_batch_limit=args.delta_batch_limit,
                 max_delta_batches=args.max_delta_batches,
                 legacy_full_refresh=args.legacy_full_refresh,
+                sample_refresh=args.sample_refresh,
+                sample_max_rows=args.sample_max_rows,
+                sample_keep_latest_snapshot_count=args.sample_keep_latest_snapshot_count,
             )
         )
     except Exception as exc:

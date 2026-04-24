@@ -263,6 +263,92 @@ export interface CompareMeta {
   training_time?: string | null;
 }
 
+export interface ProgramBaseSummary {
+  id: string | number | null;
+  title: string | null;
+  category: string | null;
+  category_detail?: string | null;
+  location: string | null;
+  provider: string | null;
+  source?: string | null;
+  source_url?: string | null;
+  link?: string | null;
+  deadline?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  cost?: number | string | null;
+  cost_type?: string | null;
+  support_type?: string | null;
+  teaching_method?: string | null;
+  is_active?: boolean | null;
+  is_ad?: boolean | null;
+  days_left?: number | null;
+  deadline_confidence?: "high" | "medium" | "low" | null;
+}
+
+export interface ProgramCardSummary extends ProgramBaseSummary {
+  summary: string | null;
+  description?: string | null;
+  tags: string[] | string | null;
+  skills: string[] | string | null;
+  application_url?: string | null;
+  application_method?: string | null;
+  participation_time?: string | null;
+  subsidy_amount?: number | string | null;
+  display_categories?: string[] | null;
+  participation_mode_label?: string | null;
+  participation_time_text?: string | null;
+  selection_process_label?: string | null;
+  extracted_keywords?: string[] | null;
+  rating?: string | number | null;
+  rating_raw?: string | number | null;
+  rating_normalized?: number | null;
+  rating_scale?: number | null;
+  rating_display?: string | null;
+  review_count?: number | null;
+  relevance_score?: number | null;
+  final_score?: number | null;
+  urgency_score?: number | null;
+  recommended_score?: number | null;
+  recommendation_reasons?: string[] | null;
+  detail_view_count?: number | null;
+  detail_view_count_7d?: number | null;
+  click_hotness_score?: number | null;
+  last_detail_viewed_at?: string | null;
+  promoted_rank?: number | null;
+}
+
+export interface ProgramListRow extends ProgramCardSummary {
+  compare_meta?: CompareMeta | null;
+}
+
+export interface ProgramSurfaceContext {
+  surface?: string | null;
+  reason?: string | null;
+  fit_keywords?: string[] | null;
+  score?: number | null;
+  relevance_score?: number | null;
+  urgency_score?: number | null;
+  relevance_reasons?: string[] | null;
+  score_breakdown?: RelevanceScoreBreakdown | null;
+  relevance_grade?: RelevanceGrade | null;
+  relevance_badge?: string | null;
+  is_bookmarked?: boolean | null;
+  bookmarked_at?: string | null;
+  selected_at?: string | null;
+  promoted_rank?: number | null;
+}
+
+export interface ProgramCardItem {
+  program: ProgramCardSummary;
+  context?: ProgramSurfaceContext | null;
+}
+
+export interface ProgramListRowItem {
+  program: ProgramListRow;
+  context?: ProgramSurfaceContext | null;
+}
+
 export interface Program {
   id: string | number | null;
   title: string | null;

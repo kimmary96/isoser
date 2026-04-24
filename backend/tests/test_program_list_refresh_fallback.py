@@ -168,3 +168,69 @@ def test_refresh_script_keeps_legacy_full_refresh_option(monkeypatch) -> None:
     assert calls == ["refresh_program_list_index"]
     assert report["status"] == "full_refresh"
     assert report["affected_rows"] == 9467
+
+
+def test_refresh_script_supports_sample_refresh_helper(monkeypatch) -> None:
+    calls: list[tuple[str, dict[str, object]]] = []
+
+    async def fake_call_rpc(function_name: str, payload: dict[str, object]) -> object:
+        calls.append((function_name, payload))
+        if function_name != "refresh_program_list_index_sample":
+            raise AssertionError(f"unexpected rpc: {function_name}")
+        return {
+            "batch_limit": 100,
+            "browse_pool_limit": 100,
+            "max_rows": 100,
+            "delta_rows": 100,
+            "browse_rows": 100,
+            "trimmed_rows": 100,
+            "remaining_rows": 100,
+            "remaining_browse_rows": 100,
+            "trimmed_facet_snapshots": 0,
+        }
+
+    monkeypatch.setattr(refresh_program_list_index, "_call_rpc", fake_call_rpc)
+
+    report = asyncio.run(
+        refresh_program_list_index.refresh(
+            100,
+            delta_batch_limit=100,
+            sample_refresh=True,
+            sample_max_rows=100,
+        )
+    )
+
+    assert calls == [
+        (
+            "refresh_program_list_index_sample",
+            {
+                "batch_limit": 100,
+                "browse_pool_limit": 100,
+                "max_rows": 100,
+                "keep_latest_snapshot_count": 1,
+            },
+        )
+    ]
+    assert report["status"] == "sample_refresh"
+    assert report["affected_rows"] == 100
+    assert report["sample_result"]["trimmed_rows"] == 100
+
+
+def test_refresh_script_parses_stringified_sample_refresh_result(monkeypatch) -> None:
+    async def fake_call_rpc(function_name: str, payload: dict[str, object]) -> object:
+        assert function_name == "refresh_program_list_index_sample"
+        return '{"remaining_rows": 50, "delta_rows": 50, "browse_rows": 50}'
+
+    monkeypatch.setattr(refresh_program_list_index, "_call_rpc", fake_call_rpc)
+
+    report = asyncio.run(
+        refresh_program_list_index.refresh(
+            50,
+            delta_batch_limit=50,
+            sample_refresh=True,
+        )
+    )
+
+    assert report["status"] == "sample_refresh"
+    assert report["affected_rows"] == 50
+    assert report["sample_result"]["browse_rows"] == 50

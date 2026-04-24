@@ -522,20 +522,88 @@ class ProgramDetailBatchResponse(BaseModel):
     items: list[ProgramDetailResponse] = Field(default_factory=list)
 
 
+def _serialize_program_base_summary(program: Mapping[str, Any]) -> dict[str, Any]:
+    record = dict(program)
+    compare_meta = record.get("compare_meta") if isinstance(record.get("compare_meta"), dict) else {}
+    record.update(_normalize_rating_fields(record.get("rating") or compare_meta.get("satisfaction_score")))
+    record["teaching_method"] = _derive_teaching_method(record)
+    deadline = _resolve_program_deadline(record)
+    days_left = _calculate_days_left(deadline)
+    record["deadline"] = deadline
+    record["days_left"] = days_left
+    if days_left is not None:
+        record["is_active"] = days_left >= 0
+    return record
+
+
+def _serialize_program_card_summary(program: Mapping[str, Any]) -> dict[str, Any]:
+    record = _serialize_program_base_summary(program)
+    participation_mode_label, participation_time_text = _derive_participation_display(record)
+    record["display_categories"] = _infer_display_categories(record)
+    record["participation_mode_label"] = participation_mode_label
+    record["participation_time_text"] = participation_time_text
+    record["selection_process_label"] = _derive_selection_process_label(record)
+    record["extracted_keywords"] = _extract_program_keywords(record)
+    score = compute_recommended_score(record)
+    record["deadline_confidence"] = _program_deadline_confidence(record)
+    record["recommended_score"] = score.recommended_score
+    record["recommendation_reasons"] = list(score.reasons)
+    return record
+
+
+def _serialize_program_list_row_summary(program: Mapping[str, Any]) -> dict[str, Any]:
+    return _serialize_program_card_summary(program)
+
+
+def _build_program_surface_context(
+    *,
+    reason: str | None = None,
+    fit_keywords: Sequence[str] | None = None,
+    score: float | None = None,
+    relevance_score: float | None = None,
+    urgency_score: float | None = None,
+    relevance_reasons: Sequence[str] | None = None,
+    score_breakdown: Mapping[str, int] | None = None,
+    relevance_grade: Literal["high", "medium", "low", "none"] | None = None,
+    relevance_badge: str | None = None,
+) -> dict[str, Any]:
+    return {
+        "reason": reason,
+        "fit_keywords": list(fit_keywords or []),
+        "score": score,
+        "relevance_score": relevance_score,
+        "urgency_score": urgency_score,
+        "relevance_reasons": list(relevance_reasons or []),
+        "score_breakdown": dict(score_breakdown or {}),
+        "relevance_grade": relevance_grade,
+        "relevance_badge": relevance_badge,
+    }
+
+
 def _serialize_program_recommendation(item: ProgramRecommendation) -> ProgramRecommendItem:
     relevance_score = item.relevance_score
     score_percent = _score_to_percent(relevance_score)
-    return ProgramRecommendItem(
-        program_id=item.program_id,
-        score=item.score,
-        relevance_score=relevance_score,
+    context = _build_program_surface_context(
         reason=item.reason,
         fit_keywords=item.fit_keywords,
+        score=item.score,
+        relevance_score=relevance_score,
         relevance_reasons=_recommendation_reasons(item),
         score_breakdown=_default_score_breakdown(score_percent),
         relevance_grade=_relevance_grade(score_percent),
         relevance_badge=_relevance_badge(score_percent),
-        program=ProgramListItem.model_validate(item.program),
+    )
+    return ProgramRecommendItem(
+        program_id=item.program_id,
+        score=context["score"],
+        relevance_score=context["relevance_score"],
+        reason=context["reason"] or "",
+        fit_keywords=context["fit_keywords"],
+        relevance_reasons=context["relevance_reasons"],
+        score_breakdown=context["score_breakdown"],
+        relevance_grade=context["relevance_grade"] or "none",
+        relevance_badge=context["relevance_badge"],
+        program=ProgramListItem.model_validate(_serialize_program_card_summary(item.program)),
     )
 
 
@@ -967,20 +1035,31 @@ def _build_calendar_item(
         urgency_score=urgency_score,
         final_score=final_score,
     )
-    return CalendarRecommendItem(
-        program_id=program_id,
+    context = _build_program_surface_context(
+        reason=reason,
+        fit_keywords=fit_keywords,
+        score=final_score,
         relevance_score=relevance_score,
         urgency_score=urgency_score,
-        final_score=final_score,
-        deadline=deadline,
-        d_day_label=_format_d_day_label(program_record.get("days_left")),
-        reason=reason,
-        fit_keywords=fit_keywords or [],
         relevance_reasons=resolved_relevance_reasons[:3],
         score_breakdown=score_breakdown or _default_score_breakdown(score_percent),
         relevance_grade=relevance_grade or _relevance_grade(score_percent),
         relevance_badge=relevance_badge if relevance_badge is not None else _relevance_badge(score_percent),
-        program=ProgramListItem.model_validate(program_record),
+    )
+    return CalendarRecommendItem(
+        program_id=program_id,
+        relevance_score=context["relevance_score"] or 0.0,
+        urgency_score=context["urgency_score"] or 0.0,
+        final_score=context["score"] or 0.0,
+        deadline=deadline,
+        d_day_label=_format_d_day_label(program_record.get("days_left")),
+        reason=context["reason"] or "",
+        fit_keywords=context["fit_keywords"],
+        relevance_reasons=context["relevance_reasons"],
+        score_breakdown=context["score_breakdown"],
+        relevance_grade=context["relevance_grade"] or "none",
+        relevance_badge=context["relevance_badge"],
+        program=ProgramListItem.model_validate(_serialize_program_card_summary(program_record)),
     )
 
 
@@ -1830,27 +1909,36 @@ def _filter_options_from_facet_snapshot(facets: ProgramFacetSnapshot) -> Program
 
 
 def _serialize_program_list_row(program: dict[str, Any]) -> dict[str, Any]:
+    return _serialize_program_list_row_summary(program)
+
+
+def _build_program_detail_schedule_fields(program: Mapping[str, Any]) -> dict[str, str | None]:
     record = dict(program)
-    compare_meta = record.get("compare_meta") if isinstance(record.get("compare_meta"), dict) else {}
-    record.update(_normalize_rating_fields(record.get("rating") or compare_meta.get("satisfaction_score")))
-    record["teaching_method"] = _derive_teaching_method(record)
-    deadline = _resolve_program_deadline(record)
-    days_left = _calculate_days_left(deadline)
-    participation_mode_label, participation_time_text = _derive_participation_display(record)
-    record["deadline"] = deadline
-    record["days_left"] = days_left
-    record["display_categories"] = _infer_display_categories(record)
-    record["participation_mode_label"] = participation_mode_label
-    record["participation_time_text"] = participation_time_text
-    record["selection_process_label"] = _derive_selection_process_label(record)
-    record["extracted_keywords"] = _extract_program_keywords(record)
-    if days_left is not None:
-        record["is_active"] = days_left >= 0
-    score = compute_recommended_score(record)
-    record["deadline_confidence"] = _program_deadline_confidence(record)
-    record["recommended_score"] = score.recommended_score
-    record["recommendation_reasons"] = list(score.reasons)
-    return record
+    source = str(record.get("source") or "").casefold()
+    is_kstartup = "k-startup" in source or "kstartup" in source
+    is_work24 = "고용24" in source or "work24" in source
+
+    application_start_date = _first_text(record.get("reg_start_date"))
+    application_end_date = _first_text(record.get("close_date"), record.get("deadline"))
+    program_start_date = _first_text(record.get("start_date"))
+    program_end_date = _first_text(record.get("end_date"))
+    if is_kstartup:
+        application_start_date = _first_text(record.get("start_date"), record.get("reg_start_date"))
+        application_end_date = _first_text(record.get("end_date"), record.get("deadline"), record.get("close_date"))
+        program_start_date = None
+        program_end_date = None
+    elif is_work24:
+        application_start_date = _first_text(record.get("reg_start_date"))
+        application_end_date = _first_text(record.get("close_date"), _resolve_program_deadline(record))
+        program_start_date = _first_text(record.get("start_date"))
+        program_end_date = _first_text(record.get("end_date"))
+
+    return {
+        "application_start_date": application_start_date,
+        "application_end_date": application_end_date,
+        "program_start_date": program_start_date,
+        "program_end_date": program_end_date,
+    }
 
 
 def _program_detail_view_count(row: Mapping[str, Any], *, recent_only: bool = False) -> int:
@@ -2326,7 +2414,7 @@ def _build_default_recommendation_items(
             relevance_score=program.get("relevance_score"),
             reason=reason,
             fit_keywords=[],
-            program=ProgramListItem.model_validate(program),
+            program=ProgramListItem.model_validate(_serialize_program_card_summary(program)),
         )
         for program in scored_programs[:top_k]
         if str(program.get("id") or "").strip()
@@ -2381,7 +2469,7 @@ async def _build_cached_recommendation_items(
                 relevance_score=cached_relevance_score,
                 reason=_clean_text(row.get("reason")) or "최근 생성된 추천 결과를 캐시에서 불러왔습니다.",
                 fit_keywords=fit_keywords,
-                program=ProgramListItem.model_validate(program_record),
+                program=ProgramListItem.model_validate(_serialize_program_card_summary(program_record)),
             )
         )
         if len(items) >= top_k:
@@ -2433,7 +2521,7 @@ async def _build_rule_recommendation_items(
                 relevance_score=relevance_score,
                 reason=reason,
                 fit_keywords=fit_keywords,
-                program=ProgramListItem.model_validate(program_record),
+                program=ProgramListItem.model_validate(_serialize_program_card_summary(program_record)),
             )
         )
 
@@ -3198,25 +3286,13 @@ def _format_detail_schedule_text(
 
 
 def _build_program_detail_response(program: dict[str, Any]) -> ProgramDetailResponse:
+    summary_record = _serialize_program_base_summary(program)
     compare_meta = program.get("compare_meta") if isinstance(program.get("compare_meta"), dict) else {}
-    source = str(program.get("source") or "").casefold()
-    is_kstartup = "k-startup" in source or "kstartup" in source
-    is_work24 = "고용24" in source or "work24" in source
-
-    application_start_date = _first_text(program.get("reg_start_date"))
-    application_end_date = _first_text(program.get("close_date"), program.get("deadline"))
-    program_start_date = _first_text(program.get("start_date"))
-    program_end_date = _first_text(program.get("end_date"))
-    if is_kstartup:
-        application_start_date = _first_text(program.get("start_date"), program.get("reg_start_date"))
-        application_end_date = _first_text(program.get("end_date"), program.get("deadline"), program.get("close_date"))
-        program_start_date = None
-        program_end_date = None
-    elif is_work24:
-        application_start_date = _first_text(program.get("reg_start_date"))
-        application_end_date = _first_text(program.get("close_date"), _resolve_program_deadline(program))
-        program_start_date = _first_text(program.get("start_date"))
-        program_end_date = _first_text(program.get("end_date"))
+    schedule_fields = _build_program_detail_schedule_fields(summary_record)
+    application_start_date = schedule_fields["application_start_date"]
+    application_end_date = schedule_fields["application_end_date"]
+    program_start_date = schedule_fields["program_start_date"]
+    program_end_date = schedule_fields["program_end_date"]
 
     capacity_total = _int_or_none(compare_meta.get("capacity"))
     registered_count = _int_or_none(compare_meta.get("registered_count"))
@@ -3225,24 +3301,22 @@ def _build_program_detail_response(program: dict[str, Any]) -> ProgramDetailResp
         capacity_remaining = max(0, capacity_total - registered_count)
 
     certification = _first_text(compare_meta.get("certificate"))
-    rating_raw = _first_text(compare_meta.get("satisfaction_score"))
-    rating_fields = _normalize_rating_fields(rating_raw)
     return ProgramDetailResponse(
-        id=program.get("id"),
-        title=_first_text(program.get("title")),
-        provider=_first_text(program.get("provider")),
+        id=summary_record.get("id"),
+        title=_first_text(summary_record.get("title")),
+        provider=_first_text(summary_record.get("provider")),
         organizer=_first_text(program.get("sponsor_name"), compare_meta.get("supervising_institution"), compare_meta.get("department")),
-        location=_first_text(program.get("location"), program.get("region_detail"), program.get("region")),
-        description=_first_text(program.get("description"), program.get("summary")),
+        location=_first_text(summary_record.get("location"), summary_record.get("region_detail"), summary_record.get("region")),
+        description=_first_text(summary_record.get("description"), summary_record.get("summary")),
         application_start_date=application_start_date,
         application_end_date=application_end_date,
         program_start_date=program_start_date,
         program_end_date=program_end_date,
-        teaching_method=_first_text(program.get("teaching_method"), compare_meta.get("teaching_method")),
-        support_type=_first_text(program.get("support_type"), compare_meta.get("business_type"), compare_meta.get("subsidy_rate")),
-        source_url=_first_text(program.get("application_url"), compare_meta.get("application_url"), program.get("source_url"), program.get("link")),
-        fee=_int_or_none(program.get("cost")),
-        support_amount=_int_or_none(program.get("subsidy_amount")),
+        teaching_method=_first_text(summary_record.get("teaching_method"), compare_meta.get("teaching_method")),
+        support_type=_first_text(summary_record.get("support_type"), compare_meta.get("business_type"), compare_meta.get("subsidy_rate")),
+        source_url=_first_text(summary_record.get("application_url"), compare_meta.get("application_url"), summary_record.get("source_url"), summary_record.get("link")),
+        fee=_int_or_none(summary_record.get("cost")),
+        support_amount=_int_or_none(summary_record.get("subsidy_amount")),
         eligibility=_compact_text_list(program.get("target"), compare_meta.get("target_group"), compare_meta.get("target_detail"), compare_meta.get("target_age")),
         schedule_text=_format_detail_schedule_text(
             application_start_date=application_start_date,
@@ -3250,11 +3324,11 @@ def _build_program_detail_response(program: dict[str, Any]) -> ProgramDetailResp
             program_start_date=program_start_date,
             program_end_date=program_end_date,
         ),
-        rating=rating_fields["rating_display"],
-        rating_raw=rating_fields["rating_raw"],
-        rating_normalized=rating_fields["rating_normalized"],
-        rating_scale=rating_fields["rating_scale"],
-        rating_display=rating_fields["rating_display"],
+        rating=summary_record.get("rating_display"),
+        rating_raw=summary_record.get("rating_raw"),
+        rating_normalized=summary_record.get("rating_normalized"),
+        rating_scale=summary_record.get("rating_scale"),
+        rating_display=summary_record.get("rating_display"),
         job_placement_rate=_first_text(compare_meta.get("employment_rate_6m"), compare_meta.get("employment_rate_3m")),
         capacity_total=capacity_total,
         capacity_remaining=capacity_remaining,
@@ -3262,8 +3336,8 @@ def _build_program_detail_response(program: dict[str, Any]) -> ProgramDetailResp
         phone=_first_text(compare_meta.get("contact_phone")),
         email=_first_text(compare_meta.get("application_method_email")),
         certifications=[certification] if certification else [],
-        tech_stack=_compact_text_list(program.get("skills")),
-        tags=_compact_text_list(program.get("tags")),
+        tech_stack=_compact_text_list(summary_record.get("skills")),
+        tags=_compact_text_list(summary_record.get("tags")),
     )
 
 
