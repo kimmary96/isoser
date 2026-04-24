@@ -748,6 +748,7 @@ export interface PortfolioResultResponse {
 
 export interface PortfolioConversionResponse {
   activity_id: string | null;
+  activity_image_urls?: string[];
   project_overview: PortfolioOverviewResponse;
   problem_definition: PortfolioTextSectionResponse;
   tech_decision: PortfolioTextSectionResponse;
@@ -868,6 +869,7 @@ export interface DashboardProfileResponse {
 export interface ResumeBuilderProfile {
   name: string;
   bio?: string;
+  avatar_url?: string | null;
   email: string;
   phone: string;
   self_intro: string;
@@ -906,6 +908,7 @@ export interface MatchDashboardResponse {
 export interface ResumeExportResponse {
   resume: Resume | null;
   activities: Activity[];
+  profile: ResumeBuilderProfile | null;
 }
 
 export interface DocumentsResponse {

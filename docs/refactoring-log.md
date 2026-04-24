@@ -1,5 +1,24 @@
 # 리팩토링 로그
 
+- 2026-04-24: `backend/services/program_list_filters.py`, `backend/routers/programs.py`, `frontend/app/(landing)/programs/programs-table.tsx`, `frontend/app/(landing)/programs/programs-table-helpers.ts`, `frontend/app/(landing)/programs/programs-urgent-card.tsx`, `frontend/app/(landing)/programs/page.tsx`, `backend/README.md`, `scripts/run-backend-checks.ps1`, `backend/tests/fixtures/program_list_api_examples.json`, `backend/tests/test_program_list_api_examples.py`, `docs/current-state.md`, `docs/API_STRUCTURE.md`, `docs/PROJECT_STRUCTURE.md`, `docs/REFACTORING_REPORT.md`
+  - `backend/routers/programs.py` 안에 길게 붙어 있던 프로그램 목록 pure helper 묶음을 `backend/services/program_list_filters.py`로 분리해, 라우터는 endpoint/orchestration 중심으로 두고 검색/카테고리 매칭/표시 파생값/추가 필터/정렬/filter-options 로직은 서비스 모듈에서 재사용하게 정리함
+  - `/programs` 페이지 안에 있던 테이블 렌더링과 포맷팅 로직을 `programs-table.tsx`, `programs-table-helpers.ts`, `programs-urgent-card.tsx`로 분리해 기존 화면 출력은 유지하면서 `page.tsx` 책임을 줄임
+  - 백엔드 개발 환경의 canonical path를 `backend/venv`로 문서화하고 `scripts/run-backend-checks.ps1`를 추가했으며, `backend/tests/fixtures/program_list_api_examples.json`와 전용 테스트로 목록/count/filter-options 예시 응답과 파라미터 키를 schema 수준에서 고정함
+
+- 2026-04-24: `frontend/lib/api/program-query.ts`, `frontend/lib/api/program-query.test.ts`, `frontend/lib/types/index.ts`, `frontend/lib/api/backend.ts`, `frontend/lib/api/app.ts`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/app/(landing)/programs/page-filters.ts`, `frontend/app/(landing)/programs/page.tsx`, `frontend/vitest.config.ts`, `backend/schemas/programs.py`, `backend/schemas/__init__.py`, `backend/routers/programs.py`, `docs/PROJECT_STRUCTURE.md`, `docs/API_STRUCTURE.md`, `docs/REFACTORING_REPORT.md`, `docs/current-state.md`, `reports/SESSION-2026-04-24-structure-cleanup-refactor-result.md`
+  - 프로그램 목록/추천/비교 검색의 query-string 조립을 `frontend/lib/api/program-query.ts`로 공통화해 `backend.ts`, `app.ts`, recommend-calendar BFF에 흩어져 있던 수동 직렬화를 줄였고, Vitest alias 설정까지 보강해 프런트 테스트를 다시 전체 통과 상태로 맞춤
+  - `/programs` 페이지 전용 필터 옵션/URL 정규화 로직을 `page-filters.ts`로 분리하고 세션/북마크 조회를 초기에 시작하게 바꿔, 기존 화면 흐름을 유지한 채 페이지 파일 책임과 초기 직렬 대기를 줄임
+  - `backend/routers/programs.py` 안에 있던 프로그램 요청/응답 Pydantic 모델을 `backend/schemas/programs.py`로 분리하고 `/programs/list` read-model 경로는 item fetch + count를 `asyncio.gather(...)`로 병렬화해, 공개 API 계약은 유지하면서 라우터 파일 집중도와 응답 대기를 함께 낮춤
+
+- 2026-04-24: `supabase/migrations/20260425120000_harden_remaining_function_search_paths.sql`, `supabase/migrations/20260425121000_align_activity_images_storage_policies.sql`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-supabase-live-policy-searchpath-alignment-result.md`
+  - live Supabase MCP 점검에서 남아 있던 `function_search_path_mutable` 경고 3건을 정리하기 위해 `recommendation_normalize_text`, `recommendation_compact_text_array`, `program_list_click_hotness_score`에 대한 corrective migration을 추가했고, 같은 SQL을 live에 적용해 advisor 경고를 실제로 닫음
+  - `activity-images` bucket 정책도 repo 기준 corrective migration으로 정리해 public bucket + `<user-id>/...` 경로 계약에 맞는 own-folder `SELECT/INSERT/UPDATE/DELETE` 정책을 정본으로 남겼지만, `storage.objects`는 MCP 경로에서 `must be owner of table objects`로 막혀 live apply는 SQL Editor 같은 owner-capable 경로가 따로 필요하다는 점을 함께 기록함
+  - live inspection 과정에서 `public.programs`의 옛 base-table helper drift는 현 runtime이 `program_list_index` 중심이라 즉시 복구 대상이 아니라는 점도 current-state에 명시해, 예전 migration 기대치와 현재 실제 운영 경로를 분리함
+
+- 2026-04-24: `frontend/app/api/dashboard/activities/images/route.ts`, `frontend/app/api/dashboard/profile/route.ts`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-activity-images-upload-upsert-removal-result.md`
+  - `activity-images` 업로드 경로가 이미 매번 고유 `<user-id>/...` path를 생성하고 있어 `upsert: true`가 필요하지 않다는 점을 반영해 profile/avatar 및 activity image upload route에서 upsert 옵션을 제거함
+  - 이로써 현재 live의 insert/delete-only storage policy drift 상태에서도 upload 경로가 SELECT/UPDATE 권한에 덜 의존하게 되었고, public URL 반환 방식과 기존 사용자 동작은 그대로 유지함
+
 - 2026-04-24: `backend/services/program_list_scoring.py`, `backend/rag/programs_rag.py`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `backend/tests/test_programs_rag.py`, `docs/specs/compare-meta-runtime-touchpoints-v1.md`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-compare-meta-score-search-cleanup-result.md`
   - 검색 helper, 추천 마감일 해석, 추천 점수 계산이 direct `compare_meta` 대신 공용 legacy bridge helper를 먼저 거치도록 정리해 `service_meta` 우선 + sparse fallback 원칙을 backend 전반에 더 넓게 맞춤
   - 관련 단위 테스트를 추가해 `service_meta`가 `compare_meta`보다 우선하는 검색/점수/추천 보조 동작과 Work24 training-start marker 보존 동작을 고정함
@@ -3159,3 +3178,12 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-24: `frontend/lib/program-card-items.ts`, `frontend/app/dashboard/_hooks/recommend-calendar-cache.ts`, `frontend/lib/types/index.ts`, `docs/current-state.md`, `reports/SESSION-2026-04-24-recommendation-summary-contract-tightening-result.md`
   - central card adapter도 `ProgramCardSummary`만 받도록 좁히고, legacy browser cache migration은 옛 `programs[]` JSON을 summary로 보정한 뒤 `ProgramCardItem[]`로 승격하게 바꿔 과도기 호환을 유지함
   - 그 결과 `ProgramCardRenderable = ProgramCardSummary | Program` 전이 별칭을 활성 코드와 타입 export에서 제거함
+- 2026-04-24: `frontend/app/dashboard/activities/page.tsx`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-activity-card-cover-image-result.md`
+  - 성과 저장소 목록 카드가 `activity.image_urls` 첫 번째 유효 URL을 대표 이미지로 렌더하도록 바꾸고, 이미지가 없을 때만 기존 그라데이션 플레이스홀더를 유지함
+  - 저장/업로드 API나 `image_urls` 배열 계약은 바꾸지 않아, 기존 활동 상세/수정 흐름을 유지하면서 카드 썸네일 표시만 보강함
+- 2026-04-24: `frontend/app/api/dashboard/resume/route.ts`, `frontend/app/api/dashboard/resume-export/route.ts`, `frontend/app/dashboard/resume/_hooks/use-resume-builder.ts`, `frontend/app/dashboard/resume/_components/resume-preview-pane.tsx`, `frontend/app/dashboard/resume/export/page.tsx`, `frontend/app/dashboard/resume/export/_components/resume-pdf-download.tsx`, `frontend/app/dashboard/portfolio/page.tsx`, `frontend/lib/activity-display.ts`, `frontend/lib/types/index.ts`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-resume-avatar-and-portfolio-images-result.md`
+  - 이력서 작성/출력 경로에 `profiles.avatar_url`을 연결해 resume builder preview와 PDF export가 프로필 아바타를 함께 표시하도록 보강함
+  - 포트폴리오 초안은 선택한 성과 활동의 `image_urls`를 `portfolio_payload.activity_image_urls`로 함께 저장하고 preview에서 전체 이미지를 렌더하도록 바꿨으며, 기존 저장 초안도 source activity 기준으로 가능한 범위에서 이미지 갤러리를 복원함
+- 2026-04-24: `docs/README.md`, `docs/audits/README.md`, `docs/launch/README.md`, `docs/presentation/README.md`, `docs/worklogs/README.md`, `docs/current-state.md`, `tasks/README.md`, `cowork/reviews/README.md`, `reports/README.md`
+  - `docs`의 날짜형 문서를 audit/presentation/worklog 월 폴더로 정리하고, launch 문서는 `docs/launch/`로 모아 찾기 경로를 단순화함
+  - 기존 문서 링크와 과거 보고서 경로를 깨지 않도록 옛 위치에는 이동 안내 stub를 남겼고, watcher가 고정 경로를 쓰는 `tasks/`, `cowork/reviews/`, `reports/TASK-*`는 이동 대신 탐색 가이드 README를 추가함

@@ -1,9 +1,11 @@
+import Image from "next/image";
 import type { Activity } from "@/lib/types";
 import { getActivityMetaItems, getActivityResumeLines } from "@/lib/activity-display";
 
 type ResumeProfile = {
   name: string;
   bio?: string;
+  avatar_url?: string | null;
   email: string;
   phone: string;
   self_intro: string;
@@ -64,33 +66,50 @@ export function ResumePreviewPane({
       <div className="flex-1 p-8">
         <div className="mx-auto min-h-[800px] max-w-2xl rounded-2xl bg-white p-10 shadow-sm">
           <div className="mb-4 flex items-start justify-between border-b border-gray-200 pb-4">
-            <div>
-              <h1
-                className="mb-1 text-3xl font-bold text-gray-900"
-                style={{ fontFamily: "Pretendard, sans-serif" }}
-              >
-                {profile?.name || "이름을 입력해주세요"}
-              </h1>
-              <input
-                type="text"
-                value={bioInput}
-                onChange={(e) => onBioInputChange(e.target.value)}
-                onBlur={() => void onBioSave()}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    void onBioSave();
-                  }
-                }}
-                placeholder="5년차 마케터 | 브랜드 기획 전문"
-                className="mt-0.5 w-full border-b border-transparent bg-transparent text-sm text-gray-500 outline-none focus:border-gray-300"
-              />
-              {targetJob && <p className="mt-0.5 text-sm text-gray-500">{targetJob}</p>}
-              <div className="mt-2 flex gap-3 text-xs text-gray-400">
-                {profile?.email && <span>✉ {profile.email}</span>}
-                {profile?.phone && <span>☎ {profile.phone}</span>}
+            <div className="flex items-start gap-4">
+              <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gray-100">
+                {profile?.avatar_url ? (
+                  <Image
+                    src={profile.avatar_url}
+                    alt={`${profile.name || "프로필"} 아바타`}
+                    width={80}
+                    height={80}
+                    sizes="80px"
+                    unoptimized
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <span className="text-2xl text-gray-300">👤</span>
+                )}
               </div>
-              {bioSaving && <p className="mt-1 text-[10px] text-gray-400">bio 저장 중...</p>}
+              <div>
+                <h1
+                  className="mb-1 text-3xl font-bold text-gray-900"
+                  style={{ fontFamily: "Pretendard, sans-serif" }}
+                >
+                  {profile?.name || "이름을 입력해주세요"}
+                </h1>
+                <input
+                  type="text"
+                  value={bioInput}
+                  onChange={(e) => onBioInputChange(e.target.value)}
+                  onBlur={() => void onBioSave()}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      void onBioSave();
+                    }
+                  }}
+                  placeholder="5년차 마케터 | 브랜드 기획 전문"
+                  className="mt-0.5 w-full border-b border-transparent bg-transparent text-sm text-gray-500 outline-none focus:border-gray-300"
+                />
+                {targetJob && <p className="mt-0.5 text-sm text-gray-500">{targetJob}</p>}
+                <div className="mt-2 flex gap-3 text-xs text-gray-400">
+                  {profile?.email && <span>✉ {profile.email}</span>}
+                  {profile?.phone && <span>☎ {profile.phone}</span>}
+                </div>
+                {bioSaving && <p className="mt-1 text-[10px] text-gray-400">bio 저장 중...</p>}
+              </div>
             </div>
             <p className="text-xs text-gray-400">Seoul, South Korea</p>
           </div>

@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { listActivities, listSavedPortfolios, savePortfolioDocument } from "@/lib/api/app";
 import { convertActivity } from "@/lib/api/backend";
+import { getActivityImageUrls } from "@/lib/activity-display";
 import type {
   Activity,
   ActivityConvertRequest,
@@ -30,6 +32,22 @@ function buildPortfolioConvertPayload(activity: Activity): ActivityConvertReques
     star_task: activity.star_task ?? null,
     star_action: activity.star_action ?? null,
     star_result: activity.star_result ?? null,
+  };
+}
+
+function attachActivityImagesToPortfolio(
+  portfolio: PortfolioConversionResponse,
+  activity?: Activity
+): PortfolioConversionResponse {
+  const nextImages = activity ? getActivityImageUrls(activity) : portfolio.activity_image_urls ?? [];
+
+  if (nextImages.length === 0) {
+    return portfolio;
+  }
+
+  return {
+    ...portfolio,
+    activity_image_urls: nextImages,
   };
 }
 
@@ -76,8 +94,27 @@ export default function PortfolioPage() {
           listSavedPortfolios().catch(() => ({ portfolios: [] })),
         ]);
         if (!mounted) return;
-        setActivities(activityResult.activities);
-        setSavedPortfolios(portfolioResult.portfolios);
+        const nextActivities = activityResult.activities;
+        const activityMap = new Map(nextActivities.map((activity) => [activity.id, activity]));
+
+        setActivities(nextActivities);
+        setPortfolioPreview((current) =>
+          current?.activity_id
+            ? attachActivityImagesToPortfolio(current, activityMap.get(current.activity_id))
+            : current
+        );
+        setSavedPortfolios(
+          portfolioResult.portfolios.map((item) => ({
+            ...item,
+            portfolio:
+              item.portfolio && item.sourceActivityId
+                ? attachActivityImagesToPortfolio(
+                    item.portfolio,
+                    activityMap.get(item.sourceActivityId)
+                  )
+                : item.portfolio,
+          }))
+        );
       } catch (loadError) {
         if (!mounted) return;
         setError(loadError instanceof Error ? loadError.message : "활동 목록을 불러오지 못했습니다.");
@@ -120,7 +157,7 @@ export default function PortfolioPage() {
       if (!result.portfolio) {
         throw new Error("포트폴리오 변환 결과를 받지 못했습니다.");
       }
-      const portfolio = result.portfolio;
+      const portfolio = attachActivityImagesToPortfolio(result.portfolio, activity);
       if (typeof window !== "undefined") {
         window.sessionStorage.setItem(
           PENDING_PORTFOLIO_CONVERSION_KEY,
@@ -245,6 +282,7 @@ export default function PortfolioPage() {
   const overview = portfolioPreview.project_overview;
   const result = portfolioPreview.quantified_result;
   const implementation = portfolioPreview.implementation_detail;
+  const portfolioImages = portfolioPreview.activity_image_urls ?? [];
 
   return (
     <main className="min-h-screen bg-gray-50 px-4 py-8">
@@ -307,6 +345,32 @@ export default function PortfolioPage() {
             />
           </div>
         </div>
+
+        {portfolioImages.length > 0 && (
+          <div className="rounded-3xl border border-gray-200 bg-white p-8 shadow-sm">
+            <h2 className="text-xl font-semibold text-gray-900">성과 이미지</h2>
+            <p className="mt-2 text-sm leading-6 text-gray-500">
+              성과 저장소에 저장된 이미지를 포트폴리오 자료로 함께 표시합니다.
+            </p>
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              {portfolioImages.map((url, index) => (
+                <div
+                  key={`${url}-${index}`}
+                  className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-gray-200 bg-gray-50"
+                >
+                  <Image
+                    src={url}
+                    alt={`${overview.title} 성과 이미지 ${index + 1}`}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    unoptimized
+                    className="object-cover"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <SectionCard
           title={portfolioPreview.problem_definition.label}

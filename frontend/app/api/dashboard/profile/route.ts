@@ -286,7 +286,6 @@ export async function PUT(request: Request) {
       const { error: uploadError } = await supabase.storage
         .from("activity-images")
         .upload(path, fileBuffer, {
-          upsert: true,
           contentType: avatarFile.type || "application/octet-stream",
         });
 

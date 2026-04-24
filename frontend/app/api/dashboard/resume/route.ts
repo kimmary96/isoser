@@ -31,7 +31,7 @@ export async function GET() {
 
     const profileWithBio = await supabase
       .from("profiles")
-      .select("name, bio, email, phone, self_intro, skills")
+      .select("name, bio, avatar_url, email, phone, self_intro, skills")
       .eq("id", user.id)
       .maybeSingle();
 
@@ -43,7 +43,7 @@ export async function GET() {
     ) {
       const profileWithoutBio = await supabase
         .from("profiles")
-        .select("name, email, phone, self_intro, skills")
+        .select("name, avatar_url, email, phone, self_intro, skills")
         .eq("id", user.id)
         .maybeSingle();
       profileData = profileWithoutBio.data ? { ...profileWithoutBio.data, bio: "" } : null;
