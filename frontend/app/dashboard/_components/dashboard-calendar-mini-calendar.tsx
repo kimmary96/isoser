@@ -2,10 +2,10 @@
 
 import { useMemo } from "react";
 
-import type { ProgramCalendarRecommendItem } from "@/lib/types";
+import type { ProgramCardItem } from "@/lib/types";
 
 type DashboardCalendarMiniCalendarProps = {
-  items: ProgramCalendarRecommendItem[];
+  items: ProgramCardItem[];
   selectedDate: string | null;
   onSelectDate: (dateKey: string) => void;
 };
@@ -49,11 +49,11 @@ export function DashboardCalendarMiniCalendar({
     const meta = new Map<string, { count: number; titles: string[] }>();
 
     items.forEach((item) => {
-      const dateKey = parseDateKey(item.deadline);
+      const dateKey = parseDateKey(item.program.deadline);
       if (!dateKey) return;
-      if (!item.deadline) return;
+      if (!item.program.deadline) return;
 
-      const parsed = new Date(item.deadline);
+      const parsed = new Date(item.program.deadline);
       if (parsed.getFullYear() !== currentYear || parsed.getMonth() !== currentMonth) return;
 
       const entry = meta.get(dateKey) ?? { count: 0, titles: [] };

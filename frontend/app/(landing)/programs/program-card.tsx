@@ -2,25 +2,48 @@
 
 import Link from "next/link";
 
-import type { Program } from "@/lib/types";
+import {
+  getProgramCardReason,
+  getProgramCardRelevanceReasons,
+  toProgramCardItem,
+} from "@/lib/program-card-items";
+import type { Program, ProgramCardRenderable, ProgramSurfaceContext } from "@/lib/types";
 
 import ProgramBookmarkButton from "./program-bookmark-button";
 import { deadlineLabel, deadlineTone, normalizeTextList, scorePercent } from "./program-utils";
 
 type ProgramCardProps = {
-  program: Program;
+  program: ProgramCardRenderable;
+  context?: ProgramSurfaceContext | null;
   isLoggedIn: boolean;
   initialBookmarked?: boolean;
 };
 
-export default function ProgramCard({ program, isLoggedIn, initialBookmarked = false }: ProgramCardProps) {
+export default function ProgramCard({
+  program,
+  context = null,
+  isLoggedIn,
+  initialBookmarked = false,
+}: ProgramCardProps) {
+  const item = toProgramCardItem(program, context);
+  const legacyProgram = program as Partial<Program>;
   const programId = typeof program.id === "string" || typeof program.id === "number" ? String(program.id) : "";
   const href = programId ? `/programs/${encodeURIComponent(programId)}` : "/programs";
   const chips = [...normalizeTextList(program.tags), ...normalizeTextList(program.skills)].slice(0, 4);
-  const reasons = (program.relevance_reasons?.length ? program.relevance_reasons : program._reason ? [program._reason] : []).slice(0, 3);
-  const percent = scorePercent(program);
-  const badge = program.relevance_badge ?? (percent !== null && percent >= 80 ? "딱 맞아요" : percent !== null && percent >= 60 ? "추천" : percent !== null && percent >= 40 ? "조건 일치" : null);
+  const reasons = getProgramCardRelevanceReasons(item);
+  const percent = scorePercent(program, context);
+  const badge =
+    context?.relevance_badge ??
+    legacyProgram.relevance_badge ??
+    (percent !== null && percent >= 80
+      ? "딱 맞아요"
+      : percent !== null && percent >= 60
+        ? "추천"
+        : percent !== null && percent >= 40
+          ? "조건 일치"
+          : null);
   const deadline = deadlineLabel(program);
+  const primaryReason = getProgramCardReason(item);
 
   return (
     <article className="relative h-full rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md">
@@ -56,6 +79,8 @@ export default function ProgramCard({ program, isLoggedIn, initialBookmarked = f
               <li key={reason} className="text-sm leading-5 text-slate-700">- {reason}</li>
             ))}
           </ul>
+        ) : primaryReason ? (
+          <p className="mt-4 text-sm leading-5 text-slate-700">- {primaryReason}</p>
         ) : null}
 
         {chips.length > 0 ? (

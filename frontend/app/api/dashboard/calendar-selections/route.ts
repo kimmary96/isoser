@@ -1,9 +1,14 @@
 import { apiError, apiOk } from "@/lib/api/route-response";
+import { toSelectionProgramCardItem } from "@/lib/program-card-items";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createClient } from "@supabase/supabase-js";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import type { Program } from "@/lib/types";
+import type {
+  DashboardCalendarSelectionsResponse,
+  Program,
+  ProgramCardItem,
+} from "@/lib/types";
 
 function readLocalBackendEnv(name: string): string | null {
   const candidates = [
@@ -69,7 +74,7 @@ export async function GET() {
 
     const { data: selectionRows, error: selectionError } = await supabase
       .from("calendar_program_selections")
-      .select("program_id, position")
+      .select("program_id, position, updated_at")
       .eq("user_id", user.id)
       .order("position", { ascending: true })
       .order("updated_at", { ascending: false });
@@ -81,7 +86,7 @@ export async function GET() {
       .filter(Boolean);
 
     if (programIds.length === 0) {
-      return apiOk({ programs: [] });
+      return apiOk<DashboardCalendarSelectionsResponse>({ items: [] });
     }
 
     const { data: programRows, error: programError } = await supabase
@@ -92,11 +97,15 @@ export async function GET() {
     if (programError) throw new Error(programError.message);
 
     const programMap = new Map((programRows ?? []).map((program) => [String(program.id), program]));
-    const programs = programIds
-      .map((programId) => programMap.get(programId))
-      .filter((program): program is Program => Boolean(program));
+    const items = programIds
+      .map((programId, index) => {
+        const program = programMap.get(programId);
+        const selectedAt = (selectionRows ?? [])[index]?.updated_at ?? null;
+        return program ? toSelectionProgramCardItem(program as Program, selectedAt) : null;
+      })
+      .filter((item): item is ProgramCardItem => Boolean(item));
 
-    return apiOk({ programs });
+    return apiOk<DashboardCalendarSelectionsResponse>({ items });
   } catch (error) {
     const message = error instanceof Error ? error.message : "캘린더 적용 일정을 불러오지 못했습니다.";
     return apiError(message, 400, "BAD_REQUEST");

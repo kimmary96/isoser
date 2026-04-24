@@ -1,6 +1,11 @@
 import { apiError, apiOk } from "@/lib/api/route-response";
+import { toBookmarkProgramCardItem } from "@/lib/program-card-items";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import type { Program } from "@/lib/types";
+import type {
+  DashboardBookmarksResponse,
+  Program,
+  ProgramCardItem,
+} from "@/lib/types";
 
 type BookmarkRow = {
   program_id: string | null;
@@ -42,13 +47,14 @@ export async function GET() {
     const programMap = new Map(
       ((programs ?? []) as Program[]).map((program) => [String(program.id ?? ""), program])
     );
-    const items = rows.map((item) => ({
-      programId: item.program_id ?? null,
-      createdAt: item.created_at ?? null,
-      program: item.program_id ? programMap.get(String(item.program_id)) ?? null : null,
-    }));
+    const items = rows
+      .map((item) => {
+        const program = item.program_id ? programMap.get(String(item.program_id)) ?? null : null;
+        return program ? toBookmarkProgramCardItem(program, item.created_at ?? null) : null;
+      })
+      .filter((item): item is ProgramCardItem => Boolean(item));
 
-    return apiOk({ items });
+    return apiOk<DashboardBookmarksResponse>({ items });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "찜한 프로그램을 불러오지 못했습니다.";

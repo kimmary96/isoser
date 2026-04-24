@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Fragment, useEffect, useMemo, useState } from "react";
 
 import { getProgramCompareRelevance } from "@/lib/api/app";
-import type { Program, ProgramRelevanceItem } from "@/lib/types";
+import type { ProgramRelevanceItem, ProgramSelectSummary } from "@/lib/types";
 
 import { CompareRelevanceSection } from "./compare-relevance-section";
 import {
@@ -24,7 +24,7 @@ type ProgramsCompareClientProps = {
   initialSlots: Array<CompareProgram | null>;
   canonicalIds: string[];
   needsNormalization: boolean;
-  suggestions: Program[];
+  suggestions: ProgramSelectSummary[];
   suggestionsError: string | null;
   isLoggedIn: boolean;
 };

@@ -322,6 +322,17 @@ export interface ProgramListRow extends ProgramCardSummary {
   compare_meta?: CompareMeta | null;
 }
 
+export interface ProgramSelectSummary {
+  id: string | number | null;
+  title: string | null;
+  category: string | null;
+  provider: string | null;
+  source?: string | null;
+  tags: string[] | string | null;
+  days_left?: number | null;
+  compare_meta?: CompareMeta | null;
+}
+
 export interface ProgramSurfaceContext {
   surface?: string | null;
   reason?: string | null;
@@ -347,6 +358,22 @@ export interface ProgramCardItem {
 export interface ProgramListRowItem {
   program: ProgramListRow;
   context?: ProgramSurfaceContext | null;
+}
+
+export interface DashboardRecommendedProgramsResponse {
+  items: ProgramCardItem[];
+}
+
+export interface DashboardRecommendCalendarResponse {
+  items: ProgramCardItem[];
+}
+
+export interface DashboardBookmarksResponse {
+  items: ProgramCardItem[];
+}
+
+export interface DashboardCalendarSelectionsResponse {
+  items: ProgramCardItem[];
 }
 
 export interface Program {
@@ -411,11 +438,7 @@ export interface Program {
   _relevance_score?: number | null;
 }
 
-export interface RecommendedProgram extends Program {
-  reason: string;
-  fitKeywords: string[];
-  score: number | null;
-}
+export type ProgramCardRenderable = ProgramCardSummary | Program;
 
 export interface ProgramDetail {
   id: string | number | null;
@@ -589,8 +612,6 @@ export interface CalendarRecommendItem {
 export interface CalendarRecommendResponse {
   items: CalendarRecommendItem[];
 }
-
-export type ProgramCalendarRecommendItem = CalendarRecommendItem;
 export type AssistantPreferredIntent = "coach" | "recommend" | "recommend_calendar";
 
 export interface AssistantToolCall {
@@ -920,8 +941,4 @@ export interface CoverLetterMutationResponse {
 
 export interface ProgramListResponse {
   programs: Program[];
-}
-
-export interface RecommendedProgramsResponse {
-  programs: RecommendedProgram[];
 }

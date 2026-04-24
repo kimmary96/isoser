@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { getRecommendedPrograms } from "@/lib/api/app";
-import type { Program } from "@/lib/types";
+import type { ProgramCardItem, ProgramCardRenderable } from "@/lib/types";
 
 import ProgramCard from "./program-card";
 import { isDisplayableProgram } from "./program-utils";
@@ -12,7 +12,7 @@ import { isDisplayableProgram } from "./program-utils";
 type RecommendedProgramsSectionProps = {
   isLoggedIn: boolean;
   loginHref?: string;
-  previewPrograms?: Program[];
+  previewPrograms?: ProgramCardRenderable[];
   bookmarkedProgramIds?: string[];
 };
 
@@ -44,13 +44,13 @@ export default function RecommendedProgramsSection({
   previewPrograms = [],
   bookmarkedProgramIds = [],
 }: RecommendedProgramsSectionProps) {
-  const [programs, setPrograms] = useState<Program[]>([]);
+  const [items, setItems] = useState<ProgramCardItem[]>([]);
   const [loading, setLoading] = useState(isLoggedIn);
   const [shouldHide, setShouldHide] = useState(false);
 
   useEffect(() => {
     if (!isLoggedIn) {
-      setPrograms([]);
+      setItems([]);
       setLoading(false);
       setShouldHide(false);
       return;
@@ -65,11 +65,11 @@ export default function RecommendedProgramsSection({
       try {
         const result = await getRecommendedPrograms();
         if (!mounted) return;
-        setPrograms(
-          result.programs
-            .filter(isDisplayableProgram)
-            .filter((program) => {
-              const score = program._relevance_score ?? program.relevance_score ?? program._score ?? program.final_score;
+        setItems(
+          result.items
+            .filter((item) => isDisplayableProgram(item.program))
+            .filter((item) => {
+              const score = item.context?.relevance_score ?? item.context?.score ?? item.program.relevance_score ?? item.program.final_score;
               if (typeof score !== "number" || Number.isNaN(score)) return false;
               return score <= 1 ? score >= 0.4 : score >= 40;
             })
@@ -149,7 +149,7 @@ export default function RecommendedProgramsSection({
         </Link>
       </div>
 
-      {programs.length === 0 ? (
+      {items.length === 0 ? (
         <div className="mt-6 rounded-2xl border border-dashed border-sky-200 bg-white px-6 py-10 text-center">
           <p className="text-base font-semibold text-slate-900">아직 추천할 프로그램이 없습니다</p>
           <p className="mt-2 text-sm text-slate-500">
@@ -166,12 +166,13 @@ export default function RecommendedProgramsSection({
         </div>
       ) : (
         <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {programs.map((program, index) => (
+          {items.map((item, index) => (
             <ProgramCard
-              key={`${typeof program.id === "string" || typeof program.id === "number" ? program.id : program.title || index}`}
-              program={program}
+              key={`${typeof item.program.id === "string" || typeof item.program.id === "number" ? item.program.id : item.program.title || index}`}
+              program={item.program}
+              context={item.context}
               isLoggedIn={isLoggedIn}
-              initialBookmarked={bookmarkedProgramIds.includes(String(program.id ?? ""))}
+              initialBookmarked={bookmarkedProgramIds.includes(String(item.program.id ?? ""))}
             />
           ))}
         </div>

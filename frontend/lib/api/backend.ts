@@ -21,9 +21,11 @@ import type {
   ProgramFilterOptionsResponse,
   ProgramListPageResponse,
   ProgramListParams,
+  ProgramSelectSummary,
   ProgramRecommendResponse,
   SkillSuggestResponse,
 } from "@/lib/types";
+import { toProgramSelectSummaries } from "@/lib/program-display";
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
@@ -277,6 +279,13 @@ export async function listPrograms(params?: ProgramListParams): Promise<Program[
     },
     "Failed to load programs."
   );
+}
+
+export async function listProgramSelectSummaries(
+  params?: ProgramListParams
+): Promise<ProgramSelectSummary[]> {
+  const programs = await listPrograms(params);
+  return toProgramSelectSummaries(programs);
 }
 
 export async function listProgramsPage(params?: ProgramListParams): Promise<ProgramListPageResponse> {

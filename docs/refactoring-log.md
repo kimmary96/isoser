@@ -1,5 +1,12 @@
 # 리팩토링 로그
 
+- 2026-04-24: `frontend/lib/types/index.ts`, `frontend/lib/program-display.ts`, `frontend/lib/api/backend.ts`, `frontend/app/(landing)/compare/program-select-modal.tsx`, `frontend/app/(landing)/compare/page.tsx`, `frontend/app/(landing)/compare/programs-compare-client.tsx`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-compare-select-summary-transition-result.md`
+  - compare 선택 경로에서 전체 `Program` row를 계속 들고 다니지 않도록 최소 선택 카드 계약 `ProgramSelectSummary`를 추가하고, `program-display`와 backend helper에서 이 요약 타입으로 바로 줄이는 adapter를 공용화함
+  - compare 모달의 북마크/검색 결과와 compare 페이지 하단 추천 카드가 이제 같은 요약 타입을 사용해, 선택 UI가 실제로 쓰는 필드만 상태로 유지하도록 정리함
+  - 검색 조건, 정렬, compare 3슬롯 URL state, 북마크 탭/전체 검색 탭 동작, 프로그램 추가 흐름은 그대로 유지함
+- 2026-04-24: `docs/rules/long-refactor-handoff-template.md`, `docs/rules/README.md`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-long-refactor-handoff-template-result.md`
+  - 장기 리팩토링 세션에서 컨텍스트가 많이 차거나 spec/log/dirty worktree가 누적된 상태를 안전하게 새 대화창으로 넘길 수 있도록 공용 handoff 템플릿 문서를 추가함
+  - 새 템플릿은 `git status --short --branch`, `docs/refactoring-log.md`, 현재 패키지 번호, dirty worktree 주제, 이번 턴에서 끝낼 작업 1개를 새 창에서 다시 확인하게 강제해 “계속 확장만 되는 리팩토링” 대신 패키지 완결 중심으로 이어가게 함
 - 2026-04-24: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/lib/types/index.ts`, `frontend/app/api/dashboard/recommended-programs/route.ts`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-program-surface-serializer-type-seed-result.md`
   - `backend/routers/programs.py`에 `base -> card/list -> legacy wrapper` 방향의 내부 serializer transition helper를 추가해 추천/캘린더/상세 조립부가 공용 요약 뿌리를 먼저 통과하도록 정리함
   - 공개 API 계약은 유지한 채 `frontend/lib/types/index.ts`에 `ProgramCardSummary`, `ProgramListRow`, `ProgramSurfaceContext` 등 새 surface 타입을 병행 추가했고, 대시보드 추천/캘린더 BFF도 내부적으로 이 구조를 먼저 조립한 뒤 현재 legacy 응답 shape로 다시 펼치도록 정리함
@@ -3005,3 +3012,23 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - `review-ready` 전환 시 이전 `review-failed` dispatch가 제거되고 supersede 메타가 남는지
 - 추가 리팩토링 후보
   - Slack thread update API를 써서 이미 전송된 과거 실패 메시지도 stale 표기로 갱신하는 경로 검토
+- 2026-04-24: `frontend/lib/types/index.ts`, `frontend/lib/api/app.ts`, `frontend/app/api/dashboard/recommended-programs/route.ts`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/app/(landing)/programs/recommended-programs-section.tsx`, `frontend/app/(landing)/programs/program-card.tsx`, `frontend/app/(landing)/programs/program-utils.ts`, `frontend/app/dashboard/page.tsx`, `frontend/app/dashboard/_hooks/use-dashboard-calendar.ts`, `frontend/app/dashboard/_components/dashboard-calendar-section.tsx`, `frontend/app/dashboard/_components/dashboard-calendar-mini-calendar.tsx`, `docs/current-state.md`
+  - dashboard 추천/캘린더 BFF 응답을 legacy flattened `Program` 중심에서 `items: ProgramCardItem[]` 중심으로 전환함
+  - landing 추천 섹션, dashboard 메인 추천 캘린더, dashboard 보조 캘린더 훅/컴포넌트가 `program + context`를 직접 읽도록 맞추고 `_reason/_score` 평탄화 의존을 주 경로에서 제거함
+  - `getRecommendedPrograms()`와 `getRecommendCalendar()` app helper도 새 구조형 응답 계약으로 바꿔 향후 serializer/API/BFF 전환을 실제 소비 코드 기준으로 이어갈 수 있게 만듦
+- 2026-04-24: `frontend/app/api/dashboard/bookmarks/route.ts`, `frontend/app/api/dashboard/calendar-selections/route.ts`, `frontend/lib/api/app.ts`, `frontend/lib/types/index.ts`, `frontend/app/dashboard/page.tsx`, `frontend/app/(landing)/compare/program-select-modal.tsx`, `docs/current-state.md`
+  - `bookmarks`와 `calendar-selections` BFF도 `items: ProgramCardItem[]`로 맞춰 dashboard 주요 보조 경로의 응답 형태를 recommendation 경로와 통일함
+  - bookmark는 `context.bookmarked_at`, calendar selection은 `context.selected_at`를 붙이고 nullable `program` placeholder 행은 응답에서 제거함
+  - dashboard 찜 섹션과 compare 선택 모달도 새 구조형 응답을 직접 읽도록 바꿔 dashboard 전반의 legacy `Program[]` 의존을 추가로 줄임
+- 2026-04-24: `frontend/lib/program-card-items.ts`, `frontend/app/api/dashboard/recommended-programs/route.ts`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/app/api/dashboard/bookmarks/route.ts`, `frontend/app/api/dashboard/calendar-selections/route.ts`, `frontend/app/dashboard/_hooks/use-dashboard-recommendations.ts`, `frontend/app/dashboard/_components/dashboard-program-cards.tsx`, `frontend/app/dashboard/page.tsx`, `frontend/app/dashboard/_components/dashboard-calendar-section.tsx`, `frontend/app/(landing)/programs/program-card.tsx`, `frontend/app/(landing)/programs/program-utils.ts`, `frontend/lib/types/index.ts`, `docs/current-state.md`, `reports/SESSION-2026-04-24-dashboard-structure-consolidation-result.md`
+  - recommendation/calendar/bookmark/selection별로 흩어져 있던 `ProgramCardItem` 변환과 score/reason/read helper를 `frontend/lib/program-card-items.ts`로 모아 BFF route와 카드 컴포넌트가 같은 규칙을 공유하게 함
+  - `frontend/app/dashboard/page.tsx`가 들고 있던 사용자/추천/북마크/캘린더 적용 상태와 필터 로직을 `useDashboardRecommendations()` hook으로 옮기고, 카드 렌더링을 `dashboard-program-cards.tsx`로 분리해 대시보드 페이지를 레이아웃 중심 파일로 줄임
+  - `frontend/lib/types/index.ts`에서 dashboard 전용 legacy 추천 타입 별칭(`RecommendedProgram`, `RecommendedProgramsResponse`, `ProgramCalendarRecommendItem`)을 제거해 구조형 `ProgramCardItem` 경로를 더 직접적으로 강제함
+- 2026-04-24: `frontend/lib/program-display.ts`, `frontend/lib/program-card-items.ts`, `frontend/lib/types/index.ts`, `frontend/app/(landing)/programs/program-utils.ts`, `frontend/app/(landing)/programs/program-card.tsx`, `frontend/app/(landing)/programs/recommended-programs-section.tsx`, `frontend/app/(landing)/compare/program-select-modal.tsx`, `frontend/app/dashboard/_components/dashboard-program-cards.tsx`, `frontend/app/dashboard/_components/dashboard-calendar-section.tsx`, `frontend/app/dashboard/page.tsx`, `docs/current-state.md`, `reports/SESSION-2026-04-24-program-display-and-transition-alias-result.md`
+  - landing/dashboard/compare에 흩어져 있던 카드 표시용 날짜, 마감, 출처, 링크, id 포맷터를 `frontend/lib/program-display.ts`로 모아 화면별 중복 로직을 줄임
+  - `frontend/lib/types/index.ts`에 `ProgramCardRenderable = ProgramCardSummary | Program` 전이 별칭을 추가해 카드 화면의 과도기 입력 타입을 이름 붙인 계약으로 정리함
+  - `frontend/lib/program-card-items.ts`는 legacy `_reason/_score/relevance_badge` 의존 범위를 좁힌 helper 타입으로 감싸고, 카드 relevance badge도 공용 helper로 읽게 바꿔 `Program` monolith 직접 의존을 추가로 줄임
+- 2026-04-24: `frontend/middleware.ts`, `frontend/app/auth/callback/route.ts`, `frontend/app/(auth)/login/page.tsx`, `docs/current-state.md`, `reports/SESSION-2026-04-24-auth-login-latency-result.md`
+  - 로그인 지연 조사에서 같은 워크스페이스의 `localhost:3000`은 `/login` 714ms, `/api/auth/google` 594ms였고 `localhost:3001`은 두 경로 모두 30초 timeout으로 확인되어, Supabase 자체보다 stale Next 서버가 체감 지연의 1차 원인 후보임을 기록함
+  - healthy 서버에서도 로그인 흐름이 불필요하게 느려지지 않도록 `middleware`의 `supabase.auth.getUser()`를 `/login`, `/dashboard*`, `/onboarding`에만 제한하고, `/api/auth/google`, `/auth/callback`, 공개 페이지에서는 건너뛰도록 줄임
+  - OAuth callback은 `exchangeCodeForSession()`이 이미 반환하는 `user`를 그대로 사용하게 바꿔 추가 auth lookup 1회를 제거했고, 로그인 페이지도 middleware가 이미 처리하는 signed-in redirect를 중복 확인하지 않도록 정리함

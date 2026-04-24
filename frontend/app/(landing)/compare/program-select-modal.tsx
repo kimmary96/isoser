@@ -3,9 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { listPrograms } from "@/lib/api/backend";
+import { listProgramSelectSummaries } from "@/lib/api/backend";
 import { getDashboardBookmarks } from "@/lib/api/app";
-import type { Program } from "@/lib/types";
+import {
+  formatProgramDeadlineCountdown,
+  getProgramId,
+  toProgramSelectSummaries,
+  type ProgramSelectCardProgram,
+} from "@/lib/program-display";
+import type { ProgramSelectSummary } from "@/lib/types";
 
 type ProgramSelectModalProps = {
   open: boolean;
@@ -18,34 +24,10 @@ type ProgramSelectModalProps = {
 
 type ModalTab = "bookmarks" | "search";
 
-type BookmarkItem = {
-  programId: string | null;
-  createdAt: string | null;
-  program: Program | null;
-};
-
-function normalizePrograms(programs: Program[]): Program[] {
-  return programs.filter(
-    (program): program is Program =>
-      Boolean(program) && typeof program.id === "string" && program.id.trim().length > 0
-  );
-}
-
-function getProgramId(program: Program | null | undefined): string {
-  return typeof program?.id === "string" ? program.id : "";
-}
-
-function getDeadlineLabel(daysLeft?: number | null): string {
-  if (typeof daysLeft !== "number") return "정보 없음";
-  if (daysLeft < 0) return "마감";
-  if (daysLeft === 0) return "D-Day";
-  return `D-${daysLeft}`;
-}
-
-function getMetaTags(program: Program, includeBookmarkedTag: boolean): string[] {
+function getMetaTags(program: ProgramSelectCardProgram, includeBookmarkedTag: boolean): string[] {
   const tags = [
     program.category,
-    getDeadlineLabel(program.days_left),
+    formatProgramDeadlineCountdown(program.days_left),
     includeBookmarkedTag ? "찜한 프로그램" : null,
     program.compare_meta?.subsidy_rate ?? null,
   ];
@@ -59,7 +41,7 @@ function ProgramListCard({
   includeBookmarkedTag,
   onSelect,
 }: {
-  program: Program;
+  program: ProgramSelectCardProgram;
   alreadyAdded: boolean;
   includeBookmarkedTag: boolean;
   onSelect: (programId: string) => void;
@@ -121,10 +103,10 @@ export default function ProgramSelectModal({
   const [isMounted, setIsMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<ModalTab>("bookmarks");
   const [query, setQuery] = useState("");
-  const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
+  const [bookmarks, setBookmarks] = useState<ProgramSelectSummary[]>([]);
   const [bookmarksLoading, setBookmarksLoading] = useState(false);
   const [bookmarksError, setBookmarksError] = useState<string | null>(null);
-  const [searchResults, setSearchResults] = useState<Program[]>([]);
+  const [searchResults, setSearchResults] = useState<ProgramSelectSummary[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [bookmarksLoaded, setBookmarksLoaded] = useState(false);
@@ -192,7 +174,7 @@ export default function ProgramSelectModal({
       try {
         const response = await getDashboardBookmarks();
         if (cancelled) return;
-        setBookmarks(response.items);
+        setBookmarks(toProgramSelectSummaries(response.items.map((item) => item.program)));
         setBookmarksLoaded(true);
       } catch (error) {
         if (cancelled) return;
@@ -222,14 +204,14 @@ export default function ProgramSelectModal({
       setSearchLoading(true);
       setSearchError(null);
       try {
-        const programs = await listPrograms({
+        const programs = await listProgramSelectSummaries({
           q: query.trim() || undefined,
           limit: 20,
           sort: "deadline",
           recruiting_only: true,
         });
         if (cancelled) return;
-        setSearchResults(normalizePrograms(programs));
+        setSearchResults(programs);
       } catch (error) {
         if (cancelled) return;
         setSearchError(
@@ -251,10 +233,7 @@ export default function ProgramSelectModal({
 
   if (!isMounted || !open || slotIndex === null) return null;
 
-  const bookmarkedPrograms = bookmarks
-    .map((item) => item.program)
-    .filter((program): program is Program => Boolean(program))
-    .filter((program): program is Program => Boolean(getProgramId(program)));
+  const bookmarkedPrograms = bookmarks.filter((program) => Boolean(getProgramId(program)));
 
   return createPortal(
     <>

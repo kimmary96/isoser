@@ -7,38 +7,41 @@ import type { MouseEvent } from "react";
 
 import { DashboardCalendarMiniCalendar } from "@/app/dashboard/_components/dashboard-calendar-mini-calendar";
 import { useDashboardCalendar } from "@/app/dashboard/_hooks/use-dashboard-calendar";
-import type { ProgramCalendarRecommendItem } from "@/lib/types";
+import {
+  formatProgramMonthDay,
+  formatProgramRelevanceText,
+  formatProgramSourceLabel,
+  toProgramDateKey,
+} from "@/lib/program-display";
+import { getProgramCardReason, getProgramCardScore } from "@/lib/program-card-items";
+import type { ProgramCardItem } from "@/lib/types";
 
-function formatMonthDay(value: string | null | undefined): string {
-  if (!value) return "정보 없음";
-
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return "정보 없음";
-
-  return `${parsed.getMonth() + 1}/${parsed.getDate()}`;
+function resolveRecommendationScore(item: ProgramCardItem): number {
+  return getProgramCardScore(item) ?? 0;
 }
 
-function formatSource(source: string | null | undefined): string {
-  if (!source) return "출처 미상";
-  if (source === "work24_training") return "고용24";
-  return source;
+function resolveRelevanceScore(item: ProgramCardItem): number {
+  return item.context?.relevance_score ?? item.program.relevance_score ?? resolveRecommendationScore(item);
 }
 
-function formatRelevance(score: number): string {
-  const percent = score <= 1 ? Math.round(score * 100) : Math.round(score);
-  return `관련도 ${percent}%`;
+function resolveReason(item: ProgramCardItem): string {
+  return getProgramCardReason(item) ?? item.context?.relevance_reasons?.[0] ?? "추천 근거 없음";
 }
 
-function parseDateKey(value: string | null | undefined): string | null {
-  if (!value) return null;
+function getDdayLabel(daysLeft: number | null | undefined): string {
+  if (typeof daysLeft !== "number" || Number.isNaN(daysLeft)) {
+    return "일정 확인";
+  }
 
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return null;
+  if (daysLeft < 0) {
+    return "마감";
+  }
 
-  const year = parsed.getFullYear();
-  const month = String(parsed.getMonth() + 1).padStart(2, "0");
-  const day = String(parsed.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+  if (daysLeft === 0) {
+    return "D-Day";
+  }
+
+  return `D-${daysLeft}`;
 }
 
 function getDdayTone(label: string, daysLeft: number | null | undefined): string {
@@ -61,15 +64,16 @@ function CalendarCard({
   item,
   selectedDate,
 }: {
-  item: ProgramCalendarRecommendItem;
+  item: ProgramCardItem;
   selectedDate: string | null;
 }) {
   const router = useRouter();
-  const dateKey = parseDateKey(item.deadline);
+  const dateKey = toProgramDateKey(item.program.deadline);
   const isSelected = selectedDate !== null && selectedDate === dateKey;
-  const programId = String(item.program.id ?? item.program_id ?? "").trim();
+  const programId = String(item.program.id ?? "").trim();
   const externalLink = item.program.application_url || item.program.link || item.program.source_url;
   const resumeLink = `/dashboard/resume?prefill_program_id=${encodeURIComponent(programId)}`;
+  const ddayLabel = getDdayLabel(item.program.days_left);
 
   const goToProgram = () => {
     if (!programId) return;
@@ -94,12 +98,12 @@ function CalendarCard({
     >
       <div className="mb-4 flex items-start justify-between gap-3">
         <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">
-          {formatSource(item.program.source)}
+          {formatProgramSourceLabel(item.program.source, { work24TrainingLabel: "고용24" })}
         </span>
         <span
-          className={`rounded-full px-3 py-1 text-xs font-semibold ${getDdayTone(item.d_day_label, item.program.days_left)}`}
+          className={`rounded-full px-3 py-1 text-xs font-semibold ${getDdayTone(ddayLabel, item.program.days_left)}`}
         >
-          {item.d_day_label}
+          {ddayLabel}
         </span>
       </div>
 
@@ -108,7 +112,7 @@ function CalendarCard({
           <h3 className="line-clamp-2 text-lg font-semibold text-slate-950">
             {item.program.title ?? "제목 없음"}
           </h3>
-          <p className="mt-1 text-sm text-slate-500">{item.reason}</p>
+          <p className="mt-1 text-sm text-slate-500">{resolveReason(item)}</p>
         </div>
 
         <div className="flex flex-wrap gap-2 text-xs font-medium">
@@ -116,18 +120,22 @@ function CalendarCard({
             {item.program.location || "지역 정보 없음"}
           </span>
           <span className="rounded-full bg-slate-100 px-2.5 py-1 text-slate-600">
-            {formatRelevance(item.final_score)}
+            {formatProgramRelevanceText(resolveRecommendationScore(item))}
           </span>
         </div>
 
         <dl className="space-y-2 text-sm text-slate-600">
           <div className="flex items-center justify-between gap-3">
             <dt>마감일</dt>
-            <dd className="font-medium text-slate-900">{formatMonthDay(item.deadline)}</dd>
+            <dd className="font-medium text-slate-900">
+              {formatProgramMonthDay(item.program.deadline) ?? "정보 없음"}
+            </dd>
           </div>
           <div className="flex items-center justify-between gap-3">
             <dt>관련도 점수</dt>
-            <dd className="font-medium text-slate-900">{formatRelevance(item.relevance_score)}</dd>
+            <dd className="font-medium text-slate-900">
+              {formatProgramRelevanceText(resolveRelevanceScore(item))}
+            </dd>
           </div>
         </dl>
       </div>
@@ -184,7 +192,7 @@ export function DashboardCalendarSection() {
   const visibleItems = useMemo(() => {
     if (!selectedDate) return items;
 
-    const filtered = items.filter((item) => parseDateKey(item.deadline) === selectedDate);
+    const filtered = items.filter((item) => toProgramDateKey(item.program.deadline) === selectedDate);
     return filtered.length > 0 ? filtered : items;
   }, [items, selectedDate]);
 
@@ -225,7 +233,7 @@ export function DashboardCalendarSection() {
             <div className="-mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pb-2">
               {visibleItems.map((item) => (
                 <div
-                  key={`${item.program_id}-${item.deadline ?? "open"}`}
+                  key={`${item.program.id ?? "program"}-${item.program.deadline ?? "open"}`}
                   className="w-[84%] min-w-0 flex-none snap-start sm:w-[calc(50%-0.75rem)] xl:w-[calc(33.333%-0.75rem)] 2xl:w-[calc(25%-0.75rem)]"
                 >
                   <CalendarCard item={item} selectedDate={selectedDate} />

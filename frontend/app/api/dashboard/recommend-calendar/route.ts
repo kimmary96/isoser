@@ -1,11 +1,15 @@
 import { apiError, apiOk } from "@/lib/api/route-response";
+import {
+  toCalendarProgramCardItem,
+  toFallbackCalendarProgramCardItem,
+} from "@/lib/program-card-items";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type {
   CalendarRecommendItem,
   CalendarRecommendResponse,
+  DashboardRecommendCalendarResponse,
   Program,
-  ProgramCardSummary,
-  ProgramSurfaceContext,
+  ProgramCardItem,
 } from "@/lib/types";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
@@ -27,53 +31,13 @@ async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit, tim
   }
 }
 
-function toCalendarFallbackContext(program: Program, reason: string): ProgramSurfaceContext {
-  const urgencyScore = Number(program.urgency_score ?? 0);
-  return {
-    surface: "dashboard_recommend_calendar_fallback",
-    reason,
-    fit_keywords: [],
-    score: urgencyScore,
-    relevance_score: 0,
-    urgency_score: urgencyScore,
-    relevance_reasons: [],
-    score_breakdown: {},
-    relevance_grade: "none",
-    relevance_badge: null,
-  };
-}
-
-function toCalendarFallbackItem(program: Program, reason: string): CalendarRecommendItem | null {
-  if (!program.id) {
-    return null;
-  }
-
-  const context = toCalendarFallbackContext(program, reason);
-  const programSummary: ProgramCardSummary = program;
-  return {
-    program_id: String(program.id),
-    relevance_score: context.relevance_score ?? 0,
-    urgency_score: context.urgency_score ?? 0,
-    final_score: context.score ?? 0,
-    deadline: program.deadline ?? null,
-    d_day_label: typeof program.days_left === "number" ? `D-${program.days_left}` : "",
-    reason: context.reason ?? reason,
-    fit_keywords: context.fit_keywords ?? [],
-    relevance_reasons: context.relevance_reasons ?? [],
-    score_breakdown: context.score_breakdown ?? {},
-    relevance_grade: context.relevance_grade ?? "none",
-    relevance_badge: context.relevance_badge ?? null,
-    program: programSummary,
-  };
-}
-
-function toFallbackCalendarResponse(programs: Program[], topK: number): CalendarRecommendResponse {
+function toFallbackCalendarResponse(programs: Program[], topK: number): DashboardRecommendCalendarResponse {
   const reason = "추천 데이터가 비어 있어 모집 마감이 가까운 공개 프로그램을 우선 노출합니다.";
   return {
     items: programs
       .slice(0, topK)
-      .map((program) => toCalendarFallbackItem(program, reason))
-      .filter((item): item is CalendarRecommendItem => Boolean(item)),
+      .map((program) => toFallbackCalendarProgramCardItem(program, reason))
+      .filter((item): item is ProgramCardItem => Boolean(item)),
   };
 }
 
@@ -112,7 +76,7 @@ function hasTrustedDeadline(program: Program): boolean {
   return true;
 }
 
-async function loadSupabaseFallbackPrograms(topK: number): Promise<CalendarRecommendResponse> {
+async function loadSupabaseFallbackPrograms(topK: number): Promise<DashboardRecommendCalendarResponse> {
   const supabase = await createServerSupabaseClient();
   const today = new Date().toISOString().slice(0, 10);
   const { data, error } = await supabase
@@ -175,7 +139,10 @@ export async function GET(request: Request) {
 
     const data = (await response.json()) as CalendarRecommendResponse;
     if (data.items.length > 0) {
-      return apiOk(data);
+      const items = data.items
+        .map(toCalendarProgramCardItem)
+        .filter((item): item is ProgramCardItem => Boolean(item));
+      return apiOk<DashboardRecommendCalendarResponse>({ items });
     }
 
     const fallbackLimit = Number(topK || "9") || 9;

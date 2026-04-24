@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
 import { LandingHeader } from "@/components/landing/LandingHeader";
-import { getProgramDetails, getPrograms, listPrograms } from "@/lib/api/backend";
+import {
+  getProgramDetails,
+  getPrograms,
+  listProgramSelectSummaries,
+} from "@/lib/api/backend";
+import { getProgramId } from "@/lib/program-display";
 import { getSiteUrl } from "@/lib/seo";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import type { Program } from "@/lib/types";
+import type { ProgramSelectSummary } from "@/lib/types";
 
 import ProgramsCompareClient from "./programs-compare-client";
 import type { CompareProgram } from "./compare-table-sections";
@@ -115,14 +120,14 @@ export default async function ProgramsComparePage({ searchParams }: ProgramsComp
     return { ...program, detail: detailsById.get(program.id) ?? null };
   });
 
-  let suggestions: Program[] = [];
+  let suggestions: ProgramSelectSummary[] = [];
   let suggestionsError: string | null = null;
 
   try {
-    const listedPrograms = await listPrograms({ limit: 8, sort: "deadline" });
+    const listedPrograms = await listProgramSelectSummaries({ limit: 8, sort: "deadline" });
     suggestions = listedPrograms
       .filter((program) => {
-        const programId = typeof program.id === "string" ? program.id : "";
+        const programId = getProgramId(program);
         return Boolean(programId) && !canonicalIds.includes(programId);
       })
       .slice(0, 4);

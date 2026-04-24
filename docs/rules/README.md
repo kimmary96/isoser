@@ -5,6 +5,7 @@
 - [task-packet-template.md](./task-packet-template.md)
 - [task-packet-examples.md](./task-packet-examples.md)
 - [watcher-restart-checklist.md](./watcher-restart-checklist.md)
+- [long-refactor-handoff-template.md](./long-refactor-handoff-template.md)
 - [claude-project-instructions.md](./claude-project-instructions.md)
 - [claude-oauth-smoke-test.md](./claude-oauth-smoke-test.md)
 - fingerprint helper: `python scripts/compute_task_fingerprint.py --frontmatter <repo-path> [<repo-path> ...]`
