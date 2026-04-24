@@ -9,47 +9,47 @@
   - `/programs` 페이지 안에 있던 테이블 렌더링과 포맷팅 로직을 `programs-table.tsx`, `programs-table-helpers.ts`, `programs-urgent-card.tsx`로 분리해 기존 화면 출력은 유지하면서 `page.tsx` 책임을 줄임
   - 백엔드 개발 환경의 canonical path를 `backend/venv`로 문서화하고 `scripts/run-backend-checks.ps1`를 추가했으며, `backend/tests/fixtures/program_list_api_examples.json`와 전용 테스트로 목록/count/filter-options 예시 응답과 파라미터 키를 schema 수준에서 고정함
 
-- 2026-04-24: `frontend/lib/api/program-query.ts`, `frontend/lib/api/program-query.test.ts`, `frontend/lib/types/index.ts`, `frontend/lib/api/backend.ts`, `frontend/lib/api/app.ts`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/app/(landing)/programs/page-filters.ts`, `frontend/app/(landing)/programs/page.tsx`, `frontend/vitest.config.ts`, `backend/schemas/programs.py`, `backend/schemas/__init__.py`, `backend/routers/programs.py`, `docs/PROJECT_STRUCTURE.md`, `docs/API_STRUCTURE.md`, `docs/REFACTORING_REPORT.md`, `docs/current-state.md`, `reports/SESSION-2026-04-24-structure-cleanup-refactor-result.md`
+- 2026-04-24: `frontend/lib/api/program-query.ts`, `frontend/lib/api/program-query.test.ts`, `frontend/lib/types/index.ts`, `frontend/lib/api/backend.ts`, `frontend/lib/api/app.ts`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/app/(landing)/programs/page-filters.ts`, `frontend/app/(landing)/programs/page.tsx`, `frontend/vitest.config.ts`, `backend/schemas/programs.py`, `backend/schemas/__init__.py`, `backend/routers/programs.py`, `docs/PROJECT_STRUCTURE.md`, `docs/API_STRUCTURE.md`, `docs/REFACTORING_REPORT.md`, `docs/current-state.md`, `reports\session\2026-04\SESSION-2026-04-24-structure-cleanup-refactor-result.md`
   - 프로그램 목록/추천/비교 검색의 query-string 조립을 `frontend/lib/api/program-query.ts`로 공통화해 `backend.ts`, `app.ts`, recommend-calendar BFF에 흩어져 있던 수동 직렬화를 줄였고, Vitest alias 설정까지 보강해 프런트 테스트를 다시 전체 통과 상태로 맞춤
   - `/programs` 페이지 전용 필터 옵션/URL 정규화 로직을 `page-filters.ts`로 분리하고 세션/북마크 조회를 초기에 시작하게 바꿔, 기존 화면 흐름을 유지한 채 페이지 파일 책임과 초기 직렬 대기를 줄임
   - `backend/routers/programs.py` 안에 있던 프로그램 요청/응답 Pydantic 모델을 `backend/schemas/programs.py`로 분리하고 `/programs/list` read-model 경로는 item fetch + count를 `asyncio.gather(...)`로 병렬화해, 공개 API 계약은 유지하면서 라우터 파일 집중도와 응답 대기를 함께 낮춤
 
-- 2026-04-24: `supabase/migrations/20260425120000_harden_remaining_function_search_paths.sql`, `supabase/migrations/20260425121000_align_activity_images_storage_policies.sql`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-supabase-live-policy-searchpath-alignment-result.md`
+- 2026-04-24: `supabase/migrations/20260425120000_harden_remaining_function_search_paths.sql`, `supabase/migrations/20260425121000_align_activity_images_storage_policies.sql`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-supabase-live-policy-searchpath-alignment-result.md`
   - live Supabase MCP 점검에서 남아 있던 `function_search_path_mutable` 경고 3건을 정리하기 위해 `recommendation_normalize_text`, `recommendation_compact_text_array`, `program_list_click_hotness_score`에 대한 corrective migration을 추가했고, 같은 SQL을 live에 적용해 advisor 경고를 실제로 닫음
   - `activity-images` bucket 정책도 repo 기준 corrective migration으로 정리해 public bucket + `<user-id>/...` 경로 계약에 맞는 own-folder `SELECT/INSERT/UPDATE/DELETE` 정책을 정본으로 남겼지만, `storage.objects`는 MCP 경로에서 `must be owner of table objects`로 막혀 live apply는 SQL Editor 같은 owner-capable 경로가 따로 필요하다는 점을 함께 기록함
   - live inspection 과정에서 `public.programs`의 옛 base-table helper drift는 현 runtime이 `program_list_index` 중심이라 즉시 복구 대상이 아니라는 점도 current-state에 명시해, 예전 migration 기대치와 현재 실제 운영 경로를 분리함
 
-- 2026-04-24: `frontend/app/api/dashboard/activities/images/route.ts`, `frontend/app/api/dashboard/profile/route.ts`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-activity-images-upload-upsert-removal-result.md`
+- 2026-04-24: `frontend/app/api/dashboard/activities/images/route.ts`, `frontend/app/api/dashboard/profile/route.ts`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-activity-images-upload-upsert-removal-result.md`
   - `activity-images` 업로드 경로가 이미 매번 고유 `<user-id>/...` path를 생성하고 있어 `upsert: true`가 필요하지 않다는 점을 반영해 profile/avatar 및 activity image upload route에서 upsert 옵션을 제거함
   - 이로써 현재 live의 insert/delete-only storage policy drift 상태에서도 upload 경로가 SELECT/UPDATE 권한에 덜 의존하게 되었고, public URL 반환 방식과 기존 사용자 동작은 그대로 유지함
 
-- 2026-04-24: `backend/services/program_list_scoring.py`, `backend/rag/programs_rag.py`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `backend/tests/test_programs_rag.py`, `docs/specs/compare-meta-runtime-touchpoints-v1.md`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-compare-meta-score-search-cleanup-result.md`
+- 2026-04-24: `backend/services/program_list_scoring.py`, `backend/rag/programs_rag.py`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `backend/tests/test_programs_rag.py`, `docs/specs/compare-meta-runtime-touchpoints-v1.md`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-compare-meta-score-search-cleanup-result.md`
   - 검색 helper, 추천 마감일 해석, 추천 점수 계산이 direct `compare_meta` 대신 공용 legacy bridge helper를 먼저 거치도록 정리해 `service_meta` 우선 + sparse fallback 원칙을 backend 전반에 더 넓게 맞춤
   - 관련 단위 테스트를 추가해 `service_meta`가 `compare_meta`보다 우선하는 검색/점수/추천 보조 동작과 Work24 training-start marker 보존 동작을 고정함
 
-- 2026-04-24: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/lib/program-display.ts`, `frontend/lib/program-display.test.ts`, `docs/specs/compare-meta-runtime-touchpoints-v1.md`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-program-surface-legacy-meta-cleanup-result.md`
+- 2026-04-24: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/lib/program-display.ts`, `frontend/lib/program-display.test.ts`, `docs/specs/compare-meta-runtime-touchpoints-v1.md`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-program-surface-legacy-meta-cleanup-result.md`
   - 목록/정렬/지역 매칭과 프런트 표시 helper 쪽에 흩어져 있던 direct `compare_meta` 읽기를 공용 legacy bridge helper 뒤로 모아, 정본 컬럼과 `service_meta`를 먼저 쓰고 sparse row에서만 fallback 하도록 정리함
   - 검색 텍스트 조립이나 deadline source 판정처럼 아직 의미가 큰 경로는 의도적으로 그대로 두고, 관련 backend/frontend 테스트를 추가해 현재 우선순위와 legacy fallback 보존 동작을 고정함
 
-- 2026-04-24: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-program-detail-compare-meta-fallback-cleanup-result.md`
+- 2026-04-24: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-program-detail-compare-meta-fallback-cleanup-result.md`
   - `ProgramDetailResponse` 조립부가 `service_meta` 우선 + sparse legacy `compare_meta` overlay helper를 한곳에서 거치도록 정리해, 상세 fallback 동작은 유지하면서 builder 안의 직접 `compare_meta` field-by-field 의존을 줄임
   - 관련 단위 테스트를 추가해 `service_meta`가 일부만 채워진 legacy row에서도 주관기관/지원 링크/자격 조건/취업률/문의 메일/커리큘럼 같은 상세 값이 계속 살아남는 동작을 고정함
 
-- 2026-04-24: `docs/specs/compare-meta-runtime-touchpoints-v1.md`, `docs/specs/README.md`, `docs/recommendation/program-recommendation-checklist.md`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-compare-meta-runtime-doc-split-result.md`
+- 2026-04-24: `docs/specs/compare-meta-runtime-touchpoints-v1.md`, `docs/specs/README.md`, `docs/recommendation/program-recommendation-checklist.md`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-compare-meta-runtime-doc-split-result.md`
   - 실제 저장소 코드 기준 `compare_meta`가 아직 남아 있는 생산/적재/상세 fallback/점수 보정/프런트 표시 helper 경로를 새 스펙 문서로 분리해, “지금 바로 삭제 가능한지”를 다시 판단할 수 있게 정리함
   - `docs/recommendation/program-recommendation-checklist.md`는 2026-04-16 감사 기록이라는 점을 상단에 명시하고, 현재 정본 판단 문서를 따로 연결해 역사 문서와 현재 runtime truth가 섞이지 않게 정리함
 
-- 2026-04-24: `supabase/SQL.md`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-live-bookmarks-drop-and-sql-sync-result.md`
+- 2026-04-24: `supabase/SQL.md`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-live-bookmarks-drop-and-sql-sync-result.md`
   - 운영 SQL Editor 후속 확인에서 legacy `public.bookmarks`가 `0` row, inbound 참조 없음 상태임을 다시 확인한 뒤 실제로 삭제됐고, bookmark 정본 테이블은 계속 `public.program_bookmarks`로 유지됨을 문서에 고정함
   - `supabase/SQL.md`에서 더 이상 live에 존재하지 않는 `bookmarks` 스냅샷을 제거하고, `docs/current-state.md`에도 현재 운영 기준 북마크 정본이 `program_bookmarks`뿐이라는 점을 반영함
 
-- 2026-04-24: `scripts/check_package5_live_state.py`, `supabase/README.md`, `supabase/SQL.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-5-live-validation-followup-result.md`
+- 2026-04-24: `scripts/check_package5_live_state.py`, `supabase/README.md`, `supabase/SQL.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-package-5-live-validation-followup-result.md`
   - SQL Editor 확인 결과와 read-only probe를 합쳐 `profiles.target_job`, `user_program_preferences`, `user_recommendation_profile`, `refresh_user_recommendation_profile(p_user_id uuid)`, `recommendations.query_hash/profile_hash/expires_at/fit_keywords`가 live에 실제로 존재함을 package-5 문서에 반영함
-  - `reports/program-validation-sample-latest.json` 기준 `free-plan-50` bounded sample validation이 `program_list_index` 50건 / `program_source_records` 50건으로 성공했음을 current-state, roadmap, Supabase 운영 문서에 같이 고정함
+  - `reports\ops\program-validation\program-validation-sample-latest.json` 기준 `free-plan-50` bounded sample validation이 `program_list_index` 50건 / `program_source_records` 50건으로 성공했음을 current-state, roadmap, Supabase 운영 문서에 같이 고정함
   - 후속 read-only 확인으로 두 테이블 row count가 실제로 `50 / 50`인지와 대표 sample row의 핵심 컬럼이 정상인지까지 다시 확인했고, roadmap status를 `package-5 완료 판정 가능` 수준으로 올림
   - `scripts/check_package5_live_state.py`의 다음 단계 안내도 live 구조 정렬 완료 상태에서는 더 이상 migration apply를 먼저 요구하지 않고, `bounded validation -> row/sample 확인 -> 문서/cleanup 마감` 순서로 바뀌게 보정함
 
-- 2026-04-24: `scripts/check_package5_live_state.py`, `supabase/README.md`, `supabase/SQL.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-5-live-db-ops-recheck-result.md`
+- 2026-04-24: `scripts/check_package5_live_state.py`, `supabase/README.md`, `supabase/SQL.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-package-5-live-db-ops-recheck-result.md`
   - package-5 운영 재점검으로 live Supabase를 read-only로 다시 확인한 결과, `program_list_index`, `program_source_records`, additive `programs` canonical 컬럼, `program_list_index` surface-contract 컬럼은 보이지만 `user_program_preferences`, `user_recommendation_profile`, `recommendations.query_hash/profile_hash/expires_at/fit_keywords`는 아직 live에 없음을 문서로 고정함
   - 현재 셸에는 `supabase` CLI와 direct DB connection 설정이 없어 DDL apply는 실행 불가하다는 점도 함께 명시하고, stale이던 roadmap 문서도 `코드 기준 package-5 / live DB mixed state`에 맞춰 `user recommendation migrations 적용 -> SQL 확인 -> bounded sample validation` 순서를 먼저 따르도록 보정함
   - `supabase/SQL.md` 맨 앞에도 이 문서가 수동 스냅샷이며 package-5 live apply 판정용 정본이 아니라는 경고와 최신 재점검 요약을 추가함
@@ -59,126 +59,126 @@
   - 병합 회귀로 `RecCard` 내부에서 호출하던 `getProgramCardScore` import가 빠져 `/dashboard` 추천/찜 카드 strip이 `ReferenceError`로 깨지던 문제를 최소 수정으로 복구함
   - 점수 계산 우선순위와 카드 렌더링 로직은 그대로 두고, 기존 공용 helper 연결만 되살려 최근 `ProgramCardItem` cleanup 이후 의도한 shared precedence를 다시 사용하게 맞춤
 
-- 2026-04-24: `frontend/app/(landing)/programs/page.tsx`, `frontend/lib/programs-page-layout.ts`, `frontend/lib/program-display.ts`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/lib/program-card-items.ts`, `frontend/lib/program-card-items.test.ts`, `frontend/app/dashboard/page.tsx`, `frontend/app/dashboard/_hooks/use-dashboard-calendar.ts`, `frontend/app/dashboard/_components/dashboard-calendar-section.tsx`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-4-read-switch-complete-result.md`
+- 2026-04-24: `frontend/app/(landing)/programs/page.tsx`, `frontend/lib/programs-page-layout.ts`, `frontend/lib/program-display.ts`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/lib/program-card-items.ts`, `frontend/lib/program-card-items.test.ts`, `frontend/app/dashboard/page.tsx`, `frontend/app/dashboard/_hooks/use-dashboard-calendar.ts`, `frontend/app/dashboard/_components/dashboard-calendar-section.tsx`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-package-4-read-switch-complete-result.md`
   - package-4의 남은 공개 읽기 전환으로 landing `/programs`의 `Closing Soon` strip도 `listProgramsPage(...) + unwrapProgramListRows(...)` 기반 read-model-first 경로로 옮기고, recommend-calendar fallback은 shared compare-meta helper를 재사용하도록 정리함
   - `ProgramCardItem` 중앙 helper 우선순위를 dashboard recommendation strip과 dashboard calendar hook/card가 같이 재사용하게 맞춰 화면별 점수·사유 해석 순서가 다시 벌어지지 않게 함
   - stale이던 roadmap/entrypoints 문서를 실제 코드 기준으로 보정하고, 저장소 코드 기준 package-4 read switch 완료 및 package-5 cleanup/validation 진입 상태로 판정을 올림
 
-- 2026-04-24: `frontend/lib/program-card-items.ts`, `frontend/lib/program-card-items.test.ts`, `frontend/app/dashboard/page.tsx`, `frontend/app/dashboard/_hooks/use-dashboard-calendar.ts`, `frontend/app/dashboard/_components/dashboard-calendar-section.tsx`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-4-program-card-items-legacy-fallback-cleanup-result.md`
+- 2026-04-24: `frontend/lib/program-card-items.ts`, `frontend/lib/program-card-items.test.ts`, `frontend/app/dashboard/page.tsx`, `frontend/app/dashboard/_hooks/use-dashboard-calendar.ts`, `frontend/app/dashboard/_components/dashboard-calendar-section.tsx`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-package-4-program-card-items-legacy-fallback-cleanup-result.md`
   - 패키지 4의 다음 transition cleanup으로 `ProgramCardItem` 중앙 adapter가 `ProgramSurfaceContext`와 canonical summary 값을 먼저 쓰고, 예전 `_reason/_fit_keywords/_score/_relevance_score`는 structured context가 없는 오래된 payload일 때만 마지막 fallback으로 읽도록 범위를 좁힘
   - canonical `recommendation_reasons`를 legacy `relevance_reasons`보다 먼저 읽도록 바꿔 새 계약 우선순위를 높였고, `/dashboard` 추천 카드와 dashboard calendar hook/card도 중앙 score/reason helper를 재사용하게 맞춰 화면별 점수·사유 해석 순서가 다시 벌어지지 않게 함
   - 단위 테스트로 context 우선/legacy fallback/stale payload 보존 동작을 고정함
 
-- 2026-04-24: `frontend/app/dashboard/_hooks/recommend-calendar-cache.ts`, `frontend/app/dashboard/_hooks/recommend-calendar-cache.test.ts`, `frontend/app/dashboard/_hooks/use-dashboard-recommendations.ts`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-4-dashboard-cache-shape-cleanup-result.md`
+- 2026-04-24: `frontend/app/dashboard/_hooks/recommend-calendar-cache.ts`, `frontend/app/dashboard/_hooks/recommend-calendar-cache.test.ts`, `frontend/app/dashboard/_hooks/use-dashboard-recommendations.ts`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-package-4-dashboard-cache-shape-cleanup-result.md`
   - 패키지 4의 dashboard cleanup으로 추천 캘린더 로컬 캐시 정본을 `ProgramCardItem[]`로 고정하고, 브라우저에 남아 있을 수 있는 예전 `programs[]` 캐시는 읽는 순간 새 item 구조로 자동 승격하도록 정리함
   - 기존 15분 TTL과 캐시 fallback 동작은 유지하면서, dashboard hook이 더 이상 old flat cache contract를 계속 퍼뜨리지 않도록 경계를 분리하고 helper test로 승격/만료 동작을 고정함
 
-- 2026-04-24: `frontend/lib/types/index.ts`, `frontend/lib/api/backend.ts`, `frontend/app/(landing)/compare/compare-table-sections.tsx`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-4-compare-summary-type-shrink-result.md`
+- 2026-04-24: `frontend/lib/types/index.ts`, `frontend/lib/api/backend.ts`, `frontend/app/(landing)/compare/compare-table-sections.tsx`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-package-4-compare-summary-type-shrink-result.md`
   - 패키지 4의 compare consumer cleanup으로 `ProgramBatchResponse`와 `getPrograms()`를 compare top-card 기준 `ProgramCardSummary[]`로 축소하고, compare 화면 타입도 full `Program` 대신 `ProgramCardSummary + ProgramDetail` 조합을 쓰도록 정리함
   - 런타임 비교 동작은 유지하면서 compare 페이지가 더 이상 목록/추천/상세 private 필드를 모두 품은 monolith `Program`에 직접 기대지 않게 한 단계 정리함
 
-- 2026-04-24: `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/app/api/dashboard/recommend-calendar/route.test.ts`, `frontend/lib/server/recommend-calendar-fallback.ts`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-4-recommend-calendar-list-fallback-cleanup-result.md`
+- 2026-04-24: `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/app/api/dashboard/recommend-calendar/route.test.ts`, `frontend/lib/server/recommend-calendar-fallback.ts`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-package-4-recommend-calendar-list-fallback-cleanup-result.md`
   - 패키지 4의 추천 BFF cleanup으로 recommend-calendar의 intermediate fallback이 더 이상 flat backend `/programs` 계약을 직접 쓰지 않고, `GET /programs/list`의 summary row item을 먼저 풀어 `ProgramCardItem` fallback 응답을 만들도록 정리함
   - 마지막 direct Supabase fallback은 그대로 유지해 운영 안전성을 지켰고, 새 helper test로 promoted row를 섞지 않고 organic `items` 순서를 그대로 쓰는 동작을 고정함
 
-- 2026-04-24: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-4-detail-compare-read-switch-result.md`
+- 2026-04-24: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-package-4-detail-compare-read-switch-result.md`
   - 패키지 4의 다음 read switch로 상세 단건/배치 응답이 `programs` row만 보지 않고 `program_source_records` primary row를 함께 읽어, `application_url/detail_url/source_specific`와 additive canonical detail 필드를 우선 사용하도록 전환함
   - compare 상단 카드가 쓰는 `POST /programs/batch`도 `program_list_index` summary read를 먼저 사용하고, read model에 없는 id만 legacy `programs`로 fallback 하도록 바꿔 비교 기본 카드 read의 legacy 의존을 더 줄임
   - 기존 public 응답 shape `ProgramDetailResponse`와 `ProgramBatchResponse`는 유지했고, read model/table 미적용 또는 일부 id 누락 환경에서도 fallback으로 계속 동작하도록 보수적으로 연결함
 
-- 2026-04-24: `frontend/lib/server/program-card-summary.ts`, `frontend/lib/server/program-card-summary.test.ts`, `frontend/lib/program-card-items.ts`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-4-recommend-calendar-fallback-read-model-result.md`
+- 2026-04-24: `frontend/lib/server/program-card-summary.ts`, `frontend/lib/server/program-card-summary.test.ts`, `frontend/lib/program-card-items.ts`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-package-4-recommend-calendar-fallback-read-model-result.md`
   - 패키지 4의 연속 read switch로 추천 캘린더의 마지막 direct Supabase fallback도 `program_list_index` open/deadline summary read를 먼저 쓰고, read model이 없을 때만 `programs`로 내려가도록 정리함
   - fallback 카드 adapter는 `Program`뿐 아니라 `ProgramCardSummary`도 그대로 받을 수 있게 넓혀, fallback reason과 응답 shape를 유지한 채 `programs` direct read 의존을 더 줄임
 
-- 2026-04-24: `backend/routers/programs.py`, `backend/rag/programs_rag.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/program-recommendation-backend-touchpoints-v1.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-4-recommendation-profile-read-switch-result.md`
+- 2026-04-24: `backend/routers/programs.py`, `backend/rag/programs_rag.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/program-recommendation-backend-touchpoints-v1.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-package-4-recommendation-profile-read-switch-result.md`
   - 패키지 4의 다음 read switch로 추천/캘린더 추천/비교 관련도가 더 이상 raw `profiles`만 직접 신뢰하지 않고, `user_recommendation_profile`을 우선 읽은 뒤 없을 때만 legacy profile로 fallback 하도록 전환함
   - 추천 cache hash는 `user_recommendation_profile.recommendation_profile_hash`를 우선 사용하고, 요청에서 `job_title`을 덮어쓴 경우에만 local hash를 다시 계산하도록 바꿔 캐시 키를 새 정본과 맞춤
   - `programs_rag`는 `target_job`, `desired_skills`, `profile_keywords`, `activity_keywords`도 키워드/문서 입력에 반영하도록 보강해, 기존 응답 shape를 유지한 채 derived recommendation profile이 실제 추천/비교 계산에 쓰이기 시작함
 
-- 2026-04-24: `frontend/lib/server/program-card-summary.ts`, `frontend/lib/server/program-card-summary.test.ts`, `frontend/lib/program-card-items.ts`, `frontend/app/api/dashboard/bookmarks/route.ts`, `frontend/app/api/dashboard/calendar-selections/route.ts`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-4-bookmarks-calendar-read-switch-result.md`
+- 2026-04-24: `frontend/lib/server/program-card-summary.ts`, `frontend/lib/server/program-card-summary.test.ts`, `frontend/lib/program-card-items.ts`, `frontend/app/api/dashboard/bookmarks/route.ts`, `frontend/app/api/dashboard/calendar-selections/route.ts`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-package-4-bookmarks-calendar-read-switch-result.md`
   - 패키지 4의 첫 read switch로 북마크/캘린더 선택 BFF가 더 이상 `programs`를 1차 읽기 원본으로 쓰지 않고, `program_list_index` summary read를 우선 사용하도록 전환함
   - 새 server helper가 id 목록 기준으로 read-model row를 `ProgramCardSummary`로 정리하고, read model이 없거나 일부 id가 비어 있으면 그 경우에만 `programs` fallback을 사용해 기존 카드 응답 shape를 유지함
   - 카드 adapter는 `Program`뿐 아니라 `ProgramCardSummary`도 그대로 받을 수 있게 정리했고, 관련 문서도 package 4 진행 상태에 맞춰 보정함
 
-- 2026-04-24: `backend/services/program_dual_write.py`, `backend/routers/admin.py`, `backend/rag/collector/scheduler.py`, `backend/tests/test_admin_router.py`, `backend/tests/test_scheduler_collectors.py`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-3-dual-write-completion-result.md`
+- 2026-04-24: `backend/services/program_dual_write.py`, `backend/routers/admin.py`, `backend/rag/collector/scheduler.py`, `backend/tests/test_admin_router.py`, `backend/tests/test_scheduler_collectors.py`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-package-3-dual-write-completion-result.md`
   - 패키지 3의 남은 적재 공백을 닫기 위해 `programs` additive canonical 컬럼 seed와 `program_source_records` provenance seed를 공용 helper로 정리하고, admin sync와 collector scheduler가 같은 dual write 규칙을 쓰도록 맞춤
   - collector 저장은 새 additive 컬럼이 없는 구형 스키마에서도 missing column만 개별 제거하며 계속 진행하고, `program_source_records` 테이블이나 conflict index가 아직 없으면 provenance 경로만 soft-fail 하도록 해 기존 동작을 유지함
   - 이로써 저장소 코드 기준 패키지 3의 `profile/resume/activity refresh + admin dual write + collector dual write` seed가 모두 채워졌고, 다음 현재 패키지는 read switch 중심의 패키지 4로 올림
 
-- 2026-04-24: `backend/routers/admin.py`, `backend/tests/test_admin_router.py`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-admin-program-source-records-dual-write-seed-result.md`
+- 2026-04-24: `backend/routers/admin.py`, `backend/tests/test_admin_router.py`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-admin-program-source-records-dual-write-seed-result.md`
   - 패키지 3의 남은 프로그램 적재 축 중 가장 작은 안전 작업으로 `POST /admin/sync/programs` 직후 `program_source_records` best-effort dual write seed를 연결함
   - 기존 `programs` upsert 성공 여부는 그대로 유지하고, 같은 normalized payload를 `raw_payload`, `field_evidence`, `normalized_snapshot` 중심의 provenance row로 다시 조립해 additive `program_source_records`에 upsert 시도하도록 함
   - 새 provenance 테이블이나 unique index가 아직 적용되지 않은 환경에서는 경고만 남기고 계속 진행하도록 soft-fail 처리해 현재 운영 sync 경로를 깨지 않게 유지함
 
-- 2026-04-24: `frontend/lib/api/backend.ts`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-compare-summary-read-model-followup-result.md`
+- 2026-04-24: `frontend/lib/api/backend.ts`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-compare-summary-read-model-followup-result.md`
   - compare 검색 BFF와 compare 페이지 추천 카드가 공통으로 쓰는 `listProgramSelectSummaries(...)`를 raw `/programs`가 아니라 `/programs/list` summary 계약 기반으로 바꿔, 같은 UI 동작을 유지한 채 server-to-backend payload도 줄임
   - compare 요약 경로는 계속 `ProgramSelectSummary`만 외부에 노출하고, promoted browse layer를 섞지 않은 organic `items`만 downcast 하도록 유지함
 
-- 2026-04-24: `frontend/app/api/programs/compare-search/route.ts`, `frontend/lib/api/app.ts`, `frontend/app/(landing)/compare/program-select-modal.tsx`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/lib/types/index.ts`, `frontend/lib/program-display.ts`, `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/page-helpers.ts`, `frontend/app/(landing)/landing-a/page.tsx`, `frontend/app/(landing)/landing-a/_hero.tsx`, `frontend/app/(landing)/landing-a/_program-feed.tsx`, `frontend/app/(landing)/landing-c/page.tsx`, `frontend/app/(landing)/landing-c/_hero.tsx`, `frontend/app/(landing)/landing-c/_program-feed.tsx`, `frontend/app/(landing)/landing-c/_program-utils.ts`, `frontend/components/landing/program-card-helpers.ts`, `frontend/components/MiniCalendar.tsx`, `frontend/app/dashboard/_components/dashboard-calendar-mini-calendar.tsx`, `frontend/app/dashboard/_hooks/use-dashboard-recommendations.ts`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-program-list-contract-bff-datekey-result.md`
+- 2026-04-24: `frontend/app/api/programs/compare-search/route.ts`, `frontend/lib/api/app.ts`, `frontend/app/(landing)/compare/program-select-modal.tsx`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/lib/types/index.ts`, `frontend/lib/program-display.ts`, `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/page-helpers.ts`, `frontend/app/(landing)/landing-a/page.tsx`, `frontend/app/(landing)/landing-a/_hero.tsx`, `frontend/app/(landing)/landing-a/_program-feed.tsx`, `frontend/app/(landing)/landing-c/page.tsx`, `frontend/app/(landing)/landing-c/_hero.tsx`, `frontend/app/(landing)/landing-c/_program-feed.tsx`, `frontend/app/(landing)/landing-c/_program-utils.ts`, `frontend/components/landing/program-card-helpers.ts`, `frontend/components/MiniCalendar.tsx`, `frontend/app/dashboard/_components/dashboard-calendar-mini-calendar.tsx`, `frontend/app/dashboard/_hooks/use-dashboard-recommendations.ts`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-program-list-contract-bff-datekey-result.md`
   - compare 검색 탭에 전용 BFF를 추가해 브라우저가 더 이상 무거운 `/programs` 원본 배열을 직접 받지 않고, 필요한 `ProgramSelectSummary`만 받도록 정리함
   - `/programs/list`를 `ProgramListRowItem(program + context)` 계약으로 전환하고, `/programs`·landing-a·landing-c 소비 경로는 페이지 경계에서만 `program`을 풀어 쓰게 바꿔 목록 축의 monolith 의존을 줄임
   - `program-display`에 날짜 parse/date-key/same-day helper를 모으고 MiniCalendar 및 dashboard calendar가 이를 재사용하도록 맞춰 날짜 계산 중복을 줄임
 
-- 2026-04-24: `frontend/lib/server/recommendation-profile.ts`, `frontend/lib/server/recommendation-profile.test.ts`, `frontend/app/api/dashboard/profile/route.ts`, `frontend/app/api/dashboard/resume/route.ts`, `frontend/app/api/dashboard/activities/route.ts`, `frontend/app/api/dashboard/activities/[id]/route.ts`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-recommendation-profile-refresh-write-bridge-result.md`
+- 2026-04-24: `frontend/lib/server/recommendation-profile.ts`, `frontend/lib/server/recommendation-profile.test.ts`, `frontend/app/api/dashboard/profile/route.ts`, `frontend/app/api/dashboard/resume/route.ts`, `frontend/app/api/dashboard/activities/route.ts`, `frontend/app/api/dashboard/activities/[id]/route.ts`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-recommendation-profile-refresh-write-bridge-result.md`
   - roadmap 상태표가 실제 저장소 진척도보다 뒤처져 있어, 패키지 1/2 초안 완료와 패키지 3 진행 중 상태, 패키지 4 일부 seed 반영 상태를 문서에 먼저 반영함
   - `profile/resume/activity` 저장 라우트에 공용 best-effort helper를 연결해 `refresh_user_recommendation_profile()` 호출과 `recommendations` 캐시 삭제를 한곳에서 처리하도록 정리함
   - 현재 UI가 아직 `bio`를 희망 직무 입력으로 쓰는 현실은 유지하되, profile 저장 시 additive `profiles.target_job/target_job_normalized`도 같이 채워 새 추천 정본 경로가 stale 되지 않게 보강함
 
-- 2026-04-24: `frontend/lib/types/index.ts`, `frontend/lib/program-display.ts`, `frontend/lib/api/backend.ts`, `frontend/app/(landing)/compare/program-select-modal.tsx`, `frontend/app/(landing)/compare/page.tsx`, `frontend/app/(landing)/compare/programs-compare-client.tsx`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-compare-select-summary-transition-result.md`
+- 2026-04-24: `frontend/lib/types/index.ts`, `frontend/lib/program-display.ts`, `frontend/lib/api/backend.ts`, `frontend/app/(landing)/compare/program-select-modal.tsx`, `frontend/app/(landing)/compare/page.tsx`, `frontend/app/(landing)/compare/programs-compare-client.tsx`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-compare-select-summary-transition-result.md`
   - compare 선택 경로에서 전체 `Program` row를 계속 들고 다니지 않도록 최소 선택 카드 계약 `ProgramSelectSummary`를 추가하고, `program-display`와 backend helper에서 이 요약 타입으로 바로 줄이는 adapter를 공용화함
   - compare 모달의 북마크/검색 결과와 compare 페이지 하단 추천 카드가 이제 같은 요약 타입을 사용해, 선택 UI가 실제로 쓰는 필드만 상태로 유지하도록 정리함
   - 검색 조건, 정렬, compare 3슬롯 URL state, 북마크 탭/전체 검색 탭 동작, 프로그램 추가 흐름은 그대로 유지함
-- 2026-04-24: `docs/rules/long-refactor-handoff-template.md`, `docs/rules/README.md`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-long-refactor-handoff-template-result.md`
+- 2026-04-24: `docs/rules/long-refactor-handoff-template.md`, `docs/rules/README.md`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-long-refactor-handoff-template-result.md`
   - 장기 리팩토링 세션에서 컨텍스트가 많이 차거나 spec/log/dirty worktree가 누적된 상태를 안전하게 새 대화창으로 넘길 수 있도록 공용 handoff 템플릿 문서를 추가함
   - 새 템플릿은 `git status --short --branch`, `docs/refactoring-log.md`, 현재 패키지 번호, dirty worktree 주제, 이번 턴에서 끝낼 작업 1개를 새 창에서 다시 확인하게 강제해 “계속 확장만 되는 리팩토링” 대신 패키지 완결 중심으로 이어가게 함
-- 2026-04-24: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/lib/types/index.ts`, `frontend/app/api/dashboard/recommended-programs/route.ts`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-program-surface-serializer-type-seed-result.md`
+- 2026-04-24: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/lib/types/index.ts`, `frontend/app/api/dashboard/recommended-programs/route.ts`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-program-surface-serializer-type-seed-result.md`
   - `backend/routers/programs.py`에 `base -> card/list -> legacy wrapper` 방향의 내부 serializer transition helper를 추가해 추천/캘린더/상세 조립부가 공용 요약 뿌리를 먼저 통과하도록 정리함
   - 공개 API 계약은 유지한 채 `frontend/lib/types/index.ts`에 `ProgramCardSummary`, `ProgramListRow`, `ProgramSurfaceContext` 등 새 surface 타입을 병행 추가했고, 대시보드 추천/캘린더 BFF도 내부적으로 이 구조를 먼저 조립한 뒤 현재 legacy 응답 shape로 다시 펼치도록 정리함
-- 2026-04-24: `scripts/refresh_program_validation_sample.py`, `backend/tests/test_program_validation_sample_script.py`, `docs/current-state.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/specs/supabase-free-plan-program-migration-ops-guide-v1.md`, `docs/specs/README.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-program-validation-preset-and-entrypoints-result.md`
+- 2026-04-24: `scripts/refresh_program_validation_sample.py`, `backend/tests/test_program_validation_sample_script.py`, `docs/current-state.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/specs/supabase-free-plan-program-migration-ops-guide-v1.md`, `docs/specs/README.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-program-validation-preset-and-entrypoints-result.md`
   - free plan 반복 검증을 더 단순하게 하기 위해 validation bundle 스크립트에 `--preset free-plan-50`, `--output`, `--source-record-fallback-min-batch-limit` 경로를 추가해 한 줄 명령과 결과 파일 저장을 같이 지원하도록 정리함
   - 이와 함께 현재 저장소 기준 실제 serializer/API/BFF 전환 진입점을 별도 문서로 고정해, 추상 전환 순서가 아니라 `backend/routers/programs.py`, `frontend/lib/types/index.ts`, 대시보드 BFF 파일 단위로 다음 구현 순서를 바로 이어갈 수 있게 정리함
-- 2026-04-24: `supabase/migrations/20260425119000_add_program_source_records_sample_backfill_helper.sql`, `docs/specs/program-source-records-sample-backfill-helper-v1.md`, `docs/specs/program-canonical-validation-summary-v1.md`, `docs/specs/supabase-free-plan-program-migration-ops-guide-v1.md`, `docs/specs/README.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-program-source-records-sample-helper-result.md`
+- 2026-04-24: `supabase/migrations/20260425119000_add_program_source_records_sample_backfill_helper.sql`, `docs/specs/program-source-records-sample-backfill-helper-v1.md`, `docs/specs/program-canonical-validation-summary-v1.md`, `docs/specs/supabase-free-plan-program-migration-ops-guide-v1.md`, `docs/specs/README.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-program-source-records-sample-helper-result.md`
   - `program_list_index` 샘플 helper와 스크립트 검증이 끝난 다음 단계로, free plan에서도 `program_source_records` provenance를 전체 3단계 대신 조금씩 검증할 수 있는 bounded sample backfill helper 초안을 추가함
   - 새 helper `backfill_program_source_records_sample(...)`는 현재 `program_list_index` 샘플 program id를 우선 대상으로 provenance를 backfill하고, 초과 source row를 다시 trim하면서 잘린 row를 참조하던 `programs.primary_source_*` 링크도 함께 정리하도록 설계함
   - 이후 실제 SQL Editor에서 `backfill_program_source_records_sample(50, 50)`를 실행해 `50건 후보 -> 50건 upsert -> 50건 primary source 연결`을 확인했고, 관련 spec/ops 문서도 검증 완료 상태로 보강함
-- 2026-04-24: `scripts/backfill_program_source_records.py`, `backend/tests/test_program_source_records_sample_backfill_script.py`, `docs/current-state.md`, `docs/specs/program-source-records-sample-backfill-helper-v1.md`, `docs/specs/program-canonical-validation-summary-v1.md`, `docs/specs/supabase-free-plan-program-migration-ops-guide-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-program-source-records-sample-script-result.md`
+- 2026-04-24: `scripts/backfill_program_source_records.py`, `backend/tests/test_program_source_records_sample_backfill_script.py`, `docs/current-state.md`, `docs/specs/program-source-records-sample-backfill-helper-v1.md`, `docs/specs/program-canonical-validation-summary-v1.md`, `docs/specs/supabase-free-plan-program-migration-ops-guide-v1.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-program-source-records-sample-script-result.md`
   - `backfill_program_source_records_sample(...)`가 실제 DB에서 샘플 검증까지 끝난 뒤, 같은 provenance sample backfill을 SQL Editor 수동 실행 없이 다시 돌릴 수 있도록 전용 CLI 스크립트를 추가함
   - 새 스크립트는 stringified JSONB 반환도 파싱해 `remaining_rows`, `linked_program_rows` 같은 요약 값을 같은 형태의 JSON 리포트로 출력하도록 맞춤
   - 이후 실제 bundle 실행에서 provenance 단계만 statement timeout이 난 사례를 반영해, retryable timeout/lock 오류일 때는 batch/max_rows를 절반씩 줄이며 자동 재시도하는 fallback을 추가함
-- 2026-04-24: `scripts/refresh_program_validation_sample.py`, `backend/tests/test_program_validation_sample_script.py`, `docs/current-state.md`, `docs/specs/supabase-free-plan-program-migration-ops-guide-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-program-validation-sample-bundle-script-result.md`
+- 2026-04-24: `scripts/refresh_program_validation_sample.py`, `backend/tests/test_program_validation_sample_script.py`, `docs/current-state.md`, `docs/specs/supabase-free-plan-program-migration-ops-guide-v1.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-program-validation-sample-bundle-script-result.md`
   - 이미 실검증된 `program_list_index` sample refresh와 `program_source_records` sample backfill을 매번 따로 실행하지 않도록, 두 RPC 경로를 순서대로 묶는 상위 validation sample bundle 스크립트를 추가함
   - bundle 스크립트는 1단계 read-model sample refresh가 실패하면 provenance 단계로 가지 않고 즉시 멈추며, 두 단계가 모두 성공하면 결합 JSON 리포트를 반환해 free plan 반복 검증 경로를 단순화함
   - 이후 직접 `python scripts/refresh_program_validation_sample.py ...` 실행에서 저장소 루트 import와 `.env` 부트스트랩이 빠져 `ModuleNotFoundError`가 난 문제가 확인되어, 스크립트가 루트/backend 경로를 먼저 잡고 기존 helper loader로 `.env`를 읽도록 보강함
-- 2026-04-24: `supabase/migrations/20260425113000_create_program_source_records.sql`, `supabase/migrations/20260425114000_add_program_canonical_columns.sql`, `supabase/migrations/20260425115000_backfill_program_source_records_from_programs.sql`, `supabase/migrations/20260425116000_backfill_program_canonical_fields.sql`, `supabase/migrations/20260425117000_extend_program_list_index_surface_contract.sql`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-program-canonical-sql-drafts-result.md`
+- 2026-04-24: `supabase/migrations/20260425113000_create_program_source_records.sql`, `supabase/migrations/20260425114000_add_program_canonical_columns.sql`, `supabase/migrations/20260425115000_backfill_program_source_records_from_programs.sql`, `supabase/migrations/20260425116000_backfill_program_canonical_fields.sql`, `supabase/migrations/20260425117000_extend_program_list_index_surface_contract.sql`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-program-canonical-sql-drafts-result.md`
   - 프로그램 정본/provenance 분리 패키지 2 초안으로 `program_source_records` 신설, `programs` canonical 컬럼 추가, 기존 `programs` 혼합 구조를 새 provenance/정본 컬럼으로 백필하는 draft SQL 체인을 추가함
   - 기존 `program_list_index`가 `program-surface-contract-v2`의 base/card/list summary를 직접 채울 수 있도록 surface contract용 additive 컬럼과 보조 helper/trigger 초안을 추가함
   - 현재 운영 경로를 즉시 뒤집지 않고 additive + backfill + transition trigger 방식으로 다음 구현 턴에서 dual write/read switch를 이어가기 쉬운 형태로 정리함
 
-- 2026-04-24: `docs/specs/program-canonical-schema-design-v1.md`, `docs/specs/program-recommendation-backend-touchpoints-v1.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/serializer-api-bff-transition-plan-v1.md`, `docs/specs/README.md`, `reports/SESSION-2026-04-24-program-canonical-migration-transition-result.md`
+- 2026-04-24: `docs/specs/program-canonical-schema-design-v1.md`, `docs/specs/program-recommendation-backend-touchpoints-v1.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/serializer-api-bff-transition-plan-v1.md`, `docs/specs/README.md`, `reports\session\2026-04\SESSION-2026-04-24-program-canonical-migration-transition-result.md`
   - `program-surface-contract-v2` 기준으로 `programs`, `program_source_records`, `program_list_index`의 최종 역할과 컬럼 분리를 문서화해 프로그램 축 A/B의 DB 설계 빈칸을 채움
   - 현재 저장소의 실제 read/write 지점을 기준으로 프로그램 축과 사용자 추천 축이 만나는 backend/BFF 변경 포인트를 정리함
   - 사용자 추천 draft migration 이후 어떤 순서로 provenance 분리, dual write, read switch, cleanup을 진행할지 통합 로드맵과 serializer/API/BFF 전환 순서를 추가함
 
-- 2026-04-24: `docs/specs/final-refactor-axis-map-v1.md`, `docs/specs/README.md`, `reports/SESSION-2026-04-24-final-refactor-axis-map-result.md`
+- 2026-04-24: `docs/specs/final-refactor-axis-map-v1.md`, `docs/specs/README.md`, `reports\session\2026-04\SESSION-2026-04-24-final-refactor-axis-map-result.md`
   - 프로그램 정본 개편과 사용자 추천 개편을 포함해 전체 개편을 6축으로 나누는 상위 기준 문서를 추가함
   - 메인 축을 `프로그램 정본`, `프로그램 화면/API 계약`, `사용자 추천 정본`, `정규화 사전`, `운영 정합성`으로 고정하고, 행동 신호 축은 1차 일부 반영 후 2차 확장 축으로 위치시킴
   - 새 창 handoff 시에도 같은 우선순위를 유지할 수 있도록 전체 구현 순서와 축 간 의존 관계를 문서화함
 
-- 2026-04-24: `supabase/migrations/20260425103000_add_profiles_target_job_columns.sql`, `supabase/migrations/20260425104000_create_user_program_preferences.sql`, `supabase/migrations/20260425105000_create_user_recommendation_profile.sql`, `supabase/migrations/20260425110000_create_user_recommendation_profile_refresh_function.sql`, `supabase/migrations/20260425111000_backfill_user_recommendation_inputs.sql`, `supabase/migrations/20260425112000_align_recommendations_with_user_recommendation_profile.sql`, `docs/specs/user-recommendation-serializer-contract-v1.md`, `docs/specs/README.md`, `reports/SESSION-2026-04-24-user-recommendation-sql-drafts-and-contract-result.md`
+- 2026-04-24: `supabase/migrations/20260425103000_add_profiles_target_job_columns.sql`, `supabase/migrations/20260425104000_create_user_program_preferences.sql`, `supabase/migrations/20260425105000_create_user_recommendation_profile.sql`, `supabase/migrations/20260425110000_create_user_recommendation_profile_refresh_function.sql`, `supabase/migrations/20260425111000_backfill_user_recommendation_inputs.sql`, `supabase/migrations/20260425112000_align_recommendations_with_user_recommendation_profile.sql`, `docs/specs/user-recommendation-serializer-contract-v1.md`, `docs/specs/README.md`, `reports\session\2026-04\SESSION-2026-04-24-user-recommendation-sql-drafts-and-contract-result.md`
   - 맞춤형 프로그램 추천용 사용자 축을 실제 migration SQL 파일 초안 단위로 내려 `profiles.target_job`, `user_program_preferences`, `user_recommendation_profile`, `recommendations` 정렬 패키지를 추가함
   - `refresh_user_recommendation_profile()` SQL 초안과 초기 backfill SQL 초안을 함께 고정해 이후 backend switch 전에 DB 구조와 파생 정본 흐름을 먼저 확정함
   - `program-surface-contract-v2`와 연결되는 추천 serializer / profile derivation 계약 문서를 추가하고, `cowork/drafts/relevance-scoring-v2.md`의 가중치를 현재 저장소 기준으로 보정 적용함
 
-- 2026-04-24: `docs/specs/user-recommendation-schema-migration-plan-v1.md`, `docs/specs/README.md`, `reports/SESSION-2026-04-24-user-recommendation-schema-migration-plan-result.md`
+- 2026-04-24: `docs/specs/user-recommendation-schema-migration-plan-v1.md`, `docs/specs/README.md`, `reports\session\2026-04\SESSION-2026-04-24-user-recommendation-schema-migration-plan-result.md`
   - 맞춤형 프로그램 추천용 사용자 스키마 재정의를 실제 migration 단계로 풀어, `profiles.target_job` 추가, `user_program_preferences`, `user_recommendation_profile`, 추천 cache 계약 정렬 순서를 문서화함
   - 단계별 migration 파일명, SQL 초안, 코드 변경 순서, 검증 SQL, 롤백 전략을 함께 정리해 실행 계획 문서로 고정함
 
-- 2026-04-24: `docs/specs/user-recommendation-schema-v1.md`, `docs/specs/README.md`, `reports/SESSION-2026-04-24-user-recommendation-schema-review-result.md`
+- 2026-04-24: `docs/specs/user-recommendation-schema-v1.md`, `docs/specs/README.md`, `reports\session\2026-04\SESSION-2026-04-24-user-recommendation-schema-review-result.md`
   - `supabase/SQL.md` 기준 현재 `profiles`, `activities`, `resumes`, `recommendations` 구조와 추천 코드가 실제로 읽는 사용자 필드를 비교해 맞춤형 프로그램 추천용 사용자 스키마 재정의 문서를 추가함
   - `bio`와 희망 직무 의미 충돌, `profiles`의 `target_job` 부재, 거주지와 선호 지역 미분리, `recommendations` 문서/코드 드리프트를 핵심 문제로 정리함
   - 최종 권장 구조를 `profiles + user_program_preferences + user_recommendation_profile + user_program_events`로 문서화함
 
-- 2026-04-24: `docs/specs/program-surface-contract-v2.md`, `docs/specs/README.md`, `reports/SESSION-2026-04-24-program-surface-contract-v2-result.md`
+- 2026-04-24: `docs/specs/program-surface-contract-v2.md`, `docs/specs/README.md`, `reports\session\2026-04\SESSION-2026-04-24-program-surface-contract-v2-result.md`
   - 프로그램 화면 계약 재정의 스펙을 추가해 카드형, 테이블형, 상세형, 화면 문맥 계약을 `ProgramBaseSummary`, `ProgramCardSummary`, `ProgramListRow`, `ProgramDetailResponse`, `ProgramSurfaceContext`로 분리해 고정함
   - 실제 페이지 검토 기준으로 프로그램 목록 테이블은 `ProgramDetail`이 아니라 별도 `ProgramListRow` 계약을 써야 한다는 판단을 문서화함
   - 이 문서는 현재 운영 truth가 아니라 앞으로의 스키마/API/UI 통합 개편 기준 스펙으로 위치시킴
@@ -209,7 +209,7 @@
   - 이 신호는 기존 `classification`을 대체하지 않고, structured `url_diagnostics` 우선 집계 기준 `parse_empty >= 2`일 때만 true가 되도록 고정함
   - 검증: `backend\venv\Scripts\python.exe -m pytest backend/tests/test_html_collector_diagnostic_cli.py -q` 통과 (`12 passed`), `backend\venv\Scripts\python.exe -m pytest backend/tests/test_tier2_collectors.py backend/tests/test_tier3_collectors.py backend/tests/test_tier4_collectors.py backend/tests/test_scheduler_collectors.py -q` 통과 (`37 passed`)
 
-- 2026-04-24: `backend/tests/test_html_collector_diagnostic_cli.py`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-scheduler-summary-consumer-smoke-test-result.md`
+- 2026-04-24: `backend/tests/test_html_collector_diagnostic_cli.py`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-scheduler-summary-consumer-smoke-test-result.md`
   - scheduler summary bundle이 가리키는 `docs/schemas/html-collector-scheduler-summary.schema.json`을 test consumer가 직접 읽어, 직렬화된 JSON 리포트의 `scheduler_dry_run` / `sources[*].scheduler_dry_run` / nested `quality` payload가 schema contract와 어긋나지 않는지 smoke test로 고정함
   - 외부 `jsonschema` 의존성을 새로 넣지 않고, 현재 schema에서 쓰는 `const`, `required`, `additionalProperties`, `oneOf`, primitive type/minimum만 읽는 가벼운 validator를 테스트 내부에 두어 Windows 로컬 환경에서도 바로 검증 가능하게 함
   - 검증: `backend\venv\Scripts\python.exe -m pytest backend/tests/test_html_collector_diagnostic_cli.py -q` 통과 (`11 passed`), `backend\venv\Scripts\python.exe -m pytest backend/tests/test_collector_quality_validator.py backend/tests/test_program_quality_report_cli.py backend/tests/test_scheduler_collectors.py backend/tests/test_html_collector_diagnostic_cli.py -q --basetemp .pytest_tmp_scheduler_smoke` 통과 (`37 passed`)
@@ -219,13 +219,13 @@
   - explicit ad row와 provider-match fallback row가 같은 프로그램을 가리켜도 promoted layer 안에서 중복되지 않도록 회귀 테스트를 추가함
   - frontend 타입에서 `promoted_items`를 optional이 아닌 required 필드로 맞춰 backend 응답 계약을 더 명확히 함
 
-- 2026-04-24: `backend/rag/collector/quality_validator.py`, `scripts/html_collector_diagnostic.py`, `backend/tests/test_collector_quality_validator.py`, `backend/tests/test_html_collector_diagnostic_cli.py`, `docs/current-state.md`, `reports/html-collector-ocr-diagnostic-2026-04-24.json`, `reports/html-collector-ocr-diagnostic-2026-04-24.md`
+- 2026-04-24: `backend/rag/collector/quality_validator.py`, `scripts/html_collector_diagnostic.py`, `backend/tests/test_collector_quality_validator.py`, `backend/tests/test_html_collector_diagnostic_cli.py`, `docs/current-state.md`, `reports\diagnostics\html-collector\2026-04-24\html-collector-ocr-diagnostic-2026-04-24.json`, `reports\diagnostics\html-collector\2026-04-24\html-collector-ocr-diagnostic-2026-04-24.md`
   - `summarize_program_field_gaps()`를 추가해 normalized row 품질 이슈를 field/code/sample 단위로 요약하고, OCR preflight가 source별 field gap audit을 함께 내리도록 연결함
   - OCR markdown/json 리포트가 attachment/image URL sample과 함께 `field_gap_summary`, `field_gap_audit`를 보여주도록 확장해 poster/attachment 후보가 실제로 OCR이 필요한 필드 결손을 갖는지 바로 판별할 수 있게 함
   - 2026-04-24 rerun 기준 OCR 분류는 `poster_or_attachment_candidate=7`, `detail_probe_inconclusive=3`, `text_sufficient_no_ocr=4`였고, field gap이 잡힌 13개 source의 175건은 모두 info-level `missing_provider`라 즉시 OCR runtime opt-in 후보는 여전히 0건으로 유지됨
   - 검증: `backend\venv\Scripts\python.exe -m pytest backend/tests/test_collector_quality_validator.py backend/tests/test_program_quality_report_cli.py backend/tests/test_scheduler_collectors.py backend/tests/test_html_collector_diagnostic_cli.py -q` 통과 (`36 passed`)
 
-- 2026-04-24: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `reports/SESSION-2026-04-24-click-hotness-contract-hardening-result.md`
+- 2026-04-24: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `reports\session\2026-04\SESSION-2026-04-24-click-hotness-contract-hardening-result.md`
   - `click hotness` fallback 계산식의 recent weight와 total cap을 module 상수/헬퍼로 분리해 Python 경로가 SQL `program_list_click_hotness_score` 계약을 한 곳에서 참조하도록 정리함
   - migration SQL formula가 backend 상수와 같은 weight/cap/coalesce 구조를 유지하는지 회귀 테스트를 추가해 SQL/Python drift를 더 빨리 감지하게 함
   - 검증: `backend\venv\Scripts\python.exe -m pytest backend/tests/test_programs_router.py -q` 통과 (`108 passed`)
@@ -237,19 +237,19 @@
   - scheduler dry-run summary에 `scheduler_source_summary_v1`, `scheduler_dry_run_summary_v1` schema id/path를 붙이고 별도 JSON schema 파일로 포맷을 고정해 downstream 자동화 소비 안정성을 높임
   - 검증: `backend\venv\Scripts\python.exe -m pytest backend/tests/test_tier2_collectors.py backend/tests/test_tier3_collectors.py backend/tests/test_tier4_collectors.py backend/tests/test_scheduler_collectors.py backend/tests/test_html_collector_diagnostic_cli.py -q` 통과 (`47 passed`)
 
-- 2026-04-23: `backend/routers/programs.py`, `backend/services/program_list_scoring.py`, `backend/tests/test_programs_router.py`, `frontend/app/(landing)/programs/page.tsx`, `frontend/lib/types/index.ts`, `scripts/benchmark_program_list_performance.py`, `docs/camps-list-refactor.md`, `docs/current-state.md`, `reports/program-list-hardening-performance-20260423.json`, `reports/TASK-2026-04-23-program-list-hardening-result.md`
+- 2026-04-23: `backend/routers/programs.py`, `backend/services/program_list_scoring.py`, `backend/tests/test_programs_router.py`, `frontend/app/(landing)/programs/page.tsx`, `frontend/lib/types/index.ts`, `scripts/benchmark_program_list_performance.py`, `docs/camps-list-refactor.md`, `docs/current-state.md`, `reports\ad-hoc\programs\program-list-hardening-performance-20260423.json`, `reports/TASK-2026-04-23-program-list-hardening-result.md`
   - `/programs/list` 응답에 `promoted_items`를 추가해 sponsored/promoted 노출을 organic `items`와 분리함
   - organic read-model query는 `is_ad=false`로 제한하고, 명시 `is_ad=true` row 또는 `PROGRAM_PROMOTED_PROVIDER_MATCHES` 기반 Fast Campus sponsored fallback row가 organic 결과에 중복 노출되지 않도록 제거함
   - 프론트 `/programs`는 sponsored rows를 `스폰서 추천` 레이어로 별도 렌더링하고 일반 추천순 테이블과 섞지 않음
   - cursor와 region `or` 필터 조합, read-model field 기반 completeness, promoted 중복 방지 테스트를 추가함
   - legacy/read-model 경로 성능 비교 CLI를 추가하고 운영 Supabase 기준 JSON 리포트를 남김
 
-- 2026-04-23: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `reports/programs-read-model-or-filter-result.md`
+- 2026-04-23: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `reports\ad-hoc\programs\programs-read-model-or-filter-result.md`
   - read model cursor pagination 조건과 region 다중 필터가 모두 PostgREST `or` 파라미터를 쓰면서 서로 덮일 수 있는 경로를 `_add_read_model_or_filter()` 병합 helper로 정리함
   - cursor 조건과 region 조건을 `and=(or(...),or(...))` 형태로 조합해, 커서 페이지 이동과 지역 필터가 동시에 유지되도록 함
   - `test_read_model_query_combines_cursor_and_region_or_filters`로 `or` 덮어쓰기 방지를 회귀 테스트로 고정함
 
-- 2026-04-23: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `reports/programs-read-model-scope-search-result.md`
+- 2026-04-23: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `reports\ad-hoc\programs\programs-read-model-scope-search-result.md`
   - `/programs/list?q=...&scope=all` 검색 경로가 `program_list_index`에 존재하지 않는 `scope` 컬럼 필터를 붙여 read model fallback으로 빠질 수 있는 문제를 수정함
   - `scope=all`은 browse/search/archive 모드 결정에만 사용하고, read model query params에는 전달하지 않도록 정리함
   - `test_read_model_query_scope_all_switches_mode_without_scope_column_filter`로 검색 모드 전환과 `scope` 필터 미전달을 회귀 테스트로 고정함
@@ -266,7 +266,7 @@
   - `backend/tests/test_programs_router.py`
   - `backend/tests/test_program_backfill.py`
   - `docs/current-state.md`
-  - `reports/programs-work24-participation-backfill-result.md`
+  - `reports\ops\work24\programs-work24-participation-backfill-result.md`
 - 변경 내용
   - Work24 상세 backfill이 `--source-family work24`로 범위를 좁힐 수 있게 하고, 상세 HTML 파서가 malformed `훈련시간/훈련유형/연락처`를 저장하지 않도록 정제함
   - backend와 SQL read model 표시 정책에서 날짜 기간만으로 `풀타임/파트타임`을 단정하지 않고, 명시 텍스트/시간 범위/야간·주말 신호만 라벨 근거로 쓰도록 조정함
@@ -299,7 +299,7 @@
   - `frontend/app/(landing)/programs/page.tsx`
   - `frontend/lib/api/backend.ts`
   - `docs/current-state.md`
-  - `reports/programs-pagination-result.md`
+  - `reports\ad-hoc\programs\programs-pagination-result.md`
 - 변경 내용
   - `/programs/list` read-model 경로에 `offset` query를 지원해 cursor 없이도 `page` 기반 페이지 이동이 가능하게 함
   - 프론트 프로그램 페이지의 cursor 전용 `처음/다음` 분기를 제거하고 기존 숫자 페이지네이션(`이전 1 2 3 다음`)을 항상 사용하도록 복구함
@@ -382,9 +382,9 @@
   - `backend/routers/programs.py`
   - `backend/tests/test_programs_router.py`
   - `docs/current-state.md`
-  - `reports/programs-filter-tags-ad-hoc-result.md`
+  - `reports\ad-hoc\programs\programs-filter-tags-ad-hoc-result.md`
 - 변경 내용
-  - `reports/program-detail-page-ad-hoc-blocked.md`는 이후 `TASK-2026-04-22-1618-program-detail-page`로 구현/검증 완료된 항목으로 분류함
+  - `reports\ad-hoc\programs\program-detail-page-ad-hoc-blocked.md`는 이후 `TASK-2026-04-22-1618-program-detail-page`로 구현/검증 완료된 항목으로 분류함
   - `reports/programs-filter-tags-ad-hoc-blocked.md`는 현재 backend에서 `category_detail=data-ai&category=AI`가 빈 결과를 반환하는 미반영 항목으로 확인해 보정함
   - 세부 카테고리 필터가 운영 DB의 `category_detail` exact 값에만 의존하지 않고 큰 카테고리 후보 조회 후 파생 표시 카테고리와 alias로 후처리 매칭하도록 조정함
   - 고용24 `근로자원격훈련` 같은 원천 target/raw 값을 목록 응답의 `teaching_method=온라인` 표시로 보정해 전체 목록에서도 온/오프라인 정보가 보이도록 함
@@ -459,7 +459,7 @@
   - `backend/tests/test_programs_router.py`
   - `supabase/migrations/20260422212000_add_programs_category_detail.sql`
   - `docs/current-state.md`
-  - `reports/programs-filter-bar-redesign-result.md`
+  - `reports\ad-hoc\programs\programs-filter-bar-redesign-result.md`
 - 변경 내용
   - `/programs`의 기존 왼쪽 사이드 필터를 상단 검색 중심 필터 바로 재구성함
   - 카테고리 선택은 기본 select 대신 참고 화면처럼 컬러 점, 선택 강조, 행 단위 항목을 가진 드롭다운 메뉴로 조정함
@@ -2877,7 +2877,7 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - 프로그램 카드/상세/대시보드/추천 캘린더의 D-day 기준을 모집 마감일(`close_date` 또는 `deadline`)로 통일하고, 프론트의 `end_date` fallback을 제거함
   - 고용24에서 훈련 종료일이 `deadline`과 같은 값으로 저장된 row는 모집 마감일로 보지 않고 D-day 계산에서 제외하도록 방어함
   - 훈련/운영 기간 표시는 기존대로 `start_date`/`end_date`를 유지하고, backend router 회귀 테스트와 frontend lint/typecheck로 검증함
-- 2026-04-22: `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/programs-filter-bar.tsx`, `frontend/lib/api/backend.ts`, `frontend/lib/types/index.ts`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `supabase/migrations/20260422213000_add_programs_cost_time_filters.sql`, `docs/current-state.md`, `reports/programs-filter-bar-redesign-result.md`
+- 2026-04-22: `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/programs-filter-bar.tsx`, `frontend/lib/api/backend.ts`, `frontend/lib/types/index.ts`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `supabase/migrations/20260422213000_add_programs_cost_time_filters.sql`, `docs/current-state.md`, `reports\ad-hoc\programs\programs-filter-bar-redesign-result.md`
   - 프로그램 상단 필터에 시·도 지역, 비용, 참여 시간 다중 선택 드롭다운을 추가하고 URL query와 목록/count API 파라미터에 연결함
   - 비용은 `내일배움카드`, `무료(내배카 X)`, `유료`, 참여 시간은 `파트타임`, `풀타임`으로 분류하며, DB 컬럼이 없는 환경에서도 기존 row의 비용/지원/기간/텍스트 정보를 기준으로 backend에서 보수적으로 필터링하도록 함
   - 운영 DB 적용용 `cost_type`, `participation_time` migration과 trigger/index를 추가하고, 기존 카드 리스트와 상세 보기 흐름은 유지함
@@ -2885,11 +2885,11 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - 고용24 `traEndDate`를 `raw_deadline`으로 넘기지 않고 `end_date`와 `compare_meta.training_end_date`로만 보존하도록 분리함
   - 관리자 sync도 별도 `deadline`/`close_date`가 없으면 고용24 `deadline=end_date`를 저장하지 않도록 수정함
   - 운영 DB의 기존 의심 row를 직접 수정하지 않고 `scripts/program_backfill.py --work24-deadline-audit` dry-run 리포트로 먼저 식별하도록 추가함
-- 2026-04-22: `backend/main.py`, `backend/rag/chroma_client.py`, `backend/tests/test_chroma_client.py`, `backend/tests/test_main_chroma_startup.py`, `docs/current-state.md`, `reports/backend-startup-chroma-quota-result.md`
+- 2026-04-22: `backend/main.py`, `backend/rag/chroma_client.py`, `backend/tests/test_chroma_client.py`, `backend/tests/test_main_chroma_startup.py`, `docs/current-state.md`, `reports\ops\backend\backend-startup-chroma-quota-result.md`
   - `CHROMA_MODE=ephemeral` 로컬 개발 모드에서는 기본 startup seed를 생략해 서버 기동이 Gemini embedding quota 초과 재시도에 묶이지 않도록 조정함
   - Gemini embedding 429를 한 번 감지하면 같은 프로세스의 이후 embedding function도 즉시 local deterministic fallback을 사용하도록 전역 fallback 플래그를 추가함
   - 필요 시 `ISOSER_CHROMA_SEED_ON_STARTUP=true`, `ISOSER_EMBEDDING_LOCAL_FALLBACK=true`로 운영/개발 동작을 명시 override할 수 있게 함
-- 2026-04-23: `frontend/app/(landing)/compare/page.tsx`, `frontend/app/(landing)/compare/programs-compare-client.tsx`, `frontend/app/(landing)/compare/compare-table-sections.tsx`, `frontend/app/(landing)/compare/compare-relevance-section.tsx`, `docs/current-state.md`, `reports/compare-page-detail-fields-result.md`
+- 2026-04-23: `frontend/app/(landing)/compare/page.tsx`, `frontend/app/(landing)/compare/programs-compare-client.tsx`, `frontend/app/(landing)/compare/compare-table-sections.tsx`, `frontend/app/(landing)/compare/compare-relevance-section.tsx`, `docs/current-state.md`, `reports\ad-hoc\programs\compare-page-detail-fields-result.md`
   - 비교 페이지가 목록용 `Program`만 쓰던 구조에서 상세 API `ProgramDetail`을 함께 조회해 비용, 지원금, 지원 대상, 정원, 만족도, 문의 같은 공통 상세 필드를 표에 반영하도록 개선함
   - 비교 표를 기본 정보, 일정, 비용·지원, 대상·모집, 소개로 재구성하고, 상세 API 실패 시 기존 목록 필드 fallback으로 화면이 유지되도록 함
   - `programs.skills`가 운영 DB에서 비어 있을 수 있는 현실을 반영해 AI 적합도와 표 라벨을 기술 스택/스킬 확정 표현 대신 프로필 키워드/수집 키워드 중심으로 완화함
@@ -2897,7 +2897,7 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - 비교 페이지 상세 호출 리스크를 줄이기 위해 `POST /programs/details/batch`를 추가하고, 프론트 비교 페이지는 상세 정보를 슬롯별 단건 호출 대신 batch로 조회하도록 변경함
   - compare relevance 응답에 `region_match_score`, `matched_regions`를 추가해 주소/지역 기반 신호를 기술 키워드와 분리해 표시함
   - 고용24/K-Startup mapping과 normalizer에 보수적인 `skills` 추출/저장 흐름을 추가해 `programs.skills`가 계속 비어 남는 문제를 줄임
-- 2026-04-23: `backend/routers/programs.py`, `backend/rag/collector/regional_html_collectors.py`, `frontend/app/(landing)/compare/page.tsx`, `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/program-card.tsx`, `frontend/app/(landing)/programs/programs-filter-bar.tsx`, `frontend/app/(landing)/programs/recommended-programs-section.tsx`, `frontend/app/api/dashboard/bookmarks/[programId]/route.ts`, `frontend/app/api/dashboard/recommended-programs/route.ts`, `frontend/lib/api/backend.ts`, `frontend/lib/types/index.ts`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `reports/compare-page-detail-fields-result.md`
+- 2026-04-23: `backend/routers/programs.py`, `backend/rag/collector/regional_html_collectors.py`, `frontend/app/(landing)/compare/page.tsx`, `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/program-card.tsx`, `frontend/app/(landing)/programs/programs-filter-bar.tsx`, `frontend/app/(landing)/programs/recommended-programs-section.tsx`, `frontend/app/api/dashboard/bookmarks/[programId]/route.ts`, `frontend/app/api/dashboard/recommended-programs/route.ts`, `frontend/lib/api/backend.ts`, `frontend/lib/types/index.ts`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `reports\ad-hoc\programs\compare-page-detail-fields-result.md`
   - 비교 페이지 기본 프로그램 조회도 `POST /programs/batch`로 통합해 상세/기본 조회 모두 batch 경로를 사용하도록 정리함
   - 지역 매칭을 문자열 포함 수준에서 시/도 정규화, 인접권역, 온라인/혼합형 판정으로 보강하고 `score_breakdown`, `relevance_reasons`, `relevance_grade`, `relevance_badge`를 relevance/recommend 응답에 추가함
   - `/programs`를 맞춤 추천, 마감 임박, 전체 프로그램 섹션으로 나누고, 목록 카드는 상세 이동 본문과 BFF 경유 찜 버튼만 남기는 구조로 조정함
@@ -2912,59 +2912,59 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-23: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `reports/TASK-2026-04-23-0556-address-field-and-region-matching-result.md`
   - 지역 매칭에서 명시 `teaching_method`를 먼저 판정하고, 온라인+오프라인/지역명 조합은 혼합형으로 분류하도록 보강함
   - 주소 미입력 프로필의 `score_breakdown`은 지역 가중치를 제외한 임시 가중치로 계산하고, 주소가 있는 프로필은 최종 지역 가중치를 유지하도록 테스트 기대값을 추가함
-- 2026-04-23: `frontend/app/(landing)/programs/bookmark-state-provider.tsx`, `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/program-card.tsx`, `docs/current-state.md`, `reports/compare-page-detail-fields-result.md`
+- 2026-04-23: `frontend/app/(landing)/programs/bookmark-state-provider.tsx`, `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/program-card.tsx`, `docs/current-state.md`, `reports\ad-hoc\programs\compare-page-detail-fields-result.md`
   - `/programs` 화면에 program id 기준 bookmark state provider를 추가해 맞춤 추천, 마감 임박, 전체 프로그램에 같은 카드가 중복 노출될 때 찜 상태가 즉시 동기화되도록 함
   - `ProgramCard`는 provider가 없는 위치에서는 기존 `initialBookmarked` 기반 로컬 상태로 계속 동작하게 해 재사용 범위의 기존 동작을 유지함
 - 2026-04-23: `frontend/app/(landing)/programs/page.tsx`, `reports/TASK-2026-04-23-0557-programs-listing-page-restructure-result.md`
   - 프로그램 목록의 비용 active filter chip 제거 URL이 운영 기관, 추천 대상, 선발 절차, 채용 연계 필터를 함께 보존하도록 보완함
   - `/programs` 구조 개편 잔여 보완 결과와 검증 결과를 task result report로 기록함
-- 2026-04-23: `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/program-card.tsx`, `frontend/app/(landing)/programs/program-bookmark-button.tsx`, `frontend/app/(landing)/programs/program-utils.ts`, `docs/current-state.md`, `reports/programs-table-list-restructure-result.md`
+- 2026-04-23: `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/program-card.tsx`, `frontend/app/(landing)/programs/program-bookmark-button.tsx`, `frontend/app/(landing)/programs/program-utils.ts`, `docs/current-state.md`, `reports\ad-hoc\programs\programs-table-list-restructure-result.md`
   - `/programs`의 맞춤 추천 섹션을 제거하고 전체 프로그램 탐색이 바로 이어지도록 구조를 단순화함
   - 마감 임박 프로그램은 기존 카드 컴포넌트를 유지하되 1줄 가로 스크롤 레일로 축소함
   - 전체 프로그램 결과는 카드 그리드에서 교육기관/프로그램명, 과정, 모집상태, 비용, 온·오프라인, 기간, 참여 시간, 선발절차·키워드, 채용연계, 운영기관을 비교하는 테이블로 전환함
   - 카드와 테이블이 공유하는 D-day, 관련도, 텍스트 리스트 helper를 `program-utils.ts`로 분리하고 테이블 행용 찜 버튼을 별도 client component로 추가함
-- 2026-04-23: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/app/dashboard/page.tsx`, `frontend/lib/types/index.ts`, `docs/current-state.md`, `reports/dashboard-recommend-calendar-relevance-result.md`
+- 2026-04-23: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/app/dashboard/page.tsx`, `frontend/lib/types/index.ts`, `docs/current-state.md`, `reports\ad-hoc\programs\dashboard-recommend-calendar-relevance-result.md`
   - 캘린더 추천 응답에 기존 맞춤 추천 카드에서 쓰던 `fit_keywords`, `relevance_reasons`, `score_breakdown`, `relevance_grade`, `relevance_badge`를 추가함
   - 대시보드 추천 캘린더 카드가 관련도 배지, 관련도 퍼센트, 맞춤 추천 키워드, 추천 근거 목록을 표시하도록 보강함
   - fallback 공개 프로그램은 개인화 근거 없이 기존 마감순 보호 동작을 유지하도록 빈 추천 필드를 내려준다
-- 2026-04-23: `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/app/dashboard/page.tsx`, `docs/current-state.md`, `reports/dashboard-recommend-calendar-relevance-result.md`
+- 2026-04-23: `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/app/dashboard/page.tsx`, `docs/current-state.md`, `reports\ad-hoc\programs\dashboard-recommend-calendar-relevance-result.md`
   - 대시보드 추천 캘린더 BFF의 백엔드 추천 fetch에 3.5초 timeout, backend 목록 fallback에 2.5초 timeout을 추가해 상류 지연 시 공개 프로그램 fallback으로 빠르게 전환되도록 함
   - 대시보드 기본 추천 목록을 15분 localStorage cache로 저장하고 재진입 시 즉시 표시한 뒤 최신 추천으로 갱신하도록 함
-- 2026-04-23: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/app/(landing)/programs/page.tsx`, `frontend/lib/api/backend.ts`, `frontend/lib/types/index.ts`, `docs/current-state.md`, `reports/compare-page-detail-fields-result.md`
+- 2026-04-23: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/app/(landing)/programs/page.tsx`, `frontend/lib/api/backend.ts`, `frontend/lib/types/index.ts`, `docs/current-state.md`, `reports\ad-hoc\programs\compare-page-detail-fields-result.md`
   - `GET /programs/filter-options`를 추가해 운영 기관, 추천 대상, 선발 절차, 채용 연계 필터 옵션을 현재 검색/카테고리/지역/수업방식/모집 상태 조건에 맞는 실제 프로그램 row에서 추출하도록 함
   - `/programs` 서버 페이지는 옵션 조회가 실패하거나 빈 배열이면 기존 정적 옵션으로 fallback해 기존 필터 동작을 유지함
-- 2026-04-23: `frontend/app/(landing)/programs/[id]/page.tsx`, `frontend/app/(landing)/programs/[id]/program-detail-client.tsx`, `frontend/app/(landing)/programs/program-bookmark-button.tsx`, `docs/current-state.md`, `reports/compare-page-detail-fields-result.md`
+- 2026-04-23: `frontend/app/(landing)/programs/[id]/page.tsx`, `frontend/app/(landing)/programs/[id]/program-detail-client.tsx`, `frontend/app/(landing)/programs/program-bookmark-button.tsx`, `docs/current-state.md`, `reports\ad-hoc\programs\compare-page-detail-fields-result.md`
   - 프로그램 상세 페이지 북마크 버튼이 로컬 토글만 하던 문제를 기존 dashboard bookmark BFF mutation 컴포넌트 재사용으로 교체함
   - 상세 페이지 서버 렌더링 시 `program_bookmarks`에서 현재 사용자 초기 찜 상태를 읽어 목록 페이지와 같은 기준으로 표시하도록 함
-- 2026-04-23: `frontend/app/(landing)/compare/program-select-modal.tsx`, `docs/current-state.md`, `reports/compare-page-detail-fields-result.md`
+- 2026-04-23: `frontend/app/(landing)/compare/program-select-modal.tsx`, `docs/current-state.md`, `reports\ad-hoc\programs\compare-page-detail-fields-result.md`
   - 비교 프로그램 선택 모달의 전체 검색 탭에 `/programs/filter-options` 기반 운영 기관, 추천 대상, 선발 절차, 채용 연계 필터를 추가함
   - 옵션 조회 실패가 검색 결과 로딩을 막지 않도록 옵션 fetch는 best-effort로 분리하고, 선택된 옵션은 기존 `/programs` 목록 query 파라미터로 적용함
-- 2026-04-23: `frontend/app/(landing)/landing-c/page.tsx`, `frontend/app/(landing)/landing-c/_*.ts*`, `docs/current-state.md`, `reports/landing-c-component-refactor-result.md`
+- 2026-04-23: `frontend/app/(landing)/landing-c/page.tsx`, `frontend/app/(landing)/landing-c/_*.ts*`, `docs/current-state.md`, `reports\ad-hoc\programs\landing-c-component-refactor-result.md`
   - landing-c의 단일 대형 `page.tsx`를 landing-a와 유사하게 스타일 변수, 정적 콘텐츠, 검색 파라미터 정규화, 프로그램 표시/정렬 helper, 히어로, Opportunity feed, 하단 지원 섹션 파일로 분리함
   - `page.tsx`는 기존 `listPrograms` 호출, Live Board 후보 조회, Opportunity feed 정렬, 섹션 조립만 맡도록 축소해 화면/라우팅 동작 변경 없이 수정 리스크를 낮춤
   - 후속으로 landing-a/c의 프로그램 카드 표시 helper 중 중복되는 provider/location/period 정규화 로직을 공용 helper로 더 줄일 수 있음
-- 2026-04-23: `docs/launch-smoke-test.md`, `reports/landing-c-component-refactor-result.md`
+- 2026-04-23: `docs/launch-smoke-test.md`, `reports\ad-hoc\programs\landing-c-component-refactor-result.md`
   - 런칭 smoke checklist의 공개 진입과 로그인 기본 복귀 항목을 현재 기본 랜딩인 `/landing-c` 기준으로 갱신함
   - landing-c 리팩토링 후속 검증 포인트로 Live Board, 검색/칩 필터, Opportunity feed 카드, 카드 액션 렌더 확인을 명시함
   - 로컬 dev server `http://localhost:3031/landing-c`에서 HTTP 200, 루트 `/`의 `/landing-c` 307 redirect, agent-browser nonblank/error-overlay/key element smoke를 확인함
-- 2026-04-23: `frontend/app/(landing)/programs/programs-filter-bar.tsx`, `frontend/app/(landing)/programs/[id]/page.tsx`, `frontend/app/(landing)/programs/[id]/program-detail-client.tsx`, `frontend/app/(landing)/programs/[id]/not-found.tsx`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `reports/programs-qa-immediate-fixes-result.md`
+- 2026-04-23: `frontend/app/(landing)/programs/programs-filter-bar.tsx`, `frontend/app/(landing)/programs/[id]/page.tsx`, `frontend/app/(landing)/programs/[id]/program-detail-client.tsx`, `frontend/app/(landing)/programs/[id]/not-found.tsx`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `reports\ad-hoc\programs\programs-qa-immediate-fixes-result.md`
   - QA에서 발견된 programs 정렬/다중 필터/잘못된 ID/공유 안내 문제를 즉시 수정함
   - 정렬은 버튼형 메뉴 대신 select 변경 즉시 제출로 단순화하고, 다중 필터 메뉴에는 `선택 적용` submit 버튼을 추가해 열린 메뉴 상태에서도 선택값을 URL query에 반영할 수 있게 함
   - 프로그램 상세 API는 UUID 형식이 아닌 id를 404로 방어하고, 상세 페이지는 내부 Supabase 오류 대신 전용 한국어 404/안내 화면과 공유 복사 결과 메시지를 제공함
-- 2026-04-23: `frontend/app/(landing)/programs/programs-filter-bar.tsx`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `reports/programs-filter-toggle-latest-sort-fix-result.md`
+- 2026-04-23: `frontend/app/(landing)/programs/programs-filter-bar.tsx`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `reports\ad-hoc\programs\programs-filter-toggle-latest-sort-fix-result.md`
   - 다중 필터 메뉴의 `선택 적용` 버튼을 제거하고, 필터 항목 또는 `전체선택` 클릭 즉시 메뉴가 닫히도록 조정함
   - `/programs?sort=latest&recruiting_only=true`에서 최신 원천 데이터 첫 묶음이 표시 불가 항목으로 채워져 결과가 비는 문제를 해결하기 위해 최신순 모집중 후보를 1,000건 단위로 넓게 조회한 뒤 실제 모집 마감일 기준으로 후처리함
   - 고용24 `deadline=end_date` 보정 후 `days_left`가 없는 항목은 모집중 목록/count에서 제외하도록 목록과 카운트 기준을 맞추고, 관련 backend 회귀 테스트를 추가함
-- 2026-04-23: `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/programs-filter-bar.tsx`, `docs/current-state.md`, `reports/programs-filter-search-layout-result.md`
+- 2026-04-23: `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/programs-filter-bar.tsx`, `docs/current-state.md`, `reports\ad-hoc\programs\programs-filter-search-layout-result.md`
   - `/programs` 목록 필터에서 선발 절차와 채용 연계 필터를 제거하고, 해당 query는 목록 화면의 active chip/API 요청/페이지네이션 URL 보존 대상에서 제외함
   - 검색 input, 검색 버튼, 초기화 버튼을 필터 드롭다운 아래 별도 줄로 내려 배치해 필터 선택 후 검색 실행 흐름이 더 명확하게 보이도록 조정함
   - 비교 프로그램 선택 모달과 backend filter-options 계약은 다른 화면에서 계속 쓰일 수 있어 변경하지 않음
   - 검색/초기화 버튼 폭을 필터 토글 1칸과 맞추고, 정렬을 native select 대신 같은 커스텀 토글 UI로 맞춰 `마감 임박순` 디자인 불일치를 해소함
-- 2026-04-23: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/app/(landing)/programs/page.tsx`, `frontend/lib/types/index.ts`, `docs/current-state.md`, `reports/programs-list-metadata-normalization-result.md`
+- 2026-04-23: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/app/(landing)/programs/page.tsx`, `frontend/lib/types/index.ts`, `docs/current-state.md`, `reports\ad-hoc\programs\programs-list-metadata-normalization-result.md`
   - `/programs` 목록 응답에 실제 row 텍스트 기반 파생 표시 필드 `display_categories`, `participation_mode_label`, `participation_time_text`, `selection_process_label`, `extracted_keywords`를 추가함
   - 카테고리는 기존 source/category_detail을 참고하되 제목/요약/설명/tags/skills/compare_meta 기반 규칙으로 보정하고, 짧은 영문 키워드는 단어 경계가 맞을 때만 매칭해 URL/식별자 오분류를 줄임
   - 목록 테이블은 파생 카테고리 badge, 참여 시간 라벨+상세 시간, 선발절차 라벨, 실제 내용 기반 keyword chip을 우선 표시하고 빈 keyword chip/dash 중복은 숨기도록 조정함
-- 2026-04-23: `backend/routers/programs.py`, `backend/rag/collector/work24_detail_parser.py`, `scripts/program_backfill.py`, `frontend/app/(landing)/programs/page.tsx`, `frontend/lib/types/index.ts`, `supabase/migrations/20260423112000_refine_programs_search_metadata.sql`, `backend/tests/test_programs_router.py`, `backend/tests/test_program_backfill.py`, `docs/current-state.md`, `reports/programs-list-metadata-normalization-result.md`
+- 2026-04-23: `backend/routers/programs.py`, `backend/rag/collector/work24_detail_parser.py`, `scripts/program_backfill.py`, `frontend/app/(landing)/programs/page.tsx`, `frontend/lib/types/index.ts`, `supabase/migrations/20260423112000_refine_programs_search_metadata.sql`, `backend/tests/test_programs_router.py`, `backend/tests/test_program_backfill.py`, `docs/current-state.md`, `reports\ad-hoc\programs\programs-list-metadata-normalization-result.md`
   - `ai` 검색이 고용24 `tracseId=AIG...`, `source_url`, `hrd_id` 같은 운영 식별자 때문에 바리스타/ERP/포토샵 과정을 잘못 포함하던 문제를 해결함
   - 검색, category detail 추론, 목록 파생 카테고리/키워드 생성에서 `compare_meta` 전체 JSON 대신 교육 내용 관련 allowlist key만 사용하도록 조정함
   - 고용24 상세 HTML 파서가 명시된 수강신청/모집/접수 마감일만 `deadline`으로 보강하고, 훈련유형/주야/주말/훈련시간을 `compare_meta`에 보존하도록 확장함
@@ -2987,69 +2987,69 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-23: `frontend/app/(landing)/programs/page.tsx`, `docs/current-state.md`
   - Closing Soon 조회에서 검색어/필터 파라미터를 제거해 검색 결과와 무관하게 전역 마감임박 섹션이 계속 유지되도록 변경함
   - 섹션 안내 문구도 검색 조건과 별개인 기준으로 갱신함
-- 2026-04-23: `frontend/app/(landing)/programs/page.tsx`, `docs/current-state.md`, `reports/programs-filter-scoped-closing-soon-result.md`
+- 2026-04-23: `frontend/app/(landing)/programs/page.tsx`, `docs/current-state.md`, `reports\ad-hoc\programs\programs-filter-scoped-closing-soon-result.md`
   - 필터 적용 후 바로 아래 Closing Soon 레일에 전역 마감임박 공고가 섞여 보이던 혼란을 줄이기 위해 목록/count와 같은 검색/카테고리/지역/수업방식/비용/참여시간/기관/대상 조건을 Closing Soon 조회에도 재사용하도록 변경함
   - Closing Soon 안내 문구를 현재 검색 조건 기준으로 갱신하고, 같은 파일의 중복 urgent chip key 방어 로직을 유지함
-- 2026-04-23: `backend/rag/collector/normalizer.py`, `backend/tests/test_work24_kstartup_field_mapping.py`, `scripts/program_source_diff.py`, `supabase/migrations/20260423112000_refine_programs_search_metadata.sql`, `docs/current-state.md`, `reports/program-detail-data-diagnosis-result.md`
+- 2026-04-23: `backend/rag/collector/normalizer.py`, `backend/tests/test_work24_kstartup_field_mapping.py`, `scripts/program_source_diff.py`, `supabase/migrations/20260423112000_refine_programs_search_metadata.sql`, `docs/current-state.md`, `reports\ad-hoc\programs\program-detail-data-diagnosis-result.md`
   - 운영 DB에 누락될 수 있는 `category_detail`, `support_type`, `teaching_method`, `raw_data`, `search_text` 등 programs metadata 컬럼을 최신 migration 시작부에서 `add column if not exists`로 보강하도록 정리함
   - collector normalized row가 원본 `raw` payload를 `raw_data`로 넘기도록 추가해 신규 수집/재수집 row에서 원본 API 필드 비교가 가능하게 함
   - `scripts/program_source_diff.py`의 추적 필드에 `raw_data`를 포함해 live raw, DB raw_data, API/UI 매핑 차이를 같은 진단 리포트에서 볼 수 있게 함
-- 2026-04-23: `backend/routers/programs.py`, `scripts/program_backfill.py`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/program-utils.ts`, `backend/tests/test_programs_router.py`, `backend/tests/test_program_backfill.py`, `docs/current-state.md`, `reports/work24-deadline-risk-mitigation-result.md`
+- 2026-04-23: `backend/routers/programs.py`, `scripts/program_backfill.py`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/program-utils.ts`, `backend/tests/test_programs_router.py`, `backend/tests/test_program_backfill.py`, `docs/current-state.md`, `reports\ops\work24\work24-deadline-risk-mitigation-result.md`
   - 운영 DB에서 고용24 계열 3346개 row가 `deadline=end_date`로 확인된 상태를 반영해, 목록/count/filter-options/recommendation 경로가 DB `deadline >= today` 단일 필터를 먼저 걸지 않고 후보 scan 후 resolved deadline으로 후처리하도록 보강함
   - 고용24 `deadline=end_date` row는 모집 마감일 미확인으로 처리하고, 캘린더 추천은 resolved deadline이 없는 프로그램을 날짜형 추천에서 제외하도록 조정함
   - backfill은 기존 고용24 오염 deadline을 상세 페이지에서 찾은 실제 신청 마감일로 `overwrite` 없이 교체하고, 빈 `close_date`, `source_unique_key`, `skills`, `tags`, `raw_data`도 보강 후보로 포함함
-- 2026-04-23: `reports/work24-kstartup-operational-risk-management-2026-04-23.md`
+- 2026-04-23: `reports\ops\work24\work24-kstartup-operational-risk-management-2026-04-23.md`
   - 운영 Supabase 읽기 전용 재점검 결과를 기준으로 Work24/K-Startup 남은 리스크를 source identity, deadline 복구, skills/raw_data 보강, API scan latency로 분류함
   - Work24 상세 페이지 10건 dry-run에서 deadline patch는 0건이고 compare_meta patch만 가능함을 확인해 broad deadline apply를 보류하기로 기록함
   - 운영 적용 전 backup, source_unique_key preview/apply, post-apply verification, rollback SQL과 go/no-go 기준을 정리함
-- 2026-04-23: `backend/rag/collector/normalizer.py`, `backend/rag/collector/scheduler.py`, `backend/routers/admin.py`, `supabase/migrations/20260423143000_relax_programs_legacy_unique_constraints.sql`, `reports/work24-kstartup-db-risk-apply-2026-04-23.md`
+- 2026-04-23: `backend/rag/collector/normalizer.py`, `backend/rag/collector/scheduler.py`, `backend/routers/admin.py`, `supabase/migrations/20260423143000_relax_programs_legacy_unique_constraints.sql`, `reports\ops\work24\work24-kstartup-db-risk-apply-2026-04-23.md`
   - 운영 DB에서 Work24/K-Startup `source_unique_key` 526건, live source 기존 row patch 3,382건, 신규 row 48건, HTML source key 110건을 안전 적용하고 최종 `source_unique_key` 누락 0건을 확인함
   - scheduler dedupe 기준을 `source_unique_key` 우선으로 바꾸고, normalizer가 source/link/title 기반 fallback key를 생성해 legacy unique 제거 후에도 반복 sync 중복을 줄이도록 함
   - `source_unique_key`가 있는 row는 admin/scheduler fallback에서 legacy `hrd_id`나 `(title, source)` row로 병합하지 않게 해 같은 제목의 다른 회차가 덮이지 않도록 방어함
   - `programs_unique(title, source)`와 `hrd_id` unique 제약이 남아 있으면 live 후보 2,560건은 여전히 저장 불가하므로, legacy unique 제거 migration 적용 후 backfill/sync 재실행이 필요함
-- 2026-04-23: `backend/rag/source_adapters/work24_training.py`, `backend/rag/collector/work24_collector.py`, `backend/routers/admin.py`, `backend/tests/test_work24_training_adapter.py`, `backend/tests/test_scheduler_collectors.py`, `backend/tests/test_admin_router.py`, `reports/work24-training-api-params-result-2026-04-23.md`
+- 2026-04-23: `backend/rag/source_adapters/work24_training.py`, `backend/rag/collector/work24_collector.py`, `backend/routers/admin.py`, `backend/tests/test_work24_training_adapter.py`, `backend/tests/test_scheduler_collectors.py`, `backend/tests/test_admin_router.py`, `reports\ops\work24\work24-training-api-params-result-2026-04-23.md`
   - 고용24 국민내일배움카드 목록 API 요청을 문서 기준 필수 파라미터(`srchTraStDt`, `srchTraEndDt`, `sort`, `sortCol` 포함)와 맞추고, scheduler/admin sync가 같은 `build_training_list_params` helper를 쓰도록 정리함
   - `srchNcsCd` 대신 문서 기준 `srchNcs1~4`를 지원하고, 기존 `ncs_code` 입력은 코드 길이에 따라 `srchNcs1~4`로 후방 호환 매핑함
   - scheduler는 env로 `wkendSe`, 지역 중분류, NCS 1~4차, 훈련유형/구분/종류, 과정명, 기관명, 정렬값을 넘길 수 있고, admin sync는 같은 파라미터를 query alias로 받을 수 있게 함
-- 2026-04-23: `backend/rag/collector/program_field_mapping.py`, `backend/rag/collector/normalizer.py`, `backend/rag/source_adapters/work24_training.py`, `backend/routers/admin.py`, `docs/data/work24-training-sync.md`, `reports/work24-region-normalization-refactoring-summary-2026-04-23.md`
+- 2026-04-23: `backend/rag/collector/program_field_mapping.py`, `backend/rag/collector/normalizer.py`, `backend/rag/source_adapters/work24_training.py`, `backend/routers/admin.py`, `docs/data/work24-training-sync.md`, `reports\ops\work24\work24-region-normalization-refactoring-summary-2026-04-23.md`
   - Work24 row의 `address`와 `trngAreaCd`에서 `region`/`region_detail`을 정규화해 전국 수집 시에도 프로그램이 서울 source meta에 고정되지 않도록 보강함
   - collector normalizer와 admin sync payload가 row-level region 값을 보존하도록 연결하고, Work24 scheduler/admin sync env/query 사용법을 데이터 문서로 분리함
-- 2026-04-23: `backend/rag/collector/program_field_mapping.py`, `backend/rag/source_adapters/work24_supplementary.py`, `backend/rag/source_adapters/work24_training.py`, `backend/rag/collector/work24_collector.py`, `backend/routers/admin.py`, `docs/data/work24-training-sync.md`, `reports/work24-region-code-backfill-result-2026-04-23.md`
+- 2026-04-23: `backend/rag/collector/program_field_mapping.py`, `backend/rag/source_adapters/work24_supplementary.py`, `backend/rag/source_adapters/work24_training.py`, `backend/rag/collector/work24_collector.py`, `backend/routers/admin.py`, `docs/data/work24-training-sync.md`, `reports\ops\work24\work24-region-code-backfill-result-2026-04-23.md`
   - Work24 공통 코드 API `dtlGb=1` 응답의 `regionCd`/`regionNm`을 파싱해 `trngAreaCd` 중분류 코드를 `성남시 분당구` 같은 시군구명 `region_detail`로 변환하도록 연결함
   - scheduler와 admin sync가 `WORK24_COMMON_CODES_AUTH_KEY`가 있을 때 지역 코드 map을 사용하고, 실패 시 기존 주소/광역 코드 fallback을 유지하도록 보강함
   - 운영 Supabase Work24 3,438건 중 코드/주소 기반으로 안전하게 보정 가능한 3,383건을 적용했고, 타임아웃 후 남은 patch를 이어 적용해 최종 복구 가능 후보를 0건으로 줄임
-- 2026-04-23: `frontend/app/dashboard/page.tsx`, `frontend/app/(landing)/compare/program-select-modal.tsx`, `docs/current-state.md`, `reports/program-bookmark-dashboard-compare-result.md`
+- 2026-04-23: `frontend/app/dashboard/page.tsx`, `frontend/app/(landing)/compare/program-select-modal.tsx`, `docs/current-state.md`, `reports\ad-hoc\programs\program-bookmark-dashboard-compare-result.md`
   - 대시보드에 `program_bookmarks` 기반 `찜한 훈련` 섹션을 추가해 목록/상세에서 북마크한 프로그램을 같은 dashboard bookmark BFF로 조회해 보여주도록 함
   - 비교 프로그램 선택 모달은 닫았다 다시 열 때 찜 목록을 새로 조회하도록 조정해 최근 북마크 변경이 모달에 반영되게 함
   - 기존 북마크 저장/삭제 BFF와 backend `/bookmarks` 계약은 유지하고, 대시보드/비교는 같은 저장 상태를 읽는 방식으로 연결함
-- 2026-04-23: `frontend/app/api/dashboard/bookmarks/route.ts`, `frontend/app/(landing)/compare/program-select-modal.tsx`, `docs/current-state.md`, `reports/program-bookmark-dashboard-compare-result.md`
+- 2026-04-23: `frontend/app/api/dashboard/bookmarks/route.ts`, `frontend/app/(landing)/compare/program-select-modal.tsx`, `docs/current-state.md`, `reports\ad-hoc\programs\program-bookmark-dashboard-compare-result.md`
   - 찜 목록 BFF의 GET 경로를 backend 프록시 대기 대신 현재 Supabase 로그인 사용자 기준 `program_bookmarks`/`programs` 직접 조회로 바꿔 비교 모달 loading 고착 가능성을 줄임
   - 비교 모달 전체 검색 탭에서 운영 기관/추천 대상/선발 절차/채용 연계 필터 select와 filter-options 호출을 제거하고 검색어 기반 목록만 남김
-- 2026-04-23: `frontend/app/(auth)/login/page.tsx`, `frontend/app/(landing)/programs/program-bookmark-button.tsx`, `frontend/app/(landing)/programs/program-card.tsx`, `docs/current-state.md`, `reports/login-bookmark-auth-flow-result.md`
+- 2026-04-23: `frontend/app/(auth)/login/page.tsx`, `frontend/app/(landing)/programs/program-bookmark-button.tsx`, `frontend/app/(landing)/programs/program-card.tsx`, `docs/current-state.md`, `reports\ad-hoc\programs\login-bookmark-auth-flow-result.md`
   - 로그인 페이지 문구를 공개/랜딩 복귀 설명 대신 찜 저장, 맞춤 추천, 문서 준비 기능을 사용할 수 있다는 안내로 조정함
   - 비로그인 사용자가 프로그램 목록/상세의 별 버튼을 누르면 현재 경로와 query/hash를 `redirectedFrom`으로 보존해 로그인 페이지로 이동하도록 변경함
   - `ProgramCard`의 별 버튼 직접 구현을 제거하고 공용 `ProgramBookmarkButton`으로 위임해 목록 카드에서도 같은 로그인 유도/찜 동작을 사용하도록 정리함
   - 로그인 사용자의 기존 dashboard bookmark BFF 저장/삭제 흐름과 pending 중복 클릭 방어는 유지함
-- 2026-04-23: `backend/routers/admin.py`, `backend/tests/test_admin_router.py`, `backend/tests/test_programs_router.py`, `reports/work24-default-exposure-sync-result-2026-04-23.md`
+- 2026-04-23: `backend/routers/admin.py`, `backend/tests/test_admin_router.py`, `backend/tests/test_programs_router.py`, `reports\ops\work24\work24-default-exposure-sync-result-2026-04-23.md`
   - 운영 Work24 서울 live sync를 재실행해 보류됐던 신규 row를 재시도했고, 1차 estimated new rows 2,434건과 2차 idempotency 0건을 확인함
   - admin sync upsert를 100건 단위 batch로 나눠 Supabase payload/timeout 리스크를 줄임
   - `/programs` 기본 노출은 창업/source 명시 필터가 없을 때 Work24 70% mix를 유지하고, 창업 필터에서는 mix를 적용하지 않는 회귀 테스트를 추가함
-- 2026-04-23: `frontend/lib/programs-page-layout.ts`, `frontend/lib/programs-page-layout.test.ts`, `frontend/app/(landing)/programs/page.tsx`, `reports/programs-page-layout-regression-tests-result.md`
+- 2026-04-23: `frontend/lib/programs-page-layout.ts`, `frontend/lib/programs-page-layout.test.ts`, `frontend/app/(landing)/programs/page.tsx`, `reports\ad-hoc\programs\programs-page-layout-regression-tests-result.md`
   - `/programs` 마감임박 섹션이 검색/필터와 독립적으로 조회되는 정책을 `buildUrgentProgramsParams()` helper로 분리하고 Vitest로 고정함
   - 마감임박 압축 카드 chip 중복 제거를 `buildUrgentProgramChips()` helper로 분리해 React duplicate key 회귀를 테스트로 방어함
-- 2026-04-23: `backend/rag/collector/program_field_mapping.py`, `backend/rag/source_adapters/work24_training.py`, `backend/routers/admin.py`, `backend/routers/programs.py`, `backend/rag/programs_rag.py`, `scripts/program_backfill.py`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/lib/types/index.ts`, `docs/current-state.md`, `docs/data/work24-training-sync.md`, `reports/work24-training-start-deadline-fallback-result-2026-04-23.md`
+- 2026-04-23: `backend/rag/collector/program_field_mapping.py`, `backend/rag/source_adapters/work24_training.py`, `backend/routers/admin.py`, `backend/routers/programs.py`, `backend/rag/programs_rag.py`, `scripts/program_backfill.py`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/lib/types/index.ts`, `docs/current-state.md`, `docs/data/work24-training-sync.md`, `reports\ops\work24\work24-training-start-deadline-fallback-result-2026-04-23.md`
   - Work24 국민내일배움카드 목록 API에 별도 모집마감일이 없어 `traStartDate`를 `deadline`/`compare_meta.application_deadline` fallback으로 저장하고 `compare_meta.deadline_source=traStartDate`를 남기도록 변경함
   - 기존 고용24 `deadline=end_date` 오염값 무시 방어는 유지하되, `deadline_source=traStartDate`가 있는 1일 과정은 신뢰하도록 backend 목록/추천/backfill/frontend fallback을 함께 보정함
   - `traStartDate`/`traEndDate` 기반 날짜 메타를 `YYYY-MM-DD`로 정규화해 Python 3.10 날짜 파싱과 D-day 계산이 basic date 문자열에 막히지 않도록 함
   - 운영 DB Work24 계열 12,206건 중 `deadline_null`을 0건으로 보정하고, `/programs?recruiting_only=true&sort=deadline&limit=20` 기본 노출 Work24 70%를 재확인함
-- 2026-04-23: `scripts/work24_partition_sync.py`, `backend/tests/test_work24_partition_sync.py`, `docs/current-state.md`, `docs/data/work24-training-sync.md`, `reports/work24-region-partition-sync-result-2026-04-23.md`
+- 2026-04-23: `scripts/work24_partition_sync.py`, `backend/tests/test_work24_partition_sync.py`, `docs/current-state.md`, `docs/data/work24-training-sync.md`, `reports\ops\work24\work24-region-partition-sync-result-2026-04-23.md`
   - Work24 전국 단일 조회가 6개월 기준 108,069건으로 API 100,000건 한도를 넘는 문제를 피하기 위해 `srchTraArea1` 17개 광역 지역 partition sync runner를 추가함
   - 기본 실행 순서를 서울 인접 권역부터 `경기 -> 인천 -> 강원 -> 충북 -> 충남 -> 세종 -> 대전 ...`으로 고정하고, `--start-from`, `--stop-after`, `--include-seoul` 옵션과 retry/report 저장을 제공함
   - 운영에서 서울 제외 16개 partition 16,205건을 upsert했고, 최종 Work24 계열 DB row는 27,772건, `deadline_null` 0건, 기본 프로그램 목록 Work24 70% 노출을 확인함
-- 2026-04-23: `reports/work24-region-partition-sync-result-2026-04-23.md`
+- 2026-04-23: `reports\ops\work24\work24-region-partition-sync-result-2026-04-23.md`
   - 후속 리스크 관리로 Chroma programs 후보 200건을 직접 sync해 200 synced, 0 skipped를 확인함
   - Gemini embedding 429 발생 후 local fallback으로 완료됐고, 현재 `CHROMA_MODE=ephemeral` 환경에서는 persistent index 보강이 아니라 프로세스 단위 smoke 검증임을 보고서에 명시함
-- 2026-04-23: `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/programs-filter-bar.tsx`, `frontend/lib/types/index.ts`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `reports/programs-sort-options-result.md`
+- 2026-04-23: `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/programs-filter-bar.tsx`, `frontend/lib/types/index.ts`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `reports\ad-hoc\programs\programs-sort-options-result.md`
   - `/programs` 정렬 드롭다운을 `기본 정렬`, `마감 임박순`, `개강 빠른순`, `비용 낮은순`, `비용 높은순`, `짧은 기간순`, `긴 기간순` 순서로 재구성함
   - `ProgramSort`와 backend `sort` 계약에 `default`, `start_soon`, `cost_low`, `cost_high`, `duration_short`, `duration_long`을 추가하고, legacy `latest`는 API 호환용으로 유지함
   - 명시 정렬 선택 시 백엔드 후처리에서 개강일, 비용, 기간 기준으로 실제 정렬되도록 회귀 테스트를 추가함
@@ -3066,58 +3066,58 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-23: `backend/rag/collector/program_field_mapping.py`, `backend/tests/test_work24_kstartup_field_mapping.py`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/TASK-2026-04-23-1945-program-field-source-evidence-result.md`
   - Work24/K-Startup normalized field의 원천 raw field명을 `compare_meta.field_sources`에 보존하도록 추가함
   - deadline/start/end/provider/location/cost/source_url/source_unique_key/application_url 등 주요 필드의 source evidence를 mapping 테스트로 고정함
-- 2026-04-23: `backend/rag/collector/base_html_collector.py`, `backend/rag/collector/regional_html_collectors.py`, `backend/rag/collector/tier3_collectors.py`, `backend/rag/collector/tier4_collectors.py`, `scripts/html_collector_diagnostic.py`, `backend/tests/test_html_collector_diagnostic_cli.py`, `docs/current-state.md`, `reports/aws-boottent-adoption-performance-report-2026-04-23.md`, `reports/html-collector-diagnostic-2026-04-23.json`, `reports/html-collector-dynamic-retrieve-diagnostic-2026-04-23.md`
+- 2026-04-23: `backend/rag/collector/base_html_collector.py`, `backend/rag/collector/regional_html_collectors.py`, `backend/rag/collector/tier3_collectors.py`, `backend/rag/collector/tier4_collectors.py`, `scripts/html_collector_diagnostic.py`, `backend/tests/test_html_collector_diagnostic_cli.py`, `docs/current-state.md`, `reports\diagnostics\html-collector\summary\aws-boottent-adoption-performance-report-2026-04-23.md`, `reports\diagnostics\html-collector\2026-04-23\html-collector-diagnostic-2026-04-23.json`, `reports\diagnostics\html-collector\2026-04-23\html-collector-dynamic-retrieve-diagnostic-2026-04-23.md`
   - AWS/Bedrock 파이프라인 차용 후보 4번인 dynamic retrieve를 바로 Playwright 도입으로 진행하지 않고, source별 opt-in 근거를 만들기 위한 HTML collector read-only 진단 체계로 구현함
   - `BaseHtmlCollector.collect_url_items()`를 추가해 Tier 2/3/4 HTML collector가 URL별 request failure, parse-empty, parse failure를 공통 `last_collect_message`로 남기도록 정리함
   - `scripts/html_collector_diagnostic.py` CLI를 추가해 HTML collector live dry-run 결과를 `healthy_static_html`, `partial_parse_empty_monitor`, `playwright_probe_candidate` 등으로 분류하고 JSON/Markdown 리포트를 저장하게 함
   - 전체/source별 `duration_ms`를 리포트에 남겨 2026-04-23 live 기준 14개 HTML collector 진단 13,599.05ms, 즉시 Playwright fallback 후보 0개, partial parse-empty 모니터링 대상 2개로 성능 리포트를 갱신함
-- 2026-04-23: `scripts/html_collector_diagnostic.py`, `backend/tests/test_html_collector_diagnostic_cli.py`, `docs/current-state.md`, `reports/aws-boottent-adoption-performance-report-2026-04-23.md`, `reports/html-collector-ocr-diagnostic-2026-04-23.json`, `reports/html-collector-ocr-diagnostic-2026-04-23.md`
+- 2026-04-23: `scripts/html_collector_diagnostic.py`, `backend/tests/test_html_collector_diagnostic_cli.py`, `docs/current-state.md`, `reports\diagnostics\html-collector\summary\aws-boottent-adoption-performance-report-2026-04-23.md`, `reports\diagnostics\html-collector\2026-04-23\html-collector-ocr-diagnostic-2026-04-23.json`, `reports\diagnostics\html-collector\2026-04-23\html-collector-ocr-diagnostic-2026-04-23.md`
   - OCR 런타임을 붙이지 않고 `--include-ocr-probe` 옵션으로 HTML detail page의 visible text, image count, attachment link count를 source별 소량 샘플링하는 read-only preflight를 추가함
   - OCR runtime opt-in 후보와 poster/attachment 검토 후보를 분리해, 2026-04-23 live 기준 OCR runtime 후보 0개, poster/attachment 검토 후보 7개, detail/parser 보강 우선 3개로 리포트를 남김
   - 첨부가 있어도 detail HTML 본문이 충분하면 OCR runtime 후보로 올리지 않도록 테스트로 고정함
-- 2026-04-23: `backend/rag/collector/base_html_collector.py`, `backend/tests/test_tier4_collectors.py`, `scripts/html_collector_diagnostic.py`, `backend/tests/test_html_collector_diagnostic_cli.py`, `docs/current-state.md`, `reports/aws-boottent-adoption-performance-report-2026-04-23.md`, `reports/html-collector-diagnostic-2026-04-23.json`, `reports/html-collector-dynamic-retrieve-diagnostic-2026-04-23.md`, `reports/html-collector-ocr-diagnostic-2026-04-23.json`, `reports/html-collector-ocr-diagnostic-2026-04-23.md`, `reports/html-collector-snapshots-2026-04-23/*`
+- 2026-04-23: `backend/rag/collector/base_html_collector.py`, `backend/tests/test_tier4_collectors.py`, `scripts/html_collector_diagnostic.py`, `backend/tests/test_html_collector_diagnostic_cli.py`, `docs/current-state.md`, `reports\diagnostics\html-collector\summary\aws-boottent-adoption-performance-report-2026-04-23.md`, `reports\diagnostics\html-collector\2026-04-23\html-collector-diagnostic-2026-04-23.json`, `reports\diagnostics\html-collector\2026-04-23\html-collector-dynamic-retrieve-diagnostic-2026-04-23.md`, `reports\diagnostics\html-collector\2026-04-23\html-collector-ocr-diagnostic-2026-04-23.json`, `reports\diagnostics\html-collector\2026-04-23\html-collector-ocr-diagnostic-2026-04-23.md`, `reports/diagnostics/html-collector/2026-04-23/snapshots/*`
   - `collect_url_items()`가 URL별 structured diagnostics와 bounded HTML snapshot 메타를 남기도록 보강해 partial parse-empty source를 문자열 메시지 해석 없이 추적할 수 있게 함
   - `scripts/html_collector_diagnostic.py`에 `--snapshot-output-dir`, `--include-scheduler-summary`를 추가해 partial parse-empty HTML snapshot 저장과 scheduler-style dry-run quality summary를 같은 리포트에 묶음
   - OCR/image preflight Markdown에 sample detail highlights를 추가하고, 2026-04-23 live 기준 partial parse-empty snapshot 2건, HTML source dry-run quality checked rows 190건, OCR runtime 후보 0건을 다시 확인함
 - 2026-04-23: `AGENTS.md`, `docs/agent-playbook.md`, `docs/current-state.md`
   - queued task packet 작업과 Codex 대화 세션 직접 작업을 분리해, execution queue에 들어온 packet에는 기존 frontmatter gate를 유지하고 대화 세션 직접 요청은 큐 파일 생성 없이 바로 구현할 수 있도록 규칙을 정리함
-  - 직접 대화 작업은 필요한 경우 `reports/SESSION-YYYY-MM-DD-brief-topic-result.md` 형태의 세션 결과 보고서만 남기고, `tasks/inbox`나 `cowork/packets`로 자동 승격하지 않도록 명시함
-- 2026-04-23: `docs/automation/task-packets.md`, `reports/SESSION-2026-04-23-login-page-ui-and-direct-workflow-result.md`
+  - 직접 대화 작업은 필요한 경우 `reports/session/YYYY-MM/SESSION-YYYY-MM-DD-brief-topic-result.md` 형태의 세션 결과 보고서만 남기고, `tasks/inbox`나 `cowork/packets`로 자동 승격하지 않도록 명시함
+- 2026-04-23: `docs/automation/task-packets.md`, `reports\session\2026-04\SESSION-2026-04-23-login-page-ui-and-direct-workflow-result.md`
   - automation task packet contract 문서도 queued task packet 전용 범위로 정리해 direct conversation work와 충돌하지 않게 맞춤
   - direct conversation work는 queue contract 검증이나 packet scaffold를 선행 조건으로 요구하지 않는다는 점을 contract 문서에 명시함
-- 2026-04-23: `frontend/app/(auth)/login/page.tsx`, `docs/current-state.md`, `reports/SESSION-2026-04-23-login-page-ui-and-direct-workflow-result.md`
+- 2026-04-23: `frontend/app/(auth)/login/page.tsx`, `docs/current-state.md`, `reports\session\2026-04\SESSION-2026-04-23-login-page-ui-and-direct-workflow-result.md`
   - 제공된 로그인 화면 참고 TSX와 스냅샷을 기준으로 좌측 브랜드/메시지 패널과 우측 로그인 카드 구조로 UI를 변경함
   - 바깥 배경과 좌측 패널의 파란 그라데이션을 더 진한 sky/blue 계열로 조정함
   - `redirectedFrom` 안전 redirect, 로그인된 사용자 자동 redirect, `getGoogleAuthHref(safeNext)` 기반 Google OAuth 링크는 유지함
   - 데스크톱 1280x720과 모바일 390x844 브라우저 검증에서 오류 오버레이와 가로 overflow가 없음을 확인함
-- 2026-04-24: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/app/api/programs/[programId]/detail-view/route.ts`, `frontend/lib/api/app.ts`, `frontend/lib/types/index.ts`, `supabase/migrations/20260424110000_add_program_detail_click_hotness.sql`, `docs/current-state.md`, `reports/SESSION-2026-04-24-program-detail-click-hotness-result.md`
+- 2026-04-24: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/app/api/programs/[programId]/detail-view/route.ts`, `frontend/lib/api/app.ts`, `frontend/lib/types/index.ts`, `supabase/migrations/20260424110000_add_program_detail_click_hotness.sql`, `docs/current-state.md`, `reports\session\2026-04\SESSION-2026-04-24-program-detail-click-hotness-result.md`
   - `program_list_index`에 상세 조회 기반 인기 점수 메타(`detail_view_count`, `detail_view_count_7d`, `click_hotness_score`, `last_detail_viewed_at`)를 추가하고, `record_program_detail_view` RPC로 프로그램 상세 진입을 일별 집계하도록 준비함
   - `GET /programs/popular`과 read-model browse query가 `popular` 정렬을 지원하도록 보강하고, 인기 정렬은 curated browse pool 대신 전체 open non-ad read-model row를 대상으로 하도록 분리함
   - Next.js BFF `POST /api/programs/[programId]/detail-view`와 app helper를 추가하고, 직접 호출 테스트에서 FastAPI `Query` 기본값이 섞여도 promoted/default browse 동작이 깨지지 않도록 sort 정규화 회귀를 함께 보강함
-- 2026-04-24: `frontend/app/(landing)/landing-c/page.tsx`, `frontend/app/(landing)/landing-c/_program-utils.ts`, `frontend/app/(landing)/landing-c/_program-utils.test.ts`, `frontend/app/(landing)/programs/[id]/program-detail-client.tsx`, `frontend/app/(landing)/programs/page.tsx`, `docs/current-state.md`, `reports/SESSION-2026-04-24-live-board-click-read-model-result.md`
+- 2026-04-24: `frontend/app/(landing)/landing-c/page.tsx`, `frontend/app/(landing)/landing-c/_program-utils.ts`, `frontend/app/(landing)/landing-c/_program-utils.test.ts`, `frontend/app/(landing)/programs/[id]/program-detail-client.tsx`, `frontend/app/(landing)/programs/page.tsx`, `docs/current-state.md`, `reports\session\2026-04\SESSION-2026-04-24-live-board-click-read-model-result.md`
   - 랜딩 C `Live Board`가 기본 추천 proxy 대신 `sort=popular` read-model 목록과 상세 조회수(`detail_view_count_7d`, `detail_view_count`)를 우선 사용하도록 연결함
   - 프로그램 상세 클라이언트는 같은 프로그램 id에 대해 중복 기록을 피하면서 BFF `detail-view` 추적을 1회 전송하도록 연결함
   - `/programs` 정렬 라벨/허용값에 `popular`를 추가해 프런트 타입 체크와 정렬 UI 계약을 맞추고, Vitest로 live board fallback 규칙을 고정함
-- 2026-04-24: `frontend/app/(landing)/programs/program-sort.ts`, `frontend/app/(landing)/programs/program-sort.test.ts`, `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/programs-filter-bar.tsx`, `reports/SESSION-2026-04-24-program-sort-contract-refactor-result.md`
+- 2026-04-24: `frontend/app/(landing)/programs/program-sort.ts`, `frontend/app/(landing)/programs/program-sort.test.ts`, `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/programs-filter-bar.tsx`, `reports\session\2026-04\SESSION-2026-04-24-program-sort-contract-refactor-result.md`
   - `/programs` 페이지와 필터 바에 흩어져 있던 정렬 라벨/허용값/기본값/정규화 로직을 `program-sort.ts`로 모아 `popular` 누락 재발 위험을 줄임
   - 필터 바 정렬 메뉴가 공용 계약을 직접 사용하도록 바꿔, backend/URL에서 이미 지원하던 `popular` 정렬을 UI에서도 바로 선택할 수 있게 맞춤
   - `program-sort.test.ts`로 허용값과 라벨 동기화, query sort 정규화 fallback을 고정함
-- 2026-04-24: `supabase/migrations/20260425115000_backfill_program_source_records_from_programs.sql`, `supabase/migrations/20260425116000_backfill_program_canonical_fields.sql`, `supabase/migrations/20260425117000_extend_program_list_index_surface_contract.sql`, `reports/SESSION-2026-04-24-program-canonical-sql-drafts-result.md`
+- 2026-04-24: `supabase/migrations/20260425115000_backfill_program_source_records_from_programs.sql`, `supabase/migrations/20260425116000_backfill_program_canonical_fields.sql`, `supabase/migrations/20260425117000_extend_program_list_index_surface_contract.sql`, `reports\session\2026-04\SESSION-2026-04-24-program-canonical-sql-drafts-result.md`
   - Supabase SQL Editor 실실행 중 일부 환경에 `programs.application_url` legacy 컬럼이 없는 drift가 확인되어, draft migration이 해당 컬럼 존재를 강하게 가정하지 않도록 보강함
   - 3단계 source-record backfill, 4단계 canonical field backfill, 5단계 `program_list_index` surface trigger가 모두 `to_jsonb(row) ->> 'application_url'` 방식으로 optional legacy 필드를 읽도록 바꿔 이후 단계 연쇄 실패 가능성을 줄임
   - 추가로 일부 행의 `compare_meta`가 JSON object가 아니라 scalar여서 `- 'field_sources'` 연산이 실패하는 drift도 확인되어, 3/4단계 draft가 object가 아닐 때는 빈 객체 또는 `legacy_compare_meta_scalar` 래핑으로 안전하게 처리하도록 보강함
   - 샘플 read-model 재생성 검증에서 `application_end_date`가 과거인 2026-01-25, 2026-04-23 row가 `open/closing_soon`으로 남는 문제가 확인되어, 5단계 모집 상태 계산이 legacy `is_open/days_left`보다 canonical `application_end_date`를 우선하도록 보정함
   - 4단계 `summary_text`가 legacy `summary` 비어 있는 환경에서 전부 비는 문제도 확인되어 `description` 280자 fallback을 추가함
   - 이후 샘플 100건 재확인에서 2026-04-23 마감 row가 한국 시간 2026-04-24 기준에도 `closing_soon`으로 남는 패턴이 확인되어, 5단계 모집 상태 계산 기준일을 DB `current_date`가 아니라 `Asia/Seoul` 기준 날짜로 고정함
-- 2026-04-24: `docs/specs/program-canonical-validation-summary-v1.md`, `docs/specs/supabase-free-plan-program-migration-ops-guide-v1.md`, `docs/specs/README.md`, `reports/SESSION-2026-04-24-program-canonical-validation-free-plan-guide-result.md`
+- 2026-04-24: `docs/specs/program-canonical-validation-summary-v1.md`, `docs/specs/supabase-free-plan-program-migration-ops-guide-v1.md`, `docs/specs/README.md`, `reports\session\2026-04\SESSION-2026-04-24-program-canonical-validation-free-plan-guide-result.md`
   - Supabase SQL Editor 실검증 결과를 단계별로 정리해, 어떤 SQL 초안이 통과했고 어떤 부분이 free plan 때문에 보류인지 비개발자도 읽을 수 있는 문서로 고정함
   - free plan에서는 `programs` 원본은 남기고 `program_list_index`와 `program_source_records`를 필요 시 비우며 샘플만 다시 채워 검증하는 운영 기준을 별도 가이드로 정리함
   - `refresh_program_list_index(pool_limit)`가 사실상 전체 적재에 가깝다는 점, `VACUUM FULL`은 단독 실행해야 한다는 점, 모집 상태는 KST 기준으로 봐야 한다는 점을 운영 메모로 남김
-- 2026-04-24: `supabase/migrations/20260425118000_add_program_list_sample_refresh_helper.sql`, `docs/specs/program-list-sample-refresh-helper-v1.md`, `docs/specs/supabase-free-plan-program-migration-ops-guide-v1.md`, `docs/specs/program-canonical-validation-summary-v1.md`, `reports/SESSION-2026-04-24-program-list-sample-refresh-helper-result.md`
+- 2026-04-24: `supabase/migrations/20260425118000_add_program_list_sample_refresh_helper.sql`, `docs/specs/program-list-sample-refresh-helper-v1.md`, `docs/specs/supabase-free-plan-program-migration-ops-guide-v1.md`, `docs/specs/program-canonical-validation-summary-v1.md`, `reports\session\2026-04\SESSION-2026-04-24-program-list-sample-refresh-helper-result.md`
   - free plan DB에 여유 공간이 다시 생긴 이후의 다음 작업으로, `refresh_program_list_delta + refresh_program_list_browse_pool`를 수동으로 조합할 때 row 수가 다시 커질 수 있는 운영 리스크를 줄이기 위해 bounded sample refresh helper 초안을 추가함
   - 새 helper `refresh_program_list_index_sample(...)`는 샘플 refresh 후 `program_list_index`와 browse facet snapshot을 다시 trim해 free plan 검증 환경을 작게 유지하도록 설계함
   - 관련 spec/ops 문서도 helper 기준 예시로 갱신해 다음 세션에서 SQL Editor 실행 순서를 더 단순하게 재사용할 수 있게 맞춤
-- 2026-04-24: `scripts/refresh_program_list_index.py`, `backend/tests/test_program_list_refresh_fallback.py`, `docs/current-state.md`, `reports/SESSION-2026-04-24-program-list-sample-refresh-script-result.md`
+- 2026-04-24: `scripts/refresh_program_list_index.py`, `backend/tests/test_program_list_refresh_fallback.py`, `docs/current-state.md`, `reports\session\2026-04\SESSION-2026-04-24-program-list-sample-refresh-script-result.md`
   - SQL Editor에서 helper를 수동 호출하던 흐름을 줄이기 위해 `scripts/refresh_program_list_index.py`에 `--sample-refresh` 경로를 추가함
   - 새 경로는 `refresh_program_list_index_sample(...)` RPC를 호출하고, stringified JSONB 결과도 파싱해 남은 row 수와 trim 결과를 한 번에 리포트할 수 있게 맞춤
   - 테스트는 sample helper RPC payload와 stringified JSON 결과 파싱을 고정했고, 현재 운영 문서에도 bounded sample refresh 경로를 반영함
@@ -3144,50 +3144,57 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - `bookmarks`와 `calendar-selections` BFF도 `items: ProgramCardItem[]`로 맞춰 dashboard 주요 보조 경로의 응답 형태를 recommendation 경로와 통일함
   - bookmark는 `context.bookmarked_at`, calendar selection은 `context.selected_at`를 붙이고 nullable `program` placeholder 행은 응답에서 제거함
   - dashboard 찜 섹션과 compare 선택 모달도 새 구조형 응답을 직접 읽도록 바꿔 dashboard 전반의 legacy `Program[]` 의존을 추가로 줄임
-- 2026-04-24: `frontend/lib/program-card-items.ts`, `frontend/app/api/dashboard/recommended-programs/route.ts`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/app/api/dashboard/bookmarks/route.ts`, `frontend/app/api/dashboard/calendar-selections/route.ts`, `frontend/app/dashboard/_hooks/use-dashboard-recommendations.ts`, `frontend/app/dashboard/_components/dashboard-program-cards.tsx`, `frontend/app/dashboard/page.tsx`, `frontend/app/dashboard/_components/dashboard-calendar-section.tsx`, `frontend/app/(landing)/programs/program-card.tsx`, `frontend/app/(landing)/programs/program-utils.ts`, `frontend/lib/types/index.ts`, `docs/current-state.md`, `reports/SESSION-2026-04-24-dashboard-structure-consolidation-result.md`
+- 2026-04-24: `frontend/lib/program-card-items.ts`, `frontend/app/api/dashboard/recommended-programs/route.ts`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/app/api/dashboard/bookmarks/route.ts`, `frontend/app/api/dashboard/calendar-selections/route.ts`, `frontend/app/dashboard/_hooks/use-dashboard-recommendations.ts`, `frontend/app/dashboard/_components/dashboard-program-cards.tsx`, `frontend/app/dashboard/page.tsx`, `frontend/app/dashboard/_components/dashboard-calendar-section.tsx`, `frontend/app/(landing)/programs/program-card.tsx`, `frontend/app/(landing)/programs/program-utils.ts`, `frontend/lib/types/index.ts`, `docs/current-state.md`, `reports\session\2026-04\SESSION-2026-04-24-dashboard-structure-consolidation-result.md`
   - recommendation/calendar/bookmark/selection별로 흩어져 있던 `ProgramCardItem` 변환과 score/reason/read helper를 `frontend/lib/program-card-items.ts`로 모아 BFF route와 카드 컴포넌트가 같은 규칙을 공유하게 함
   - `frontend/app/dashboard/page.tsx`가 들고 있던 사용자/추천/북마크/캘린더 적용 상태와 필터 로직을 `useDashboardRecommendations()` hook으로 옮기고, 카드 렌더링을 `dashboard-program-cards.tsx`로 분리해 대시보드 페이지를 레이아웃 중심 파일로 줄임
   - `frontend/lib/types/index.ts`에서 dashboard 전용 legacy 추천 타입 별칭(`RecommendedProgram`, `RecommendedProgramsResponse`, `ProgramCalendarRecommendItem`)을 제거해 구조형 `ProgramCardItem` 경로를 더 직접적으로 강제함
-- 2026-04-24: `frontend/lib/program-display.ts`, `frontend/lib/program-card-items.ts`, `frontend/lib/types/index.ts`, `frontend/app/(landing)/programs/program-utils.ts`, `frontend/app/(landing)/programs/program-card.tsx`, `frontend/app/(landing)/programs/recommended-programs-section.tsx`, `frontend/app/(landing)/compare/program-select-modal.tsx`, `frontend/app/dashboard/_components/dashboard-program-cards.tsx`, `frontend/app/dashboard/_components/dashboard-calendar-section.tsx`, `frontend/app/dashboard/page.tsx`, `docs/current-state.md`, `reports/SESSION-2026-04-24-program-display-and-transition-alias-result.md`
+- 2026-04-24: `frontend/lib/program-display.ts`, `frontend/lib/program-card-items.ts`, `frontend/lib/types/index.ts`, `frontend/app/(landing)/programs/program-utils.ts`, `frontend/app/(landing)/programs/program-card.tsx`, `frontend/app/(landing)/programs/recommended-programs-section.tsx`, `frontend/app/(landing)/compare/program-select-modal.tsx`, `frontend/app/dashboard/_components/dashboard-program-cards.tsx`, `frontend/app/dashboard/_components/dashboard-calendar-section.tsx`, `frontend/app/dashboard/page.tsx`, `docs/current-state.md`, `reports\session\2026-04\SESSION-2026-04-24-program-display-and-transition-alias-result.md`
   - landing/dashboard/compare에 흩어져 있던 카드 표시용 날짜, 마감, 출처, 링크, id 포맷터를 `frontend/lib/program-display.ts`로 모아 화면별 중복 로직을 줄임
   - `frontend/lib/types/index.ts`에 `ProgramCardRenderable = ProgramCardSummary | Program` 전이 별칭을 추가해 카드 화면의 과도기 입력 타입을 이름 붙인 계약으로 정리함
   - `frontend/lib/program-card-items.ts`는 legacy `_reason/_score/relevance_badge` 의존 범위를 좁힌 helper 타입으로 감싸고, 카드 relevance badge도 공용 helper로 읽게 바꿔 `Program` monolith 직접 의존을 추가로 줄임
-- 2026-04-24: `frontend/middleware.ts`, `frontend/app/auth/callback/route.ts`, `frontend/app/(auth)/login/page.tsx`, `docs/current-state.md`, `reports/SESSION-2026-04-24-auth-login-latency-result.md`
+- 2026-04-24: `frontend/middleware.ts`, `frontend/app/auth/callback/route.ts`, `frontend/app/(auth)/login/page.tsx`, `docs/current-state.md`, `reports\session\2026-04\SESSION-2026-04-24-auth-login-latency-result.md`
   - 로그인 지연 조사에서 같은 워크스페이스의 `localhost:3000`은 `/login` 714ms, `/api/auth/google` 594ms였고 `localhost:3001`은 두 경로 모두 30초 timeout으로 확인되어, Supabase 자체보다 stale Next 서버가 체감 지연의 1차 원인 후보임을 기록함
   - healthy 서버에서도 로그인 흐름이 불필요하게 느려지지 않도록 `middleware`의 `supabase.auth.getUser()`를 `/login`, `/dashboard*`, `/onboarding`에만 제한하고, `/api/auth/google`, `/auth/callback`, 공개 페이지에서는 건너뛰도록 줄임
   - OAuth callback은 `exchangeCodeForSession()`이 이미 반환하는 `user`를 그대로 사용하게 바꿔 추가 auth lookup 1회를 제거했고, 로그인 페이지도 middleware가 이미 처리하는 signed-in redirect를 중복 확인하지 않도록 정리함
-- 2026-04-24: `frontend/lib/server/program-card-summary.ts`, `frontend/lib/server/program-card-summary.test.ts`, `frontend/app/api/dashboard/bookmarks/route.ts`, `frontend/app/api/dashboard/calendar-selections/route.ts`, `frontend/lib/program-display.ts`, `frontend/lib/types/index.ts`, `frontend/lib/api/app.ts`, `frontend/lib/server/recommendation-profile.ts`, `frontend/lib/server/recommendation-profile.test.ts`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-program-summary-loader-and-unused-bookmarks-audit-result.md`
+- 2026-04-24: `frontend/lib/server/program-card-summary.ts`, `frontend/lib/server/program-card-summary.test.ts`, `frontend/app/api/dashboard/bookmarks/route.ts`, `frontend/app/api/dashboard/calendar-selections/route.ts`, `frontend/lib/program-display.ts`, `frontend/lib/types/index.ts`, `frontend/lib/api/app.ts`, `frontend/lib/server/recommendation-profile.ts`, `frontend/lib/server/recommendation-profile.test.ts`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-program-summary-loader-and-unused-bookmarks-audit-result.md`
   - 북마크/캘린더 선택 BFF가 id 조회 보조 경로에서도 full `Program` 대신 `ProgramCardSummary`만 받도록 `program-card-summary`에 summary-only loader를 추가하고, legacy `programs` fallback row도 route 진입 전에 summary로 축소함
   - compare 선택 카드 요약 타입 `ProgramSelectSummary`에서 실제로 쓰지 않던 `compare_meta`를 제거해 search/bookmark suggestion card가 add-to-compare용 최소 필드만 유지하게 정리함
   - `recommendation-profile.ts`에 남아 있던 미사용 legacy export를 제거했고, 저장소 코드 기준 bookmark 정본은 `program_bookmarks`이며 `public.bookmarks`는 문서/옛 migration에만 남은 unused DB 후보라는 점을 결과 보고서에 근거와 함께 기록함
-- 2026-04-24: `frontend/lib/normalizers/profile.ts`, `frontend/lib/normalizers/profile.test.ts`, `frontend/app/api/dashboard/profile/route.ts`, `frontend/app/dashboard/profile/_hooks/use-profile-page.ts`, `frontend/app/dashboard/profile/_components/profile-edit-modal.tsx`, `frontend/app/dashboard/profile/_components/profile-hero-section.tsx`, `frontend/app/dashboard/profile/page.tsx`, `frontend/lib/server/recommendation-profile.ts`, `frontend/lib/server/recommendation-profile.test.ts`, `frontend/lib/program-card-items.ts`, `frontend/lib/program-card-items.test.ts`, `frontend/lib/program-display.ts`, `frontend/app/(landing)/programs/program-card.tsx`, `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/landing-c/_program-utils.ts`, `frontend/app/(landing)/compare/program-select-modal.tsx`, `frontend/lib/api/backend.ts`, `frontend/lib/types/index.ts`, `docs/current-state.md`, `docs/specs/program-recommendation-backend-touchpoints-v1.md`, `docs/specs/serializer-api-bff-transition-plan-v1.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/specs/user-recommendation-schema-v1.md`, `docs/specs/user-recommendation-schema-migration-plan-v1.md`, `reports/SESSION-2026-04-24-profile-target-job-and-surface-cleanup-result.md`
+- 2026-04-24: `frontend/lib/normalizers/profile.ts`, `frontend/lib/normalizers/profile.test.ts`, `frontend/app/api/dashboard/profile/route.ts`, `frontend/app/dashboard/profile/_hooks/use-profile-page.ts`, `frontend/app/dashboard/profile/_components/profile-edit-modal.tsx`, `frontend/app/dashboard/profile/_components/profile-hero-section.tsx`, `frontend/app/dashboard/profile/page.tsx`, `frontend/lib/server/recommendation-profile.ts`, `frontend/lib/server/recommendation-profile.test.ts`, `frontend/lib/program-card-items.ts`, `frontend/lib/program-card-items.test.ts`, `frontend/lib/program-display.ts`, `frontend/app/(landing)/programs/program-card.tsx`, `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/landing-c/_program-utils.ts`, `frontend/app/(landing)/compare/program-select-modal.tsx`, `frontend/lib/api/backend.ts`, `frontend/lib/types/index.ts`, `docs/current-state.md`, `docs/specs/program-recommendation-backend-touchpoints-v1.md`, `docs/specs/serializer-api-bff-transition-plan-v1.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/specs/user-recommendation-schema-v1.md`, `docs/specs/user-recommendation-schema-migration-plan-v1.md`, `reports\session\2026-04\SESSION-2026-04-24-profile-target-job-and-surface-cleanup-result.md`
   - 대시보드 프로필 모달에서 `희망 직무`와 `한 줄 소개` 입력을 실제 저장 대상과 맞게 분리하고, profile 저장 API가 `bio`와 `target_job/target_job_normalized`를 각각 저장하도록 정리함
   - `frontend/lib/normalizers/profile.ts`로 희망 직무/주소 정규화를 모아 profile route와 recommendation-profile helper가 같은 규칙을 재사용하게 했고, 구형 row를 위한 `bio -> target_job` read fallback은 유지함
   - `frontend/lib/program-card-items.ts`에서 dashboard-only private `_reason/_fit_keywords/_score/_relevance_score` fallback을 제거해 카드 추천 문맥 해석을 `ProgramSurfaceContext`와 canonical summary 값으로 고정함
   - landing/compare helper가 비용/지원/훈련형태/평점/키워드 표시를 `frontend/lib/program-display.ts` 공용 helper로 재사용하게 바꾸고, compare selection summary에 `support_type`를 직접 담아 `compare_meta` 직접 의존을 한 단계 더 줄임
   - 미사용 `frontend/lib/api/backend.ts::getProgram()` helper와 `ProgramListResponse` 타입을 제거하고, 관련 current-state/spec 문서를 현재 코드 기준으로 갱신함
-- 2026-04-24: `frontend/lib/program-display.ts`, `frontend/lib/program-display.test.ts`, `frontend/lib/server/program-card-summary.ts`, `frontend/lib/server/program-card-summary.test.ts`, `frontend/lib/server/recommend-calendar-fallback.ts`, `frontend/lib/program-card-items.ts`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `docs/current-state.md`, `reports/SESSION-2026-04-24-calendar-deadline-summary-cleanup-result.md`
+- 2026-04-24: `frontend/lib/program-display.ts`, `frontend/lib/program-display.test.ts`, `frontend/lib/server/program-card-summary.ts`, `frontend/lib/server/program-card-summary.test.ts`, `frontend/lib/server/recommend-calendar-fallback.ts`, `frontend/lib/program-card-items.ts`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `docs/current-state.md`, `reports\session\2026-04\SESSION-2026-04-24-calendar-deadline-summary-cleanup-result.md`
   - recommend-calendar direct fallback용 deadline loader도 `ProgramCardSummary` 기준으로 줄여, `program_list_index` 미적용 시 legacy `programs` row를 읽더라도 route 진입 전에 카드 summary shape로 축소되게 정리함
   - Work24 모집마감 신뢰도 판정을 `frontend/lib/program-display.ts::hasTrustedProgramDeadline(...)` 공용 helper로 옮겨 route-local `compare_meta` 파싱을 제거하고, 같은 규칙을 독립 테스트로 고정함
   - fallback calendar card helper도 summary 입력으로 좁혀 dashboard 보조 경로의 `Program` monolith 직접 의존을 한 단계 더 줄였고, recommend-calendar route는 기존 `ProgramCardItem[]` 응답과 timeout/fallback 순서는 그대로 유지함
-- 2026-04-24: `frontend/lib/types/index.ts`, `frontend/app/api/dashboard/recommended-programs/route.ts`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `docs/current-state.md`, `reports/SESSION-2026-04-24-recommendation-summary-contract-tightening-result.md`
+- 2026-04-24: `frontend/lib/types/index.ts`, `frontend/app/api/dashboard/recommended-programs/route.ts`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `docs/current-state.md`, `reports\session\2026-04\SESSION-2026-04-24-recommendation-summary-contract-tightening-result.md`
   - 프런트 타입에서 `ProgramRecommendItem.program`과 `CalendarRecommendItem.program`을 full `Program` 대신 `ProgramCardSummary`로 축소해, 실제 backend recommendation payload가 summary 위주라는 현재 계약과 맞춤
   - dashboard recommendation/calendar BFF의 런타임 응답 shape는 그대로 `ProgramCardItem[]`를 유지하고, 변경은 주로 과도하게 넓게 남아 있던 타입 의존을 줄이는 정합성 정리에 가깝다
-- 2026-04-24: `frontend/app/(landing)/programs/program-card.tsx`, `frontend/app/(landing)/programs/recommended-programs-section.tsx`, `docs/current-state.md`, `reports/SESSION-2026-04-24-dead-landing-recommend-preview-cleanup-result.md`
+- 2026-04-24: `frontend/app/(landing)/programs/program-card.tsx`, `frontend/app/(landing)/programs/recommended-programs-section.tsx`, `docs/current-state.md`, `reports\session\2026-04\SESSION-2026-04-24-dead-landing-recommend-preview-cleanup-result.md`
   - dashboard recommendation BFF 전환 이후 더 이상 import되지 않던 landing personalized preview 전용 컴포넌트 두 개를 삭제해 dead code를 정리함
   - 현재 `/programs` 런타임 경로는 이 파일들을 참조하지 않으므로 동작 변화 없이 monolith transition 잔재만 줄이는 cleanup 성격이다
-- 2026-04-24: `frontend/lib/program-display.ts`, `frontend/app/(landing)/programs/program-utils.ts`, `docs/current-state.md`, `reports/SESSION-2026-04-24-recommendation-summary-contract-tightening-result.md`
+- 2026-04-24: `frontend/lib/program-display.ts`, `frontend/app/(landing)/programs/program-utils.ts`, `docs/current-state.md`, `reports\session\2026-04\SESSION-2026-04-24-recommendation-summary-contract-tightening-result.md`
   - compare selection helper와 `/programs` page helper에서 더 이상 broad `ProgramCardRenderable` 전이 별칭이 필요하지 않도록 입력 타입을 summary/list 범위로 좁힘
   - 결과적으로 `ProgramCardRenderable`는 central adapter(`program-card-items.ts`)와 legacy browser cache migration(`recommend-calendar-cache.ts`)처럼 실제 과도기 호환이 필요한 경로에만 남게 됨
-- 2026-04-24: `frontend/lib/program-card-items.ts`, `frontend/app/dashboard/_hooks/recommend-calendar-cache.ts`, `frontend/lib/types/index.ts`, `docs/current-state.md`, `reports/SESSION-2026-04-24-recommendation-summary-contract-tightening-result.md`
+- 2026-04-24: `frontend/lib/program-card-items.ts`, `frontend/app/dashboard/_hooks/recommend-calendar-cache.ts`, `frontend/lib/types/index.ts`, `docs/current-state.md`, `reports\session\2026-04\SESSION-2026-04-24-recommendation-summary-contract-tightening-result.md`
   - central card adapter도 `ProgramCardSummary`만 받도록 좁히고, legacy browser cache migration은 옛 `programs[]` JSON을 summary로 보정한 뒤 `ProgramCardItem[]`로 승격하게 바꿔 과도기 호환을 유지함
   - 그 결과 `ProgramCardRenderable = ProgramCardSummary | Program` 전이 별칭을 활성 코드와 타입 export에서 제거함
-- 2026-04-24: `frontend/app/dashboard/activities/page.tsx`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-activity-card-cover-image-result.md`
+- 2026-04-24: `frontend/app/dashboard/activities/page.tsx`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-activity-card-cover-image-result.md`
   - 성과 저장소 목록 카드가 `activity.image_urls` 첫 번째 유효 URL을 대표 이미지로 렌더하도록 바꾸고, 이미지가 없을 때만 기존 그라데이션 플레이스홀더를 유지함
   - 저장/업로드 API나 `image_urls` 배열 계약은 바꾸지 않아, 기존 활동 상세/수정 흐름을 유지하면서 카드 썸네일 표시만 보강함
-- 2026-04-24: `frontend/app/api/dashboard/resume/route.ts`, `frontend/app/api/dashboard/resume-export/route.ts`, `frontend/app/dashboard/resume/_hooks/use-resume-builder.ts`, `frontend/app/dashboard/resume/_components/resume-preview-pane.tsx`, `frontend/app/dashboard/resume/export/page.tsx`, `frontend/app/dashboard/resume/export/_components/resume-pdf-download.tsx`, `frontend/app/dashboard/portfolio/page.tsx`, `frontend/lib/activity-display.ts`, `frontend/lib/types/index.ts`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-resume-avatar-and-portfolio-images-result.md`
+- 2026-04-24: `frontend/app/api/dashboard/resume/route.ts`, `frontend/app/api/dashboard/resume-export/route.ts`, `frontend/app/dashboard/resume/_hooks/use-resume-builder.ts`, `frontend/app/dashboard/resume/_components/resume-preview-pane.tsx`, `frontend/app/dashboard/resume/export/page.tsx`, `frontend/app/dashboard/resume/export/_components/resume-pdf-download.tsx`, `frontend/app/dashboard/portfolio/page.tsx`, `frontend/lib/activity-display.ts`, `frontend/lib/types/index.ts`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports\session\2026-04\SESSION-2026-04-24-resume-avatar-and-portfolio-images-result.md`
   - 이력서 작성/출력 경로에 `profiles.avatar_url`을 연결해 resume builder preview와 PDF export가 프로필 아바타를 함께 표시하도록 보강함
   - 포트폴리오 초안은 선택한 성과 활동의 `image_urls`를 `portfolio_payload.activity_image_urls`로 함께 저장하고 preview에서 전체 이미지를 렌더하도록 바꿨으며, 기존 저장 초안도 source activity 기준으로 가능한 범위에서 이미지 갤러리를 복원함
 - 2026-04-24: `docs/README.md`, `docs/audits/README.md`, `docs/launch/README.md`, `docs/presentation/README.md`, `docs/worklogs/README.md`, `docs/current-state.md`, `tasks/README.md`, `cowork/reviews/README.md`, `reports/README.md`
   - `docs`의 날짜형 문서를 audit/presentation/worklog 월 폴더로 정리하고, launch 문서는 `docs/launch/`로 모아 찾기 경로를 단순화함
   - 기존 문서 링크와 과거 보고서 경로를 깨지 않도록 옛 위치에는 이동 안내 stub를 남겼고, watcher가 고정 경로를 쓰는 `tasks/`, `cowork/reviews/`, `reports/TASK-*`는 이동 대신 탐색 가이드 README를 추가함
+- 2026-04-24: `AGENTS.md`, `docs/agent-playbook.md`, `docs/automation/task-packets.md`, `docs/rules/long-refactor-handoff-template.md`, `docs/current-state.md`, `reports/README.md`
+  - `reports/`를 watcher 루트 보고서와 세션/진단/운영/벤치마크/시각 QA 폴더로 재정렬하고, 앞으로 direct conversation 결과 보고서는 `reports/session/YYYY-MM/SESSION-...` 아래에 두도록 문서 규칙을 갱신함
+  - watcher가 직접 참조하는 `TASK-*`는 루트에 유지하고, 나머지 파일만 목적별 폴더로 이동해 루트 혼잡도를 줄임
+- 2026-04-24: `supabase/MIGRATIONS_INDEX.md`, `supabase/README.md`, `docs/current-state.md`
+  - `supabase/migrations/`는 Supabase runner가 읽는 flat history라 적용된 migration 파일 이동/아카이브가 위험하다는 운영 규칙을 명시하고, 대신 월별/도메인별 탐색용 인덱스 문서를 추가함
+  - 앞으로 실행 대상이 아닌 SQL 초안은 `supabase/SQL.md`나 specs로 보내고, 실제 migration만 `supabase/migrations/`에 두는 기준을 분명히 함
+

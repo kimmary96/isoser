@@ -2,47 +2,19 @@ import { apiError, apiOk } from "@/lib/api/route-response";
 import { toSelectionProgramCardItem } from "@/lib/program-card-items";
 import { loadProgramCardSummariesByIds } from "@/lib/server/program-card-summary";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { createClient } from "@supabase/supabase-js";
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { createServiceRoleSupabaseClient } from "@/lib/supabase/service-role";
 import type {
   DashboardCalendarSelectionsResponse,
   ProgramCardItem,
 } from "@/lib/types";
 import type { ProgramCardRouteClient } from "@/lib/server/program-card-summary";
 
-function readLocalBackendEnv(name: string): string | null {
-  const candidates = [
-    join(process.cwd(), "..", "backend", ".env"),
-    join(process.cwd(), "backend", ".env"),
-  ];
-
-  for (const path of candidates) {
-    if (!existsSync(path)) continue;
-    const lines = readFileSync(path, "utf8").split(/\r?\n/);
-    const line = lines.find((item) => item.startsWith(`${name}=`));
-    if (!line) continue;
-    return line.slice(name.length + 1).trim().replace(/^"|"$/g, "") || null;
-  }
-
-  return null;
-}
-
 function createCalendarDbClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? readLocalBackendEnv("SUPABASE_SERVICE_ROLE_KEY");
-
-  if (supabaseUrl && serviceRoleKey) {
-    return createClient(supabaseUrl, serviceRoleKey, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
-    });
+  try {
+    return createServiceRoleSupabaseClient();
+  } catch {
+    return createServerSupabaseClient();
   }
-
-  return createServerSupabaseClient();
 }
 
 async function getAuthenticatedClient() {

@@ -27,10 +27,8 @@ import type {
   SkillSuggestResponse,
 } from "@/lib/types";
 import { toProgramSelectSummaries, unwrapProgramListRows } from "@/lib/program-display";
+import { fetchBackendResponse } from "./backend-endpoint";
 import { buildPathWithSearchParams, buildProgramListSearchParams } from "./program-query";
-
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
 async function handleResponse<T>(
   response: Response,
@@ -50,12 +48,12 @@ async function requestJson<T>(
   fallbackMessage: string
 ): Promise<T> {
   try {
-    const response = await fetch(`${BACKEND_URL}${path}`, init);
+    const response = await fetchBackendResponse(path, init);
     return handleResponse<T>(response, fallbackMessage);
   } catch (error) {
     if (error instanceof Error && /failed to fetch/i.test(error.message)) {
       throw new Error(
-        `Failed to connect to the backend at ${BACKEND_URL}. Check whether the backend server is running.`
+        "Failed to connect to the backend. Check whether the backend server is running."
       );
     }
     throw error;

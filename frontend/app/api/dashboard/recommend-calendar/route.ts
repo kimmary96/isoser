@@ -1,4 +1,5 @@
 import { apiError, apiOk } from "@/lib/api/route-response";
+import { fetchBackendResponse } from "@/lib/api/backend-endpoint";
 import { buildPathWithSearchParams, buildRecommendationSearchParams } from "@/lib/api/program-query";
 import {
   toCalendarProgramCardItem,
@@ -11,6 +12,7 @@ import {
   type ProgramCardDeadlineRouteClient,
 } from "@/lib/server/program-card-summary";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createServiceRoleSupabaseClient } from "@/lib/supabase/service-role";
 import type {
   CalendarRecommendResponse,
   DashboardRecommendCalendarResponse,
@@ -18,25 +20,9 @@ import type {
   ProgramCardSummary,
   ProgramListPageResponse,
 } from "@/lib/types";
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 const BACKEND_RECOMMEND_TIMEOUT_MS = 3500;
 const BACKEND_FALLBACK_TIMEOUT_MS = 2500;
 const SUPABASE_FALLBACK_SCAN_LIMIT = 1000;
-
-async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit, timeoutMs: number): Promise<Response> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
-
-  try {
-    return await fetch(input, {
-      ...init,
-      signal: controller.signal,
-    });
-  } finally {
-    clearTimeout(timeout);
-  }
-}
 
 function toFallbackCalendarResponse(
   programs: ProgramCardSummary[],
@@ -52,10 +38,15 @@ function toFallbackCalendarResponse(
 }
 
 async function loadSupabaseFallbackPrograms(topK: number): Promise<DashboardRecommendCalendarResponse> {
-  const supabase = await createServerSupabaseClient();
+  let supabase: ProgramCardDeadlineRouteClient;
+  try {
+    supabase = createServiceRoleSupabaseClient() as unknown as ProgramCardDeadlineRouteClient;
+  } catch {
+    supabase = (await createServerSupabaseClient()) as unknown as ProgramCardDeadlineRouteClient;
+  }
   const today = new Date().toISOString().slice(0, 10);
   const items = await loadDeadlineOrderedProgramCardSummaries(
-    supabase as unknown as ProgramCardDeadlineRouteClient,
+    supabase,
     {
       today,
       limit: SUPABASE_FALLBACK_SCAN_LIMIT,
@@ -93,13 +84,13 @@ export async function GET(request: Request) {
       headers.Authorization = `Bearer ${accessToken}`;
     }
 
-    const response = await fetchWithTimeout(
-      `${BACKEND_URL}${buildPathWithSearchParams("/programs/recommend/calendar", backendSearchParams)}`,
+    const response = await fetchBackendResponse(
+      buildPathWithSearchParams("/programs/recommend/calendar", backendSearchParams),
       {
         method: "GET",
         headers,
       },
-      BACKEND_RECOMMEND_TIMEOUT_MS
+      { timeoutMs: BACKEND_RECOMMEND_TIMEOUT_MS }
     );
 
     if (!response.ok) {
@@ -117,10 +108,10 @@ export async function GET(request: Request) {
 
     const fallbackLimit = Number(topK || "9") || 9;
     try {
-      const fallbackResponse = await fetchWithTimeout(
-        `${BACKEND_URL}/programs/list?recruiting_only=true&sort=deadline&limit=${fallbackLimit}`,
+      const fallbackResponse = await fetchBackendResponse(
+        `/programs/list?recruiting_only=true&sort=deadline&limit=${fallbackLimit}`,
         { method: "GET" },
-        BACKEND_FALLBACK_TIMEOUT_MS
+        { timeoutMs: BACKEND_FALLBACK_TIMEOUT_MS }
       );
 
       if (fallbackResponse.ok) {
