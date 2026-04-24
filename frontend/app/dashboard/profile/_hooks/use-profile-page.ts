@@ -8,12 +8,15 @@ import {
   saveDashboardProfile,
   updateDashboardProfileSection,
 } from "@/lib/api/app";
+import { resolveProfileTargetJob } from "@/lib/normalizers/profile";
 import type { Activity, MatchAnalysisRecord, Profile } from "@/lib/types";
 
 const EMPTY_PROFILE: Profile = {
   id: "",
   name: null,
   bio: null,
+  target_job: null,
+  target_job_normalized: null,
   portfolio_url: null,
   email: null,
   phone: null,
@@ -42,6 +45,7 @@ export function useProfilePage() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [profileModalSaving, setProfileModalSaving] = useState(false);
   const [profileNameInput, setProfileNameInput] = useState("");
+  const [profileTargetJobInput, setProfileTargetJobInput] = useState("");
   const [profileBioInput, setProfileBioInput] = useState("");
   const [profileEmailInput, setProfileEmailInput] = useState("");
   const [profilePhoneInput, setProfilePhoneInput] = useState("");
@@ -76,6 +80,7 @@ export function useProfilePage() {
 
     const profileAny = profile as Profile & { avatar_url?: string | null; bio?: string | null };
     setProfileNameInput(profile.name ?? "");
+    setProfileTargetJobInput(resolveProfileTargetJob(profile) ?? "");
     setProfileBioInput(profileAny.bio ?? "");
     setProfileEmailInput(profile.email ?? "");
     setProfilePhoneInput(profile.phone ?? "");
@@ -131,6 +136,7 @@ export function useProfilePage() {
 
       const payload = new FormData();
       payload.set("name", profileNameInput.trim());
+      payload.set("target_job", profileTargetJobInput.trim());
       payload.set("bio", profileBioInput.trim());
       payload.set("email", profileEmailInput.trim());
       payload.set("phone", profilePhoneInput.trim());
@@ -166,6 +172,8 @@ export function useProfilePage() {
     profileModalSaving,
     profileNameInput,
     setProfileNameInput,
+    profileTargetJobInput,
+    setProfileTargetJobInput,
     profileBioInput,
     setProfileBioInput,
     profileEmailInput,

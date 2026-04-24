@@ -1,22 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
-import {
-  buildLegacyTargetJobFields,
-  syncRecommendationProfileAfterUserMutation,
-} from "./recommendation-profile";
+import { syncRecommendationProfileAfterUserMutation } from "./recommendation-profile";
 
 describe("recommendation profile helper", () => {
-  it("mirrors the current legacy bio input into target job fields", () => {
-    expect(buildLegacyTargetJobFields("  Data   Engineer  ")).toEqual({
-      target_job: "Data Engineer",
-      target_job_normalized: "data engineer",
-    });
-    expect(buildLegacyTargetJobFields("   ")).toEqual({
-      target_job: null,
-      target_job_normalized: null,
-    });
-  });
-
   it("refreshes the derived recommendation profile and clears cached rows", async () => {
     const rpc = vi.fn().mockResolvedValue({ error: null });
     const eq = vi.fn().mockResolvedValue({ error: null });

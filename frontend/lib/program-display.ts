@@ -50,6 +50,11 @@ export function normalizeProgramTextList(value: string[] | string | null | undef
   return [];
 }
 
+function cleanText(value: unknown): string | null {
+  const text = String(value ?? "").trim();
+  return text || null;
+}
+
 export function formatProgramMonthDay(value: string | null | undefined): string | null {
   if (!value) return null;
 
@@ -189,6 +194,191 @@ export function getProgramCompareMeta(program: ProgramCardRenderable): CompareMe
   return null;
 }
 
+type ProgramInsightSource = Pick<
+  ProgramCardSummary,
+  | "cost"
+  | "support_type"
+  | "subsidy_amount"
+  | "teaching_method"
+  | "application_method"
+  | "location"
+  | "title"
+  | "summary"
+  | "description"
+  | "rating"
+  | "rating_display"
+  | "review_count"
+> & {
+  compare_meta?: CompareMeta | null;
+};
+
+function normalizeMetaText(value: string | boolean | null | undefined): string | null {
+  if (typeof value === "boolean") {
+    return value ? "필수" : null;
+  }
+
+  const text = value?.trim();
+  return text ? text : null;
+}
+
+function parseMetricNumber(value: string | number | null | undefined): number | null {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
+
+  const normalized = value?.replace(/,/g, "").match(/\d+(?:\.\d+)?/)?.[0];
+  if (!normalized) {
+    return null;
+  }
+
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function normalizeProgramRatingDisplay(value: string | number | null | undefined): string | null {
+  if (typeof value === "string" && /(^|[^\d])\.\d/u.test(value.trim())) {
+    return null;
+  }
+
+  const rating = parseMetricNumber(value);
+  if (rating === null || rating <= 0 || rating > 100) {
+    return null;
+  }
+
+  const normalizedRating = rating <= 5 ? rating : rating / 20;
+  return normalizedRating.toFixed(1);
+}
+
+export function formatProgramCostLabel(program: ProgramInsightSource): string | null {
+  const directCost = parseMetricNumber(program.cost);
+  if (directCost !== null) {
+    return directCost === 0 ? "무료" : `${directCost.toLocaleString("ko-KR")}원`;
+  }
+
+  if (typeof program.cost === "string" && program.cost.trim()) {
+    return program.cost.trim();
+  }
+
+  if (typeof program.support_type === "string" && program.support_type.trim()) {
+    return program.support_type.trim();
+  }
+
+  return normalizeMetaText(program.compare_meta?.subsidy_rate);
+}
+
+export function getProgramSupportBadge(program: ProgramInsightSource): string | null {
+  const text = [
+    program.support_type,
+    program.compare_meta?.training_type,
+    program.summary,
+    program.description,
+    program.title,
+  ]
+    .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+    .join(" ");
+
+  if (/K[-\s]?Digital|KDT|디지털\s*트레이닝/i.test(text)) return "KDT";
+  if (/산업구조변화|산대특/.test(text)) return "산대특";
+  if (/국가기간|전략산업직종|국기/.test(text)) return "국기";
+  if (/내일배움|국민내일배움/.test(text)) return "내일배움";
+
+  const explicit = program.support_type?.trim();
+  return explicit && explicit.length <= 8 ? explicit : null;
+}
+
+export function hasTomorrowLearningCardRequirement(program: ProgramInsightSource): boolean {
+  const explicit = program.compare_meta?.naeilbaeumcard_required;
+  if (explicit === true || explicit === "pass" || explicit === "block") {
+    return true;
+  }
+
+  const text = [
+    program.support_type,
+    program.description,
+    program.summary,
+    program.compare_meta?.target_group,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  return /내일배움카드|국민내일배움카드|내배카/.test(text);
+}
+
+export function getProgramTrainingModeLabel(
+  program: Pick<ProgramInsightSource, "teaching_method" | "application_method" | "location" | "title"> & {
+    compare_meta?: CompareMeta | null;
+  }
+): "온라인" | "오프라인" | "온·오프라인" | null {
+  const text = [
+    program.teaching_method,
+    program.compare_meta?.teaching_method,
+    program.application_method,
+    program.location,
+    program.title,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const hasOnline = /온라인|비대면|원격|zoom|줌|인터넷/i.test(text);
+  const hasOffline = /오프라인|대면|집체|현장|방문/i.test(text);
+  if (/혼합|온.?오프|블렌디드/i.test(text) || (hasOnline && hasOffline)) {
+    return "온·오프라인";
+  }
+  if (hasOnline) {
+    return "온라인";
+  }
+  if (hasOffline || cleanText(program.location)) {
+    return "오프라인";
+  }
+  return null;
+}
+
+export function getProgramRatingDisplay(program: ProgramInsightSource): string | null {
+  return (
+    cleanText(program.rating_display) ||
+    normalizeProgramRatingDisplay(program.rating) ||
+    normalizeProgramRatingDisplay(program.compare_meta?.satisfaction_score)
+  );
+}
+
+export function getProgramRatingValue(program: ProgramInsightSource): number {
+  const rating =
+    parseMetricNumber(program.rating_display) ??
+    parseMetricNumber(program.rating) ??
+    parseMetricNumber(program.compare_meta?.satisfaction_score);
+  if (rating === null || rating <= 0) {
+    return 0;
+  }
+
+  return rating <= 5 ? rating : rating / 20;
+}
+
+export function getProgramSelectionKeywords(program: ProgramListRow): string[] {
+  const meta = program.compare_meta;
+  const candidates = [
+    meta?.coding_skill_required ? "코딩역량" : null,
+    meta?.portfolio_required ? "포트폴리오" : null,
+    meta?.interview_required ? "면접" : null,
+    ...normalizeProgramTextList(program.extracted_keywords),
+    meta?.employment_insurance ? "고용보험" : null,
+    ...normalizeProgramTextList(program.tags),
+    ...normalizeProgramTextList(program.skills),
+  ];
+
+  const seen = new Set<string>();
+  return candidates
+    .flatMap((value) => (typeof value === "string" ? value.split("/") : []))
+    .map((value) => value.trim())
+    .filter((value) => {
+      if (!value || seen.has(value)) {
+        return false;
+      }
+      seen.add(value);
+      return true;
+    })
+    .slice(0, 8);
+}
+
 export function toProgramSelectSummary(
   program: ProgramCardRenderable | null | undefined
 ): ProgramSelectSummary | null {
@@ -209,7 +399,7 @@ export function toProgramSelectSummary(
     source: program.source ?? null,
     tags: program.tags ?? null,
     days_left: program.days_left ?? null,
-    compare_meta: getProgramCompareMeta(program),
+    support_type: program.support_type ?? null,
   };
 }
 

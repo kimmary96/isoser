@@ -1,11 +1,15 @@
 import { apiError, apiOk, apiRateLimited } from "@/lib/api/route-response";
+import {
+  buildTargetJobFields,
+  normalizeTargetJobText,
+  parseProfileAddress,
+} from "@/lib/normalizers/profile";
 import { enforceRateLimit } from "@/lib/server/rate-limit";
 import {
   MAX_AVATAR_IMAGE_SIZE_BYTES,
   validateImageFile,
 } from "@/lib/server/upload-validation";
 import {
-  buildLegacyTargetJobFields,
   syncRecommendationProfileAfterUserMutation,
 } from "@/lib/server/recommendation-profile";
 import { logRouteError } from "@/lib/server/route-logging";
@@ -16,6 +20,8 @@ const EMPTY_PROFILE: Profile = {
   id: "",
   name: null,
   bio: null,
+  target_job: null,
+  target_job_normalized: null,
   portfolio_url: null,
   email: null,
   phone: null,
@@ -34,72 +40,15 @@ const EMPTY_PROFILE: Profile = {
   updated_at: "",
 };
 
-const REGION_ALIASES: Array<{ region: string; aliases: string[] }> = [
-  { region: "서울", aliases: ["서울특별시", "서울시", "서울"] },
-  { region: "경기", aliases: ["경기도", "경기"] },
-  { region: "인천", aliases: ["인천광역시", "인천시", "인천"] },
-  { region: "부산", aliases: ["부산광역시", "부산시", "부산"] },
-  { region: "대구", aliases: ["대구광역시", "대구시", "대구"] },
-  { region: "광주", aliases: ["광주광역시", "광주시", "광주"] },
-  { region: "대전", aliases: ["대전광역시", "대전시", "대전"] },
-  { region: "울산", aliases: ["울산광역시", "울산시", "울산"] },
-  { region: "세종", aliases: ["세종특별자치시", "세종시", "세종"] },
-  { region: "강원", aliases: ["강원특별자치도", "강원도", "강원"] },
-  { region: "충북", aliases: ["충청북도", "충북"] },
-  { region: "충남", aliases: ["충청남도", "충남"] },
-  { region: "전북", aliases: ["전북특별자치도", "전라북도", "전북"] },
-  { region: "전남", aliases: ["전라남도", "전남"] },
-  { region: "경북", aliases: ["경상북도", "경북"] },
-  { region: "경남", aliases: ["경상남도", "경남"] },
-  { region: "제주", aliases: ["제주특별자치도", "제주도", "제주"] },
-];
-
-function normalizeAddressText(value: unknown): string | null {
-  const text = String(value ?? "").replace(/\s+/g, " ").trim();
-  return text || null;
-}
-
-function extractRegionDetail(address: string, region: string | null): string | null {
-  const tokens = address.split(/\s+/).map((token) => token.trim()).filter(Boolean);
-  const regionAliasSet = new Set(
-    REGION_ALIASES.flatMap((entry) => (entry.region === region ? [entry.region, ...entry.aliases] : []))
-  );
-  const detail = tokens.find((token) => {
-    const normalized = token.replace(/[(),]/g, "");
-    return !regionAliasSet.has(normalized) && /(시|군|구)$/.test(normalized) && normalized.length >= 2;
-  });
-
-  return detail?.replace(/[(),]/g, "") ?? null;
-}
-
-function parseProfileAddress(value: unknown): {
-  address: string | null;
-  region: string | null;
-  region_detail: string | null;
-} {
-  const address = normalizeAddressText(value);
-  if (!address) {
-    return { address: null, region: null, region_detail: null };
-  }
-
-  const compactAddress = address.replace(/\s+/g, "");
-  const match = REGION_ALIASES.find((entry) =>
-    entry.aliases.some((alias) => compactAddress.includes(alias.replace(/\s+/g, "")))
-  );
-  const region = match?.region ?? null;
-
-  return {
-    address,
-    region,
-    region_detail: extractRegionDetail(address, region),
-  };
-}
-
 function normalizeProfile(profileRow: Record<string, unknown> | null): Profile {
   const getStringArray = (key: string): string[] => {
     const value = profileRow?.[key];
     return Array.isArray(value) ? (value as string[]) : [];
   };
+  const targetJob =
+    (profileRow?.["target_job"] as string | null) ??
+    (profileRow?.["bio"] as string | null) ??
+    "";
 
   return {
     ...EMPTY_PROFILE,
@@ -112,6 +61,10 @@ function normalizeProfile(profileRow: Record<string, unknown> | null): Profile {
     skills: getStringArray("skills"),
     self_intro: (profileRow?.["self_intro"] as string | null) ?? "",
     bio: (profileRow?.["bio"] as string | null) ?? "",
+    target_job: targetJob,
+    target_job_normalized:
+      (profileRow?.["target_job_normalized"] as string | null) ??
+      normalizeTargetJobText(targetJob),
     portfolio_url: (profileRow?.["portfolio_url"] as string | null) ?? "",
     address: (profileRow?.["address"] as string | null) ?? "",
     region: (profileRow?.["region"] as string | null) ?? "",
@@ -240,10 +193,8 @@ export async function PATCH(request: Request) {
     if (patch.languages !== undefined) payload.languages = patch.languages;
     if (patch.skills !== undefined) payload.skills = patch.skills;
     if (patch.self_intro !== undefined) payload.self_intro = patch.self_intro;
-    if (patch.bio !== undefined) {
-      payload.bio = patch.bio;
-      Object.assign(payload, buildLegacyTargetJobFields(patch.bio));
-    }
+    if (patch.bio !== undefined) payload.bio = patch.bio;
+    if (patch.target_job !== undefined) Object.assign(payload, buildTargetJobFields(patch.target_job));
     if (patch.email !== undefined) payload.email = patch.email;
     if (patch.phone !== undefined) payload.phone = patch.phone;
     if (patch.portfolio_url !== undefined) payload.portfolio_url = patch.portfolio_url;
@@ -309,7 +260,8 @@ export async function PUT(request: Request) {
     }
 
     const bio = String(formData.get("bio") ?? "").trim() || null;
-    const targetJobFields = buildLegacyTargetJobFields(bio);
+    const targetJob = String(formData.get("target_job") ?? "").trim() || null;
+    const targetJobFields = buildTargetJobFields(targetJob);
     const email = String(formData.get("email") ?? "").trim() || null;
     const phone = String(formData.get("phone") ?? "").trim() || null;
     const portfolioUrl = String(formData.get("portfolio_url") ?? "").trim() || null;

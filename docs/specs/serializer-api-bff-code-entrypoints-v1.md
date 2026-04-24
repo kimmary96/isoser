@@ -59,7 +59,7 @@
 | `frontend/lib/types/index.ts` | `ProgramRecommendItem`, `CalendarRecommendItem` | 추천 wrapper | 내부 `program: Program` 구조 유지 | `program + context` 구조로 정리 필요 |
 | `frontend/lib/api/backend.ts` | `listPrograms()` | plain list helper | 주 경로는 대부분 `listProgramsPage()`로 이동, 현재는 legacy fallback 성격이 강함 | cleanup 단계에서 축소 여부 판단 |
 | `frontend/lib/api/backend.ts` | `listProgramsPage()` | 메인 목록 helper | 메인 목록/urgent strip read-model path의 기준 helper가 됨 | 완료 |
-| `frontend/lib/api/backend.ts` | `getProgram()`, `getPrograms()` | 기본 program fetch helper | `getProgram()`은 여전히 monolith, `getPrograms()`는 compare top card용 `ProgramCardSummary`로 축소 시작 | `getProgram()` 축소와 compare helper 분리 계속 필요 |
+| `frontend/lib/api/backend.ts` | `getPrograms()` | compare top-card batch helper | compare top card는 이미 `ProgramCardSummary` 기준으로 축소됐고, `getProgram()`은 current code에서 제거됨 | 남은 일은 `listPrograms()` fallback 축소와 compare/detail helper 경계 정리 |
 | `frontend/lib/api/backend.ts` | `getProgramDetail()`, `getProgramDetails()` | 상세 helper | 타입명은 있지만 summary 계층과 연결이 약함 | detail 계약 전환 시 유지하되 payload shape만 교체 |
 
 ## 5. frontend BFF 실제 진입점
@@ -124,7 +124,7 @@
 이유:
 
 - 추천 문맥이 가장 많이 섞여 있다.
-- `_reason` 같은 임시 필드를 가장 빨리 제거할 수 있다.
+- `_reason` 같은 임시 필드는 주 경로에서 이미 제거됐고, 남은 일은 helper/transition alias cleanup이다.
 - 카드형 summary + context 구조가 안정되면 대시보드 카드와 캘린더 추천이 같이 정리된다.
 
 ### 6.4 4단계: direct `programs` 조회 BFF 교체
@@ -149,7 +149,7 @@
 
 1. `listProgramsPage()`
 2. `getPrograms()`
-3. `getProgram()`
+3. `listPrograms()`
 4. `getProgramDetail()`
 
 이유:

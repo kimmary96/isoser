@@ -175,8 +175,8 @@
 
 ### 5.1 `bio` 의미 오염
 
-대시보드 프로필 편집 UI는 `bio` 입력칸 라벨을 `희망 직무 (선택)`으로 보여준다.  
-즉, 현재 UI는 `bio`를 소개 문장이 아니라 희망 직무처럼 쓰고 있다.
+기존 대시보드 프로필 편집 UI는 `bio` 입력칸 라벨을 `희망 직무 (선택)`으로 보여줬다.
+2026-04-24 기준 현재 UI와 저장 경로는 `target_job`과 `bio`를 분리했다. 다만 legacy row와 추천 fallback에는 여전히 `bio` 흔적이 남아 있어 정본 정리 이유 자체는 유효하다.
 
 이건 의미 충돌이다.
 
@@ -187,16 +187,16 @@
 
 ### 5.2 `희망 직무` 정본 부재
 
-현재 추천/비교 로직은 `target_job` 또는 `job_title`을 읽고 싶어 한다.  
-하지만 실DB `profiles` 정본에는 해당 필드가 없다.
+추천/비교 로직은 `target_job` 또는 `job_title`을 읽고 싶어 한다.
+2026-04-24 기준 live/code에는 `profiles.target_job`과 `user_recommendation_profile`이 들어왔고, 이 항목은 왜 migration이 필요했는지 설명하는 기록으로 보는 편이 맞다.
 
-결과적으로 현재는 아래 문제가 생긴다.
+초안 당시에는 아래 문제가 있었다.
 
 - 추천 요청 payload에만 임시 `job_title`을 넣는다
 - resume의 `target_job`는 따로 저장된다
-- profile UI에서는 `bio`에 저장한다
+- profile UI도 `target_job` 정본 write가 없어 `bio` fallback에 기대고 있었다
 
-즉, 희망 직무의 단일 정본이 없다.
+즉, 이 문서가 만들어질 당시에는 희망 직무의 단일 정본이 없었다.
 
 ### 5.3 거주지와 추천 선호 지역 미분리
 
@@ -394,8 +394,8 @@
 
 ### 8.4 profile edit UI 의미 수정
 
-현재 UI의 `희망 직무` 입력은 `bio`로 저장된다.  
-이건 스키마 정리와 함께 반드시 바로잡아야 한다.
+현재 UI의 profile modal/write path는 이미 `target_job`과 `bio`를 분리했다.
+이 항목은 신규 구현 과제라기보다 legacy row fallback과 문서 정합성을 계속 정리해야 한다는 뜻으로 읽는다.
 
 ### 8.5 cache invalidation 기준 축소
 

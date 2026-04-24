@@ -4,7 +4,12 @@ import Link from "next/link";
 import AdSlot from "@/components/AdSlot";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { getProgramFilterOptions, listPrograms, listProgramsPage } from "@/lib/api/backend";
-import { unwrapProgramListRows } from "@/lib/program-display";
+import {
+  formatProgramCostLabel,
+  getProgramSelectionKeywords,
+  getProgramSupportBadge,
+  unwrapProgramListRows,
+} from "@/lib/program-display";
 import { buildUrgentProgramChips, buildUrgentProgramsParams } from "@/lib/programs-page-layout";
 import { getSiteUrl } from "@/lib/seo";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -379,27 +384,11 @@ function formatDateRange(start?: string | null, end?: string | null): string {
 }
 
 function formatCost(program: ProgramListRow): string {
-  if (typeof program.cost === "number") {
-    return program.cost === 0 ? "무료" : `${program.cost.toLocaleString("ko-KR")}원`;
-  }
-  if (typeof program.cost === "string" && program.cost.trim()) return program.cost.trim();
-  if (program.cost_type === "naeil-card") return "내일배움카드";
-  if (program.cost_type === "free-no-card") return "무료";
-  if (program.cost_type === "paid") return "유료";
-  if (typeof program.support_type === "string" && program.support_type.trim()) return program.support_type.trim();
-  return "-";
+  return formatProgramCostLabel(program) || "-";
 }
 
 function getSupportBadge(program: ProgramListRow): string | null {
-  const text = [program.support_type, program.compare_meta?.training_type, program.summary, program.description, program.title]
-    .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
-    .join(" ");
-  if (/K[-\s]?Digital|KDT|디지털\s*트레이닝/i.test(text)) return "KDT";
-  if (/산업구조변화|산대특/.test(text)) return "산대특";
-  if (/국가기간|전략산업직종|국기/.test(text)) return "국기";
-  if (/내일배움|국민내일배움/.test(text)) return "내일배움";
-  const explicit = program.support_type?.trim();
-  return explicit && explicit.length <= 8 ? explicit : null;
+  return getProgramSupportBadge(program);
 }
 
 function formatMethodAndRegion(program: ProgramListRow): { method: string | null; region: string | null } {
@@ -422,27 +411,7 @@ function getDisplayCategories(program: ProgramListRow): string[] {
 }
 
 function extractSelectionKeywords(program: ProgramListRow): string[] {
-  const meta = program.compare_meta;
-  const candidates = [
-    meta?.coding_skill_required ? "코딩역량" : null,
-    meta?.portfolio_required ? "포트폴리오" : null,
-    meta?.interview_required ? "면접" : null,
-    ...normalizeTextList(program.extracted_keywords),
-    meta?.employment_insurance ? "고용보험" : null,
-    ...normalizeTextList(program.tags),
-    ...normalizeTextList(program.skills),
-  ];
-
-  const seen = new Set<string>();
-  return candidates
-    .flatMap((value) => (typeof value === "string" ? value.split("/") : []))
-    .map((value) => value.trim())
-    .filter((value) => {
-      if (!value || seen.has(value)) return false;
-      seen.add(value);
-      return true;
-    })
-    .slice(0, 8);
+  return getProgramSelectionKeywords(program);
 }
 
 function ProgramKeywordList({ keywords }: { keywords: string[] }) {

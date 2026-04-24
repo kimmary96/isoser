@@ -15,9 +15,9 @@
 - 추천/비교 핵심 로직은 현재 `backend/routers/programs.py`에 모여 있다.
 - 현재 추천 read는 `_fetch_profile_row()`가 `user_recommendation_profile`을 우선 읽고, 없을 때만 legacy `profiles`로 fallback한다. `_fetch_activity_rows()`는 아직 보조 evidence read로 함께 남아 있다.
 - 현재 추천 cache hash는 `_build_profile_hash()`가 `user_recommendation_profile.recommendation_profile_hash`를 우선 쓰고, 요청 단에서 `job_title` override가 있을 때만 로컬 hash를 다시 만든다.
-- 현재 목록 serializer는 `_serialize_program_list_row()`가 monolithic row를 직접 가공한다.
-- 현재 상세 serializer는 `_build_program_detail_response()`가 `programs` row를 직접 해석한다.
-- 현재 대시보드 추천 BFF는 `Program` 객체에 `_reason`, `_fit_keywords`, `score`를 섞는다.
+- 현재 목록 serializer는 `_serialize_program_base_summary()`, `_serialize_program_card_summary()`, `_serialize_program_list_row_summary()` 같은 transition helper를 먼저 거쳐 summary를 조립한다.
+- 현재 상세 serializer는 `programs` row만 단독 해석하지 않고 `program_source_records` primary row를 함께 읽는다.
+- 현재 대시보드 추천 BFF 주 경로는 `ProgramCardItem`의 `program + context` 구조를 반환하며, `_reason`, `_fit_keywords`, `score` private field 혼합은 main path에서 제거됐다.
 - 현재 프로필/이력서/활동 저장 API는 추천 파생 정본 refresh를 자동 호출한다.
 
 ## 3. 가장 먼저 바뀌어야 할 backend read 포인트
@@ -62,7 +62,7 @@
 | --- | --- | --- |
 | `frontend/app/api/dashboard/profile/route.ts::PATCH` | `profiles`만 갱신 | `profiles`와 `user_program_preferences`를 역할 분리해서 저장 |
 | `frontend/app/api/dashboard/profile/route.ts::PUT` | 이름/bio/address 중심 upsert | `bio`와 `target_job` 분리, 저장 후 `refresh_user_recommendation_profile()` 호출 |
-| `frontend/app/dashboard/profile/_components/profile-edit-modal.tsx` | “희망 직무” 입력이 실제로 `bio`에 연결 | UI label과 저장 대상 분리 |
+| `frontend/app/dashboard/profile/_components/profile-edit-modal.tsx` | “희망 직무”와 “한 줄 소개” 입력이 이미 분리됨 | 분리된 저장 구조 유지, legacy `bio` fallback은 점진 축소 |
 
 고정 판단:
 

@@ -5,6 +5,8 @@ export interface Profile {
   name: string | null;
   avatar_url?: string;
   bio?: string | null;
+  target_job?: string | null;
+  target_job_normalized?: string | null;
   portfolio_url?: string | null;
   email: string | null;
   phone: string | null;
@@ -330,7 +332,7 @@ export interface ProgramSelectSummary {
   source?: string | null;
   tags: string[] | string | null;
   days_left?: number | null;
-  compare_meta?: CompareMeta | null;
+  support_type?: string | null;
 }
 
 export interface ProgramSurfaceContext {
@@ -436,10 +438,6 @@ export interface Program {
   urgency_score?: number | null;
   days_left?: number | null;
   compare_meta?: CompareMeta | null;
-  _reason?: string | null;
-  _fit_keywords?: string[] | null;
-  _score?: number | null;
-  _relevance_score?: number | null;
 }
 
 export type ProgramCardRenderable = ProgramCardSummary | Program;
@@ -941,8 +939,4 @@ export interface CoverLetterDetailResponse {
 
 export interface CoverLetterMutationResponse {
   coverLetter: CoverLetter;
-}
-
-export interface ProgramListResponse {
-  programs: Program[];
 }

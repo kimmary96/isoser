@@ -1,5 +1,6 @@
 import Image from "next/image";
 
+import { resolveProfileTargetJob } from "@/lib/normalizers/profile";
 import type { Profile } from "@/lib/types";
 
 type ProfileWithExtras = Profile & {
@@ -49,6 +50,8 @@ export function ProfileHeroSection({
   onEditSelfIntro,
   onEditSkills,
 }: ProfileHeroSectionProps) {
+  const targetJob = resolveProfileTargetJob(profile);
+
   return (
     <div className="mb-6 grid gap-6 xl:grid-cols-[14rem_minmax(0,42rem)_14rem] xl:items-start xl:justify-between">
       <div className="w-56 flex-shrink-0 xl:w-auto">
@@ -71,7 +74,7 @@ export function ProfileHeroSection({
             <p className="text-lg font-bold leading-tight text-white">
               {profile.name || "사용자"}
             </p>
-            <p className="text-sm text-gray-300">{profile.bio || "직무를 입력해주세요"}</p>
+            <p className="text-sm text-gray-300">{targetJob || "직무를 입력해주세요"}</p>
           </div>
         </div>
       </div>

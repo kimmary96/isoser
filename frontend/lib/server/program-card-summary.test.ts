@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   loadDeadlineOrderedProgramCardRenderables,
-  loadProgramCardRenderablesByIds,
+  loadProgramCardSummariesByIds,
 } from "./program-card-summary";
 
 type QueryResult = {
@@ -123,7 +123,7 @@ describe("program card summary loader", () => {
       },
     });
 
-    const items = await loadProgramCardRenderablesByIds(client, ["program-a", "program-b"]);
+    const items = await loadProgramCardSummariesByIds(client, ["program-a", "program-b"]);
 
     expect(inCalls).toEqual([
       { table: "program_list_index", column: "id", values: ["program-a", "program-b"] },
@@ -171,7 +171,7 @@ describe("program card summary loader", () => {
       },
     });
 
-    const items = await loadProgramCardRenderablesByIds(client, ["program-a"]);
+    const items = await loadProgramCardSummariesByIds(client, ["program-a"]);
 
     expect(inCalls).toEqual([
       { table: "program_list_index", column: "id", values: ["program-a"] },
@@ -211,7 +211,7 @@ describe("program card summary loader", () => {
       },
     });
 
-    const items = await loadProgramCardRenderablesByIds(client, ["program-a", "program-b"]);
+    const items = await loadProgramCardSummariesByIds(client, ["program-a", "program-b"]);
 
     expect(inCalls).toEqual([
       { table: "program_list_index", column: "id", values: ["program-a", "program-b"] },

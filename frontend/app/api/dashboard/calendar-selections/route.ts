@@ -1,6 +1,6 @@
 import { apiError, apiOk } from "@/lib/api/route-response";
 import { toSelectionProgramCardItem } from "@/lib/program-card-items";
-import { loadProgramCardRenderablesByIds } from "@/lib/server/program-card-summary";
+import { loadProgramCardSummariesByIds } from "@/lib/server/program-card-summary";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createClient } from "@supabase/supabase-js";
 import { existsSync, readFileSync } from "node:fs";
@@ -90,7 +90,7 @@ export async function GET() {
       return apiOk<DashboardCalendarSelectionsResponse>({ items: [] });
     }
 
-    const programs = await loadProgramCardRenderablesByIds(
+    const programs = await loadProgramCardSummariesByIds(
       supabase as unknown as ProgramCardRouteClient,
       programIds
     );

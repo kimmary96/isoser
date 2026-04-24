@@ -28,7 +28,7 @@ function getMetaTags(program: ProgramSelectCardProgram, includeBookmarkedTag: bo
     program.category,
     formatProgramDeadlineCountdown(program.days_left),
     includeBookmarkedTag ? "찜한 프로그램" : null,
-    program.compare_meta?.subsidy_rate ?? null,
+    program.support_type ?? null,
   ];
 
   return tags.filter((tag): tag is string => Boolean(tag && tag !== "정보 없음"));

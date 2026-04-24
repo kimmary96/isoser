@@ -390,16 +390,6 @@ export async function getProgramFilterOptions(params?: ProgramListParams): Promi
   );
 }
 
-export async function getProgram(programId: string): Promise<Program> {
-  return requestJson<Program>(
-    `/programs/${programId}`,
-    {
-      method: "GET",
-    },
-    "Failed to load the program."
-  );
-}
-
 export async function getPrograms(programIds: string[]): Promise<ProgramCardSummary[]> {
   const response = await requestJson<ProgramBatchResponse>(
     "/programs/batch",

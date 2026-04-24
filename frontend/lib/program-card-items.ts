@@ -1,6 +1,5 @@
 import type {
   CalendarRecommendItem,
-  Program,
   ProgramCardItem,
   ProgramCardRenderable,
   ProgramCardSummary,
@@ -8,53 +7,9 @@ import type {
   ProgramSurfaceContext,
 } from "@/lib/types";
 
-type ProgramCardLegacyFields = Partial<
-  Pick<
-    Program,
-    "_relevance_score" | "_score" | "_reason" | "_fit_keywords" | "relevance_reasons" | "relevance_badge"
-  >
->;
-
 function trimNullableText(value: string | null | undefined): string | null {
   const trimmed = value?.trim();
   return trimmed || null;
-}
-
-function hasContextRecommendationFields(
-  context: ProgramSurfaceContext | null | undefined
-): boolean {
-  if (!context) {
-    return false;
-  }
-
-  return Boolean(
-    trimNullableText(context.reason) ||
-      trimNullableText(context.relevance_badge) ||
-      typeof context.score === "number" ||
-      typeof context.relevance_score === "number" ||
-      (Array.isArray(context.relevance_reasons) && context.relevance_reasons.length > 0) ||
-      (Array.isArray(context.fit_keywords) && context.fit_keywords.length > 0)
-  );
-}
-
-function hasLegacyProgramCardFields(program: ProgramCardLegacyFields): boolean {
-  return Boolean(
-    trimNullableText(program._reason) ||
-      trimNullableText(program.relevance_badge) ||
-      typeof program._score === "number" ||
-      typeof program._relevance_score === "number" ||
-      (Array.isArray(program.relevance_reasons) && program.relevance_reasons.length > 0) ||
-      (Array.isArray(program._fit_keywords) && program._fit_keywords.length > 0)
-  );
-}
-
-function getLegacyProgramCardFields(item: ProgramCardItem): ProgramCardLegacyFields | null {
-  if (hasContextRecommendationFields(item.context)) {
-    return null;
-  }
-
-  const legacyProgram = item.program as ProgramCardLegacyFields;
-  return hasLegacyProgramCardFields(legacyProgram) ? legacyProgram : null;
 }
 
 function toProgramCardSummary(
@@ -88,41 +43,33 @@ export function isProgramCardItem(value: unknown): value is ProgramCardItem {
 }
 
 export function getProgramCardScore(item: ProgramCardItem): number | null {
-  const legacyProgram = getLegacyProgramCardFields(item);
   return (
     item.context?.relevance_score ??
     item.context?.score ??
     item.program.relevance_score ??
     item.program.final_score ??
     item.program.recommended_score ??
-    legacyProgram?._relevance_score ??
-    legacyProgram?._score ??
     null
   );
 }
 
 export function getProgramCardReason(item: ProgramCardItem): string | null {
-  const legacyProgram = getLegacyProgramCardFields(item);
-  return trimNullableText(item.context?.reason ?? legacyProgram?._reason);
+  return trimNullableText(item.context?.reason);
 }
 
 export function getProgramCardRelevanceReasons(item: ProgramCardItem): string[] {
-  const legacyProgram = getLegacyProgramCardFields(item);
   const reasons =
     Array.isArray(item.context?.relevance_reasons) && item.context.relevance_reasons.length > 0
       ? item.context.relevance_reasons
       : Array.isArray(item.program.recommendation_reasons) && item.program.recommendation_reasons.length > 0
         ? item.program.recommendation_reasons
-        : Array.isArray(legacyProgram?.relevance_reasons)
-          ? legacyProgram.relevance_reasons
         : [];
   const fallback = getProgramCardReason(item);
   return (reasons.length > 0 ? reasons : fallback ? [fallback] : []).slice(0, 3);
 }
 
 export function getProgramCardFitKeywords(item: ProgramCardItem): string[] {
-  const legacyProgram = getLegacyProgramCardFields(item);
-  const value = item.context?.fit_keywords ?? legacyProgram?._fit_keywords;
+  const value = item.context?.fit_keywords;
   if (!Array.isArray(value)) {
     return [];
   }
@@ -131,8 +78,7 @@ export function getProgramCardFitKeywords(item: ProgramCardItem): string[] {
 }
 
 export function getProgramCardRelevanceBadge(item: ProgramCardItem): string | null {
-  const legacyProgram = getLegacyProgramCardFields(item);
-  return trimNullableText(item.context?.relevance_badge ?? legacyProgram?.relevance_badge);
+  return trimNullableText(item.context?.relevance_badge);
 }
 
 export function toRecommendationSurfaceContext(item: ProgramRecommendItem): ProgramSurfaceContext {

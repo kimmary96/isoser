@@ -18,31 +18,6 @@ type SupabaseRouteClient = {
   };
 };
 
-function compactWhitespace(value: string | null | undefined): string | null {
-  const text = String(value ?? "").replace(/\s+/g, " ").trim();
-  return text || null;
-}
-
-export function normalizeRecommendationText(
-  value: string | null | undefined,
-): string | null {
-  const text = compactWhitespace(value);
-  return text ? text.toLowerCase() : null;
-}
-
-export function buildLegacyTargetJobFields(
-  value: string | null | undefined,
-): {
-  target_job: string | null;
-  target_job_normalized: string | null;
-} {
-  const targetJob = compactWhitespace(value);
-  return {
-    target_job: targetJob,
-    target_job_normalized: normalizeRecommendationText(targetJob),
-  };
-}
-
 function isIgnorableRecommendationRefreshError(
   error: SupabaseErrorLike,
 ): boolean {

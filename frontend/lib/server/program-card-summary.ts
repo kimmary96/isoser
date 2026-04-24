@@ -1,4 +1,4 @@
-import type { Program, ProgramCardRenderable, ProgramCardSummary } from "@/lib/types";
+import type { ProgramCardRenderable, ProgramCardSummary } from "@/lib/types";
 
 type SupabaseErrorLike = {
   code?: string | null;
@@ -206,10 +206,86 @@ function toProgramCardSummary(row: Record<string, unknown>): ProgramCardSummary 
   };
 }
 
-export async function loadProgramCardRenderablesByIds(
+function toLegacyProgramCardSummary(row: Record<string, unknown>): ProgramCardSummary | null {
+  const id = cleanText(row.id);
+  if (!id) {
+    return null;
+  }
+
+  const applicationUrl = cleanText(row.application_url);
+  const sourceUrl = cleanText(row.source_url);
+  const link = toExternalLink(row.link);
+
+  return {
+    id,
+    title: cleanText(row.title),
+    category: cleanText(row.category),
+    category_detail: cleanText(row.category_detail),
+    location: cleanText(row.location),
+    provider: cleanText(row.provider),
+    source: cleanText(row.source),
+    source_url: sourceUrl ?? applicationUrl,
+    link,
+    deadline: cleanText(row.deadline),
+    start_date: cleanText(row.start_date),
+    end_date: cleanText(row.end_date),
+    cost:
+      typeof row.cost === "number" || typeof row.cost === "string"
+        ? (row.cost as number | string)
+        : null,
+    cost_type: cleanText(row.cost_type),
+    support_type: cleanText(row.support_type),
+    teaching_method: cleanText(row.teaching_method),
+    is_active: asBoolean(row.is_active),
+    is_ad: asBoolean(row.is_ad),
+    days_left: asNumber(row.days_left),
+    deadline_confidence:
+      cleanText(row.deadline_confidence) as ProgramCardSummary["deadline_confidence"],
+    summary: cleanText(row.summary),
+    description: cleanText(row.description),
+    tags: asStringArray(row.tags),
+    skills: asStringArray(row.skills),
+    application_url: applicationUrl,
+    application_method: cleanText(row.application_method),
+    participation_time: cleanText(row.participation_time),
+    subsidy_amount:
+      typeof row.subsidy_amount === "number" || typeof row.subsidy_amount === "string"
+        ? (row.subsidy_amount as number | string)
+        : null,
+    display_categories: asStringArray(row.display_categories),
+    participation_mode_label: cleanText(row.participation_mode_label),
+    participation_time_text: cleanText(row.participation_time_text),
+    selection_process_label: cleanText(row.selection_process_label),
+    extracted_keywords: asStringArray(row.extracted_keywords),
+    rating:
+      typeof row.rating === "number" || typeof row.rating === "string"
+        ? (row.rating as number | string)
+        : null,
+    rating_raw:
+      typeof row.rating_raw === "number" || typeof row.rating_raw === "string"
+        ? (row.rating_raw as number | string)
+        : null,
+    rating_normalized: asNumber(row.rating_normalized),
+    rating_scale: asNumber(row.rating_scale),
+    rating_display: cleanText(row.rating_display),
+    review_count: asNumber(row.review_count),
+    relevance_score: asNumber(row.relevance_score),
+    final_score: asNumber(row.final_score),
+    urgency_score: asNumber(row.urgency_score),
+    recommended_score: asNumber(row.recommended_score),
+    recommendation_reasons: asStringArray(row.recommendation_reasons),
+    detail_view_count: asNumber(row.detail_view_count),
+    detail_view_count_7d: asNumber(row.detail_view_count_7d),
+    click_hotness_score: asNumber(row.click_hotness_score),
+    last_detail_viewed_at: cleanText(row.last_detail_viewed_at),
+    promoted_rank: asNumber(row.promoted_rank),
+  };
+}
+
+export async function loadProgramCardSummariesByIds(
   supabase: SupabaseRouteClient,
   programIds: string[],
-): Promise<ProgramCardRenderable[]> {
+): Promise<ProgramCardSummary[]> {
   const orderedIds = normalizeProgramIds(programIds);
   if (orderedIds.length === 0) {
     return [];
@@ -244,7 +320,7 @@ export async function loadProgramCardRenderablesByIds(
     }
   }
 
-  const legacyProgramMap = new Map<string, Program>();
+  const legacyProgramMap = new Map<string, ProgramCardSummary>();
   if (missingIds.length > 0) {
     const { data, error } = await supabase
       .from("programs")
@@ -255,18 +331,18 @@ export async function loadProgramCardRenderablesByIds(
       throw new Error(error.message || "programs 조회에 실패했습니다.");
     }
 
-    for (const row of (data ?? []) as unknown as Program[]) {
-      const id = cleanText(row.id);
-      if (!id) {
+    for (const row of data ?? []) {
+      const summary = toLegacyProgramCardSummary(row);
+      if (!summary) {
         continue;
       }
-      legacyProgramMap.set(id, row);
+      legacyProgramMap.set(String(summary.id), summary);
     }
   }
 
   return orderedIds
     .map((programId) => readModelMap.get(programId) ?? legacyProgramMap.get(programId) ?? null)
-    .filter((program): program is ProgramCardRenderable => Boolean(program));
+    .filter((program): program is ProgramCardSummary => Boolean(program));
 }
 
 export async function loadDeadlineOrderedProgramCardRenderables(
@@ -313,5 +389,5 @@ export async function loadDeadlineOrderedProgramCardRenderables(
     throw new Error(error.message || "programs 조회에 실패했습니다.");
   }
 
-  return ((data ?? []) as unknown as Program[]).filter(Boolean);
+  return ((data ?? []) as unknown as ProgramCardRenderable[]).filter(Boolean);
 }

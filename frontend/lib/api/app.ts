@@ -9,7 +9,6 @@ import type {
   DashboardRecommendCalendarResponse,
   DashboardRecommendedProgramsResponse,
   Profile,
-  Program,
   ProgramCompareRelevanceResponse,
   ProgramSort,
   Resume,

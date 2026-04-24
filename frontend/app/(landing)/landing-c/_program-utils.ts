@@ -1,6 +1,13 @@
 import {
   getProgramDeadlineTone,
 } from "../../../components/landing/program-card-helpers";
+import {
+  formatProgramCostLabel,
+  getProgramRatingDisplay,
+  getProgramRatingValue,
+  getProgramTrainingModeLabel,
+  hasTomorrowLearningCardRequirement,
+} from "@/lib/program-display";
 import type { ProgramListRow } from "@/lib/types";
 
 import { OPPORTUNITY_FEED_SIZE, SEOUL_DISTRICTS, liveBoardSources } from "./_content";
@@ -32,15 +39,6 @@ export function providerLabel(program: ProgramListRow): string {
   return program.source || "운영 기관 확인 필요";
 }
 
-export function normalizeMetaText(value: string | boolean | null | undefined): string | null {
-  if (typeof value === "boolean") {
-    return value ? "필수" : null;
-  }
-
-  const text = value?.trim();
-  return text ? text : null;
-}
-
 function parseMetricNumber(value: string | number | null | undefined): number | null {
   if (typeof value === "number") {
     return Number.isFinite(value) ? value : null;
@@ -69,25 +67,7 @@ function formatWon(value: string | number | null | undefined): string | null {
 }
 
 function trainingFeeLabel(program: ProgramListRow): string {
-  return formatWon(program.cost) || normalizeMetaText(program.compare_meta?.subsidy_rate) || "확인 필요";
-}
-
-function hasTomorrowLearningCardRequirement(program: ProgramListRow): boolean {
-  const explicit = program.compare_meta?.naeilbaeumcard_required;
-  if (explicit === true || explicit === "pass" || explicit === "block") {
-    return true;
-  }
-
-  const text = [
-    program.support_type,
-    program.description,
-    program.summary,
-    program.compare_meta?.target_group,
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  return /내일배움카드|국민내일배움카드|내배카/.test(text);
+  return formatProgramCostLabel(program) || formatWon(program.cost) || "확인 필요";
 }
 
 export function trainingPeriodLabel(program: ProgramListRow): string {
@@ -138,7 +118,7 @@ function compactDistrictLocation(location: string): string {
 }
 
 export function locationLabel(program: ProgramListRow): string | null {
-  const location = normalizeMetaText(program.location);
+  const location = typeof program.location === "string" ? program.location.trim() : null;
   if (location) {
     if (/온라인|비대면|원격/i.test(location)) {
       return null;
@@ -151,37 +131,12 @@ export function locationLabel(program: ProgramListRow): string | null {
   return district ? `서울 ${district}구` : null;
 }
 
-function trainingModeLabel(program: ProgramListRow): "온라인" | "오프라인" | "온·오프라인" | null {
-  const text = [
-    program.teaching_method,
-    program.compare_meta?.teaching_method,
-    program.application_method,
-    program.location,
-    program.title,
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  const hasOnline = /온라인|비대면|원격|zoom|줌|인터넷/i.test(text);
-  const hasOffline = /오프라인|대면|집체|현장|방문/i.test(text);
-  if (/혼합|온.?오프|블렌디드/i.test(text) || (hasOnline && hasOffline)) {
-    return "온·오프라인";
-  }
-  if (hasOnline) {
-    return "온라인";
-  }
-  if (hasOffline || locationLabel(program)) {
-    return "오프라인";
-  }
-  return null;
-}
-
 export function programTagItems(program: ProgramListRow): Array<{ label: string; tone: "green" | "blue" | "amber" | "indigo" }> {
   const tags: Array<{ label: string; tone: "green" | "blue" | "amber" | "indigo" }> = [
     { label: `훈련비 ${trainingFeeLabel(program)}`, tone: "green" },
   ];
 
-  const trainingMode = trainingModeLabel(program);
+  const trainingMode = getProgramTrainingModeLabel(program);
   if (trainingMode) {
     tags.push({ label: trainingMode, tone: "indigo" });
   }
@@ -203,34 +158,12 @@ export function programTagItems(program: ProgramListRow): Array<{ label: string;
   return tags;
 }
 
-function normalizeProgramRatingDisplay(value: string | number | null | undefined): string | null {
-  if (typeof value === "string" && /(^|[^\d])\.\d/u.test(value.trim())) {
-    return null;
-  }
-
-  const rating = parseMetricNumber(value);
-  if (rating === null || rating <= 0 || rating > 100) {
-    return null;
-  }
-
-  const normalizedRating = rating <= 5 ? rating : rating / 20;
-  return normalizedRating.toFixed(1);
-}
-
 function programRatingDisplay(program: ProgramListRow): string | null {
-  return (
-    program.rating_display ||
-    normalizeProgramRatingDisplay(program.rating) ||
-    normalizeProgramRatingDisplay(program.compare_meta?.satisfaction_score)
-  );
+  return getProgramRatingDisplay(program);
 }
 
 function programRatingValue(program: ProgramListRow): number {
-  const rating = parseMetricNumber(program.rating_display) ?? parseMetricNumber(program.rating) ?? parseMetricNumber(program.compare_meta?.satisfaction_score);
-  if (rating === null || rating <= 0) {
-    return 0;
-  }
-  return rating <= 5 ? rating : rating / 20;
+  return getProgramRatingValue(program);
 }
 
 function programReviewCount(program: ProgramListRow): number {

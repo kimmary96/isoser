@@ -1,6 +1,6 @@
 import { apiError, apiOk } from "@/lib/api/route-response";
 import { toBookmarkProgramCardItem } from "@/lib/program-card-items";
-import { loadProgramCardRenderablesByIds } from "@/lib/server/program-card-summary";
+import { loadProgramCardSummariesByIds } from "@/lib/server/program-card-summary";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type {
   DashboardBookmarksResponse,
@@ -37,7 +37,7 @@ export async function GET() {
 
     const rows = ((bookmarkRows ?? []) as BookmarkRow[]).filter((row) => row.program_id);
     const programIds = rows.map((row) => String(row.program_id));
-    const programs = await loadProgramCardRenderablesByIds(
+    const programs = await loadProgramCardSummariesByIds(
       supabase as unknown as ProgramCardRouteClient,
       programIds
     );

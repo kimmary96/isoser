@@ -7,7 +7,7 @@ import {
   getProgramCardRelevanceReasons,
   toProgramCardItem,
 } from "@/lib/program-card-items";
-import type { Program, ProgramCardRenderable, ProgramSurfaceContext } from "@/lib/types";
+import type { ProgramCardRenderable, ProgramSurfaceContext } from "@/lib/types";
 
 import ProgramBookmarkButton from "./program-bookmark-button";
 import { deadlineLabel, deadlineTone, normalizeTextList, scorePercent } from "./program-utils";
@@ -26,7 +26,6 @@ export default function ProgramCard({
   initialBookmarked = false,
 }: ProgramCardProps) {
   const item = toProgramCardItem(program, context);
-  const legacyProgram = program as Partial<Program>;
   const programId = typeof program.id === "string" || typeof program.id === "number" ? String(program.id) : "";
   const href = programId ? `/programs/${encodeURIComponent(programId)}` : "/programs";
   const chips = [...normalizeTextList(program.tags), ...normalizeTextList(program.skills)].slice(0, 4);
@@ -34,7 +33,6 @@ export default function ProgramCard({
   const percent = scorePercent(program, context);
   const badge =
     context?.relevance_badge ??
-    legacyProgram.relevance_badge ??
     (percent !== null && percent >= 80
       ? "딱 맞아요"
       : percent !== null && percent >= 60

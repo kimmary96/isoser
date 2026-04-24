@@ -25,12 +25,13 @@
 
 ### 3.1 `bio`와 희망 직무 의미 충돌
 
-현재 UI는 `희망 직무` 입력을 `bio`에 저장한다.  
-이 구조를 유지한 채 추천 품질을 올리면 의미 충돌이 계속 누적된다.
+기존 UI는 `희망 직무` 입력을 `bio`에 저장했다.
+2026-04-24 기준 현재 profile modal/write path는 `target_job`과 `bio`를 분리했고, 이 migration reason은 legacy row/fallback cleanup 관점에서 계속 유효하다.
 
 ### 3.2 추천 정본 부재
 
-현재 추천은 `profiles + activities + 요청 payload`를 조합해 쓰지만, 이를 정리한 단일 추천 정본이 없다.
+초안 당시에는 추천이 `profiles + activities + 요청 payload`를 조합해 쓰고 있었고, 이를 정리한 단일 추천 정본이 없었다.
+2026-04-24 기준 현재 code/live에는 `user_recommendation_profile` 경로가 들어와 있으므로, 이 항목은 적용 전 문제 정의로 읽는 편이 맞다.
 
 ### 3.3 추천 캐시 hash 기준 불안정
 

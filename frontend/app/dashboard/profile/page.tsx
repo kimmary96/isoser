@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
+import { resolveProfileTargetJob } from "@/lib/normalizers/profile";
 import type { Profile } from "@/lib/types";
 import { useProfilePage } from "./_hooks/use-profile-page";
 import { ProfileActivityStrip } from "./_components/profile-activity-strip";
@@ -43,6 +44,8 @@ export default function DashboardPage() {
     profileModalSaving,
     profileNameInput,
     setProfileNameInput,
+    profileTargetJobInput,
+    setProfileTargetJobInput,
     profileBioInput,
     setProfileBioInput,
     profileEmailInput,
@@ -93,12 +96,13 @@ export default function DashboardPage() {
       bio?: string | null;
       education?: string[] | string | null;
     };
+    const targetJob = resolveProfileTargetJob(profile);
 
     if (profileAny.avatar_url) score += 10;
     if (profile.name) score += 10;
     if (profile.email) score += 10;
     if (profile.phone) score += 10;
-    if (profileAny.bio || profile.self_intro) score += 10;
+    if (targetJob || profileAny.bio || profile.self_intro) score += 10;
     if (toArray(profile.skills).length > 0) score += 10;
     if (toArray(profile.career).length > 0) score += 10;
 
@@ -264,16 +268,18 @@ export default function DashboardPage() {
         onSave={async (items) => updateProfileSection({ self_intro: items[0] ?? "" })}
       />
 
-      <ProfileEditModal
-        open={isProfileModalOpen}
-        avatarPreviewUrl={avatarPreviewUrl}
-        fileInputRef={fileInputRef}
-        onAvatarFileChange={handleAvatarFileChange}
-        profileNameInput={profileNameInput}
-        onProfileNameInputChange={setProfileNameInput}
-        profileBioInput={profileBioInput}
-        onProfileBioInputChange={setProfileBioInput}
-        profileEmailInput={profileEmailInput}
+        <ProfileEditModal
+          open={isProfileModalOpen}
+          avatarPreviewUrl={avatarPreviewUrl}
+          fileInputRef={fileInputRef}
+          onAvatarFileChange={handleAvatarFileChange}
+          profileNameInput={profileNameInput}
+          onProfileNameInputChange={setProfileNameInput}
+          profileTargetJobInput={profileTargetJobInput}
+          onProfileTargetJobInputChange={setProfileTargetJobInput}
+          profileBioInput={profileBioInput}
+          onProfileBioInputChange={setProfileBioInput}
+          profileEmailInput={profileEmailInput}
         onProfileEmailInputChange={setProfileEmailInput}
         profilePhoneInput={profilePhoneInput}
         onProfilePhoneInputChange={setProfilePhoneInput}
