@@ -354,7 +354,6 @@ class ProgramListItem(BaseModel):
     click_hotness_score: float | None = None
     last_detail_viewed_at: str | None = None
     promoted_rank: int | None = None
-    compare_meta: dict[str, Any] | None = None
 
 
 class ProgramRecommendRequest(BaseModel):
@@ -4551,7 +4550,9 @@ async def get_program(program_id: str) -> Any:
     )
     if not rows:
         raise HTTPException(status_code=404, detail="Program not found")
-    return rows[0]
+    response_row = dict(rows[0]) if isinstance(rows[0], Mapping) else {}
+    response_row.pop("compare_meta", None)
+    return response_row
 
 
 @programs_router.post("/recommend", response_model=ProgramRecommendResponse)

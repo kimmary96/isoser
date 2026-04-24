@@ -68,6 +68,19 @@ def test_serialize_program_recommendation_uses_card_summary_serializer() -> None
     assert serialized.relevance_reasons
 
 
+def test_program_list_item_response_model_omits_compare_meta() -> None:
+    item = programs.ProgramListItem(
+        id="program-1",
+        title="AI 부트캠프",
+        compare_meta={"region": "서울"},
+    )
+
+    dumped = item.model_dump(exclude_none=True)
+
+    assert dumped["id"] == "program-1"
+    assert "compare_meta" not in dumped
+
+
 def test_build_program_query_params_for_filtered_list() -> None:
     params = programs._build_program_query_params(
         select="*",
@@ -1150,6 +1163,33 @@ def test_get_program_returns_404_for_invalid_uuid(client: TestClient) -> None:
 
     assert response.status_code == 404
     assert response.json()["detail"] == "Program not found"
+
+
+def test_get_program_omits_compare_meta_in_raw_response(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_request_supabase(*, method: str, path: str, params: dict[str, str], **_: object) -> list[dict[str, object]]:
+        assert method == "GET"
+        assert path == "/rest/v1/programs"
+        assert params["limit"] == "1"
+        return [
+            {
+                "id": "00000000-0000-0000-0000-000000000123",
+                "title": "단건 조회 테스트",
+                "compare_meta": {"contact_phone": "02-0000-0000"},
+                "source": "고용24",
+            }
+        ]
+
+    monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
+
+    response = client.get("/programs/00000000-0000-0000-0000-000000000123")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["title"] == "단건 조회 테스트"
+    assert "compare_meta" not in payload
 
 
 @pytest.mark.asyncio
