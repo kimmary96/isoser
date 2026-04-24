@@ -9,6 +9,7 @@ import {
   listActivities,
   listCoverLetters,
 } from "@/lib/api/app";
+import { getProgramCardScore } from "@/lib/program-card-items";
 import { formatProgramMonthDay, parseProgramDate, toProgramDateKey } from "@/lib/program-display";
 import type { ProgramCardItem, ProgramCardSummary } from "@/lib/types";
 

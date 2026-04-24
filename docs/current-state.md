@@ -1,6 +1,7 @@
 # Current State
 
 Update 2026-04-24:
+- `frontend/app/dashboard/page.tsx` now imports the shared `getProgramCardScore` helper again for its inline `RecCard` renderer, restoring the main dashboard recommendation/bookmark strip after a merge regression without changing the current score precedence rules from `frontend/lib/program-card-items.ts`.
 - `backend/routers/programs.py`의 상세 read는 이제 `programs` row만 단독 해석하지 않고 `program_source_records` primary row를 같이 읽는다. `get_program_detail()`와 `get_program_details_batch()`는 `application_url/detail_url/source_specific`를 보강 입력으로 넘겨 `ProgramDetailResponse`를 조립하고, `provider_name`, `organizer_name`, `location_text`, `business_type`, `curriculum_items`, `certifications`, `service_meta` 같은 additive canonical/detail 필드를 `compare_meta`보다 먼저 쓴다.
 - 같은 파일의 `POST /programs/batch`는 이제 compare 상단 카드용 기본 목록 batch를 `program_list_index` summary read 우선 구조로 읽고, read model에 없는 id만 legacy `programs`로 fallback 한다. 그래서 compare 페이지의 기본 카드 정보는 read-model 값과 먼저 맞추면서도, 누락 id나 미적용 환경에서는 기존 batch 응답 shape를 유지한다.
 - `backend/routers/programs.py::_fetch_profile_row()` now prefers additive `user_recommendation_profile` rows for recommendation and compare reads, mapping `effective_target_job`, `evidence_skills`, `desired_skills`, and `preferred_regions` back into the legacy in-memory profile shape only when the derived row exists. If the new table or columns are still missing, the route falls back to direct `profiles` reads so the current recommendation endpoints keep working.

@@ -1,5 +1,9 @@
 # 리팩토링 로그
 
+- 2026-04-24: `frontend/app/dashboard/page.tsx`, `docs/current-state.md`, `docs/refactoring-log.md`
+  - 병합 회귀로 `RecCard` 내부에서 호출하던 `getProgramCardScore` import가 빠져 `/dashboard` 추천/찜 카드 strip이 `ReferenceError`로 깨지던 문제를 최소 수정으로 복구함
+  - 점수 계산 우선순위와 카드 렌더링 로직은 그대로 두고, 기존 공용 helper 연결만 되살려 최근 `ProgramCardItem` cleanup 이후 의도한 shared precedence를 다시 사용하게 맞춤
+
 - 2026-04-24: `frontend/app/(landing)/programs/page.tsx`, `frontend/lib/programs-page-layout.ts`, `frontend/lib/program-display.ts`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/lib/program-card-items.ts`, `frontend/lib/program-card-items.test.ts`, `frontend/app/dashboard/page.tsx`, `frontend/app/dashboard/_hooks/use-dashboard-calendar.ts`, `frontend/app/dashboard/_components/dashboard-calendar-section.tsx`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-4-read-switch-complete-result.md`
   - package-4의 남은 공개 읽기 전환으로 landing `/programs`의 `Closing Soon` strip도 `listProgramsPage(...) + unwrapProgramListRows(...)` 기반 read-model-first 경로로 옮기고, recommend-calendar fallback은 shared compare-meta helper를 재사용하도록 정리함
   - `ProgramCardItem` 중앙 helper 우선순위를 dashboard recommendation strip과 dashboard calendar hook/card가 같이 재사용하게 맞춰 화면별 점수·사유 해석 순서가 다시 벌어지지 않게 함
