@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  loadDeadlineOrderedProgramCardRenderables,
+  loadDeadlineOrderedProgramCardSummaries,
   loadProgramCardSummariesByIds,
 } from "./program-card-summary";
 
@@ -238,7 +238,7 @@ describe("program card summary loader", () => {
       },
     });
 
-    const items = await loadDeadlineOrderedProgramCardRenderables(client, {
+    const items = await loadDeadlineOrderedProgramCardSummaries(client, {
       today: "2026-04-24",
       limit: 50,
     });
@@ -282,7 +282,7 @@ describe("program card summary loader", () => {
       },
     });
 
-    const items = await loadDeadlineOrderedProgramCardRenderables(client, {
+    const items = await loadDeadlineOrderedProgramCardSummaries(client, {
       today: "2026-04-24",
       limit: 20,
     });

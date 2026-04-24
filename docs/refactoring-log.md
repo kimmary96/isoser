@@ -3123,3 +3123,7 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - `frontend/lib/program-card-items.ts`에서 dashboard-only private `_reason/_fit_keywords/_score/_relevance_score` fallback을 제거해 카드 추천 문맥 해석을 `ProgramSurfaceContext`와 canonical summary 값으로 고정함
   - landing/compare helper가 비용/지원/훈련형태/평점/키워드 표시를 `frontend/lib/program-display.ts` 공용 helper로 재사용하게 바꾸고, compare selection summary에 `support_type`를 직접 담아 `compare_meta` 직접 의존을 한 단계 더 줄임
   - 미사용 `frontend/lib/api/backend.ts::getProgram()` helper와 `ProgramListResponse` 타입을 제거하고, 관련 current-state/spec 문서를 현재 코드 기준으로 갱신함
+- 2026-04-24: `frontend/lib/program-display.ts`, `frontend/lib/program-display.test.ts`, `frontend/lib/server/program-card-summary.ts`, `frontend/lib/server/program-card-summary.test.ts`, `frontend/lib/server/recommend-calendar-fallback.ts`, `frontend/lib/program-card-items.ts`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `docs/current-state.md`, `reports/SESSION-2026-04-24-calendar-deadline-summary-cleanup-result.md`
+  - recommend-calendar direct fallback용 deadline loader도 `ProgramCardSummary` 기준으로 줄여, `program_list_index` 미적용 시 legacy `programs` row를 읽더라도 route 진입 전에 카드 summary shape로 축소되게 정리함
+  - Work24 모집마감 신뢰도 판정을 `frontend/lib/program-display.ts::hasTrustedProgramDeadline(...)` 공용 helper로 옮겨 route-local `compare_meta` 파싱을 제거하고, 같은 규칙을 독립 테스트로 고정함
+  - fallback calendar card helper도 summary 입력으로 좁혀 dashboard 보조 경로의 `Program` monolith 직접 의존을 한 단계 더 줄였고, recommend-calendar route는 기존 `ProgramCardItem[]` 응답과 timeout/fallback 순서는 그대로 유지함

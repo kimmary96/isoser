@@ -194,6 +194,65 @@ export function getProgramCompareMeta(program: ProgramCardRenderable): CompareMe
   return null;
 }
 
+type ProgramDeadlineTrustSource = Pick<
+  ProgramBaseSummary,
+  "deadline" | "end_date" | "source" | "deadline_confidence"
+> & {
+  compare_meta?: CompareMeta | null;
+};
+
+function hasTrainingStartDeadlineSource(compareMeta: CompareMeta | null | undefined): boolean {
+  const deadlineSource = String(
+    compareMeta?.deadline_source ||
+      compareMeta?.application_deadline_source ||
+      compareMeta?.recruitment_deadline_source ||
+      "",
+  )
+    .replace(/[_-]/g, "")
+    .toLowerCase();
+
+  return (
+    deadlineSource === "trastartdate" ||
+    deadlineSource === "trainingstartdate" ||
+    deadlineSource === "trainingstart"
+  );
+}
+
+export function hasTrustedProgramDeadline(
+  program: ProgramDeadlineTrustSource | null | undefined
+): boolean {
+  if (!program?.deadline) {
+    return false;
+  }
+
+  if (program.deadline_confidence === "low") {
+    return false;
+  }
+
+  const deadline = String(program.deadline).slice(0, 10);
+  const endDate = String(program.end_date ?? "").slice(0, 10);
+  const compareMeta = program.compare_meta;
+  const metaDeadline =
+    compareMeta?.application_deadline ||
+    compareMeta?.application_end_date ||
+    compareMeta?.recruitment_deadline ||
+    compareMeta?.recruitment_end_date;
+  const source = String(program.source ?? "").toLowerCase();
+  const isWork24 = source.includes("고용24") || source.includes("work24");
+
+  if (
+    isWork24 &&
+    endDate &&
+    deadline === endDate &&
+    !metaDeadline &&
+    !hasTrainingStartDeadlineSource(compareMeta)
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
 type ProgramInsightSource = Pick<
   ProgramCardSummary,
   | "cost"

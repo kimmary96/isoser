@@ -1,8 +1,8 @@
 import { unwrapProgramListRows } from "../program-display";
-import type { ProgramCardRenderable, ProgramListPageResponse } from "../types";
+import type { ProgramCardSummary, ProgramListPageResponse } from "../types";
 
 export function extractBackendFallbackPrograms(
   page: Pick<ProgramListPageResponse, "items">
-): ProgramCardRenderable[] {
+): ProgramCardSummary[] {
   return unwrapProgramListRows(page.items ?? []);
 }

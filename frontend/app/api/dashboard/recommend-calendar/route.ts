@@ -3,10 +3,10 @@ import {
   toCalendarProgramCardItem,
   toFallbackCalendarProgramCardItem,
 } from "@/lib/program-card-items";
-import { getProgramCompareMeta } from "@/lib/program-display";
+import { hasTrustedProgramDeadline } from "@/lib/program-display";
 import { extractBackendFallbackPrograms } from "@/lib/server/recommend-calendar-fallback";
 import {
-  loadDeadlineOrderedProgramCardRenderables,
+  loadDeadlineOrderedProgramCardSummaries,
   type ProgramCardDeadlineRouteClient,
 } from "@/lib/server/program-card-summary";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -15,7 +15,7 @@ import type {
   CalendarRecommendResponse,
   DashboardRecommendCalendarResponse,
   ProgramCardItem,
-  ProgramCardRenderable,
+  ProgramCardSummary,
   ProgramListPageResponse,
 } from "@/lib/types";
 
@@ -38,7 +38,10 @@ async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit, tim
   }
 }
 
-function toFallbackCalendarResponse(programs: ProgramCardRenderable[], topK: number): DashboardRecommendCalendarResponse {
+function toFallbackCalendarResponse(
+  programs: ProgramCardSummary[],
+  topK: number
+): DashboardRecommendCalendarResponse {
   const reason = "추천 데이터가 비어 있어 모집 마감이 가까운 공개 프로그램을 우선 노출합니다.";
   return {
     items: programs
@@ -48,50 +51,10 @@ function toFallbackCalendarResponse(programs: ProgramCardRenderable[], topK: num
   };
 }
 
-function isWork24Program(program: ProgramCardRenderable): boolean {
-  const source = String(program.source ?? "").toLowerCase();
-  return source.includes("고용24") || source.includes("work24");
-}
-
-function hasTrustedDeadline(program: ProgramCardRenderable): boolean {
-  if (!program.deadline) return false;
-
-  if ("deadline_confidence" in program && program.deadline_confidence === "low") {
-    return false;
-  }
-
-  const deadline = String(program.deadline).slice(0, 10);
-  const endDate = String(program.end_date ?? "").slice(0, 10);
-  const compareMeta = getProgramCompareMeta(program) ?? {};
-  const metaDeadline =
-    compareMeta.application_deadline ||
-    compareMeta.application_end_date ||
-    compareMeta.recruitment_deadline ||
-    compareMeta.recruitment_end_date;
-  const deadlineSource = String(
-    compareMeta.deadline_source ||
-      compareMeta.application_deadline_source ||
-      compareMeta.recruitment_deadline_source ||
-      "",
-  )
-    .replace(/[_-]/g, "")
-    .toLowerCase();
-  const usesTrainingStartDeadline =
-    deadlineSource === "trastartdate" ||
-    deadlineSource === "trainingstartdate" ||
-    deadlineSource === "trainingstart";
-
-  if (isWork24Program(program) && endDate && deadline === endDate && !metaDeadline && !usesTrainingStartDeadline) {
-    return false;
-  }
-
-  return true;
-}
-
 async function loadSupabaseFallbackPrograms(topK: number): Promise<DashboardRecommendCalendarResponse> {
   const supabase = await createServerSupabaseClient();
   const today = new Date().toISOString().slice(0, 10);
-  const items = await loadDeadlineOrderedProgramCardRenderables(
+  const items = await loadDeadlineOrderedProgramCardSummaries(
     supabase as unknown as ProgramCardDeadlineRouteClient,
     {
       today,
@@ -99,7 +62,7 @@ async function loadSupabaseFallbackPrograms(topK: number): Promise<DashboardReco
     }
   );
 
-  return toFallbackCalendarResponse(items.filter(hasTrustedDeadline), topK);
+  return toFallbackCalendarResponse(items.filter(hasTrustedProgramDeadline), topK);
 }
 
 export async function GET(request: Request) {

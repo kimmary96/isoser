@@ -136,7 +136,7 @@ export function toCalendarProgramCardItem(item: CalendarRecommendItem): ProgramC
 }
 
 export function toFallbackCalendarSurfaceContext(
-  program: ProgramCardRenderable,
+  program: ProgramCardSummary,
   reason: string
 ): ProgramSurfaceContext {
   const urgencyScore = Number(program.urgency_score ?? 0);
@@ -155,7 +155,7 @@ export function toFallbackCalendarSurfaceContext(
 }
 
 export function toFallbackCalendarProgramCardItem(
-  program: ProgramCardRenderable,
+  program: ProgramCardSummary,
   reason: string
 ): ProgramCardItem | null {
   if (!program.id) {

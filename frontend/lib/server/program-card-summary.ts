@@ -1,4 +1,4 @@
-import type { ProgramCardRenderable, ProgramCardSummary } from "@/lib/types";
+import type { ProgramCardSummary } from "@/lib/types";
 
 type SupabaseErrorLike = {
   code?: string | null;
@@ -345,13 +345,13 @@ export async function loadProgramCardSummariesByIds(
     .filter((program): program is ProgramCardSummary => Boolean(program));
 }
 
-export async function loadDeadlineOrderedProgramCardRenderables(
+export async function loadDeadlineOrderedProgramCardSummaries(
   supabase: SupabaseDeadlineRouteClient,
   options: {
     today: string;
     limit: number;
   },
-): Promise<ProgramCardRenderable[]> {
+): Promise<ProgramCardSummary[]> {
   const { today, limit } = options;
   const normalizedLimit = Math.max(1, limit);
 
@@ -389,5 +389,7 @@ export async function loadDeadlineOrderedProgramCardRenderables(
     throw new Error(error.message || "programs 조회에 실패했습니다.");
   }
 
-  return ((data ?? []) as unknown as ProgramCardRenderable[]).filter(Boolean);
+  return (data ?? [])
+    .map((row) => toLegacyProgramCardSummary(row))
+    .filter((program): program is ProgramCardSummary => Boolean(program));
 }
