@@ -3,6 +3,7 @@ import {
   toCalendarProgramCardItem,
   toFallbackCalendarProgramCardItem,
 } from "@/lib/program-card-items";
+import { getProgramCompareMeta } from "@/lib/program-display";
 import { extractBackendFallbackPrograms } from "@/lib/server/recommend-calendar-fallback";
 import {
   loadDeadlineOrderedProgramCardRenderables,
@@ -13,7 +14,6 @@ import type {
   CalendarRecommendItem,
   CalendarRecommendResponse,
   DashboardRecommendCalendarResponse,
-  Program,
   ProgramCardItem,
   ProgramCardRenderable,
   ProgramListPageResponse,
@@ -62,10 +62,7 @@ function hasTrustedDeadline(program: ProgramCardRenderable): boolean {
 
   const deadline = String(program.deadline).slice(0, 10);
   const endDate = String(program.end_date ?? "").slice(0, 10);
-  const compareMeta: NonNullable<Program["compare_meta"]> =
-    "compare_meta" in program
-      ? ((program.compare_meta ?? {}) as NonNullable<Program["compare_meta"]>)
-      : {};
+  const compareMeta = getProgramCompareMeta(program) ?? {};
   const metaDeadline =
     compareMeta.application_deadline ||
     compareMeta.application_end_date ||

@@ -36,8 +36,8 @@
 | 패키지 1 | 사용자 추천 정본 additive migration | SQL draft 완료, write 연결은 진행 중 |
 | 패키지 2 | 프로그램 정본/provenance additive migration | draft SQL 체인 + sample validation helper 완료 |
 | 패키지 3 | backfill + dual write + serializer/API/BFF transition seed | 저장소 seed 기준 완료 |
-| 패키지 4 | read switch | 진행 중 |
-| 패키지 5 | cleanup / validation / 문서 정합성 | 부분 문서화만 반영, 미완료 |
+| 패키지 4 | read switch | 저장소 코드 기준 완료 |
+| 패키지 5 | cleanup / validation / 문서 정합성 | 진행 중 |
 
 ## 4. 단계별 로드맵
 
@@ -130,7 +130,8 @@
 - compare 상단 카드 batch도 `program_list_index` summary read 우선, legacy `programs` fallback 구조로 전환됐다.
 - compare frontend top card consumer도 이제 `ProgramCardSummary + ProgramDetail` 조합을 쓰기 시작해, compare 쪽 `Program` monolith 의존이 줄어드는 중이다.
 - 단건/배치 상세는 `programs + program_source_records` 조합을 읽기 시작했고, additive canonical detail 필드를 우선 사용한다.
-- 따라서 패키지 4의 남은 핵심은 추천 BFF cleanup과 detail/compare read를 `program_list_index` / `program_source_records` 축에 더 맞추는 일이다.
+- dashboard calendar hook/card, dashboard recommendation strip, recommend-calendar fallback helper, and landing `/programs` urgent strip now all reuse the same `ProgramCardItem` / read-model-first helpers, so 저장소 코드 기준 패키지 4의 주 경로 read switch는 닫힌 상태다.
+- 따라서 다음 현재 패키지는 package-5 cleanup/validation이며, 남은 일은 legacy helper 축소, 문서 stale 제거, 운영 migration/backfill/validation 절차 정리 쪽이다.
 
 ### backend
 
@@ -139,23 +140,31 @@
 2. 목록/card read를 `program_list_index` 명시 컬럼 serializer로 전환  
    현재 상태: 대부분 seed 완료, remaining cleanup 위주
 3. 상세 read를 `programs + program_source_records` 조합으로 전환
-   현재 상태: 단건/배치 상세는 진행 중, compare/detail cleanup 남음
+   현재 상태: 저장소 코드 기준 완료, 이후 남은 것은 cleanup 단계
 
 ### BFF
 
 1. 대시보드 추천 BFF  
-   현재 상태: 응답 seed 완료, transition cleanup 남음
+   현재 상태: 저장소 코드 기준 완료, 이후 남은 것은 cleanup 단계
 2. 북마크/캘린더 BFF  
    현재 상태: 완료, recommend-calendar direct Supabase fallback도 `program_list_index` 우선 구조로 정리됨
 3. landing/live board/opportunity BFF 또는 helper  
+   현재 상태: landing `/programs` urgent strip도 read-model-first로 정리됨
 4. 메인 목록 BFF  
+   현재 상태: 완료
 5. 상세/비교 BFF
+   현재 상태: 저장소 코드 기준 완료
 
 ### frontend
 
 1. `Program` monolith 타입 축소  
 2. `ProgramCardItem`, `ProgramListRowItem`, `ProgramDetailResponse`, `ProgramCompareItem` 전환  
 3. 추천 관련 값은 `context`로만 소비
+
+현재 저장소 기준 추가 메모:
+
+- `Program` monolith 자체는 아직 남아 있지만, package-4 read switch에 직접 필요한 주 소비 경로는 모두 새 구조 우선으로 전환됐다.
+- 남은 private field 제거와 미사용 helper 축소는 package-5 cleanup 범위로 본다.
 
 ## 4.5 패키지 5: cleanup / validation / 문서 정합성
 

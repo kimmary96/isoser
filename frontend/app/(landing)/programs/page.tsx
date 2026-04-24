@@ -752,19 +752,19 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
   }
 
   try {
-    const [programsPage, urgentRows] = await Promise.all([
+    const [programsPage, urgentPage] = await Promise.all([
       listProgramsPage({
         ...currentFilterParams,
         sort,
         limit: PAGE_SIZE,
         offset,
       }),
-      listPrograms(buildUrgentProgramsParams()),
+      listProgramsPage(buildUrgentProgramsParams()),
     ]);
     promotedPrograms = unwrapProgramListRows(programsPage.promoted_items);
     programs = unwrapProgramListRows(programsPage.items);
     totalCount = programsPage.count ?? programsPage.items.length;
-    urgentPrograms = urgentRows;
+    urgentPrograms = unwrapProgramListRows(urgentPage.items);
   } catch (e) {
     promotedPrograms = [];
     try {

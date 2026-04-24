@@ -1,5 +1,15 @@
 # 리팩토링 로그
 
+- 2026-04-24: `frontend/app/(landing)/programs/page.tsx`, `frontend/lib/programs-page-layout.ts`, `frontend/lib/program-display.ts`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/lib/program-card-items.ts`, `frontend/lib/program-card-items.test.ts`, `frontend/app/dashboard/page.tsx`, `frontend/app/dashboard/_hooks/use-dashboard-calendar.ts`, `frontend/app/dashboard/_components/dashboard-calendar-section.tsx`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/specs/serializer-api-bff-code-entrypoints-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-4-read-switch-complete-result.md`
+  - package-4의 남은 공개 읽기 전환으로 landing `/programs`의 `Closing Soon` strip도 `listProgramsPage(...) + unwrapProgramListRows(...)` 기반 read-model-first 경로로 옮기고, recommend-calendar fallback은 shared compare-meta helper를 재사용하도록 정리함
+  - `ProgramCardItem` 중앙 helper 우선순위를 dashboard recommendation strip과 dashboard calendar hook/card가 같이 재사용하게 맞춰 화면별 점수·사유 해석 순서가 다시 벌어지지 않게 함
+  - stale이던 roadmap/entrypoints 문서를 실제 코드 기준으로 보정하고, 저장소 코드 기준 package-4 read switch 완료 및 package-5 cleanup/validation 진입 상태로 판정을 올림
+
+- 2026-04-24: `frontend/lib/program-card-items.ts`, `frontend/lib/program-card-items.test.ts`, `frontend/app/dashboard/page.tsx`, `frontend/app/dashboard/_hooks/use-dashboard-calendar.ts`, `frontend/app/dashboard/_components/dashboard-calendar-section.tsx`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-4-program-card-items-legacy-fallback-cleanup-result.md`
+  - 패키지 4의 다음 transition cleanup으로 `ProgramCardItem` 중앙 adapter가 `ProgramSurfaceContext`와 canonical summary 값을 먼저 쓰고, 예전 `_reason/_fit_keywords/_score/_relevance_score`는 structured context가 없는 오래된 payload일 때만 마지막 fallback으로 읽도록 범위를 좁힘
+  - canonical `recommendation_reasons`를 legacy `relevance_reasons`보다 먼저 읽도록 바꿔 새 계약 우선순위를 높였고, `/dashboard` 추천 카드와 dashboard calendar hook/card도 중앙 score/reason helper를 재사용하게 맞춰 화면별 점수·사유 해석 순서가 다시 벌어지지 않게 함
+  - 단위 테스트로 context 우선/legacy fallback/stale payload 보존 동작을 고정함
+
 - 2026-04-24: `frontend/app/dashboard/_hooks/recommend-calendar-cache.ts`, `frontend/app/dashboard/_hooks/recommend-calendar-cache.test.ts`, `frontend/app/dashboard/_hooks/use-dashboard-recommendations.ts`, `docs/current-state.md`, `docs/specs/final-refactor-migration-roadmap-v1.md`, `docs/refactoring-log.md`, `reports/SESSION-2026-04-24-package-4-dashboard-cache-shape-cleanup-result.md`
   - 패키지 4의 dashboard cleanup으로 추천 캘린더 로컬 캐시 정본을 `ProgramCardItem[]`로 고정하고, 브라우저에 남아 있을 수 있는 예전 `programs[]` 캐시는 읽는 순간 새 item 구조로 자동 승격하도록 정리함
   - 기존 15분 TTL과 캐시 fallback 동작은 유지하면서, dashboard hook이 더 이상 old flat cache contract를 계속 퍼뜨리지 않도록 경계를 분리하고 helper test로 승격/만료 동작을 고정함

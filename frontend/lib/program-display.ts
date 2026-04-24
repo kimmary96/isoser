@@ -181,7 +181,7 @@ export function getProgramPrimaryLink(program: ProgramLinks | null | undefined):
   return program?.application_url || program?.link || program?.source_url || null;
 }
 
-function getProgramCompareMeta(program: ProgramCardRenderable): CompareMeta | null {
+export function getProgramCompareMeta(program: ProgramCardRenderable): CompareMeta | null {
   if ("compare_meta" in program && program.compare_meta) {
     return program.compare_meta;
   }
