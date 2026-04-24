@@ -7,7 +7,7 @@
 - Frontmatter 필수 필드 `id`, `status`, `type`, `title`, `planned_at`, `planned_against_commit`는 모두 존재한다.
 - `planned_against_commit`은 현재 `HEAD`와 정확히 일치하므로, touched area 기준 코드 드리프트 자체는 확인되지 않았다.
 - `planned_files`는 유효한 저장소 경로를 가리킨다.
-  - `reports/benchmark-queue-baseline-note-2026-04-24.md`
+  - `reports\benchmarks\queue\2026-04\benchmark-queue-baseline-note-2026-04-24.md`
   - `reports/TASK-2026-04-24-0106-benchmark-queue-smoke-result.md`
 - 위 `planned_files` 두 파일은 현재 worktree에 아직 존재하지 않는다. 미실행 packet 상태와는 일관되며, 이 자체가 blocker는 아니다.
 - `planned_worktree_fingerprint`는 없다. optional 필드이므로 누락 자체는 blocker가 아니지만, 이 task가 dirty worktree 허용 상황을 smoke하려는 성격이라면 fingerprint 또는 동등한 상태 고정 설명이 있으면 더 안전하다.
@@ -35,3 +35,4 @@
 - generated_at: `2026-04-24T01:09:31`
 - watcher_exit_code: `0`
 - codex_tokens_used: `72,479`
+

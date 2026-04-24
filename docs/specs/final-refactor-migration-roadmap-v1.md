@@ -29,7 +29,7 @@
 - `docs/specs/program-surface-contract-v2.md`, `docs/specs/user-recommendation-serializer-contract-v1.md`, `docs/specs/final-refactor-axis-map-v1.md`는 이미 상위 계약으로 고정돼 있다.
 - 2026-04-24 live read-only 재확인 기준 `program_list_index`, `program_source_records`, additive `programs` canonical 컬럼, `program_list_index` surface-contract 컬럼은 실제 live DB에서 보였다.
 - 2026-04-24 SQL Editor 확인과 후속 read-only probe 기준 `profiles.target_job/target_job_normalized`, `user_program_preferences`, `user_recommendation_profile`, `refresh_user_recommendation_profile(p_user_id uuid)`, `recommendations.query_hash/profile_hash/expires_at/fit_keywords`도 실제 live DB에서 확인됐다.
-- 같은 날 `scripts/refresh_program_validation_sample.py --preset free-plan-50 --output reports/program-validation-sample-latest.json` 실행이 성공했고, `program_list_index` sample refresh 50건 + `program_source_records` sample backfill 50건이 fallback 없이 완료됐다.
+- 같은 날 `scripts/refresh_program_validation_sample.py --preset free-plan-50 --output reports\ops\program-validation\program-validation-sample-latest.json` 실행이 성공했고, `program_list_index` sample refresh 50건 + `program_source_records` sample backfill 50건이 fallback 없이 완료됐다.
 - 따라서 “저장소 코드 기준 현재 패키지”와 “live DB 구조 상태”는 모두 package-5 validation 단계까지 맞춰진 상태로 보는 것이 맞다.
 - 현재 셸은 service-role REST read와 이미 존재하는 RPC 호출은 가능하지만, `supabase` CLI와 direct DB connection 설정이 없어 DDL apply 자체를 이 셸에서 확정 실행할 수는 없다.
 
@@ -281,3 +281,4 @@
 - 그 다음은 프로그램 provenance 분리와 canonical 컬럼 additive다.
 - read switch는 serializer/API/BFF 순으로 잘라서 진행해야 한다.
 - cleanup은 가장 마지막이다.
+

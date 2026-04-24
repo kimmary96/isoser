@@ -2,7 +2,7 @@
 
 ## Changed Files
 
-- `reports/benchmark-queue-baseline-note-2026-04-24.md`
+- `reports\benchmarks\queue\2026-04\benchmark-queue-baseline-note-2026-04-24.md`
 - `reports/TASK-2026-04-24-0106-benchmark-queue-smoke-result.md`
 
 ## Why Changes Were Made
@@ -17,7 +17,7 @@ This smoke task exists to leave a small benchmark note that fixes the timing anc
 
 ## What Changed
 
-- Created `reports/benchmark-queue-baseline-note-2026-04-24.md`.
+- Created `reports\benchmarks\queue\2026-04\benchmark-queue-baseline-note-2026-04-24.md`.
 - Recorded the current watcher-managed timing anchors already present in dispatch artifacts:
   - `review-ready` `created_at = 2026-04-24T01:09:31`
   - promoted dispatch recorded `approved_at = 2026-04-24T01:11:20`
@@ -37,7 +37,7 @@ This smoke task exists to leave a small benchmark note that fixes the timing anc
 
 ## Test Points
 
-- Confirm `reports/benchmark-queue-baseline-note-2026-04-24.md` exists and remains the only implementer-authored benchmark content file for this packet.
+- Confirm `reports\benchmarks\queue\2026-04\benchmark-queue-baseline-note-2026-04-24.md` exists and remains the only implementer-authored benchmark content file for this packet.
 - Confirm watcher-managed dispatch artifacts for `review-ready` and `promoted` remain present with the timestamps referenced above.
 - Confirm final verification later checks for `tasks/done/TASK-2026-04-24-0106-benchmark-queue-smoke.md` after watcher completion.
 
@@ -68,3 +68,4 @@ This smoke task exists to leave a small benchmark note that fixes the timing anc
 - commit: `9bafa7b21905236120b324c91dd4248e4a85c7c2`
 - note: remote: Internal Server Error
 fatal: unable to access 'https://github.com/kimmary96/isoser.git/': The requested URL returned error: 500
+

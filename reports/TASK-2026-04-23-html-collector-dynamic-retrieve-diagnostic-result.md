@@ -10,9 +10,9 @@
 - `backend/tests/test_html_collector_diagnostic_cli.py`
 - `docs/current-state.md`
 - `docs/refactoring-log.md`
-- `reports/aws-boottent-adoption-performance-report-2026-04-23.md`
-- `reports/html-collector-diagnostic-2026-04-23.json`
-- `reports/html-collector-dynamic-retrieve-diagnostic-2026-04-23.md`
+- `reports\diagnostics\html-collector\summary\aws-boottent-adoption-performance-report-2026-04-23.md`
+- `reports\diagnostics\html-collector\2026-04-23\html-collector-diagnostic-2026-04-23.json`
+- `reports\diagnostics\html-collector\2026-04-23\html-collector-dynamic-retrieve-diagnostic-2026-04-23.md`
 
 ## Why Changes Were Made
 
@@ -65,3 +65,4 @@ AWS/Bedrock 파이프라인 차용 후보 4번인 dynamic retrieve는 Playwright
 - partial parse-empty URL의 HTML snapshot을 선택적으로 저장하는 smoke를 추가한다.
 - 반복 full parse-empty source가 생기면 해당 source만 Playwright fallback opt-in packet으로 분리한다.
 - CLI 결과를 scheduler dry-run summary와 연결해 운영자가 한 리포트에서 quality와 dynamic retrieve 후보를 함께 볼 수 있게 한다.
+

@@ -46,7 +46,7 @@ For the full repository read order and source-of-truth priority, start with [../
 ## Direct conversation note
 - 대화 세션에서 사용자가 바로 요청한 작업은 task packet이 없어도 진행할 수 있다.
 - 이런 작업은 queue contract 검증, blocked report, packet scaffold 명령을 선행 조건으로 요구하지 않는다.
-- 필요 시 결과는 `reports/SESSION-YYYY-MM-DD-brief-topic-result.md` 형태의 세션 보고서로 남긴다.
+- 필요 시 결과는 `reports/session/YYYY-MM/SESSION-YYYY-MM-DD-brief-topic-result.md` 형태의 세션 보고서로 남긴다.
 
 ## References
 - agent entrypoint: [../agent-playbook.md](../agent-playbook.md)

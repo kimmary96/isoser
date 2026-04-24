@@ -3,10 +3,13 @@
 이 폴더는 프로젝트의 DB 변경 이력을 관리합니다.
 이미 적용된 migration 파일은 수정하지 않고, 보정이 필요하면 새 migration 파일을 추가합니다.
 
+빠른 탐색용 인덱스는 [MIGRATIONS_INDEX.md](./MIGRATIONS_INDEX.md)를 참고합니다.
+
 ## 기본 원칙
 
 - 파일명은 `YYYYMMDDHHMMSS_description.sql` 형식을 사용합니다.
 - 이미 실행된 migration 파일은 직접 수정하지 않습니다.
+- 이미 실행된 migration 파일은 archive 이동이나 날짜 폴더 재배치를 하지 않습니다.
 - 과거 초안 스키마와 현재 코드 계약이 다르면 기존 파일을 덮어쓰지 말고 corrective migration을 추가합니다.
 - live DB 적용 여부의 최종 정본은 `supabase_migrations.schema_migrations`입니다.
 
@@ -43,7 +46,7 @@ backend\venv\Scripts\python.exe scripts/check_package5_live_state.py
 
 - 코드 저장소 기준 현재 작업 패키지는 `패키지 5`가 맞습니다.
 - live DB 결과물 기준으로도 프로그램 축과 사용자 추천 축의 핵심 구조는 모두 확인됐습니다.
-- `reports/program-validation-sample-latest.json` 기준 `free-plan-50` bounded sample validation도 성공했습니다.
+- `reports\ops\program-validation\program-validation-sample-latest.json` 기준 `free-plan-50` bounded sample validation도 성공했습니다.
 - 후속 read-only 확인에서도 `program_list_index = 50`, `program_source_records = 50`과 대표 sample row가 정상 조회됐습니다.
 - 따라서 지금 package-5의 필수 범위는 사실상 닫혔고, 남은 일은 `최소 cleanup 후보 정리 -> 문서/로그 close-out` 쪽입니다.
 
@@ -223,7 +226,7 @@ from public.user_recommendation_profile;
 권장 명령:
 
 ```powershell
-backend\venv\Scripts\python.exe scripts/refresh_program_validation_sample.py --preset free-plan-50 --output reports/program-validation-sample-latest.json
+backend\venv\Scripts\python.exe scripts/refresh_program_validation_sample.py --preset free-plan-50 --output reports\ops\program-validation\program-validation-sample-latest.json
 ```
 
 2026-04-24 최신 성공 결과:
@@ -273,3 +276,4 @@ limit 20;
 - 구조는 live에 올라왔지만, 최종 이력 확인을 `schema_migrations`로 같이 남기지 못한 환경에서는 “결과물 기준 완료”와 “버전 이력 기준 완료”를 구분해서 적는 편이 안전합니다.
 - `refresh_program_list_index(300)` full refresh는 free plan에서 바로 돌리지 않습니다.
 - package-5 완료 조건은 “문서만 최신”이 아니라 `row/sample 확인 + 최소 cleanup + 문서/로그 정합성 마감`까지입니다.
+

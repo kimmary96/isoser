@@ -21,7 +21,7 @@ auto_recovery_attempts: 1
 
 - `reports/TASK-2026-04-23-1900-collector-quality-validator-result.md`
 - `reports/TASK-2026-04-23-1945-program-field-source-evidence-result.md`
-- `reports/SESSION-2026-04-24-ocr-field-gap-audit-result.md`
+- `reports\session\2026-04\SESSION-2026-04-24-ocr-field-gap-audit-result.md`
 - `reports/TASK-2026-04-24-1100-html-diagnostic-followup-result.md`
 - `docs/current-state.md`의 OCR preflight `field_gap_summary` / `field_gap_audit` 기록
 
@@ -84,3 +84,4 @@ auto_recovery_attempts: 1
 - failure_report: `reports/TASK-2026-04-24-1130-collector-quality-phase2-blocked.md`
 - recovery_report: `reports/TASK-2026-04-24-1130-collector-quality-phase2-recovery.md`
 - reviewer_action: update the packet or provide approval/feedback before requeueing
+

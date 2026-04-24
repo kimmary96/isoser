@@ -115,7 +115,7 @@
 5. 관련 파일 읽기
 6. 구현
 7. 테스트/검증
-8. `docs/current-state.md`, `docs/refactoring-log.md`, 필요 시 `reports/SESSION-YYYY-MM-DD-...-result.md` 갱신
+8. `docs/current-state.md`, `docs/refactoring-log.md`, 필요 시 `reports/session/YYYY-MM/SESSION-YYYY-MM-DD-...-result.md` 갱신
 9. 다음 패키지와 남은 과제 보고
 
 중요 출력 형식:

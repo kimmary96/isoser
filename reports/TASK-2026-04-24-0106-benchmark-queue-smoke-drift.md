@@ -15,7 +15,7 @@ Final verification found material drift between the task packet, the inspection 
 - `tasks/running/TASK-2026-04-24-0106-benchmark-queue-smoke.md`
 - `reports/TASK-2026-04-24-0106-benchmark-queue-smoke-supervisor-inspection.md`
 - `reports/TASK-2026-04-24-0106-benchmark-queue-smoke-result.md`
-- `reports/benchmark-queue-baseline-note-2026-04-24.md`
+- `reports\benchmarks\queue\2026-04\benchmark-queue-baseline-note-2026-04-24.md`
 - `cowork/dispatch/TASK-2026-04-24-0106-benchmark-queue-smoke-review-ready.md`
 - `cowork/dispatch/TASK-2026-04-24-0106-benchmark-queue-smoke-promoted.md`
 
@@ -24,3 +24,4 @@ Final verification found material drift between the task packet, the inspection 
 - Let watcher completion finish and confirm `tasks/done/TASK-2026-04-24-0106-benchmark-queue-smoke.md` exists before rerunning final verification.
 - Reconcile the promotion-stage timing anchor so the packet, dispatch artifact, baseline note, and result report all point to the same field semantics.
 - Update the result report if needed so it reflects the actual completed state rather than an in-progress checkpoint.
+

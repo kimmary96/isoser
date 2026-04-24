@@ -26,9 +26,9 @@ AWS Boottent course-registration automation article에서 차용 가능한 품�
   - `scripts/program_backfill.py`
   - `scripts/refresh_program_list_index.py`
   - `supabase/migrations/20260423203000_conservative_program_participation_display.sql`
-  - `reports/programs-work24-participation-backfill-current-dry-run.json`
-  - `reports/programs-work24-participation-backfill-dry-run.json`
-  - `reports/work24_partition_sync_with_chroma_20260423.json`
+  - `reports\ops\work24\programs-work24-participation-backfill-current-dry-run.json`
+  - `reports\ops\work24\programs-work24-participation-backfill-dry-run.json`
+  - `reports\ops\work24\work24_partition_sync_with_chroma_20260423.json`
 
 ## Recommended First Packet Scope
 
@@ -65,3 +65,4 @@ Implementation can resume when one of these is true:
 1. A task packet with required frontmatter is created and approved for this work.
 2. The user explicitly asks to create a packet first instead of implementing directly.
 3. The current related worktree changes are committed, archived, or explicitly accepted as the new baseline in the packet.
+

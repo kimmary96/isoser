@@ -5,7 +5,7 @@
 - 2026-04-24 live read-only 재확인 기준:
   - `program_list_index`, `program_source_records`, additive `programs` canonical 컬럼은 live DB에서 확인됐습니다.
   - `profiles.target_job/target_job_normalized`, `user_program_preferences`, `user_recommendation_profile`, `refresh_user_recommendation_profile(p_user_id uuid)`, `recommendations.query_hash/profile_hash/expires_at/fit_keywords`도 live DB에서 확인됐습니다.
-  - `reports/program-validation-sample-latest.json` 기준 `free-plan-50` bounded sample validation은 `program_list_index` 50건, `program_source_records` 50건으로 성공했습니다.
+  - `reports\ops\program-validation\program-validation-sample-latest.json` 기준 `free-plan-50` bounded sample validation은 `program_list_index` 50건, `program_source_records` 50건으로 성공했습니다.
 - 현재 live migration apply 상태를 판정할 때는 이 문서보다 `supabase/README.md`와 `supabase_migrations.schema_migrations` 확인을 우선합니다.
 
 ## Table `activities`
@@ -487,3 +487,4 @@
 | `selected_activity_ids` | `_uuid`       | Nullable    |
 | `created_at`            | `timestamptz` | Nullable    |
 | `updated_at`            | `timestamptz` | Nullable    |
+

@@ -49,7 +49,7 @@ The blocker is packet clarity. The repository already has a live classification 
   - Acceptance 4 requires test coverage for the new rule and at least JSON semantics, but leaves Markdown semantics unpinned even though Markdown output is part of scope.
 
 - Missing reference: one directly relevant latest report is omitted.
-  - `reports/SESSION-2026-04-24-html-diagnostic-signal-hardening-result.md` exists and touches the same diagnostic/reporting surface, but is not listed in `Current References`.
+  - `reports\session\2026-04\SESSION-2026-04-24-html-diagnostic-signal-hardening-result.md` exists and touches the same diagnostic/reporting surface, but is not listed in `Current References`.
 
 # Recommendation
 
@@ -70,7 +70,7 @@ Exactly what should change before promotion:
   - Keep JSON semantics required.
   - If Markdown is part of the contract, require at least one Markdown assertion too.
 
-- Add `reports/SESSION-2026-04-24-html-diagnostic-signal-hardening-result.md` to `Current References`.
+- Add `reports\session\2026-04\SESSION-2026-04-24-html-diagnostic-signal-hardening-result.md` to `Current References`.
 
 After those packet edits, this should be promotable with minor or no further changes because the current repository paths and optional worktree metadata are already in good shape.
 
@@ -79,3 +79,4 @@ After those packet edits, this should be promotable with minor or no further cha
 - generated_at: `2026-04-24T00:48:12`
 - watcher_exit_code: `0`
 - codex_tokens_used: `92,821`
+
