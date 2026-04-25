@@ -15,7 +15,7 @@ if (-not (Test-Path $activatePath)) {
 Set-Location $repoRoot
 
 python --version
-python -m py_compile backend/routers/programs.py backend/services/program_list_filters.py backend/schemas/programs.py
+python -m py_compile backend/routers/programs.py backend/services/program_list_filters.py backend/services/program_list_queries.py backend/schemas/programs.py scripts/refresh_program_list_index.py
 
 if ($Full) {
   python -m pytest backend/tests -q

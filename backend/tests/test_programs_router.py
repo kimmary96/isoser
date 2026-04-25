@@ -653,7 +653,11 @@ async def test_filter_options_use_facet_snapshot_for_default_browse(monkeypatch:
     async def fail_legacy_request(**_: object) -> list[dict[str, object]]:
         raise AssertionError("legacy filter option scan should not run for default browse")
 
+    async def fake_count_program_read_model_rows(**_: object) -> int:
+        return 300
+
     monkeypatch.setattr(programs, "_load_program_facet_snapshot", fake_load_facet_snapshot)
+    monkeypatch.setattr(programs, "_count_program_read_model_rows", fake_count_program_read_model_rows)
     monkeypatch.setattr(programs, "request_supabase", fail_legacy_request)
     monkeypatch.setenv("ENABLE_PROGRAM_LIST_READ_MODEL", "true")
 
@@ -808,7 +812,7 @@ async def test_list_programs_page_forwards_offset_to_read_model(monkeypatch: pyt
         params = kwargs.get("params")
         assert isinstance(params, dict)
         if params.get("select") == "id":
-            return [{"id": "program-1"}]
+            return [{"id": f"program-{index}"} for index in range(300)]
         return [
             {
                 "id": "00000000-0000-0000-0000-000000000021",
@@ -901,7 +905,7 @@ async def test_list_programs_page_returns_fastcampus_promoted_layer_without_orga
         params = kwargs.get("params")
         assert isinstance(params, dict)
         if params.get("select") == "id":
-            return [{"id": "program-fastcampus"}, {"id": "program-organic"}]
+            return [{"id": f"program-{index}"} for index in range(300)]
         if params.get("is_ad") == "eq.true":
             return []
         if "search_text.ilike.*패스트캠퍼스*" in str(params.get("or", "")) or "search_text.ilike.*패스트캠퍼스*" in str(params.get("and", "")):
@@ -1187,6 +1191,7 @@ def test_program_query_search_uses_service_meta_when_compare_meta_is_sparse() ->
 
 
 def test_build_program_query_params_expands_latest_recruiting_scan_limit() -> None:
+    today = date.today().isoformat()
     params = programs._build_program_query_params(
         select="*",
         recruiting_only=True,
@@ -1194,11 +1199,12 @@ def test_build_program_query_params_expands_latest_recruiting_scan_limit() -> No
     )
 
     assert params["limit"] == str(programs.PROGRAM_SEARCH_SCAN_LIMIT)
-    assert "deadline" not in params
+    assert params["deadline"] == f"gte.{today}"
     assert params["order"] == "created_at.desc.nullslast"
 
 
 def test_build_program_query_params_deadline_sort_only_includes_active_programs() -> None:
+    today = date.today().isoformat()
     params = programs._build_program_query_params(
         select="*",
         sort="default",
@@ -1206,10 +1212,11 @@ def test_build_program_query_params_deadline_sort_only_includes_active_programs(
 
     assert params["order"] == "deadline.asc.nullslast"
     assert params["limit"] == str(programs.PROGRAM_SEARCH_SCAN_LIMIT)
-    assert "deadline" not in params
+    assert params["deadline"] == f"gte.{today}"
 
 
 def test_build_program_query_params_default_sort_preserves_deadline_scan() -> None:
+    today = date.today().isoformat()
     params = programs._build_program_query_params(
         select="*",
         sort="default",
@@ -1217,7 +1224,7 @@ def test_build_program_query_params_default_sort_preserves_deadline_scan() -> No
 
     assert params["order"] == "deadline.asc.nullslast"
     assert params["limit"] == str(programs.PROGRAM_SEARCH_SCAN_LIMIT)
-    assert "deadline" not in params
+    assert params["deadline"] == f"gte.{today}"
 
 
 def test_build_program_query_params_computed_sort_expands_scan_limit() -> None:
@@ -1231,6 +1238,7 @@ def test_build_program_query_params_computed_sort_expands_scan_limit() -> None:
 
 
 def test_build_program_query_params_include_closed_recent_uses_90_day_cutoff() -> None:
+    cutoff = (date.today() - timedelta(days=90)).isoformat()
     params = programs._build_program_query_params(
         select="*",
         include_closed_recent=True,
@@ -1238,7 +1246,7 @@ def test_build_program_query_params_include_closed_recent_uses_90_day_cutoff() -
     )
 
     assert params["limit"] == str(programs.PROGRAM_SEARCH_SCAN_LIMIT)
-    assert "deadline" not in params
+    assert params["deadline"] == f"gte.{cutoff}"
 
 
 def test_normalize_regions_param_splits_csv_values() -> None:

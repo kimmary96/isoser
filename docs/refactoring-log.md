@@ -3252,3 +3252,8 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - backend/frontend를 모두 재기동한 뒤 `127.0.0.1:8001` fresh backend와 `127.0.0.1:3000` frontend를 다시 검증하면서, default public browse fallback이 flat `/programs/list`에서는 다시 stale read-model로 재진입하는 문제와 legacy browse query가 base `programs` 테이블에 `scope=eq.default`를 잘못 넘겨 메인 리스트를 비우는 문제를 재현함
   - `list_programs()`도 page endpoint와 같은 underfilled read-model 감지를 수행하도록 보강하고, legacy browse query는 `scope`를 제거한 채 KST 오늘 이후 deadline window + bounded scan limit을 사용하게 정리해 `list/count/filter-options`가 fresh 재기동 환경에서도 다시 채워지도록 복구함
   - `/programs/count`가 underfilled browse fallback에서 raw legacy scan 개수를 노출하지 않고 browse 계약 `300`을 유지하도록 맞췄고, 관련 pytest/py_compile과 `3000`/`8001` 재기동 검증을 다시 통과시킴
+- 2026-04-26: `backend/services/program_list_queries.py`, `backend/routers/programs.py`, `backend/tests/test_program_list_refresh_fallback.py`, `scripts/refresh_program_list_index.py`, `scripts/repair-local-backend.ps1`, `supabase/migrations/20260426110000_add_program_list_browse_refresh_resilient.sql`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-26-browse-refresh-resilient-result.md`
+  - 공개 프로그램 query param 조립 로직의 정렬/scan 상수와 builder를 `program_list_queries` 서비스 모듈로 분리해 router 책임을 줄이고, browse/search/archive query 조립 규칙을 한 곳에서 재사용하게 정리함
+  - browse pool refresh 스크립트는 새 resilient RPC를 우선 호출하고, 운영 DB에 함수가 아직 없으면 기존 browse RPC로 자동 fallback하도록 바꿔 migration 적용 전후 스크립트 호환을 유지함
+  - 새 migration은 timeout/lock pressure 시 bounded candidate set으로 browse pool을 재생성하는 SQL 함수와 resilient daily cron wrapper를 추가해 free-plan/운영 환경의 browse refresh 실패 복원력을 높임
+  - `repair-local-backend.ps1`는 stale local backend listener를 probe/정리하는 운영 스크립트로 추가했고, 초기 검증에서 PowerShell 예약 변수 충돌을 바로 수정해 실제 실행 가능한 상태로 맞춤

@@ -32,6 +32,29 @@ except ImportError:
     from services.program_list_scoring import compute_recommended_score
 
 try:
+    from backend.services.program_list_queries import (
+        PROGRAM_COMPUTED_SORTS,
+        PROGRAM_DEADLINE_SORTS,
+        PROGRAM_POPULAR_SORTS,
+        PROGRAM_SEARCH_INDEX_COLUMN,
+        PROGRAM_SEARCH_SCAN_LIMIT,
+        PROGRAM_SEARCH_SCAN_PAGE_SIZE,
+        PROGRAM_SORT_OPTIONS,
+        build_program_query_params as _service_build_program_query_params,
+    )
+except ImportError:
+    from services.program_list_queries import (
+        PROGRAM_COMPUTED_SORTS,
+        PROGRAM_DEADLINE_SORTS,
+        PROGRAM_POPULAR_SORTS,
+        PROGRAM_SEARCH_INDEX_COLUMN,
+        PROGRAM_SEARCH_SCAN_LIMIT,
+        PROGRAM_SEARCH_SCAN_PAGE_SIZE,
+        PROGRAM_SORT_OPTIONS,
+        build_program_query_params as _service_build_program_query_params,
+    )
+
+try:
     from backend.services.program_detail_builder import build_program_detail_response as _service_build_program_detail_response
 except ImportError:
     from services.program_detail_builder import build_program_detail_response as _service_build_program_detail_response
@@ -171,10 +194,6 @@ programs_router = APIRouter(prefix="/programs", tags=["programs"])
 router = programs_router
 programs_rag = ProgramsRAG()
 
-PROGRAM_DEADLINE_SORTS = {"default", "deadline"}
-PROGRAM_COMPUTED_SORTS = {"start_soon", "cost_low", "cost_high", "duration_short", "duration_long"}
-PROGRAM_POPULAR_SORTS = {"popular"}
-PROGRAM_SORT_OPTIONS = PROGRAM_DEADLINE_SORTS | PROGRAM_COMPUTED_SORTS | PROGRAM_POPULAR_SORTS | {"latest"}
 PROGRAM_CLICK_HOTNESS_RECENT_WEIGHT = 1_000_000
 PROGRAM_CLICK_HOTNESS_TOTAL_CAP = 999_999
 PROGRAM_TEACHING_METHODS = {"온라인", "오프라인", "혼합"}
@@ -304,9 +323,6 @@ PROGRAM_KEYWORD_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("취업지원", ("취업지원", "취업 지원")),
     ("채용연계", ("채용연계", "채용 연계")),
 )
-PROGRAM_SEARCH_SCAN_LIMIT = 10000
-PROGRAM_SEARCH_SCAN_PAGE_SIZE = 1000
-PROGRAM_SEARCH_INDEX_COLUMN = "search_text"
 PROGRAM_SHORT_ASCII_SEARCH_MAX_LENGTH = 2
 PROGRAM_LIST_INDEX_TABLE = "program_list_index"
 PROGRAM_LIST_FACET_TABLE = "program_list_facet_snapshots"
@@ -1069,7 +1085,7 @@ def _normalize_cached_recommendation_rows(
 
 
 def _normalize_regions_param(regions: list[str] | None) -> list[str]:
-    if not regions:
+    if not isinstance(regions, list | tuple | set):
         return []
 
     normalized: list[str] = []
@@ -1084,7 +1100,7 @@ def _normalize_regions_param(regions: list[str] | None) -> list[str]:
 
 
 def _normalize_teaching_methods_param(teaching_methods: list[str] | None) -> list[str]:
-    if not teaching_methods:
+    if not isinstance(teaching_methods, list | tuple | set):
         return []
 
     normalized: list[str] = []
@@ -1099,7 +1115,7 @@ def _normalize_teaching_methods_param(teaching_methods: list[str] | None) -> lis
 
 
 def _normalize_option_param(values: list[str] | None, allowed_values: set[str]) -> list[str]:
-    if not values:
+    if not isinstance(values, list | tuple | set):
         return []
 
     normalized: list[str] = []
@@ -1124,36 +1140,6 @@ def _expand_region_keywords(regions: list[str]) -> list[str]:
     return keywords
 
 
-def _program_order_clause(sort: str) -> str:
-    if sort == "latest":
-        return "created_at.desc.nullslast"
-    if sort == "start_soon":
-        return "start_date.asc.nullslast"
-    if sort == "cost_low":
-        return "cost.asc.nullslast"
-    if sort == "cost_high":
-        return "cost.desc.nullslast"
-    return "deadline.asc.nullslast"
-
-
-def _requires_resolved_deadline_scan(
-    *,
-    recruiting_only: bool,
-    include_closed_recent: bool,
-    sort: str,
-) -> bool:
-    return include_closed_recent or recruiting_only or sort in PROGRAM_DEADLINE_SORTS or sort in PROGRAM_COMPUTED_SORTS
-
-
-def _bounded_resolved_deadline_scan_limit(limit: int | None) -> int:
-    if limit is None:
-        return PROGRAM_SEARCH_SCAN_LIMIT
-    return min(
-        PROGRAM_SEARCH_SCAN_LIMIT,
-        max(PROGRAM_SEARCH_SCAN_PAGE_SIZE, limit * 20),
-    )
-
-
 def _build_program_query_params(
     *,
     select: str,
@@ -1171,60 +1157,29 @@ def _build_program_query_params(
     limit: int | None = None,
     offset: int | None = None,
 ) -> dict[str, Any]:
-    effective_sort = sort if sort in PROGRAM_SORT_OPTIONS else "deadline"
     has_keyword_search = bool(_normalize_search_text(q))
-    today_kst = _today_kst()
-    params: dict[str, Any] = {
-        "select": select,
-        "order": _program_order_clause(effective_sort),
-    }
-
-    should_scan_resolved_deadline = _requires_resolved_deadline_scan(
+    normalized_teaching_methods = _normalize_teaching_methods_param(teaching_methods)
+    normalized_regions = _expand_region_keywords(_normalize_regions_param(regions))
+    normalized_sources = [source.strip() for source in (sources or []) if source.strip()]
+    search_filter = _program_search_index_filter(q) if _can_use_program_search_index(q) else None
+    return _service_build_program_query_params(
+        select=select,
+        category=category,
+        category_detail=category_detail,
+        region_detail=region_detail,
         recruiting_only=recruiting_only,
         include_closed_recent=include_closed_recent,
-        sort=effective_sort,
+        sort=sort,
+        limit=limit,
+        offset=offset,
+        has_keyword_search=has_keyword_search,
+        today_kst=_today_kst(),
+        normalized_teaching_methods=normalized_teaching_methods,
+        normalized_region_keywords=normalized_regions,
+        normalized_sources=normalized_sources,
+        search_filter=search_filter,
+        parent_categories=PROGRAM_CATEGORY_PARENT_CATEGORIES,
     )
-    if limit is not None:
-        if should_scan_resolved_deadline:
-            params["limit"] = str(
-                PROGRAM_SEARCH_SCAN_LIMIT
-                if has_keyword_search
-                else _bounded_resolved_deadline_scan_limit(limit)
-            )
-        else:
-            params["limit"] = str(limit)
-    elif has_keyword_search or should_scan_resolved_deadline:
-        params["limit"] = str(PROGRAM_SEARCH_SCAN_LIMIT)
-    if offset is not None and not should_scan_resolved_deadline:
-        params["offset"] = str(offset)
-    if include_closed_recent:
-        params["deadline"] = f"gte.{(today_kst - timedelta(days=90)).isoformat()}"
-    elif should_scan_resolved_deadline:
-        params["deadline"] = f"gte.{today_kst.isoformat()}"
-    effective_category = category or PROGRAM_CATEGORY_PARENT_CATEGORIES.get(str(category_detail or "").strip())
-    if effective_category:
-        params["category"] = f"eq.{effective_category}"
-    if region_detail:
-        params["region_detail"] = f"eq.{region_detail}"
-    normalized_teaching_methods = _normalize_teaching_methods_param(teaching_methods)
-    if normalized_teaching_methods:
-        quoted_values = ",".join(f'"{value}"' for value in normalized_teaching_methods)
-        params["teaching_method"] = f"in.({quoted_values})"
-
-    normalized_regions = _expand_region_keywords(_normalize_regions_param(regions))
-    if normalized_regions:
-        params["or"] = "(" + ",".join(f"location.ilike.*{keyword}*" for keyword in normalized_regions) + ")"
-
-    normalized_sources = [source.strip() for source in (sources or []) if source.strip()]
-    if normalized_sources:
-        quoted_sources = ",".join(f'"{source}"' for source in normalized_sources)
-        params["source"] = f"in.({quoted_sources})"
-
-    search_filter = _program_search_index_filter(q) if _can_use_program_search_index(q) else None
-    if search_filter:
-        params[PROGRAM_SEARCH_INDEX_COLUMN] = search_filter
-
-    return params
 
 
 def _normalize_rating_fields(value: Any) -> dict[str, str | float | int | None]:

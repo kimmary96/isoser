@@ -48,6 +48,23 @@ def test_delta_refresh_migration_adds_chunked_sync_entrypoint() -> None:
     assert "browse_rank = pli.browse_rank" in migration
 
 
+def test_resilient_browse_refresh_migration_adds_bounded_and_daily_helpers() -> None:
+    migration = (
+        Path(__file__).resolve().parents[2]
+        / "supabase"
+        / "migrations"
+        / "20260426110000_add_program_list_browse_refresh_resilient.sql"
+    ).read_text(encoding="utf-8")
+
+    assert "refresh_program_list_browse_pool_bounded" in migration
+    assert "limit effective_candidate_limit" in migration
+    assert "refresh_program_list_browse_pool_resilient" in migration
+    assert "when query_canceled or lock_not_available or deadlock_detected" in migration
+    assert "refresh_program_list_browse_pool_daily_resilient" in migration
+    assert "current_batch_limit := greatest(current_batch_limit / 2, min_batch_limit)" in migration
+    assert "select public.refresh_program_list_browse_pool_daily_resilient(300, 500, 20, 2400);" in migration
+
+
 def test_refresh_script_runs_delta_batches_then_browse_rpc(monkeypatch) -> None:
     calls: list[tuple[str, dict[str, object]]] = []
     delta_results = [500, 12]
@@ -56,7 +73,9 @@ def test_refresh_script_runs_delta_batches_then_browse_rpc(monkeypatch) -> None:
         calls.append((function_name, payload))
         if function_name == "refresh_program_list_delta":
             return delta_results.pop(0)
-        return 300
+        if function_name == "refresh_program_list_browse_pool_resilient":
+            return {"browse_rows": 300, "mode": "full"}
+        raise AssertionError(f"unexpected rpc: {function_name}")
 
     monkeypatch.setattr(refresh_program_list_index, "_call_rpc", fake_call_rpc)
 
@@ -72,12 +91,16 @@ def test_refresh_script_runs_delta_batches_then_browse_rpc(monkeypatch) -> None:
     assert calls == [
         ("refresh_program_list_delta", {"batch_limit": 500}),
         ("refresh_program_list_delta", {"batch_limit": 500}),
-        ("refresh_program_list_browse_pool", {"pool_limit": 300}),
+        (
+            "refresh_program_list_browse_pool_resilient",
+            {"pool_limit": 300, "candidate_limit": 2400},
+        ),
     ]
     assert report["status"] == "incremental_refresh"
     assert report["delta_synced_rows"] == 512
     assert report["delta_batches"] == 2
     assert report["affected_rows"] == 300
+    assert report["browse_result"]["mode"] == "full"
 
 
 def test_refresh_script_falls_back_to_browse_rpc_when_delta_fails(monkeypatch) -> None:
@@ -87,19 +110,22 @@ def test_refresh_script_falls_back_to_browse_rpc_when_delta_fails(monkeypatch) -
         calls.append(function_name)
         if function_name == "refresh_program_list_delta":
             raise RuntimeError("canceling statement due to statement timeout")
-        return 300
+        if function_name == "refresh_program_list_browse_pool_resilient":
+            return {"browse_rows": 300, "mode": "bounded_fallback"}
+        raise AssertionError(f"unexpected rpc: {function_name}")
 
     monkeypatch.setattr(refresh_program_list_index, "_call_rpc", fake_call_rpc)
 
     report = asyncio.run(refresh_program_list_index.refresh(300, retry_delay_seconds=0))
 
-    assert calls == ["refresh_program_list_delta", "refresh_program_list_browse_pool"]
+    assert calls == ["refresh_program_list_delta", "refresh_program_list_browse_pool_resilient"]
     assert report["pool_limit"] == 300
     assert report["status"] == "browse_fallback"
     assert report["delta_refresh_error"] == "canceling statement due to statement timeout"
     assert report["affected_rows"] == 300
     assert report["fallback_attempts"] == 1
     assert [stage["status"] for stage in report["stages"]] == ["failed", "succeeded"]
+    assert report["browse_result"]["mode"] == "bounded_fallback"
 
 
 def test_refresh_script_retries_retryable_browse_fallback_error(monkeypatch) -> None:
@@ -109,9 +135,11 @@ def test_refresh_script_retries_retryable_browse_fallback_error(monkeypatch) -> 
         calls.append(function_name)
         if function_name == "refresh_program_list_delta":
             raise RuntimeError("canceling statement due to statement timeout")
-        if calls.count("refresh_program_list_browse_pool") == 1:
+        if calls.count("refresh_program_list_browse_pool_resilient") == 1:
             raise RuntimeError("deadlock detected")
-        return 300
+        if function_name == "refresh_program_list_browse_pool_resilient":
+            return {"browse_rows": 300, "mode": "full"}
+        raise AssertionError(f"unexpected rpc: {function_name}")
 
     monkeypatch.setattr(refresh_program_list_index, "_call_rpc", fake_call_rpc)
 
@@ -119,8 +147,8 @@ def test_refresh_script_retries_retryable_browse_fallback_error(monkeypatch) -> 
 
     assert calls == [
         "refresh_program_list_delta",
-        "refresh_program_list_browse_pool",
-        "refresh_program_list_browse_pool",
+        "refresh_program_list_browse_pool_resilient",
+        "refresh_program_list_browse_pool_resilient",
     ]
     assert report["status"] == "browse_fallback"
     assert report["affected_rows"] == 300
@@ -146,10 +174,46 @@ def test_refresh_script_reports_failed_browse_only_after_retries(monkeypatch) ->
         )
     )
 
-    assert calls == ["refresh_program_list_browse_pool", "refresh_program_list_browse_pool"]
+    assert calls == ["refresh_program_list_browse_pool_resilient", "refresh_program_list_browse_pool_resilient"]
     assert report["status"] == "failed"
     assert report["fallback_attempts"] == 2
     assert report["error"] == "canceling statement due to statement timeout"
+
+
+def test_refresh_script_falls_back_to_legacy_browse_rpc_when_resilient_rpc_is_missing(monkeypatch) -> None:
+    calls: list[str] = []
+
+    async def fake_call_rpc(function_name: str, payload: dict[str, object]) -> object:
+        calls.append(function_name)
+        if function_name == "refresh_program_list_delta":
+            return 100
+        if function_name == "refresh_program_list_browse_pool_resilient":
+            raise RuntimeError(
+                "Could not find the function public.refresh_program_list_browse_pool_resilient(pool_limit, candidate_limit)"
+            )
+        if function_name == "refresh_program_list_browse_pool":
+            return 300
+        raise AssertionError(f"unexpected rpc: {function_name}")
+
+    monkeypatch.setattr(refresh_program_list_index, "_call_rpc", fake_call_rpc)
+
+    report = asyncio.run(
+        refresh_program_list_index.refresh(
+            300,
+            delta_batch_limit=500,
+            max_delta_batches=3,
+            retry_delay_seconds=0,
+        )
+    )
+
+    assert calls == [
+        "refresh_program_list_delta",
+        "refresh_program_list_browse_pool_resilient",
+        "refresh_program_list_browse_pool",
+    ]
+    assert report["status"] == "incremental_refresh"
+    assert report["affected_rows"] == 300
+    assert report["browse_result"] is None
 
 
 def test_refresh_script_keeps_legacy_full_refresh_option(monkeypatch) -> None:
