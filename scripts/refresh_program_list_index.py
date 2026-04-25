@@ -21,6 +21,7 @@ LEGACY_FULL_REFRESH_RPC = "refresh_program_list_index"
 DELTA_REFRESH_RPC = "refresh_program_list_delta"
 BROWSE_REFRESH_RPC = "refresh_program_list_browse_pool"
 BROWSE_REFRESH_RESILIENT_RPC = "refresh_program_list_browse_pool_resilient"
+LANDING_SNAPSHOT_REFRESH_RPC = "refresh_program_landing_chip_snapshots"
 SAMPLE_REFRESH_RPC = "refresh_program_list_index_sample"
 RETRYABLE_REFRESH_ERROR_TOKENS = (
     "canceling statement due to statement timeout",
@@ -96,6 +97,28 @@ def _coerce_json_result(result: object) -> dict[str, object]:
 
 def _default_browse_candidate_limit(pool_limit: int) -> int:
     return max(pool_limit * 8, 1200)
+
+
+async def _run_optional_landing_snapshot_refresh() -> tuple[dict[str, object] | None, dict[str, object]]:
+    succeeded, result, stage = await _run_rpc_stage(
+        LANDING_SNAPSHOT_REFRESH_RPC,
+        {"surface": "landing-c", "item_limit": 24},
+    )
+    stage["optional"] = True
+    if not succeeded:
+        error = str(stage.get("error") or "")
+        if _is_missing_rpc_error(error, LANDING_SNAPSHOT_REFRESH_RPC):
+            stage["status"] = "skipped"
+            stage["reason"] = "missing_rpc"
+            stage.pop("error", None)
+            stage.pop("status_code", None)
+            return None, stage
+        stage["warning"] = "landing_snapshot_refresh_failed"
+        return None, stage
+
+    parsed = _coerce_json_result(result)
+    stage["result"] = parsed
+    return parsed, stage
 
 
 def _is_missing_rpc_error(detail: str, function_name: str) -> bool:
@@ -335,12 +358,15 @@ async def refresh(
                 "elapsed_ms": _elapsed_ms(started_at),
                 "stages": stages,
             }
+        landing_snapshot_result, landing_snapshot_stage = await _run_optional_landing_snapshot_refresh()
+        stages.append(landing_snapshot_stage)
         return {
             "pool_limit": pool_limit,
             "status": "browse_fallback_only",
             "affected_rows": result,
             "fallback_attempts": len(browse_stages),
             "browse_result": browse_result,
+            "landing_snapshot_result": landing_snapshot_result,
             "elapsed_ms": _elapsed_ms(started_at),
             "stages": stages,
         }
@@ -382,6 +408,8 @@ async def refresh(
                     "elapsed_ms": _elapsed_ms(started_at),
                     "stages": stages,
                 }
+            landing_snapshot_result, landing_snapshot_stage = await _run_optional_landing_snapshot_refresh()
+            stages.append(landing_snapshot_stage)
             return {
                 "pool_limit": pool_limit,
                 "status": "browse_fallback",
@@ -391,6 +419,7 @@ async def refresh(
                 "affected_rows": fallback_result,
                 "fallback_attempts": len(browse_stages),
                 "browse_result": browse_result,
+                "landing_snapshot_result": landing_snapshot_result,
                 "elapsed_ms": _elapsed_ms(started_at),
                 "stages": stages,
             }
@@ -413,6 +442,8 @@ async def refresh(
                 "elapsed_ms": _elapsed_ms(started_at),
                 "stages": stages,
             }
+        landing_snapshot_result, landing_snapshot_stage = await _run_optional_landing_snapshot_refresh()
+        stages.append(landing_snapshot_stage)
         return {
             "pool_limit": pool_limit,
             "status": "incremental_refresh",
@@ -421,6 +452,7 @@ async def refresh(
             "affected_rows": browse_result,
             "fallback_attempts": len(browse_stages),
             "browse_result": browse_result_meta,
+            "landing_snapshot_result": landing_snapshot_result,
             "elapsed_ms": _elapsed_ms(started_at),
             "stages": stages,
         }
@@ -458,6 +490,8 @@ async def refresh(
                 "elapsed_ms": _elapsed_ms(started_at),
                 "stages": stages,
             }
+        landing_snapshot_result, landing_snapshot_stage = await _run_optional_landing_snapshot_refresh()
+        stages.append(landing_snapshot_stage)
         return {
             "pool_limit": pool_limit,
             "status": "browse_fallback",
@@ -465,15 +499,19 @@ async def refresh(
             "affected_rows": fallback_result,
             "fallback_attempts": len(browse_stages),
             "browse_result": browse_result,
+            "landing_snapshot_result": landing_snapshot_result,
             "elapsed_ms": _elapsed_ms(started_at),
             "stages": stages,
         }
 
+    landing_snapshot_result, landing_snapshot_stage = await _run_optional_landing_snapshot_refresh()
+    stages.append(landing_snapshot_stage)
     return {
         "pool_limit": pool_limit,
         "status": "full_refresh",
         "affected_rows": result,
         "fallback_attempts": 0,
+        "landing_snapshot_result": landing_snapshot_result,
         "elapsed_ms": _elapsed_ms(started_at),
         "stages": stages,
     }

@@ -2079,6 +2079,45 @@ def _is_underfilled_default_browse_read_model(
     )
 
 
+def _is_stale_default_browse_read_model_items(
+    items: Sequence[ProgramListRowItem] | Sequence[ProgramListItem],
+    *,
+    category: str | None,
+    category_detail: str | None,
+    scope: str | None,
+    region_detail: str | None,
+    q: str | None,
+    regions: list[str] | None,
+    sources: list[str] | None,
+    teaching_methods: list[str] | None,
+    cost_types: list[str] | None,
+    participation_times: list[str] | None,
+    targets: list[str] | None,
+    include_closed_recent: bool,
+) -> bool:
+    if not _is_default_public_browse_scope(
+        category=category,
+        category_detail=category_detail,
+        scope=scope,
+        region_detail=region_detail,
+        q=q,
+        regions=regions,
+        sources=sources,
+        teaching_methods=teaching_methods,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
+        include_closed_recent=include_closed_recent,
+    ):
+        return False
+
+    for item in items:
+        program = item.program if isinstance(item, ProgramListRowItem) else item
+        if (program.days_left is not None and program.days_left < 0) or program.is_active is False:
+            return True
+    return False
+
+
 def _encode_program_cursor(row: Mapping[str, Any], *, sort: str) -> str | None:
     program_id = str(row.get("id") or "").strip()
     if not program_id:
@@ -3218,6 +3257,22 @@ async def list_programs(
                 raise RuntimeError(
                     f"default browse read model underfilled ({count} < {_program_browse_pool_limit()})"
                 )
+            if _is_stale_default_browse_read_model_items(
+                page.items,
+                category=category,
+                category_detail=category_detail,
+                scope=scope,
+                region_detail=region_detail,
+                q=q,
+                regions=regions,
+                sources=sources,
+                teaching_methods=teaching_methods,
+                cost_types=cost_types,
+                participation_times=participation_times,
+                targets=targets,
+                include_closed_recent=include_closed_recent,
+            ):
+                raise RuntimeError("default browse read model returned closed rows")
             return [item.program.model_dump() for item in page.items]
         except Exception as exc:
             log_event(
@@ -3335,6 +3390,22 @@ async def list_programs_page(
                 raise RuntimeError(
                     f"default browse read model underfilled ({count} < {_program_browse_pool_limit()})"
                 )
+            if _is_stale_default_browse_read_model_items(
+                response.items,
+                category=category,
+                category_detail=category_detail,
+                scope=scope,
+                region_detail=region_detail,
+                q=q,
+                regions=regions,
+                sources=sources,
+                teaching_methods=teaching_methods,
+                cost_types=cost_types,
+                participation_times=participation_times,
+                targets=targets,
+                include_closed_recent=include_closed_recent,
+            ):
+                raise RuntimeError("default browse read model returned closed rows")
             response.count = count
             return response
         except Exception as exc:

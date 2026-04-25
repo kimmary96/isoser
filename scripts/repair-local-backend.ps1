@@ -156,11 +156,20 @@ $healthyPorts = @(
 $killed = @()
 if ($Fix) {
   foreach ($status in $statuses) {
-    if (-not $status.is_workspace_backend -or -not $status.pid) {
+    if (-not $status.pid) {
       continue
     }
     $hasStaleSignature = @($status.stale_reason).Count -gt 0
-    $shouldKill = $hasStaleSignature -and ($healthyPorts.Count -gt 0 -or $status.port -ne $PreferredPort)
+    $hasProbeFailure = @(
+      $status.probe |
+        Where-Object {
+          $_.signature -eq "supabase_not_configured" -or
+          ($_.signature -eq "error" -and $_.status_code -ge 500)
+        }
+    ).Count -gt 0
+    $isOwnerMissingStale = ($status.stale_reason -contains "owner_process_missing") -and $hasProbeFailure
+    $isWorkspaceStale = $status.is_workspace_backend -and $hasStaleSignature
+    $shouldKill = ($isWorkspaceStale -or $isOwnerMissingStale) -and ($healthyPorts.Count -gt 0 -or $status.port -ne $PreferredPort -or $isOwnerMissingStale)
     if (-not $shouldKill) {
       continue
     }
@@ -172,10 +181,20 @@ if ($Fix) {
         reason = ($status.stale_reason -join ",")
       }
     } catch {
-      $killed += [pscustomobject]@{
-        port = $status.port
-        pid = $status.pid
-        reason = "kill_failed: $($_.Exception.Message)"
+      $taskkillOutput = ""
+      try {
+        $taskkillOutput = & taskkill /PID $status.pid /F 2>&1 | Out-String
+        $killed += [pscustomobject]@{
+          port = $status.port
+          pid = $status.pid
+          reason = "taskkill_fallback: $($taskkillOutput.Trim())"
+        }
+      } catch {
+        $killed += [pscustomobject]@{
+          port = $status.port
+          pid = $status.pid
+          reason = "kill_failed: $($_.Exception.Message)"
+        }
       }
     }
   }

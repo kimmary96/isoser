@@ -1,5 +1,10 @@
 # 리팩토링 로그
 
+- 2026-04-26: `supabase/migrations/20260426143000_add_program_landing_chip_snapshots.sql`, `scripts/refresh_program_list_index.py`, `backend/tests/test_program_list_refresh_fallback.py`, `frontend/lib/server/public-program-snapshot-utils.ts`, `frontend/lib/server/public-programs-fallback.test.ts`, `frontend/lib/server/public-programs-fallback.ts`, `frontend/app/(landing)/landing-c/page.tsx`, `docs/current-state.md`, `docs/refactoring-log.md`
+  - 랜딩 Opportunity feed 칩별 후보를 하루 단위로 고정할 수 있도록 `program_landing_chip_snapshots` read-model과 refresh RPC를 추가했고, 기존 KST 자정 browse/list refresh wrapper 끝에서 같은 snapshot refresh를 같이 실행하게 묶음
+  - `landing-c`는 keyword가 없을 때 오늘 생성된 snapshot이 6개 이상 있으면 그것만으로 카드를 렌더링하고, snapshot이 없거나 부족할 때만 기존 `listProgramsPage + legacy fallback top-up`을 타도록 바꿔 첫 진입 비용과 일중 카드 흔들림을 같이 줄임
+  - 수동 `scripts/refresh_program_list_index.py` 경로도 browse refresh 뒤 snapshot refresh를 best-effort로 같이 호출하게 맞췄고, 새 RPC가 아직 없는 DB에서는 refresh 자체를 깨지 않고 optional stage만 skip 하도록 테스트로 고정함
+
 - 2026-04-26: `frontend/lib/program-filters.ts`, `frontend/app/(landing)/landing-c/_program-utils.ts`, `frontend/lib/server/public-programs-fallback.ts`, `frontend/app/(landing)/landing-c/page.tsx`, `frontend/lib/program-filters.test.ts`, `docs/current-state.md`, `docs/refactoring-log.md`
   - 랜딩 공용 칩 matcher를 backend query param과 local fallback에서 함께 쓰도록 정리하고, `창업` 칩은 `category=창업` 기본 요청을 유지하면서도 `K-Startup`/`창업진흥원`/`예비창업` 계열 텍스트를 같은 칩 의미로 인정하게 보강함
   - `landing-c` Opportunity feed가 필터 결과 6개 미만일 때 legacy 공개 row를 더 넓게 읽어 같은 칩/keyword 규칙으로 보충하도록 바꿔, browse pool에 덜 잡힌 `창업` 계열도 가능한 범위에서 6개 카드까지 유지하게 맞춤
@@ -3257,3 +3262,7 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - browse pool refresh 스크립트는 새 resilient RPC를 우선 호출하고, 운영 DB에 함수가 아직 없으면 기존 browse RPC로 자동 fallback하도록 바꿔 migration 적용 전후 스크립트 호환을 유지함
   - 새 migration은 timeout/lock pressure 시 bounded candidate set으로 browse pool을 재생성하는 SQL 함수와 resilient daily cron wrapper를 추가해 free-plan/운영 환경의 browse refresh 실패 복원력을 높임
   - `repair-local-backend.ps1`는 stale local backend listener를 probe/정리하는 운영 스크립트로 추가했고, 초기 검증에서 PowerShell 예약 변수 충돌을 바로 수정해 실제 실행 가능한 상태로 맞춤
+- 2026-04-26: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-24-program-supabase-config-recovery-result.md`
+  - fresh `8001` backend + fresh `3001` frontend 검증에서 default browse read-model이 `count=300`이어도 이미 마감된 row를 `/programs` 첫 페이지에 노출하는 운영 회귀를 재현함
+  - default public browse read-model이 closed row(`days_left < 0` 또는 `is_active = false`)를 반환하면 underfilled가 아니어도 legacy open-only path로 즉시 fallback 하도록 방어 로직을 추가했고, 관련 helper/unit test/async fallback test를 보강함
+  - 새 코드로 재기동한 `8001`에서 `/programs/list?limit=5`가 `source=\"legacy\"`와 open row만 반환하는 것을 확인했고, fresh `3001`의 `/programs` table에서도 closed row 텍스트가 사라진 것을 브라우저로 다시 검증함

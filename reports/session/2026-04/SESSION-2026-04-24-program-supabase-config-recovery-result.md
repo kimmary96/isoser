@@ -156,3 +156,45 @@
 - Passed: fresh backend `http://127.0.0.1:8001/programs/filter-options` returned `200`
 - Passed: fresh frontend `http://127.0.0.1:3000/programs` returned SSR HTML with response length `383807` and table markup present
 - Passed: fresh frontend `http://127.0.0.1:3000/landing-c` returned SSR HTML with `Live Board` and `Opportunity feed` sections present
+
+## Runtime stabilization update (2026-04-26)
+
+### Changed files
+
+- `backend/services/program_list_queries.py`
+- `backend/routers/programs.py`
+- `backend/tests/test_programs_router.py`
+- `scripts/refresh_program_list_index.py`
+- `backend/tests/test_program_list_refresh_fallback.py`
+- `scripts/repair-local-backend.ps1`
+- `scripts/run-backend-checks.ps1`
+- `backend/README.md`
+- `supabase/migrations/20260426110000_add_program_list_browse_refresh_resilient.sql`
+- `docs/current-state.md`
+- `docs/refactoring-log.md`
+
+### Why changes were made
+
+- 남아 있던 3개 리팩토링 후보를 운영 안정화 관점에서 코드로 마무리했다. 대상은 stale local backend repair, browse fallback query builder 분리, browse refresh timeout-safe 경로였다.
+- fresh `8001` + fresh `3001` 검증 중 `program_list_index`가 `count=300`이어도 이미 마감된 row를 `/programs` 첫 페이지에 섞는 추가 회귀를 재현했다. browse pool refresh가 stale일 때 underfilled만 보고 read-model을 신뢰하면 운영 화면에 closed row가 다시 노출되기 때문에, closed-row read-model guard를 추가했다.
+
+### Preserved behaviors
+
+- 기본 browse `300` 계약과 `keyword 또는 2개 이상 필터 => search` 계약은 유지했다.
+- browse refresh helper가 live DB에 아직 없을 때 `scripts/refresh_program_list_index.py`는 기존 `refresh_program_list_browse_pool` RPC로 계속 fallback 한다.
+- `landing-c` 우선 운영 원칙과 public detail fallback, free chip fallback은 그대로 유지했다.
+
+### Risks / possible regressions
+
+- `127.0.0.1:8000`에는 여전히 ownerless stale listener가 남아 있어, 같은 포트의 직접 HTTP 확인은 계속 503일 수 있다.
+- 새 resilient browse RPC migration은 저장소에 반영됐지만 live Supabase에 아직 적용되지 않은 상태라, manual refresh는 기존 browse RPC timeout 리스크를 아직 가진다.
+- `scripts/repair-local-backend.ps1`는 monitored port(`8000/8001`)와 probe 결과를 기준으로 kill 후보를 판단하므로, 다른 커스텀 포트 운영은 별도 파라미터로 봐야 한다.
+
+### Tests
+
+- Passed: `backend\venv\Scripts\python.exe -m py_compile backend/routers/programs.py backend/services/program_list_queries.py backend/tests/test_programs_router.py scripts/refresh_program_list_index.py backend/tests/test_program_list_refresh_fallback.py`
+- Passed: `backend\venv\Scripts\python.exe -m pytest backend/tests/test_programs_router.py -q`
+- Passed: `backend\venv\Scripts\python.exe -m pytest backend/tests/test_program_list_refresh_fallback.py -q`
+- Passed: `powershell -File scripts/repair-local-backend.ps1 -Json` detected the stale ownerless `8000` listener and can start fresh backends on alternate preferred ports
+- Passed: fresh `8001` backend after code reload returned `/programs/list?limit=5` with `source="legacy"` and open rows only, confirming the new closed-row read-model fallback engaged
+- Passed: fresh `3001` frontend rendered `/programs` without closed rows on the first table page (`NO_CLOSED_TEXT`) and `/programs/[id]` detail still rendered `프로그램 요약`, `교육기관 정보`

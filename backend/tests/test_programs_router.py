@@ -349,6 +349,63 @@ def test_underfilled_default_browse_read_model_triggers_fallback() -> None:
     ) is False
 
 
+def test_stale_default_browse_read_model_items_trigger_fallback() -> None:
+    assert (
+        programs._is_stale_default_browse_read_model_items(
+            [
+                programs.ProgramListRowItem(
+                    program=programs.ProgramListItem(
+                        id="program-1",
+                        title="stale",
+                        days_left=-1,
+                        is_active=False,
+                    )
+                )
+            ],
+            category=None,
+            category_detail=None,
+            scope=None,
+            region_detail=None,
+            q=None,
+            regions=None,
+            sources=None,
+            teaching_methods=None,
+            cost_types=None,
+            participation_times=None,
+            targets=None,
+            include_closed_recent=False,
+        )
+        is True
+    )
+    assert (
+        programs._is_stale_default_browse_read_model_items(
+            [
+                programs.ProgramListRowItem(
+                    program=programs.ProgramListItem(
+                        id="program-2",
+                        title="open",
+                        days_left=2,
+                        is_active=True,
+                    )
+                )
+            ],
+            category=None,
+            category_detail=None,
+            scope=None,
+            region_detail=None,
+            q=None,
+            regions=None,
+            sources=None,
+            teaching_methods=None,
+            cost_types=None,
+            participation_times=None,
+            targets=None,
+            include_closed_recent=False,
+        )
+        is False
+    )
+
+
 def test_read_model_query_popular_sort_skips_browse_pool() -> None:
     params, mode = programs._build_read_model_params(
         category=None,
@@ -777,6 +834,61 @@ async def test_list_programs_flat_endpoint_falls_back_when_default_browse_read_m
     assert len(rows) == 1
     assert rows[0]["id"] == "legacy-open"
     assert rows[0]["days_left"] == 5
+
+
+@pytest.mark.asyncio
+async def test_list_programs_page_falls_back_when_default_browse_read_model_contains_closed_rows(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_fetch_program_list_read_model_rows(**_: object) -> programs.ProgramListPageResponse:
+        return programs.ProgramListPageResponse(
+            items=[
+                programs.ProgramListRowItem(
+                    program=programs.ProgramListItem(
+                        id="closed-read-model",
+                        title="closed-read-model",
+                        days_left=-1,
+                        is_active=False,
+                    )
+                )
+            ],
+            mode="browse",
+            source="read_model",
+        )
+
+    async def fake_count_program_read_model_rows(**_: object) -> int:
+        return 300
+
+    async def fake_fetch_program_list_rows(params: dict[str, object], *, q: str | None) -> list[dict[str, object]]:
+        assert q is None
+        assert params["select"] == "*"
+        return [
+            {
+                "id": "legacy-open",
+                "title": "legacy-open",
+                "deadline": (date.today() + timedelta(days=3)).isoformat(),
+                "is_active": True,
+            }
+        ]
+
+    monkeypatch.setattr(programs, "_fetch_program_list_read_model_rows", fake_fetch_program_list_read_model_rows)
+    monkeypatch.setattr(programs, "_count_program_read_model_rows", fake_count_program_read_model_rows)
+    monkeypatch.setattr(programs, "_fetch_program_list_rows", fake_fetch_program_list_rows)
+    monkeypatch.setenv("ENABLE_PROGRAM_LIST_READ_MODEL", "true")
+
+    response = await programs.list_programs_page(
+        regions=None,
+        sources=None,
+        teaching_methods=None,
+        cost_types=None,
+        participation_times=None,
+        targets=None,
+        limit=5,
+    )
+
+    assert response.source == "legacy"
+    assert response.items[0].program.id == "legacy-open"
+    assert response.items[0].program.days_left == 3
 
 
 @pytest.mark.asyncio

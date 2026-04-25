@@ -8,6 +8,7 @@ import { buildProgramFilterParams, getProgramFilterChipDefinition } from "@/lib/
 import { getSiteUrl } from "@/lib/seo";
 import {
   loadPublicFreeProgramFallbackRows,
+  loadPublicLandingChipSnapshotRows,
   loadPublicFilteredProgramFallbackRows,
   loadPublicProgramsPageFallback,
   PUBLIC_PROGRAM_BROWSE_LIMIT,
@@ -71,48 +72,65 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
   const isCostChip = activeChipDefinition?.kind === "cost";
   const programParams = buildProgramFilterParams(activeChip, keyword, 48);
   const scope = resolvePublicProgramListScope({ keyword });
+  const shouldUseLandingSnapshot = !keyword;
 
   let programs: ProgramListRow[] = [];
   let liveBoardPrograms: ProgramListRow[] = [];
+  let snapshotPrograms: ProgramListRow[] = [];
   let error: string | null = null;
 
+  if (shouldUseLandingSnapshot) {
+    try {
+      snapshotPrograms = await loadPublicLandingChipSnapshotRows(activeChip);
+    } catch {
+      snapshotPrograms = [];
+    }
+  }
+
+  const canServeFromLandingSnapshot = snapshotPrograms.length >= OPPORTUNITY_FEED_SIZE;
+
   try {
-    const [programsPage, liveBoardPage] = await Promise.all([
-      listProgramsPage({
+    const liveBoardPage = await listProgramsPage({
+      sort: "popular",
+      recruiting_only: true,
+      limit: 100,
+      scope: "default",
+    });
+    liveBoardPrograms = unwrapProgramListRows(liveBoardPage.items);
+
+    if (!canServeFromLandingSnapshot) {
+      const programsPage = await listProgramsPage({
         ...programParams,
         scope,
-      }),
-      listProgramsPage({
-        sort: "popular",
-        recruiting_only: true,
-        limit: 100,
-        scope: "default",
-      }),
-    ]);
-    const shouldUseBrowseFallback =
-      activeChip === "전체" &&
-      !keyword &&
-      programsPage.source === "read_model" &&
-      (programsPage.count ?? 0) > 0 &&
-      (programsPage.count ?? 0) < PUBLIC_PROGRAM_BROWSE_LIMIT;
+      });
+      const shouldUseBrowseFallback =
+        activeChip === "전체" &&
+        !keyword &&
+        programsPage.source === "read_model" &&
+        (programsPage.count ?? 0) > 0 &&
+        (programsPage.count ?? 0) < PUBLIC_PROGRAM_BROWSE_LIMIT;
 
-    if (shouldUseBrowseFallback) {
-      const fallbackPage = await loadPublicProgramsPageFallback();
-      programs = fallbackPage.programs;
-      liveBoardPrograms = fallbackPage.programs;
-    } else {
-      programs = unwrapProgramListRows(programsPage.items);
-      liveBoardPrograms = unwrapProgramListRows(liveBoardPage.items);
-      if (!keyword && isCostChip && programs.length === 0) {
-        programs = await loadPublicFreeProgramFallbackRows(120);
+      if (shouldUseBrowseFallback) {
+        const fallbackPage = await loadPublicProgramsPageFallback();
+        programs = fallbackPage.programs;
+        liveBoardPrograms = fallbackPage.programs;
+      } else {
+        programs = unwrapProgramListRows(programsPage.items);
+        if (!keyword && isCostChip && programs.length === 0) {
+          programs = await loadPublicFreeProgramFallbackRows(120);
+        }
       }
+    } else {
+      programs = snapshotPrograms;
     }
   } catch (cause) {
     try {
       const fallbackPage = await loadPublicProgramsPageFallback();
-      programs = !keyword && isCostChip
-        ? await loadPublicFreeProgramFallbackRows(120)
-        : fallbackPage.programs;
+      programs = canServeFromLandingSnapshot
+        ? snapshotPrograms
+        : !keyword && isCostChip
+          ? await loadPublicFreeProgramFallbackRows(120)
+          : fallbackPage.programs;
       liveBoardPrograms = fallbackPage.programs;
     } catch {
       error = cause instanceof Error ? cause.message : "프로그램 정보를 불러오지 못했습니다.";
@@ -120,12 +138,14 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
   }
 
   const heroPrograms = getLiveBoardPrograms(liveBoardPrograms);
-  let opportunityPrograms = orderOpportunityPrograms(
-    filterOpportunityPrograms(programs, { activeChip, keyword }),
-    { activeChip }
-  );
+  let opportunityPrograms = canServeFromLandingSnapshot && !error
+    ? orderOpportunityPrograms(snapshotPrograms, { activeChip, limit: OPPORTUNITY_FEED_SIZE })
+    : orderOpportunityPrograms(
+        filterOpportunityPrograms(programs, { activeChip, keyword }),
+        { activeChip }
+      );
 
-  if (!keyword && !error && opportunityPrograms.length < OPPORTUNITY_FEED_SIZE) {
+  if (!keyword && !error && !canServeFromLandingSnapshot && opportunityPrograms.length < OPPORTUNITY_FEED_SIZE) {
     try {
       const fallbackPrograms = isCostChip
         ? await loadPublicFreeProgramFallbackRows(240)

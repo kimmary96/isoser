@@ -65,6 +65,21 @@ def test_resilient_browse_refresh_migration_adds_bounded_and_daily_helpers() -> 
     assert "select public.refresh_program_list_browse_pool_daily_resilient(300, 500, 20, 2400);" in migration
 
 
+def test_landing_chip_snapshot_migration_adds_snapshot_table_and_daily_refresh_hook() -> None:
+    migration = (
+        Path(__file__).resolve().parents[2]
+        / "supabase"
+        / "migrations"
+        / "20260426143000_add_program_landing_chip_snapshots.sql"
+    ).read_text(encoding="utf-8")
+
+    assert "create table if not exists public.program_landing_chip_snapshots" in migration
+    assert "refresh_program_landing_chip_snapshots" in migration
+    assert "program_landing_chip_snapshots_public_read" in migration
+    assert "landing_snapshot_result := public.refresh_program_landing_chip_snapshots('landing-c', 24);" in migration
+    assert "'온라인'::text" in migration
+
+
 def test_refresh_script_runs_delta_batches_then_browse_rpc(monkeypatch) -> None:
     calls: list[tuple[str, dict[str, object]]] = []
     delta_results = [500, 12]
@@ -75,6 +90,8 @@ def test_refresh_script_runs_delta_batches_then_browse_rpc(monkeypatch) -> None:
             return delta_results.pop(0)
         if function_name == "refresh_program_list_browse_pool_resilient":
             return {"browse_rows": 300, "mode": "full"}
+        if function_name == "refresh_program_landing_chip_snapshots":
+            return {"surface": "landing-c", "chip_rows": 10}
         raise AssertionError(f"unexpected rpc: {function_name}")
 
     monkeypatch.setattr(refresh_program_list_index, "_call_rpc", fake_call_rpc)
@@ -95,12 +112,17 @@ def test_refresh_script_runs_delta_batches_then_browse_rpc(monkeypatch) -> None:
             "refresh_program_list_browse_pool_resilient",
             {"pool_limit": 300, "candidate_limit": 2400},
         ),
+        (
+            "refresh_program_landing_chip_snapshots",
+            {"surface": "landing-c", "item_limit": 24},
+        ),
     ]
     assert report["status"] == "incremental_refresh"
     assert report["delta_synced_rows"] == 512
     assert report["delta_batches"] == 2
     assert report["affected_rows"] == 300
     assert report["browse_result"]["mode"] == "full"
+    assert report["landing_snapshot_result"]["surface"] == "landing-c"
 
 
 def test_refresh_script_falls_back_to_browse_rpc_when_delta_fails(monkeypatch) -> None:
@@ -112,20 +134,27 @@ def test_refresh_script_falls_back_to_browse_rpc_when_delta_fails(monkeypatch) -
             raise RuntimeError("canceling statement due to statement timeout")
         if function_name == "refresh_program_list_browse_pool_resilient":
             return {"browse_rows": 300, "mode": "bounded_fallback"}
+        if function_name == "refresh_program_landing_chip_snapshots":
+            return {"surface": "landing-c", "chip_rows": 10}
         raise AssertionError(f"unexpected rpc: {function_name}")
 
     monkeypatch.setattr(refresh_program_list_index, "_call_rpc", fake_call_rpc)
 
     report = asyncio.run(refresh_program_list_index.refresh(300, retry_delay_seconds=0))
 
-    assert calls == ["refresh_program_list_delta", "refresh_program_list_browse_pool_resilient"]
+    assert calls == [
+        "refresh_program_list_delta",
+        "refresh_program_list_browse_pool_resilient",
+        "refresh_program_landing_chip_snapshots",
+    ]
     assert report["pool_limit"] == 300
     assert report["status"] == "browse_fallback"
     assert report["delta_refresh_error"] == "canceling statement due to statement timeout"
     assert report["affected_rows"] == 300
     assert report["fallback_attempts"] == 1
-    assert [stage["status"] for stage in report["stages"]] == ["failed", "succeeded"]
+    assert [stage["status"] for stage in report["stages"]] == ["failed", "succeeded", "succeeded"]
     assert report["browse_result"]["mode"] == "bounded_fallback"
+    assert report["landing_snapshot_result"]["chip_rows"] == 10
 
 
 def test_refresh_script_retries_retryable_browse_fallback_error(monkeypatch) -> None:
@@ -139,6 +168,8 @@ def test_refresh_script_retries_retryable_browse_fallback_error(monkeypatch) -> 
             raise RuntimeError("deadlock detected")
         if function_name == "refresh_program_list_browse_pool_resilient":
             return {"browse_rows": 300, "mode": "full"}
+        if function_name == "refresh_program_landing_chip_snapshots":
+            return {"surface": "landing-c", "chip_rows": 10}
         raise AssertionError(f"unexpected rpc: {function_name}")
 
     monkeypatch.setattr(refresh_program_list_index, "_call_rpc", fake_call_rpc)
@@ -149,11 +180,12 @@ def test_refresh_script_retries_retryable_browse_fallback_error(monkeypatch) -> 
         "refresh_program_list_delta",
         "refresh_program_list_browse_pool_resilient",
         "refresh_program_list_browse_pool_resilient",
+        "refresh_program_landing_chip_snapshots",
     ]
     assert report["status"] == "browse_fallback"
     assert report["affected_rows"] == 300
     assert report["fallback_attempts"] == 2
-    assert [stage["status"] for stage in report["stages"]] == ["failed", "failed", "succeeded"]
+    assert [stage["status"] for stage in report["stages"]] == ["failed", "failed", "succeeded", "succeeded"]
 
 
 def test_refresh_script_reports_failed_browse_only_after_retries(monkeypatch) -> None:
@@ -193,6 +225,8 @@ def test_refresh_script_falls_back_to_legacy_browse_rpc_when_resilient_rpc_is_mi
             )
         if function_name == "refresh_program_list_browse_pool":
             return 300
+        if function_name == "refresh_program_landing_chip_snapshots":
+            return {"surface": "landing-c", "chip_rows": 10}
         raise AssertionError(f"unexpected rpc: {function_name}")
 
     monkeypatch.setattr(refresh_program_list_index, "_call_rpc", fake_call_rpc)
@@ -210,10 +244,12 @@ def test_refresh_script_falls_back_to_legacy_browse_rpc_when_resilient_rpc_is_mi
         "refresh_program_list_delta",
         "refresh_program_list_browse_pool_resilient",
         "refresh_program_list_browse_pool",
+        "refresh_program_landing_chip_snapshots",
     ]
     assert report["status"] == "incremental_refresh"
     assert report["affected_rows"] == 300
     assert report["browse_result"] is None
+    assert report["landing_snapshot_result"]["chip_rows"] == 10
 
 
 def test_refresh_script_keeps_legacy_full_refresh_option(monkeypatch) -> None:
@@ -223,15 +259,55 @@ def test_refresh_script_keeps_legacy_full_refresh_option(monkeypatch) -> None:
         calls.append(function_name)
         if function_name == "refresh_program_list_index":
             return 9467
+        if function_name == "refresh_program_landing_chip_snapshots":
+            return {"surface": "landing-c", "chip_rows": 10}
         raise AssertionError(f"unexpected rpc: {function_name}")
 
     monkeypatch.setattr(refresh_program_list_index, "_call_rpc", fake_call_rpc)
 
     report = asyncio.run(refresh_program_list_index.refresh(300, legacy_full_refresh=True))
 
-    assert calls == ["refresh_program_list_index"]
+    assert calls == ["refresh_program_list_index", "refresh_program_landing_chip_snapshots"]
     assert report["status"] == "full_refresh"
     assert report["affected_rows"] == 9467
+    assert report["landing_snapshot_result"]["chip_rows"] == 10
+
+
+def test_refresh_script_skips_optional_snapshot_stage_when_rpc_is_missing(monkeypatch) -> None:
+    calls: list[str] = []
+
+    async def fake_call_rpc(function_name: str, payload: dict[str, object]) -> object:
+        calls.append(function_name)
+        if function_name == "refresh_program_list_delta":
+            return 100
+        if function_name == "refresh_program_list_browse_pool_resilient":
+            return {"browse_rows": 300, "mode": "full"}
+        if function_name == "refresh_program_landing_chip_snapshots":
+            raise RuntimeError(
+                "Could not find the function public.refresh_program_landing_chip_snapshots(surface, item_limit)"
+            )
+        raise AssertionError(f"unexpected rpc: {function_name}")
+
+    monkeypatch.setattr(refresh_program_list_index, "_call_rpc", fake_call_rpc)
+
+    report = asyncio.run(
+        refresh_program_list_index.refresh(
+            300,
+            delta_batch_limit=500,
+            max_delta_batches=3,
+            retry_delay_seconds=0,
+        )
+    )
+
+    assert calls == [
+        "refresh_program_list_delta",
+        "refresh_program_list_browse_pool_resilient",
+        "refresh_program_landing_chip_snapshots",
+    ]
+    assert report["status"] == "incremental_refresh"
+    assert report["landing_snapshot_result"] is None
+    assert report["stages"][-1]["status"] == "skipped"
+    assert report["stages"][-1]["reason"] == "missing_rpc"
 
 
 def test_refresh_script_supports_sample_refresh_helper(monkeypatch) -> None:

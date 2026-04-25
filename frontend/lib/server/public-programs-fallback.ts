@@ -2,6 +2,9 @@ import {
   legacyProgramRowToProgramCardSummary,
   readModelRowToProgramCardSummary,
 } from "@/lib/server/program-card-summary";
+import {
+  parseProgramLandingChipSnapshotItems,
+} from "@/lib/server/public-program-snapshot-utils";
 import { matchesProgramFilterChip, matchesProgramKeyword } from "@/lib/program-filters";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createServiceRoleSupabaseClient } from "@/lib/supabase/service-role";
@@ -28,12 +31,36 @@ function getTodayDateString(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+function getKstTodayDateString(): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+}
+
 async function createPublicFallbackClient() {
   try {
     return createServiceRoleSupabaseClient();
   } catch {
     return createServerSupabaseClient();
   }
+}
+
+function isIgnorableLandingSnapshotError(error: { code?: string | null; message?: string | null } | null | undefined): boolean {
+  if (!error) {
+    return false;
+  }
+
+  const code = String(error.code ?? "").toUpperCase();
+  const message = String(error.message ?? "").toLowerCase();
+  return (
+    code === "42P01" ||
+    code === "42703" ||
+    code === "PGRST202" ||
+    message.includes("program_landing_chip_snapshots")
+  );
 }
 
 function dedupePrograms(programs: ProgramListRow[], limit?: number): ProgramListRow[] {
@@ -413,6 +440,33 @@ export async function loadPublicProgramsPageFallback(): Promise<PublicProgramsPa
     urgentPrograms,
     totalCount: programs.length,
   };
+}
+
+export async function loadPublicLandingChipSnapshotRows(activeChip: string): Promise<ProgramListRow[]> {
+  const supabase = await createPublicFallbackClient();
+  const { data, error } = await supabase
+    .from("program_landing_chip_snapshots")
+    .select("generated_for, generated_at, items")
+    .eq("surface", "landing-c")
+    .eq("chip", activeChip)
+    .order("generated_for", { ascending: false })
+    .order("generated_at", { ascending: false })
+    .limit(1);
+
+  if (error) {
+    if (isIgnorableLandingSnapshotError(error)) {
+      return [];
+    }
+    throw new Error(error.message || "landing chip snapshot query failed");
+  }
+
+  const row = data?.[0] as { generated_for?: string | null; items?: unknown } | undefined;
+  const todayKst = getKstTodayDateString();
+  if (!row || String(row.generated_for ?? "").slice(0, 10) !== todayKst) {
+    return [];
+  }
+
+  return parseProgramLandingChipSnapshotItems(row.items);
 }
 
 export async function loadPublicProgramFallbackRowsBySort(
