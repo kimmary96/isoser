@@ -2,14 +2,22 @@ import type { Metadata } from "next";
 
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { listProgramsPage } from "@/lib/api/backend";
+import { resolvePublicProgramListScope } from "@/lib/program-list-scope";
 import { unwrapProgramListRows } from "@/lib/program-display";
-import { buildProgramFilterParams } from "@/lib/program-filters";
+import { buildProgramFilterParams, getProgramFilterChipDefinition } from "@/lib/program-filters";
 import { getSiteUrl } from "@/lib/seo";
+import {
+  loadPublicFreeProgramFallbackRows,
+  loadPublicFilteredProgramFallbackRows,
+  loadPublicProgramsPageFallback,
+  PUBLIC_PROGRAM_BROWSE_LIMIT,
+} from "@/lib/server/public-programs-fallback";
 import type { ProgramListRow } from "@/lib/types";
 
 import { LandingCHeroSection } from "./_hero";
 import { LandingCOpportunityFeed } from "./_program-feed";
-import { getLiveBoardPrograms, orderOpportunityPrograms } from "./_program-utils";
+import { OPPORTUNITY_FEED_SIZE } from "./_content";
+import { filterOpportunityPrograms, getLiveBoardPrograms, orderOpportunityPrograms } from "./_program-utils";
 import { normalizeChip, normalizeKeyword } from "./_search";
 import { landingCThemeVars } from "./_styles";
 import {
@@ -37,11 +45,32 @@ export const metadata: Metadata = {
   },
 };
 
+function mergeDistinctPrograms(...programGroups: ProgramListRow[][]): ProgramListRow[] {
+  const seenIds = new Set<string>();
+  const merged: ProgramListRow[] = [];
+
+  for (const programs of programGroups) {
+    for (const program of programs) {
+      const programId = String(program.id ?? "").trim();
+      if (!programId || seenIds.has(programId)) {
+        continue;
+      }
+      seenIds.add(programId);
+      merged.push(program);
+    }
+  }
+
+  return merged;
+}
+
 export default async function LandingCPage({ searchParams }: LandingCPageProps) {
   const resolvedSearchParams = await searchParams;
   const activeChip = normalizeChip(resolvedSearchParams.chip);
   const keyword = normalizeKeyword(resolvedSearchParams.q);
+  const activeChipDefinition = getProgramFilterChipDefinition(activeChip);
+  const isCostChip = activeChipDefinition?.kind === "cost";
   const programParams = buildProgramFilterParams(activeChip, keyword, 48);
+  const scope = resolvePublicProgramListScope({ keyword });
 
   let programs: ProgramListRow[] = [];
   let liveBoardPrograms: ProgramListRow[] = [];
@@ -51,7 +80,7 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
     const [programsPage, liveBoardPage] = await Promise.all([
       listProgramsPage({
         ...programParams,
-        scope: programParams.q ? "all" : "default",
+        scope,
       }),
       listProgramsPage({
         sort: "popular",
@@ -60,14 +89,60 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
         scope: "default",
       }),
     ]);
-    programs = unwrapProgramListRows(programsPage.items);
-    liveBoardPrograms = unwrapProgramListRows(liveBoardPage.items);
+    const shouldUseBrowseFallback =
+      activeChip === "전체" &&
+      !keyword &&
+      programsPage.source === "read_model" &&
+      (programsPage.count ?? 0) > 0 &&
+      (programsPage.count ?? 0) < PUBLIC_PROGRAM_BROWSE_LIMIT;
+
+    if (shouldUseBrowseFallback) {
+      const fallbackPage = await loadPublicProgramsPageFallback();
+      programs = fallbackPage.programs;
+      liveBoardPrograms = fallbackPage.programs;
+    } else {
+      programs = unwrapProgramListRows(programsPage.items);
+      liveBoardPrograms = unwrapProgramListRows(liveBoardPage.items);
+      if (!keyword && isCostChip && programs.length === 0) {
+        programs = await loadPublicFreeProgramFallbackRows(120);
+      }
+    }
   } catch (cause) {
-    error = cause instanceof Error ? cause.message : "프로그램 정보를 불러오지 못했습니다.";
+    try {
+      const fallbackPage = await loadPublicProgramsPageFallback();
+      programs = !keyword && isCostChip
+        ? await loadPublicFreeProgramFallbackRows(120)
+        : fallbackPage.programs;
+      liveBoardPrograms = fallbackPage.programs;
+    } catch {
+      error = cause instanceof Error ? cause.message : "프로그램 정보를 불러오지 못했습니다.";
+    }
   }
 
   const heroPrograms = getLiveBoardPrograms(liveBoardPrograms);
-  const opportunityPrograms = orderOpportunityPrograms(programs, { activeChip });
+  let opportunityPrograms = orderOpportunityPrograms(
+    filterOpportunityPrograms(programs, { activeChip, keyword }),
+    { activeChip }
+  );
+
+  if (!keyword && !error && opportunityPrograms.length < OPPORTUNITY_FEED_SIZE) {
+    try {
+      const fallbackPrograms = isCostChip
+        ? await loadPublicFreeProgramFallbackRows(240)
+        : await loadPublicFilteredProgramFallbackRows({
+            activeChip,
+            keyword,
+            limit: OPPORTUNITY_FEED_SIZE * 4,
+          });
+
+      opportunityPrograms = orderOpportunityPrograms(
+        filterOpportunityPrograms(mergeDistinctPrograms(programs, fallbackPrograms), { activeChip, keyword }),
+        { activeChip, limit: OPPORTUNITY_FEED_SIZE }
+      );
+    } catch {
+      // Keep the already loaded list when the supplemental fallback path is unavailable.
+    }
+  }
 
   return (
     <main className="min-h-screen bg-[var(--surface)] text-[var(--ink)]" style={landingCThemeVars}>

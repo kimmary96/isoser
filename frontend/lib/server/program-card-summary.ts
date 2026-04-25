@@ -128,7 +128,7 @@ function toExternalLink(value: unknown): string | null {
   return /^https?:\/\//i.test(text) ? text : null;
 }
 
-function toProgramCardSummary(row: Record<string, unknown>): ProgramCardSummary | null {
+export function readModelRowToProgramCardSummary(row: Record<string, unknown>): ProgramCardSummary | null {
   const id = cleanText(row.id);
   if (!id) {
     return null;
@@ -206,7 +206,7 @@ function toProgramCardSummary(row: Record<string, unknown>): ProgramCardSummary 
   };
 }
 
-function toLegacyProgramCardSummary(row: Record<string, unknown>): ProgramCardSummary | null {
+export function legacyProgramRowToProgramCardSummary(row: Record<string, unknown>): ProgramCardSummary | null {
   const id = cleanText(row.id);
   if (!id) {
     return null;
@@ -306,7 +306,7 @@ export async function loadProgramCardSummariesByIds(
       }
     } else {
       for (const row of data ?? []) {
-        const summary = toProgramCardSummary(row);
+        const summary = readModelRowToProgramCardSummary(row);
         if (!summary) {
           continue;
         }
@@ -332,7 +332,7 @@ export async function loadProgramCardSummariesByIds(
     }
 
     for (const row of data ?? []) {
-      const summary = toLegacyProgramCardSummary(row);
+      const summary = legacyProgramRowToProgramCardSummary(row);
       if (!summary) {
         continue;
       }
@@ -369,7 +369,7 @@ export async function loadDeadlineOrderedProgramCardSummaries(
       }
     } else {
       return (data ?? [])
-        .map((row) => toProgramCardSummary(row))
+        .map((row) => readModelRowToProgramCardSummary(row))
         .filter((program): program is ProgramCardSummary => Boolean(program));
     }
   } catch (error) {
@@ -390,6 +390,6 @@ export async function loadDeadlineOrderedProgramCardSummaries(
   }
 
   return (data ?? [])
-    .map((row) => toLegacyProgramCardSummary(row))
+    .map((row) => legacyProgramRowToProgramCardSummary(row))
     .filter((program): program is ProgramCardSummary => Boolean(program));
 }

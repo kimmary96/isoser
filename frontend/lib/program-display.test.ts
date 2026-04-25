@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   formatProgramCostLabel,
+  getProgramOutOfPocketAmount,
   getProgramRatingDisplay,
   getProgramTrainingModeLabel,
   hasTomorrowLearningCardRequirement,
@@ -114,5 +115,26 @@ describe("program display legacy compare_meta bridge", () => {
     expect(getProgramTrainingModeLabel(program)).toBe("온라인");
     expect(getProgramRatingDisplay(program)).toBe("4.6");
     expect(hasTomorrowLearningCardRequirement(program)).toBe(true);
+  });
+
+  it("prefers out-of-pocket amounts over total training cost when available", () => {
+    const program = {
+      cost: 1000000,
+      subsidy_amount: 22730,
+      support_type: "훈련비 지원",
+      teaching_method: "온라인",
+      application_method: null,
+      location: "온라인",
+      title: "AI 과정",
+      summary: null,
+      description: null,
+      rating: null,
+      rating_display: null,
+      review_count: 0,
+      compare_meta: null,
+    };
+
+    expect(getProgramOutOfPocketAmount(program)).toBe(22730);
+    expect(formatProgramCostLabel(program)).toBe("22,730원");
   });
 });

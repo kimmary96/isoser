@@ -304,11 +304,46 @@ function normalizeProgramRatingDisplay(value: string | number | null | undefined
   return normalizedRating.toFixed(1);
 }
 
+function formatMetricWon(value: number | null): string | null {
+  if (value === null) {
+    return null;
+  }
+  return value === 0 ? "무료" : `${value.toLocaleString("ko-KR")}원`;
+}
+
+export function getProgramOutOfPocketAmount(program: ProgramInsightSource): number | null {
+  const compareMeta = getLegacyProgramMeta(program);
+  const directAmount = parseMetricNumber(program.subsidy_amount);
+  if (directAmount !== null) {
+    return Math.max(0, directAmount);
+  }
+
+  for (const value of [
+    compareMeta?.self_payment,
+    compareMeta?.out_of_pocket,
+    compareMeta?.out_of_pocket_amount,
+    compareMeta?.actual_training_cost,
+    compareMeta?.real_man,
+  ]) {
+    const parsed = parseMetricNumber(value);
+    if (parsed !== null) {
+      return Math.max(0, parsed);
+    }
+  }
+
+  return null;
+}
+
 export function formatProgramCostLabel(program: ProgramInsightSource): string | null {
   const compareMeta = getLegacyProgramMeta(program);
+  const outOfPocketAmount = getProgramOutOfPocketAmount(program);
+  if (outOfPocketAmount !== null) {
+    return formatMetricWon(outOfPocketAmount);
+  }
+
   const directCost = parseMetricNumber(program.cost);
   if (directCost !== null) {
-    return directCost === 0 ? "무료" : `${directCost.toLocaleString("ko-KR")}원`;
+    return formatMetricWon(directCost);
   }
 
   if (typeof program.cost === "string" && program.cost.trim()) {

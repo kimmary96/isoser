@@ -45,6 +45,7 @@ try:
         _extract_program_filter_options,
         _extract_program_keywords,
         _filter_options_from_facet_snapshot,
+        _filter_program_rows_by_extra_filters,
         _filter_program_rows_by_category_detail,
         _filter_program_rows_by_query,
         _first_text,
@@ -76,6 +77,7 @@ except ImportError:
         _extract_program_filter_options,
         _extract_program_keywords,
         _filter_options_from_facet_snapshot,
+        _filter_program_rows_by_extra_filters,
         _filter_program_rows_by_category_detail,
         _filter_program_rows_by_query,
         _first_text,
@@ -878,11 +880,15 @@ def _parse_program_deadline(value: str | None) -> date | None:
         return None
 
 
+def _today_kst() -> date:
+    return datetime.now(timezone(timedelta(hours=9))).date()
+
+
 def _calculate_days_left(deadline: str | None) -> int | None:
     parsed = _parse_program_deadline(deadline)
     if parsed is None:
         return None
-    return (parsed - date.today()).days
+    return (parsed - _today_kst()).days
 
 
 def _format_d_day_label(days_left: int | None) -> str:
@@ -1139,6 +1145,15 @@ def _requires_resolved_deadline_scan(
     return include_closed_recent or recruiting_only or sort in PROGRAM_DEADLINE_SORTS or sort in PROGRAM_COMPUTED_SORTS
 
 
+def _bounded_resolved_deadline_scan_limit(limit: int | None) -> int:
+    if limit is None:
+        return PROGRAM_SEARCH_SCAN_LIMIT
+    return min(
+        PROGRAM_SEARCH_SCAN_LIMIT,
+        max(PROGRAM_SEARCH_SCAN_PAGE_SIZE, limit * 20),
+    )
+
+
 def _build_program_query_params(
     *,
     select: str,
@@ -1157,6 +1172,8 @@ def _build_program_query_params(
     offset: int | None = None,
 ) -> dict[str, Any]:
     effective_sort = sort if sort in PROGRAM_SORT_OPTIONS else "deadline"
+    has_keyword_search = bool(_normalize_search_text(q))
+    today_kst = _today_kst()
     params: dict[str, Any] = {
         "select": select,
         "order": _program_order_clause(effective_sort),
@@ -1168,16 +1185,25 @@ def _build_program_query_params(
         sort=effective_sort,
     )
     if limit is not None:
-        params["limit"] = str(PROGRAM_SEARCH_SCAN_LIMIT if should_scan_resolved_deadline else limit)
-    elif q or should_scan_resolved_deadline:
+        if should_scan_resolved_deadline:
+            params["limit"] = str(
+                PROGRAM_SEARCH_SCAN_LIMIT
+                if has_keyword_search
+                else _bounded_resolved_deadline_scan_limit(limit)
+            )
+        else:
+            params["limit"] = str(limit)
+    elif has_keyword_search or should_scan_resolved_deadline:
         params["limit"] = str(PROGRAM_SEARCH_SCAN_LIMIT)
     if offset is not None and not should_scan_resolved_deadline:
         params["offset"] = str(offset)
+    if include_closed_recent:
+        params["deadline"] = f"gte.{(today_kst - timedelta(days=90)).isoformat()}"
+    elif should_scan_resolved_deadline:
+        params["deadline"] = f"gte.{today_kst.isoformat()}"
     effective_category = category or PROGRAM_CATEGORY_PARENT_CATEGORIES.get(str(category_detail or "").strip())
     if effective_category:
         params["category"] = f"eq.{effective_category}"
-    if scope:
-        params["scope"] = f"eq.{scope}"
     if region_detail:
         params["region_detail"] = f"eq.{region_detail}"
     normalized_teaching_methods = _normalize_teaching_methods_param(teaching_methods)
@@ -1915,8 +1941,9 @@ def _can_use_program_list_read_model(
     *,
     selection_processes: list[str] | None = None,
     employment_links: list[str] | None = None,
+    include_closed_recent: bool = False,
 ) -> bool:
-    return _program_list_read_model_enabled() and not (
+    return _program_list_read_model_enabled() and not include_closed_recent and not (
         _normalize_option_param(selection_processes, PROGRAM_SELECTION_PROCESSES)
         or _normalize_option_param(employment_links, PROGRAM_EMPLOYMENT_LINKS)
     )
@@ -1948,11 +1975,47 @@ def _program_promoted_provider_terms() -> list[str]:
     return terms
 
 
-def _program_list_mode(*, q: str | None, scope: str | None, include_closed_recent: bool) -> Literal["browse", "search", "archive"]:
+def _program_active_filter_group_count(
+    *,
+    category: str | None = None,
+    category_detail: str | None = None,
+    region_detail: str | None = None,
+    regions: list[str] | None = None,
+    sources: list[str] | None = None,
+    teaching_methods: list[str] | None = None,
+    cost_types: list[str] | None = None,
+    participation_times: list[str] | None = None,
+    targets: list[str] | None = None,
+) -> int:
+    count = 0
+    if category or category_detail:
+        count += 1
+    if region_detail or _normalize_regions_param(regions):
+        count += 1
+    if [source.strip() for source in (sources or []) if source.strip()]:
+        count += 1
+    if _normalize_teaching_methods_param(teaching_methods):
+        count += 1
+    if _normalize_option_param(cost_types, PROGRAM_COST_TYPES):
+        count += 1
+    if _normalize_option_param(participation_times, PROGRAM_PARTICIPATION_TIMES):
+        count += 1
+    if _normalize_option_param(targets, PROGRAM_TARGETS):
+        count += 1
+    return count
+
+
+def _program_list_mode(
+    *,
+    q: str | None,
+    scope: str | None,
+    include_closed_recent: bool,
+    active_filter_group_count: int = 0,
+) -> Literal["browse", "search", "archive"]:
     normalized_scope = str(scope or "default").strip().lower()
     if include_closed_recent or normalized_scope in {"archive", "closed", "recent_closed"}:
         return "archive"
-    if _normalize_search_text(q) or normalized_scope == "all":
+    if _normalize_search_text(q) or normalized_scope == "all" or active_filter_group_count >= 2:
         return "search"
     return "browse"
 
@@ -1989,6 +2052,74 @@ def _is_default_browse_entry_request(
             cost_types,
             participation_times,
             targets,
+        )
+    )
+
+
+def _is_default_public_browse_scope(
+    *,
+    category: str | None = None,
+    category_detail: str | None = None,
+    scope: str | None = None,
+    region_detail: str | None = None,
+    q: str | None = None,
+    regions: list[str] | None = None,
+    sources: list[str] | None = None,
+    teaching_methods: list[str] | None = None,
+    cost_types: list[str] | None = None,
+    participation_times: list[str] | None = None,
+    targets: list[str] | None = None,
+    include_closed_recent: bool = False,
+) -> bool:
+    return _is_default_browse_entry_request(
+        mode=_program_list_mode(q=q, scope=scope, include_closed_recent=include_closed_recent),
+        sort="default",
+        offset=0,
+        cursor=None,
+        category=category,
+        category_detail=category_detail,
+        region_detail=region_detail,
+        regions=regions,
+        sources=sources,
+        teaching_methods=teaching_methods,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
+    )
+
+
+def _is_underfilled_default_browse_read_model(
+    *,
+    count: int,
+    category: str | None = None,
+    category_detail: str | None = None,
+    scope: str | None = None,
+    region_detail: str | None = None,
+    q: str | None = None,
+    regions: list[str] | None = None,
+    sources: list[str] | None = None,
+    teaching_methods: list[str] | None = None,
+    cost_types: list[str] | None = None,
+    participation_times: list[str] | None = None,
+    targets: list[str] | None = None,
+    include_closed_recent: bool = False,
+) -> bool:
+    return (
+        count > 0
+        and count < _program_browse_pool_limit()
+        and _is_default_public_browse_scope(
+            category=category,
+            category_detail=category_detail,
+            scope=scope,
+            region_detail=region_detail,
+            q=q,
+            regions=regions,
+            sources=sources,
+            teaching_methods=teaching_methods,
+            cost_types=cost_types,
+            participation_times=participation_times,
+            targets=targets,
+            include_closed_recent=include_closed_recent,
         )
     )
 
@@ -2095,7 +2226,22 @@ def _build_read_model_params(
     cursor: str | None = None,
     count: bool = False,
 ) -> tuple[dict[str, Any], Literal["browse", "search", "archive"]]:
-    mode = _program_list_mode(q=q, scope=scope, include_closed_recent=include_closed_recent)
+    mode = _program_list_mode(
+        q=q,
+        scope=scope,
+        include_closed_recent=include_closed_recent,
+        active_filter_group_count=_program_active_filter_group_count(
+            category=category,
+            category_detail=category_detail,
+            region_detail=region_detail,
+            regions=regions,
+            sources=sources,
+            teaching_methods=teaching_methods,
+            cost_types=cost_types,
+            participation_times=participation_times,
+            targets=targets,
+        ),
+    )
     effective_sort = sort if sort in PROGRAM_SORT_OPTIONS else "default"
     use_browse_pool = mode == "browse" and effective_sort != "popular"
     params: dict[str, Any] = {
@@ -2187,7 +2333,22 @@ async def _fetch_promoted_read_model_rows(
     slot_limit = _program_promoted_slot_limit()
     if slot_limit <= 0:
         return []
-    mode = _program_list_mode(q=None, scope=scope, include_closed_recent=include_closed_recent)
+    mode = _program_list_mode(
+        q=None,
+        scope=scope,
+        include_closed_recent=include_closed_recent,
+        active_filter_group_count=_program_active_filter_group_count(
+            category=category,
+            category_detail=category_detail,
+            region_detail=region_detail,
+            regions=regions,
+            sources=sources,
+            teaching_methods=teaching_methods,
+            cost_types=cost_types,
+            participation_times=participation_times,
+            targets=targets,
+        ),
+    )
     if mode != "browse":
         return []
 
@@ -2269,7 +2430,23 @@ async def _fetch_program_list_read_model_rows(
     cursor: str | None = None,
 ) -> ProgramListPageResponse:
     started = time.perf_counter()
-    mode = _program_list_mode(q=q, scope=scope, include_closed_recent=include_closed_recent)
+    active_filter_group_count = _program_active_filter_group_count(
+        category=category,
+        category_detail=category_detail,
+        region_detail=region_detail,
+        regions=regions,
+        sources=sources,
+        teaching_methods=teaching_methods,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
+    )
+    mode = _program_list_mode(
+        q=q,
+        scope=scope,
+        include_closed_recent=include_closed_recent,
+        active_filter_group_count=active_filter_group_count,
+    )
     effective_sort = _normalize_program_sort(sort)
     promoted_items: list[ProgramListItem] = []
     if _is_default_browse_entry_request(
@@ -3026,9 +3203,50 @@ async def list_programs(
     offset: int = Query(default=0, ge=0),
     cursor: str | None = Query(default=None),
 ) -> Any:
-    if _can_use_program_list_read_model(selection_processes=selection_processes, employment_links=employment_links) and offset == 0:
+    if _can_use_program_list_read_model(
+        selection_processes=selection_processes,
+        employment_links=employment_links,
+        include_closed_recent=include_closed_recent,
+    ) and offset == 0:
         try:
-            page = await _fetch_program_list_read_model_rows(
+            page, count = await asyncio.gather(
+                _fetch_program_list_read_model_rows(
+                    category=category,
+                    category_detail=category_detail,
+                    scope=scope,
+                    region_detail=region_detail,
+                    q=q,
+                    regions=regions,
+                    sources=sources,
+                    teaching_methods=teaching_methods,
+                    cost_types=cost_types,
+                    participation_times=participation_times,
+                    targets=targets,
+                    recruiting_only=recruiting_only,
+                    include_closed_recent=include_closed_recent,
+                    sort=sort,
+                    limit=limit,
+                    cursor=cursor,
+                ),
+                _count_program_read_model_rows(
+                    category=category,
+                    category_detail=category_detail,
+                    scope=scope,
+                    region_detail=region_detail,
+                    q=q,
+                    regions=regions,
+                    sources=sources,
+                    teaching_methods=teaching_methods,
+                    cost_types=cost_types,
+                    participation_times=participation_times,
+                    targets=targets,
+                    recruiting_only=recruiting_only,
+                    include_closed_recent=include_closed_recent,
+                    sort=sort,
+                ),
+            )
+            if _is_underfilled_default_browse_read_model(
+                count=count,
                 category=category,
                 category_detail=category_detail,
                 scope=scope,
@@ -3040,12 +3258,11 @@ async def list_programs(
                 cost_types=cost_types,
                 participation_times=participation_times,
                 targets=targets,
-                recruiting_only=recruiting_only,
                 include_closed_recent=include_closed_recent,
-                sort=sort,
-                limit=limit,
-                cursor=cursor,
-            )
+            ):
+                raise RuntimeError(
+                    f"default browse read model underfilled ({count} < {_program_browse_pool_limit()})"
+                )
             return [item.program.model_dump() for item in page.items]
         except Exception as exc:
             log_event(
@@ -3068,6 +3285,7 @@ async def list_programs(
         recruiting_only=recruiting_only,
         include_closed_recent=include_closed_recent,
         sort=sort,
+        limit=limit,
     )
     rows = await _fetch_program_list_rows(params, q=q)
     prefer_work24_default_mix = sort == "default" and _should_apply_work24_default_mix(
@@ -3131,7 +3349,7 @@ async def list_programs_page(
         include_closed_recent=include_closed_recent,
         sort=sort,
     )
-    if _program_list_read_model_enabled():
+    if _can_use_program_list_read_model(include_closed_recent=include_closed_recent):
         try:
             response, count = await asyncio.gather(
                 _fetch_program_list_read_model_rows(
@@ -3144,6 +3362,24 @@ async def list_programs_page(
                     **read_model_filters,
                 ),
             )
+            if _is_underfilled_default_browse_read_model(
+                count=count,
+                category=category,
+                category_detail=category_detail,
+                scope=scope,
+                region_detail=region_detail,
+                q=q,
+                regions=regions,
+                sources=sources,
+                teaching_methods=teaching_methods,
+                cost_types=cost_types,
+                participation_times=participation_times,
+                targets=targets,
+                include_closed_recent=include_closed_recent,
+            ):
+                raise RuntimeError(
+                    f"default browse read model underfilled ({count} < {_program_browse_pool_limit()})"
+                )
             response.count = count
             return response
         except Exception as exc:
@@ -3173,7 +3409,22 @@ async def list_programs_page(
     return ProgramListPageResponse(
         items=[_serialize_program_list_row_item(row, already_serialized=True) for row in rows],
         count=len(rows),
-        mode=_program_list_mode(q=q, scope=scope, include_closed_recent=include_closed_recent),
+        mode=_program_list_mode(
+            q=q,
+            scope=scope,
+            include_closed_recent=include_closed_recent,
+            active_filter_group_count=_program_active_filter_group_count(
+                category=category,
+                category_detail=category_detail,
+                region_detail=region_detail,
+                regions=regions,
+                sources=sources,
+                teaching_methods=teaching_methods,
+                cost_types=cost_types,
+                participation_times=participation_times,
+                targets=targets,
+            ),
+        ),
         source="legacy",
     )
 
@@ -3268,25 +3519,96 @@ async def count_programs(
     recruiting_only: bool = False,
     include_closed_recent: bool = False,
 ) -> ProgramCountResponse:
-    if _can_use_program_list_read_model(selection_processes=selection_processes, employment_links=employment_links):
+    if _is_default_public_browse_scope(
+        category=category,
+        category_detail=category_detail,
+        scope=scope,
+        region_detail=region_detail,
+        q=q,
+        regions=regions,
+        sources=sources,
+        teaching_methods=teaching_methods,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
+        include_closed_recent=include_closed_recent,
+    ) and _can_use_program_list_read_model(
+        selection_processes=selection_processes,
+        employment_links=employment_links,
+        include_closed_recent=include_closed_recent,
+    ):
         try:
-            return ProgramCountResponse(
-                count=await _count_program_read_model_rows(
-                    category=category,
-                    category_detail=category_detail,
-                    scope=scope,
-                    region_detail=region_detail,
-                    q=q,
-                    regions=regions,
-                    sources=sources,
-                    teaching_methods=teaching_methods,
-                    cost_types=cost_types,
-                    participation_times=participation_times,
-                    targets=targets,
-                    recruiting_only=recruiting_only,
-                    include_closed_recent=include_closed_recent,
-                )
+            read_model_count = await _count_program_read_model_rows(
+                category=category,
+                category_detail=category_detail,
+                scope=scope,
+                region_detail=region_detail,
+                q=q,
+                regions=regions,
+                sources=sources,
+                teaching_methods=teaching_methods,
+                cost_types=cost_types,
+                participation_times=participation_times,
+                targets=targets,
+                recruiting_only=recruiting_only,
+                include_closed_recent=include_closed_recent,
             )
+            if _is_underfilled_default_browse_read_model(
+                count=read_model_count,
+                category=category,
+                category_detail=category_detail,
+                scope=scope,
+                region_detail=region_detail,
+                q=q,
+                regions=regions,
+                sources=sources,
+                teaching_methods=teaching_methods,
+                cost_types=cost_types,
+                participation_times=participation_times,
+                targets=targets,
+                include_closed_recent=include_closed_recent,
+            ):
+                return ProgramCountResponse(count=_program_browse_pool_limit())
+        except Exception as exc:
+            log_event(logger, logging.WARNING, "program_count_browse_pool_fallback", error=str(exc))
+
+    if _can_use_program_list_read_model(
+        selection_processes=selection_processes,
+        employment_links=employment_links,
+        include_closed_recent=include_closed_recent,
+    ):
+        try:
+            read_model_count = await _count_program_read_model_rows(
+                category=category,
+                category_detail=category_detail,
+                scope=scope,
+                region_detail=region_detail,
+                q=q,
+                regions=regions,
+                sources=sources,
+                teaching_methods=teaching_methods,
+                cost_types=cost_types,
+                participation_times=participation_times,
+                targets=targets,
+                recruiting_only=recruiting_only,
+                include_closed_recent=include_closed_recent,
+            )
+            if not _is_underfilled_default_browse_read_model(
+                count=read_model_count,
+                category=category,
+                category_detail=category_detail,
+                scope=scope,
+                region_detail=region_detail,
+                q=q,
+                regions=regions,
+                sources=sources,
+                teaching_methods=teaching_methods,
+                cost_types=cost_types,
+                participation_times=participation_times,
+                targets=targets,
+                include_closed_recent=include_closed_recent,
+            ):
+                return ProgramCountResponse(count=read_model_count)
         except Exception as exc:
             log_event(logger, logging.WARNING, "program_count_read_model_fallback", error=str(exc))
     count = await _count_program_rows(
@@ -3321,11 +3643,44 @@ async def get_program_filter_options(
     recruiting_only: bool = False,
     include_closed_recent: bool = False,
 ) -> ProgramFilterOptionsResponse:
-    mode = _program_list_mode(q=q, scope=scope, include_closed_recent=include_closed_recent)
-    if _program_list_read_model_enabled() and mode == "browse":
+    mode = _program_list_mode(
+        q=q,
+        scope=scope,
+        include_closed_recent=include_closed_recent,
+        active_filter_group_count=_program_active_filter_group_count(
+            category=category,
+            category_detail=category_detail,
+            region_detail=region_detail,
+            regions=regions,
+            teaching_methods=teaching_methods,
+        ),
+    )
+    if _can_use_program_list_read_model(include_closed_recent=include_closed_recent) and mode == "browse":
         try:
-            facets, _ = await _load_program_facet_snapshot(mode=mode)
-            return _filter_options_from_facet_snapshot(facets)
+            read_model_count = await _count_program_read_model_rows(
+                category=category,
+                category_detail=category_detail,
+                scope=scope,
+                region_detail=region_detail,
+                q=q,
+                regions=regions,
+                teaching_methods=teaching_methods,
+                recruiting_only=recruiting_only,
+                include_closed_recent=include_closed_recent,
+            )
+            if not _is_underfilled_default_browse_read_model(
+                count=read_model_count,
+                category=category,
+                category_detail=category_detail,
+                scope=scope,
+                region_detail=region_detail,
+                q=q,
+                regions=regions,
+                teaching_methods=teaching_methods,
+                include_closed_recent=include_closed_recent,
+            ):
+                facets, _ = await _load_program_facet_snapshot(mode=mode)
+                return _filter_options_from_facet_snapshot(facets)
         except Exception as exc:
             log_event(logger, logging.WARNING, "program_filter_options_facet_fallback", error=str(exc))
 

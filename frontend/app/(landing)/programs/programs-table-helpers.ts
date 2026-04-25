@@ -1,5 +1,6 @@
 import {
   formatProgramCostLabel,
+  getProgramTrainingModeLabel,
   getProgramSelectionKeywords,
   getProgramSupportBadge,
 } from "@/lib/program-display";
@@ -34,7 +35,7 @@ export function getSupportBadge(program: ProgramListRow): string | null {
 
 export function formatMethodAndRegion(program: ProgramListRow): { method: string | null; region: string | null } {
   return {
-    method: program.teaching_method?.trim() || null,
+    method: getProgramTrainingModeLabel(program),
     region: program.location?.trim() || null,
   };
 }

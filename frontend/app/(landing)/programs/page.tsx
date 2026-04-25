@@ -5,8 +5,13 @@ import AdSlot from "@/components/AdSlot";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { getProgramFilterOptions, listPrograms, listProgramsPage } from "@/lib/api/backend";
 import { unwrapProgramListRows } from "@/lib/program-display";
+import { countActiveProgramFilterGroups, resolvePublicProgramListScope } from "@/lib/program-list-scope";
 import { buildUrgentProgramsParams } from "@/lib/programs-page-layout";
 import { getSiteUrl } from "@/lib/seo";
+import {
+  loadPublicProgramsPageFallback,
+  PUBLIC_PROGRAM_BROWSE_LIMIT,
+} from "@/lib/server/public-programs-fallback";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { ProgramListRow } from "@/lib/types";
 
@@ -128,6 +133,15 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
   let error: string | null = null;
   let isLoggedIn = false;
   let bookmarkedProgramIds: string[] = [];
+  const activeFilterGroupCount = countActiveProgramFilterGroups({
+    categoryId: selectedCategory.id,
+    regions: selectedRegions,
+    teachingMethods: selectedTeachingMethods,
+    costTypes: selectedCostTypes,
+    participationTimes: selectedParticipationTimes,
+    sources: selectedSources,
+    targets: selectedTargets,
+  });
   const currentFilterParams = {
     q: q || undefined,
     category: selectedCategory.category !== "전체" ? selectedCategory.category : undefined,
@@ -140,8 +154,24 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
     targets: selectedTargets,
     recruiting_only: recruitingOnly,
     include_closed_recent: showClosedRecent,
-    scope: q ? "all" : showClosedRecent ? "archive" : "default",
+    scope: resolvePublicProgramListScope({
+      keyword: q,
+      includeClosedRecent: showClosedRecent,
+      activeFilterGroupCount,
+    }),
   };
+  const isDefaultBrowseView = Boolean(
+    !q &&
+      selectedCategory.id === "all" &&
+      selectedRegions.length === 0 &&
+      selectedTeachingMethods.length === 0 &&
+      selectedCostTypes.length === 0 &&
+      selectedParticipationTimes.length === 0 &&
+      selectedSources.length === 0 &&
+      selectedTargets.length === 0 &&
+      !showClosedRecent &&
+      sort === DEFAULT_PROGRAM_SORT
+  );
 
   ({ isLoggedIn, bookmarkedProgramIds } = await sessionContextPromise);
 
@@ -155,10 +185,24 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
       }),
       listProgramsPage(buildUrgentProgramsParams()),
     ]);
-    promotedPrograms = unwrapProgramListRows(programsPage.promoted_items);
-    programs = unwrapProgramListRows(programsPage.items);
-    totalCount = programsPage.count ?? programsPage.items.length;
-    urgentPrograms = unwrapProgramListRows(urgentPage.items);
+    const shouldUseBrowseFallback =
+      isDefaultBrowseView &&
+      programsPage.source === "read_model" &&
+      (programsPage.count ?? 0) > 0 &&
+      (programsPage.count ?? 0) < PUBLIC_PROGRAM_BROWSE_LIMIT;
+
+    if (shouldUseBrowseFallback) {
+      const fallbackPage = await loadPublicProgramsPageFallback();
+      promotedPrograms = page === 1 ? fallbackPage.promotedPrograms : [];
+      programs = fallbackPage.programs.slice(offset, offset + PAGE_SIZE);
+      totalCount = fallbackPage.totalCount;
+      urgentPrograms = fallbackPage.urgentPrograms;
+    } else {
+      promotedPrograms = unwrapProgramListRows(programsPage.promoted_items);
+      programs = unwrapProgramListRows(programsPage.items);
+      totalCount = programsPage.count ?? programsPage.items.length;
+      urgentPrograms = unwrapProgramListRows(urgentPage.items);
+    }
   } catch (e) {
     promotedPrograms = [];
     try {
@@ -173,7 +217,15 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
       ]);
       totalCount = programs.length;
     } catch {
-      error = e instanceof Error ? e.message : "프로그램을 불러오는 중 문제가 발생했습니다.";
+      try {
+        const fallbackPage = await loadPublicProgramsPageFallback();
+        promotedPrograms = page === 1 && isDefaultBrowseView ? fallbackPage.promotedPrograms : [];
+        programs = fallbackPage.programs.slice(offset, offset + PAGE_SIZE);
+        urgentPrograms = fallbackPage.urgentPrograms;
+        totalCount = fallbackPage.totalCount;
+      } catch {
+        error = e instanceof Error ? e.message : "프로그램을 불러오는 중 문제가 발생했습니다.";
+      }
     }
   }
 

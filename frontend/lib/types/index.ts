@@ -232,6 +232,11 @@ export type CompareStatus = "pass" | "warn" | "block";
 
 export interface CompareMeta {
   subsidy_rate?: string | null;
+  self_payment?: string | number | null;
+  out_of_pocket?: string | number | null;
+  out_of_pocket_amount?: string | number | null;
+  actual_training_cost?: string | number | null;
+  real_man?: string | number | null;
   teaching_method?: string | null;
   employment_connection?: string | null;
   satisfaction_score?: string | number | null;

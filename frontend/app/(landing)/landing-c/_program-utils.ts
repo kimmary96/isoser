@@ -8,6 +8,11 @@ import {
   getProgramTrainingModeLabel,
   hasTomorrowLearningCardRequirement,
 } from "@/lib/program-display";
+import {
+  isAllProgramFilterChip,
+  matchesProgramKeyword,
+  matchesProgramFilterChip,
+} from "@/lib/program-filters";
 import type { ProgramListRow } from "@/lib/types";
 
 import { OPPORTUNITY_FEED_SIZE, SEOUL_DISTRICTS, liveBoardSources } from "./_content";
@@ -133,7 +138,7 @@ export function locationLabel(program: ProgramListRow): string | null {
 
 export function programTagItems(program: ProgramListRow): Array<{ label: string; tone: "green" | "blue" | "amber" | "indigo" }> {
   const tags: Array<{ label: string; tone: "green" | "blue" | "amber" | "indigo" }> = [
-    { label: `훈련비 ${trainingFeeLabel(program)}`, tone: "green" },
+    { label: `본인부담금 ${trainingFeeLabel(program)}`, tone: "green" },
   ];
 
   const trainingMode = getProgramTrainingModeLabel(program);
@@ -261,7 +266,7 @@ type OpportunityOrderingOptions = {
 
 export function orderOpportunityPrograms(programs: ProgramListRow[], options?: OpportunityOrderingOptions): ProgramListRow[] {
   const limit = options?.limit ?? OPPORTUNITY_FEED_SIZE;
-  const isAllChip = !options?.activeChip || options.activeChip === "전체";
+  const isAllChip = isAllProgramFilterChip(options?.activeChip);
   const minimumDaysLeft = isAllChip ? 1 : 0;
   const recruitingPrograms = programs.filter((program) => isRecruitingProgram(program, minimumDaysLeft));
   const fallbackPrograms =
@@ -273,6 +278,25 @@ export function orderOpportunityPrograms(programs: ProgramListRow[], options?: O
     .toSorted((left, right) => comparePrograms(left.program, right.program) || left.index - right.index)
     .map(({ program }) => program)
     .slice(0, limit);
+}
+
+export function filterOpportunityPrograms(
+  programs: ProgramListRow[],
+  options?: {
+    activeChip?: string;
+    keyword?: string;
+  }
+): ProgramListRow[] {
+  const activeChip = options?.activeChip ?? "전체";
+  const keyword = options?.keyword ?? "";
+
+  return programs.filter((program) => {
+    if (!matchesProgramKeyword(program, keyword)) {
+      return false;
+    }
+
+    return matchesProgramFilterChip(program, activeChip);
+  });
 }
 
 export function getLiveBoardPrograms(programs: ProgramListRow[]): ProgramListRow[] {

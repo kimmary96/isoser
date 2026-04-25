@@ -82,10 +82,12 @@ def test_program_list_item_response_model_omits_compare_meta() -> None:
 
 
 def test_build_program_query_params_for_filtered_list() -> None:
+    today = date.today().isoformat()
     params = programs._build_program_query_params(
         select="*",
         category="IT",
         category_detail="web-development",
+        scope="default",
         q="부트캠프",
         regions=["서울", "대전·충청"],
         recruiting_only=True,
@@ -97,13 +99,27 @@ def test_build_program_query_params_for_filtered_list() -> None:
     assert params["select"] == "*"
     assert params["category"] == "eq.IT"
     assert "category_detail" not in params
+    assert "scope" not in params
     assert "title" not in params
     assert params["search_text"] == "ilike.*부트캠프*"
     assert params["limit"] == str(programs.PROGRAM_SEARCH_SCAN_LIMIT)
-    assert "deadline" not in params
+    assert params["deadline"] == f"gte.{today}"
     assert params["order"] == "created_at.desc.nullslast"
     assert "offset" not in params
     assert params["or"] == "(location.ilike.*서울*,location.ilike.*대전*,location.ilike.*충청*,location.ilike.*세종*)"
+
+
+def test_build_program_query_params_bounds_default_browse_deadline_scan() -> None:
+    today = date.today().isoformat()
+    params = programs._build_program_query_params(
+        select="*",
+        sort="default",
+        limit=20,
+    )
+
+    assert params["limit"] == str(programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE)
+    assert params["order"] == "deadline.asc.nullslast"
+    assert params["deadline"] == f"gte.{today}"
 
 
 def test_recommended_score_uses_weighted_components_and_reasons() -> None:
@@ -215,6 +231,49 @@ def test_read_model_mode_splits_browse_search_and_archive() -> None:
     assert programs._program_list_mode(q=None, scope=None, include_closed_recent=True) == "archive"
 
 
+def test_program_list_mode_treats_two_filter_groups_as_search() -> None:
+    assert (
+        programs._program_list_mode(
+            q=None,
+            scope=None,
+            include_closed_recent=False,
+            active_filter_group_count=1,
+        )
+        == "browse"
+    )
+    assert (
+        programs._program_list_mode(
+            q=None,
+            scope=None,
+            include_closed_recent=False,
+            active_filter_group_count=2,
+        )
+        == "search"
+    )
+
+
+def test_program_active_filter_group_count_counts_filter_families() -> None:
+    assert (
+        programs._program_active_filter_group_count(
+            category_detail="data-ai",
+            regions=["서울", "경기"],
+            cost_types=["naeil-card"],
+        )
+        == 3
+    )
+    assert (
+        programs._program_active_filter_group_count(
+            regions=["서울", "경기"],
+        )
+        == 1
+    )
+
+
+def test_read_model_is_disabled_for_recent_closed_mode() -> None:
+    assert programs._can_use_program_list_read_model(include_closed_recent=False) is True
+    assert programs._can_use_program_list_read_model(include_closed_recent=True) is False
+
+
 def test_read_model_query_limits_default_browse_pool() -> None:
     params, mode = programs._build_read_model_params(
         category=None,
@@ -238,6 +297,56 @@ def test_read_model_query_limits_default_browse_pool() -> None:
     assert params["browse_rank"] == "lte.300"
     assert params["is_open"] == "eq.true"
     assert params["order"].startswith("recommended_score.desc")
+
+
+def test_underfilled_default_browse_read_model_triggers_fallback() -> None:
+    assert programs._is_underfilled_default_browse_read_model(
+        count=50,
+        category=None,
+        category_detail=None,
+        scope=None,
+        region_detail=None,
+        q=None,
+        regions=None,
+        sources=None,
+        teaching_methods=None,
+        cost_types=None,
+        participation_times=None,
+        targets=None,
+        include_closed_recent=False,
+    ) is True
+
+    assert programs._is_underfilled_default_browse_read_model(
+        count=300,
+        category=None,
+        category_detail=None,
+        scope=None,
+        region_detail=None,
+        q=None,
+        regions=None,
+        sources=None,
+        teaching_methods=None,
+        cost_types=None,
+        participation_times=None,
+        targets=None,
+        include_closed_recent=False,
+    ) is False
+
+    assert programs._is_underfilled_default_browse_read_model(
+        count=50,
+        category="AI",
+        category_detail=None,
+        scope=None,
+        region_detail=None,
+        q=None,
+        regions=None,
+        sources=None,
+        teaching_methods=None,
+        cost_types=None,
+        participation_times=None,
+        targets=None,
+        include_closed_recent=False,
+    ) is False
 
 
 def test_read_model_query_popular_sort_skips_browse_pool() -> None:
@@ -484,6 +593,37 @@ def test_program_detail_click_hotness_migration_formula_matches_backend_contract
     assert "+ coalesce(recommended, 0);" in migration
 
 
+def test_program_browse_pool_daily_refresh_migration_uses_kst_midnight_schedule() -> None:
+    migration = (
+        Path(__file__).resolve().parents[2]
+        / "supabase"
+        / "migrations"
+        / "20260425133000_schedule_daily_program_browse_pool_refresh_kst.sql"
+    ).read_text(encoding="utf-8")
+
+    assert "program_list_kst_today" in migration
+    assert "timezone('Asia/Seoul', now())::date" in migration
+    assert "refresh_program_list_browse_pool_daily" in migration
+    assert "create extension if not exists pg_cron" in migration
+    assert "program-list-browse-pool-daily-kst" in migration
+    assert "'0 15 * * *'" in migration
+
+
+def test_program_browse_pool_priority_migration_uses_urgency_bucket_before_diversity() -> None:
+    migration = (
+        Path(__file__).resolve().parents[2]
+        / "supabase"
+        / "migrations"
+        / "20260425143000_prioritize_program_browse_pool_urgency_buckets.sql"
+    ).read_text(encoding="utf-8")
+
+    assert "urgency_bucket" in migration
+    assert "between 0 and 7 then 1" in migration
+    assert "between 8 and 30 then 2" in migration
+    assert "c.urgency_bucket asc" in migration
+    assert "source_rank_calc <= ceil(greatest(pool_limit, 1)::numeric * 0.70)" in migration
+
+
 def test_pg_trgm_extension_warning_has_separate_migration() -> None:
     migration = (
         Path(__file__).resolve().parents[2]
@@ -533,7 +673,7 @@ async def test_list_programs_page_uses_read_model_and_cursor(monkeypatch: pytest
         params = kwargs.get("params")
         assert isinstance(params, dict)
         if params.get("select") == "id":
-            return [{"id": "program-1"}]
+            return [{"id": f"program-{index}"} for index in range(300)]
         return [
             {
                 "id": "00000000-0000-0000-0000-000000000001",
@@ -569,7 +709,94 @@ async def test_list_programs_page_uses_read_model_and_cursor(monkeypatch: pytest
     assert len(response.items) == 1
     assert response.items[0].program.id == "00000000-0000-0000-0000-000000000001"
     assert response.next_cursor is not None
-    assert response.count == 1
+    assert response.count == 300
+
+
+@pytest.mark.asyncio
+async def test_list_programs_flat_endpoint_falls_back_when_default_browse_read_model_is_underfilled(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_fetch_program_list_read_model_rows(**_: object) -> programs.ProgramListPageResponse:
+        return programs.ProgramListPageResponse(
+            items=[
+                programs._serialize_program_list_row_item(
+                    {
+                        "id": "stale-read-model",
+                        "title": "stale-read-model",
+                        "deadline": (date.today() - timedelta(days=1)).isoformat(),
+                        "is_active": False,
+                        "days_left": -1,
+                    }
+                )
+            ],
+            mode="browse",
+            source="read_model",
+        )
+
+    async def fake_count_program_read_model_rows(**_: object) -> int:
+        return 50
+
+    async def fake_fetch_program_list_rows(params: dict[str, object], *, q: str | None) -> list[dict[str, object]]:
+        assert q is None
+        assert params["select"] == "*"
+        assert params["limit"] == str(programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE)
+        future_deadline = (date.today() + timedelta(days=5)).isoformat()
+        return [
+            {
+                "id": "legacy-open",
+                "title": "legacy-open",
+                "deadline": future_deadline,
+                "is_active": True,
+            }
+        ]
+
+    monkeypatch.setattr(programs, "_fetch_program_list_read_model_rows", fake_fetch_program_list_read_model_rows)
+    monkeypatch.setattr(programs, "_count_program_read_model_rows", fake_count_program_read_model_rows)
+    monkeypatch.setattr(programs, "_fetch_program_list_rows", fake_fetch_program_list_rows)
+    monkeypatch.setenv("ENABLE_PROGRAM_LIST_READ_MODEL", "true")
+
+    rows = await programs.list_programs(
+        regions=None,
+        sources=None,
+        teaching_methods=None,
+        cost_types=None,
+        participation_times=None,
+        targets=None,
+        selection_processes=None,
+        employment_links=None,
+        sort="default",
+        limit=5,
+        offset=0,
+        cursor=None,
+    )
+
+    assert len(rows) == 1
+    assert rows[0]["id"] == "legacy-open"
+    assert rows[0]["days_left"] == 5
+
+
+@pytest.mark.asyncio
+async def test_count_programs_returns_browse_pool_limit_when_default_read_model_is_underfilled(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_count_program_read_model_rows(**_: object) -> int:
+        return 50
+
+    monkeypatch.setattr(programs, "_count_program_read_model_rows", fake_count_program_read_model_rows)
+    monkeypatch.setenv("ENABLE_PROGRAM_LIST_READ_MODEL", "true")
+
+    response = await programs.count_programs(
+        regions=None,
+        sources=None,
+        teaching_methods=None,
+        cost_types=None,
+        participation_times=None,
+        targets=None,
+        selection_processes=None,
+        employment_links=None,
+    )
+
+    assert response.count == programs._program_browse_pool_limit()
 
 
 @pytest.mark.asyncio

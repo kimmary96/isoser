@@ -1,5 +1,15 @@
 # 리팩토링 로그
 
+- 2026-04-26: `frontend/lib/program-filters.ts`, `frontend/app/(landing)/landing-c/_program-utils.ts`, `frontend/lib/server/public-programs-fallback.ts`, `frontend/app/(landing)/landing-c/page.tsx`, `frontend/lib/program-filters.test.ts`, `docs/current-state.md`, `docs/refactoring-log.md`
+  - 랜딩 공용 칩 matcher를 backend query param과 local fallback에서 함께 쓰도록 정리하고, `창업` 칩은 `category=창업` 기본 요청을 유지하면서도 `K-Startup`/`창업진흥원`/`예비창업` 계열 텍스트를 같은 칩 의미로 인정하게 보강함
+  - `landing-c` Opportunity feed가 필터 결과 6개 미만일 때 legacy 공개 row를 더 넓게 읽어 같은 칩/keyword 규칙으로 보충하도록 바꿔, browse pool에 덜 잡힌 `창업` 계열도 가능한 범위에서 6개 카드까지 유지하게 맞춤
+  - 공용 matcher 확장을 `vitest`로 고정해 `창업` 칩의 K-Startup 매칭과 keyword matcher 공유 규칙이 이후 변경에서도 다시 어긋나지 않게 함
+
+- 2026-04-26: `frontend/lib/program-filters.ts`, `frontend/lib/program-display.ts`, `frontend/lib/server/public-programs-fallback.ts`, `frontend/app/(landing)/landing-c/_program-utils.ts`, `frontend/app/(landing)/programs/programs-table.tsx`, `frontend/app/(landing)/programs/programs-table-helpers.ts`, `frontend/lib/program-display.test.ts`, `frontend/lib/program-filters.test.ts`, `docs/current-state.md`, `docs/refactoring-log.md`
+  - 랜딩 `온라인` 칩을 `regions=온라인` 대신 `teaching_methods=온라인`으로 보내고, local matcher/목록 표시도 `getProgramTrainingModeLabel(...)` 공용 추론을 쓰게 바꿔 오래된 sparse row에서도 온라인 신호를 더 잘 회수하게 함
+  - 공개 fallback 스캔은 더 이상 고정 3000행 1회 필터에만 의존하지 않고, 필요한 개수를 채울 때까지 1000행 배치 스캔을 반복하도록 바꿔 `온라인`/`무료`처럼 browse pool 바깥에 많이 있는 칩이 최소 카드 수를 채우기 쉽게 맞춤
+  - 카드와 `/programs` 목록의 비용 노출은 Work24 계열에서 `subsidy_amount`를 `본인부담금` 우선값으로 해석하도록 조정했고, 값이 없을 때만 기존 총 훈련비/지원 텍스트 fallback을 유지함
+
 - 2026-04-24: `backend/utils/supabase_admin.py`, `frontend/lib/supabase/server.ts`, `docs/current-state.md`, `docs/refactoring-log.md`
   - 로컬 터미널/서버 세션에서 프로세스 env가 비어 있어도 `backend/.env`, `frontend/.env.local` 쪽 값을 fallback으로 읽어 Supabase URL/key를 해석하도록 보강함
   - 기존 env 우선순위와 런타임 API 계약은 유지하고, 설정 누락 시 local operator session에서만 보조 경로로 동작하게 정리함
@@ -3197,4 +3207,48 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-24: `supabase/MIGRATIONS_INDEX.md`, `supabase/README.md`, `docs/current-state.md`
   - `supabase/migrations/`는 Supabase runner가 읽는 flat history라 적용된 migration 파일 이동/아카이브가 위험하다는 운영 규칙을 명시하고, 대신 월별/도메인별 탐색용 인덱스 문서를 추가함
   - 앞으로 실행 대상이 아닌 SQL 초안은 `supabase/SQL.md`나 specs로 보내고, 실제 migration만 `supabase/migrations/`에 두는 기준을 분명히 함
+- 2026-04-24: `backend/utils/supabase_admin.py`, `frontend/lib/api/backend.ts`, `frontend/lib/api/backend-endpoint.ts`, `frontend/lib/supabase/env.ts`, `frontend/lib/supabase/server.ts`, `frontend/lib/supabase/service-role.ts`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/app/api/dashboard/recommended-programs/route.ts`, `frontend/app/api/dashboard/calendar-selections/route.ts`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-24-program-supabase-config-recovery-result.md`
+  - local operator session에서 process env 누락과 stale backend listener가 겹치면서 랜딩 `/programs`, 랜딩 추천, dashboard 추천/캘린더 경로가 같이 비던 문제를 재현했고, backend/Next server env file fallback과 local backend candidate failover를 추가해 현재 공개 화면이 다시 데이터를 노출하도록 복구함
+  - dashboard recommendation/calendar BFF는 backend 추천 경로가 비거나 timeout/503일 때 service-role Supabase summary read로 한 번 더 내려가도록 보강했고, `127.0.0.1:3000` 기준 `/landing-c`, `/programs`, `/api/dashboard/recommend-calendar`, `/api/dashboard/recommended-programs` populated 응답을 다시 확인함
+- 2026-04-24: `frontend/lib/server/public-programs-fallback.ts`, `frontend/app/(landing)/landing-c/page.tsx`, `frontend/app/(landing)/programs/page.tsx`, `frontend/lib/api/backend.ts`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-24-program-supabase-config-recovery-result.md`
+  - 공개 랜딩 `/landing-c`와 `/programs`가 stale local backend 503에 다시 묶이는 남은 경로를 재현했고, public SSR에서 직접 Supabase summary fallback을 쓰도록 연결해 backend가 비정상이더라도 카드 데이터를 계속 렌더하게 맞춤
+  - `/programs`의 `filter-options` 보조 요청은 local backend `Supabase is not configured` 오류를 더 이상 dev SSR payload에 노출하지 않도록, retryable local metadata 오류일 때 빈 옵션으로 내려 static filter option fallback을 유지하게 정리함
+- 2026-04-24: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/lib/server/program-card-summary.ts`, `frontend/lib/server/public-programs-fallback.ts`, `frontend/app/(landing)/landing-c/_program-utils.ts`, `frontend/app/(landing)/landing-c/_program-utils.test.ts`, `frontend/app/(landing)/landing-c/page.tsx`, `frontend/app/(landing)/programs/page.tsx`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-24-program-supabase-config-recovery-result.md`
+  - free-plan 검증 때문에 `program_list_index`가 50건 샘플 상태일 때도 public browse 화면이 그 값을 정상 browse pool처럼 믿어 `300건 browse`, `광고 3개 상단 고정`, `모집중만`, `만족도/추천 점수 우선` 규칙이 무너지던 회귀를 재현함
+  - backend 기본 browse API는 underfilled default read-model을 감지하면 legacy 경로로 되돌리도록 보강했고, frontend public fallback도 legacy open `programs` row를 로컬 정렬/보강해 `300 programs / 3 promoted / 12 urgent` 상태를 다시 만들도록 정리함
+  - fresh `3001` Next dev 기준 `/programs`에서 `전체 프로그램 300개`, `광고` 3개, `Closing Soon`을 다시 확인했고 `/landing-c`의 `추천 공고 3건`도 유지됨
+- 2026-04-25: `frontend/lib/server/program-detail-fallback.ts`, `frontend/app/(landing)/programs/[id]/page.tsx`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-24-program-supabase-config-recovery-result.md`
+  - 랜딩/목록은 direct Supabase fallback으로 살아 있는데 상세 `/programs/[id]`는 여전히 backend detail endpoint 단일 의존이라 `과정 보기` 진입 시 에러 박스로 떨어지는 회귀를 재현함
+  - 상세 페이지도 backend detail 실패 시 `programs` row와 primary `program_source_records`를 직접 읽는 fallback을 추가해, fresh `3001` 기준 실제 상세 URL에서 `프로그램 요약`, `교육기관 정보` 섹션이 다시 렌더링되는 것까지 확인함
 
+- 2026-04-25: 랜딩 `무료` 칩을 `내일배움카드 무료`까지 포함하고 비용 칩 전용 fallback을 추가함
+  - `frontend/lib/program-filters.ts`의 `무료` chip definition을 `free-no-card + naeil-card`로 넓히고, explicit `cost_type`이 비어 있어도 `cost=0` 또는 `내일배움카드` 신호를 무료 후보로 분류하도록 보강함
+  - `frontend/lib/server/public-programs-fallback.ts`에 `loadPublicFreeProgramFallbackRows()`를 추가해 generic deadline fallback 대신 무료 후보만 넓게 스캔하는 경로를 만들고, `landing-a/page.tsx`, `landing-c/page.tsx`가 비용 칩에서는 그 전용 fallback을 사용하도록 조정함
+  - fresh dev 검증에서 `/landing-c?chip=무료`가 더 이상 빈 상태 문구를 렌더링하지 않고 무료 후보를 다시 노출하는 것을 확인함
+- 2026-04-25: 랜딩 칩 메타데이터와 매칭 로직을 공용 helper로 통합함
+  - `frontend/lib/program-filters.ts`가 단순 문자열 배열/맵 대신 공용 chip definition 목록을 갖고, query builder와 local matcher를 같은 정의에서 파생하도록 정리함
+  - `frontend/app/(landing)/landing-c/_program-utils.ts`는 더 이상 카테고리/지역/무료 칩 규칙을 직접 하드코딩하지 않고 `program-filters` helper를 사용하도록 단순화함
+  - 관련 Vitest를 확장해 `전체/무료/카테고리/지역` 공용 chip 의미가 query param과 local filtering에서 같이 유지되는지 고정함
+- 2026-04-25: 랜딩 공용 칩에서 `마감임박`을 제거하고 `무료`를 추가함
+  - `frontend/lib/program-filters.ts`가 공용 랜딩 칩을 `무료` 기준으로 바꾸고, 선택 시 `cost_types=free-no-card`를 backend 목록 API에 전달하도록 조정함
+  - `frontend/app/(landing)/landing-c/_program-utils.ts`가 public fallback feed에서도 같은 무료 판정을 적용하도록 보강해, stale backend/직접 Supabase fallback 상황에서도 랜딩 카드가 무료 훈련만 남도록 맞춤
+  - `frontend/app/(landing)/landing-a/_program-feed.tsx`의 칩 강조 색을 `무료`에 맞춰 조정하고, 관련 Vitest 기대값을 업데이트함
+- 2026-04-25: `backend/routers/programs.py`, `backend/services/program_list_filters.py`, `backend/tests/test_programs_router.py`, `frontend/app/(landing)/programs/programs-filter-bar.tsx`, `supabase/migrations/20260425133000_schedule_daily_program_browse_pool_refresh_kst.sql`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-24-program-supabase-config-recovery-result.md`
+  - `/programs`의 `마감된 공고 보기`는 현재 read-model archive path가 아니라 legacy deadline-window path를 타도록 read-model 사용 조건을 좁혀, 체크 시에만 `최근 90일 내 마감 공고 + 모집중 공고` 조합과 open-first 정렬을 보장함
+  - backend deadline/date helper는 KST 기준일을 쓰도록 보강했고, filter bar 라벨도 사용자 요청에 맞춰 `마감된 공고 보기`로 정리함
+  - 새 Supabase migration은 `program_list_kst_today()` helper와 `refresh_program_list_browse_pool_daily()` wrapper를 추가하고, `pg_cron` job `program-list-browse-pool-daily-kst`를 `0 15 * * *` UTC로 등록해 한국시간 자정마다 `300건 browse pool`을 다시 계산하도록 함
+  - 이후 public landing fixes는 `landing-c` 우선 기준으로 문서화하고, `landing-a`는 보존 경로로만 유지한다는 현재 운영 원칙을 `docs/current-state.md`에 반영함
+- 2026-04-25: `frontend/lib/program-list-scope.ts`, `frontend/lib/program-list-scope.test.ts`, `frontend/app/(landing)/landing-c/page.tsx`, `frontend/app/(landing)/programs/page.tsx`
+  - 공개 프로그램 목록의 `browse/default`, `search/all`, `archive` scope 전환 규칙을 `resolvePublicProgramListScope()`로 공용화해, landing-c와 `/programs`가 같은 기준으로 browse pool vs 검색 모드를 고르도록 정리함
+  - 동작은 유지하되 `keyword 있으면 all`, `마감 공고 보기면 archive`, 그 외 `default`라는 계약을 테스트로 고정해 이후 설명/운영 기준과 코드가 다시 어긋나지 않게 함
+- 2026-04-25: `docs/specs/public-program-browse-search-rule-v1.md`
+  - 공개 `300 browse pool`과 `search/all` 전환 규칙에 대한 사용자 제안안을 현재 read-model 구조와 비교 분석하고, 그대로 적용 시의 충돌점(`deadline-only shortlist` 후 `recommended_score` 재정렬)과 권장안을 문서화함
+  - 권장안은 `KST open-only`, `single filter stays in browse pool`, `keyword or 2+ filter groups => search`, 그리고 `urgency bucket + recommended_score + source diversity` 기반 pool 선정 후 surface별 기본 정렬을 분리하는 방향으로 정리함
+- 2026-04-25: `frontend/lib/program-list-scope.ts`, `frontend/lib/program-list-scope.test.ts`, `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/page-filters.ts`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/lib/server/public-programs-fallback.ts`, `supabase/migrations/20260425143000_prioritize_program_browse_pool_urgency_buckets.sql`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-24-program-supabase-config-recovery-result.md`
+  - 공개 탐색 규칙을 실제 코드에 반영해 `keyword 또는 active filter group 2개 이상 => search`, `필터 1개까지 => browse 300` 계약을 landing-c, `/programs`, backend read-model mode 판정에 같이 적용함
+  - `/programs` URL helper도 같은 기준으로 `scope=all/archive/default`를 계산하게 바꿔 active filter chip 제거/페이지 이동 시 mode가 다시 어긋나지 않도록 정리함
+  - public fallback browse 정렬과 새 Supabase migration은 browse pool의 organic 선정 우선순위를 `KST open-only -> urgency bucket -> recommended_score -> source diversity -> 300 cut` 방향으로 맞추기 시작함
+- 2026-04-25: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-24-program-supabase-config-recovery-result.md`
+  - backend/frontend를 모두 재기동한 뒤 `127.0.0.1:8001` fresh backend와 `127.0.0.1:3000` frontend를 다시 검증하면서, default public browse fallback이 flat `/programs/list`에서는 다시 stale read-model로 재진입하는 문제와 legacy browse query가 base `programs` 테이블에 `scope=eq.default`를 잘못 넘겨 메인 리스트를 비우는 문제를 재현함
+  - `list_programs()`도 page endpoint와 같은 underfilled read-model 감지를 수행하도록 보강하고, legacy browse query는 `scope`를 제거한 채 KST 오늘 이후 deadline window + bounded scan limit을 사용하게 정리해 `list/count/filter-options`가 fresh 재기동 환경에서도 다시 채워지도록 복구함
+  - `/programs/count`가 underfilled browse fallback에서 raw legacy scan 개수를 노출하지 않고 browse 계약 `300`을 유지하도록 맞췄고, 관련 pytest/py_compile과 `3000`/`8001` 재기동 검증을 다시 통과시킴

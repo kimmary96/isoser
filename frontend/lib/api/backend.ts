@@ -60,6 +60,22 @@ async function requestJson<T>(
   }
 }
 
+function isRetryableLocalBackendMetadataError(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const normalized = error.message.trim().toLowerCase();
+  return (
+    normalized.includes("supabase is not configured") ||
+    normalized.includes("service unavailable") ||
+    normalized.includes("failed to fetch") ||
+    normalized.includes("fetch failed") ||
+    normalized.includes("connect") ||
+    normalized.includes("no backend endpoint could be reached")
+  );
+}
+
 export async function parsePdf(file: File): Promise<ParsePdfResponse> {
   const formData = new FormData();
   formData.append("file", file);
@@ -272,13 +288,25 @@ export async function getProgramCount(params?: ProgramListParams): Promise<numbe
 }
 
 export async function getProgramFilterOptions(params?: ProgramListParams): Promise<ProgramFilterOptionsResponse> {
-  return requestJson<ProgramFilterOptionsResponse>(
-    buildPathWithSearchParams("/programs/filter-options", buildProgramListSearchParams(params)),
-    {
-      method: "GET",
-    },
-    "Failed to load program filter options."
-  );
+  try {
+    return await requestJson<ProgramFilterOptionsResponse>(
+      buildPathWithSearchParams("/programs/filter-options", buildProgramListSearchParams(params)),
+      {
+        method: "GET",
+      },
+      "Failed to load program filter options."
+    );
+  } catch (error) {
+    if (isRetryableLocalBackendMetadataError(error)) {
+      return {
+        sources: [],
+        targets: [],
+        selection_processes: [],
+        employment_links: [],
+      };
+    }
+    throw error;
+  }
 }
 
 export async function getPrograms(programIds: string[]): Promise<ProgramCardSummary[]> {

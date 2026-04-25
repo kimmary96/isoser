@@ -58,7 +58,7 @@ export function ProgramsTable({
             <th scope="col" className="w-[20%] px-4 py-3">교육기관명 / 프로그램명</th>
             <th scope="col" className="w-[11%] px-4 py-3">프로그램 과정</th>
             <th scope="col" className="w-[8%] px-4 py-3">모집상태</th>
-            <th scope="col" className="w-[7%] px-4 py-3">비용</th>
+            <th scope="col" className="w-[7%] px-4 py-3">본인부담금</th>
             <th scope="col" className="w-[10%] px-4 py-3">온·오프라인</th>
             <th scope="col" className="w-[9%] px-4 py-3">학습기간</th>
             <th scope="col" className="w-[10%] px-4 py-3">참여 시간</th>

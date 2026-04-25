@@ -1,4 +1,5 @@
 import type { ProgramSort } from "@/lib/types";
+import { countActiveProgramFilterGroups, resolvePublicProgramListScope } from "@/lib/program-list-scope";
 
 import { DEFAULT_PROGRAM_SORT, PROGRAM_SORT_LABELS } from "./program-sort";
 import type { NamedFilterOption, ProgramCategoryMenuOption, ProgramsFilterChip } from "./programs-filter-bar";
@@ -187,8 +188,21 @@ export function buildProgramsHref(params: ProgramsHrefParams): string {
   params.participationTimes?.forEach((time) => searchParams.append("participation_times", time));
   params.sources?.forEach((source) => searchParams.append("sources", source));
   params.targets?.forEach((target) => searchParams.append("targets", target));
-  if (params.q) searchParams.set("scope", "all");
   if (params.closed) searchParams.set("closed", "true");
+  const scope = resolvePublicProgramListScope({
+    keyword: params.q,
+    includeClosedRecent: params.closed,
+    activeFilterGroupCount: countActiveProgramFilterGroups({
+      categoryId: params.categoryId,
+      regions: params.regions,
+      teachingMethods: params.teachingMethods,
+      costTypes: params.costTypes,
+      participationTimes: params.participationTimes,
+      sources: params.sources,
+      targets: params.targets,
+    }),
+  });
+  if (scope !== "default") searchParams.set("scope", scope);
   if (params.sort && params.sort !== DEFAULT_PROGRAM_SORT) searchParams.set("sort", params.sort);
   if (params.page && params.page > 1) searchParams.set("page", String(params.page));
 

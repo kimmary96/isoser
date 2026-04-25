@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import Any, Callable, Mapping, Sequence
 
 try:
@@ -24,6 +24,7 @@ PROGRAM_PARTICIPATION_TIMES = {"part-time", "full-time"}
 PROGRAM_TARGETS = {"청년", "여성", "중장년", "창업", "재직자", "구직자", "대학생"}
 PROGRAM_SELECTION_PROCESSES = {"서류", "면접", "테스트", "선착순", "추첨"}
 PROGRAM_EMPLOYMENT_LINKS = {"채용연계", "인턴십", "취업지원", "멘토링"}
+KST = timezone(timedelta(hours=9))
 PROGRAM_CATEGORY_LABELS: dict[str, str] = {
     "web-development": "웹 풀스택",
     "mobile": "프론트엔드",
@@ -943,6 +944,10 @@ def _sort_program_list_rows(
     return sorted(rows, key=deadline_sort_key)
 
 
+def _today_kst() -> date:
+    return datetime.now(KST).date()
+
+
 def _filter_program_rows_by_deadline_window(
     rows: list[dict[str, Any]],
     *,
@@ -952,7 +957,7 @@ def _filter_program_rows_by_deadline_window(
     is_active_work24_with_unknown_deadline: Callable[[Mapping[str, Any]], bool],
 ) -> list[dict[str, Any]]:
     if include_closed_recent:
-        recent_cutoff = date.today() - timedelta(days=90)
+        recent_cutoff = _today_kst() - timedelta(days=90)
         return [
             row
             for row in rows
