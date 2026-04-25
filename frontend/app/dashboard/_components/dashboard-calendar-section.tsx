@@ -7,6 +7,7 @@ import type { MouseEvent } from "react";
 
 import { DashboardCalendarMiniCalendar } from "@/app/dashboard/_components/dashboard-calendar-mini-calendar";
 import { useDashboardCalendar } from "@/app/dashboard/_hooks/use-dashboard-calendar";
+import { ProgramDeadlineBadge } from "@/components/programs/program-deadline-badge";
 import {
   formatProgramMonthDay,
   formatProgramRelevanceText,
@@ -32,34 +33,6 @@ function resolveReason(item: ProgramCardItem): string {
   return getProgramCardRelevanceReasons(item)[0] ?? getProgramCardReason(item) ?? "추천 근거 없음";
 }
 
-function getDdayLabel(daysLeft: number | null | undefined): string {
-  if (typeof daysLeft !== "number" || Number.isNaN(daysLeft)) {
-    return "일정 확인";
-  }
-
-  if (daysLeft < 0) {
-    return "마감";
-  }
-
-  if (daysLeft === 0) {
-    return "D-Day";
-  }
-
-  return `D-${daysLeft}`;
-}
-
-function getDdayTone(label: string, daysLeft: number | null | undefined): string {
-  if (label === "D-Day" || daysLeft === 0 || (typeof daysLeft === "number" && daysLeft <= 3)) {
-    return "bg-rose-100 text-rose-700";
-  }
-
-  if (typeof daysLeft === "number" && daysLeft <= 7) {
-    return "bg-amber-100 text-amber-700";
-  }
-
-  return "bg-slate-100 text-slate-600";
-}
-
 function stopCardNavigation(event: MouseEvent<HTMLElement>) {
   event.stopPropagation();
 }
@@ -77,7 +50,6 @@ function CalendarCard({
   const programId = String(item.program.id ?? "").trim();
   const externalLink = item.program.application_url || item.program.link || item.program.source_url;
   const resumeLink = `/dashboard/resume?prefill_program_id=${encodeURIComponent(programId)}`;
-  const ddayLabel = getDdayLabel(item.program.days_left);
 
   const goToProgram = () => {
     if (!programId) return;
@@ -104,11 +76,7 @@ function CalendarCard({
         <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">
           {formatProgramSourceLabel(item.program.source, { work24TrainingLabel: "고용24" })}
         </span>
-        <span
-          className={`rounded-full px-3 py-1 text-xs font-semibold ${getDdayTone(ddayLabel, item.program.days_left)}`}
-        >
-          {ddayLabel}
-        </span>
+        <ProgramDeadlineBadge program={item.program} />
       </div>
 
       <div className="space-y-3">

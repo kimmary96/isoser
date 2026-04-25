@@ -1,5 +1,6 @@
 import {
   formatProgramCostLabel,
+  formatProgramScheduleLabel,
   getProgramTrainingModeLabel,
   getProgramSelectionKeywords,
   getProgramSupportBadge,
@@ -23,6 +24,10 @@ export function formatDateRange(start?: string | null, end?: string | null): str
   if (endText === "-") return startText;
   if (startText === endText) return startText;
   return `${startText} ~ ${endText}`;
+}
+
+export function formatSchedule(program: ProgramListRow): string {
+  return formatProgramScheduleLabel(program, { unknownLabel: "-" });
 }
 
 export function formatCost(program: ProgramListRow): string {

@@ -1,4 +1,4 @@
-import type { ProgramCardSummary } from "@/lib/types";
+import type { CompareMeta, ProgramCardSummary } from "@/lib/types";
 
 type SupabaseErrorLike = {
   code?: string | null;
@@ -89,6 +89,14 @@ function asBoolean(value: unknown): boolean | null {
   return typeof value === "boolean" ? value : null;
 }
 
+function asCompareMeta(value: unknown): CompareMeta | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+
+  return value as CompareMeta;
+}
+
 function normalizeProgramIds(programIds: string[]): string[] {
   const seen = new Set<string>();
   const orderedIds: string[] = [];
@@ -154,6 +162,12 @@ export function readModelRowToProgramCardSummary(row: Record<string, unknown>): 
       typeof row.cost === "number" || typeof row.cost === "string"
         ? (row.cost as number | string)
         : null,
+    support_amount:
+      typeof row.support_amount === "number" || typeof row.support_amount === "string"
+        ? (row.support_amount as number | string)
+        : typeof row.subsidy_amount === "number" || typeof row.subsidy_amount === "string"
+          ? (row.subsidy_amount as number | string)
+          : null,
     cost_type: cleanText(row.cost_type),
     support_type: cleanText(row.support_type),
     teaching_method: cleanText(row.teaching_method_label) ?? cleanText(row.teaching_method),
@@ -164,6 +178,7 @@ export function readModelRowToProgramCardSummary(row: Record<string, unknown>): 
       cleanText(row.deadline_confidence) as ProgramCardSummary["deadline_confidence"],
     summary: cleanText(row.summary_text) ?? cleanText(row.summary),
     description: cleanText(row.description),
+    compare_meta: asCompareMeta(row.compare_meta),
     tags: asStringArray(row.badge_labels) ?? asStringArray(row.tags),
     skills: asStringArray(row.keyword_labels) ?? asStringArray(row.skills),
     application_url: primaryLink,
@@ -171,8 +186,10 @@ export function readModelRowToProgramCardSummary(row: Record<string, unknown>): 
     participation_time:
       cleanText(row.program_period_label) ?? cleanText(row.participation_time),
     subsidy_amount:
-      typeof row.subsidy_amount === "number" || typeof row.subsidy_amount === "string"
-        ? (row.subsidy_amount as number | string)
+      typeof row.support_amount === "number" || typeof row.support_amount === "string"
+        ? (row.support_amount as number | string)
+        : typeof row.subsidy_amount === "number" || typeof row.subsidy_amount === "string"
+          ? (row.subsidy_amount as number | string)
         : null,
     display_categories: asStringArray(row.display_categories),
     participation_mode_label:
@@ -233,6 +250,12 @@ export function legacyProgramRowToProgramCardSummary(row: Record<string, unknown
       typeof row.cost === "number" || typeof row.cost === "string"
         ? (row.cost as number | string)
         : null,
+    support_amount:
+      typeof row.support_amount === "number" || typeof row.support_amount === "string"
+        ? (row.support_amount as number | string)
+        : typeof row.subsidy_amount === "number" || typeof row.subsidy_amount === "string"
+          ? (row.subsidy_amount as number | string)
+          : null,
     cost_type: cleanText(row.cost_type),
     support_type: cleanText(row.support_type),
     teaching_method: cleanText(row.teaching_method),
@@ -243,14 +266,17 @@ export function legacyProgramRowToProgramCardSummary(row: Record<string, unknown
       cleanText(row.deadline_confidence) as ProgramCardSummary["deadline_confidence"],
     summary: cleanText(row.summary),
     description: cleanText(row.description),
+    compare_meta: asCompareMeta(row.compare_meta),
     tags: asStringArray(row.tags),
     skills: asStringArray(row.skills),
     application_url: applicationUrl,
     application_method: cleanText(row.application_method),
     participation_time: cleanText(row.participation_time),
     subsidy_amount:
-      typeof row.subsidy_amount === "number" || typeof row.subsidy_amount === "string"
-        ? (row.subsidy_amount as number | string)
+      typeof row.support_amount === "number" || typeof row.support_amount === "string"
+        ? (row.support_amount as number | string)
+        : typeof row.subsidy_amount === "number" || typeof row.subsidy_amount === "string"
+          ? (row.subsidy_amount as number | string)
         : null,
     display_categories: asStringArray(row.display_categories),
     participation_mode_label: cleanText(row.participation_mode_label),

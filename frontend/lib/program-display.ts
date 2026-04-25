@@ -11,6 +11,7 @@ type ProgramIdentity = Pick<ProgramBaseSummary, "id">;
 type ProgramVisibility = Pick<ProgramBaseSummary, "title" | "source">;
 type ProgramLinks = Pick<ProgramCardSummary, "application_url" | "link" | "source_url">;
 type ProgramLegacyMetaCarrier = { compare_meta?: CompareMeta | null };
+type LegacyMetaRecord = Record<string, unknown>;
 
 type SourceLabelOptions = {
   work24TrainingLabel?: string;
@@ -61,6 +62,42 @@ function getLegacyProgramMeta(
   return program?.compare_meta ?? null;
 }
 
+function getLegacyProgramMetaRecord(
+  program: ProgramLegacyMetaCarrier | null | undefined
+): LegacyMetaRecord | null {
+  const compareMeta = getLegacyProgramMeta(program);
+  if (!compareMeta || typeof compareMeta !== "object" || Array.isArray(compareMeta)) {
+    return null;
+  }
+
+  return compareMeta as LegacyMetaRecord;
+}
+
+function getLegacyMetaValue(
+  compareMeta: LegacyMetaRecord | null,
+  keys: readonly string[]
+): unknown {
+  if (!compareMeta) {
+    return null;
+  }
+
+  for (const key of keys) {
+    const value = compareMeta[key];
+    if (typeof value === "string") {
+      if (value.trim()) {
+        return value;
+      }
+      continue;
+    }
+
+    if (value !== null && value !== undefined) {
+      return value;
+    }
+  }
+
+  return null;
+}
+
 export function formatProgramMonthDay(value: string | null | undefined): string | null {
   if (!value) return null;
 
@@ -101,6 +138,51 @@ export function parseProgramDate(value: string | Date | null | undefined): Date 
   if (Number.isNaN(date.getTime())) return null;
 
   return date;
+}
+
+function normalizeProgramDateText(value: unknown): string | null {
+  if (value instanceof Date) {
+    return toProgramDateKey(value);
+  }
+
+  const text = cleanText(value);
+  if (!text) {
+    return null;
+  }
+
+  const matched = text.match(/(\d{4})[./-](\d{1,2})[./-](\d{1,2})/u);
+  if (matched) {
+    const [, year, month, day] = matched;
+    return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+  }
+
+  return toProgramDateKey(text);
+}
+
+export function formatProgramDateRangeLabel(
+  startDate: string | Date | null | undefined,
+  endDate: string | Date | null | undefined,
+  options: {
+    sameDaySingleLabel?: boolean;
+    unknownLabel?: string | null;
+  } = {}
+): string | null {
+  const start = normalizeProgramDateText(startDate);
+  const end = normalizeProgramDateText(endDate);
+  const sameDaySingleLabel = options.sameDaySingleLabel ?? true;
+
+  if (!start && !end) {
+    return options.unknownLabel ?? null;
+  }
+
+  if (start && end) {
+    if (sameDaySingleLabel && start === end) {
+      return start;
+    }
+    return `${start} ~ ${end}`;
+  }
+
+  return start ?? end ?? options.unknownLabel ?? null;
 }
 
 export function toProgramDateKey(value: string | Date | null | undefined): string | null {
@@ -253,6 +335,7 @@ export function hasTrustedProgramDeadline(
 type ProgramInsightSource = Pick<
   ProgramCardSummary,
   | "cost"
+  | "support_amount"
   | "support_type"
   | "subsidy_amount"
   | "teaching_method"
@@ -261,6 +344,11 @@ type ProgramInsightSource = Pick<
   | "title"
   | "summary"
   | "description"
+  | "source"
+  | "deadline"
+  | "start_date"
+  | "end_date"
+  | "days_left"
   | "rating"
   | "rating_display"
   | "review_count"
@@ -276,12 +364,16 @@ function normalizeMetaText(value: string | boolean | null | undefined): string |
   return text ? text : null;
 }
 
-function parseMetricNumber(value: string | number | null | undefined): number | null {
+function parseMetricNumber(value: unknown): number | null {
   if (typeof value === "number") {
     return Number.isFinite(value) ? value : null;
   }
 
-  const normalized = value?.replace(/,/g, "").match(/\d+(?:\.\d+)?/)?.[0];
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const normalized = value.replace(/,/g, "").match(/\d+(?:\.\d+)?/)?.[0];
   if (!normalized) {
     return null;
   }
@@ -312,23 +404,25 @@ function formatMetricWon(value: number | null): string | null {
 }
 
 export function getProgramOutOfPocketAmount(program: ProgramInsightSource): number | null {
-  const compareMeta = getLegacyProgramMeta(program);
-  const directAmount = parseMetricNumber(program.subsidy_amount);
-  if (directAmount !== null) {
-    return Math.max(0, directAmount);
-  }
-
+  const compareMeta = getLegacyProgramMetaRecord(program);
   for (const value of [
-    compareMeta?.self_payment,
-    compareMeta?.out_of_pocket,
-    compareMeta?.out_of_pocket_amount,
-    compareMeta?.actual_training_cost,
-    compareMeta?.real_man,
+    program.support_amount,
+    getLegacyMetaValue(compareMeta, ["self_payment", "selfPayment"]),
+    getLegacyMetaValue(compareMeta, ["out_of_pocket", "outOfPocket"]),
+    getLegacyMetaValue(compareMeta, ["out_of_pocket_amount", "outOfPocketAmount"]),
+    getLegacyMetaValue(compareMeta, ["actual_training_cost", "actualTrainingCost"]),
+    getLegacyMetaValue(compareMeta, ["real_man", "realMan"]),
+    getLegacyMetaValue(compareMeta, ["support_amount", "supportAmount"]),
   ]) {
     const parsed = parseMetricNumber(value);
     if (parsed !== null) {
       return Math.max(0, parsed);
     }
+  }
+
+  const directAmount = parseMetricNumber(program.subsidy_amount);
+  if (directAmount !== null) {
+    return Math.max(0, directAmount);
   }
 
   return null;
@@ -425,6 +519,229 @@ export function getProgramTrainingModeLabel(
     return "오프라인";
   }
   return null;
+}
+
+function isWork24ProgramSource(source: string | null | undefined): boolean {
+  const normalizedSource = String(source ?? "").toLowerCase();
+  return normalizedSource.includes("고용24") || normalizedSource.includes("work24");
+}
+
+type ProgramScheduleRange = {
+  startDate: string | null;
+  endDate: string | null;
+};
+
+function extractProgramDateRangeFromText(
+  value: string | null | undefined,
+  options: { allowSingleDate?: boolean } = {}
+): ProgramScheduleRange | null {
+  const text = cleanText(value);
+  if (!text) {
+    return null;
+  }
+
+  if (/(모집|신청|접수)\s*(기간|마감)?/u.test(text) && !/(교육|운영|행사|개최|설명회|워크숍|세미나|데모데이)/u.test(text)) {
+    return null;
+  }
+
+  const matches = Array.from(
+    text.matchAll(/(\d{4})[./-](\d{1,2})[./-](\d{1,2})/gu)
+  ).map((matched) => `${matched[1]}-${matched[2].padStart(2, "0")}-${matched[3].padStart(2, "0")}`);
+
+  if (matches.length >= 2) {
+    return {
+      startDate: matches[0] ?? null,
+      endDate: matches[1] ?? null,
+    };
+  }
+
+  if (options.allowSingleDate && matches.length === 1) {
+    return {
+      startDate: matches[0] ?? null,
+      endDate: matches[0] ?? null,
+    };
+  }
+
+  return null;
+}
+
+function resolveProgramScheduleRange(program: ProgramInsightSource): ProgramScheduleRange | null {
+  const compareMeta = getLegacyProgramMetaRecord(program);
+  const rowStart = normalizeProgramDateText(program.start_date);
+  const rowEnd = normalizeProgramDateText(program.end_date);
+  const deadline = normalizeProgramDateText(program.deadline);
+  const metaProgramStart = normalizeProgramDateText(
+    getLegacyMetaValue(compareMeta, [
+      "program_start_date",
+      "programStartDate",
+      "training_start_date",
+      "trainingStartDate",
+      "tra_start_date",
+      "traStartDate",
+      "course_start_date",
+      "courseStartDate",
+      "event_start_date",
+      "eventStartDate",
+    ])
+  );
+  const metaProgramEnd = normalizeProgramDateText(
+    getLegacyMetaValue(compareMeta, [
+      "program_end_date",
+      "programEndDate",
+      "training_end_date",
+      "trainingEndDate",
+      "tra_end_date",
+      "traEndDate",
+      "course_end_date",
+      "courseEndDate",
+      "event_end_date",
+      "eventEndDate",
+    ])
+  );
+  const metaApplicationStart = normalizeProgramDateText(
+    getLegacyMetaValue(compareMeta, [
+      "application_start_date",
+      "applicationStartDate",
+      "recruitment_start_date",
+      "recruitmentStartDate",
+      "registration_start_date",
+      "registrationStartDate",
+    ])
+  );
+  const metaApplicationEnd = normalizeProgramDateText(
+    getLegacyMetaValue(compareMeta, [
+      "application_end_date",
+      "applicationEndDate",
+      "application_deadline",
+      "applicationDeadline",
+      "recruitment_end_date",
+      "recruitmentEndDate",
+      "recruitment_deadline",
+      "recruitmentDeadline",
+    ])
+  );
+
+  if (isWork24ProgramSource(program.source)) {
+    if (rowStart || rowEnd) {
+      return {
+        startDate: rowStart,
+        endDate: rowEnd,
+      };
+    }
+
+    if (metaProgramStart || metaProgramEnd) {
+      return {
+        startDate: metaProgramStart,
+        endDate: metaProgramEnd,
+      };
+    }
+
+    return null;
+  }
+
+  if (metaProgramStart || metaProgramEnd) {
+    return {
+      startDate: metaProgramStart,
+      endDate: metaProgramEnd,
+    };
+  }
+
+  for (const candidate of [
+    getLegacyMetaValue(compareMeta, ["schedule_text", "scheduleText"]),
+    getLegacyMetaValue(compareMeta, ["training_schedule", "trainingSchedule"]),
+  ]) {
+    const extracted =
+      typeof candidate === "string"
+        ? extractProgramDateRangeFromText(candidate, { allowSingleDate: true })
+        : null;
+    if (extracted) {
+      return extracted;
+    }
+  }
+
+  for (const candidate of [program.title, program.summary, program.description]) {
+    const extracted = extractProgramDateRangeFromText(candidate);
+    if (extracted) {
+      return extracted;
+    }
+  }
+
+  const rowLooksLikeApplicationRange =
+    Boolean(rowEnd && deadline && rowEnd === deadline) ||
+    Boolean(rowStart && metaApplicationStart && rowStart === metaApplicationStart) ||
+    Boolean(rowEnd && metaApplicationEnd && rowEnd === metaApplicationEnd);
+
+  if (!rowLooksLikeApplicationRange && (rowStart || rowEnd)) {
+    return {
+      startDate: rowStart,
+      endDate: rowEnd,
+    };
+  }
+
+  return null;
+}
+
+export function formatProgramScheduleLabel(
+  program: ProgramInsightSource,
+  options: {
+    unknownLabel?: string;
+  } = {}
+): string {
+  const scheduleRange = resolveProgramScheduleRange(program);
+  const label = formatProgramDateRangeLabel(scheduleRange?.startDate, scheduleRange?.endDate, {
+    sameDaySingleLabel: true,
+  });
+  return label ?? options.unknownLabel ?? "일정 확인 필요";
+}
+
+export type ProgramDeadlineBadgeData = {
+  label: string;
+  tone: "critical" | "warning" | "normal" | "closed";
+};
+
+function resolveProgramDaysLeft(
+  program: Pick<ProgramBaseSummary, "days_left" | "deadline">
+): number | null {
+  if (typeof program.days_left === "number" && Number.isFinite(program.days_left)) {
+    return program.days_left;
+  }
+
+  const deadlineDateKey = normalizeProgramDateText(program.deadline);
+  if (!deadlineDateKey) {
+    return null;
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const deadline = new Date(deadlineDateKey);
+  deadline.setHours(0, 0, 0, 0);
+  return Math.round((deadline.getTime() - today.getTime()) / 86_400_000);
+}
+
+export function getProgramDeadlineBadgeData(
+  program: Pick<ProgramBaseSummary, "days_left" | "deadline">
+): ProgramDeadlineBadgeData | null {
+  const daysLeft = resolveProgramDaysLeft(program);
+  if (daysLeft === null) {
+    return null;
+  }
+
+  if (daysLeft < 0) {
+    return { label: "마감", tone: "closed" };
+  }
+
+  if (daysLeft === 0) {
+    return { label: "D-Day", tone: "critical" };
+  }
+
+  if (daysLeft <= 7) {
+    return { label: `D-${daysLeft}`, tone: "warning" };
+  }
+
+  return {
+    label: `D-${daysLeft}`,
+    tone: "normal",
+  };
 }
 
 export function getProgramRatingDisplay(program: ProgramInsightSource): string | null {

@@ -3,6 +3,7 @@ import {
 } from "../../../components/landing/program-card-helpers";
 import {
   formatProgramCostLabel,
+  formatProgramScheduleLabel,
   getProgramRatingDisplay,
   getProgramRatingValue,
   getProgramTrainingModeLabel,
@@ -76,16 +77,7 @@ function trainingFeeLabel(program: ProgramListRow): string {
 }
 
 export function trainingPeriodLabel(program: ProgramListRow): string {
-  if (program.start_date || program.end_date) {
-    return [program.start_date || "시작일 미정", program.end_date || "종료일 미정"].join(" ~ ");
-  }
-
-  const titlePeriod = extractPeriodFromTitle(program.title);
-  if (titlePeriod) {
-    return titlePeriod;
-  }
-
-  return program.deadline ? `모집 마감 ${program.deadline}` : "일정 확인 필요";
+  return formatProgramScheduleLabel(program);
 }
 
 export function displayTitle(program: ProgramListRow): string {

@@ -2,6 +2,15 @@ import type { ProgramListRow } from "@/lib/types";
 
 export const PUBLIC_PROGRAM_LANDING_SNAPSHOT_LIMIT = 24;
 
+export function getKstTodayDateString(): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+}
+
 function dedupePrograms(programs: ProgramListRow[], limit?: number): ProgramListRow[] {
   const seenIds = new Set<string>();
   const deduped: ProgramListRow[] = [];
@@ -50,4 +59,34 @@ export function parseProgramLandingChipSnapshotItems(
   }
 
   return dedupePrograms(parsedPrograms, safeLimit);
+}
+
+export function isProgramOpenOnReferenceDate(
+  program: Pick<ProgramListRow, "deadline" | "days_left" | "is_active">,
+  referenceDate: string
+): boolean {
+  if (typeof program.days_left === "number" && Number.isFinite(program.days_left)) {
+    return program.days_left >= 0;
+  }
+
+  const deadline = String(program.deadline ?? "").trim();
+  if (deadline) {
+    const normalizedDeadline = deadline.slice(0, 10);
+    if (normalizedDeadline && normalizedDeadline < referenceDate) {
+      return false;
+    }
+  }
+
+  if (program.is_active === false && !deadline) {
+    return false;
+  }
+
+  return true;
+}
+
+export function filterOpenProgramsByReferenceDate(
+  programs: ProgramListRow[],
+  referenceDate: string
+): ProgramListRow[] {
+  return programs.filter((program) => isProgramOpenOnReferenceDate(program, referenceDate));
 }

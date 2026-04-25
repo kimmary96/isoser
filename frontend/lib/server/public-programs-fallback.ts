@@ -1,11 +1,23 @@
+import { unstable_cache } from "next/cache";
+import { createClient } from "@supabase/supabase-js";
 import {
   legacyProgramRowToProgramCardSummary,
   readModelRowToProgramCardSummary,
 } from "@/lib/server/program-card-summary";
 import {
+  filterOpenProgramsByReferenceDate,
+  getKstTodayDateString,
+  isProgramOpenOnReferenceDate,
   parseProgramLandingChipSnapshotItems,
+  PUBLIC_PROGRAM_LANDING_SNAPSHOT_LIMIT,
 } from "@/lib/server/public-program-snapshot-utils";
-import { matchesProgramFilterChip, matchesProgramKeyword } from "@/lib/program-filters";
+import {
+  getProgramFilterChipDefinition,
+  matchesProgramFilterChip,
+  matchesProgramKeyword,
+  PROGRAM_FILTER_CHIPS,
+} from "@/lib/program-filters";
+import { resolveServerSupabaseEnv, resolveServiceRoleSupabaseEnv } from "@/lib/supabase/env";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createServiceRoleSupabaseClient } from "@/lib/supabase/service-role";
 import type { ProgramListRow } from "@/lib/types";
@@ -17,6 +29,15 @@ export const PUBLIC_PROGRAM_URGENT_LIMIT = 12;
 const LEGACY_PROGRAM_SCAN_LIMIT = 900;
 const LEGACY_FILTERED_PROGRAM_SCAN_BATCH = 1000;
 const LEGACY_FILTERED_PROGRAM_SCAN_MAX = 12000;
+const LANDING_CHIP_FALLBACK_SEED_LIMIT = 2400;
+
+type LandingChipFallbackCacheEntry = {
+  generatedFor: string;
+  chipPrograms: Map<string, ProgramListRow[]>;
+};
+
+let landingChipFallbackCache: LandingChipFallbackCacheEntry | null = null;
+let landingChipFallbackPromise: Promise<LandingChipFallbackCacheEntry> | null = null;
 
 type PublicProgramsPageFallback = {
   programs: ProgramListRow[];
@@ -28,16 +49,27 @@ type PublicProgramsPageFallback = {
 type PublicProgramSort = "default" | "deadline" | "popular";
 
 function getTodayDateString(): string {
-  return new Date().toISOString().slice(0, 10);
+  return getKstTodayDateString();
 }
 
-function getKstTodayDateString(): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Seoul",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
+function createPublicReadOnlyClient() {
+  try {
+    const { url, serviceRoleKey } = resolveServiceRoleSupabaseEnv();
+    return createClient(url, serviceRoleKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
+  } catch {
+    const { url, anonKey } = resolveServerSupabaseEnv();
+    return createClient(url, anonKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
+  }
 }
 
 async function createPublicFallbackClient() {
@@ -47,6 +79,67 @@ async function createPublicFallbackClient() {
     return createServerSupabaseClient();
   }
 }
+
+const loadCachedLandingChipSnapshotRows = unstable_cache(
+  async (activeChip: string, generatedFor: string) => {
+    const supabase = createPublicReadOnlyClient();
+    const { data, error } = await supabase
+      .from("program_landing_chip_snapshots")
+      .select("generated_for, generated_at, items")
+      .eq("surface", "landing-c")
+      .eq("chip", activeChip)
+      .lte("generated_for", generatedFor)
+      .order("generated_for", { ascending: false })
+      .order("generated_at", { ascending: false })
+      .limit(1);
+
+    if (error) {
+      if (isIgnorableLandingSnapshotError(error)) {
+        return [];
+      }
+      throw new Error(error.message || "landing chip snapshot query failed");
+    }
+
+    const row = data?.[0] as { items?: unknown } | undefined;
+    return filterOpenProgramsByReferenceDate(
+      parseProgramLandingChipSnapshotItems(row?.items),
+      generatedFor
+    );
+  },
+  ["public-landing-chip-snapshot"],
+  { revalidate: 3600 }
+);
+
+const loadCachedLandingLiveBoardRows = unstable_cache(
+  async (generatedFor: string) => {
+    const supabase = createPublicReadOnlyClient();
+    const { data, error } = await supabase
+      .from("program_list_index")
+      .select("*")
+      .eq("is_open", true)
+      .eq("is_ad", false)
+      .order("click_hotness_score", { ascending: false, nullsFirst: false })
+      .order("deadline", { ascending: true, nullsFirst: false })
+      .order("id", { ascending: true })
+      .limit(24);
+
+    if (error) {
+      return [];
+    }
+
+    return filterOpenProgramsByReferenceDate(
+      dedupePrograms(
+        (data ?? [])
+          .map((row) => readModelRowToProgramCardSummary(row as Record<string, unknown>))
+          .filter((program): program is ProgramListRow => Boolean(program)),
+        24
+      ),
+      generatedFor
+    );
+  },
+  ["public-landing-live-board"],
+  { revalidate: 3600 }
+);
 
 function isIgnorableLandingSnapshotError(error: { code?: string | null; message?: string | null } | null | undefined): boolean {
   if (!error) {
@@ -63,23 +156,79 @@ function isIgnorableLandingSnapshotError(error: { code?: string | null; message?
   );
 }
 
-function dedupePrograms(programs: ProgramListRow[], limit?: number): ProgramListRow[] {
-  const seenIds = new Set<string>();
-  const deduped: ProgramListRow[] = [];
+function hasMeaningfulProgramValue(value: unknown): boolean {
+  if (value === null || value === undefined) {
+    return false;
+  }
 
-  for (const program of programs) {
-    const id = String(program.id ?? "").trim();
-    if (!id || seenIds.has(id)) {
+  if (typeof value === "string") {
+    return value.trim().length > 0;
+  }
+
+  if (Array.isArray(value)) {
+    return value.length > 0;
+  }
+
+  if (typeof value === "object") {
+    return Object.keys(value as Record<string, unknown>).length > 0;
+  }
+
+  return true;
+}
+
+function mergeProgramRows(primary: ProgramListRow, incoming: ProgramListRow): ProgramListRow {
+  const merged: ProgramListRow = { ...primary };
+
+  for (const [key, rawValue] of Object.entries(incoming) as Array<[keyof ProgramListRow, ProgramListRow[keyof ProgramListRow]]>) {
+    if (key === "id") {
       continue;
     }
-    seenIds.add(id);
-    deduped.push(program);
-    if (typeof limit === "number" && deduped.length >= limit) {
-      break;
+
+    if (key === "compare_meta") {
+      const baseMeta = hasMeaningfulProgramValue(primary.compare_meta)
+        ? (primary.compare_meta as Record<string, unknown>)
+        : null;
+      const incomingMeta = hasMeaningfulProgramValue(incoming.compare_meta)
+        ? (incoming.compare_meta as Record<string, unknown>)
+        : null;
+
+      if (incomingMeta) {
+        merged.compare_meta = {
+          ...(baseMeta ?? {}),
+          ...incomingMeta,
+        };
+      }
+      continue;
+    }
+
+    if (!hasMeaningfulProgramValue(merged[key]) && hasMeaningfulProgramValue(rawValue)) {
+      (merged as unknown as Record<string, unknown>)[String(key)] = rawValue;
     }
   }
 
-  return deduped;
+  return merged;
+}
+
+function dedupePrograms(programs: ProgramListRow[], limit?: number): ProgramListRow[] {
+  const deduped = new Map<string, ProgramListRow>();
+
+  for (const program of programs) {
+    const id = String(program.id ?? "").trim();
+    if (!id) {
+      continue;
+    }
+
+    const existing = deduped.get(id);
+    if (!existing) {
+      deduped.set(id, program);
+      continue;
+    }
+
+    deduped.set(id, mergeProgramRows(existing, program));
+  }
+
+  const rows = [...deduped.values()];
+  return typeof limit === "number" ? rows.slice(0, limit) : rows;
 }
 
 function mergeProgramsBySort(
@@ -299,6 +448,7 @@ async function loadLegacyPrograms(options: {
     (data ?? [])
       .map((row) => legacyProgramRowToProgramCardSummary(row as Record<string, unknown>))
       .filter((program): program is ProgramListRow => Boolean(program))
+      .filter((program) => isProgramOpenOnReferenceDate(program, today))
       .toSorted((left, right) => comparePrograms(left, right, sort)),
     limit
   );
@@ -341,7 +491,7 @@ async function scanLegacyProgramsUntilEnough(options: {
 
     for (const row of rows) {
       const program = legacyProgramRowToProgramCardSummary(row as Record<string, unknown>);
-      if (!program || !matcher(program)) {
+      if (!program || !isProgramOpenOnReferenceDate(program, today) || !matcher(program)) {
         continue;
       }
 
@@ -372,6 +522,64 @@ async function loadOrganicPrograms(today: string, limit: number): Promise<Progra
   ]);
 
   return mergeProgramsBySort([...readModelPrograms, ...legacyPrograms], "default", limit);
+}
+
+async function buildLandingChipFallbackCache(
+  generatedFor: string
+): Promise<LandingChipFallbackCacheEntry> {
+  const [browsePrograms, legacyPrograms] = await Promise.all([
+    loadReadModelPrograms({ limit: PUBLIC_PROGRAM_BROWSE_LIMIT, sort: "default" }),
+    loadLegacyPrograms({
+      today: generatedFor,
+      limit: LANDING_CHIP_FALLBACK_SEED_LIMIT,
+      sort: "deadline",
+    }),
+  ]);
+
+  const seedPrograms = dedupePrograms(
+    filterOpenProgramsByReferenceDate(
+      [...browsePrograms, ...legacyPrograms],
+      generatedFor
+    )
+  );
+  const chipPrograms = new Map<string, ProgramListRow[]>();
+
+  for (const chip of PROGRAM_FILTER_CHIPS) {
+    const sort = getProgramFilterChipDefinition(chip)?.kind === "all" ? "default" : "deadline";
+    chipPrograms.set(
+      chip,
+      mergeProgramsBySort(
+        seedPrograms.filter((program) => matchesProgramFilterChip(program, chip)),
+        sort,
+        PUBLIC_PROGRAM_LANDING_SNAPSHOT_LIMIT
+      )
+    );
+  }
+
+  return {
+    generatedFor,
+    chipPrograms,
+  };
+}
+
+async function loadCachedLandingChipFallbackRows(activeChip: string, generatedFor: string): Promise<ProgramListRow[]> {
+  if (landingChipFallbackCache?.generatedFor === generatedFor) {
+    return landingChipFallbackCache.chipPrograms.get(activeChip) ?? [];
+  }
+
+  if (!landingChipFallbackPromise) {
+    landingChipFallbackPromise = buildLandingChipFallbackCache(generatedFor)
+      .then((entry) => {
+        landingChipFallbackCache = entry;
+        return entry;
+      })
+      .finally(() => {
+        landingChipFallbackPromise = null;
+      });
+  }
+
+  const cacheEntry = await landingChipFallbackPromise;
+  return cacheEntry.chipPrograms.get(activeChip) ?? [];
 }
 
 async function loadUrgentPrograms(today: string, limit: number): Promise<ProgramListRow[]> {
@@ -443,30 +651,18 @@ export async function loadPublicProgramsPageFallback(): Promise<PublicProgramsPa
 }
 
 export async function loadPublicLandingChipSnapshotRows(activeChip: string): Promise<ProgramListRow[]> {
-  const supabase = await createPublicFallbackClient();
-  const { data, error } = await supabase
-    .from("program_landing_chip_snapshots")
-    .select("generated_for, generated_at, items")
-    .eq("surface", "landing-c")
-    .eq("chip", activeChip)
-    .order("generated_for", { ascending: false })
-    .order("generated_at", { ascending: false })
-    .limit(1);
-
-  if (error) {
-    if (isIgnorableLandingSnapshotError(error)) {
-      return [];
-    }
-    throw new Error(error.message || "landing chip snapshot query failed");
-  }
-
-  const row = data?.[0] as { generated_for?: string | null; items?: unknown } | undefined;
   const todayKst = getKstTodayDateString();
-  if (!row || String(row.generated_for ?? "").slice(0, 10) !== todayKst) {
-    return [];
+  const snapshotRows = await loadCachedLandingChipSnapshotRows(activeChip, todayKst);
+  if (snapshotRows.length > 0) {
+    return snapshotRows;
   }
 
-  return parseProgramLandingChipSnapshotItems(row.items);
+  return loadCachedLandingChipFallbackRows(activeChip, todayKst);
+}
+
+export async function loadPublicLandingLiveBoardRows(): Promise<ProgramListRow[]> {
+  const todayKst = getKstTodayDateString();
+  return loadCachedLandingLiveBoardRows(todayKst);
 }
 
 export async function loadPublicProgramFallbackRowsBySort(

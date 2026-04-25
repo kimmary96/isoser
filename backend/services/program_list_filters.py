@@ -21,7 +21,7 @@ PROGRAM_DEADLINE_SORTS = {"default", "deadline"}
 PROGRAM_TEACHING_METHODS = {"온라인", "오프라인", "혼합"}
 PROGRAM_COST_TYPES = {"naeil-card", "free-no-card", "paid"}
 PROGRAM_PARTICIPATION_TIMES = {"part-time", "full-time"}
-PROGRAM_TARGETS = {"청년", "여성", "중장년", "창업", "재직자", "구직자", "대학생"}
+PROGRAM_TARGETS = {"청년", "여성", "창업", "재직자", "대학생"}
 PROGRAM_SELECTION_PROCESSES = {"서류", "면접", "테스트", "선착순", "추첨"}
 PROGRAM_EMPLOYMENT_LINKS = {"채용연계", "인턴십", "취업지원", "멘토링"}
 KST = timezone(timedelta(hours=9))
@@ -79,6 +79,24 @@ PROGRAM_CATEGORY_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("임베디드", ("임베디드", "iot", "arm", "펌웨어", "라즈베리", "아두이노")),
     ("보안", ("정보보안", "보안 실무", "보안 엔지니어", "클라우드 보안", "사이버보안", "security", "해킹", "모의해킹", "침해대응", "침해 사고", "정보보호")),
     ("인프라", ("인프라", "네트워크 인프라", "네트워크 관리", "네트워크 엔지니어", "linux", "리눅스", "ccna", "서버관리")),
+)
+PROGRAM_CATEGORY_FILTER_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("web-development", ("웹개발", "웹 개발", "풀스택", "fullstack", "백엔드", "backend", "프론트엔드", "frontend", "react", "next.js", "spring", "django", "api", "서버")),
+    ("mobile", ("모바일", "앱", "android", "ios", "flutter", "react native", "reactnative")),
+    ("data-ai", ("데이터", "데이터분석", "데이터 분석", "ai", "인공지능", "llm", "rag", "머신러닝", "딥러닝", "ml")),
+    ("cloud-security", ("클라우드", "aws", "azure", "gcp", "보안", "security", "devops", "쿠버네티스", "kubernetes", "docker", "인프라")),
+    ("iot-embedded-semiconductor", ("iot", "임베디드", "펌웨어", "아두이노", "라즈베리", "반도체", "fpga", "soc", "rtl", "verilog")),
+    ("game-blockchain", ("게임", "game", "블록체인", "blockchain", "web3")),
+    ("planning-marketing-other", ("기획", "pm", "서비스기획", "프로덕트", "마케팅", "브랜딩")),
+    ("design-3d", ("디자인", "ux", "ui", "uxui", "uiux", "figma", "피그마", "3d", "블렌더", "그래픽")),
+    ("project-career-startup", ("프로젝트", "포트폴리오", "취준", "취업준비", "커리어", "창업", "스타트업", "startup", "k-startup", "kstartup", "예비창업")),
+)
+PROGRAM_TARGET_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("청년", ("청년", "청년층", "청년구직자", "청년취업사관학교", "만 15", "만15", "34세 이하", "39세 이하")),
+    ("여성", ("여성", "여학생", "경력단절여성", "여성가족부")),
+    ("창업", ("창업", "스타트업", "startup", "k-startup", "kstartup", "예비창업", "초기창업", "창업자")),
+    ("재직자", ("재직자", "근로자", "직장인", "재직중", "고용보험", "근로자원격훈련")),
+    ("대학생", ("대학생", "대학 재학생", "대학재학생", "학부생", "휴학생")),
 )
 PROGRAM_KEYWORD_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("AI", ("ai", "인공지능")),
@@ -169,6 +187,25 @@ PROGRAM_SHORT_ASCII_SEARCH_MAX_LENGTH = 2
 ONLINE_KEYWORDS = ("온라인", "비대면", "원격")
 HYBRID_KEYWORDS = ("혼합", "블렌디드", "온오프", "온·오프")
 OFFLINE_KEYWORDS = ("오프라인", "대면", "현장")
+PROGRAM_FILTER_REGION_KEYWORDS = (
+    "서울",
+    "경기",
+    "인천",
+    "부산",
+    "대구",
+    "광주",
+    "대전",
+    "울산",
+    "세종",
+    "강원",
+    "충북",
+    "충남",
+    "전북",
+    "전남",
+    "경북",
+    "경남",
+    "제주",
+)
 
 
 def _normalize_search_text(value: Any) -> str:
@@ -323,6 +360,9 @@ def _row_matches_category_detail(row: dict[str, Any], category_detail: str | Non
     if not target:
         return True
 
+    if target in _derive_category_filter_tags(row):
+        return True
+
     if str(row.get("category_detail") or "").strip() == target:
         return True
 
@@ -401,6 +441,42 @@ def _program_source_text_values(row: dict[str, Any]) -> list[str]:
         + _flatten_search_values(raw_data.get("trainTarget"))
         + _searchable_compare_meta_values(legacy_meta)
     )
+
+
+def _derive_category_filter_tags(row: dict[str, Any]) -> list[str]:
+    tags: list[str] = []
+    explicit_category_detail = str(row.get("category_detail") or "").strip()
+    if explicit_category_detail:
+        tags.append(explicit_category_detail)
+
+    text = " ".join(_program_source_text_values(row)).casefold()
+    for category_detail, keywords in PROGRAM_CATEGORY_FILTER_RULES:
+        if any(_text_has_keyword(text, keyword) for keyword in keywords):
+            tags.append(category_detail)
+
+    return _dedupe_preserve_order(tags, limit=3)
+
+
+def _derive_target_filter_tags(row: dict[str, Any]) -> list[str]:
+    tags: list[str] = []
+    text = (_program_text_blob(row) + " " + " ".join(_flatten_search_values(row.get("target")))).casefold()
+    for target, keywords in PROGRAM_TARGET_RULES:
+        if any(_text_has_keyword(text, keyword) for keyword in keywords):
+            tags.append(target)
+    return _dedupe_preserve_order(tags, limit=5)
+
+
+def _derive_region_filter_keyword(row: dict[str, Any]) -> str | None:
+    values = (
+        _flatten_search_values(row.get("region"))
+        + _flatten_search_values(row.get("region_detail"))
+        + _flatten_search_values(row.get("location"))
+    )
+    text = " ".join(values)
+    for region in PROGRAM_FILTER_REGION_KEYWORDS:
+        if region in text:
+            return region
+    return None
 
 
 def _text_has_keyword(text: str, keyword: str) -> bool:
@@ -609,7 +685,7 @@ def _derive_selection_process_label(row: dict[str, Any]) -> str | None:
             candidates.append(label)
 
     deduped = _dedupe_preserve_order(candidates, limit=3)
-    return " / ".join(deduped) if deduped else "선발 절차 없음"
+    return " / ".join(deduped) if deduped else None
 
 
 def _is_useful_keyword(value: str) -> bool:
@@ -637,6 +713,30 @@ def _is_useful_keyword(value: str) -> bool:
 def _extract_program_keywords(row: dict[str, Any]) -> list[str]:
     keywords: list[str] = []
     text = " ".join(_program_source_text_values(row)).casefold()
+
+    keywords.extend(_infer_display_categories(row))
+
+    cost_type = _program_cost_type(row)
+    if cost_type == "free-no-card":
+        keywords.append("무료")
+    elif cost_type == "naeil-card":
+        keywords.append("내일배움카드")
+    elif cost_type == "paid":
+        keywords.append("유료")
+
+    keywords.extend(_derive_target_filter_tags(row))
+
+    teaching_method = _derive_teaching_method(row)
+    if teaching_method:
+        keywords.append(teaching_method)
+
+    region_keyword = _derive_region_filter_keyword(row)
+    if region_keyword:
+        keywords.append(region_keyword)
+
+    participation_label, _ = _derive_participation_display(row)
+    if participation_label in {"주말반", "저녁반", "자율학습", "풀타임", "파트타임"}:
+        keywords.append(participation_label)
 
     for label, aliases in PROGRAM_KEYWORD_RULES:
         if any(_text_has_keyword(text, alias) for alias in aliases):
@@ -791,8 +891,7 @@ def _filter_program_rows_by_extra_filters(
 
 
 def _program_matches_targets(row: dict[str, Any], targets: set[str]) -> bool:
-    text = _program_text_blob(row) + " " + " ".join(_flatten_search_values(row.get("target")))
-    return any(target.casefold() in text.casefold() for target in targets)
+    return any(target in _derive_target_filter_tags(row) for target in targets)
 
 
 def _program_matches_any(row: dict[str, Any], keywords: set[str]) -> bool:
@@ -839,8 +938,7 @@ def _extract_program_filter_options(rows: list[dict[str, Any]]) -> ProgramFilter
         if source:
             sources.append(source)
 
-        target_text = (_program_text_blob(row) + " " + " ".join(_flatten_search_values(row.get("target")))).casefold()
-        targets.extend(target for target in sorted(PROGRAM_TARGETS) if target.casefold() in target_text)
+        targets.extend(_derive_target_filter_tags(row))
         selection_processes.extend(
             process for process in sorted(PROGRAM_SELECTION_PROCESSES) if _program_matches_any(row, {process})
         )
@@ -863,7 +961,10 @@ def _filter_options_from_facet_snapshot(facets: ProgramFacetSnapshot) -> Program
             for bucket in facets.source
             if bucket.value
         ],
-        targets=[ProgramFilterOption(value=value, label=value) for value in sorted(PROGRAM_TARGETS)],
+        targets=[
+            ProgramFilterOption(value=value, label=value)
+            for value in ("청년", "여성", "창업", "재직자", "대학생")
+        ],
         selection_processes=[],
         employment_links=[],
     )

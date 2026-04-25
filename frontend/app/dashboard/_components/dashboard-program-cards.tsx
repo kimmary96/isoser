@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import { ProgramDeadlineBadge } from "@/components/programs/program-deadline-badge";
 import {
   getProgramCardFitKeywords,
   getProgramCardRelevanceReasons,
@@ -11,8 +12,8 @@ import {
 import {
   formatProgramDeadlineDate,
   formatProgramRelevanceText,
+  formatProgramScheduleLabel,
   formatProgramSourceLabel,
-  formatProgramTrainingPeriod,
   getProgramId,
   getProgramPrimaryLink,
 } from "@/lib/program-display";
@@ -28,28 +29,6 @@ function getCardBorderClass(daysLeft: number | null | undefined): string {
   }
 
   return "border-l-4 border-l-yellow-400";
-}
-
-function getDdayBadge(daysLeft: number | null | undefined) {
-  if (typeof daysLeft !== "number" || Number.isNaN(daysLeft) || daysLeft < 0) {
-    return null;
-  }
-
-  if (daysLeft === 0) {
-    return {
-      label: "마감 D-Day",
-      className: "bg-red-100 text-red-700",
-    };
-  }
-
-  if (daysLeft <= 7) {
-    return {
-      label: `마감 D-${daysLeft}`,
-      className: "bg-orange-100 text-orange-700",
-    };
-  }
-
-  return null;
 }
 
 export function DashboardRecommendationSkeletonCard() {
@@ -86,9 +65,8 @@ export function DashboardRecommendationProgramCard({
   onApplyToCalendar: (program: ProgramCardSummary) => void;
 }) {
   const { program } = item;
-  const trainingPeriodLabel = formatProgramTrainingPeriod(program.start_date, program.end_date);
+  const trainingPeriodLabel = formatProgramScheduleLabel(program);
   const deadlineLabel = formatProgramDeadlineDate(program.deadline);
-  const ddayBadge = getDdayBadge(program.days_left);
   const cardBorderClass = getCardBorderClass(program.days_left);
   const programLink = getProgramPrimaryLink(program);
   const relevanceReasons = getProgramCardRelevanceReasons(item);
@@ -105,16 +83,10 @@ export function DashboardRecommendationProgramCard({
           <h3 className="line-clamp-2 text-base font-semibold text-slate-950">{program.title || "제목 없음"}</h3>
           <p className="mt-2 text-sm text-slate-500">{formatProgramSourceLabel(program.source)}</p>
         </div>
-        {ddayBadge ? (
-          <span
-            className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-xs font-semibold ${ddayBadge.className}`}
-          >
-            {ddayBadge.label}
-          </span>
-        ) : null}
+        <ProgramDeadlineBadge program={program} />
       </div>
 
-      <div className="mb-2 text-sm text-slate-600">훈련 기간: {trainingPeriodLabel}</div>
+      <div className="mb-2 text-sm text-slate-600">일정: {trainingPeriodLabel}</div>
       <div className="mb-3 text-sm text-slate-600">신청 마감: {deadlineLabel}</div>
       <div className="mb-3 flex flex-wrap items-center gap-2">
         {relevanceBadge ? (
@@ -185,21 +157,25 @@ export function DashboardBookmarkedProgramCard({ item }: { item: ProgramCardItem
   const detailHref = programId ? `/programs/${encodeURIComponent(programId)}` : null;
   const deadlineLabel = formatProgramDeadlineDate(program.deadline);
   const programLink = getProgramPrimaryLink(program);
+  const scheduleLabel = formatProgramScheduleLabel(program);
 
   return (
     <article className="flex min-h-[178px] flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="min-w-0">
-        <p className="text-xs font-semibold text-amber-600">찜한 훈련</p>
-        <h3 className="mt-2 line-clamp-2 text-sm font-semibold leading-5 text-slate-950">
-          {program.title || "제목 없음"}
-        </h3>
-        <p className="mt-2 text-xs text-slate-500">
-          {program.provider || formatProgramSourceLabel(program.source)}
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold text-amber-600">찜한 훈련</p>
+          <h3 className="mt-2 line-clamp-2 text-sm font-semibold leading-5 text-slate-950">
+            {program.title || "제목 없음"}
+          </h3>
+          <p className="mt-2 text-xs text-slate-500">
+            {program.provider || formatProgramSourceLabel(program.source)}
+          </p>
+        </div>
+        <ProgramDeadlineBadge program={program} />
       </div>
       <div className="mt-3 space-y-1 text-xs text-slate-600">
         <p>신청 마감: {deadlineLabel}</p>
-        <p>훈련 기간: {formatProgramTrainingPeriod(program.start_date, program.end_date)}</p>
+        <p>일정: {scheduleLabel}</p>
       </div>
       <div className="mt-auto flex flex-wrap items-center gap-3 pt-4">
         {detailHref ? (

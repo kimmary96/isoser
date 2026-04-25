@@ -46,7 +46,11 @@ function normalizeProgramId(program: ProgramListRow): string {
 function totalHoursLabel(detail: string | null | undefined): string | null {
   const match = detail?.match(/총\s*(\d+(?:\.\d+)?)\s*시간/u);
   if (!match) {
-    return detail?.trim() || null;
+    const normalized = detail?.trim() || null;
+    if (!normalized || /곧\s*마감|마감\s*임박|d-\d+|d-day|모집중/iu.test(normalized)) {
+      return null;
+    }
+    return normalized;
   }
   return `${match[1]}시간`;
 }
@@ -59,13 +63,14 @@ function hashKeywordTone(keyword: string): string {
 export function formatProgramParticipationTime(
   program: Pick<ProgramListRow, "participation_mode_label" | "participation_time" | "participation_time_text">
 ): { label: string | null; detail: string | null } {
-  const label =
+  const rawLabel =
     program.participation_mode_label ||
     (program.participation_time === "full-time"
       ? "풀타임"
       : program.participation_time === "part-time"
         ? "파트타임"
         : program.participation_time || null);
+  const label = rawLabel && !/곧\s*마감|마감\s*임박|d-\d+|d-day|모집중/iu.test(rawLabel) ? rawLabel : null;
   const detail = totalHoursLabel(program.participation_time_text || null);
   return { label, detail };
 }

@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  legacyProgramRowToProgramCardSummary,
   loadDeadlineOrderedProgramCardSummaries,
   loadProgramCardSummariesByIds,
+  readModelRowToProgramCardSummary,
 } from "./program-card-summary";
 
 type QueryResult = {
@@ -90,6 +92,64 @@ function createDeadlineSupabaseStub(results: Record<string, QueryResult>) {
 }
 
 describe("program card summary loader", () => {
+  it("maps support_amount into subsidy_amount for snapshot and canonical legacy rows", () => {
+    expect(
+      readModelRowToProgramCardSummary({
+        id: "program-a",
+        title: "지원금 테스트",
+        support_amount: 22730,
+      }),
+    ).toMatchObject({
+      id: "program-a",
+      support_amount: 22730,
+      subsidy_amount: 22730,
+    });
+
+    expect(
+      legacyProgramRowToProgramCardSummary({
+        id: "program-b",
+        title: "레거시 지원금 테스트",
+        support_amount: 0,
+      }),
+    ).toMatchObject({
+      id: "program-b",
+      support_amount: 0,
+      subsidy_amount: 0,
+    });
+  });
+
+  it("keeps compare_meta on summary rows so display helpers can prefer self-payment fields", () => {
+    expect(
+      readModelRowToProgramCardSummary({
+        id: "program-a",
+        title: "리드모델 메타 테스트",
+        compare_meta: {
+          self_payment: "93,100",
+        },
+      }),
+    ).toMatchObject({
+      id: "program-a",
+      compare_meta: {
+        self_payment: "93,100",
+      },
+    });
+
+    expect(
+      legacyProgramRowToProgramCardSummary({
+        id: "program-b",
+        title: "레거시 메타 테스트",
+        compare_meta: {
+          out_of_pocket: 0,
+        },
+      }),
+    ).toMatchObject({
+      id: "program-b",
+      compare_meta: {
+        out_of_pocket: 0,
+      },
+    });
+  });
+
   it("prefers program_list_index rows and preserves requested id order", async () => {
     const { client, inCalls } = createSupabaseStub({
       program_list_index: {

@@ -199,7 +199,7 @@ PROGRAM_CLICK_HOTNESS_TOTAL_CAP = 999_999
 PROGRAM_TEACHING_METHODS = {"온라인", "오프라인", "혼합"}
 PROGRAM_COST_TYPES = {"naeil-card", "free-no-card", "paid"}
 PROGRAM_PARTICIPATION_TIMES = {"part-time", "full-time"}
-PROGRAM_TARGETS = {"청년", "여성", "중장년", "창업", "재직자", "구직자", "대학생"}
+PROGRAM_TARGETS = {"청년", "여성", "창업", "재직자", "대학생"}
 PROGRAM_SELECTION_PROCESSES = {"서류", "면접", "테스트", "선착순", "추첨"}
 PROGRAM_EMPLOYMENT_LINKS = {"채용연계", "인턴십", "취업지원", "멘토링"}
 PROGRAM_CATEGORY_LABELS: dict[str, str] = {
@@ -1894,11 +1894,21 @@ def _program_list_read_model_enabled() -> bool:
 
 def _can_use_program_list_read_model(
     *,
+    category_detail: str | None = None,
+    cost_types: list[str] | None = None,
+    participation_times: list[str] | None = None,
+    targets: list[str] | None = None,
     selection_processes: list[str] | None = None,
     employment_links: list[str] | None = None,
     include_closed_recent: bool = False,
 ) -> bool:
-    return _program_list_read_model_enabled() and not include_closed_recent and not (
+    has_local_derived_filters = bool(
+        str(category_detail or "").strip()
+        or _normalize_option_param(cost_types, PROGRAM_COST_TYPES)
+        or _normalize_option_param(participation_times, PROGRAM_PARTICIPATION_TIMES)
+        or _normalize_option_param(targets, PROGRAM_TARGETS)
+    )
+    return _program_list_read_model_enabled() and not include_closed_recent and not has_local_derived_filters and not (
         _normalize_option_param(selection_processes, PROGRAM_SELECTION_PROCESSES)
         or _normalize_option_param(employment_links, PROGRAM_EMPLOYMENT_LINKS)
     )
@@ -3198,6 +3208,10 @@ async def list_programs(
     cursor: str | None = Query(default=None),
 ) -> Any:
     if _can_use_program_list_read_model(
+        category_detail=category_detail,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
         selection_processes=selection_processes,
         employment_links=employment_links,
         include_closed_recent=include_closed_recent,
@@ -3359,7 +3373,13 @@ async def list_programs_page(
         include_closed_recent=include_closed_recent,
         sort=sort,
     )
-    if _can_use_program_list_read_model(include_closed_recent=include_closed_recent):
+    if _can_use_program_list_read_model(
+        category_detail=category_detail,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
+        include_closed_recent=include_closed_recent,
+    ):
         try:
             response, count = await asyncio.gather(
                 _fetch_program_list_read_model_rows(
@@ -3559,6 +3579,10 @@ async def count_programs(
         targets=targets,
         include_closed_recent=include_closed_recent,
     ) and _can_use_program_list_read_model(
+        category_detail=category_detail,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
         selection_processes=selection_processes,
         employment_links=employment_links,
         include_closed_recent=include_closed_recent,
@@ -3599,6 +3623,10 @@ async def count_programs(
             log_event(logger, logging.WARNING, "program_count_browse_pool_fallback", error=str(exc))
 
     if _can_use_program_list_read_model(
+        category_detail=category_detail,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
         selection_processes=selection_processes,
         employment_links=employment_links,
         include_closed_recent=include_closed_recent,
@@ -3681,7 +3709,12 @@ async def get_program_filter_options(
             teaching_methods=teaching_methods,
         ),
     )
-    if _can_use_program_list_read_model(include_closed_recent=include_closed_recent) and mode == "browse":
+    if _can_use_program_list_read_model(
+        category_detail=category_detail,
+        participation_times=None,
+        targets=None,
+        include_closed_recent=include_closed_recent,
+    ) and mode == "browse":
         try:
             read_model_count = await _count_program_read_model_rows(
                 category=category,

@@ -233,10 +233,15 @@ export type CompareStatus = "pass" | "warn" | "block";
 export interface CompareMeta {
   subsidy_rate?: string | null;
   self_payment?: string | number | null;
+  selfPayment?: string | number | null;
   out_of_pocket?: string | number | null;
+  outOfPocket?: string | number | null;
   out_of_pocket_amount?: string | number | null;
+  outOfPocketAmount?: string | number | null;
   actual_training_cost?: string | number | null;
+  actualTrainingCost?: string | number | null;
   real_man?: string | number | null;
+  realMan?: string | number | null;
   teaching_method?: string | null;
   employment_connection?: string | null;
   satisfaction_score?: string | number | null;
@@ -258,12 +263,20 @@ export interface CompareMeta {
   recruitment_deadline_source?: string | null;
   recruitment_deadline?: string | null;
   recruitment_end_date?: string | null;
+  recruitment_start_date?: string | null;
   application_end_date?: string | null;
+  application_start_date?: string | null;
+  program_start_date?: string | null;
+  program_end_date?: string | null;
+  training_start_date?: string | null;
+  training_end_date?: string | null;
   day_night?: string | null;
   day_night_type?: string | null;
   training_type?: string | null;
   training_schedule?: string | null;
+  trainingSchedule?: string | null;
   schedule_text?: string | null;
+  scheduleText?: string | null;
   weekend_text?: string | null;
   weekend_yn?: string | null;
   weekday_text?: string | null;
@@ -284,6 +297,7 @@ export interface ProgramBaseSummary {
   start_date?: string | null;
   end_date?: string | null;
   cost?: number | string | null;
+  support_amount?: number | string | null;
   cost_type?: string | null;
   support_type?: string | null;
   teaching_method?: string | null;
@@ -296,6 +310,7 @@ export interface ProgramBaseSummary {
 export interface ProgramCardSummary extends ProgramBaseSummary {
   summary: string | null;
   description?: string | null;
+  compare_meta?: CompareMeta | null;
   tags: string[] | string | null;
   skills: string[] | string | null;
   application_url?: string | null;
@@ -394,6 +409,7 @@ export interface Program {
   provider: string | null;
   summary: string | null;
   description?: string | null;
+  compare_meta?: CompareMeta | null;
   tags: string[] | string | null;
   skills: string[] | string | null;
   application_url?: string | null;
@@ -405,6 +421,7 @@ export interface Program {
   start_date?: string | null;
   end_date?: string | null;
   cost?: number | string | null;
+  support_amount?: number | string | null;
   cost_type?: string | null;
   participation_time?: string | null;
   subsidy_amount?: number | string | null;

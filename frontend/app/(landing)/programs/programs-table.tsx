@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { ProgramProviderBrand } from "@/components/programs/program-provider-brand";
 import type { ProgramListRow } from "@/lib/types";
 
 import {
@@ -9,15 +10,13 @@ import {
 import ProgramBookmarkButton from "./program-bookmark-button";
 import {
   deadlineTone,
-  normalizeTextList,
-  scorePercent,
 } from "./program-utils";
 import {
   extractSelectionKeywords,
   formatCost,
-  formatDateRange,
   formatMethodAndRegion,
   formatRecruitingStatus,
+  formatSchedule,
   formatShortDate,
   getDisplayCategories,
   getSupportBadge,
@@ -60,7 +59,7 @@ export function ProgramsTable({
             <th scope="col" className="w-[8%] px-4 py-3">모집상태</th>
             <th scope="col" className="w-[7%] px-4 py-3">본인부담금</th>
             <th scope="col" className="w-[10%] px-4 py-3">온·오프라인</th>
-            <th scope="col" className="w-[9%] px-4 py-3">학습기간</th>
+            <th scope="col" className="w-[9%] px-4 py-3">일정</th>
             <th scope="col" className="w-[10%] px-4 py-3">참여 시간</th>
             <th scope="col" className="w-[18%] px-4 py-3">선발절차·키워드</th>
             <th scope="col" className="w-[7%] px-4 py-3">운영기관</th>
@@ -70,15 +69,21 @@ export function ProgramsTable({
           {programs.map((program) => {
             const programId = String(program.id ?? "");
             const href = programId ? `/programs/${encodeURIComponent(programId)}` : "/programs";
-            const percent = scorePercent(program);
             const categories = getDisplayCategories(program);
             const participation = formatProgramParticipationTime(program);
             const methodAndRegion = formatMethodAndRegion(program);
             const selectionKeywords = extractSelectionKeywords(program);
             const supportBadge = getSupportBadge(program);
+            const selectionProcessLabel =
+              program.selection_process_label && program.selection_process_label !== "선발 절차 없음"
+                ? program.selection_process_label
+                : null;
+            const rowClassName = program.is_ad
+              ? "bg-amber-50/70 hover:bg-amber-50"
+              : "hover:bg-slate-50";
 
             return (
-              <tr key={programId || `${program.source}-${program.title}`} className="align-top transition hover:bg-slate-50">
+              <tr key={programId || `${program.source}-${program.title}`} className={`align-top transition ${rowClassName}`}>
                 <td className="px-4 py-4">
                   {programId ? (
                     <ProgramBookmarkButton
@@ -93,16 +98,6 @@ export function ProgramsTable({
                   <Link href={href} className="mt-1 block text-base font-semibold leading-6 text-slate-950 hover:text-violet-700">
                     {program.title}
                   </Link>
-                  {normalizeTextList(program.recommendation_reasons).length ? (
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      {normalizeTextList(program.recommendation_reasons).slice(0, 3).map((reason) => (
-                        <span key={reason} className="rounded-md bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">
-                          {reason}
-                        </span>
-                      ))}
-                    </div>
-                  ) : null}
-                  {percent !== null ? <p className="mt-1 text-xs font-semibold text-violet-600">관련도 {percent}%</p> : null}
                 </td>
                 <td className="px-4 py-4">
                   <div className="flex flex-wrap gap-1.5">
@@ -149,12 +144,12 @@ export function ProgramsTable({
                     "-"
                   )}
                 </td>
-                <td className="px-4 py-4 text-slate-600">{formatDateRange(program.start_date, program.end_date)}</td>
+                <td className="px-4 py-4 text-slate-600">{formatSchedule(program)}</td>
                 <td className="px-4 py-4 text-slate-600">
                   {participation.label || participation.detail ? (
                     <div className="space-y-1">
                       {participation.label ? (
-                        <span className="inline-flex rounded-md bg-teal-50 px-2 py-1 text-xs font-semibold text-teal-700">
+                        <span className="inline-flex rounded-full bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-700">
                           {participation.label}
                         </span>
                       ) : null}
@@ -165,22 +160,22 @@ export function ProgramsTable({
                   )}
                 </td>
                 <td className="px-4 py-4">
-                  {program.selection_process_label ? (
-                    <p
-                      className={`text-xs font-semibold ${
-                        program.selection_process_label === "선발 절차 없음" ? "text-slate-500" : "text-blue-700"
-                      } ${selectionKeywords.length ? "mb-2" : ""}`}
-                    >
-                      {program.selection_process_label}
-                    </p>
+                  {selectionProcessLabel ? (
+                    <div className={selectionKeywords.length ? "mb-2" : ""}>
+                      <span className="inline-flex rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700">
+                        {selectionProcessLabel}
+                      </span>
+                    </div>
                   ) : null}
                   {selectionKeywords.length ? (
                     <ProgramKeywordList keywords={selectionKeywords} />
-                  ) : program.selection_process_label ? null : (
+                  ) : selectionProcessLabel ? null : (
                     <span className="text-slate-400">-</span>
                   )}
                 </td>
-                <td className="px-4 py-4 text-slate-600">{program.source || "-"}</td>
+                <td className="px-4 py-4 text-slate-600">
+                  <ProgramProviderBrand program={program} />
+                </td>
               </tr>
             );
           })}

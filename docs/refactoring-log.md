@@ -1,5 +1,10 @@
 # 리팩토링 로그
 
+- 2026-04-26: `frontend/app/(landing)/landing-c/page.tsx`, `frontend/app/(landing)/landing-c/_program-feed.tsx`, `frontend/components/landing/LandingHeader.tsx`, `frontend/app/page.tsx`, `frontend/lib/server/public-program-snapshot-utils.ts`, `frontend/lib/server/public-programs-fallback.ts`, `frontend/lib/server/public-programs-fallback.test.ts`, `frontend/lib/server/program-card-summary.ts`, `frontend/lib/server/program-card-summary.test.ts`, `docs/current-state.md`, `docs/refactoring-log.md`
+  - `landing-c`는 keyword가 없는 칩 탐색에서 backend `/programs/list`를 기본 경로로 더 이상 쓰지 않고, daily snapshot + cached direct Supabase read만으로 카드와 라이브보드를 구성하게 정리해 칩 클릭 SSR 비용을 크게 줄임
+  - 공개 fallback 날짜 기준을 KST로 통일하고, `무료`/`창업` 등 legacy fallback 칩도 마감 지난 공고를 보충 후보에서 제외하도록 맞춰 기본 모집중 규칙이 다시 일관되게 유지되게 함
+  - Opportunity feed 검색창을 제거하고 CTA/안내 문구를 `프로그램 더보기`, `프로그램 탐색` 기준으로 정리했으며, 카드 비용 표시도 canonical `support_amount`를 본인부담금 우선값으로 읽도록 summary bridge를 보강함
+
 - 2026-04-26: `supabase/migrations/20260426143000_add_program_landing_chip_snapshots.sql`, `scripts/refresh_program_list_index.py`, `backend/tests/test_program_list_refresh_fallback.py`, `frontend/lib/server/public-program-snapshot-utils.ts`, `frontend/lib/server/public-programs-fallback.test.ts`, `frontend/lib/server/public-programs-fallback.ts`, `frontend/app/(landing)/landing-c/page.tsx`, `docs/current-state.md`, `docs/refactoring-log.md`
   - 랜딩 Opportunity feed 칩별 후보를 하루 단위로 고정할 수 있도록 `program_landing_chip_snapshots` read-model과 refresh RPC를 추가했고, 기존 KST 자정 browse/list refresh wrapper 끝에서 같은 snapshot refresh를 같이 실행하게 묶음
   - `landing-c`는 keyword가 없을 때 오늘 생성된 snapshot이 6개 이상 있으면 그것만으로 카드를 렌더링하고, snapshot이 없거나 부족할 때만 기존 `listProgramsPage + legacy fallback top-up`을 타도록 바꿔 첫 진입 비용과 일중 카드 흔들림을 같이 줄임
@@ -3266,3 +3271,14 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - fresh `8001` backend + fresh `3001` frontend 검증에서 default browse read-model이 `count=300`이어도 이미 마감된 row를 `/programs` 첫 페이지에 노출하는 운영 회귀를 재현함
   - default public browse read-model이 closed row(`days_left < 0` 또는 `is_active = false`)를 반환하면 underfilled가 아니어도 legacy open-only path로 즉시 fallback 하도록 방어 로직을 추가했고, 관련 helper/unit test/async fallback test를 보강함
   - 새 코드로 재기동한 `8001`에서 `/programs/list?limit=5`가 `source=\"legacy\"`와 open row만 반환하는 것을 확인했고, fresh `3001`의 `/programs` table에서도 closed row 텍스트가 사라진 것을 브라우저로 다시 검증함
+- 2026-04-26: `frontend/lib/program-display.ts`, `frontend/lib/program-display.test.ts`, `frontend/lib/server/program-card-summary.ts`, `frontend/lib/server/program-card-summary.test.ts`, `frontend/lib/server/public-programs-fallback.ts`, `frontend/app/(landing)/landing-c/page.tsx`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-26-landing-c-speed-and-feed-followup-result.md`
+  - 랜딩 카드와 `/programs`의 `본인부담금`이 일부 고용24 row에서 총 훈련비로 보이던 회귀를 재현했고, summary row에도 `compare_meta`를 보존한 뒤 display helper가 `self_payment/out_of_pocket/real_man`을 `subsidy_amount`보다 먼저 보도록 정리함
+  - 랜딩 keywordless 칩 전환은 더 이상 snapshot 부재 시 매 요청마다 legacy `programs` 대량 scan을 반복하지 않는다. 가장 최근 landing snapshot을 우선 재사용하고, snapshot이 정말 없으면 하루 1회 in-memory chip fallback cache를 만들어 `무료/창업/온라인` 같은 칩도 즉시 응답하도록 줄였다
+  - `landing-c/page.tsx`의 keywordless 추가 top-up scan을 제거해 칩 클릭 때 응답이 다시 느려지는 경로를 끊고, 무거운 filtered fallback은 수동 keyword URL 경로에만 남겨 두었다
+- 2026-04-26: `supabase/migrations/20260426152000_fix_landing_chip_snapshot_function_live_schema.sql`, `docs/current-state.md`
+  - live DB 확인에서 `program_landing_chip_snapshots`가 비어 있던 직접 원인이 `refresh_program_landing_chip_snapshots()`의 스키마 mismatch(`public.programs.application_url` 직접 참조)라는 점을 확인함
+  - corrective migration으로 landing snapshot 함수를 live-compatible SQL로 재정의해 `program_source_records.application_url`과 `programs.service_meta/compare_meta`를 사용하도록 고치고, migration 적용 직후 snapshot backfill도 한 번 시도하게 함
+- 2026-04-26: `frontend/lib/types/index.ts`, `frontend/lib/program-display.ts`, `frontend/lib/program-display.test.ts`, `frontend/lib/server/program-card-summary.ts`, `frontend/lib/server/program-card-summary.test.ts`, `frontend/app/dashboard/_hooks/recommend-calendar-cache.ts`, `frontend/components/programs/program-deadline-badge.tsx`, `frontend/app/(landing)/landing-c/_program-utils.ts`, `frontend/app/(landing)/landing-c/_program-feed.tsx`, `frontend/app/(landing)/programs/programs-table-helpers.ts`, `frontend/app/(landing)/programs/programs-table.tsx`, `frontend/app/(landing)/programs/programs-urgent-card.tsx`, `frontend/app/dashboard/_components/dashboard-program-cards.tsx`, `frontend/app/dashboard/_components/dashboard-calendar-section.tsx`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-26-program-card-cost-schedule-dday-result.md`
+  - 공용 program display helper가 `support_amount`와 camelCase legacy compare_meta 비용 키까지 해석하도록 넓혀, 일부 고용24 카드가 총 훈련비를 `본인부담금`으로 보이던 회귀를 줄임
+  - 카드 일정 라인을 source-aware helper로 공용화해 `고용24`는 훈련 기간을 유지하고, 그 외 source는 실제 운영 일정 메타를 우선 보며 신청기간처럼 보이는 값은 `일정 확인 필요`로 숨기도록 조정함
+  - 랜딩 Opportunity feed, 마감임박 compact card, dashboard 추천/찜/캘린더 카드에 공통 `ProgramDeadlineBadge`를 붙여 오른쪽 위 D-day 시각 표현을 통일함

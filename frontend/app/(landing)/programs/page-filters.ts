@@ -43,10 +43,8 @@ export const SOURCE_OPTIONS: readonly NamedFilterOption[] = [
 export const TARGET_OPTIONS: readonly NamedFilterOption[] = [
   { value: "청년", label: "청년" },
   { value: "여성", label: "여성" },
-  { value: "중장년", label: "중장년" },
   { value: "창업", label: "창업" },
   { value: "재직자", label: "재직자" },
-  { value: "구직자", label: "구직자" },
   { value: "대학생", label: "대학생" },
 ];
 export const PROGRAM_CATEGORY_OPTIONS: readonly ProgramCategoryMenuOption[] = [

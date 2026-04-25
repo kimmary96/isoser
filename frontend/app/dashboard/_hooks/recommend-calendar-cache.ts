@@ -84,6 +84,12 @@ function normalizeLegacyCachedProgram(value: unknown): ProgramCardSummary | null
       typeof record.cost === "number" || typeof record.cost === "string"
         ? (record.cost as number | string)
         : null,
+    support_amount:
+      typeof record.support_amount === "number" || typeof record.support_amount === "string"
+        ? (record.support_amount as number | string)
+        : typeof record.subsidy_amount === "number" || typeof record.subsidy_amount === "string"
+          ? (record.subsidy_amount as number | string)
+          : null,
     cost_type: cleanText(record.cost_type),
     support_type: cleanText(record.support_type),
     teaching_method: cleanText(record.teaching_method),
@@ -94,6 +100,10 @@ function normalizeLegacyCachedProgram(value: unknown): ProgramCardSummary | null
       cleanText(record.deadline_confidence) as ProgramCardSummary["deadline_confidence"],
     summary: cleanText(record.summary),
     description: cleanText(record.description),
+    compare_meta:
+      record.compare_meta && typeof record.compare_meta === "object" && !Array.isArray(record.compare_meta)
+        ? (record.compare_meta as ProgramCardSummary["compare_meta"])
+        : null,
     tags: asStringArray(record.tags),
     skills: asStringArray(record.skills),
     application_url: cleanText(record.application_url),
