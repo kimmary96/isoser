@@ -7,6 +7,7 @@ import {
   getProgramOutOfPocketAmount,
   getProgramDeadlineBadgeData,
   getProgramRatingDisplay,
+  getProgramSelectionKeywords,
   getProgramTrainingModeLabel,
   hasTomorrowLearningCardRequirement,
   hasTrustedProgramDeadline,
@@ -144,11 +145,13 @@ describe("program display legacy compare_meta bridge", () => {
   it("prefers compare_meta self-payment over subsidy_amount when both are present", () => {
     const program = {
       cost: 265980,
+      support_amount: 265980,
       subsidy_amount: 265980,
       support_type: "훈련비 지원",
       teaching_method: "오프라인",
       application_method: null,
       location: "부산",
+      source: "고용24",
       title: "스케치업 과정",
       summary: null,
       description: null,
@@ -228,6 +231,7 @@ describe("program display legacy compare_meta bridge", () => {
   it("does not show total training cost as out-of-pocket when work24 self-payment evidence is missing", () => {
     const program = {
       cost: 265980,
+      support_amount: 265980,
       subsidy_amount: 265980,
       support_type: "훈련비 지원",
       teaching_method: "오프라인",
@@ -244,9 +248,19 @@ describe("program display legacy compare_meta bridge", () => {
     };
 
     expect(getProgramOutOfPocketAmount(program)).toBeNull();
-    expect(formatProgramCostLabel(program)).toBe("자부담 정보 확인 필요");
+    expect(formatProgramCostLabel(program)).toBe("훈련비 265,980원");
   });
 
+  it("drops stale status keywords from list keyword chips", () => {
+    const keywords = getProgramSelectionKeywords({
+      extracted_keywords: ["마감임박", "최근등록", "데이터·AI"],
+      tags: ["관련도 82%", "Python"],
+      skills: ["RAG"],
+      compare_meta: null,
+    });
+
+    expect(keywords).toEqual(["Python", "RAG"]);
+  });
 });
 
 describe("program schedule display helpers", () => {

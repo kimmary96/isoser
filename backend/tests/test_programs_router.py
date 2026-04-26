@@ -287,6 +287,9 @@ def test_program_active_filter_group_count_counts_filter_families() -> None:
 def test_read_model_is_disabled_for_recent_closed_mode() -> None:
     assert programs._can_use_program_list_read_model(include_closed_recent=False) is True
     assert programs._can_use_program_list_read_model(include_closed_recent=True) is False
+    assert programs._can_use_program_list_read_model(category_detail="web-development") is False
+    assert programs._can_use_program_list_read_model(participation_times=["part-time"]) is False
+    assert programs._can_use_program_list_read_model(targets=["청년"]) is False
 
 
 def test_read_model_query_limits_default_browse_pool() -> None:
@@ -575,6 +578,7 @@ def test_read_model_summary_select_excludes_heavy_detail_fields() -> None:
     assert "compare_meta" not in selected
     assert "description" not in selected
     assert "raw_data" not in selected
+    assert "verified_self_pay_amount" in selected
     assert "recommended_score" in selected
 
 
@@ -876,7 +880,7 @@ async def test_list_programs_page_falls_back_when_default_browse_read_model_cont
 
     async def fake_fetch_program_list_rows(params: dict[str, object], *, q: str | None) -> list[dict[str, object]]:
         assert q is None
-        assert params["select"] == "*"
+        assert "select" in params
         return [
             {
                 "id": "legacy-open",
@@ -1139,6 +1143,76 @@ async def test_list_programs_page_skips_promoted_layer_for_filtered_browse(
 
 
 @pytest.mark.asyncio
+async def test_list_programs_page_uses_local_browse_subset_count_for_category_filter(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_load_local_browse_subset_rows(**_: object) -> list[dict[str, object]]:
+        return [
+            {
+                "id": "subset-1",
+                "title": "웹 과정",
+                "source": "고용24",
+                "deadline": (date.today() + timedelta(days=4)).isoformat(),
+            },
+            {
+                "id": "subset-2",
+                "title": "백엔드 과정",
+                "source": "고용24",
+                "deadline": (date.today() + timedelta(days=5)).isoformat(),
+            },
+        ]
+
+    monkeypatch.setattr(programs, "_load_local_browse_subset_rows", fake_load_local_browse_subset_rows)
+
+    response = await programs.list_programs_page(
+        regions=None,
+        sources=None,
+        teaching_methods=None,
+        cost_types=None,
+        participation_times=None,
+        targets=None,
+        category="IT",
+        category_detail="web-development",
+        limit=1,
+        offset=0,
+    )
+
+    assert response.source == "legacy"
+    assert response.mode == "browse"
+    assert response.count == 2
+    assert [item.program.id for item in response.items] == ["subset-1"]
+
+
+@pytest.mark.asyncio
+async def test_count_programs_uses_local_browse_subset_for_derived_filters(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_load_local_browse_subset_rows(**_: object) -> list[dict[str, object]]:
+        return [
+            {"id": "subset-1"},
+            {"id": "subset-2"},
+            {"id": "subset-3"},
+        ]
+
+    monkeypatch.setattr(programs, "_load_local_browse_subset_rows", fake_load_local_browse_subset_rows)
+
+    response = await programs.count_programs(
+        regions=None,
+        sources=None,
+        teaching_methods=None,
+        cost_types=None,
+        participation_times=None,
+        targets=None,
+        selection_processes=None,
+        employment_links=None,
+        category="IT",
+        category_detail="web-development",
+    )
+
+    assert response.count == 3
+
+
+@pytest.mark.asyncio
 async def test_fetch_promoted_read_model_rows_dedupes_explicit_ads_and_provider_fallback(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1298,6 +1372,88 @@ def test_category_detail_filter_matches_inferred_ai_programs() -> None:
     ]
 
     assert [row["id"] for row in programs._filter_program_rows_by_category_detail(rows, "data-ai")] == ["program-ai"]
+
+
+def test_category_detail_filter_matches_title_based_development_tags() -> None:
+    rows = [
+        programs._serialize_program_list_row(
+            {
+                "id": "program-dev",
+                "title": "프론트엔드 백엔드 실무 부트캠프",
+                "category": "IT",
+                "category_detail": None,
+                "deadline": (date.today() + timedelta(days=5)).isoformat(),
+            }
+        ),
+        programs._serialize_program_list_row(
+            {
+                "id": "program-design",
+                "title": "브랜딩 디자인 워크숍",
+                "category": "디자인",
+                "category_detail": None,
+                "deadline": (date.today() + timedelta(days=5)).isoformat(),
+            }
+        ),
+    ]
+
+    assert [row["id"] for row in programs._filter_program_rows_by_category_detail(rows, "web-development")] == ["program-dev"]
+
+
+def test_category_detail_filter_prefers_ncs_based_tags_when_available() -> None:
+    rows = [
+        programs._serialize_program_list_row(
+            {
+                "id": "program-ncs-web",
+                "title": "실무 과정",
+                "category": "IT",
+                "deadline": (date.today() + timedelta(days=5)).isoformat(),
+                "compare_meta": {
+                    "ncs_name": "응용SW엔지니어링",
+                },
+            }
+        ),
+        programs._serialize_program_list_row(
+            {
+                "id": "program-ncs-marketing",
+                "title": "마케팅 과정",
+                "category": "경영",
+                "deadline": (date.today() + timedelta(days=5)).isoformat(),
+                "compare_meta": {
+                    "ncs_name": "경영기획",
+                },
+            }
+        ),
+    ]
+
+    assert [row["id"] for row in programs._filter_program_rows_by_category_detail(rows, "web-development")] == ["program-ncs-web"]
+    assert [row["id"] for row in programs._filter_program_rows_by_category_detail(rows, "ncs-20")] == ["program-ncs-web"]
+    assert rows[0]["display_categories"][0] == "정보통신"
+
+
+def test_program_target_filter_matches_derived_target_tags_from_title_and_description() -> None:
+    rows = programs._postprocess_program_list_rows(
+        [
+            {
+                "id": "program-startup",
+                "title": "여성 예비창업자 아카데미",
+                "description": "여성 창업자를 위한 실전 과정",
+                "deadline": (date.today() + timedelta(days=10)).isoformat(),
+            },
+            {
+                "id": "program-worker",
+                "title": "재직자 데이터 분석 과정",
+                "description": "직장인 대상 야간 수업",
+                "deadline": (date.today() + timedelta(days=10)).isoformat(),
+            },
+        ],
+        targets=["여성", "창업"],
+        sort="deadline",
+        include_closed_recent=False,
+        limit=10,
+        offset=0,
+    )
+
+    assert [row["id"] for row in rows] == ["program-startup"]
 
 
 def test_program_query_search_uses_service_meta_when_compare_meta_is_sparse() -> None:
@@ -1482,6 +1638,52 @@ def test_extract_program_filter_options_uses_present_program_values() -> None:
     assert {option.value for option in options.targets} == {"청년", "창업"}
     assert {option.value for option in options.selection_processes} == {"서류", "면접", "선착순"}
     assert {option.value for option in options.employment_links} == {"취업지원", "멘토링", "인턴십"}
+
+
+def test_extract_program_filter_options_canonicalizes_raw_source_labels() -> None:
+    rows = [
+        {
+            "source": "K-Startup 창업진흥원",
+            "title": "창업 지원 사업",
+        },
+        {
+            "source": "고용24",
+            "title": "직무 훈련 과정",
+        },
+    ]
+
+    options = programs._extract_program_filter_options(rows)
+
+    assert [option.value for option in options.sources] == ["kstartup", "고용24"]
+    assert [option.label for option in options.sources] == ["K-Startup", "고용24"]
+
+
+def test_filter_options_from_facet_snapshot_canonicalizes_source_values() -> None:
+    facets = programs.ProgramFacetSnapshot(
+        source=[
+            programs.ProgramFacetBucket(value="K-Startup 창업진흥원", count=1),
+            programs.ProgramFacetBucket(value="고용24", count=2),
+        ]
+    )
+
+    options = programs._filter_options_from_facet_snapshot(facets)
+
+    assert [option.value for option in options.sources] == ["kstartup", "고용24"]
+    assert [option.label for option in options.sources] == ["K-Startup", "고용24"]
+
+
+def test_extract_program_filter_options_uses_reduced_explicit_target_family() -> None:
+    rows = [
+        {
+            "source": "sesac",
+            "title": "여성 예비창업자 성장 프로그램",
+            "description": "재직자와 대학생도 지원 가능합니다.",
+        }
+    ]
+
+    options = programs._extract_program_filter_options(rows)
+
+    assert [option.value for option in options.targets] == ["여성", "창업", "재직자", "대학생"]
 
 
 def test_get_program_filter_options_endpoint(
@@ -1689,10 +1891,11 @@ def test_serialize_program_list_row_derives_display_metadata_from_real_text() ->
         }
     )
 
-    assert row["display_categories"] == ["AI서비스"]
+    assert row["display_categories"] == ["정보통신"]
     assert row["participation_mode_label"] == "풀타임"
     assert row["participation_time_text"] == "월,화,수,목,금 / 09:00 ~ 18:00"
     assert row["selection_process_label"] == "포트폴리오 / 면접 / 서류"
+    assert {"정보통신", "풀타임"}.isdisjoint(set(row["extracted_keywords"]))
     assert {"Python", "RAG", "LLM", "MCP", "머신러닝"}.issubset(set(row["extracted_keywords"]))
 
 
@@ -1722,10 +1925,25 @@ def test_serialize_program_list_row_derives_weekend_and_semiconductor_metadata()
         }
     )
 
-    assert row["display_categories"] == ["반도체"]
+    assert row["display_categories"] == ["전기·전자"]
     assert row["participation_mode_label"] == "주말반"
     assert row["participation_time_text"] == "주말 / 10:00 ~ 17:00"
+    assert {"전기·전자", "주말반"}.isdisjoint(set(row["extracted_keywords"]))
     assert {"FPGA", "SoC", "RTL", "Verilog", "반도체설계"}.issubset(set(row["extracted_keywords"]))
+
+
+def test_serialize_program_list_row_hides_selection_process_when_evidence_is_missing() -> None:
+    row = programs._serialize_program_list_row(
+        {
+            "id": "program-basic",
+            "title": "대학생 웹개발 입문",
+            "description": "서울에서 진행하는 오프라인 과정",
+            "deadline": (date.today() + timedelta(days=5)).isoformat(),
+        }
+    )
+
+    assert row["selection_process_label"] is None
+    assert row["extracted_keywords"] == ["대학생"]
 
 
 def test_serialize_program_list_row_uses_work24_day_night_metadata() -> None:
@@ -1856,6 +2074,10 @@ def test_build_program_detail_response_maps_kstartup_dates_as_application_period
             "source": "K-Startup 창업진흥원",
             "title": "2026년 서울여성 창업아이디어 공모전",
             "provider": "서울시여성능력개발원",
+            "category": "창업",
+            "category_detail": "startup-career",
+            "ncs_code": "010101",
+            "ncs_name": "사업관리",
             "location": "서울",
             "description": "창업 아이디어 공모전 설명",
             "start_date": "2026-03-30",
@@ -1877,6 +2099,12 @@ def test_build_program_detail_response_maps_kstartup_dates_as_application_period
 
     assert detail.title == "2026년 서울여성 창업아이디어 공모전"
     assert detail.provider == "서울시여성능력개발원"
+    assert detail.source == "K-Startup 창업진흥원"
+    assert detail.category == "창업"
+    assert detail.category_detail == "startup-career"
+    assert detail.ncs_code == "010101"
+    assert detail.ncs_name == "사업관리"
+    assert detail.display_categories
     assert detail.organizer == "민간"
     assert detail.location == "서울"
     assert detail.application_start_date == "2026-03-30"
@@ -1899,13 +2127,16 @@ def test_build_program_detail_response_maps_work24_dates_as_program_period() -> 
             "source": "고용24",
             "title": "Python 자료구조&알고리즘 프로그래밍",
             "provider": "그린컴퓨터아트학원",
+            "participation_time": "part-time",
+            "application_method": "온라인 신청",
+            "cost_type": "naeil-card",
             "location": "서울 종로구",
             "description": "그린컴퓨터아트학원",
             "start_date": "2026-04-23",
             "end_date": "2026-05-12",
             "deadline": "2026-05-01",
             "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20230000419940",
-            "cost": 0,
+            "cost": 629760,
             "subsidy_amount": 238320,
             "compare_meta": {
                 "capacity": "20",
@@ -1919,6 +2150,11 @@ def test_build_program_detail_response_maps_work24_dates_as_program_period() -> 
 
     assert detail.title == "Python 자료구조&알고리즘 프로그래밍"
     assert detail.provider == "그린컴퓨터아트학원"
+    assert detail.source == "고용24"
+    assert detail.participation_time in {"파트타임", "part-time"}
+    assert detail.application_method == "온라인 신청"
+    assert detail.cost_type == "naeil-card"
+    assert detail.deadline == "2026-05-01"
     assert detail.location == "서울 종로구"
     assert detail.application_start_date is None
     assert detail.application_end_date == "2026-05-01"
@@ -1926,7 +2162,7 @@ def test_build_program_detail_response_maps_work24_dates_as_program_period() -> 
     assert detail.program_end_date == "2026-05-12"
     assert detail.schedule_text == "신청 시작일 미정 ~ 2026-05-01"
     assert detail.source_url == "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20230000419940"
-    assert detail.fee == 0
+    assert detail.fee == 629760
     assert detail.support_amount == 238320
     assert detail.rating == "4.6"
     assert detail.rating_raw == "91.4"
@@ -1936,6 +2172,22 @@ def test_build_program_detail_response_maps_work24_dates_as_program_period() -> 
     assert detail.capacity_total == 20
     assert detail.capacity_remaining == 17
     assert detail.phone == "02-722-2111"
+
+
+def test_build_program_detail_response_hides_self_pay_when_only_total_fee_is_available() -> None:
+    detail = programs._build_program_detail_response(
+        {
+            "id": "work24-total-only",
+            "source": "고용24",
+            "title": "총 훈련비만 있는 과정",
+            "cost": 629760,
+            "support_amount": 629760,
+            "deadline": "2026-05-01",
+        }
+    )
+
+    assert detail.fee == 629760
+    assert detail.support_amount is None
 
 
 def test_build_program_detail_response_uses_work24_application_deadline_from_meta() -> None:
@@ -1970,12 +2222,15 @@ def test_build_program_detail_response_prefers_canonical_and_source_record_field
             "location_text": "정본 위치",
             "summary": "기존 요약",
             "business_type": "훈련비 지원",
+            "application_method": "홈페이지 신청",
+            "cost_type": "free-no-card",
             "application_start_date": "2026-04-20",
             "application_end_date": "2026-04-29",
             "program_start_date": "2026-05-10",
             "program_end_date": "2026-06-10",
             "fee_amount": 0,
             "support_amount": 120000,
+            "verified_self_pay_amount": 120000,
             "eligibility_labels": ["청년", "초급 개발자"],
             "contact_phone": "02-0000-0000",
             "contact_email": "hello@example.com",
@@ -1990,6 +2245,7 @@ def test_build_program_detail_response_prefers_canonical_and_source_record_field
             "compare_meta": {
                 "contact_phone": "02-9999-9999",
                 "application_method_email": "legacy@example.com",
+                "selection_process": "서류 검토",
             },
         },
         {
@@ -2014,6 +2270,9 @@ def test_build_program_detail_response_prefers_canonical_and_source_record_field
     assert detail.organizer == "정본 주관기관"
     assert detail.location == "정본 위치"
     assert detail.support_type == "훈련비 지원"
+    assert detail.application_method == "홈페이지 신청"
+    assert detail.selection_process_label == "서류 검토"
+    assert detail.cost_type == "free-no-card"
     assert detail.source_url == "https://example.com/apply"
     assert detail.fee == 0
     assert detail.support_amount == 120000
@@ -2347,6 +2606,121 @@ def test_should_apply_work24_default_mix_skips_startup_filters_and_explicit_sour
     assert programs._should_apply_work24_default_mix(category_detail="project-career-startup") is False
     assert programs._should_apply_work24_default_mix(q="스타트업 지원") is False
     assert programs._should_apply_work24_default_mix(sources=["K-Startup 창업진흥원"]) is False
+
+
+def test_build_program_query_params_expands_canonical_source_aliases() -> None:
+    params = programs._build_program_query_params(
+        select="*",
+        sources=["kstartup"],
+        sort="default",
+        limit=20,
+    )
+
+    assert params["source"] == 'in.("kstartup","K-Startup","K-Startup 창업진흥원")'
+
+
+def test_build_program_query_params_supports_other_source_filter() -> None:
+    params = programs._build_program_query_params(
+        select="*",
+        sources=["other"],
+        sort="default",
+        limit=20,
+    )
+
+    assert "source" not in params
+    assert params["limit"] == "10000"
+    assert "offset" not in params
+
+
+def test_other_source_filter_uses_legacy_postprocess_path() -> None:
+    assert programs._can_use_program_list_read_model(sources=["other"]) is False
+
+
+def test_build_read_model_params_skips_source_param_when_other_is_present() -> None:
+    params, mode = programs._build_read_model_params(
+        category=None,
+        category_detail=None,
+        scope="default",
+        region_detail=None,
+        q=None,
+        regions=None,
+        sources=["kstartup", "other"],
+        teaching_methods=None,
+        cost_types=None,
+        participation_times=None,
+        targets=None,
+        recruiting_only=True,
+        include_closed_recent=False,
+        sort="default",
+        limit=20,
+    )
+
+    assert mode == "browse"
+    assert "source" not in params
+
+
+def test_postprocess_other_source_filter_matches_non_canonical_provider() -> None:
+    deadline = (date.today() + timedelta(days=10)).isoformat()
+
+    rows = programs._postprocess_program_list_rows(
+        [
+            {
+                "id": "local-gov-kstartup",
+                "title": "도봉구 청년 창업 교육",
+                "source": "K-Startup 창업진흥원",
+                "provider": "도봉구청",
+                "deadline": deadline,
+                "is_active": True,
+            },
+            {
+                "id": "work24-provider",
+                "title": "도봉 간호 교육",
+                "source": "고용24",
+                "provider": "도봉유디간호학원",
+                "deadline": deadline,
+                "is_active": True,
+            },
+            {
+                "id": "sesac",
+                "title": "SeSAC 개발자 과정",
+                "source": "SeSAC",
+                "provider": "청년취업사관학교",
+                "deadline": deadline,
+                "is_active": True,
+            },
+            {
+                "id": "unknown-source",
+                "title": "서울시 일자리 특강",
+                "source": "서울시 일자리",
+                "provider": "서울시 일자리",
+                "deadline": deadline,
+                "is_active": True,
+            },
+        ],
+        sources=["other"],
+        recruiting_only=True,
+        sort="deadline",
+        include_closed_recent=False,
+        limit=10,
+        offset=0,
+    )
+
+    assert [row["id"] for row in rows] == ["local-gov-kstartup", "unknown-source"]
+
+
+def test_filter_options_collapse_unknown_sources_into_other() -> None:
+    options = programs._extract_program_filter_options(
+        [
+            {"source": "서울시 일자리"},
+            {"source": "도봉구청"},
+            {"source": "K-Startup 창업진흥원"},
+        ]
+    )
+
+    assert [option.model_dump() for option in options.sources] == [
+        {"value": "kstartup", "label": "K-Startup"},
+        {"value": "other", "label": "기타 기관"},
+    ]
 
 
 def test_postprocess_program_list_rows_searches_provider_and_orders_by_match_field() -> None:

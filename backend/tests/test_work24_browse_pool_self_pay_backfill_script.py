@@ -26,7 +26,7 @@ def test_fetch_browse_pool_work24_rows_uses_bounded_browse_rank_window(monkeypat
     assert captured["or"] == "(source.ilike.*고용24*,source.ilike.*work24*)"
 
 
-def test_build_report_only_keeps_suspicious_work24_rows(monkeypatch) -> None:
+def test_build_report_keeps_work24_rows_without_verified_self_pay(monkeypatch) -> None:
     monkeypatch.setattr(
         backfill_work24_browse_pool_self_pay,
         "fetch_browse_pool_work24_rows",
@@ -41,10 +41,10 @@ def test_build_report_only_keeps_suspicious_work24_rows(monkeypatch) -> None:
         lambda ids: [
             {
                 "id": "program-1",
-                "title": "의심 과정",
+                "title": "자부담 미확인 과정",
                 "source": "고용24",
                 "cost": 265980,
-                "subsidy_amount": 265980,
+                "subsidy_amount": None,
                 "compare_meta": {},
                 "link": "https://www.work24.go.kr/detail?id=1",
             },
@@ -97,6 +97,35 @@ def test_build_report_only_keeps_suspicious_work24_rows(monkeypatch) -> None:
             },
         }
     ]
+
+
+def test_work24_self_pay_candidate_skips_already_verified_rows() -> None:
+    assert not backfill_work24_browse_pool_self_pay.should_fetch_work24_self_pay_detail(
+        {
+            "source": "고용24",
+            "cost": 265980,
+            "support_amount": 93100,
+            "compare_meta": {},
+            "link": "https://www.work24.go.kr/detail?id=1",
+        }
+    )
+    assert not backfill_work24_browse_pool_self_pay.should_fetch_work24_self_pay_detail(
+        {
+            "source": "고용24",
+            "cost": 265980,
+            "compare_meta": {"self_payment": 93100},
+            "link": "https://www.work24.go.kr/detail?id=1",
+        }
+    )
+    assert backfill_work24_browse_pool_self_pay.should_fetch_work24_self_pay_detail(
+        {
+            "source": "고용24",
+            "cost": 265980,
+            "subsidy_amount": None,
+            "compare_meta": {},
+            "link": "https://www.work24.go.kr/detail?id=1",
+        }
+    )
 
 
 def test_refresh_browse_pool_uses_browse_only_strategy(monkeypatch) -> None:

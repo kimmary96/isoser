@@ -63,6 +63,17 @@ function trainingFeeLabel(program: ProgramListRow): string {
   return formatProgramCostLabel(program) || "확인 필요";
 }
 
+function trainingFeeTagLabel(program: ProgramListRow): string {
+  const label = trainingFeeLabel(program);
+  if (label.startsWith("훈련비 ")) {
+    return label;
+  }
+  if (label.includes("확인 필요")) {
+    return "비용 정보 확인 필요";
+  }
+  return `본인부담금 ${label}`;
+}
+
 export function trainingPeriodLabel(program: ProgramListRow): string {
   return formatProgramScheduleLabel(program);
 }
@@ -117,7 +128,7 @@ export function locationLabel(program: ProgramListRow): string | null {
 
 export function programTagItems(program: ProgramListRow): Array<{ label: string; tone: "green" | "blue" | "amber" | "indigo" }> {
   const tags: Array<{ label: string; tone: "green" | "blue" | "amber" | "indigo" }> = [
-    { label: `본인부담금 ${trainingFeeLabel(program)}`, tone: "green" },
+    { label: trainingFeeTagLabel(program), tone: "green" },
   ];
 
   const trainingMode = getProgramTrainingModeLabel(program);

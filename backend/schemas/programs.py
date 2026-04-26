@@ -199,13 +199,26 @@ class ProgramDetailResponse(BaseModel):
     title: str | None = None
     provider: str | None = None
     organizer: str | None = None
+    source: str | None = None
+    category: str | None = None
+    category_detail: str | None = None
+    display_categories: list[str] = Field(default_factory=list)
+    ncs_code: str | None = None
+    ncs_name: str | None = None
     location: str | None = None
     description: str | None = None
+    deadline: str | None = None
+    days_left: int | None = None
     application_start_date: str | None = None
     application_end_date: str | None = None
     program_start_date: str | None = None
     program_end_date: str | None = None
     teaching_method: str | None = None
+    participation_time: str | None = None
+    participation_time_text: str | None = None
+    application_method: str | None = None
+    selection_process_label: str | None = None
+    cost_type: str | None = None
     support_type: str | None = None
     source_url: str | None = None
     fee: int | None = None
@@ -227,6 +240,7 @@ class ProgramDetailResponse(BaseModel):
     certifications: list[str] = Field(default_factory=list)
     tech_stack: list[str] = Field(default_factory=list)
     tags: list[str] = Field(default_factory=list)
+    extracted_keywords: list[str] = Field(default_factory=list)
     curriculum: list[str] = Field(default_factory=list)
     faq: list[dict[str, str]] = Field(default_factory=list)
     reviews: list[dict[str, Any]] = Field(default_factory=list)

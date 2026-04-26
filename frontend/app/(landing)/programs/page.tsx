@@ -17,6 +17,7 @@ import type { ProgramListRow } from "@/lib/types";
 
 import {
   buildProgramsHref,
+  canonicalizeSourceFilterOption,
   COST_TYPE_OPTIONS,
   dynamicOrFallbackOptions,
   findOptionLabel,
@@ -98,7 +99,11 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
       recruiting_only: recruitingOnly,
       include_closed_recent: showClosedRecent,
     });
-    sourceOptions = dynamicOrFallbackOptions(filterOptions.sources, SOURCE_OPTIONS);
+    sourceOptions = dynamicOrFallbackOptions(
+      filterOptions.sources,
+      SOURCE_OPTIONS,
+      canonicalizeSourceFilterOption
+    );
     targetOptions = dynamicOrFallbackOptions(filterOptions.targets, TARGET_OPTIONS);
   } catch {
     sourceOptions = SOURCE_OPTIONS;
@@ -291,10 +296,10 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
 
           <ProgramBookmarkStateProvider initialBookmarkedProgramIds={bookmarkedProgramIds}>
             {displayUrgentPrograms.length > 0 ? (
-              <section className="rounded-2xl border border-amber-100 bg-amber-50/60 p-5 shadow-sm">
+              <section className="rounded-2xl border border-rose-200 bg-rose-50/70 p-5 shadow-sm">
                 <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-[0.24em] text-amber-700">Closing Soon</p>
+                    <p className="text-sm font-semibold uppercase tracking-[0.24em] text-rose-700">Closing Soon</p>
                     <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-950">마감 임박 프로그램</h2>
                     <p className="mt-2 text-sm text-slate-600">
                       {urgentProgramsUseStrictWindow

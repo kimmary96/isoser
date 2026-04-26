@@ -86,7 +86,10 @@ try:
         _program_participation_time,
         _program_search_index_filter,
         _program_search_match_rank,
+        _program_source_filter_param,
+        _has_other_program_source_filter,
         _program_source_label,
+        _normalize_program_source_filters,
         _sort_program_list_rows as _service_sort_program_list_rows,
         _postprocess_program_list_rows as _service_postprocess_program_list_rows,
         _filter_program_rows_by_deadline_window as _service_filter_program_rows_by_deadline_window,
@@ -118,7 +121,10 @@ except ImportError:
         _program_participation_time,
         _program_search_index_filter,
         _program_search_match_rank,
+        _program_source_filter_param,
+        _has_other_program_source_filter,
         _program_source_label,
+        _normalize_program_source_filters,
         _sort_program_list_rows as _service_sort_program_list_rows,
         _postprocess_program_list_rows as _service_postprocess_program_list_rows,
         _filter_program_rows_by_deadline_window as _service_filter_program_rows_by_deadline_window,
@@ -333,8 +339,15 @@ PROGRAM_LIST_SUMMARY_SELECT = (
     "teaching_method,cost,cost_type,participation_time,source,source_url,link,deadline,"
     "close_date,start_date,end_date,is_active,is_ad,display_categories,participation_mode_label,participation_time_text,"
     "selection_process_label,extracted_keywords,tags,skills,days_left,"
+    "verified_self_pay_amount,"
     "deadline_confidence,recommended_score,recommendation_reasons,detail_view_count,detail_view_count_7d,"
     "click_hotness_score,last_detail_viewed_at,promoted_rank,updated_at"
+)
+PROGRAM_FILTER_SCAN_SELECT = (
+    "id,title,provider,summary,description,category,category_detail,region,region_detail,location,"
+    "teaching_method,cost,cost_type,participation_time,source,source_url,link,deadline,close_date,"
+    "start_date,end_date,is_active,is_ad,tags,skills,target,support_type,compare_meta,service_meta,"
+    "support_amount,subsidy_amount,raw_data"
 )
 USER_RECOMMENDATION_PROFILE_SELECT = (
     "user_id,effective_target_job,effective_target_job_normalized,profile_keywords,evidence_skills,"
@@ -1162,10 +1175,11 @@ def _build_program_query_params(
     limit: int | None = None,
     offset: int | None = None,
 ) -> dict[str, Any]:
-    has_keyword_search = bool(_normalize_search_text(q))
     normalized_teaching_methods = _normalize_teaching_methods_param(teaching_methods)
+    has_keyword_search = bool(_normalize_search_text(q))
     normalized_regions = _expand_region_keywords(_normalize_regions_param(regions))
-    normalized_sources = [source.strip() for source in (sources or []) if source.strip()]
+    normalized_sources = _normalize_program_source_filters(sources, expand_aliases=True)
+    needs_source_postprocess_scan = _has_other_program_source_filter(sources)
     search_filter = _program_search_index_filter(q) if _can_use_program_search_index(q) else None
     return _service_build_program_query_params(
         select=select,
@@ -1175,9 +1189,9 @@ def _build_program_query_params(
         recruiting_only=recruiting_only,
         include_closed_recent=include_closed_recent,
         sort=sort,
-        limit=limit,
-        offset=offset,
-        has_keyword_search=has_keyword_search,
+        limit=PROGRAM_SEARCH_SCAN_LIMIT if needs_source_postprocess_scan and limit is not None else limit,
+        offset=None if needs_source_postprocess_scan else offset,
+        has_keyword_search=has_keyword_search or needs_source_postprocess_scan,
         today_kst=_today_kst(),
         normalized_teaching_methods=normalized_teaching_methods,
         normalized_region_keywords=normalized_regions,
@@ -1324,6 +1338,8 @@ def _postprocess_program_list_rows(
     *,
     category_detail: str | None = None,
     q: str | None = None,
+    sources: list[str] | None = None,
+    teaching_methods: list[str] | None = None,
     cost_types: list[str] | None = None,
     participation_times: list[str] | None = None,
     targets: list[str] | None = None,
@@ -1340,6 +1356,8 @@ def _postprocess_program_list_rows(
         rows,
         category_detail=category_detail,
         q=q,
+        sources=sources,
+        teaching_methods=teaching_methods,
         cost_types=cost_types,
         participation_times=participation_times,
         targets=targets,
@@ -1845,7 +1863,9 @@ async def _count_program_rows(
     include_closed_recent: bool = False,
 ) -> int:
     has_extra_filters = bool(
-        _normalize_option_param(cost_types, PROGRAM_COST_TYPES)
+        _has_other_program_source_filter(sources)
+        or _normalize_teaching_methods_param(teaching_methods)
+        or _normalize_option_param(cost_types, PROGRAM_COST_TYPES)
         or _normalize_option_param(participation_times, PROGRAM_PARTICIPATION_TIMES)
         or _normalize_option_param(targets, PROGRAM_TARGETS)
         or _normalize_option_param(selection_processes, PROGRAM_SELECTION_PROCESSES)
@@ -1853,7 +1873,7 @@ async def _count_program_rows(
     )
     params = _build_program_query_params(
         select=(
-            "*"
+            PROGRAM_FILTER_SCAN_SELECT
             if _normalize_search_text(q) or has_extra_filters or category_detail
             else "id,source,deadline,close_date,end_date,compare_meta,is_active,created_at"
         ),
@@ -1877,6 +1897,8 @@ async def _count_program_rows(
                         _filter_program_rows_by_query([_serialize_program_list_row(row) for row in rows], q),
                         category_detail,
                     ),
+                    sources=sources,
+                    teaching_methods=teaching_methods,
                     cost_types=cost_types,
                     participation_times=participation_times,
                     targets=targets,
@@ -1899,6 +1921,7 @@ def _program_list_read_model_enabled() -> bool:
 
 def _can_use_program_list_read_model(
     *,
+    sources: list[str] | None = None,
     category_detail: str | None = None,
     cost_types: list[str] | None = None,
     participation_times: list[str] | None = None,
@@ -1909,6 +1932,7 @@ def _can_use_program_list_read_model(
 ) -> bool:
     has_local_derived_filters = bool(
         str(category_detail or "").strip()
+        or _has_other_program_source_filter(sources)
         or _normalize_option_param(cost_types, PROGRAM_COST_TYPES)
         or _normalize_option_param(participation_times, PROGRAM_PARTICIPATION_TIMES)
         or _normalize_option_param(targets, PROGRAM_TARGETS)
@@ -1962,7 +1986,7 @@ def _program_active_filter_group_count(
         count += 1
     if region_detail or _normalize_regions_param(regions):
         count += 1
-    if [source.strip() for source in (sources or []) if source.strip()]:
+    if _normalize_program_source_filters(sources):
         count += 1
     if _normalize_teaching_methods_param(teaching_methods):
         count += 1
@@ -2055,6 +2079,64 @@ def _is_default_public_browse_scope(
         cost_types=cost_types,
         participation_times=participation_times,
         targets=targets,
+    )
+
+
+def _has_local_browse_subset_filters(
+    *,
+    category_detail: str | None = None,
+    cost_types: list[str] | None = None,
+    participation_times: list[str] | None = None,
+    targets: list[str] | None = None,
+) -> bool:
+    return bool(
+        str(category_detail or "").strip()
+        or _normalize_option_param(cost_types, PROGRAM_COST_TYPES)
+        or _normalize_option_param(participation_times, PROGRAM_PARTICIPATION_TIMES)
+        or _normalize_option_param(targets, PROGRAM_TARGETS)
+    )
+
+
+def _should_use_local_browse_subset(
+    *,
+    category: str | None = None,
+    category_detail: str | None = None,
+    scope: str | None = None,
+    region_detail: str | None = None,
+    q: str | None = None,
+    regions: list[str] | None = None,
+    sources: list[str] | None = None,
+    teaching_methods: list[str] | None = None,
+    cost_types: list[str] | None = None,
+    participation_times: list[str] | None = None,
+    targets: list[str] | None = None,
+    include_closed_recent: bool = False,
+) -> bool:
+    active_filter_group_count = _program_active_filter_group_count(
+        category=category,
+        category_detail=category_detail,
+        region_detail=region_detail,
+        regions=regions,
+        sources=sources,
+        teaching_methods=teaching_methods,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
+    )
+    return (
+        _program_list_mode(
+            q=q,
+            scope=scope,
+            include_closed_recent=include_closed_recent,
+            active_filter_group_count=active_filter_group_count,
+        )
+        == "browse"
+        and _has_local_browse_subset_filters(
+            category_detail=category_detail,
+            cost_types=cost_types,
+            participation_times=participation_times,
+            targets=targets,
+        )
     )
 
 
@@ -2277,10 +2359,11 @@ def _build_read_model_params(
     if normalized_regions:
         _add_read_model_or_filter(params, "(" + ",".join(f"location.ilike.*{keyword}*" for keyword in normalized_regions) + ")")
 
-    normalized_sources = [source.strip() for source in (sources or []) if source.strip()]
+    normalized_sources = _normalize_program_source_filters(sources, expand_aliases=True)
     if normalized_sources:
-        quoted_sources = ",".join(f'"{source}"' for source in normalized_sources)
-        params["source"] = f"in.({quoted_sources})"
+        source_filter = _program_source_filter_param(normalized_sources)
+        if source_filter:
+            params["source"] = source_filter
 
     normalized_teaching_methods = _normalize_teaching_methods_param(teaching_methods)
     if normalized_teaching_methods:
@@ -2579,6 +2662,121 @@ async def _count_program_read_model_rows(
     )
     rows = await request_supabase(method="GET", path=f"/rest/v1/{PROGRAM_LIST_INDEX_TABLE}", params=params)
     return len(rows) if isinstance(rows, list) else 0
+
+
+async def _fetch_default_browse_pool_program_ids() -> list[str]:
+    params = {
+        "select": "id",
+        "browse_rank": f"lte.{_program_browse_pool_limit()}",
+        "is_open": "eq.true",
+        "is_ad": "eq.false",
+        "order": "browse_rank.asc,id.asc",
+        "limit": str(_program_browse_pool_limit()),
+    }
+    rows = await request_supabase(method="GET", path=f"/rest/v1/{PROGRAM_LIST_INDEX_TABLE}", params=params)
+    if not isinstance(rows, list):
+        return []
+    ids: list[str] = []
+    for row in rows:
+        program_id = str(row.get("id") or "").strip() if isinstance(row, Mapping) else ""
+        if program_id:
+            ids.append(program_id)
+    return ids
+
+
+async def _fetch_program_rows_by_ids_ordered(program_ids: Sequence[str]) -> list[dict[str, Any]]:
+    ordered_ids = [program_id.strip() for program_id in program_ids if str(program_id or "").strip()]
+    if not ordered_ids:
+        return []
+
+    chunk_size = 40
+    chunks = [ordered_ids[index : index + chunk_size] for index in range(0, len(ordered_ids), chunk_size)]
+
+    async def fetch_chunk(chunk_ids: Sequence[str]) -> list[dict[str, Any]]:
+        quoted_ids = ",".join(f'"{program_id}"' for program_id in chunk_ids)
+        rows = await request_supabase(
+            method="GET",
+            path="/rest/v1/programs",
+            params={
+                "select": "*",
+                "id": f"in.({quoted_ids})",
+                "limit": str(len(chunk_ids)),
+            },
+        )
+        return rows if isinstance(rows, list) else []
+
+    chunk_rows = await asyncio.gather(*(fetch_chunk(chunk) for chunk in chunks))
+    row_by_id = {
+        str(row.get("id") or "").strip(): dict(row)
+        for rows in chunk_rows
+        for row in rows
+        if isinstance(row, Mapping) and str(row.get("id") or "").strip()
+    }
+    return [row_by_id[program_id] for program_id in ordered_ids if program_id in row_by_id]
+
+
+def _filter_local_browse_subset_rows(
+    rows: list[dict[str, Any]],
+    *,
+    category_detail: str | None = None,
+    teaching_methods: list[str] | None = None,
+    cost_types: list[str] | None = None,
+    participation_times: list[str] | None = None,
+    targets: list[str] | None = None,
+    recruiting_only: bool = False,
+    include_closed_recent: bool = False,
+    sort: str,
+) -> list[dict[str, Any]]:
+    serialized_rows = [ _serialize_program_list_row(row) for row in rows ]
+    filtered_rows = _filter_program_rows_by_deadline_window(
+        _filter_program_rows_by_extra_filters(
+            _filter_program_rows_by_category_detail(serialized_rows, category_detail),
+            teaching_methods=teaching_methods,
+            cost_types=cost_types,
+            participation_times=participation_times,
+            targets=targets,
+            selection_processes=None,
+            employment_links=None,
+        ),
+        recruiting_only=recruiting_only,
+        include_closed_recent=include_closed_recent,
+        sort=sort,
+    )
+    if _normalize_program_sort(sort) == "default":
+        return filtered_rows
+    return _sort_program_list_rows(
+        filtered_rows,
+        sort=sort,
+        include_closed_recent=include_closed_recent,
+    )
+
+
+async def _load_local_browse_subset_rows(
+    *,
+    category_detail: str | None = None,
+    teaching_methods: list[str] | None = None,
+    cost_types: list[str] | None = None,
+    participation_times: list[str] | None = None,
+    targets: list[str] | None = None,
+    recruiting_only: bool = False,
+    include_closed_recent: bool = False,
+    sort: str,
+) -> list[dict[str, Any]]:
+    ordered_program_ids = await _fetch_default_browse_pool_program_ids()
+    if not ordered_program_ids:
+        return []
+    ordered_rows = await _fetch_program_rows_by_ids_ordered(ordered_program_ids)
+    return _filter_local_browse_subset_rows(
+        ordered_rows,
+        category_detail=category_detail,
+        teaching_methods=teaching_methods,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
+        recruiting_only=recruiting_only,
+        include_closed_recent=include_closed_recent,
+        sort=sort,
+    )
 
 
 async def _record_program_detail_view(program_id: str) -> None:
@@ -3212,7 +3410,43 @@ async def list_programs(
     offset: int = Query(default=0, ge=0),
     cursor: str | None = Query(default=None),
 ) -> Any:
-    if _can_use_program_list_read_model(
+    if _should_use_local_browse_subset(
+        category=category,
+        category_detail=category_detail,
+        scope=scope,
+        region_detail=region_detail,
+        q=q,
+        regions=regions,
+        sources=sources,
+        teaching_methods=teaching_methods,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
+        include_closed_recent=include_closed_recent,
+    ):
+        try:
+            subset_rows = await _load_local_browse_subset_rows(
+                category_detail=category_detail,
+                teaching_methods=teaching_methods,
+                cost_types=cost_types,
+                participation_times=participation_times,
+                targets=targets,
+                recruiting_only=recruiting_only,
+                include_closed_recent=include_closed_recent,
+                sort=sort,
+            )
+            return subset_rows[offset : offset + limit]
+        except Exception as exc:
+            log_event(
+                logger,
+                logging.WARNING,
+                "program_list_local_browse_subset_fallback",
+                error=str(exc),
+                offset=offset,
+            )
+
+    if not _normalize_teaching_methods_param(teaching_methods) and _can_use_program_list_read_model(
+        sources=sources,
         category_detail=category_detail,
         cost_types=cost_types,
         participation_times=participation_times,
@@ -3328,6 +3562,8 @@ async def list_programs(
         rows,
         category_detail=category_detail,
         q=q,
+        sources=sources,
+        teaching_methods=teaching_methods,
         cost_types=cost_types,
         participation_times=participation_times,
         targets=targets,
@@ -3378,7 +3614,50 @@ async def list_programs_page(
         include_closed_recent=include_closed_recent,
         sort=sort,
     )
-    if _can_use_program_list_read_model(
+    if _should_use_local_browse_subset(
+        category=category,
+        category_detail=category_detail,
+        scope=scope,
+        region_detail=region_detail,
+        q=q,
+        regions=regions,
+        sources=sources,
+        teaching_methods=teaching_methods,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
+        include_closed_recent=include_closed_recent,
+    ):
+        try:
+            subset_rows = await _load_local_browse_subset_rows(
+                category_detail=category_detail,
+                teaching_methods=teaching_methods,
+                cost_types=cost_types,
+                participation_times=participation_times,
+                targets=targets,
+                recruiting_only=recruiting_only,
+                include_closed_recent=include_closed_recent,
+                sort=sort,
+            )
+            return ProgramListPageResponse(
+                items=[
+                    _serialize_program_list_row_item(row, already_serialized=True)
+                    for row in subset_rows[offset : offset + limit]
+                ],
+                count=len(subset_rows),
+                mode="browse",
+                source="legacy",
+            )
+        except Exception as exc:
+            log_event(
+                logger,
+                logging.WARNING,
+                "program_list_page_local_browse_subset_fallback",
+                error=str(exc),
+            )
+
+    if not _normalize_teaching_methods_param(teaching_methods) and _can_use_program_list_read_model(
+        sources=sources,
         category_detail=category_detail,
         cost_types=cost_types,
         participation_times=participation_times,
@@ -3436,30 +3715,49 @@ async def list_programs_page(
         except Exception as exc:
             log_event(logger, logging.WARNING, "program_list_page_read_model_fallback", error=str(exc))
 
-    rows = await list_programs(
-        category=category,
-        category_detail=category_detail,
-        scope=scope,
-        region_detail=region_detail,
-        q=q,
-        regions=regions,
-        sources=sources,
-        teaching_methods=teaching_methods,
-        cost_types=cost_types,
-        participation_times=participation_times,
-        targets=targets,
-        selection_processes=None,
-        employment_links=None,
-        recruiting_only=recruiting_only,
-        include_closed_recent=include_closed_recent,
-        sort=sort,
-        limit=limit,
-        offset=offset,
-        cursor=None,
+    rows, total_count = await asyncio.gather(
+        list_programs(
+            category=category,
+            category_detail=category_detail,
+            scope=scope,
+            region_detail=region_detail,
+            q=q,
+            regions=regions,
+            sources=sources,
+            teaching_methods=teaching_methods,
+            cost_types=cost_types,
+            participation_times=participation_times,
+            targets=targets,
+            selection_processes=None,
+            employment_links=None,
+            recruiting_only=recruiting_only,
+            include_closed_recent=include_closed_recent,
+            sort=sort,
+            limit=limit,
+            offset=offset,
+            cursor=None,
+        ),
+        _count_program_rows(
+            category=category,
+            category_detail=category_detail,
+            scope=scope,
+            region_detail=region_detail,
+            q=q,
+            regions=regions,
+            sources=sources,
+            teaching_methods=teaching_methods,
+            cost_types=cost_types,
+            participation_times=participation_times,
+            targets=targets,
+            selection_processes=None,
+            employment_links=None,
+            recruiting_only=recruiting_only,
+            include_closed_recent=include_closed_recent,
+        ),
     )
     return ProgramListPageResponse(
         items=[_serialize_program_list_row_item(row, already_serialized=True) for row in rows],
-        count=len(rows),
+        count=total_count,
         mode=_program_list_mode(
             q=q,
             scope=scope,
@@ -3570,6 +3868,39 @@ async def count_programs(
     recruiting_only: bool = False,
     include_closed_recent: bool = False,
 ) -> ProgramCountResponse:
+    if _should_use_local_browse_subset(
+        category=category,
+        category_detail=category_detail,
+        scope=scope,
+        region_detail=region_detail,
+        q=q,
+        regions=regions,
+        sources=sources,
+        teaching_methods=teaching_methods,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
+        include_closed_recent=include_closed_recent,
+    ):
+        try:
+            subset_rows = await _load_local_browse_subset_rows(
+                category_detail=category_detail,
+                cost_types=cost_types,
+                participation_times=participation_times,
+                targets=targets,
+                recruiting_only=recruiting_only,
+                include_closed_recent=include_closed_recent,
+                sort="default",
+            )
+            return ProgramCountResponse(count=len(subset_rows))
+        except Exception as exc:
+            log_event(
+                logger,
+                logging.WARNING,
+                "program_count_local_browse_subset_fallback",
+                error=str(exc),
+            )
+
     if _is_default_public_browse_scope(
         category=category,
         category_detail=category_detail,
@@ -3583,7 +3914,8 @@ async def count_programs(
         participation_times=participation_times,
         targets=targets,
         include_closed_recent=include_closed_recent,
-    ) and _can_use_program_list_read_model(
+    ) and not _normalize_teaching_methods_param(teaching_methods) and _can_use_program_list_read_model(
+        sources=sources,
         category_detail=category_detail,
         cost_types=cost_types,
         participation_times=participation_times,
@@ -3627,7 +3959,8 @@ async def count_programs(
         except Exception as exc:
             log_event(logger, logging.WARNING, "program_count_browse_pool_fallback", error=str(exc))
 
-    if _can_use_program_list_read_model(
+    if not _normalize_teaching_methods_param(teaching_methods) and _can_use_program_list_read_model(
+        sources=sources,
         category_detail=category_detail,
         cost_types=cost_types,
         participation_times=participation_times,
@@ -3714,7 +4047,8 @@ async def get_program_filter_options(
             teaching_methods=teaching_methods,
         ),
     )
-    if _can_use_program_list_read_model(
+    if not _normalize_teaching_methods_param(teaching_methods) and _can_use_program_list_read_model(
+        sources=sources,
         category_detail=category_detail,
         participation_times=None,
         targets=None,

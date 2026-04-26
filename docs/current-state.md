@@ -1,6 +1,43 @@
 # Current State
 
 Update 2026-04-26:
+- 공개 `/programs/{id}` 상세 페이지는 비용 영역의 사용자-facing 명칭을 `훈련비`와 `자부담금`으로 사용한다. 상세 API는 `source/category/category_detail/display_categories/NCS/deadline/days_left/cost_type/participation_time/application_method/selection_process_label/extracted_keywords` 같은 이미 조회 가능한 상세 메타를 함께 내려주고, 프론트는 프로그램 요약/일정/지원 자격/상세 정보 섹션에 값이 있는 항목만 노출한다. 자부담금은 `verified_self_pay_amount` 또는 detail `self_payment/out_of_pocket` 증거를 먼저 쓰며, 증거 없이 총 훈련비와 같은 금액은 자부담금으로 표시하지 않는다.
+- 공개 `/programs/list` 기본 read-model 응답은 이제 `program_list_index.verified_self_pay_amount`를 select에 포함하고, backend serializer가 이를 기존 `support_amount/subsidy_amount` 소비 코드로 bridge한다. 그래서 필터를 걸지 않은 기본 목록에서도 detail/backfill로 확인된 고용24 자부담금이 내려온다.
+- `frontend/lib/program-display.ts`는 Work24 비용 표시에서 `verified_self_pay_amount`와 `compare_meta.self_payment/out_of_pocket`을 먼저 신뢰하고, `support_amount >= cost`처럼 총 훈련비로 보이는 값은 자부담금으로 쓰지 않는다. 검증 자부담이 없고 `cost`만 있으면 금액을 `본인부담금`으로 억지 표기하지 않고 `훈련비 N원`으로 표시한다.
+- `landing-c` Opportunity feed는 snapshot row를 후보/순서로 쓰되, 화면 표시 전 같은 id의 최신 `program_list_index` summary로 비용 관련 필드를 보강한다. 따라서 snapshot RPC가 timeout으로 갱신되지 않아도 랜딩 카드의 본인부담금은 최신 read-model의 `verified_self_pay_amount`를 우선 반영한다.
+- `/programs` 운영 기관 필터는 facet snapshot에 특정 기관이 없더라도 기본 canonical 항목 `고용24`, `K-Startup`, `SeSAC`, `기타 기관`을 항상 보존한다. 현재 live facet이 `고용24/kstartup`만 내려와도 프론트가 fallback source option을 병합해 `SeSAC`와 `기타 기관`이 드롭다운에서 사라지지 않는다. `sources=other`는 DB `source` exact filter로 자르지 않고 legacy scan 후 `source/provider`를 함께 판정한다. 그래서 `source=K-Startup 창업진흥원`이어도 `provider=도봉구청`, `서울경제진흥원`처럼 canonical 운영기관 자체가 아닌 local/public 기관이면 `기타 기관` 결과에 포함되고, `고용24`/`SeSAC` 직접 source는 제외된다.
+- 2026-04-26 운영 보정에서는 `scripts/backfill_work24_browse_pool_self_pay.py --pool-limit 300 --apply`로 Work24 browse pool 중 자부담 증거가 없는 11건을 detail HTML 기준으로 patch했고, `refresh_program_list_index.py --browse-only --pool-limit 300 --browse-candidate-limit 2400`는 `bounded_fallback`으로 300개 browse row refresh에 성공했다. 다만 `refresh_program_landing_chip_snapshots`는 DB statement timeout으로 실패해, 별도 SQL/RPC 최적화가 후속 과제로 남아 있다.
+
+Update 2026-04-26:
+- 공개 `/programs`의 운영기관 필터는 이제 canonical source value를 공통으로 쓴다. `GET /programs/filter-options`는 `고용24`, `kstartup`, `sesac` 값을 내려주고, `backend/routers/programs.py`는 incoming `sources=kstartup` 같은 query를 raw source alias(`K-Startup`, `K-Startup 창업진흥원`)까지 확장해 read-model/legacy path 모두 같은 결과를 돌려준다. 로컬 브라우저 QA 기준 `전체 300개 -> 온라인 72개 -> 정보통신 30개 -> K-Startup 1개`처럼 count와 첫 row가 실제 subset 기준으로 달라진다.
+- 로컬에서 repo root 기준 `uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000`를 그대로 쓰면 uvicorn reloader가 저장소 전체를 watch해서 `frontend/.next` 갱신에도 백엔드가 재시작될 수 있다. 이 경우 `/programs`처럼 SSR에서 FastAPI `/programs/list`와 `/programs/filter-options`를 바로 읽는 페이지는 간헐적으로 `fetch failed`처럼 보일 수 있으므로, 로컬 검증은 `backend/` cwd의 `main:app` 또는 reload 범위를 `backend/`로 제한한 실행을 우선 사용한다.
+
+Update 2026-04-26:
+- 공개 `/programs`의 카테고리 필터와 프로그램 과정 chip은 NCS 1차 직종 24개(`사업관리`부터 `농림어업`) 기준으로 정렬된다. 기존 read-model row에 `IT`/`디자인`/`기타` 같은 stale 표시값이 남아도 backend와 frontend가 title, skills, NCS 코드/명칭으로 1차 직종 라벨을 다시 추론해 표시한다.
+- `/programs`의 D-3 이하 모집상태 badge는 `bg-red-50 text-red-700 ring-red-200`으로 바뀌어 D-1 상태가 연한 빨강 배경으로 보인다. 선발절차·키워드 chip은 모집상태/비용/온·오프라인/일정/참여시간 및 과정 라벨과 중복되는 항목을 숨긴다.
+- 고용24 상세 시간표는 상세 페이지의 `#searchForm1` hidden fields와 상세 URL query를 재사용해 `/hr/a/a/3100/selectTracseTimeTable.do`로 POST하면 HTML로 회수할 수 있다. `backend/rag/collector/work24_detail_parser.py`는 해당 시간표 HTML을 날짜별 `training_schedule`과 `training_schedule_summary`로 파싱하는 helper를 제공한다.
+- `teaching_methods=오프라인`처럼 read-model의 sparse `teaching_method` 컬럼만으로는 누락되는 필터는 read-model을 우회하고 legacy row 후처리로 판정한다. 현재 로컬 QA 기준 온라인/오프라인 모두 결과와 count가 일치하지만, 오프라인은 legacy scan 경로라 read-model에 파생 `teaching_method`를 채우기 전까지 상대적으로 느릴 수 있다.
+
+Update 2026-04-26:
+- `backend/main.py`는 이제 repo root에서 `uvicorn backend.main:app ...`로 띄우는 경우와 `backend/` cwd에서 `uvicorn main:app ...`로 띄우는 경우를 둘 다 지원한다. 엔트리포인트가 시작 시 `backend/` 디렉터리를 `sys.path`에 넣고, `check_python_version`, `logging_config`, `rag`, `routers` import를 package 경로와 top-level 경로 양쪽으로 해석한다. 따라서 로컬 8000 백엔드 기동 시 `ModuleNotFoundError: check_python_version` 같은 cwd 의존 import 실패가 줄어든다.
+- 공개 `/programs`는 다른 랜딩보다 FastAPI `/programs/list`, `/programs/filter-options`와 Supabase-backed fallback 경로 의존이 강해서, 로컬 8000 백엔드가 잘못된 cwd/엔트리포인트로 떠 있으면 가장 먼저 `Supabase is not configured`나 import/runtime 오류가 표면에 드러난다. 랜딩 일부가 열려 보여도 `/programs` 실패를 데이터 회귀로 단정하기 전에 8000 백엔드 기동 상태를 먼저 확인한다.
+
+Update 2026-04-26:
+- 공개 `/programs`의 단일 파생 필터(`category_detail`, `cost_types`, `participation_times`, `targets`)는 이제 broad legacy scan이나 sparse read-model 컬럼을 바로 믿지 않는다. `backend/routers/programs.py`는 browse mode에서 이 필터들이 걸리면 기본 `browse 300` read-model id pool을 먼저 읽고, 대응하는 live `programs` row를 다시 불러와 같은 순서 그대로 후처리한다. 따라서 browse 300 계약은 유지하면서도 필터 적용 후 count와 노출 순서가 실제 subset 기준으로 달라진다.
+- `/programs/list`의 legacy fallback count도 현재 page length가 아니라 실제 filtered total을 다시 계산한다. 그래서 카테고리/추천 대상/참여시간/비용 같은 파생 필터를 단독으로 걸었을 때 `전체 프로그램 N개`가 현재 page item 수 20개나 browse 기본값 300개로 고정되지 않고, 매칭된 subset total로 내려간다.
+- `backend/services/program_list_filters.py`의 카테고리 태그는 `ncs_name`/`ncs_code`를 title/summary 기반 추론보다 먼저 본다. row의 `display_categories`와 `category_detail` 매칭이 같은 helper를 공유하고, `게임·블록체인`, `기획·마케팅`, `창업·커리어` 같은 사용자-facing label로 통일됐다. `기타`는 실제 분류 신호가 없을 때만 마지막 fallback으로 남는다.
+- `/programs`의 `Closing Soon` rail wrapper는 연한 빨강 배경으로, 내부 urgent card는 흰 배경으로 되돌렸고, 참여시간 detail은 plain text 대신 pill chip으로 렌더링한다. `frontend/lib/program-display.ts`는 visible keyword chip에서 `마감임박`, `최근등록`, `관련도`, `광고` 같은 상태/보조 텍스트를 제거한다.
+
+Update 2026-04-26:
+- `/programs` 목록의 운영기관 칸은 이제 `고용24`, `K-Startup`, `SeSAC`를 텍스트 대신 소형 BI 이미지 배지로 렌더링한다. 자산은 `frontend/public/program-logos/` 아래에 두고, 매칭되지 않는 기관만 기존 텍스트 fallback 배지를 유지한다.
+- `frontend/components/programs/program-provider-brand.tsx`는 브랜드별 로고 파일과 높이 제한을 관리한다. 기본 배지 높이는 compact row에 맞춰 `max-h-7 ~ max-h-8`로 제한해 표 row가 과도하게 커지지 않게 유지한다.
+
+Update 2026-04-26:
+- 공개 `/programs`의 카테고리·추천 대상·참여시간 기반 탐색은 이제 read-model의 sparse 컬럼만 믿지 않는다. `backend/routers/programs.py`는 `category_detail`, `participation_times`, `targets`, `cost_types` 같은 로컬 파생 필터가 걸리면 read-model 경로를 우회하고 legacy post-process 경로를 사용해 제목/설명/메타 기반 태그 추론 결과로 다시 필터링한다.
+- `backend/services/program_list_filters.py`는 프로그램 row마다 카테고리 추론 태그와 추천 대상 태그를 텍스트에서 직접 도출한다. 카테고리는 `웹개발/백엔드/프론트엔드 -> web-development`, `데이터/AI/분석 -> data-ai` 같은 규칙을 따르고, 추천 대상은 `청년/여성/창업/재직자/대학생` 5종만 유지한다.
+- `/programs` 목록의 선발절차는 명확한 신호가 있을 때만 표시하고, 키워드 chip은 기술 스택 위주 나열 대신 비용·대상·운영 방식·지역·참여 형태 같은 필터 친화 태그를 먼저 보여준다. 따라서 `선발 절차 없음`, `중장년`, `구직자` 같은 애매한 노출은 기본 탐색 UI에서 사라진다.
+
+Update 2026-04-26:
 - `backend/services/program_list_queries.py` now owns the legacy public-program query builder. Sort coercion, resolved-deadline scan 여부, bounded browse scan limit, and base REST param assembly for the fallback `programs` path no longer sit inline inside `backend/routers/programs.py`, so later router cleanup can treat the legacy browse path as a reusable service helper instead of a route-local block.
 - `backend/routers/programs.py` now treats the default public browse read-model as stale not only when it is underfilled, but also when the returned first-page items already contain closed rows (`days_left < 0` or `is_active = false`). In that case `/programs` and the flat `/programs/list` immediately fall back to the legacy open-only path, which prevents stale `program_list_index` browse snapshots from leaking expired rows onto the public table.
 - `supabase/migrations/20260426110000_add_program_list_browse_refresh_resilient.sql` adds `refresh_program_list_browse_pool_bounded(pool_limit, candidate_limit)`, `refresh_program_list_browse_pool_resilient(...)`, and `refresh_program_list_browse_pool_daily_resilient(...)`. The bounded helper limits the open-candidate working set before urgency/source-diversity ranking, and the daily wrapper can reduce delta batch size on timeout/lock pressure before calling the resilient browse helper. The `program-list-browse-pool-daily-kst` cron job is now defined to call the resilient daily wrapper.

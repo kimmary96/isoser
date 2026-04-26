@@ -11,6 +11,16 @@ PROGRAM_SORT_OPTIONS = PROGRAM_DEADLINE_SORTS | PROGRAM_COMPUTED_SORTS | PROGRAM
 PROGRAM_SEARCH_SCAN_LIMIT = 10000
 PROGRAM_SEARCH_SCAN_PAGE_SIZE = 1000
 PROGRAM_SEARCH_INDEX_COLUMN = "search_text"
+PROGRAM_SOURCE_OTHER_VALUE = "other"
+PROGRAM_SOURCE_KNOWN_ALIAS_VALUES = (
+    "고용24",
+    "work24",
+    "kstartup",
+    "K-Startup",
+    "K-Startup 창업진흥원",
+    "sesac",
+    "SeSAC",
+)
 
 
 def program_order_clause(sort: str) -> str:
@@ -41,6 +51,20 @@ def bounded_resolved_deadline_scan_limit(limit: int | None) -> int:
         PROGRAM_SEARCH_SCAN_LIMIT,
         max(PROGRAM_SEARCH_SCAN_PAGE_SIZE, limit * 20),
     )
+
+
+def program_source_filter_param(normalized_sources: Sequence[str]) -> str | None:
+    if not normalized_sources:
+        return None
+
+    source_set = set(normalized_sources)
+    has_other = PROGRAM_SOURCE_OTHER_VALUE in source_set
+    if has_other:
+        return None
+
+    if not has_other:
+        quoted_sources = ",".join(f'"{source}"' for source in normalized_sources)
+        return f"in.({quoted_sources})"
 
 
 def build_program_query_params(
@@ -98,14 +122,15 @@ def build_program_query_params(
         params["category"] = f"eq.{effective_category}"
     if region_detail:
         params["region_detail"] = f"eq.{region_detail}"
-    if normalized_teaching_methods:
+    if normalized_teaching_methods and "오프라인" not in normalized_teaching_methods:
         quoted_values = ",".join(f'"{value}"' for value in normalized_teaching_methods)
         params["teaching_method"] = f"in.({quoted_values})"
     if normalized_region_keywords:
         params["or"] = "(" + ",".join(f"location.ilike.*{keyword}*" for keyword in normalized_region_keywords) + ")"
     if normalized_sources:
-        quoted_sources = ",".join(f'"{source}"' for source in normalized_sources)
-        params["source"] = f"in.({quoted_sources})"
+        source_filter = program_source_filter_param(normalized_sources)
+        if source_filter:
+            params["source"] = source_filter
     if search_filter:
         params[PROGRAM_SEARCH_INDEX_COLUMN] = search_filter
     return params

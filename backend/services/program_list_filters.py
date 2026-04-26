@@ -25,38 +25,65 @@ PROGRAM_TARGETS = {"청년", "여성", "창업", "재직자", "대학생"}
 PROGRAM_SELECTION_PROCESSES = {"서류", "면접", "테스트", "선착순", "추첨"}
 PROGRAM_EMPLOYMENT_LINKS = {"채용연계", "인턴십", "취업지원", "멘토링"}
 KST = timezone(timedelta(hours=9))
+NCS_MAJOR_CATEGORY_LABELS: dict[str, str] = {
+    "ncs-01": "사업관리",
+    "ncs-02": "경영·회계·사무",
+    "ncs-03": "금융·보험",
+    "ncs-04": "교육·자연·사회과학",
+    "ncs-05": "법률·경찰·소방·교도·국방",
+    "ncs-06": "보건·의료",
+    "ncs-07": "사회복지·종교",
+    "ncs-08": "문화·예술·디자인·방송",
+    "ncs-09": "운전·운송",
+    "ncs-10": "영업판매",
+    "ncs-11": "경비·청소",
+    "ncs-12": "이용·숙박·여행·오락·스포츠",
+    "ncs-13": "음식서비스",
+    "ncs-14": "건설",
+    "ncs-15": "기계",
+    "ncs-16": "재료",
+    "ncs-17": "화학·바이오",
+    "ncs-18": "섬유·의복",
+    "ncs-19": "전기·전자",
+    "ncs-20": "정보통신",
+    "ncs-21": "식품가공",
+    "ncs-22": "인쇄·목재·가구·공예",
+    "ncs-23": "환경·에너지·안전",
+    "ncs-24": "농림어업",
+}
+NCS_MAJOR_LABEL_TO_ID = {label: key for key, label in NCS_MAJOR_CATEGORY_LABELS.items()}
 PROGRAM_CATEGORY_LABELS: dict[str, str] = {
-    "web-development": "웹 풀스택",
-    "mobile": "프론트엔드",
-    "data-ai": "AI서비스",
-    "cloud-security": "클라우드",
-    "iot-embedded-semiconductor": "반도체",
-    "game-blockchain": "기타",
-    "planning-marketing-other": "PM/기획",
-    "design-3d": "UX/UI/디자인",
-    "project-career-startup": "PM/기획",
+    "web-development": "웹·백엔드",
+    "mobile": "모바일·프론트엔드",
+    "data-ai": "데이터·AI",
+    "cloud-security": "클라우드·보안",
+    "iot-embedded-semiconductor": "임베디드·반도체",
+    "game-blockchain": "게임·블록체인",
+    "planning-marketing-other": "기획·마케팅",
+    "design-3d": "디자인·3D",
+    "project-career-startup": "창업·커리어",
 }
 PROGRAM_CATEGORY_SEARCH_ALIASES: dict[str, tuple[str, ...]] = {
-    "web-development": ("웹개발", "웹 개발", "웹 풀스택", "fullstack"),
-    "mobile": ("모바일", "앱", "프론트엔드"),
-    "data-ai": ("ai", "데이터", "데이터AI", "데이터 AI", "AI서비스", "인공지능", "llm", "rag"),
-    "cloud-security": ("클라우드", "보안", "클라우드보안"),
-    "iot-embedded-semiconductor": ("IoT", "임베디드", "반도체"),
+    "web-development": ("웹개발", "웹 개발", "웹·백엔드", "웹백엔드", "백엔드", "fullstack"),
+    "mobile": ("모바일", "앱", "모바일·프론트엔드", "모바일프론트엔드", "프론트엔드"),
+    "data-ai": ("ai", "데이터", "데이터AI", "데이터 AI", "데이터·AI", "인공지능", "llm", "rag"),
+    "cloud-security": ("클라우드", "보안", "클라우드보안", "클라우드·보안"),
+    "iot-embedded-semiconductor": ("IoT", "임베디드", "반도체", "임베디드·반도체"),
     "game-blockchain": ("게임", "블록체인"),
-    "planning-marketing-other": ("기획", "마케팅", "PM", "기타"),
-    "design-3d": ("디자인", "3D", "UX", "UI"),
-    "project-career-startup": ("프로젝트", "취준", "창업", "스타트업"),
+    "planning-marketing-other": ("기획", "마케팅", "PM", "기획·마케팅"),
+    "design-3d": ("디자인", "3D", "UX", "UI", "디자인·3D"),
+    "project-career-startup": ("프로젝트", "취준", "창업", "스타트업", "창업·커리어"),
 }
 PROGRAM_CATEGORY_DETAIL_DISPLAY_MATCHES: dict[str, tuple[str, ...]] = {
-    "web-development": ("웹 풀스택", "백엔드", "프론트엔드"),
-    "mobile": ("프론트엔드",),
-    "data-ai": ("AI서비스", "AI역량강화", "데이터분석", "데이터엔지니어링"),
-    "cloud-security": ("클라우드", "보안", "인프라"),
-    "iot-embedded-semiconductor": ("반도체", "임베디드"),
+    "web-development": ("웹·백엔드", "웹 풀스택", "백엔드"),
+    "mobile": ("모바일·프론트엔드", "프론트엔드"),
+    "data-ai": ("데이터·AI", "AI서비스", "AI역량강화", "데이터분석", "데이터엔지니어링"),
+    "cloud-security": ("클라우드·보안", "클라우드", "보안", "인프라"),
+    "iot-embedded-semiconductor": ("임베디드·반도체", "반도체", "임베디드"),
     "game-blockchain": ("게임", "블록체인"),
-    "planning-marketing-other": ("PM/기획",),
-    "design-3d": ("UX/UI/디자인",),
-    "project-career-startup": ("PM/기획",),
+    "planning-marketing-other": ("기획·마케팅", "PM/기획"),
+    "design-3d": ("디자인·3D", "UX/UI/디자인"),
+    "project-career-startup": ("창업·커리어", "PM/기획"),
 }
 PROGRAM_CATEGORY_DETAIL_BROAD_FALLBACKS: dict[str, tuple[str, ...]] = {
     "data-ai": ("AI",),
@@ -81,15 +108,52 @@ PROGRAM_CATEGORY_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("인프라", ("인프라", "네트워크 인프라", "네트워크 관리", "네트워크 엔지니어", "linux", "리눅스", "ccna", "서버관리")),
 )
 PROGRAM_CATEGORY_FILTER_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
-    ("web-development", ("웹개발", "웹 개발", "풀스택", "fullstack", "백엔드", "backend", "프론트엔드", "frontend", "react", "next.js", "spring", "django", "api", "서버")),
+    ("web-development", ("웹개발", "웹 개발", "풀스택", "fullstack", "백엔드", "backend", "응용sw", "응용 소프트웨어", "응용sw엔지니어링", "소프트웨어개발", "프론트엔드", "frontend", "react", "next.js", "spring", "django", "api", "서버")),
     ("mobile", ("모바일", "앱", "android", "ios", "flutter", "react native", "reactnative")),
-    ("data-ai", ("데이터", "데이터분석", "데이터 분석", "ai", "인공지능", "llm", "rag", "머신러닝", "딥러닝", "ml")),
-    ("cloud-security", ("클라우드", "aws", "azure", "gcp", "보안", "security", "devops", "쿠버네티스", "kubernetes", "docker", "인프라")),
-    ("iot-embedded-semiconductor", ("iot", "임베디드", "펌웨어", "아두이노", "라즈베리", "반도체", "fpga", "soc", "rtl", "verilog")),
+    ("data-ai", ("데이터", "빅데이터", "데이터분석", "데이터 분석", "ai", "인공지능", "llm", "rag", "머신러닝", "딥러닝", "ml")),
+    ("cloud-security", ("클라우드", "aws", "azure", "gcp", "보안", "security", "정보보안", "devops", "쿠버네티스", "kubernetes", "docker", "인프라", "네트워크", "시스템관리")),
+    ("iot-embedded-semiconductor", ("iot", "임베디드", "펌웨어", "아두이노", "라즈베리", "반도체", "fpga", "soc", "rtl", "verilog", "전자", "사물인터넷")),
     ("game-blockchain", ("게임", "game", "블록체인", "blockchain", "web3")),
-    ("planning-marketing-other", ("기획", "pm", "서비스기획", "프로덕트", "마케팅", "브랜딩")),
-    ("design-3d", ("디자인", "ux", "ui", "uxui", "uiux", "figma", "피그마", "3d", "블렌더", "그래픽")),
-    ("project-career-startup", ("프로젝트", "포트폴리오", "취준", "취업준비", "커리어", "창업", "스타트업", "startup", "k-startup", "kstartup", "예비창업")),
+    ("planning-marketing-other", ("기획", "pm", "서비스기획", "프로덕트", "마케팅", "브랜딩", "광고", "홍보", "경영기획")),
+    ("design-3d", ("디자인", "ux", "ui", "uxui", "uiux", "figma", "피그마", "3d", "블렌더", "그래픽", "시각디자인", "영상")),
+    ("project-career-startup", ("포트폴리오", "취준", "취업준비", "커리어", "창업", "스타트업", "startup", "k-startup", "kstartup", "예비창업", "프로젝트관리", "취업지원")),
+)
+PROGRAM_NCS_CATEGORY_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("web-development", ("응용sw엔지니어링", "응용 소프트웨어", "소프트웨어개발", "웹개발", "백엔드")),
+    ("mobile", ("모바일", "앱개발", "모바일콘텐츠")),
+    ("data-ai", ("빅데이터", "인공지능", "데이터분석", "데이터베이스", "데이터 아키텍처")),
+    ("cloud-security", ("정보보안", "클라우드", "네트워크", "시스템관리", "인프라")),
+    ("iot-embedded-semiconductor", ("임베디드", "반도체", "전자응용", "사물인터넷")),
+    ("game-blockchain", ("게임", "블록체인")),
+    ("planning-marketing-other", ("마케팅", "홍보", "경영기획")),
+    ("design-3d", ("디자인", "시각디자인", "영상그래픽", "3d")),
+    ("project-career-startup", ("창업", "프로젝트관리", "취업지원")),
+)
+NCS_MAJOR_TEXT_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("ncs-01", ("사업관리", "프로젝트관리", "창업", "스타트업", "사업계획")),
+    ("ncs-02", ("경영", "회계", "사무", "마케팅", "홍보", "인사", "총무", "재무", "세무", "전산회계", "전산세무", "컴활", "컴퓨터활용능력", "엑셀", "엑세스")),
+    ("ncs-03", ("금융", "보험", "투자", "자산관리")),
+    ("ncs-05", ("법률", "경찰", "소방", "교도", "국방")),
+    ("ncs-06", ("보건", "의료", "간호", "병원")),
+    ("ncs-07", ("사회복지", "종교", "요양보호")),
+    ("ncs-04", ("교육", "자연", "사회과학", "강사", "교수설계")),
+    ("ncs-08", ("디자인", "시각디자인", "영상", "방송", "문화", "예술", "3d", "그래픽", "스케치업", "일러스트", "포토샵", "프리미어", "ux", "ui")),
+    ("ncs-09", ("운전", "운송", "물류운송", "지게차", "굴착기", "중장비")),
+    ("ncs-10", ("영업", "판매", "유통", "무역", "쇼핑몰", "커머스", "카페24")),
+    ("ncs-11", ("경비", "청소")),
+    ("ncs-12", ("숙박", "여행", "오락", "스포츠", "레저", "관광", "미용", "애견미용", "반려견스타일리스트")),
+    ("ncs-13", ("음식", "조리", "식음료", "바리스타", "제과", "제빵")),
+    ("ncs-14", ("건설", "건축", "토목", "조경", "타일시공", "시공", "인테리어")),
+    ("ncs-15", ("기계", "자동차", "기계설계", "금형")),
+    ("ncs-16", ("재료", "금속", "용접")),
+    ("ncs-17", ("화학", "바이오", "제약")),
+    ("ncs-18", ("섬유", "의복", "패션")),
+    ("ncs-19", ("전기", "전자", "반도체", "회로", "fpga", "soc", "verilog", "rtl")),
+    ("ncs-20", ("정보통신", "정보기술", "itq", "응용sw", "응용 소프트웨어", "소프트웨어", "웹개발", "백엔드", "프론트엔드", "모바일", "빅데이터", "인공지능", "데이터분석", "클라우드", "정보보안", "네트워크", "시스템관리", "게임", "블록체인", "ai", "llm", "rag")),
+    ("ncs-21", ("식품가공", "식품")),
+    ("ncs-22", ("인쇄", "목재", "가구", "공예")),
+    ("ncs-23", ("환경", "에너지", "안전")),
+    ("ncs-24", ("농림", "어업", "농업", "축산", "수산")),
 )
 PROGRAM_TARGET_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("청년", ("청년", "청년층", "청년구직자", "청년취업사관학교", "만 15", "만15", "34세 이하", "39세 이하")),
@@ -206,6 +270,22 @@ PROGRAM_FILTER_REGION_KEYWORDS = (
     "경남",
     "제주",
 )
+PROGRAM_SOURCE_CANONICAL_LABELS: dict[str, str] = {
+    "kstartup": "K-Startup",
+    "sesac": "SeSAC",
+    "other": "기타 기관",
+}
+PROGRAM_SOURCE_FILTER_ALIASES: dict[str, tuple[str, ...]] = {
+    "고용24": ("고용24", "work24"),
+    "kstartup": ("kstartup", "K-Startup", "K-Startup 창업진흥원"),
+    "sesac": ("sesac", "SeSAC"),
+}
+PROGRAM_SOURCE_OTHER_VALUE = "other"
+PROGRAM_SOURCE_KNOWN_ALIAS_VALUES: tuple[str, ...] = tuple(
+    alias
+    for canonical in ("고용24", "kstartup", "sesac")
+    for alias in PROGRAM_SOURCE_FILTER_ALIASES[canonical]
+)
 
 
 def _normalize_search_text(value: Any) -> str:
@@ -314,6 +394,101 @@ def _searchable_compare_meta_values(value: Any) -> list[str]:
     return values
 
 
+def _program_ncs_text_values(row: dict[str, Any]) -> list[str]:
+    raw_data = row.get("raw_data") if isinstance(row.get("raw_data"), dict) else {}
+    legacy_meta = _legacy_program_meta(row)
+    return (
+        _flatten_search_values(row.get("ncs_name"))
+        + _flatten_search_values(row.get("ncs_code"))
+        + _flatten_search_values(legacy_meta.get("ncs_name"))
+        + _flatten_search_values(legacy_meta.get("ncs_code"))
+        + _flatten_search_values(raw_data.get("ncs_name"))
+        + _flatten_search_values(raw_data.get("ncs_code"))
+    )
+
+
+def _program_ncs_major_source_values(row: dict[str, Any]) -> list[str]:
+    raw_data = row.get("raw_data") if isinstance(row.get("raw_data"), dict) else {}
+    legacy_meta = _legacy_program_meta(row)
+    keys = (
+        "NCS_LCLAS_CD",
+        "NCS_LCLAS_CDNM",
+        "ncsLclasCd",
+        "ncsLclasCdnm",
+        "ncs_lclas_cd",
+        "ncs_lclas_name",
+        "ncs_large_code",
+        "ncs_large_name",
+    )
+    values: list[str] = []
+    for source in (row, legacy_meta, raw_data):
+        for key in keys:
+            values.extend(_flatten_search_values(source.get(key)))
+    return values
+
+
+def _normalize_ncs_major_id(value: Any) -> str | None:
+    text = str(value or "").strip()
+    if not text:
+        return None
+
+    if text in NCS_MAJOR_CATEGORY_LABELS:
+        return text
+    if text in NCS_MAJOR_LABEL_TO_ID:
+        return NCS_MAJOR_LABEL_TO_ID[text]
+
+    ncs_match = re.fullmatch(r"ncs[-_ ]?(\d{1,2})", text, flags=re.IGNORECASE)
+    if ncs_match:
+        candidate = f"ncs-{int(ncs_match.group(1)):02d}"
+        return candidate if candidate in NCS_MAJOR_CATEGORY_LABELS else None
+
+    if re.fullmatch(r"\d{1,2}", text):
+        candidate = f"ncs-{int(text):02d}"
+        return candidate if candidate in NCS_MAJOR_CATEGORY_LABELS else None
+
+    code_match = re.match(r"\D*(\d{2})(?=[:.\-_ ]|\d)", text)
+    if code_match:
+        candidate = f"ncs-{code_match.group(1)}"
+        return candidate if candidate in NCS_MAJOR_CATEGORY_LABELS else None
+
+    return None
+
+
+def _derive_ncs_major_filter_tags(row: dict[str, Any]) -> list[str]:
+    tags: list[str] = []
+    for value in _program_ncs_major_source_values(row) + _program_ncs_text_values(row):
+        normalized = _normalize_ncs_major_id(value)
+        if normalized:
+            tags.append(normalized)
+
+    if tags:
+        return _dedupe_preserve_order(tags, limit=2)
+
+    primary_text = " ".join(
+        _flatten_search_values(row.get("title"))
+        + _flatten_search_values(row.get("category"))
+        + _flatten_search_values(row.get("category_detail"))
+        + _flatten_search_values(row.get("skills"))
+        + _program_ncs_text_values(row)
+    ).casefold()
+    for ncs_id, aliases in NCS_MAJOR_TEXT_RULES:
+        if any(_text_has_keyword(primary_text, alias) for alias in aliases):
+            tags.append(ncs_id)
+
+    if tags:
+        return _dedupe_preserve_order(tags, limit=2)
+
+    text = " ".join(_program_category_source_text_values(row)).casefold()
+    for ncs_id, aliases in NCS_MAJOR_TEXT_RULES:
+        if any(_text_has_keyword(text, alias) for alias in aliases):
+            tags.append(ncs_id)
+    return _dedupe_preserve_order(tags, limit=2)
+
+
+def _is_ncs_major_category_filter(value: str | None) -> bool:
+    return _normalize_ncs_major_id(value) is not None
+
+
 def _program_category_search_values(row: dict[str, Any]) -> list[str]:
     values = _flatten_search_values(row.get("category")) + _flatten_search_values(row.get("category_detail"))
     category_detail = str(row.get("category_detail") or "").strip()
@@ -323,6 +498,7 @@ def _program_category_search_values(row: dict[str, Any]) -> list[str]:
         label = PROGRAM_CATEGORY_LABELS.get(category_detail)
         if label:
             values.extend((label, re.sub(r"[\s·/]+", "", label)))
+    values.extend(_program_ncs_text_values(row))
     return values
 
 
@@ -360,6 +536,10 @@ def _row_matches_category_detail(row: dict[str, Any], category_detail: str | Non
     if not target:
         return True
 
+    normalized_ncs_target = _normalize_ncs_major_id(target)
+    if normalized_ncs_target:
+        return normalized_ncs_target in _derive_ncs_major_filter_tags(row)
+
     if target in _derive_category_filter_tags(row):
         return True
 
@@ -393,6 +573,14 @@ def _filter_program_rows_by_category_detail(
     return [row for row in rows if _row_matches_category_detail(row, category_detail)]
 
 
+def _program_ncs_display_name(row: dict[str, Any]) -> str | None:
+    for value in _program_ncs_text_values(row):
+        normalized = str(value or "").strip()
+        if normalized:
+            return normalized
+    return None
+
+
 def _program_text_blob(row: dict[str, Any]) -> str:
     legacy_meta = _legacy_program_meta(row)
     values = (
@@ -407,6 +595,19 @@ def _program_text_blob(row: dict[str, Any]) -> str:
         + _searchable_compare_meta_values(legacy_meta)
     )
     return " ".join(values).casefold()
+
+
+def _derive_category_tags_from_text(
+    text: str,
+    rules: tuple[tuple[str, tuple[str, ...]], ...],
+) -> list[str]:
+    if not text:
+        return []
+    tags: list[str] = []
+    for category_detail, keywords in rules:
+        if any(_text_has_keyword(text, keyword) for keyword in keywords):
+            tags.append(category_detail)
+    return tags
 
 
 def _dedupe_preserve_order(values: list[str], *, limit: int | None = None) -> list[str]:
@@ -443,16 +644,31 @@ def _program_source_text_values(row: dict[str, Any]) -> list[str]:
     )
 
 
+def _program_category_source_text_values(row: dict[str, Any]) -> list[str]:
+    legacy_meta = _legacy_program_meta(row)
+    return (
+        _flatten_search_values(row.get("title"))
+        + _flatten_search_values(row.get("summary"))
+        + _flatten_search_values(row.get("description"))
+        + _flatten_search_values(row.get("category"))
+        + _flatten_search_values(row.get("category_detail"))
+        + _flatten_search_values(row.get("skills"))
+        + _program_ncs_text_values(row)
+        + _searchable_compare_meta_values(legacy_meta)
+    )
+
+
 def _derive_category_filter_tags(row: dict[str, Any]) -> list[str]:
     tags: list[str] = []
+    ncs_text = " ".join(_program_ncs_text_values(row)).casefold()
+    tags.extend(_derive_category_tags_from_text(ncs_text, PROGRAM_NCS_CATEGORY_RULES))
+
     explicit_category_detail = str(row.get("category_detail") or "").strip()
     if explicit_category_detail:
         tags.append(explicit_category_detail)
 
-    text = " ".join(_program_source_text_values(row)).casefold()
-    for category_detail, keywords in PROGRAM_CATEGORY_FILTER_RULES:
-        if any(_text_has_keyword(text, keyword) for keyword in keywords):
-            tags.append(category_detail)
+    text = " ".join(_program_category_source_text_values(row)).casefold()
+    tags.extend(_derive_category_tags_from_text(text, PROGRAM_CATEGORY_FILTER_RULES))
 
     return _dedupe_preserve_order(tags, limit=3)
 
@@ -468,7 +684,10 @@ def _derive_target_filter_tags(row: dict[str, Any]) -> list[str]:
 
 def _derive_region_filter_keyword(row: dict[str, Any]) -> str | None:
     values = (
-        _flatten_search_values(row.get("region"))
+        _flatten_search_values(row.get("title"))
+        + _flatten_search_values(row.get("summary"))
+        + _flatten_search_values(row.get("description"))
+        + _flatten_search_values(row.get("region"))
         + _flatten_search_values(row.get("region_detail"))
         + _flatten_search_values(row.get("location"))
     )
@@ -525,30 +744,39 @@ def _derive_teaching_method(row: dict[str, Any]) -> str | None:
 
 def _infer_display_categories(row: dict[str, Any]) -> list[str]:
     candidates: list[str] = []
-    category_detail = str(row.get("category_detail") or "").strip()
-    category = str(row.get("category") or "").strip()
+    ncs_major_labels = [
+        NCS_MAJOR_CATEGORY_LABELS[ncs_id]
+        for ncs_id in _derive_ncs_major_filter_tags(row)
+        if ncs_id in NCS_MAJOR_CATEGORY_LABELS
+    ]
+    if ncs_major_labels:
+        return _dedupe_preserve_order(ncs_major_labels, limit=2)
 
-    if category_detail in PROGRAM_CATEGORY_LABELS:
-        mapped = PROGRAM_CATEGORY_LABELS[category_detail]
-        if mapped != "기타":
+    category = str(row.get("category") or "").strip()
+    inferred_category_details = _derive_category_filter_tags(row)
+
+    for category_detail in inferred_category_details:
+        mapped = PROGRAM_CATEGORY_LABELS.get(category_detail)
+        if mapped:
             candidates.append(mapped)
 
-    text = " ".join(_program_source_text_values(row)).casefold()
-    for label, keywords in PROGRAM_CATEGORY_RULES:
-        if any(_text_has_keyword(text, keyword) for keyword in keywords):
-            candidates.append(label)
+    ncs_name = _program_ncs_display_name(row)
+    if ncs_name and len(ncs_name) <= 24:
+        candidates.append(ncs_name)
 
     if category and category not in {"IT", "AI", "디자인", "경영", "창업", "기타", "전체"}:
         candidates.append(category)
     elif category == "AI":
-        candidates.append("AI서비스")
-    elif category == "디자인" and any(_text_has_keyword(text, keyword) for keyword in ("디자인", "ux", "ui", "figma", "피그마")):
-        candidates.append("UX/UI/디자인")
+        candidates.append("데이터·AI")
+    elif category == "디자인":
+        candidates.append("디자인·3D")
     elif category == "창업":
-        candidates.append("PM/기획")
+        candidates.append("창업·커리어")
 
     deduped = _dedupe_preserve_order(candidates, limit=2)
-    return deduped if deduped else ["기타"]
+    if deduped:
+        return deduped
+    return ["기타"] if _program_source_text_values(row) else []
 
 
 def _extract_time_detail(text_values: list[str]) -> str | None:
@@ -714,29 +942,7 @@ def _extract_program_keywords(row: dict[str, Any]) -> list[str]:
     keywords: list[str] = []
     text = " ".join(_program_source_text_values(row)).casefold()
 
-    keywords.extend(_infer_display_categories(row))
-
-    cost_type = _program_cost_type(row)
-    if cost_type == "free-no-card":
-        keywords.append("무료")
-    elif cost_type == "naeil-card":
-        keywords.append("내일배움카드")
-    elif cost_type == "paid":
-        keywords.append("유료")
-
     keywords.extend(_derive_target_filter_tags(row))
-
-    teaching_method = _derive_teaching_method(row)
-    if teaching_method:
-        keywords.append(teaching_method)
-
-    region_keyword = _derive_region_filter_keyword(row)
-    if region_keyword:
-        keywords.append(region_keyword)
-
-    participation_label, _ = _derive_participation_display(row)
-    if participation_label in {"주말반", "저녁반", "자율학습", "풀타임", "파트타임"}:
-        keywords.append(participation_label)
 
     for label, aliases in PROGRAM_KEYWORD_RULES:
         if any(_text_has_keyword(text, alias) for alias in aliases):
@@ -854,19 +1060,25 @@ def _program_sort_cost_amount(row: dict[str, Any]) -> int | None:
 def _filter_program_rows_by_extra_filters(
     rows: list[dict[str, Any]],
     *,
+    sources: list[str] | None = None,
+    teaching_methods: list[str] | None = None,
     cost_types: list[str] | None = None,
     participation_times: list[str] | None = None,
     targets: list[str] | None = None,
     selection_processes: list[str] | None = None,
     employment_links: list[str] | None = None,
 ) -> list[dict[str, Any]]:
+    normalized_sources = set(_normalize_program_source_filters(sources, expand_aliases=True))
+    normalized_teaching_methods = set(_normalize_option_param(teaching_methods, PROGRAM_TEACHING_METHODS))
     normalized_cost_types = set(_normalize_option_param(cost_types, PROGRAM_COST_TYPES))
     normalized_participation_times = set(_normalize_option_param(participation_times, PROGRAM_PARTICIPATION_TIMES))
     normalized_targets = set(_normalize_option_param(targets, PROGRAM_TARGETS))
     normalized_selection_processes = set(_normalize_option_param(selection_processes, PROGRAM_SELECTION_PROCESSES))
     normalized_employment_links = set(_normalize_option_param(employment_links, PROGRAM_EMPLOYMENT_LINKS))
     if (
-        not normalized_cost_types
+        not normalized_sources
+        and not normalized_teaching_methods
+        and not normalized_cost_types
         and not normalized_participation_times
         and not normalized_targets
         and not normalized_selection_processes
@@ -876,6 +1088,10 @@ def _filter_program_rows_by_extra_filters(
 
     filtered_rows: list[dict[str, Any]] = []
     for row in rows:
+        if normalized_sources and not _program_matches_source_filters(row, sources):
+            continue
+        if normalized_teaching_methods and _derive_teaching_method(row) not in normalized_teaching_methods:
+            continue
         if normalized_cost_types and _program_cost_type(row) not in normalized_cost_types:
             continue
         if normalized_participation_times and _program_participation_time(row) not in normalized_participation_times:
@@ -899,22 +1115,107 @@ def _program_matches_any(row: dict[str, Any], keywords: set[str]) -> bool:
     return any(keyword.casefold() in text.casefold() for keyword in keywords)
 
 
+def _normalize_program_source_value(source: str | None) -> str | None:
+    raw = str(source or "").strip()
+    if not raw:
+        return None
+
+    lookup = _normalize_search_text(raw).replace("-", "").replace("_", "")
+    if "고용24" in raw or "work24" in lookup:
+        return "고용24"
+    if "kstartup" in lookup or "창업진흥원" in raw:
+        return "kstartup"
+    if "sesac" in lookup or "새싹" in raw or "서울소프트웨어아카데미" in raw:
+        return "sesac"
+    if lookup in {"other", "etc", "기타", "기타기관"}:
+        return PROGRAM_SOURCE_OTHER_VALUE
+    return raw
+
+
+def _source_filter_option_value(source: str | None) -> str | None:
+    normalized = _normalize_program_source_value(source)
+    if not normalized:
+        return None
+    if normalized in PROGRAM_SOURCE_CANONICAL_LABELS or normalized == "고용24":
+        return normalized
+    return PROGRAM_SOURCE_OTHER_VALUE
+
+
+def _program_source_filter_param(normalized_sources: Sequence[str]) -> str | None:
+    if not normalized_sources:
+        return None
+
+    source_set = set(normalized_sources)
+    has_other = PROGRAM_SOURCE_OTHER_VALUE in source_set
+    if has_other:
+        return None
+
+    if not has_other:
+        quoted_sources = ",".join(f'"{source}"' for source in normalized_sources)
+        return f"in.({quoted_sources})"
+
+
+def _normalize_program_source_filters(
+    sources: Sequence[str] | None,
+    *,
+    expand_aliases: bool = False,
+) -> list[str]:
+    normalized_filters: list[str] = []
+    seen: set[str] = set()
+
+    for source in sources or []:
+        canonical = _normalize_program_source_value(source)
+        if not canonical:
+            continue
+        candidates = PROGRAM_SOURCE_FILTER_ALIASES.get(canonical, (canonical,)) if expand_aliases else (canonical,)
+        for candidate in candidates:
+            if candidate in seen:
+                continue
+            seen.add(candidate)
+            normalized_filters.append(candidate)
+
+    return normalized_filters
+
+
+def _has_other_program_source_filter(sources: Sequence[str] | None) -> bool:
+    return PROGRAM_SOURCE_OTHER_VALUE in _normalize_program_source_filters(sources)
+
+
+def _program_matches_source_filters(row: Mapping[str, Any], sources: Sequence[str] | None) -> bool:
+    normalized_sources = set(_normalize_program_source_filters(sources, expand_aliases=True))
+    if not normalized_sources:
+        return True
+
+    raw_source = str(row.get("source") or "").strip()
+    canonical_source = _normalize_program_source_value(raw_source)
+    if raw_source in normalized_sources or (canonical_source and canonical_source in normalized_sources):
+        return True
+
+    if PROGRAM_SOURCE_OTHER_VALUE not in normalized_sources:
+        return False
+
+    if canonical_source in {"고용24", "sesac"}:
+        return False
+    if canonical_source == "kstartup":
+        provider = str(row.get("provider") or "").strip()
+        provider_canonical = _normalize_program_source_value(provider)
+        return bool(provider) and provider_canonical not in {"kstartup", "고용24", "sesac"}
+
+    return bool(raw_source or str(row.get("provider") or "").strip())
+
+
 def _program_source_label(source: str) -> str:
-    normalized = source.strip()
-    labels = {
-        "kstartup": "K-Startup",
-        "K-Startup": "K-Startup",
-        "sesac": "SeSAC",
-        "SeSAC": "SeSAC",
-    }
-    return labels.get(normalized, normalized)
+    normalized = _normalize_program_source_value(source)
+    if not normalized:
+        return ""
+    return PROGRAM_SOURCE_CANONICAL_LABELS.get(normalized, normalized)
 
 
 def _build_named_filter_options(values: list[str], *, source_labels: bool = False) -> list[ProgramFilterOption]:
     seen: set[str] = set()
     options: list[ProgramFilterOption] = []
     for value in values:
-        normalized = str(value or "").strip()
+        normalized = _source_filter_option_value(value) if source_labels else str(value or "").strip()
         if not normalized or normalized in seen:
             continue
         seen.add(normalized)
@@ -956,11 +1257,7 @@ def _extract_program_filter_options(rows: list[dict[str, Any]]) -> ProgramFilter
 
 def _filter_options_from_facet_snapshot(facets: ProgramFacetSnapshot) -> ProgramFilterOptionsResponse:
     return ProgramFilterOptionsResponse(
-        sources=[
-            ProgramFilterOption(value=bucket.value, label=_program_source_label(bucket.value))
-            for bucket in facets.source
-            if bucket.value
-        ],
+        sources=_build_named_filter_options([bucket.value for bucket in facets.source if bucket.value], source_labels=True),
         targets=[
             ProgramFilterOption(value=value, label=value)
             for value in ("청년", "여성", "창업", "재직자", "대학생")
@@ -1082,6 +1379,8 @@ def _postprocess_program_list_rows(
     *,
     category_detail: str | None = None,
     q: str | None = None,
+    sources: list[str] | None = None,
+    teaching_methods: list[str] | None = None,
     cost_types: list[str] | None = None,
     participation_times: list[str] | None = None,
     targets: list[str] | None = None,
@@ -1106,6 +1405,8 @@ def _postprocess_program_list_rows(
                 ),
                 category_detail,
             ),
+            sources=sources,
+            teaching_methods=teaching_methods,
             cost_types=cost_types,
             participation_times=participation_times,
             targets=targets,

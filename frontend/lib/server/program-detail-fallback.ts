@@ -165,6 +165,30 @@ function toProgramDetail(programRow: JsonRecord, sourceRecord: JsonRecord): Prog
     detailMeta.program_end_date,
     detailMeta.training_end_date
   );
+  const trainingFee = firstNumber(
+    programRow.fee_amount,
+    detailMeta.actual_training_cost,
+    detailMeta.actualTrainingCost,
+    detailMeta.training_fee_total,
+    detailMeta.training_fee,
+    programRow.cost
+  );
+  const explicitSelfPay = firstNumber(
+    programRow.verified_self_pay_amount,
+    detailMeta.self_payment,
+    detailMeta.selfPayment,
+    detailMeta.out_of_pocket,
+    detailMeta.outOfPocket,
+    detailMeta.out_of_pocket_amount,
+    detailMeta.outOfPocketAmount
+  );
+  const supportCandidate = firstNumber(programRow.support_amount, programRow.subsidy_amount);
+  const selfPayAmount =
+    explicitSelfPay !== null
+      ? explicitSelfPay
+      : supportCandidate !== null && (trainingFee === null || supportCandidate < trainingFee)
+        ? supportCandidate
+        : null;
 
   const capacityTotal = firstNumber(
     programRow.capacity_total,
@@ -189,6 +213,12 @@ function toProgramDetail(programRow: JsonRecord, sourceRecord: JsonRecord): Prog
       detailMeta.supervising_institution,
       detailMeta.department
     ),
+    source: firstText(programRow.source, detailMeta.source),
+    category: firstText(programRow.category, detailMeta.category),
+    category_detail: firstText(programRow.category_detail, detailMeta.category_detail),
+    display_categories: uniqueStrings(programRow.display_categories, detailMeta.display_categories),
+    ncs_code: firstText(programRow.ncs_code, detailMeta.ncs_code),
+    ncs_name: firstText(programRow.ncs_name, detailMeta.ncs_name),
     location: firstText(
       programRow.location_text,
       programRow.location,
@@ -196,11 +226,23 @@ function toProgramDetail(programRow: JsonRecord, sourceRecord: JsonRecord): Prog
       programRow.region
     ),
     description: firstText(programRow.description, programRow.summary),
+    deadline: firstText(programRow.deadline, applicationEndDate),
+    days_left: firstNumber(programRow.days_left),
     application_start_date: applicationStartDate,
     application_end_date: applicationEndDate,
     program_start_date: programStartDate,
     program_end_date: programEndDate,
     teaching_method: firstText(programRow.teaching_method, detailMeta.teaching_method),
+    participation_time: firstText(programRow.participation_mode_label, programRow.participation_time),
+    participation_time_text: firstText(programRow.participation_time_text, detailMeta.training_time),
+    application_method: firstText(
+      programRow.application_method,
+      sourceSpecific.application_method,
+      detailMeta.application_method,
+      detailMeta.apply_method
+    ),
+    selection_process_label: firstText(programRow.selection_process_label, detailMeta.selection_process),
+    cost_type: firstText(programRow.cost_type, detailMeta.cost_type),
     support_type: firstText(
       programRow.business_type,
       programRow.support_type,
@@ -216,8 +258,8 @@ function toProgramDetail(programRow: JsonRecord, sourceRecord: JsonRecord): Prog
       programRow.source_url,
       programRow.link
     ),
-    fee: firstNumber(programRow.fee_amount, programRow.cost),
-    support_amount: firstNumber(programRow.support_amount, programRow.subsidy_amount),
+    fee: trainingFee,
+    support_amount: selfPayAmount,
     eligibility: uniqueStrings(
       programRow.eligibility_labels,
       programRow.target_summary,
@@ -260,6 +302,7 @@ function toProgramDetail(programRow: JsonRecord, sourceRecord: JsonRecord): Prog
     ),
     tech_stack: uniqueStrings(programRow.skills, detailMeta.skills),
     tags: uniqueStrings(programRow.tags, detailMeta.tags),
+    extracted_keywords: uniqueStrings(programRow.extracted_keywords, detailMeta.extracted_keywords),
     curriculum: uniqueStrings(
       programRow.curriculum_items,
       sourceSpecific.curriculum_items,

@@ -39,6 +39,7 @@ export const SOURCE_OPTIONS: readonly NamedFilterOption[] = [
   { value: "고용24", label: "고용24" },
   { value: "kstartup", label: "K-Startup" },
   { value: "sesac", label: "SeSAC" },
+  { value: "other", label: "기타 기관" },
 ];
 export const TARGET_OPTIONS: readonly NamedFilterOption[] = [
   { value: "청년", label: "청년" },
@@ -49,16 +50,47 @@ export const TARGET_OPTIONS: readonly NamedFilterOption[] = [
 ];
 export const PROGRAM_CATEGORY_OPTIONS: readonly ProgramCategoryMenuOption[] = [
   { id: "all", label: "전체", category: "전체", dotClassName: "bg-slate-400" },
-  { id: "web-development", label: "웹개발", category: "IT", dotClassName: "bg-violet-500" },
-  { id: "mobile", label: "모바일", category: "IT", dotClassName: "bg-blue-500" },
-  { id: "data-ai", label: "데이터·AI", category: "AI", dotClassName: "bg-emerald-500" },
-  { id: "cloud-security", label: "클라우드·보안", category: "IT", dotClassName: "bg-sky-500" },
-  { id: "iot-embedded-semiconductor", label: "IoT·임베디드·반도체", category: "IT", dotClassName: "bg-indigo-500" },
-  { id: "game-blockchain", label: "게임·블록체인", category: "IT", dotClassName: "bg-pink-500" },
-  { id: "planning-marketing-other", label: "기획·마케팅·기타", category: "경영", dotClassName: "bg-teal-500" },
-  { id: "design-3d", label: "디자인·3D", category: "디자인", dotClassName: "bg-orange-500" },
-  { id: "project-career-startup", label: "프로젝트·취준·창업", category: "창업", dotClassName: "bg-lime-600" },
+  { id: "ncs-01", label: "사업관리", category: "전체", dotClassName: "bg-lime-600" },
+  { id: "ncs-02", label: "경영·회계·사무", category: "전체", dotClassName: "bg-teal-500" },
+  { id: "ncs-03", label: "금융·보험", category: "전체", dotClassName: "bg-cyan-500" },
+  { id: "ncs-04", label: "교육·자연·사회과학", category: "전체", dotClassName: "bg-amber-500" },
+  { id: "ncs-05", label: "법률·경찰·소방·교도·국방", category: "전체", dotClassName: "bg-zinc-500" },
+  { id: "ncs-06", label: "보건·의료", category: "전체", dotClassName: "bg-rose-500" },
+  { id: "ncs-07", label: "사회복지·종교", category: "전체", dotClassName: "bg-pink-500" },
+  { id: "ncs-08", label: "문화·예술·디자인·방송", category: "전체", dotClassName: "bg-orange-500" },
+  { id: "ncs-09", label: "운전·운송", category: "전체", dotClassName: "bg-blue-500" },
+  { id: "ncs-10", label: "영업판매", category: "전체", dotClassName: "bg-emerald-500" },
+  { id: "ncs-11", label: "경비·청소", category: "전체", dotClassName: "bg-gray-500" },
+  { id: "ncs-12", label: "이용·숙박·여행·오락·스포츠", category: "전체", dotClassName: "bg-yellow-500" },
+  { id: "ncs-13", label: "음식서비스", category: "전체", dotClassName: "bg-red-500" },
+  { id: "ncs-14", label: "건설", category: "전체", dotClassName: "bg-stone-500" },
+  { id: "ncs-15", label: "기계", category: "전체", dotClassName: "bg-slate-500" },
+  { id: "ncs-16", label: "재료", category: "전체", dotClassName: "bg-neutral-500" },
+  { id: "ncs-17", label: "화학·바이오", category: "전체", dotClassName: "bg-green-500" },
+  { id: "ncs-18", label: "섬유·의복", category: "전체", dotClassName: "bg-fuchsia-500" },
+  { id: "ncs-19", label: "전기·전자", category: "전체", dotClassName: "bg-indigo-500" },
+  { id: "ncs-20", label: "정보통신", category: "전체", dotClassName: "bg-violet-500" },
+  { id: "ncs-21", label: "식품가공", category: "전체", dotClassName: "bg-red-400" },
+  { id: "ncs-22", label: "인쇄·목재·가구·공예", category: "전체", dotClassName: "bg-orange-700" },
+  { id: "ncs-23", label: "환경·에너지·안전", category: "전체", dotClassName: "bg-sky-500" },
+  { id: "ncs-24", label: "농림어업", category: "전체", dotClassName: "bg-emerald-700" },
 ];
+const LEGACY_CATEGORY_OPTION_ALIASES: Record<string, string> = {
+  "web-development": "ncs-20",
+  mobile: "ncs-20",
+  "data-ai": "ncs-20",
+  "cloud-security": "ncs-20",
+  "iot-embedded-semiconductor": "ncs-19",
+  "game-blockchain": "ncs-20",
+  "planning-marketing-other": "ncs-02",
+  "design-3d": "ncs-08",
+  "project-career-startup": "ncs-01",
+  IT: "ncs-20",
+  AI: "ncs-20",
+  경영: "ncs-02",
+  디자인: "ncs-08",
+  창업: "ncs-01",
+};
 
 export type ProgramsPageSearchParams = {
   q?: string | string[];
@@ -115,6 +147,11 @@ export function normalizeSelectedCategoryOption(value?: string | string[]): Prog
     return byId;
   }
 
+  const alias = LEGACY_CATEGORY_OPTION_ALIASES[rawCategory];
+  if (alias) {
+    return PROGRAM_CATEGORY_OPTIONS.find((option) => option.id === alias) || PROGRAM_CATEGORY_OPTIONS[0];
+  }
+
   return PROGRAM_CATEGORY_OPTIONS.find((option) => option.category === rawCategory) || PROGRAM_CATEGORY_OPTIONS[0];
 }
 
@@ -140,20 +177,61 @@ export function normalizeNamedOptions(
   return options.map((option) => option.value).filter((optionValue) => normalized.includes(optionValue));
 }
 
+function normalizeOptionLookupToken(value: string): string {
+  return value.toLowerCase().replace(/[\s\-_]+/g, "");
+}
+
+function getCanonicalSourceOption(value: string, label: string): NamedFilterOption | null {
+  const lookup = normalizeOptionLookupToken(`${value}${label}`);
+
+  if (!lookup) {
+    return null;
+  }
+
+  if (lookup.includes("kstartup") || lookup.includes("창업진흥원")) {
+    return SOURCE_OPTIONS.find((option) => option.value === "kstartup") || null;
+  }
+
+  if (lookup.includes("sesac") || lookup.includes("새싹") || lookup.includes("서울소프트웨어아카데미")) {
+    return SOURCE_OPTIONS.find((option) => option.value === "sesac") || null;
+  }
+
+  if (lookup.includes("고용24") || lookup.includes("work24")) {
+    return SOURCE_OPTIONS.find((option) => option.value === "고용24") || null;
+  }
+
+  if (lookup === "other" || lookup.includes("기타기관")) {
+    return SOURCE_OPTIONS.find((option) => option.value === "other") || null;
+  }
+
+  return null;
+}
+
+export function canonicalizeSourceFilterOption(option: NamedFilterOption): NamedFilterOption {
+  const value = String(option.value || "").trim();
+  const label = String(option.label || option.value || "").trim();
+  return getCanonicalSourceOption(value, label) || { value, label };
+}
+
 export function dynamicOrFallbackOptions(
   dynamicOptions: readonly NamedFilterOption[] | null | undefined,
-  fallbackOptions: readonly NamedFilterOption[]
+  fallbackOptions: readonly NamedFilterOption[],
+  canonicalizeOption?: (option: NamedFilterOption) => NamedFilterOption
 ): readonly NamedFilterOption[] {
   if (!dynamicOptions?.length) {
     return fallbackOptions;
   }
 
   const seen = new Set<string>();
-  return dynamicOptions
-    .map((option) => ({
-      value: String(option.value || "").trim(),
-      label: String(option.label || option.value || "").trim(),
-    }))
+  return [...dynamicOptions, ...fallbackOptions]
+    .map((option) =>
+      canonicalizeOption
+        ? canonicalizeOption(option)
+        : {
+            value: String(option.value || "").trim(),
+            label: String(option.label || option.value || "").trim(),
+          }
+    )
     .filter((option) => {
       if (!option.value || seen.has(option.value)) return false;
       seen.add(option.value);

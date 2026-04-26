@@ -234,7 +234,7 @@ export function getProgramDeadlineTone(
   daysLeft: number | null | undefined
 ): string {
   if (typeof daysLeft !== "number") return "bg-slate-100 text-slate-600";
-  if (daysLeft <= 3) return "bg-rose-100 text-rose-700";
+  if (daysLeft <= 3) return "bg-red-50 text-red-700 ring-1 ring-red-200";
   if (daysLeft <= 7) return "bg-amber-100 text-amber-700";
   return "bg-emerald-100 text-emerald-700";
 }
@@ -414,24 +414,41 @@ function hasAmbiguousSupportedFundingText(text: string | null | undefined): bool
 
 export function getProgramOutOfPocketAmount(program: ProgramInsightSource): number | null {
   const compareMeta = getLegacyProgramMetaRecord(program);
-  for (const value of [
+  const directCost = parseMetricNumber(program.cost);
+  const isWork24 = isWork24ProgramSource(program.source);
+  const explicitSelfPayValues = [
     program.verified_self_pay_amount,
-    program.support_amount,
     getLegacyMetaValue(compareMeta, ["self_payment", "selfPayment"]),
     getLegacyMetaValue(compareMeta, ["out_of_pocket", "outOfPocket"]),
     getLegacyMetaValue(compareMeta, ["out_of_pocket_amount", "outOfPocketAmount"]),
-    getLegacyMetaValue(compareMeta, ["support_amount", "supportAmount"]),
-  ]) {
+  ];
+
+  for (const value of explicitSelfPayValues) {
     const parsed = parseMetricNumber(value);
     if (parsed !== null) {
       return Math.max(0, parsed);
     }
   }
 
-  const directAmount =
-    isWork24ProgramSource(program.source) ? null : parseMetricNumber(program.subsidy_amount);
-  if (directAmount !== null) {
-    return Math.max(0, directAmount);
+  for (const value of [
+    program.support_amount,
+    getLegacyMetaValue(compareMeta, ["support_amount", "supportAmount"]),
+  ]) {
+    const parsed = parseMetricNumber(value);
+    if (parsed === null) {
+      continue;
+    }
+    if (isWork24 && directCost !== null && parsed >= directCost) {
+      continue;
+    }
+    return Math.max(0, parsed);
+  }
+
+  if (!isWork24) {
+    const directAmount = parseMetricNumber(program.subsidy_amount);
+    if (directAmount !== null) {
+      return Math.max(0, directAmount);
+    }
   }
 
   return null;
@@ -454,6 +471,11 @@ export function formatProgramCostLabel(program: ProgramInsightSource): string | 
     isWork24ProgramSource(program.source) ||
     hasAmbiguousSupportedFundingText(explicitSupportText)
   ) {
+    const trainingCost = parseMetricNumber(program.cost);
+    if (trainingCost !== null) {
+      const formattedCost = formatMetricWon(trainingCost);
+      return formattedCost ? `훈련비 ${formattedCost}` : "자부담 정보 확인 필요";
+    }
     return "자부담 정보 확인 필요";
   }
 
@@ -791,6 +813,8 @@ export function getProgramRatingValue(program: ProgramInsightSource): number {
 export function getProgramSelectionKeywords(
   program: Pick<ProgramListRow, "extracted_keywords" | "tags" | "skills"> & ProgramLegacyMetaCarrier
 ): string[] {
+  const blockedKeywordPattern =
+    /^(광고|마감임박|최근등록|관련도)|^(무료|유료|내일배움카드|온라인|오프라인|온·오프라인|풀타임|파트타임|주말반|저녁반|자율학습|웹·백엔드|모바일·프론트엔드|데이터·AI|클라우드·보안|임베디드·반도체|게임·블록체인|기획·마케팅|디자인·3D|창업·커리어|사업관리|경영·회계·사무|금융·보험|교육·자연·사회과학|법률·경찰·소방·교도·국방|보건·의료|사회복지·종교|문화·예술·디자인·방송|운전·운송|영업판매|경비·청소|이용·숙박·여행·오락·스포츠|음식서비스|건설|기계|재료|화학·바이오|섬유·의복|전기·전자|정보통신|식품가공|인쇄·목재·가구·공예|환경·에너지·안전|농림어업)$/u;
   const meta = getLegacyProgramMeta(program);
   const candidates = [
     meta?.coding_skill_required ? "코딩역량" : null,
@@ -807,7 +831,7 @@ export function getProgramSelectionKeywords(
     .flatMap((value) => (typeof value === "string" ? value.split("/") : []))
     .map((value) => value.trim())
     .filter((value) => {
-      if (!value || seen.has(value)) {
+      if (!value || blockedKeywordPattern.test(value) || seen.has(value)) {
         return false;
       }
       seen.add(value);

@@ -39,6 +39,19 @@ describe("programs page helpers", () => {
     });
   });
 
+  it("drops recruiting-status text from participation display", () => {
+    expect(
+      formatProgramParticipationTime({
+        participation_mode_label: "곧 마감",
+        participation_time: null,
+        participation_time_text: "모집중",
+      })
+    ).toEqual({
+      label: null,
+      detail: null,
+    });
+  });
+
   it("pins promoted programs only on the default all-programs view", () => {
     expect(
       shouldPinPromotedPrograms({

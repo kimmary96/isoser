@@ -57,7 +57,7 @@ export function ProgramsTable({
             <th scope="col" className="w-[20%] px-4 py-3">교육기관명 / 프로그램명</th>
             <th scope="col" className="w-[11%] px-4 py-3">프로그램 과정</th>
             <th scope="col" className="w-[8%] px-4 py-3">모집상태</th>
-            <th scope="col" className="w-[7%] px-4 py-3">본인부담금</th>
+            <th scope="col" className="w-[7%] px-4 py-3">비용 정보</th>
             <th scope="col" className="w-[10%] px-4 py-3">온·오프라인</th>
             <th scope="col" className="w-[9%] px-4 py-3">일정</th>
             <th scope="col" className="w-[10%] px-4 py-3">참여 시간</th>
@@ -147,13 +147,17 @@ export function ProgramsTable({
                 <td className="px-4 py-4 text-slate-600">{formatSchedule(program)}</td>
                 <td className="px-4 py-4 text-slate-600">
                   {participation.label || participation.detail ? (
-                    <div className="space-y-1">
+                    <div className="flex flex-wrap gap-1.5">
                       {participation.label ? (
                         <span className="inline-flex rounded-full bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-700">
                           {participation.label}
                         </span>
                       ) : null}
-                      {participation.detail ? <p className="text-xs leading-5 text-slate-600">{participation.detail}</p> : null}
+                      {participation.detail ? (
+                        <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">
+                          {participation.detail}
+                        </span>
+                      ) : null}
                     </div>
                   ) : (
                     "-"

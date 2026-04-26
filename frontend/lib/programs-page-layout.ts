@@ -1,4 +1,5 @@
 import type { ProgramCardSummary, ProgramListParams, ProgramListRow } from "./types";
+import { deriveNcsMajorCategoryLabels } from "./ncs-categories";
 
 export const URGENT_PROGRAM_LIMIT = 12;
 
@@ -14,8 +15,12 @@ function normalizeTextList(value: string[] | string | null | undefined): string[
 }
 
 function getProgramDisplayCategories(
-  program: Pick<ProgramCardSummary, "category" | "category_detail" | "display_categories">
+  program: Pick<ProgramCardSummary, "category" | "category_detail" | "display_categories"> &
+    Partial<Pick<ProgramCardSummary, "title" | "summary" | "description" | "skills" | "tags">>
 ): string[] {
+  const ncsCategories = deriveNcsMajorCategoryLabels(program);
+  if (ncsCategories.length) return ncsCategories;
+
   const derived = normalizeTextList(program.display_categories);
   if (derived.length) return derived.slice(0, 2);
   return [program.category, program.category_detail].filter((value): value is string => Boolean(value?.trim())).slice(0, 2);
@@ -34,7 +39,8 @@ export function buildUrgentProgramChips(
   program: Pick<
     ProgramListRow,
     "category" | "category_detail" | "display_categories" | "extracted_keywords" | "skills"
-  >
+  > &
+    Partial<Pick<ProgramListRow, "title" | "summary" | "description" | "tags">>
 ): string[] {
   return Array.from(
     new Set([

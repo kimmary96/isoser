@@ -18,6 +18,16 @@ for path in (REPO_ROOT, BACKEND_ROOT):
 from scripts import program_backfill, refresh_program_list_index
 
 
+SELF_PAY_META_KEYS = (
+    "self_payment",
+    "selfPayment",
+    "out_of_pocket",
+    "outOfPocket",
+    "out_of_pocket_amount",
+    "outOfPocketAmount",
+)
+
+
 def _clean_id(value: Any) -> str:
     return str(value or "").strip()
 
@@ -51,6 +61,51 @@ def fetch_program_rows_by_ids(program_ids: list[str]) -> list[dict[str, Any]]:
     return rows if isinstance(rows, list) else []
 
 
+def _int_or_none(value: Any) -> int | None:
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float) and value.is_integer():
+        return int(value)
+    if isinstance(value, str):
+        text = value.replace(",", "").strip()
+        return int(text) if text.isdigit() else None
+    return None
+
+
+def _meta_dict(row: dict[str, Any], key: str) -> dict[str, Any]:
+    value = row.get(key)
+    return value if isinstance(value, dict) else {}
+
+
+def _has_verified_self_pay_signal(row: dict[str, Any]) -> bool:
+    compare_meta = _meta_dict(row, "compare_meta")
+    service_meta = _meta_dict(row, "service_meta")
+    if any(
+        meta.get(key) not in (None, "", [], {})
+        for meta in (compare_meta, service_meta)
+        for key in SELF_PAY_META_KEYS
+    ):
+        return True
+
+    cost = _int_or_none(row.get("cost") or row.get("fee_amount"))
+    for key in ("verified_self_pay_amount", "support_amount", "subsidy_amount"):
+        amount = _int_or_none(row.get(key))
+        if amount is None:
+            continue
+        if cost is None or amount < cost:
+            return True
+    return False
+
+
+def should_fetch_work24_self_pay_detail(row: dict[str, Any]) -> bool:
+    if program_backfill.source_family(row) != "work24":
+        return False
+    if _has_verified_self_pay_signal(row):
+        return False
+    source_url = program_backfill.nested_text(row, ("source_url", "link", "compare_meta.source_url"))
+    return source_url.startswith(("http://", "https://")) and "work24.go.kr" in source_url.lower()
+
+
 def build_report(
     *,
     pool_limit: int,
@@ -71,7 +126,7 @@ def build_report(
     for browse_row in browse_rows:
         program_id = _clean_id(browse_row.get("id"))
         db_row = program_rows_by_id.get(program_id)
-        if db_row is None or not program_backfill.should_enrich_work24_detail(db_row):
+        if db_row is None or not should_fetch_work24_self_pay_detail(db_row):
             continue
 
         suspicious_count += 1

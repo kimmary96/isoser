@@ -46,6 +46,20 @@ function formatMoney(value: number | null | undefined): string | null {
   return `${value.toLocaleString("ko-KR")}원`;
 }
 
+function joinNonEmpty(values: Array<string | number | null | undefined>, separator = " · "): string | null {
+  const items = values
+    .map((value) => (value === null || value === undefined ? "" : String(value).trim()))
+    .filter(Boolean);
+  return items.length ? items.join(separator) : null;
+}
+
+function formatDaysLeft(value: number | null | undefined): string | null {
+  if (typeof value !== "number") return null;
+  if (value < 0) return "마감";
+  if (value === 0) return "D-Day";
+  return `D-${value}`;
+}
+
 function getDeadlineState(value: string | null | undefined): { label: string; subLabel: string | null; active: boolean } {
   if (!value) {
     return { label: "일정 확인", subLabel: null, active: false };
@@ -86,6 +100,7 @@ const sectionIconById: Record<string, string> = {
   "sec-apply": "✓",
   "sec-career": "◆",
   "sec-notice": "!",
+  "sec-detail-meta": "i",
   "sec-curriculum": "▤",
   "sec-reviews": "★",
   "sec-qna": "?",
@@ -177,6 +192,8 @@ export default function ProgramDetailClient({
   const eligibility = textList(program.eligibility);
   const tags = textList(program.tags);
   const techStack = textList(program.tech_stack);
+  const displayCategories = textList(program.display_categories);
+  const extractedKeywords = textList(program.extracted_keywords);
   const certifications = textList(program.certifications);
   const curriculum = textList(program.curriculum);
   const recommendedFor = textList(program.recommended_for);
@@ -191,6 +208,16 @@ export default function ProgramDetailClient({
   const programPeriod = formatDateRange(program.program_start_date, program.program_end_date);
   const feeLabel = formatMoney(program.fee);
   const supportAmountLabel = formatMoney(program.support_amount);
+  const categoryLabel = joinNonEmpty([displayCategories.join(", ") || null, program.category_detail, program.category]);
+  const ncsLabel = joinNonEmpty([program.ncs_name, program.ncs_code]);
+  const participationLabel = joinNonEmpty([program.participation_time, program.participation_time_text]);
+  const ratingDetailLabel = joinNonEmpty([
+    program.rating_display || program.rating,
+    program.rating_raw ? `원점수 ${program.rating_raw}` : null,
+    typeof program.rating_normalized === "number" && typeof program.rating_scale === "number"
+      ? `${program.rating_normalized}/${program.rating_scale}`
+      : null,
+  ]);
   const deadlineState = getDeadlineState(program.application_end_date);
   const externalLink = program.source_url;
 
@@ -198,14 +225,19 @@ export default function ProgramDetailClient({
     const nextSections: DetailSection[] = [];
     const overviewFacts = [
       ["지역", program.location],
+      ["운영기관 원천", program.source],
+      ["과정 분류", categoryLabel],
+      ["NCS", ncsLabel],
       ["운영 방식", program.teaching_method],
+      ["참여 시간", participationLabel],
+      ["선발 절차", program.selection_process_label],
       ["지원 유형", program.support_type],
-      ["만족도", program.rating_display || program.rating],
+      ["만족도", ratingDetailLabel],
       ["후기 수", typeof program.review_count === "number" ? `${program.review_count}개` : null],
       ["모집 정원", typeof program.capacity_total === "number" ? `${program.capacity_total}명` : null],
     ].filter((entry): entry is [string, string] => Boolean(entry[1]));
 
-    if (program.description || overviewFacts.length || tags.length || techStack.length) {
+    if (program.description || overviewFacts.length || tags.length || techStack.length || extractedKeywords.length) {
       nextSections.push({
         id: "sec-overview",
         label: "프로그램 요약",
@@ -215,7 +247,9 @@ export default function ProgramDetailClient({
           <div className="space-y-5">
             {program.description ? <p className="whitespace-pre-wrap text-sm leading-7 text-slate-700">{program.description}</p> : null}
             {overviewFacts.length ? <FactGrid facts={overviewFacts} /> : null}
-            {tags.length || techStack.length ? <ChipList items={[...tags, ...techStack].slice(0, 12)} /> : null}
+            {tags.length || techStack.length || extractedKeywords.length ? (
+              <ChipList items={[...tags, ...techStack, ...extractedKeywords].slice(0, 16)} />
+            ) : null}
           </div>
         ),
       });
@@ -244,6 +278,8 @@ export default function ProgramDetailClient({
       ["교육 기간", programPeriod],
       ["일정 요약", program.schedule_text],
       ["운영 방식", program.teaching_method],
+      ["참여 시간", participationLabel],
+      ["상세 마감", formatDateLabel(program.deadline)],
       ["잔여 정원", typeof program.capacity_remaining === "number" ? `${program.capacity_remaining}명` : null],
     ].filter((entry): entry is [string, string] => Boolean(entry[1]));
     if (scheduleFacts.length) {
@@ -288,16 +324,17 @@ export default function ProgramDetailClient({
     }
 
     const feeFacts = [
-      ["수강료", feeLabel],
-      ["지원금", supportAmountLabel],
+      ["훈련비", feeLabel],
+      ["자부담금", supportAmountLabel],
+      ["비용 유형", program.cost_type],
       ["지원 유형", program.support_type],
     ].filter((entry): entry is [string, string] => Boolean(entry[1]));
     if (feeFacts.length || certifications.length) {
       nextSections.push({
         id: "sec-fee",
-        label: "수강료 & 지원금",
+        label: "훈련비 & 자부담금",
         eyebrow: "Fee",
-        title: "수강료 & 지원금",
+        title: "훈련비 & 자부담금",
         body: (
           <div className="space-y-5">
             {feeFacts.length ? <FactGrid facts={feeFacts} /> : null}
@@ -307,7 +344,13 @@ export default function ProgramDetailClient({
       });
     }
 
-    if (eligibility.length || externalLink) {
+    const applicationFacts = [
+      ["신청 방법", program.application_method],
+      ["선발 절차", program.selection_process_label],
+      ["신청 마감", formatDateLabel(program.application_end_date)],
+      ["공고 원천", program.source],
+    ].filter((entry): entry is [string, string] => Boolean(entry[1]));
+    if (eligibility.length || applicationFacts.length || externalLink) {
       nextSections.push({
         id: "sec-apply",
         label: "지원 자격 & 절차",
@@ -315,6 +358,7 @@ export default function ProgramDetailClient({
         title: "지원 자격 & 절차",
         body: (
           <div className="space-y-4">
+            {applicationFacts.length ? <FactGrid facts={applicationFacts} /> : null}
             {eligibility.length ? (
               <ul className="space-y-2 text-sm leading-7 text-slate-700">
                 {eligibility.map((item) => (
@@ -361,6 +405,30 @@ export default function ProgramDetailClient({
             {program.event_banner ? <p className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4">{program.event_banner}</p> : null}
           </div>
         ),
+      });
+    }
+
+    const detailFacts = [
+      ["공고 ID", program.id ? String(program.id) : null],
+      ["운영기관 원천", program.source],
+      ["과정 분류", categoryLabel],
+      ["NCS", ncsLabel],
+      ["비용 유형", program.cost_type],
+      ["참여 시간", participationLabel],
+      ["신청 방법", program.application_method],
+      ["선발 절차", program.selection_process_label],
+      ["모집 상태", formatDaysLeft(program.days_left)],
+      ["마감일", formatDateLabel(program.deadline)],
+      ["만족도", ratingDetailLabel],
+      ["후기 수", typeof program.review_count === "number" ? `${program.review_count}개` : null],
+    ].filter((entry): entry is [string, string] => Boolean(entry[1]));
+    if (detailFacts.length) {
+      nextSections.push({
+        id: "sec-detail-meta",
+        label: "상세 정보",
+        eyebrow: "Details",
+        title: "상세 정보",
+        body: <FactGrid facts={detailFacts} />,
       });
     }
 
@@ -413,15 +481,21 @@ export default function ProgramDetailClient({
   }, [
     applicationPeriod,
     careerSupport,
+    categoryLabel,
     certifications,
     curriculum,
+    displayCategories,
     eligibility,
     externalLink,
+    extractedKeywords,
     faq,
     feeLabel,
     learningOutcomes,
+    ncsLabel,
+    participationLabel,
     program,
     programPeriod,
+    ratingDetailLabel,
     recommendedFor,
     reviews,
     supportAmountLabel,
@@ -434,16 +508,18 @@ export default function ProgramDetailClient({
   const sidebarFacts = [
     ["기간", programPeriod],
     ["지역", program.location],
-    ["수강료", feeLabel],
-    ["지원금", supportAmountLabel],
+    ["훈련비", feeLabel],
+    ["자부담금", supportAmountLabel],
     ["운영 방식", program.teaching_method],
+    ["참여 시간", participationLabel],
     ["잔여 정원", typeof program.capacity_remaining === "number" ? `${program.capacity_remaining}명` : null],
   ].filter((entry): entry is [string, string] => Boolean(entry[1]));
   const heroFacts = [
     ["모집 마감", deadlineState.subLabel || deadlineState.label],
     ["교육 기간", programPeriod],
     ["수업 형태", program.teaching_method],
-    ["수강료", feeLabel],
+    ["훈련비", feeLabel],
+    ["자부담금", supportAmountLabel],
     ["잔여 정원", typeof program.capacity_remaining === "number" ? `${program.capacity_remaining}명` : null],
   ].filter((entry): entry is [string, string] => Boolean(entry[1])).slice(0, 5);
   const heroBadges = [program.support_type, deadlineState.active ? "모집 중" : deadlineState.label, program.location].filter(

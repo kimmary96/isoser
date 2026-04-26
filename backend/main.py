@@ -1,20 +1,35 @@
 # FastAPI 앱 진입점 - CORS 설정, 라우터 등록, 서버 시작 시 ChromaDB 초기화
 from contextlib import asynccontextmanager
 import os
+from pathlib import Path
+import sys
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from check_python_version import main as assert_python_version
-from logging_config import configure_logging
-from rag.runtime_config import load_backend_dotenv, resolve_chroma_mode
+BACKEND_DIR = Path(__file__).resolve().parent
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
+try:
+    from backend.check_python_version import main as assert_python_version
+    from backend.logging_config import configure_logging
+    from backend.rag.runtime_config import load_backend_dotenv, resolve_chroma_mode
+except ImportError:
+    from check_python_version import main as assert_python_version
+    from logging_config import configure_logging
+    from rag.runtime_config import load_backend_dotenv, resolve_chroma_mode
 
 configure_logging()
 load_backend_dotenv()
 assert_python_version()
 
-from routers import activities, admin, assistant, bookmarks, coach, company, match, parse, programs, skills, slack
-from rag.chroma_client import get_chroma_health_summary, init_chroma
+try:
+    from backend.routers import activities, admin, assistant, bookmarks, coach, company, match, parse, programs, skills, slack
+    from backend.rag.chroma_client import get_chroma_health_summary, init_chroma
+except ImportError:
+    from routers import activities, admin, assistant, bookmarks, coach, company, match, parse, programs, skills, slack
+    from rag.chroma_client import get_chroma_health_summary, init_chroma
 
 TRUE_ENV_VALUES = {"1", "true", "yes", "on"}
 

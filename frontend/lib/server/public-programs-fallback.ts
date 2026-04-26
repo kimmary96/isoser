@@ -2,7 +2,9 @@ import { unstable_cache } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 import {
   legacyProgramRowToProgramCardSummary,
+  loadProgramCardSummariesByIds,
   readModelRowToProgramCardSummary,
+  type ProgramCardRouteClient,
 } from "@/lib/server/program-card-summary";
 import {
   filterOpenProgramsByReferenceDate,
@@ -582,6 +584,24 @@ async function loadCachedLandingChipFallbackRows(activeChip: string, generatedFo
   return cacheEntry.chipPrograms.get(activeChip) ?? [];
 }
 
+async function refreshSnapshotRowsFromReadModel(programs: ProgramListRow[]): Promise<ProgramListRow[]> {
+  const ids = programs
+    .map((program) => String(program.id ?? "").trim())
+    .filter(Boolean);
+  if (ids.length === 0) {
+    return programs;
+  }
+
+  const readOnlyClient: ProgramCardRouteClient =
+    createPublicReadOnlyClient() as unknown as ProgramCardRouteClient;
+  const freshPrograms = await loadProgramCardSummariesByIds(readOnlyClient, ids);
+  const freshById = new Map(freshPrograms.map((program) => [String(program.id ?? ""), program]));
+  return programs.map((program) => {
+    const fresh = freshById.get(String(program.id ?? ""));
+    return fresh ? mergeProgramRows(fresh, program) : program;
+  });
+}
+
 async function loadUrgentPrograms(today: string, limit: number): Promise<ProgramListRow[]> {
   const [readModelPrograms, legacyPrograms] = await Promise.all([
     loadReadModelPrograms({ limit, sort: "deadline" }),
@@ -654,7 +674,7 @@ export async function loadPublicLandingChipSnapshotRows(activeChip: string): Pro
   const todayKst = getKstTodayDateString();
   const snapshotRows = await loadCachedLandingChipSnapshotRows(activeChip, todayKst);
   if (snapshotRows.length > 0) {
-    return snapshotRows;
+    return refreshSnapshotRowsFromReadModel(snapshotRows).catch(() => snapshotRows);
   }
 
   return loadCachedLandingChipFallbackRows(activeChip, todayKst);

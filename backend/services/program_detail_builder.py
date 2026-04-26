@@ -5,7 +5,11 @@ from typing import Any, Callable, Mapping
 try:
     from backend.schemas.programs import ProgramDetailResponse
     from backend.services.program_list_filters import (
+        _derive_participation_display,
+        _derive_selection_process_label,
+        _extract_program_keywords,
         _first_text,
+        _infer_display_categories,
         _int_or_none,
         _legacy_program_meta,
         _normalize_text_list,
@@ -13,7 +17,11 @@ try:
 except ImportError:
     from schemas.programs import ProgramDetailResponse
     from services.program_list_filters import (
+        _derive_participation_display,
+        _derive_selection_process_label,
+        _extract_program_keywords,
         _first_text,
+        _infer_display_categories,
         _int_or_none,
         _legacy_program_meta,
         _normalize_text_list,
@@ -51,6 +59,44 @@ def _first_int(*values: Any) -> int | None:
         if parsed is not None:
             return parsed
     return None
+
+
+def _detail_training_fee(program: Mapping[str, Any], summary_record: Mapping[str, Any], detail_meta: Mapping[str, Any]) -> int | None:
+    return _first_int(
+        program.get("fee_amount"),
+        detail_meta.get("actual_training_cost"),
+        detail_meta.get("actualTrainingCost"),
+        detail_meta.get("training_fee_total"),
+        detail_meta.get("training_fee"),
+        summary_record.get("cost"),
+    )
+
+
+def _detail_self_pay_amount(
+    program: Mapping[str, Any],
+    summary_record: Mapping[str, Any],
+    detail_meta: Mapping[str, Any],
+    *,
+    training_fee: int | None,
+) -> int | None:
+    explicit_self_pay = _first_int(
+        program.get("verified_self_pay_amount"),
+        detail_meta.get("self_payment"),
+        detail_meta.get("selfPayment"),
+        detail_meta.get("out_of_pocket"),
+        detail_meta.get("outOfPocket"),
+        detail_meta.get("out_of_pocket_amount"),
+        detail_meta.get("outOfPocketAmount"),
+    )
+    if explicit_self_pay is not None:
+        return explicit_self_pay
+
+    support_candidate = _first_int(program.get("support_amount"), summary_record.get("subsidy_amount"))
+    if support_candidate is None:
+        return None
+    if training_fee is not None and support_candidate >= training_fee:
+        return None
+    return support_candidate
 
 
 def _build_program_detail_schedule_fields(
@@ -126,6 +172,15 @@ def build_program_detail_response(
     application_end_date = schedule_fields["application_end_date"]
     program_start_date = schedule_fields["program_start_date"]
     program_end_date = schedule_fields["program_end_date"]
+    participation_label, participation_time_text = _derive_participation_display(summary_record)
+    display_categories = _compact_text_list(
+        summary_record.get("display_categories"),
+        _infer_display_categories(summary_record),
+    )
+    extracted_keywords = _compact_text_list(
+        summary_record.get("extracted_keywords"),
+        _extract_program_keywords(summary_record),
+    )
 
     capacity_total = _first_int(
         program.get("capacity_total"),
@@ -151,6 +206,13 @@ def build_program_detail_response(
     certification = _first_text(detail_meta.get("certificate"))
     if certification and certification not in certification_values:
         certification_values.append(certification)
+    training_fee = _detail_training_fee(program, summary_record, detail_meta)
+    self_pay_amount = _detail_self_pay_amount(
+        program,
+        summary_record,
+        detail_meta,
+        training_fee=training_fee,
+    )
 
     return ProgramDetailResponse(
         id=summary_record.get("id"),
@@ -162,6 +224,12 @@ def build_program_detail_response(
             detail_meta.get("supervising_institution"),
             detail_meta.get("department"),
         ),
+        source=_first_text(summary_record.get("source"), detail_meta.get("source")),
+        category=_first_text(summary_record.get("category"), detail_meta.get("category")),
+        category_detail=_first_text(summary_record.get("category_detail"), detail_meta.get("category_detail")),
+        display_categories=display_categories,
+        ncs_code=_first_text(program.get("ncs_code"), detail_meta.get("ncs_code")),
+        ncs_name=_first_text(program.get("ncs_name"), detail_meta.get("ncs_name")),
         location=_first_text(
             program.get("location_text"),
             summary_record.get("location"),
@@ -169,11 +237,27 @@ def build_program_detail_response(
             summary_record.get("region"),
         ),
         description=_first_text(summary_record.get("description"), summary_record.get("summary")),
+        deadline=_first_text(summary_record.get("deadline"), application_end_date),
+        days_left=_first_int(summary_record.get("days_left")),
         application_start_date=application_start_date,
         application_end_date=application_end_date,
         program_start_date=program_start_date,
         program_end_date=program_end_date,
         teaching_method=_first_text(summary_record.get("teaching_method"), detail_meta.get("teaching_method")),
+        participation_time=_first_text(participation_label, summary_record.get("participation_time")),
+        participation_time_text=participation_time_text,
+        application_method=_first_text(
+            program.get("application_method"),
+            source_specific.get("application_method"),
+            detail_meta.get("application_method"),
+            detail_meta.get("apply_method"),
+        ),
+        selection_process_label=_first_text(
+            summary_record.get("selection_process_label"),
+            detail_meta.get("selection_process"),
+            _derive_selection_process_label(summary_record),
+        ),
+        cost_type=_first_text(summary_record.get("cost_type"), detail_meta.get("cost_type")),
         support_type=_first_text(
             program.get("business_type"),
             summary_record.get("support_type"),
@@ -189,8 +273,8 @@ def build_program_detail_response(
             summary_record.get("source_url"),
             summary_record.get("link"),
         ),
-        fee=_first_int(program.get("fee_amount"), summary_record.get("cost")),
-        support_amount=_first_int(program.get("support_amount"), summary_record.get("subsidy_amount")),
+        fee=training_fee,
+        support_amount=self_pay_amount,
         eligibility=_detail_text_list(
             program.get("eligibility_labels"),
             program.get("target_summary"),
@@ -233,6 +317,7 @@ def build_program_detail_response(
         certifications=certification_values,
         tech_stack=_compact_text_list(summary_record.get("skills")),
         tags=_compact_text_list(summary_record.get("tags")),
+        extracted_keywords=extracted_keywords,
         curriculum=_detail_text_list(
             program.get("curriculum_items"),
             source_specific.get("curriculum_items"),
