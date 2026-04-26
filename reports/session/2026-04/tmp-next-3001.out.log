@@ -1,25 +1,16 @@
 
 > isoser-frontend@0.1.0 dev
-> next dev --port 3001
+> next dev --hostname 127.0.0.1 --port 3001
 
    ▲ Next.js 15.5.15
-   - Local:        http://localhost:3001
-   - Network:      http://192.168.123.100:3001
+   - Local:        http://127.0.0.1:3001
+   - Network:      http://127.0.0.1:3001
    - Environments: .env.local
 
  ✓ Starting...
- ✓ Ready in 1200ms
- ✓ Compiled /middleware in 163ms (167 modules)
- ○ Compiling /programs ...
- ✓ Compiled /programs in 2s (754 modules)
- ✓ Compiled in 360ms (264 modules)
- GET /programs 200 in 19730ms
- GET /programs?teaching_methods=%EC%98%A8%EB%9D%BC%EC%9D%B8 200 in 19992ms
- GET /programs?sources=kstartup 200 in 18524ms
- GET /programs 200 in 145385ms
- ✓ Compiled /api/dashboard/me in 302ms (416 modules)
- GET /api/dashboard/me 401 in 407ms
- ✓ Compiled /programs in 111ms (510 modules)
- GET /programs 200 in 12550ms
- GET /api/dashboard/me 401 in 18ms
-[?25h
+ ✓ Ready in 1197ms
+ ✓ Compiled /middleware in 133ms (167 modules)
+ ○ Compiling /compare ...
+ ✓ Compiled /compare in 1158ms (736 modules)
+ ✓ Compiled in 440ms (270 modules)
+ GET /compare 200 in 1617ms
