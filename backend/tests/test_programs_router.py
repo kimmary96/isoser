@@ -46,6 +46,21 @@ def test_program_surface_serializers_split_base_and_card_layers() -> None:
     assert list_row == card
 
 
+def test_program_surface_serializer_bridges_verified_self_pay_amount() -> None:
+    base = programs._serialize_program_base_summary(
+        {
+            **_sample_program(),
+            "verified_self_pay_amount": 93100,
+            "support_amount": None,
+            "subsidy_amount": None,
+        }
+    )
+
+    assert base["verified_self_pay_amount"] == 93100
+    assert base["support_amount"] == 93100
+    assert base["subsidy_amount"] == 93100
+
+
 def test_serialize_program_recommendation_uses_card_summary_serializer() -> None:
     item = SimpleNamespace(
         program_id="program-1",

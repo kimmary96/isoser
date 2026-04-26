@@ -80,6 +80,38 @@ def test_landing_chip_snapshot_migration_adds_snapshot_table_and_daily_refresh_h
     assert "'온라인'::text" in migration
 
 
+def test_corrective_snapshot_migration_restores_verified_self_pay_and_rpc() -> None:
+    migration = (
+        Path(__file__).resolve().parents[2]
+        / "supabase"
+        / "migrations"
+        / "20260426170000_add_verified_self_pay_surface_and_restore_landing_snapshot_rpc.sql"
+    ).read_text(encoding="utf-8")
+
+    assert "add column if not exists verified_self_pay_amount integer" in migration
+    assert "program_surface_verified_self_pay_amount" in migration
+    assert "'verified_self_pay_amount'" in migration
+    assert "drop function if exists public.refresh_program_landing_chip_snapshots(text, integer);" in migration
+    assert "on conflict on constraint program_landing_chip_snapshots_pkey do update" in migration
+    assert "refresh_program_landing_chip_snapshots" in migration
+    assert "update public.program_list_index\nset indexed_at = indexed_at;" not in migration
+    assert "perform public.refresh_program_landing_chip_snapshots('landing-c', 24);" not in migration
+
+
+def test_followup_snapshot_conflict_fix_migration_is_function_only() -> None:
+    migration = (
+        Path(__file__).resolve().parents[2]
+        / "supabase"
+        / "migrations"
+        / "20260426171000_fix_landing_snapshot_conflict_target.sql"
+    ).read_text(encoding="utf-8")
+
+    assert "drop function if exists public.refresh_program_landing_chip_snapshots(text, integer);" in migration
+    assert "on conflict on constraint program_landing_chip_snapshots_pkey do update" in migration
+    assert "verified_self_pay_amount" in migration
+    assert "alter table public.program_list_index" not in migration
+
+
 def test_refresh_script_runs_delta_batches_then_browse_rpc(monkeypatch) -> None:
     calls: list[tuple[str, dict[str, object]]] = []
     delta_results = [500, 12]

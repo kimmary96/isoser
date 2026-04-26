@@ -21,10 +21,14 @@ for path in (REPO_ROOT, BACKEND_ROOT):
         sys.path.insert(0, path_text)
 
 from backend.rag.collector.kstartup_collector import KstartupApiCollector  # noqa: E402
+from backend.rag.collector.external_program_schedule_parser import (  # noqa: E402
+    fetch_external_program_schedule_fields,
+)
 from backend.rag.collector.normalizer import normalize  # noqa: E402
 from backend.rag.collector.regional_html_collectors import SesacCollector  # noqa: E402
 from backend.rag.collector.work24_collector import Work24Collector  # noqa: E402
 from backend.rag.collector.work24_detail_parser import fetch_work24_detail_fields  # noqa: E402
+from backend.services.program_dual_write import merge_program_dual_write_fields  # noqa: E402
 
 
 BACKFILL_FIELDS = (
@@ -42,7 +46,27 @@ BACKFILL_FIELDS = (
     "tags",
     "skills",
     "compare_meta",
+    "service_meta",
     "raw_data",
+    "application_start_date",
+    "application_end_date",
+    "program_start_date",
+    "program_end_date",
+    "fee_amount",
+    "support_amount",
+)
+KSTARTUP_SCHEDULE_HINTS = (
+    "교육",
+    "멘토링",
+    "컨설팅",
+    "아카데미",
+    "세미나",
+    "설명회",
+    "행사",
+    "워크숍",
+    "강연",
+    "데모데이",
+    "네트워킹",
 )
 
 
@@ -183,16 +207,102 @@ def merge_compare_meta(current: Any, incoming: Any, *, overwrite: bool) -> dict[
     for key, value in incoming.items():
         if is_blank(value):
             continue
+        if key == "field_sources" and isinstance(value, dict):
+            existing_sources = merged.get("field_sources") if isinstance(merged.get("field_sources"), dict) else {}
+            merged["field_sources"] = {
+                **existing_sources,
+                **{str(field_key): field_value for field_key, field_value in value.items() if not is_blank(field_value)},
+            }
+            continue
         if overwrite or is_blank(merged.get(key)):
             merged[key] = value
     return merged or None
 
 
+def merge_normalized_record(
+    base: dict[str, Any],
+    incoming: dict[str, Any],
+    *,
+    overwrite: bool,
+) -> dict[str, Any]:
+    merged = dict(base)
+    for key, value in incoming.items():
+        if is_blank(value):
+            continue
+        if key == "compare_meta":
+            merged_meta = merge_compare_meta(merged.get("compare_meta"), value, overwrite=overwrite)
+            if merged_meta:
+                merged["compare_meta"] = merged_meta
+            continue
+        if overwrite or is_blank(merged.get(key)):
+            merged[key] = value
+    return merged
+
+
+def should_enrich_work24_detail(normalized: dict[str, Any]) -> bool:
+    if source_family(normalized) != "work24":
+        return False
+    cost = normalized.get("cost")
+    subsidy_amount = normalized.get("subsidy_amount")
+    compare_meta = normalized.get("compare_meta") if isinstance(normalized.get("compare_meta"), dict) else {}
+    if any(compare_meta.get(key) not in (None, "", [], {}) for key in ("self_payment", "out_of_pocket", "support_amount")):
+        return False
+    return isinstance(cost, int) and isinstance(subsidy_amount, int) and subsidy_amount >= cost
+
+
+def should_enrich_kstartup_schedule(normalized: dict[str, Any]) -> bool:
+    if source_family(normalized) != "kstartup":
+        return False
+    compare_meta = normalized.get("compare_meta") if isinstance(normalized.get("compare_meta"), dict) else {}
+    if any(compare_meta.get(key) not in (None, "", [], {}) for key in ("program_start_date", "program_end_date", "schedule_text")):
+        return False
+    application_url = nested_text(normalized, ("compare_meta.application_url",))
+    if not application_url.startswith(("http://", "https://")) or "k-startup.go.kr" in application_url.lower():
+        return False
+    hint_text = " ".join(
+        filter(
+            None,
+            (
+                str(normalized.get("title") or "").strip(),
+                str(compare_meta.get("business_type") or "").strip(),
+                str(normalized.get("description") or "").strip(),
+            ),
+        )
+    )
+    return any(keyword in hint_text for keyword in KSTARTUP_SCHEDULE_HINTS)
+
+
+def enrich_source_record(record: SourceRecord) -> SourceRecord:
+    normalized = dict(record.normalized)
+
+    if should_enrich_work24_detail(normalized):
+        detail_record = fetch_work24_record_from_detail_url(normalized)
+        if detail_record is not None:
+            normalized = merge_normalized_record(normalized, detail_record.normalized, overwrite=True)
+
+    if should_enrich_kstartup_schedule(normalized):
+        application_url = nested_text(normalized, ("compare_meta.application_url",))
+        try:
+            fetched = fetch_external_program_schedule_fields(source_url=application_url)
+        except Exception:
+            fetched = None
+        if isinstance(fetched, dict):
+            normalized = merge_normalized_record(normalized, fetched, overwrite=True)
+
+    return SourceRecord(
+        source=record.source,
+        match_key=record.match_key,
+        normalized=normalized,
+        raw=record.raw,
+    )
+
+
 def build_patch(db_row: dict[str, Any], normalized: dict[str, Any], *, overwrite: bool) -> dict[str, Any]:
+    normalized = merge_program_dual_write_fields(dict(normalized))
     patch: dict[str, Any] = {}
     for field in BACKFILL_FIELDS:
         incoming = normalized.get(field)
-        if field == "compare_meta":
+        if field in {"compare_meta", "service_meta"}:
             merged = merge_compare_meta(db_row.get(field), incoming, overwrite=overwrite)
             if merged and merged != db_row.get(field):
                 patch[field] = merged
@@ -507,17 +617,18 @@ def collect_source_records(max_pages: int) -> dict[str, SourceRecord]:
                 normalized=normalized,
                 raw=mapped.get("raw") if isinstance(mapped.get("raw"), dict) else {},
             )
+            record = enrich_source_record(record)
             records[key] = record
             if source_family(normalized) == "work24":
-                url_key = work24_url_key(normalized)
+                url_key = work24_url_key(record.normalized)
                 if url_key:
                     records[url_key] = record
             if source_family(normalized) == "kstartup":
-                url_key = kstartup_url_key(normalized)
+                url_key = kstartup_url_key(record.normalized)
                 if url_key:
                     records[url_key] = record
             if source_family(normalized) == "sesac":
-                key = sesac_key(normalized)
+                key = sesac_key(record.normalized)
                 if key:
                     records[key] = record
     return records
@@ -568,12 +679,12 @@ def fetch_kstartup_record_by_announcement_id(announcement_id: str) -> SourceReco
     key = source_key(normalized)
     if not key:
         return None
-    return SourceRecord(
+    return enrich_source_record(SourceRecord(
         source=str(normalized.get("source") or ""),
         match_key=key,
         normalized=normalized,
         raw=items[0],
-    )
+    ))
 
 
 def build_report(

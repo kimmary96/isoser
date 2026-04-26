@@ -27,6 +27,8 @@ class ProgramListItem(BaseModel):
     start_date: str | None = None
     end_date: str | None = None
     cost: int | str | None = None
+    support_amount: int | str | None = None
+    verified_self_pay_amount: int | str | None = None
     cost_type: str | None = None
     participation_time: str | None = None
     subsidy_amount: int | str | None = None

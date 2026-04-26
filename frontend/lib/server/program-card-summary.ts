@@ -97,6 +97,22 @@ function asCompareMeta(value: unknown): CompareMeta | null {
   return value as CompareMeta;
 }
 
+function supportAmountValue(row: Record<string, unknown>): number | string | null {
+  if (
+    typeof row.verified_self_pay_amount === "number" ||
+    typeof row.verified_self_pay_amount === "string"
+  ) {
+    return row.verified_self_pay_amount as number | string;
+  }
+  if (typeof row.support_amount === "number" || typeof row.support_amount === "string") {
+    return row.support_amount as number | string;
+  }
+  if (typeof row.subsidy_amount === "number" || typeof row.subsidy_amount === "string") {
+    return row.subsidy_amount as number | string;
+  }
+  return null;
+}
+
 function normalizeProgramIds(programIds: string[]): string[] {
   const seen = new Set<string>();
   const orderedIds: string[] = [];
@@ -162,12 +178,12 @@ export function readModelRowToProgramCardSummary(row: Record<string, unknown>): 
       typeof row.cost === "number" || typeof row.cost === "string"
         ? (row.cost as number | string)
         : null,
-    support_amount:
-      typeof row.support_amount === "number" || typeof row.support_amount === "string"
-        ? (row.support_amount as number | string)
-        : typeof row.subsidy_amount === "number" || typeof row.subsidy_amount === "string"
-          ? (row.subsidy_amount as number | string)
-          : null,
+    support_amount: supportAmountValue(row),
+    verified_self_pay_amount:
+      typeof row.verified_self_pay_amount === "number" ||
+      typeof row.verified_self_pay_amount === "string"
+        ? (row.verified_self_pay_amount as number | string)
+        : null,
     cost_type: cleanText(row.cost_type),
     support_type: cleanText(row.support_type),
     teaching_method: cleanText(row.teaching_method_label) ?? cleanText(row.teaching_method),
@@ -185,12 +201,7 @@ export function readModelRowToProgramCardSummary(row: Record<string, unknown>): 
     application_method: cleanText(row.application_method),
     participation_time:
       cleanText(row.program_period_label) ?? cleanText(row.participation_time),
-    subsidy_amount:
-      typeof row.support_amount === "number" || typeof row.support_amount === "string"
-        ? (row.support_amount as number | string)
-        : typeof row.subsidy_amount === "number" || typeof row.subsidy_amount === "string"
-          ? (row.subsidy_amount as number | string)
-        : null,
+    subsidy_amount: supportAmountValue(row),
     display_categories: asStringArray(row.display_categories),
     participation_mode_label:
       cleanText(row.recruiting_status_label) ?? cleanText(row.participation_mode_label),
@@ -250,12 +261,12 @@ export function legacyProgramRowToProgramCardSummary(row: Record<string, unknown
       typeof row.cost === "number" || typeof row.cost === "string"
         ? (row.cost as number | string)
         : null,
-    support_amount:
-      typeof row.support_amount === "number" || typeof row.support_amount === "string"
-        ? (row.support_amount as number | string)
-        : typeof row.subsidy_amount === "number" || typeof row.subsidy_amount === "string"
-          ? (row.subsidy_amount as number | string)
-          : null,
+    support_amount: supportAmountValue(row),
+    verified_self_pay_amount:
+      typeof row.verified_self_pay_amount === "number" ||
+      typeof row.verified_self_pay_amount === "string"
+        ? (row.verified_self_pay_amount as number | string)
+        : null,
     cost_type: cleanText(row.cost_type),
     support_type: cleanText(row.support_type),
     teaching_method: cleanText(row.teaching_method),
@@ -272,12 +283,7 @@ export function legacyProgramRowToProgramCardSummary(row: Record<string, unknown
     application_url: applicationUrl,
     application_method: cleanText(row.application_method),
     participation_time: cleanText(row.participation_time),
-    subsidy_amount:
-      typeof row.support_amount === "number" || typeof row.support_amount === "string"
-        ? (row.support_amount as number | string)
-        : typeof row.subsidy_amount === "number" || typeof row.subsidy_amount === "string"
-          ? (row.subsidy_amount as number | string)
-        : null,
+    subsidy_amount: supportAmountValue(row),
     display_categories: asStringArray(row.display_categories),
     participation_mode_label: cleanText(row.participation_mode_label),
     participation_time_text: cleanText(row.participation_time_text),

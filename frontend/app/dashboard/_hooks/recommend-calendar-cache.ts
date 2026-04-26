@@ -49,6 +49,22 @@ function asBoolean(value: unknown): boolean | null {
   return typeof value === "boolean" ? value : null;
 }
 
+function supportAmountValue(record: Record<string, unknown>): number | string | null {
+  if (
+    typeof record.verified_self_pay_amount === "number" ||
+    typeof record.verified_self_pay_amount === "string"
+  ) {
+    return record.verified_self_pay_amount as number | string;
+  }
+  if (typeof record.support_amount === "number" || typeof record.support_amount === "string") {
+    return record.support_amount as number | string;
+  }
+  if (typeof record.subsidy_amount === "number" || typeof record.subsidy_amount === "string") {
+    return record.subsidy_amount as number | string;
+  }
+  return null;
+}
+
 function normalizeLegacyCachedProgram(value: unknown): ProgramCardSummary | null {
   if (!value || typeof value !== "object") {
     return null;
@@ -84,12 +100,12 @@ function normalizeLegacyCachedProgram(value: unknown): ProgramCardSummary | null
       typeof record.cost === "number" || typeof record.cost === "string"
         ? (record.cost as number | string)
         : null,
-    support_amount:
-      typeof record.support_amount === "number" || typeof record.support_amount === "string"
-        ? (record.support_amount as number | string)
-        : typeof record.subsidy_amount === "number" || typeof record.subsidy_amount === "string"
-          ? (record.subsidy_amount as number | string)
-          : null,
+    support_amount: supportAmountValue(record),
+    verified_self_pay_amount:
+      typeof record.verified_self_pay_amount === "number" ||
+      typeof record.verified_self_pay_amount === "string"
+        ? (record.verified_self_pay_amount as number | string)
+        : null,
     cost_type: cleanText(record.cost_type),
     support_type: cleanText(record.support_type),
     teaching_method: cleanText(record.teaching_method),
@@ -109,10 +125,7 @@ function normalizeLegacyCachedProgram(value: unknown): ProgramCardSummary | null
     application_url: cleanText(record.application_url),
     application_method: cleanText(record.application_method),
     participation_time: cleanText(record.participation_time),
-    subsidy_amount:
-      typeof record.subsidy_amount === "number" || typeof record.subsidy_amount === "string"
-        ? (record.subsidy_amount as number | string)
-        : null,
+    subsidy_amount: supportAmountValue(record),
     display_categories: Array.isArray(record.display_categories)
       ? record.display_categories
           .map((item) => cleanText(item))

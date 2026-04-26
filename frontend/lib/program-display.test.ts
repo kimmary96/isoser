@@ -191,7 +191,7 @@ describe("program display legacy compare_meta bridge", () => {
       ...directProgram,
       support_amount: null,
       compare_meta: {
-        actualTrainingCost: "93,100",
+        outOfPocketAmount: "93,100",
       } satisfies CompareMeta,
     };
 
@@ -200,6 +200,53 @@ describe("program display legacy compare_meta bridge", () => {
     expect(getProgramOutOfPocketAmount(metaProgram)).toBe(93100);
     expect(formatProgramCostLabel(metaProgram)).toBe("93,100원");
   });
+
+  it("prefers verified_self_pay_amount when read-model rows expose it explicitly", () => {
+    const program = {
+      cost: 265980,
+      verified_self_pay_amount: 93100,
+      support_amount: 265980,
+      subsidy_amount: 265980,
+      support_type: "훈련비 지원",
+      teaching_method: "오프라인",
+      application_method: null,
+      location: "부산",
+      source: "고용24",
+      title: "스케치업 과정",
+      summary: null,
+      description: null,
+      rating: null,
+      rating_display: null,
+      review_count: 0,
+      compare_meta: null,
+    };
+
+    expect(getProgramOutOfPocketAmount(program)).toBe(93100);
+    expect(formatProgramCostLabel(program)).toBe("93,100원");
+  });
+
+  it("does not show total training cost as out-of-pocket when work24 self-payment evidence is missing", () => {
+    const program = {
+      cost: 265980,
+      subsidy_amount: 265980,
+      support_type: "훈련비 지원",
+      teaching_method: "오프라인",
+      application_method: null,
+      location: "부산",
+      source: "고용24",
+      title: "스케치업 과정",
+      summary: null,
+      description: null,
+      rating: null,
+      rating_display: null,
+      review_count: 0,
+      compare_meta: null,
+    };
+
+    expect(getProgramOutOfPocketAmount(program)).toBeNull();
+    expect(formatProgramCostLabel(program)).toBe("자부담 정보 확인 필요");
+  });
+
 });
 
 describe("program schedule display helpers", () => {

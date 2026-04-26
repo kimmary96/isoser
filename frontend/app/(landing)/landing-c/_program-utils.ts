@@ -59,21 +59,8 @@ function parseMetricNumber(value: string | number | null | undefined): number | 
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-function formatWon(value: string | number | null | undefined): string | null {
-  const amount = parseMetricNumber(value);
-  if (amount === null) {
-    return null;
-  }
-
-  if (amount === 0) {
-    return "무료";
-  }
-
-  return `${amount.toLocaleString("ko-KR")}원`;
-}
-
 function trainingFeeLabel(program: ProgramListRow): string {
-  return formatProgramCostLabel(program) || formatWon(program.cost) || "확인 필요";
+  return formatProgramCostLabel(program) || "확인 필요";
 }
 
 export function trainingPeriodLabel(program: ProgramListRow): string {

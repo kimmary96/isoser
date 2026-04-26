@@ -336,6 +336,7 @@ type ProgramInsightSource = Pick<
   ProgramCardSummary,
   | "cost"
   | "support_amount"
+  | "verified_self_pay_amount"
   | "support_type"
   | "subsidy_amount"
   | "teaching_method"
@@ -403,15 +404,22 @@ function formatMetricWon(value: number | null): string | null {
   return value === 0 ? "무료" : `${value.toLocaleString("ko-KR")}원`;
 }
 
+function hasExplicitFreeFundingText(text: string | null | undefined): boolean {
+  return /무료|전액\s*지원|전액지원|100%\s*지원|100%\s*무료/u.test(text ?? "");
+}
+
+function hasAmbiguousSupportedFundingText(text: string | null | undefined): boolean {
+  return /내일배움|국비|자부담|훈련비\s*지원|수강료\s*지원|지원/u.test(text ?? "");
+}
+
 export function getProgramOutOfPocketAmount(program: ProgramInsightSource): number | null {
   const compareMeta = getLegacyProgramMetaRecord(program);
   for (const value of [
+    program.verified_self_pay_amount,
     program.support_amount,
     getLegacyMetaValue(compareMeta, ["self_payment", "selfPayment"]),
     getLegacyMetaValue(compareMeta, ["out_of_pocket", "outOfPocket"]),
     getLegacyMetaValue(compareMeta, ["out_of_pocket_amount", "outOfPocketAmount"]),
-    getLegacyMetaValue(compareMeta, ["actual_training_cost", "actualTrainingCost"]),
-    getLegacyMetaValue(compareMeta, ["real_man", "realMan"]),
     getLegacyMetaValue(compareMeta, ["support_amount", "supportAmount"]),
   ]) {
     const parsed = parseMetricNumber(value);
@@ -420,7 +428,8 @@ export function getProgramOutOfPocketAmount(program: ProgramInsightSource): numb
     }
   }
 
-  const directAmount = parseMetricNumber(program.subsidy_amount);
+  const directAmount =
+    isWork24ProgramSource(program.source) ? null : parseMetricNumber(program.subsidy_amount);
   if (directAmount !== null) {
     return Math.max(0, directAmount);
   }
@@ -433,6 +442,19 @@ export function formatProgramCostLabel(program: ProgramInsightSource): string | 
   const outOfPocketAmount = getProgramOutOfPocketAmount(program);
   if (outOfPocketAmount !== null) {
     return formatMetricWon(outOfPocketAmount);
+  }
+
+  const explicitSupportText =
+    cleanText(program.support_type) ?? normalizeMetaText(compareMeta?.subsidy_rate);
+  if (hasExplicitFreeFundingText(explicitSupportText)) {
+    return explicitSupportText ?? "전액지원";
+  }
+
+  if (
+    isWork24ProgramSource(program.source) ||
+    hasAmbiguousSupportedFundingText(explicitSupportText)
+  ) {
+    return "자부담 정보 확인 필요";
   }
 
   const directCost = parseMetricNumber(program.cost);

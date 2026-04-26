@@ -5,7 +5,45 @@ from datetime import date, datetime
 import re
 from typing import Any
 
+try:
+    from backend.rag.collector.external_program_schedule_parser import (
+        fetch_external_program_schedule_fields,
+    )
+    from backend.rag.collector.work24_detail_parser import fetch_work24_detail_fields
+except ImportError:
+    from rag.collector.external_program_schedule_parser import (  # type: ignore
+        fetch_external_program_schedule_fields,
+    )
+    from rag.collector.work24_detail_parser import fetch_work24_detail_fields  # type: ignore
+
 _MISSING_COLUMN_PATTERN = re.compile(r"Could not find the '([^']+)' column", flags=re.IGNORECASE)
+PROGRAM_DATE_START_META_KEYS = (
+    "program_start_date",
+    "training_start_date",
+    "course_start_date",
+    "event_start_date",
+    "schedule_start_date",
+)
+PROGRAM_DATE_END_META_KEYS = (
+    "program_end_date",
+    "training_end_date",
+    "course_end_date",
+    "event_end_date",
+    "schedule_end_date",
+)
+KSTARTUP_SCHEDULE_HINTS = (
+    "교육",
+    "멘토링",
+    "컨설팅",
+    "아카데미",
+    "세미나",
+    "설명회",
+    "행사",
+    "워크숍",
+    "강연",
+    "데모데이",
+    "네트워킹",
+)
 
 
 def clean_text(value: Any) -> str | None:
@@ -220,6 +258,177 @@ def _uses_training_start_deadline(compare_meta: dict[str, Any], application_end_
     return uses_training_start_deadline_marker(compare_meta, application_end_date=application_end_date)
 
 
+def _merge_meta_dicts(
+    base_meta: dict[str, Any],
+    incoming_meta: dict[str, Any],
+) -> dict[str, Any]:
+    merged = dict(base_meta)
+    merged_field_sources = dict(base_meta.get("field_sources") or {}) if isinstance(base_meta.get("field_sources"), dict) else {}
+    incoming_field_sources = incoming_meta.get("field_sources")
+    if isinstance(incoming_field_sources, dict):
+        merged_field_sources.update(
+            {
+                str(key): value
+                for key, value in incoming_field_sources.items()
+                if value not in (None, "", [], {})
+            }
+        )
+
+    for key, value in incoming_meta.items():
+        if key == "field_sources" or value in (None, "", [], {}):
+            continue
+        merged[str(key)] = value
+
+    if merged_field_sources:
+        merged["field_sources"] = merged_field_sources
+    return merged
+
+
+def _is_external_kstartup_url(url: str | None) -> bool:
+    normalized = str(url or "").strip().lower()
+    if not normalized.startswith(("http://", "https://")):
+        return False
+    return "k-startup.go.kr" not in normalized and "kstartup.go.kr" not in normalized
+
+
+def _is_work24_detail_url(url: str | None) -> bool:
+    normalized = str(url or "").strip().lower()
+    return normalized.startswith(("http://", "https://")) and "work24.go.kr" in normalized
+
+
+def _looks_like_work24_out_of_pocket_candidate(source_row: dict[str, Any], compare_meta: dict[str, Any]) -> bool:
+    source_label = clean_text(source_row.get("source")) or ""
+    if program_source_code_from_label(source_label) != "work24":
+        return False
+
+    if any(
+        compare_meta.get(key) not in (None, "", [], {})
+        for key in ("self_payment", "selfPayment", "out_of_pocket", "outOfPocket")
+    ):
+        return False
+
+    source_url = pick_first_text(source_row.get("source_url"), source_row.get("link"), compare_meta.get("source_url"))
+    if not _is_work24_detail_url(source_url):
+        return False
+
+    cost = parse_int(source_row.get("cost"))
+    listed_amount = parse_int(source_row.get("subsidy_amount"))
+    return cost is not None and listed_amount is not None and listed_amount >= cost
+
+
+def _merge_source_row_details(source_row: dict[str, Any], incoming: dict[str, Any]) -> dict[str, Any]:
+    merged = dict(source_row)
+    for key, value in incoming.items():
+        if value in (None, "", [], {}):
+            continue
+        if key == "compare_meta":
+            incoming_meta = value if isinstance(value, dict) else {}
+            merged["compare_meta"] = _merge_meta_dicts(_compare_meta(source_row), incoming_meta)
+            continue
+        merged[str(key)] = value
+    return merged
+
+
+def _maybe_attach_work24_detail_fields(source_row: dict[str, Any]) -> dict[str, Any]:
+    compare_meta = _compare_meta(source_row)
+    if not _looks_like_work24_out_of_pocket_candidate(source_row, compare_meta):
+        return source_row
+
+    source_url = pick_first_text(source_row.get("source_url"), source_row.get("link"), compare_meta.get("source_url"))
+    title = clean_text(source_row.get("title")) or ""
+    if not source_url:
+        return source_row
+
+    try:
+        fetched = fetch_work24_detail_fields(source_url=source_url, title=title)
+    except Exception:
+        return source_row
+
+    if not isinstance(fetched, dict) or not fetched:
+        return source_row
+
+    return _merge_source_row_details(source_row, fetched)
+
+
+def _looks_like_kstartup_schedule_candidate(source_row: dict[str, Any], compare_meta: dict[str, Any]) -> bool:
+    application_url = pick_first_text(source_row.get("application_url"), compare_meta.get("application_url"))
+    if not _is_external_kstartup_url(application_url):
+        return False
+    if pick_first_text(
+        compare_meta.get("program_start_date"),
+        compare_meta.get("program_end_date"),
+        compare_meta.get("schedule_text"),
+    ):
+        return False
+
+    hint_text = " ".join(
+        filter(
+            None,
+            (
+                clean_text(source_row.get("title")) or "",
+                clean_text(source_row.get("business_type")) or "",
+                clean_text(compare_meta.get("business_type")) or "",
+                clean_text(source_row.get("description")) or "",
+            ),
+        )
+    )
+    return any(keyword in hint_text for keyword in KSTARTUP_SCHEDULE_HINTS)
+
+
+def _maybe_attach_kstartup_schedule_details(source_row: dict[str, Any]) -> dict[str, Any]:
+    compare_meta = _compare_meta(source_row)
+    if not _looks_like_kstartup_schedule_candidate(source_row, compare_meta):
+        return source_row
+
+    application_url = pick_first_text(source_row.get("application_url"), compare_meta.get("application_url"))
+    if not application_url:
+        return source_row
+
+    try:
+        fetched = fetch_external_program_schedule_fields(source_url=application_url)
+    except Exception:
+        return source_row
+
+    fetched_meta = fetched.get("compare_meta") if isinstance(fetched, dict) and isinstance(fetched.get("compare_meta"), dict) else {}
+    if not fetched_meta:
+        return source_row
+
+    merged = dict(source_row)
+    merged["compare_meta"] = _merge_meta_dicts(compare_meta, fetched_meta)
+    return merged
+
+
+def _program_schedule_date_from_meta(compare_meta: dict[str, Any], keys: tuple[str, ...]) -> str | None:
+    return parse_date_text(
+        pick_first_text(*(compare_meta.get(key) for key in keys))
+    )
+
+
+def _resolve_program_schedule_dates(
+    source_code: str,
+    source_row: dict[str, Any],
+    compare_meta: dict[str, Any],
+) -> tuple[str | None, str | None]:
+    explicit_program_start = parse_date_text(source_row.get("program_start_date"))
+    explicit_program_end = parse_date_text(source_row.get("program_end_date"))
+    meta_program_start = _program_schedule_date_from_meta(compare_meta, PROGRAM_DATE_START_META_KEYS)
+    meta_program_end = _program_schedule_date_from_meta(compare_meta, PROGRAM_DATE_END_META_KEYS)
+
+    if source_code == "kstartup":
+        return explicit_program_start or meta_program_start, explicit_program_end or meta_program_end
+
+    if source_code == "work24":
+        return (
+            explicit_program_start or parse_date_text(source_row.get("start_date")) or meta_program_start,
+            explicit_program_end or parse_date_text(source_row.get("end_date")) or meta_program_end,
+        )
+
+    return (
+        explicit_program_start or meta_program_start or parse_date_text(source_row.get("start_date")),
+        explicit_program_end or meta_program_end or parse_date_text(source_row.get("end_date")),
+    )
+
+
 def _eligibility_labels(source_row: dict[str, Any]) -> list[str] | None:
     compare_meta = _legacy_source_meta(source_row)
     values: list[str] = []
@@ -273,15 +482,32 @@ def build_program_additive_fields(source_row: dict[str, Any]) -> dict[str, Any]:
     application_url = pick_first_text(source_row.get("application_url"), compare_meta.get("application_url"))
     source_url = clean_text(source_row.get("source_url"))
     detail_url = _detail_url_from_source_row(source_row, application_url, source_url)
-    application_end_date = parse_date_text(
-        pick_first_text(
+    application_start_candidates = [
+        compare_meta.get("application_start_date"),
+        compare_meta.get("recruitment_start_date"),
+        compare_meta.get("registration_start_date"),
+    ]
+    if source_code == "kstartup":
+        application_start_candidates.append(source_row.get("start_date"))
+    application_end_candidates = [
+        compare_meta.get("application_deadline"),
+        compare_meta.get("recruitment_deadline"),
+        compare_meta.get("application_end_date"),
+        compare_meta.get("recruitment_end_date"),
+        source_row.get("deadline"),
+    ]
+    if source_code != "kstartup":
+        application_end_candidates = [
             source_row.get("deadline"),
             compare_meta.get("application_deadline"),
             compare_meta.get("recruitment_deadline"),
             compare_meta.get("application_end_date"),
             compare_meta.get("recruitment_end_date"),
-        )
+        ]
+    application_end_date = parse_date_text(
+        pick_first_text(*application_end_candidates)
     )
+    program_start_date, program_end_date = _resolve_program_schedule_dates(source_code, source_row, compare_meta)
     target_summary = clean_text_list(source_row.get("target"))
     target_detail = pick_first_text(
         compare_meta.get("target"),
@@ -318,16 +544,10 @@ def build_program_additive_fields(source_row: dict[str, Any]) -> dict[str, Any]:
             source_row.get("region_detail"),
             source_row.get("region"),
         ),
-        "application_start_date": parse_date_text(
-            pick_first_text(
-                compare_meta.get("application_start_date"),
-                compare_meta.get("recruitment_start_date"),
-                compare_meta.get("registration_start_date"),
-            )
-        ),
+        "application_start_date": parse_date_text(pick_first_text(*application_start_candidates)),
         "application_end_date": application_end_date,
-        "program_start_date": parse_date_text(source_row.get("start_date")),
-        "program_end_date": parse_date_text(source_row.get("end_date")),
+        "program_start_date": program_start_date,
+        "program_end_date": program_end_date,
         "deadline_confidence": deadline_confidence,
         "detail_url": detail_url,
         "fee_amount": parse_int(source_row.get("cost")),
@@ -356,8 +576,9 @@ def build_program_additive_fields(source_row: dict[str, Any]) -> dict[str, Any]:
 
 
 def merge_program_dual_write_fields(source_row: dict[str, Any]) -> dict[str, Any]:
-    merged = dict(source_row)
-    merged.update(build_program_additive_fields(source_row))
+    merged = _maybe_attach_work24_detail_fields(dict(source_row))
+    merged = _maybe_attach_kstartup_schedule_details(merged)
+    merged.update(build_program_additive_fields(merged))
     return merged
 
 

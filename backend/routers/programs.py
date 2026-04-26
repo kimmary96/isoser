@@ -443,6 +443,11 @@ OFFLINE_KEYWORDS = ("오프라인", "대면", "현장")
 def _serialize_program_base_summary(program: Mapping[str, Any]) -> dict[str, Any]:
     record = dict(program)
     legacy_meta = _legacy_program_meta(record)
+    verified_self_pay_amount = record.get("verified_self_pay_amount")
+    if record.get("support_amount") in (None, "") and verified_self_pay_amount not in (None, ""):
+        record["support_amount"] = verified_self_pay_amount
+    if record.get("subsidy_amount") in (None, "") and record.get("support_amount") not in (None, ""):
+        record["subsidy_amount"] = record.get("support_amount")
     record.update(_normalize_rating_fields(record.get("rating") or legacy_meta.get("satisfaction_score")))
     record["teaching_method"] = _derive_teaching_method(record)
     deadline = _resolve_program_deadline(record)

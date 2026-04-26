@@ -298,6 +298,7 @@ export interface ProgramBaseSummary {
   end_date?: string | null;
   cost?: number | string | null;
   support_amount?: number | string | null;
+  verified_self_pay_amount?: number | string | null;
   cost_type?: string | null;
   support_type?: string | null;
   teaching_method?: string | null;
@@ -422,6 +423,7 @@ export interface Program {
   end_date?: string | null;
   cost?: number | string | null;
   support_amount?: number | string | null;
+  verified_self_pay_amount?: number | string | null;
   cost_type?: string | null;
   participation_time?: string | null;
   subsidy_amount?: number | string | null;

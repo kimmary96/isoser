@@ -118,6 +118,23 @@ describe("program card summary loader", () => {
     });
   });
 
+  it("prefers verified_self_pay_amount over legacy support aliases", () => {
+    expect(
+      readModelRowToProgramCardSummary({
+        id: "program-c",
+        title: "검증 자부담 테스트",
+        verified_self_pay_amount: 93100,
+        support_amount: 265980,
+        subsidy_amount: 265980,
+      }),
+    ).toMatchObject({
+      id: "program-c",
+      verified_self_pay_amount: 93100,
+      support_amount: 93100,
+      subsidy_amount: 93100,
+    });
+  });
+
   it("keeps compare_meta on summary rows so display helpers can prefer self-payment fields", () => {
     expect(
       readModelRowToProgramCardSummary({
