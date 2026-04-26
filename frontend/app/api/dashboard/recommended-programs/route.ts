@@ -439,11 +439,16 @@ export async function GET(request: Request) {
 
     const supabase = await createServerSupabaseClient();
     const {
-      data: { session },
+      data: { user },
       error,
+    } = await supabase.auth.getUser();
+
+    const {
+      data: { session: authSession },
+      error: sessionError,
     } = await supabase.auth.getSession();
 
-    const accessToken = !error && session?.access_token ? session.access_token : null;
+    const accessToken = !sessionError && authSession?.access_token ? authSession.access_token : null;
     const headers: HeadersInit = {
       "Content-Type": "application/json",
     };
@@ -452,36 +457,78 @@ export async function GET(request: Request) {
       headers.Authorization = `Bearer ${accessToken}`;
     }
 
-    const response = await fetchBackendResponse(
-      "/programs/recommend",
-      {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          top_k: 9,
-          category,
-          region,
-          force_refresh: forceRefresh,
-        }),
-      },
-      { timeoutMs: BACKEND_RECOMMEND_TIMEOUT_MS },
-    );
+    const engineItems: ProgramCardItem[] = [];
+    if (accessToken) {
+      try {
+        const response = await fetchBackendResponse(
+          "/programs/recommend",
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify({
+              top_k: RECOMMENDATION_LIMIT,
+              category,
+              region,
+              force_refresh: forceRefresh,
+            }),
+          },
+          { timeoutMs: BACKEND_RECOMMEND_TIMEOUT_MS },
+        );
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      const message = errorData?.error || errorData?.detail || DASHBOARD_COPY.programs.loadError;
-      return apiError(message, response.status, "BAD_REQUEST");
+        if (response.ok) {
+          const data = (await response.json()) as ProgramRecommendResponse;
+          engineItems.push(
+            ...(data.items ?? [])
+              .map(toRecommendationProgramCardItem)
+              .filter((item): item is ProgramCardItem => Boolean(item))
+              .filter(isProgramCardOpen)
+          );
+        }
+      } catch {
+        // User DB and open-quality fallback below keep the dashboard populated.
+      }
     }
 
-    const data = (await response.json()) as ProgramRecommendResponse;
-    const items = (data.items ?? [])
-      .map(toRecommendationProgramCardItem)
-      .filter((item): item is ProgramCardItem => Boolean(item))
-      .filter(isProgramCardOpen)
-      .slice(0, 9);
+    let fallbackSupabase: ProgramCardDeadlineRouteClient;
+    try {
+      fallbackSupabase = createServiceRoleSupabaseClient() as unknown as ProgramCardDeadlineRouteClient;
+    } catch {
+      fallbackSupabase = supabase as unknown as ProgramCardDeadlineRouteClient;
+    }
+
+    const candidatePrograms = (
+      await loadOpenCandidatePrograms(fallbackSupabase, CANDIDATE_POOL_LIMIT)
+    ).filter((program) => isProgramCardOpen({ program }));
+    const userTerms = !error && user?.id ? await loadUserRecommendationTerms(supabase, user.id) : [];
+
+    const userDbItems = candidatePrograms
+      .map((program) => ({
+        program,
+        score: scoreProgramAgainstTerms(program, userTerms),
+      }))
+      .filter((item) => item.score > 0)
+      .sort((left, right) => {
+        const scoreDiff = right.score - left.score;
+        if (scoreDiff !== 0) return scoreDiff;
+        return qualityScore(right.program) - qualityScore(left.program);
+      })
+      .map((item) => toUserDbMatchItem(item.program, item.score))
+      .filter((item): item is ProgramCardItem => Boolean(item));
+
+    const qualityItems = candidatePrograms
+      .map((program) => ({ program, score: qualityScore(program) }))
+      .sort((left, right) => right.score - left.score)
+      .map((item) => toQualityFallbackItem(item.program, item.score))
+      .filter((item): item is ProgramCardItem => Boolean(item));
+
+    const items = dedupeAndFill(
+      [engineItems, userDbItems, qualityItems],
+      RECOMMENDATION_LIMIT
+    );
 
     return apiOk<DashboardRecommendedProgramsResponse>({ items });
-  } catch {
-    return apiOk<DashboardRecommendedProgramsResponse>({ items: [] });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : DASHBOARD_COPY.programs.loadError;
+    return apiError(message, 400, "BAD_REQUEST");
   }
 }
