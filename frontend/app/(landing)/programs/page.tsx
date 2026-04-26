@@ -88,26 +88,38 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
   const recruitingOnly = !showClosedRecent;
   let sourceOptions: readonly NamedFilterOption[] = SOURCE_OPTIONS;
   let targetOptions: readonly NamedFilterOption[] = TARGET_OPTIONS;
+  const shouldLoadDynamicFilterOptions = Boolean(
+    q ||
+      selectedCategory.id !== "all" ||
+      selectedRegions.length > 0 ||
+      selectedTeachingMethods.length > 0 ||
+      showClosedRecent
+  );
 
-  try {
-    const filterOptions = await getProgramFilterOptions({
-      q: q || undefined,
-      category: selectedCategory.category !== "전체" ? selectedCategory.category : undefined,
-      category_detail: selectedCategory.id !== "all" ? selectedCategory.id : undefined,
-      regions: selectedRegions,
-      teaching_methods: selectedTeachingMethods,
-      recruiting_only: recruitingOnly,
-      include_closed_recent: showClosedRecent,
-    });
-    sourceOptions = dynamicOrFallbackOptions(
-      filterOptions.sources,
-      SOURCE_OPTIONS,
-      canonicalizeSourceFilterOption
-    );
-    targetOptions = dynamicOrFallbackOptions(filterOptions.targets, TARGET_OPTIONS);
-  } catch {
-    sourceOptions = SOURCE_OPTIONS;
-    targetOptions = TARGET_OPTIONS;
+  if (shouldLoadDynamicFilterOptions) {
+    try {
+      const filterOptions = await withTimeout(
+        getProgramFilterOptions({
+          q: q || undefined,
+          category: selectedCategory.category !== "전체" ? selectedCategory.category : undefined,
+          category_detail: selectedCategory.id !== "all" ? selectedCategory.id : undefined,
+          regions: selectedRegions,
+          teaching_methods: selectedTeachingMethods,
+          recruiting_only: recruitingOnly,
+          include_closed_recent: showClosedRecent,
+        }),
+        3500
+      );
+      sourceOptions = dynamicOrFallbackOptions(
+        filterOptions.sources,
+        SOURCE_OPTIONS,
+        canonicalizeSourceFilterOption
+      );
+      targetOptions = dynamicOrFallbackOptions(filterOptions.targets, TARGET_OPTIONS);
+    } catch {
+      sourceOptions = SOURCE_OPTIONS;
+      targetOptions = TARGET_OPTIONS;
+    }
   }
 
   const selectedSources = normalizeNamedOptions(resolvedSearchParams.sources, sourceOptions);
@@ -502,4 +514,13 @@ async function loadProgramsPageSessionContext(): Promise<{
       bookmarkedProgramIds: [],
     };
   }
+}
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => {
+      setTimeout(() => reject(new Error("timeout")), timeoutMs);
+    }),
+  ]);
 }

@@ -7,30 +7,21 @@ import type { MouseEvent } from "react";
 
 import { DashboardCalendarMiniCalendar } from "@/app/dashboard/_components/dashboard-calendar-mini-calendar";
 import { useDashboardCalendar } from "@/app/dashboard/_hooks/use-dashboard-calendar";
+import { DASHBOARD_COPY } from "@/app/dashboard/dashboard-copy";
 import { ProgramDeadlineBadge } from "@/components/programs/program-deadline-badge";
 import {
   formatProgramMonthDay,
-  formatProgramRelevanceText,
   formatProgramSourceLabel,
   toProgramDateKey,
 } from "@/lib/program-display";
 import {
   getProgramCardReason,
   getProgramCardRelevanceReasons,
-  getProgramCardScore,
 } from "@/lib/program-card-items";
 import type { ProgramCardItem } from "@/lib/types";
 
-function resolveRecommendationScore(item: ProgramCardItem): number {
-  return getProgramCardScore(item) ?? 0;
-}
-
-function resolveRelevanceScore(item: ProgramCardItem): number {
-  return item.context?.relevance_score ?? item.program.relevance_score ?? resolveRecommendationScore(item);
-}
-
 function resolveReason(item: ProgramCardItem): string {
-  return getProgramCardRelevanceReasons(item)[0] ?? getProgramCardReason(item) ?? "추천 근거 없음";
+  return getProgramCardRelevanceReasons(item)[0] ?? getProgramCardReason(item) ?? DASHBOARD_COPY.calendar.reasonFallback;
 }
 
 function stopCardNavigation(event: MouseEvent<HTMLElement>) {
@@ -91,22 +82,13 @@ function CalendarCard({
           <span className="rounded-full bg-slate-100 px-2.5 py-1 text-slate-600">
             {item.program.location || "지역 정보 없음"}
           </span>
-          <span className="rounded-full bg-slate-100 px-2.5 py-1 text-slate-600">
-            {formatProgramRelevanceText(resolveRecommendationScore(item))}
-          </span>
         </div>
 
         <dl className="space-y-2 text-sm text-slate-600">
           <div className="flex items-center justify-between gap-3">
-            <dt>마감일</dt>
+            <dt>{DASHBOARD_COPY.calendar.deadlineLabel}</dt>
             <dd className="font-medium text-slate-900">
               {formatProgramMonthDay(item.program.deadline) ?? "정보 없음"}
-            </dd>
-          </div>
-          <div className="flex items-center justify-between gap-3">
-            <dt>관련도 점수</dt>
-            <dd className="font-medium text-slate-900">
-              {formatProgramRelevanceText(resolveRelevanceScore(item))}
             </dd>
           </div>
         </dl>
@@ -121,7 +103,7 @@ function CalendarCard({
             onClick={stopCardNavigation}
             className="inline-flex items-center rounded-full bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-700"
           >
-            지원하기
+            {DASHBOARD_COPY.calendar.applyButton}
           </a>
         ) : null}
         {programId ? (
@@ -130,7 +112,7 @@ function CalendarCard({
             onClick={stopCardNavigation}
             className="inline-flex items-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
           >
-            이력서 바로 만들기
+            {DASHBOARD_COPY.calendar.resumeButton}
           </Link>
         ) : null}
       </div>
@@ -180,23 +162,23 @@ export function DashboardCalendarSection() {
     <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="mb-6 flex flex-col gap-2">
         <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
-          AI 맞춤 취업 지원 캘린더
+          {DASHBOARD_COPY.calendar.title}
         </h2>
         <p className="text-sm text-slate-500">
-          마감이 가까운 맞춤 일정을 한 번에 보고 바로 지원하거나 이력서 작성으로 이어갈 수 있습니다.
+          {DASHBOARD_COPY.calendar.description}
         </p>
       </div>
 
       {status === "empty" ? (
         <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-12 text-center">
           <p className="text-sm text-slate-500">
-            아직 추천할 일정이 없습니다. 프로필을 완성하면 맞춤 일정이 보입니다.
+            {DASHBOARD_COPY.calendar.empty}
           </p>
           <Link
             href="/dashboard/profile"
             className="mt-4 inline-flex items-center rounded-full bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-700"
           >
-            프로필 편집
+            {DASHBOARD_COPY.calendar.profileButton}
           </Link>
         </div>
       ) : (

@@ -323,7 +323,7 @@ describe("program card summary loader", () => {
     expect(calls).toEqual([
       {
         table: "program_list_index",
-        filter: { type: "eq", column: "is_open", value: true },
+        filter: { type: "gte", column: "deadline", value: "2026-04-24" },
         order: { column: "deadline", ascending: true, nullsFirst: false },
         limit: 50,
       },
@@ -367,7 +367,7 @@ describe("program card summary loader", () => {
     expect(calls).toEqual([
       {
         table: "program_list_index",
-        filter: { type: "eq", column: "is_open", value: true },
+        filter: { type: "gte", column: "deadline", value: "2026-04-24" },
         order: { column: "deadline", ascending: true, nullsFirst: false },
         limit: 20,
       },

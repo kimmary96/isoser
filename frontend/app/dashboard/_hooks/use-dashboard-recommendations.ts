@@ -6,17 +6,21 @@ import {
   getCalendarSelections,
   getDashboardBookmarks,
   getDashboardMe,
-  getRecommendCalendar,
+  getRecommendedPrograms,
   saveCalendarSelections,
 } from "@/lib/api/app";
+import { getProgramCardScore, isProgramCardOpen } from "@/lib/program-card-items";
 import { toProgramDateKey } from "@/lib/program-display";
 import type { ProgramCardItem, ProgramCardSummary } from "@/lib/types";
 import {
   readRecommendCalendarCache,
   writeRecommendCalendarCache,
 } from "./recommend-calendar-cache";
+import { DASHBOARD_COPY } from "../dashboard-copy";
 
 const APPLIED_CALENDAR_PROGRAMS_KEY = "isoser:applied-calendar-programs";
+const BOOKMARKED_PROGRAMS_CACHE_KEY = "isoser:dashboard-bookmarked-programs:v1";
+const BOOKMARKED_PROGRAMS_CACHE_TTL_MS = 1000 * 60 * 10;
 
 export const DASHBOARD_CATEGORY_OPTIONS = [
   { label: "전체", value: null },
@@ -36,6 +40,71 @@ export const DASHBOARD_REGION_OPTIONS = [
 function formatUserName(value: string | null | undefined): string {
   const trimmed = value?.trim();
   return trimmed || "사용자";
+}
+
+function resolveUserMatchScore(item: ProgramCardItem): number {
+  return getProgramCardScore(item) ?? 0;
+}
+
+function resolveDeadlineTime(value: string | null | undefined): number {
+  if (!value) return Number.MAX_SAFE_INTEGER;
+  const parsed = new Date(value).getTime();
+  return Number.isNaN(parsed) ? Number.MAX_SAFE_INTEGER : parsed;
+}
+
+function sortByUserMatch(items: ProgramCardItem[]): ProgramCardItem[] {
+  return [...items].sort((left, right) => {
+    const scoreDiff = resolveUserMatchScore(right) - resolveUserMatchScore(left);
+    if (scoreDiff !== 0) return scoreDiff;
+
+    return resolveDeadlineTime(left.program.deadline) - resolveDeadlineTime(right.program.deadline);
+  });
+}
+
+function isUsableCareerFitCache(items: ProgramCardItem[]): boolean {
+  return items.some(isProgramCardOpen);
+}
+
+function readBookmarkedProgramsCache(now = Date.now()): ProgramCardItem[] {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  const raw = window.localStorage.getItem(BOOKMARKED_PROGRAMS_CACHE_KEY);
+  if (!raw) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as { savedAt?: unknown; items?: unknown };
+    if (
+      typeof parsed.savedAt !== "number" ||
+      now - parsed.savedAt > BOOKMARKED_PROGRAMS_CACHE_TTL_MS ||
+      !Array.isArray(parsed.items)
+    ) {
+      window.localStorage.removeItem(BOOKMARKED_PROGRAMS_CACHE_KEY);
+      return [];
+    }
+
+    return parsed.items.filter(
+      (item): item is ProgramCardItem =>
+        Boolean(item && typeof item === "object" && (item as ProgramCardItem).program?.id)
+    );
+  } catch {
+    window.localStorage.removeItem(BOOKMARKED_PROGRAMS_CACHE_KEY);
+    return [];
+  }
+}
+
+function writeBookmarkedProgramsCache(items: ProgramCardItem[]) {
+  if (typeof window === "undefined" || items.length === 0) {
+    return;
+  }
+
+  window.localStorage.setItem(
+    BOOKMARKED_PROGRAMS_CACHE_KEY,
+    JSON.stringify({ savedAt: Date.now(), items })
+  );
 }
 
 export function useDashboardRecommendations() {
@@ -109,9 +178,14 @@ export function useDashboardRecommendations() {
         canUseCache && typeof window !== "undefined"
           ? readRecommendCalendarCache(window.localStorage)
           : [];
+      const openCachedPrograms = cachedPrograms.filter(isProgramCardOpen);
+      const usableCachedPrograms =
+        openCachedPrograms.length > 0 && isUsableCareerFitCache(openCachedPrograms)
+          ? openCachedPrograms
+          : [];
 
-      if (cachedPrograms.length > 0) {
-        setPrograms(cachedPrograms);
+      if (usableCachedPrograms.length > 0) {
+        setPrograms(usableCachedPrograms);
         setLoading(false);
       } else {
         setLoading(true);
@@ -119,18 +193,23 @@ export function useDashboardRecommendations() {
       setError(null);
 
       try {
-        const result = await getRecommendCalendar({
+        const result = await getRecommendedPrograms({
           category: options?.category ?? undefined,
           region: options?.region ?? undefined,
         });
-        setPrograms(result.items);
-        if (canUseCache && typeof window !== "undefined") {
-          writeRecommendCalendarCache(window.localStorage, result.items);
-        }
-      } catch (fetchError) {
-        if (cachedPrograms.length === 0) {
+        const sortedItems = result.items.filter(isProgramCardOpen);
+        if (sortedItems.length > 0) {
+          setPrograms(sortedItems);
+        } else if (usableCachedPrograms.length === 0) {
           setPrograms([]);
-          setError(fetchError instanceof Error ? fetchError.message : "추천 프로그램을 불러오지 못했습니다.");
+        }
+        if (sortedItems.length > 0 && canUseCache && typeof window !== "undefined") {
+          writeRecommendCalendarCache(window.localStorage, sortedItems);
+        }
+      } catch {
+        if (usableCachedPrograms.length === 0) {
+          setPrograms([]);
+          setError(DASHBOARD_COPY.programs.loadError);
         } else {
           setError(null);
         }
@@ -166,16 +245,25 @@ export function useDashboardRecommendations() {
     let mounted = true;
 
     const loadBookmarks = async () => {
-      setBookmarksLoading(true);
+      const cachedBookmarks = readBookmarkedProgramsCache();
+      if (cachedBookmarks.length > 0) {
+        setBookmarkedPrograms(cachedBookmarks);
+        setBookmarksLoading(false);
+      } else {
+        setBookmarksLoading(true);
+      }
       setBookmarksError(null);
       try {
         const result = await getDashboardBookmarks();
         if (!mounted) return;
         setBookmarkedPrograms(result.items);
-      } catch (fetchError) {
+        writeBookmarkedProgramsCache(result.items);
+      } catch {
         if (!mounted) return;
-        setBookmarkedPrograms([]);
-        setBookmarksError(fetchError instanceof Error ? fetchError.message : "찜한 훈련을 불러오지 못했습니다.");
+        if (cachedBookmarks.length === 0) {
+          setBookmarkedPrograms([]);
+        }
+        setBookmarksError(DASHBOARD_COPY.bookmarks.loadError);
       } finally {
         if (mounted) {
           setBookmarksLoading(false);
@@ -244,10 +332,10 @@ export function useDashboardRecommendations() {
   const emptyMessage = error
     ? error
     : selectedDate && programs.length > 0
-      ? "해당 날짜에 마감되는 프로그램이 없습니다"
+      ? DASHBOARD_COPY.programs.dateEmpty
       : isFiltered
-        ? "해당 조건에 맞는 추천 프로그램이 없습니다"
-        : "추천 프로그램이 없습니다";
+        ? DASHBOARD_COPY.programs.filteredEmpty
+        : DASHBOARD_COPY.programs.empty;
 
   return {
     userName,

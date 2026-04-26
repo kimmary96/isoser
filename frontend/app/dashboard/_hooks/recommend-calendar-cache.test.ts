@@ -78,6 +78,7 @@ describe("recommend calendar cache helper", () => {
     const migratedRaw = storage.getItem(RECOMMEND_CALENDAR_CACHE_KEY);
     expect(migratedRaw).not.toBeNull();
     expect(JSON.parse(migratedRaw as string)).toMatchObject({
+      version: 2,
       savedAt: 2_000,
       items: [
         {

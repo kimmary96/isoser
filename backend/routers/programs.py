@@ -614,6 +614,42 @@ def _recommendation_reasons(item: ProgramRecommendation) -> list[str]:
     return reasons[:3]
 
 
+RECOMMENDATION_SCORE_WEIGHTS_WITH_REGION = {
+    "target_job": 30,
+    "skills": 25,
+    "experience": 15,
+    "region": 15,
+    "readiness": 10,
+    "behavior": 5,
+}
+
+RECOMMENDATION_SCORE_WEIGHTS_WITHOUT_REGION = {
+    "target_job": 35,
+    "skills": 30,
+    "experience": 20,
+    "region": 0,
+    "readiness": 10,
+    "behavior": 5,
+}
+
+RECOMMENDATION_BREAKDOWN_PRIORITY = {
+    "target_job": 0,
+    "skills": 1,
+    "experience": 2,
+    "region": 3,
+    "readiness": 4,
+    "behavior": 5,
+}
+
+
+def _recommendation_score_weights(*, has_profile_region: bool) -> dict[str, int]:
+    return (
+        RECOMMENDATION_SCORE_WEIGHTS_WITH_REGION
+        if has_profile_region
+        else RECOMMENDATION_SCORE_WEIGHTS_WITHOUT_REGION
+    )
+
+
 def _coerce_score(value: Any) -> float | None:
     if value is None:
         return None
@@ -1487,6 +1523,39 @@ async def _fetch_program_list_summary_rows_by_ids(
         for row in rows
         if str(row.get("id") or "").strip()
     }
+
+
+def _merge_program_rows_for_relevance(
+    programs_by_id: Mapping[str, Mapping[str, Any]],
+    summary_rows_by_id: Mapping[str, Mapping[str, Any]],
+) -> dict[str, dict[str, Any]]:
+    program_ids = list(dict.fromkeys([*programs_by_id.keys(), *summary_rows_by_id.keys()]))
+    merged_by_id: dict[str, dict[str, Any]] = {}
+
+    for program_id in program_ids:
+        merged: dict[str, Any] = dict(programs_by_id.get(program_id) or {})
+        summary = dict(summary_rows_by_id.get(program_id) or {})
+        for key, value in summary.items():
+            if value not in (None, "", []):
+                merged[key] = value
+
+        keywords: list[str] = []
+        for key in (
+            "skills",
+            "extracted_keywords",
+            "tags",
+            "display_categories",
+            "category",
+            "category_detail",
+        ):
+            keywords.extend(_normalize_text_list(merged.get(key)))
+        if keywords:
+            merged["skills"] = list(dict.fromkeys(keywords))
+
+        if merged:
+            merged_by_id[program_id] = merged
+
+    return merged_by_id
 
 
 async def _load_recommendation_rule(condition_keys: Sequence[str]) -> dict[str, Any] | None:
@@ -2969,6 +3038,40 @@ async def _fetch_activity_rows(user_id: str, limit: int = 50) -> list[dict[str, 
     return rows if isinstance(rows, list) else []
 
 
+async def _fetch_user_behavior_program_ids(user_id: str) -> set[str]:
+    program_ids: set[str] = set()
+    for path in ("/rest/v1/program_bookmarks", "/rest/v1/calendar_program_selections"):
+        try:
+            rows = await request_supabase(
+                method="GET",
+                path=path,
+                params={
+                    "select": "program_id",
+                    "user_id": f"eq.{user_id}",
+                    "order": "created_at.desc",
+                    "limit": "100",
+                },
+            )
+        except Exception as exc:
+            log_event(
+                logger,
+                logging.WARNING,
+                "program_compare_behavior_signal_unavailable",
+                path=path,
+                error=str(exc),
+            )
+            continue
+        if not isinstance(rows, list):
+            continue
+        for row in rows:
+            if not isinstance(row, Mapping):
+                continue
+            program_id = _first_text(row.get("program_id"))
+            if program_id:
+                program_ids.add(program_id)
+    return program_ids
+
+
 def _normalize_text_tokens(value: Any) -> list[str]:
     if value is None:
         return []
@@ -2977,6 +3080,39 @@ def _normalize_text_tokens(value: Any) -> list[str]:
     else:
         source = str(value).strip()
     return programs_rag._tokenize_text(source)
+
+
+def _target_job_matches_program(profile: Mapping[str, Any], program_token_set: set[str]) -> bool:
+    target_job = _first_text(
+        profile.get("effective_target_job"),
+        profile.get("target_job"),
+        profile.get("desired_job"),
+        profile.get("job_title"),
+    )
+    if not target_job:
+        return False
+
+    target_tokens = set(programs_rag._tokenize_text(target_job))
+    normalized_target = target_job.replace(" ", "").lower()
+    if "개발" in normalized_target:
+        target_tokens.update(
+            {
+                "개발",
+                "개발자",
+                "백엔드",
+                "프론트엔드",
+                "소프트웨어",
+                "프로그래밍",
+                "정보기술",
+                "it",
+            }
+        )
+    if "마케팅" in normalized_target:
+        target_tokens.update({"마케팅", "광고", "홍보", "브랜딩", "콘텐츠"})
+    if "기획" in normalized_target:
+        target_tokens.update({"기획", "pm", "서비스", "프로덕트", "운영"})
+
+    return bool(target_tokens and program_token_set.intersection(target_tokens))
 
 
 def _normalize_text_list(value: Any) -> list[str]:
@@ -3064,6 +3200,55 @@ def _has_meaningful_profile_text(profile: dict[str, Any]) -> bool:
 
     career_items = _normalize_text_list(profile.get("career"))
     return any(len(item.strip()) >= 8 for item in career_items)
+
+
+def _has_recommendation_experience_signal(
+    profile: Mapping[str, Any],
+    activities: Sequence[Mapping[str, Any]],
+) -> bool:
+    if activities:
+        return True
+    return bool(_normalize_text_list(profile.get("activity_keywords")))
+
+
+def _matched_experience_keywords(
+    profile: Mapping[str, Any],
+    activities: Sequence[Mapping[str, Any]],
+    program_token_set: set[str],
+) -> list[str]:
+    candidates: list[str] = []
+    for activity in activities:
+        if not isinstance(activity, Mapping):
+            continue
+        candidates.extend(
+            _compact_text_list(
+                activity.get("title"),
+                activity.get("description"),
+                activity.get("role"),
+                activity.get("skills"),
+                activity.get("contributions"),
+            )
+        )
+    candidates.extend(_normalize_text_list(profile.get("activity_keywords")))
+
+    matched: list[str] = []
+    seen: set[str] = set()
+    for candidate in candidates:
+        tokens = set(programs_rag._tokenize_text(candidate))
+        if not tokens or not program_token_set.intersection(tokens):
+            continue
+        normalized = candidate.strip()
+        if normalized and normalized not in seen:
+            seen.add(normalized)
+            matched.append(normalized)
+    return matched[:5]
+
+
+def _recommendation_readiness_ratio(profile: Mapping[str, Any]) -> float:
+    completeness = _coerce_score(profile.get("profile_completeness_score"))
+    if completeness is not None:
+        return max(0.0, min(1.0, completeness))
+    return 1.0 if _has_meaningful_profile_text(dict(profile)) else 0.0
 
 
 def _derive_fit_label(
@@ -3241,18 +3426,23 @@ def _build_compare_score_breakdown(
     skill_match_score: float,
     region_match_score: float,
     has_profile_region: bool,
+    has_target_job_match: bool = False,
+    matched_experience_keywords: Sequence[str] | None = None,
+    has_behavior_signal: bool = False,
 ) -> dict[str, int]:
-    weights = (
-        {"target_job": 30, "skills": 25, "experience": 15, "region": 15, "readiness": 10, "behavior": 5}
-        if has_profile_region
-        else {"target_job": 35, "skills": 30, "experience": 20, "region": 0, "readiness": 10, "behavior": 5}
-    )
-    target_job = weights["target_job"] if _first_text(profile.get("target_job"), profile.get("desired_job"), profile.get("job_title")) else 0
+    weights = _recommendation_score_weights(has_profile_region=has_profile_region)
+    target_job = weights["target_job"] if has_target_job_match else 0
     skills = round(skill_match_score * weights["skills"])
-    experience = weights["experience"] if activities else 0
-    region = round(region_match_score * 15)
-    readiness = weights["readiness"] if _has_meaningful_profile_text(profile) else 0
-    behavior = weights["behavior"] if activities and _normalize_text_list(profile.get("skills")) else 0
+    has_experience_signal = _has_recommendation_experience_signal(profile, activities)
+    if matched_experience_keywords:
+        experience = weights["experience"]
+    elif has_experience_signal:
+        experience = round(weights["experience"] * 0.5)
+    else:
+        experience = 0
+    region = round(region_match_score * weights["region"])
+    readiness = round(_recommendation_readiness_ratio(profile) * weights["readiness"])
+    behavior = weights["behavior"] if has_behavior_signal else 0
     return {
         "target_job": target_job,
         "skills": skills,
@@ -3275,14 +3465,20 @@ def _build_relevance_reasons(
         ("experience", score_breakdown.get("experience", 0), "활동 이력 기반 경험 신호 보유"),
         ("region", score_breakdown.get("region", 0), f"{matched_regions[0]} 지역 조건과 일치" if matched_regions else ""),
         ("readiness", score_breakdown.get("readiness", 0), "프로필 소개와 경력 정보 보유"),
-        ("behavior", score_breakdown.get("behavior", 0), "프로필과 활동 정보가 함께 입력됨"),
+        ("behavior", score_breakdown.get("behavior", 0), "찜/캘린더 관심 행동과 일치"),
     ]
-    priority = {key: index for index, key in enumerate(["target_job", "skills", "experience", "region", "readiness", "behavior"])}
-    return [
+    ranked_reasons = [
         label
-        for key, score, label in sorted(candidates, key=lambda item: (-item[1], priority[item[0]]))
-        if score >= 8 and label
-    ][:3]
+        for key, score, label in sorted(candidates, key=lambda item: (-item[1], RECOMMENDATION_BREAKDOWN_PRIORITY[item[0]]))
+        if (score >= 8 or (key == "behavior" and score > 0)) and label
+    ]
+    behavior_score = score_breakdown.get("behavior", 0)
+    behavior_label = "찜/캘린더 관심 행동과 일치"
+    if behavior_score > 0 and behavior_label not in ranked_reasons:
+        ranked_reasons.append(behavior_label)
+    if behavior_score > 0 and len(ranked_reasons) > 3 and ranked_reasons[-1] == behavior_label:
+        return [*ranked_reasons[:2], behavior_label]
+    return ranked_reasons[:3]
 
 
 def _compute_program_relevance_items(
@@ -3291,7 +3487,9 @@ def _compute_program_relevance_items(
     activities: list[dict[str, Any]],
     programs_by_id: dict[str, dict[str, Any]],
     program_ids: list[str],
+    behavior_program_ids: set[str] | None = None,
 ) -> list[ProgramRelevanceItem]:
+    behavior_program_ids = behavior_program_ids or set()
     profile_keywords = programs_rag._profile_keywords(profile, activities)
     raw_profile_skills = _normalize_text_list(profile.get("skills"))
     profile_region = _first_text(profile.get("region"))
@@ -3316,6 +3514,7 @@ def _compute_program_relevance_items(
             + _normalize_text_tokens(program.get("summary"))
             + _normalize_text_tokens(program.get("description"))
         )
+        has_target_job_match = _target_job_matches_program(profile, program_token_set)
         matched_skills = [
             skill
             for skill, tokens in skill_tokens.items()
@@ -3325,6 +3524,11 @@ def _compute_program_relevance_items(
             profile_region=profile_region,
             profile_region_detail=profile_region_detail,
             program=program,
+        )
+        matched_experience_keywords = _matched_experience_keywords(
+            profile=profile,
+            activities=activities,
+            program_token_set=program_token_set,
         )
         skill_match_score = (
             min(1.0, len(matched_skills) / max(1, min(len(skill_tokens), 5)))
@@ -3337,15 +3541,26 @@ def _compute_program_relevance_items(
             if profile_region or profile_region_detail
             else relevance_score
         )
-        rounded_relevance_score = round(adjusted_relevance_score, 4)
         rounded_skill_match_score = round(skill_match_score, 4)
         rounded_region_match_score = round(region_match_score, 4)
+        has_profile_region = bool(profile_region or profile_region_detail)
         score_breakdown = _build_compare_score_breakdown(
             profile=profile,
             activities=activities,
             skill_match_score=rounded_skill_match_score,
             region_match_score=rounded_region_match_score,
-            has_profile_region=bool(profile_region or profile_region_detail),
+            has_profile_region=has_profile_region,
+            has_target_job_match=has_target_job_match,
+            matched_experience_keywords=matched_experience_keywords,
+            has_behavior_signal=program_id in behavior_program_ids,
+        )
+        max_breakdown_score = sum(
+            _recommendation_score_weights(has_profile_region=has_profile_region).values()
+        )
+        breakdown_relevance_score = sum(score_breakdown.values()) / max(1, max_breakdown_score)
+        rounded_relevance_score = round(
+            max(adjusted_relevance_score, breakdown_relevance_score),
+            4,
         )
         relevance_reasons = _build_relevance_reasons(
             matched_skills=normalized_matched_skills,
@@ -4031,10 +4246,13 @@ async def get_program_filter_options(
     region_detail: str | None = None,
     q: str | None = None,
     regions: list[str] | None = Query(default=None),
+    sources: list[str] | None = Query(default=None),
     teaching_methods: list[str] | None = Query(default=None),
     recruiting_only: bool = False,
     include_closed_recent: bool = False,
 ) -> ProgramFilterOptionsResponse:
+    if not isinstance(sources, list):
+        sources = None
     mode = _program_list_mode(
         q=q,
         scope=scope,
@@ -4044,10 +4262,11 @@ async def get_program_filter_options(
             category_detail=category_detail,
             region_detail=region_detail,
             regions=regions,
+            sources=sources,
             teaching_methods=teaching_methods,
         ),
     )
-    if not _normalize_teaching_methods_param(teaching_methods) and _can_use_program_list_read_model(
+    if not recruiting_only and not _normalize_teaching_methods_param(teaching_methods) and _can_use_program_list_read_model(
         sources=sources,
         category_detail=category_detail,
         participation_times=None,
@@ -4091,6 +4310,7 @@ async def get_program_filter_options(
         region_detail=region_detail,
         q=q,
         regions=regions,
+        sources=sources,
         teaching_methods=teaching_methods,
         recruiting_only=recruiting_only,
         include_closed_recent=include_closed_recent,
@@ -4553,7 +4773,11 @@ async def compare_program_relevance(
     current_user = await get_current_user_from_authorization(authorization)
     profile = await _fetch_profile_row(current_user.id)
     activities = await _fetch_activity_rows(current_user.id)
-    programs_by_id = await _fetch_programs_by_ids(deduped_program_ids)
+    behavior_program_ids = await _fetch_user_behavior_program_ids(current_user.id)
+    programs_by_id = _merge_program_rows_for_relevance(
+        await _fetch_programs_by_ids(deduped_program_ids),
+        await _fetch_program_list_summary_rows_by_ids(deduped_program_ids),
+    )
 
     return ProgramCompareRelevanceResponse(
         items=_compute_program_relevance_items(
@@ -4561,6 +4785,7 @@ async def compare_program_relevance(
             activities=activities,
             programs_by_id=programs_by_id,
             program_ids=deduped_program_ids,
+            behavior_program_ids=behavior_program_ids,
         )
     )
 

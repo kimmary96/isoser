@@ -42,14 +42,36 @@ export function isProgramCardItem(value: unknown): value is ProgramCardItem {
 }
 
 export function getProgramCardScore(item: ProgramCardItem): number | null {
-  return (
-    item.context?.relevance_score ??
-    item.context?.score ??
-    item.program.relevance_score ??
-    item.program.final_score ??
-    item.program.recommended_score ??
-    null
-  );
+  const candidates = [
+    item.context?.relevance_score,
+    item.context?.score,
+    item.program.relevance_score,
+    item.program.final_score,
+    item.program.recommended_score,
+  ].filter((score): score is number => typeof score === "number" && Number.isFinite(score));
+
+  return candidates.find((score) => score > 0) ?? candidates[0] ?? null;
+}
+
+export function isProgramCardOpen(item: ProgramCardItem): boolean {
+  const { program } = item;
+
+  if (typeof program.days_left === "number" && Number.isFinite(program.days_left)) {
+    return program.days_left >= 0;
+  }
+
+  const deadlineText = program.deadline?.trim();
+  if (deadlineText) {
+    const parsed = new Date(deadlineText);
+    if (!Number.isNaN(parsed.getTime())) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      parsed.setHours(0, 0, 0, 0);
+      return parsed.getTime() >= today.getTime();
+    }
+  }
+
+  return program.is_open !== false && program.is_active !== false;
 }
 
 export function getProgramCardReason(item: ProgramCardItem): string | null {
@@ -138,14 +160,26 @@ export function toFallbackCalendarSurfaceContext(
   program: ProgramCardSummary,
   reason: string
 ): ProgramSurfaceContext {
-  const urgencyScore = Number(program.urgency_score ?? 0);
+  const positiveScore = [
+    program.relevance_score,
+    program.final_score,
+    program.recommended_score,
+    program.urgency_score,
+  ].find((score) => typeof score === "number" && Number.isFinite(score) && score > 0);
+  const daysLeft =
+    typeof program.days_left === "number" && Number.isFinite(program.days_left)
+      ? program.days_left
+      : null;
+  const fallbackScore =
+    positiveScore ??
+    (daysLeft !== null ? Math.max(25, Math.min(70, 70 - daysLeft)) : 35);
   return {
     surface: "dashboard_recommend_calendar_fallback",
     reason,
     fit_keywords: [],
-    score: urgencyScore,
-    relevance_score: 0,
-    urgency_score: urgencyScore,
+    score: fallbackScore,
+    relevance_score: null,
+    urgency_score: program.urgency_score ?? fallbackScore,
     relevance_reasons: [],
     score_breakdown: {},
     relevance_grade: "none",

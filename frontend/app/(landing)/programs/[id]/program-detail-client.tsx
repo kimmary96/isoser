@@ -25,7 +25,19 @@ type DetailSection = {
 };
 
 function textList(value: string[] | null | undefined): string[] {
-  return Array.isArray(value) ? value.filter((item) => typeof item === "string" && item.trim().length > 0) : [];
+  return Array.isArray(value)
+    ? value.map((item) => (typeof item === "string" ? item.trim() : "")).filter(Boolean)
+    : [];
+}
+
+function uniqueTextList(items: string[]): string[] {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    const normalized = item.trim();
+    if (!normalized || seen.has(normalized)) return false;
+    seen.add(normalized);
+    return true;
+  });
 }
 
 function formatDateLabel(value: string | null | undefined): string | null {
@@ -170,9 +182,11 @@ function FactGrid({ facts }: { facts: Array<[string, string]> }) {
 }
 
 function ChipList({ items }: { items: string[] }) {
+  const uniqueItems = uniqueTextList(items);
+
   return (
     <div className="flex flex-wrap gap-2">
-      {items.map((item) => (
+      {uniqueItems.map((item) => (
         <span key={item} className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600">
           {item}
         </span>
@@ -309,7 +323,7 @@ export default function ProgramDetailClient({
         body: (
           <ol className="space-y-3">
             {recommendedFor.map((item, index) => (
-              <li key={item} className="flex gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-7 text-slate-700">
+              <li key={`${item}-${index}`} className="flex gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-7 text-slate-700">
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-950 text-xs font-bold text-white">
                   {index + 1}
                 </span>
@@ -369,8 +383,8 @@ export default function ProgramDetailClient({
             {applicationFacts.length ? <FactGrid facts={applicationFacts} /> : null}
             {eligibility.length ? (
               <ul className="space-y-2 text-sm leading-7 text-slate-700">
-                {eligibility.map((item) => (
-                  <li key={item} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                {eligibility.map((item, index) => (
+                  <li key={`${item}-${index}`} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                     {item}
                   </li>
                 ))}
@@ -492,7 +506,6 @@ export default function ProgramDetailClient({
     categoryLabel,
     certifications,
     curriculum,
-    displayCategories,
     eligibility,
     externalLink,
     extractedKeywords,
@@ -601,8 +614,8 @@ export default function ProgramDetailClient({
           </div>
           <div className="min-w-0">
             <div className="flex flex-wrap gap-2">
-              {heroBadges.map((badge) => (
-                <span key={badge} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-bold text-slate-700">
+              {heroBadges.map((badge, index) => (
+                <span key={`${badge}-${index}`} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-bold text-slate-700">
                   {badge}
                 </span>
               ))}

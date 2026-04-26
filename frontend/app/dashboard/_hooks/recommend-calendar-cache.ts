@@ -1,12 +1,13 @@
 import { isProgramCardItem, toProgramCardItem } from "../../../lib/program-card-items";
 import type { ProgramCardItem, ProgramCardSummary } from "../../../lib/types";
 
-export const RECOMMEND_CALENDAR_CACHE_KEY = "isoser:recommend-calendar-programs";
-export const RECOMMEND_CALENDAR_CACHE_TTL_MS = 1000 * 60 * 15;
+export const RECOMMEND_CALENDAR_CACHE_KEY = "isoser:dashboard-recommended-programs:v3";
+export const RECOMMEND_CALENDAR_CACHE_TTL_MS = 1000 * 60 * 60 * 6;
 
 type CacheStorage = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
 type RecommendCalendarCache = {
+  version: 2;
   savedAt: number;
   items?: ProgramCardItem[];
 };
@@ -182,6 +183,7 @@ export function writeRecommendCalendarCache(
   }
 
   const cache: RecommendCalendarCache = {
+    version: 2,
     savedAt,
     items,
   };

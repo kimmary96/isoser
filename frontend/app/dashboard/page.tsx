@@ -3,17 +3,19 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
+import { ProgramDeadlineBadge } from "@/components/programs/program-deadline-badge";
 import {
   getDashboardProfile,
   getDocuments,
   listActivities,
   listCoverLetters,
+  listSavedPortfolios,
 } from "@/lib/api/app";
-import { getProgramCardScore } from "@/lib/program-card-items";
-import { formatProgramMonthDay, parseProgramDate, toProgramDateKey } from "@/lib/program-display";
+import { formatProgramMonthDay, toProgramDateKey } from "@/lib/program-display";
 import type { ProgramCardItem, ProgramCardSummary } from "@/lib/types";
 
 import { useDashboardRecommendations } from "./_hooks/use-dashboard-recommendations";
+import { DASHBOARD_COPY } from "./dashboard-copy";
 
 const DOW_KR = ["일", "월", "화", "수", "목", "금", "토"];
 const MONTHS_KR = [
@@ -30,6 +32,8 @@ const MONTHS_KR = [
   "11월",
   "12월",
 ];
+const MAIN_CALENDAR_ROWS = 5;
+const MINI_CALENDAR_ROWS = 6;
 
 type ColorKey = "it" | "design" | "biz" | "urgent" | "other";
 type EventType = "start" | "deadline" | "pass" | "test";
@@ -47,20 +51,6 @@ type CalendarEvent = {
 };
 
 type BgKey = "blue" | "teal" | "mint" | "lavender";
-
-type CategoryTag = {
-  label: string;
-  key: "all" | "IT" | "디자인" | "비즈니스" | "urgent";
-  className: string;
-};
-
-const CATEGORY_TAGS: CategoryTag[] = [
-  { label: "전체", key: "all", className: "bg-[#4361ee] text-white" },
-  { label: "IT·컴퓨터", key: "IT", className: "bg-[#e8f0fe] text-[#4361ee]" },
-  { label: "디자인", key: "디자인", className: "bg-[#fce8f3] text-[#d63384]" },
-  { label: "비즈니스", key: "비즈니스", className: "bg-[#e8f8f0] text-[#198754]" },
-  { label: "긴급", key: "urgent", className: "bg-[#fff3e8] text-[#e0621a]" },
-];
 
 const AGENDA_DOT_COLOR: Record<ColorKey, string> = {
   it: "#4361ee",
@@ -97,13 +87,6 @@ const CARD_BG_CLASS: Record<BgKey, string> = {
 };
 
 const CARD_BG_CYCLE: BgKey[] = ["blue", "teal", "mint", "lavender"];
-
-const BADGE_CYCLE: Array<{ label: string; className: string }> = [
-  { label: "HOT", className: "bg-[#ff5c35] text-white" },
-  { label: "HOT", className: "bg-[#ff5c35] text-white" },
-  { label: "NEW", className: "bg-[#2ecbc1] text-white" },
-  { label: "NEW", className: "bg-[#2ecbc1] text-white" },
-];
 
 const BOOKMARK_BADGE_PALETTE: Array<{ bg: string; color: string }> = [
   { bg: "#e8f0fe", color: "#4361ee" },
@@ -175,10 +158,30 @@ function firstDayOfMonth(y: number, m: number): number {
   return new Date(y, m, 1).getDay();
 }
 
-function buildMonthCells(year: number, month: number) {
+function isSameLocalDate(value: string | null | undefined, targetDate: Date): boolean {
+  if (!value) return false;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return false;
+
+  return (
+    parsed.getFullYear() === targetDate.getFullYear() &&
+    parsed.getMonth() === targetDate.getMonth() &&
+    parsed.getDate() === targetDate.getDate()
+  );
+}
+
+function countCreatedToday<T extends { created_at?: string | null }>(
+  items: T[],
+  targetDate: Date
+): number {
+  return items.filter((item) => isSameLocalDate(item.created_at, targetDate)).length;
+}
+
+function buildMonthCells(year: number, month: number, rowCount = MINI_CALENDAR_ROWS) {
   const firstDay = firstDayOfMonth(year, month);
   const days = daysInMonth(year, month);
   const prevDays = daysInMonth(year, month - 1);
+  const targetCellCount = rowCount * 7;
   const cells: Array<{ day: number; cur: boolean; dateStr: string }> = [];
 
   for (let i = 0; i < firstDay; i += 1) {
@@ -190,13 +193,13 @@ function buildMonthCells(year: number, month: number) {
   for (let d = 1; d <= days; d += 1) {
     cells.push({ day: d, cur: true, dateStr: formatDateStr(year, month, d) });
   }
-  const remaining = 42 - cells.length;
+  const remaining = targetCellCount - cells.length;
   for (let d = 1; d <= remaining; d += 1) {
     const m = month === 11 ? 0 : month + 1;
     const y = month === 11 ? year + 1 : year;
     cells.push({ day: d, cur: false, dateStr: formatDateStr(y, m, d) });
   }
-  return cells;
+  return cells.slice(0, targetCellCount);
 }
 
 export default function DashboardPage() {
@@ -204,6 +207,8 @@ export default function DashboardPage() {
     userName,
     programs,
     bookmarkedPrograms,
+    bookmarksLoading,
+    bookmarksError,
     appliedCalendarPrograms,
     selectedDate,
     setSelectedDate,
@@ -219,7 +224,6 @@ export default function DashboardPage() {
 
   const [year, setYear] = useState<number>(todayDate.getFullYear());
   const [month, setMonth] = useState<number>(todayDate.getMonth());
-  const [activeTag, setActiveTag] = useState<CategoryTag["key"]>("all");
   const [calView, setCalView] = useState<"차트" | "달력" | "주간">("달력");
   const [filters, setFilters] = useState<Record<EventType, boolean>>({
     start: true,
@@ -234,40 +238,57 @@ export default function DashboardPage() {
     activities: number;
     resumes: number;
     coverLetters: number;
-  }>({ profile: 0, activities: 0, resumes: 0, coverLetters: 0 });
+    portfolios: number;
+  }>({ profile: 0, activities: 0, resumes: 0, coverLetters: 0, portfolios: 0 });
 
   useEffect(() => {
     let mounted = true;
     const load = async () => {
-      const [profileRes, activitiesRes, documentsRes, coverLettersRes] = await Promise.allSettled([
-        getDashboardProfile(),
-        listActivities(),
-        getDocuments(),
-        listCoverLetters(),
-      ]);
+      const [profileRes, activitiesRes, documentsRes, coverLettersRes, portfoliosRes] =
+        await Promise.allSettled([
+          getDashboardProfile(),
+          listActivities(),
+          getDocuments(),
+          listCoverLetters(),
+          listSavedPortfolios(),
+        ]);
       if (!mounted) return;
       const profileCount =
-        profileRes.status === "fulfilled" && profileRes.value.profile ? 1 : 0;
+        profileRes.status === "fulfilled" &&
+        isSameLocalDate(profileRes.value.profile?.created_at, todayDate)
+          ? 1
+          : 0;
       const activitiesCount =
-        activitiesRes.status === "fulfilled" ? activitiesRes.value.activities.length : 0;
+        activitiesRes.status === "fulfilled"
+          ? countCreatedToday(activitiesRes.value.activities, todayDate)
+          : 0;
       const resumesCount =
-        documentsRes.status === "fulfilled" ? documentsRes.value.documents.length : 0;
+        documentsRes.status === "fulfilled"
+          ? countCreatedToday(documentsRes.value.documents, todayDate)
+          : 0;
       const coverLettersCount =
         coverLettersRes.status === "fulfilled"
-          ? coverLettersRes.value.coverLetters.length
+          ? countCreatedToday(coverLettersRes.value.coverLetters, todayDate)
+          : 0;
+      const portfoliosCount =
+        portfoliosRes.status === "fulfilled"
+          ? portfoliosRes.value.portfolios.filter((item) =>
+              isSameLocalDate(item.createdAt, todayDate)
+            ).length
           : 0;
       setAchievement({
         profile: profileCount,
         activities: activitiesCount,
         resumes: resumesCount,
         coverLetters: coverLettersCount,
+        portfolios: portfoliosCount,
       });
     };
     void load();
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [todayDate]);
 
   const effectiveSelectedDate = selectedDate ?? todayStr;
 
@@ -346,34 +367,33 @@ export default function DashboardPage() {
     setSelectedDate((current) => (current === dateStr ? null : dateStr));
   };
 
-  const monthCells = useMemo(() => buildMonthCells(year, month), [year, month]);
+  const monthCells = useMemo(
+    () => buildMonthCells(year, month, MAIN_CALENDAR_ROWS),
+    [year, month]
+  );
 
-  // AI 추천: programs[0..5], 찜한: bookmarkedPrograms[0..5]
-  const recCardItems = programs.slice(0, 6);
-  const bookmarkedCardItems = bookmarkedPrograms.slice(0, 6);
+  // 커리어 핏 과정/찜한 과정은 하단 5컬럼 grid에 맞춰 최대 5개만 보여준다.
+  const recCardItems = programs.slice(0, 5);
+  const bookmarkedCardItems = bookmarkedPrograms.slice(0, 5);
 
   return (
     <div className="flex h-[calc(100vh-57px)] flex-col overflow-hidden bg-[#f4f5f7] font-sans">
-      {/* Topbar */}
-      <div className="flex h-[52px] flex-shrink-0 items-center justify-between border-b border-[#e8eaed] bg-white px-7">
-        <div>
-          <div className="text-[13px] font-semibold text-[#16162a]">
-            안녕하세요, {userName}님 👋
-          </div>
-          <div className="mt-[2px] flex items-center gap-3.5">
-            <span className="text-[11.5px] text-[#888]">
-              이번 달 마감{" "}
-              <b className="text-[#e0621a]">{totalDeadlines}건</b> · 오늘 마감{" "}
-              <b className="text-[#d63384]">{todayEvents.length}건</b>
-            </span>
-          </div>
-        </div>
-      </div>
-
       {/* Body: left panel + right area */}
       <div className="flex flex-1 min-h-0 min-w-0">
         {/* LEFT PANEL */}
-        <aside className="flex w-[240px] min-w-[240px] flex-shrink-0 flex-col overflow-y-auto border-r border-[#e8eaed] bg-white">
+        <aside className="flex w-[320px] min-w-[320px] flex-shrink-0 flex-col overflow-y-auto border-r border-[#e8eaed] bg-white">
+          {/* Greeting summary */}
+          <div className="border-b border-[#f0f0f0] px-4 pb-3 pt-6">
+            <div className="text-[15px] font-semibold text-[#16162a]">
+              안녕하세요, {userName}님 👋
+            </div>
+            <div className="mt-[3px] text-[15px] text-[#888]">
+              이번 달 마감{" "}
+              <b className="text-[#e0621a]">{totalDeadlines}건</b> · 오늘 마감{" "}
+              <b className="text-[#d63384]">{todayEvents.length}건</b>
+            </div>
+          </div>
+
           {/* Mini calendar */}
           <div className="border-b border-[#f0f0f0] p-4">
             <MiniCalendar
@@ -388,37 +408,13 @@ export default function DashboardPage() {
             />
           </div>
 
-          {/* Category tags */}
-          <div className="border-b border-[#f0f0f0] p-4">
-            <div className="mb-2.5 text-[10.5px] font-semibold uppercase tracking-[0.8px] text-[#aaa]">
-              카테고리
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {CATEGORY_TAGS.map((t) => {
-                const isActive = activeTag === t.key;
-                return (
-                  <button
-                    key={t.key}
-                    type="button"
-                    onClick={() => setActiveTag(t.key)}
-                    className={`whitespace-nowrap rounded-full border-[1.5px] px-2.5 py-1 text-[11px] font-medium transition-all ${t.className} ${
-                      isActive ? "ring-2 ring-current" : "border-transparent"
-                    }`}
-                  >
-                    {t.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
           {/* Today's deadlines */}
           <div className="border-b border-[#f0f0f0] p-4">
-            <div className="mb-2.5 text-[10.5px] font-semibold uppercase tracking-[0.8px] text-[#aaa]">
+            <div className="mb-2.5 text-[15px] font-semibold text-[#aaa]">
               오늘 마감 일정
             </div>
             {todayEvents.length === 0 ? (
-              <div className="py-2 text-[12px] text-[#bbb]">오늘 마감 일정이 없습니다</div>
+              <div className="py-2 text-[15px] text-[#bbb]">오늘 마감 일정이 없습니다</div>
             ) : (
               todayEvents.slice(0, 3).map((e) => (
                 <div key={e.id} className="flex items-start gap-2 py-1.5">
@@ -427,10 +423,10 @@ export default function DashboardPage() {
                     style={{ background: AGENDA_DOT_COLOR[e.color] }}
                   />
                   <div className="min-w-0">
-                    <div className="truncate text-[12px] font-medium leading-[1.4] text-[#222]">
+                    <div className="truncate text-[15px] font-medium leading-[1.4] text-[#222]">
                       {e.title}
                     </div>
-                    <div className="mt-[1px] text-[10.5px] text-[#999]">
+                    <div className="mt-[1px] text-[15px] text-[#999]">
                       {e.org ? `${e.org} · ` : ""}마감 {formatProgramMonthDay(e.deadline) ?? "-"}
                     </div>
                   </div>
@@ -442,11 +438,11 @@ export default function DashboardPage() {
           {/* Selected date events */}
           {effectiveSelectedDate !== todayStr ? (
             <div className="border-b border-[#f0f0f0] p-4">
-              <div className="mb-2.5 text-[10.5px] font-semibold uppercase tracking-[0.8px] text-[#aaa]">
+              <div className="mb-2.5 text-[15px] font-semibold text-[#aaa]">
                 선택 날짜 일정
               </div>
               {selectedEvents.length === 0 ? (
-                <div className="py-2 text-[12px] text-[#bbb]">해당 날짜 일정 없음</div>
+                <div className="py-2 text-[15px] text-[#bbb]">해당 날짜 일정 없음</div>
               ) : (
                 selectedEvents.slice(0, 3).map((e) => (
                   <div key={e.id} className="flex items-start gap-2 py-1.5">
@@ -455,10 +451,10 @@ export default function DashboardPage() {
                       style={{ background: AGENDA_DOT_COLOR[e.color] }}
                     />
                     <div className="min-w-0">
-                      <div className="truncate text-[12px] font-medium leading-[1.4] text-[#222]">
+                      <div className="truncate text-[15px] font-medium leading-[1.4] text-[#222]">
                         {e.title}
                       </div>
-                      <div className="mt-[1px] text-[10.5px] text-[#999]">
+                      <div className="mt-[1px] text-[15px] text-[#999]">
                         {e.org ? `${e.org} · ` : ""}마감 {formatProgramMonthDay(e.deadline) ?? "-"}
                       </div>
                     </div>
@@ -470,7 +466,7 @@ export default function DashboardPage() {
 
           {/* Today's achievements (dashboard counts) */}
           <div className="border-b border-[#f0f0f0] p-4">
-            <div className="mb-2.5 text-[10.5px] font-semibold uppercase tracking-[0.8px] text-[#aaa]">
+            <div className="mb-2.5 text-[15px] font-semibold text-[#aaa]">
               오늘의 성과
             </div>
             {(
@@ -494,22 +490,31 @@ export default function DashboardPage() {
                   letter: "성",
                 },
                 {
-                  key: "resumes",
-                  label: "이력서",
-                  href: "/dashboard/resume",
-                  count: achievement.resumes,
-                  unit: "건",
-                  palette: BOOKMARK_BADGE_PALETTE[2],
-                  letter: "이",
-                },
-                {
                   key: "coverLetters",
                   label: "자기소개서",
                   href: "/dashboard/cover-letter",
                   count: achievement.coverLetters,
                   unit: "건",
-                  palette: BOOKMARK_BADGE_PALETTE[3],
+                  palette: BOOKMARK_BADGE_PALETTE[2],
                   letter: "자",
+                },
+                {
+                  key: "resumes",
+                  label: "이력서",
+                  href: "/dashboard/resume",
+                  count: achievement.resumes,
+                  unit: "건",
+                  palette: BOOKMARK_BADGE_PALETTE[3],
+                  letter: "이",
+                },
+                {
+                  key: "portfolios",
+                  label: "포트폴리오",
+                  href: "/dashboard/portfolio",
+                  count: achievement.portfolios,
+                  unit: "건",
+                  palette: BOOKMARK_BADGE_PALETTE[4],
+                  letter: "포",
                 },
               ] as const
             ).map((row) => (
@@ -519,16 +524,16 @@ export default function DashboardPage() {
                 className="flex items-center gap-2.5 border-b border-[#f5f5f5] py-[7px] last:border-b-0 hover:bg-[#fafbff]"
               >
                 <div
-                  className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-[10px] font-bold"
+                  className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-[12px] font-bold"
                   style={{ background: row.palette.bg, color: row.palette.color }}
                 >
                   {row.letter}
                 </div>
                 <div className="flex min-w-0 flex-1 items-center justify-between">
-                  <div className="truncate text-[11.5px] font-medium leading-[1.3] text-[#333]">
+                  <div className="truncate text-[12px] font-medium leading-[1.3] text-[#333]">
                     {row.label}
                   </div>
-                  <div className="ml-2 flex-shrink-0 text-[11px] font-semibold text-[#4361ee]">
+                  <div className="ml-2 flex-shrink-0 text-[12px] font-semibold text-[#4361ee]">
                     {row.count}
                     {row.unit}
                   </div>
@@ -541,7 +546,7 @@ export default function DashboardPage() {
         {/* RIGHT AREA */}
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           {/* Calendar area */}
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col px-4 pt-2.5">
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col px-4 pt-6">
             {/* Toolbar */}
             <div className="relative flex flex-shrink-0 flex-nowrap items-center gap-1.5 py-2">
               <div className="flex flex-shrink-0 items-center gap-2">
@@ -551,7 +556,7 @@ export default function DashboardPage() {
                       key={v}
                       type="button"
                       onClick={() => setCalView(v)}
-                      className={`border-r border-[#dde0e8] px-2.5 py-1 text-[11px] font-medium transition-colors last:border-r-0 ${
+                      className={`border-r border-[#dde0e8] px-2.5 py-1 text-[15px] font-medium transition-colors last:border-r-0 ${
                         calView === v
                           ? "bg-[#16162a] text-white"
                           : "bg-white text-[#888]"
@@ -573,15 +578,15 @@ export default function DashboardPage() {
                         style={{ color: f.color }}
                       >
                         <span
-                          className={`flex h-[14px] w-[14px] flex-shrink-0 items-center justify-center rounded-[3px] border-[1.5px]`}
+                          className={`flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center rounded-[3px] border-[1.5px]`}
                           style={{
                             borderColor: f.color,
                             background: on ? f.color : "transparent",
                           }}
                         >
-                          {on ? <span className="text-[9px] leading-none text-white">✓</span> : null}
+                          {on ? <span className="text-[15px] leading-none text-white">✓</span> : null}
                         </span>
-                        <span className="whitespace-nowrap text-[10.5px] font-medium">
+                        <span className="whitespace-nowrap text-[15px] font-medium">
                           {f.label}
                         </span>
                       </button>
@@ -595,7 +600,7 @@ export default function DashboardPage() {
                 <button
                   type="button"
                   onClick={prevMonth}
-                  className="flex h-7 w-7 items-center justify-center rounded-md border border-[#e0e0e0] bg-white text-sm text-[#555] transition-colors hover:border-[#4361ee] hover:text-[#4361ee]"
+                  className="flex h-7 w-7 items-center justify-center rounded-md border border-[#e0e0e0] bg-white text-[15px] text-[#555] transition-colors hover:border-[#4361ee] hover:text-[#4361ee]"
                 >
                   ‹
                 </button>
@@ -605,7 +610,7 @@ export default function DashboardPage() {
                 <button
                   type="button"
                   onClick={nextMonth}
-                  className="flex h-7 w-7 items-center justify-center rounded-md border border-[#e0e0e0] bg-white text-sm text-[#555] transition-colors hover:border-[#4361ee] hover:text-[#4361ee]"
+                  className="flex h-7 w-7 items-center justify-center rounded-md border border-[#e0e0e0] bg-white text-[15px] text-[#555] transition-colors hover:border-[#4361ee] hover:text-[#4361ee]"
                 >
                   ›
                 </button>
@@ -615,13 +620,13 @@ export default function DashboardPage() {
               <div className="ml-auto flex flex-shrink-0 flex-nowrap items-center gap-1.5">
                 <button
                   type="button"
-                  className="whitespace-nowrap rounded-md border border-[#ddd] bg-transparent px-3 py-[5px] text-[12px] font-medium text-[#555] transition-colors hover:bg-[#f5f5f5]"
+                  className="whitespace-nowrap rounded-md border border-[#ddd] bg-transparent px-3 py-[5px] text-[15px] font-medium text-[#555] transition-colors hover:bg-[#f5f5f5]"
                 >
                   새로고침
                 </button>
                 <Link
                   href="/programs"
-                  className="whitespace-nowrap rounded-md bg-[#4361ee] px-3 py-[5px] text-[12px] font-medium text-white transition-colors hover:bg-[#3451d1]"
+                  className="whitespace-nowrap rounded-md bg-[#4361ee] px-3 py-[5px] text-[15px] font-medium text-white transition-colors hover:bg-[#3451d1]"
                 >
                   + 새 일정
                 </Link>
@@ -644,18 +649,13 @@ export default function DashboardPage() {
               </div>
               <div
                 className="grid min-h-0 flex-1 grid-cols-7 gap-px overflow-hidden border border-[#e8eaed] bg-[#e8eaed]"
-                style={{ gridTemplateRows: "repeat(6, minmax(0, 1fr))" }}
+                style={{ gridTemplateRows: `repeat(${MAIN_CALENDAR_ROWS}, minmax(0, 1fr))` }}
               >
                 {monthCells.map((cell, idx) => {
                   const colIdx = idx % 7;
                   const isToday = cell.dateStr === todayStr;
                   const isSelected = cell.dateStr === effectiveSelectedDate;
                   let cellEvents = eventsByDate[cell.dateStr] ?? [];
-                  if (activeTag !== "all") {
-                    cellEvents = cellEvents.filter((e) =>
-                      activeTag === "urgent" ? e.color === "urgent" : e.category === activeTag
-                    );
-                  }
                   cellEvents = cellEvents.filter((e) => filters[e.eventType]);
                   const shown = cellEvents.slice(0, 3);
                   const more = cellEvents.length - shown.length;
@@ -710,7 +710,7 @@ export default function DashboardPage() {
                                   ? "text-[#f4b942]"
                                   : "text-[#ccc] hover:text-[#f4b942]"
                               }`}
-                              title={e.isBookmarked ? "찜한 프로그램" : undefined}
+                              title={e.isBookmarked ? DASHBOARD_COPY.bookmarks.cardLabel : undefined}
                             >
                               {e.isBookmarked || starred[e.id] ? "★" : "☆"}
                             </span>
@@ -731,22 +731,22 @@ export default function DashboardPage() {
 
           {/* Bottom strip */}
           <div className="max-h-[42vh] flex-shrink-0 overflow-y-auto border-t border-[#e8eaed] bg-white px-6 pb-4 pt-3.5">
-            {/* AI 추천 프로그램 */}
+            {/* 커리어 핏 과정 */}
             <div className="mb-3 flex items-center justify-between">
               <div className="flex flex-col gap-0.5">
                 <div className="text-[15px] font-bold leading-[1.4] text-[#16162a]">
-                  AI 추천 프로그램
+                  {DASHBOARD_COPY.programs.sectionTitle}
                 </div>
               </div>
-              <Link href="/programs" className="text-[11.5px] text-[#4361ee] hover:underline">
-                추천관리 &gt;
+              <Link href="/programs" className="text-[15px] text-[#4361ee] hover:underline">
+                {DASHBOARD_COPY.programs.manageLink}
               </Link>
             </div>
-            <div className="mb-[18px] flex items-center gap-2">
-              <div className="flex flex-1 gap-2.5 overflow-x-auto pb-1">
+            <div className="mb-[18px] min-h-[154px]">
+              <div className="grid grid-cols-5 gap-2.5 overflow-visible pb-2 pt-1.5">
                 {recCardItems.length === 0 ? (
-                  <div className="w-full py-6 text-center text-[12px] text-[#bbb]">
-                    추천 프로그램이 없습니다
+                  <div className="col-span-5 w-full py-6 text-center text-[15px] text-[#bbb]">
+                    {DASHBOARD_COPY.programs.empty}
                   </div>
                 ) : (
                   recCardItems.map((item, i) => (
@@ -761,30 +761,32 @@ export default function DashboardPage() {
                   ))
                 )}
               </div>
-              <button
-                type="button"
-                className="flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center self-center rounded-full border border-[#e0e0e0] bg-white text-sm text-[#666] shadow-sm transition-colors hover:border-[#4361ee] hover:text-[#4361ee]"
-              >
-                ›
-              </button>
             </div>
 
-            {/* 찜한 프로그램 */}
+            {/* 찜한 과정 */}
             <div className="mb-3 flex items-center justify-between">
               <div className="flex flex-col gap-0.5">
                 <div className="text-[15px] font-bold leading-[1.4] text-[#16162a]">
-                  찜한 프로그램
+                  {DASHBOARD_COPY.bookmarks.sectionTitle}
                 </div>
               </div>
-              <Link href="/compare" className="text-[11.5px] text-[#4361ee] hover:underline">
-                전체보기 &gt;
+              <Link href="/compare" className="text-[15px] text-[#4361ee] hover:underline">
+                {DASHBOARD_COPY.bookmarks.viewAllLink}
               </Link>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="flex flex-1 gap-2.5 overflow-x-auto pb-1">
-                {bookmarkedCardItems.length === 0 ? (
-                  <div className="w-full py-6 text-center text-[12px] text-[#bbb]">
-                    아직 찜한 훈련이 없습니다
+            <div className="min-h-[154px]">
+              <div className="grid grid-cols-5 gap-2.5 overflow-visible pb-2 pt-1.5">
+                {bookmarksLoading && bookmarkedCardItems.length === 0 ? (
+                  <div className="col-span-5 w-full py-6 text-center text-[15px] text-[#bbb]">
+                    찜한 과정을 불러오는 중입니다
+                  </div>
+                ) : bookmarksError && bookmarkedCardItems.length === 0 ? (
+                  <div className="col-span-5 w-full py-6 text-center text-[15px] text-[#bbb]">
+                    {bookmarksError}
+                  </div>
+                ) : bookmarkedCardItems.length === 0 ? (
+                  <div className="col-span-5 w-full py-6 text-center text-[15px] text-[#bbb]">
+                    {DASHBOARD_COPY.bookmarks.empty}
                   </div>
                 ) : (
                   bookmarkedCardItems.map((item, i) => (
@@ -799,17 +801,11 @@ export default function DashboardPage() {
                   ))
                 )}
               </div>
-              <button
-                type="button"
-                className="flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center self-center rounded-full border border-[#e0e0e0] bg-white text-sm text-[#666] shadow-sm transition-colors hover:border-[#4361ee] hover:text-[#4361ee]"
-              >
-                ›
-              </button>
             </div>
 
             {appliedCalendarPrograms.length > 0 ? (
-              <p className="mt-3 text-[11px] text-[#999]">
-                적용된 캘린더 일정 {appliedCalendarPrograms.length}건 · 카드의 &quot;+ 찜콩&quot;으로 캘린더에 일정을 추가할 수 있습니다.
+              <p className="mt-3 text-[15px] text-[#999]">
+                {DASHBOARD_COPY.programs.appliedNotice(appliedCalendarPrograms.length)}
               </p>
             ) : null}
           </div>
@@ -876,7 +872,7 @@ function MiniCalendar({
           </button>
         </div>
       </div>
-      <div className="grid grid-cols-7 gap-0">
+      <div className="grid grid-cols-7 gap-1">
         {DOW_KR.map((d) => (
           <div key={d} className="py-[3px] text-center text-[9.5px] font-medium text-[#aaa]">
             {d}
@@ -893,7 +889,7 @@ function MiniCalendar({
               type="button"
               disabled={!cell.cur}
               onClick={() => dateStr && onSelectDate(dateStr)}
-              className={`relative mx-auto my-[1px] flex h-[26px] w-[26px] items-center justify-center rounded-full p-0 text-[11px] transition-colors ${
+              className={`relative flex aspect-square w-full items-center justify-center rounded-md p-0 text-[12px] transition-colors ${
                 !cell.cur
                   ? "cursor-default text-[#ccc]"
                   : isToday
@@ -933,58 +929,36 @@ function RecCard({
 }) {
   const { program } = item;
   const bg = isWhite ? "" : CARD_BG_CLASS[CARD_BG_CYCLE[index % CARD_BG_CYCLE.length]];
-  const badge = BADGE_CYCLE[index % BADGE_CYCLE.length];
-  const score = getProgramCardScore(item);
-  const percent =
-    typeof score === "number"
-      ? Math.max(0, Math.min(100, Math.round(score <= 1 ? score * 100 : score)))
-      : 85 - index * 3;
-  const deadlineDisplay = parseProgramDate(program.deadline)
-    ? formatProgramMonthDay(program.deadline) ?? ""
-    : "";
-  const categoryLabel = program.category ?? "프로그램";
+  const categoryLabel = program.category ?? DASHBOARD_COPY.programs.fallbackCategory;
 
   return (
     <div
-      className={`relative flex min-w-[200px] max-w-[210px] flex-shrink-0 flex-col rounded-[14px] border-0 p-[14px_15px_13px] transition-all hover:-translate-y-0.5 hover:shadow-md ${
+      className={`relative flex h-[132px] min-w-0 w-full flex-col rounded-[14px] border-0 p-[14px_15px_13px] transition-all hover:-translate-y-0.5 hover:shadow-md ${
         isWhite ? "border-[1.5px] border-[#e0e0e0] bg-white hover:border-[#4361ee]" : bg
       }`}
     >
-      {!isWhite ? (
-        <span
-          className={`mb-2 inline-flex w-fit items-center rounded-full px-2 py-[2px] text-[10px] font-bold ${badge.className}`}
-        >
-          {badge.label}
-        </span>
-      ) : (
-        <div className="mb-1.5 overflow-hidden text-ellipsis whitespace-nowrap text-[10.5px] text-[#aaa]">
-          {categoryLabel}
-        </div>
-      )}
-      {!isWhite ? (
-        <div className="mb-1.5 line-clamp-2 text-[10.5px] leading-[1.5] text-[#555]">
-          {categoryLabel}
-          {deadlineDisplay ? ` · 마감 ${deadlineDisplay}` : ""}
-        </div>
-      ) : null}
-      <div className="mb-2.5 line-clamp-2 text-[14px] font-bold leading-[1.35] text-[#16162a]">
+      <ProgramDeadlineBadge
+        program={program}
+        className="absolute right-3 top-3 px-2 py-0.5 text-[15px]"
+      />
+      <div className="mb-1.5 max-w-[calc(100%-72px)] overflow-hidden text-ellipsis whitespace-nowrap text-[15px] text-[#777]">
+        {categoryLabel}
+      </div>
+      <div className="mb-2.5 line-clamp-2 pr-20 text-[15px] font-bold leading-[1.35] text-[#16162a]">
         {program.title ?? "제목 없음"}
       </div>
-      <div className="mt-auto flex items-center justify-between">
-        <span className="whitespace-nowrap text-[11px] font-semibold text-[#4361ee]">
-          관련도 {percent}%
-        </span>
+      <div className="mt-auto flex items-center justify-end">
         <button
           type="button"
           onClick={onSubscribe}
-          className="flex items-center gap-1 whitespace-nowrap rounded-full border-[1.5px] px-2.5 py-1 text-[11px] font-semibold transition-all"
+          className="flex items-center gap-1 whitespace-nowrap rounded-full border-[1.5px] px-2.5 py-1 text-[15px] font-semibold transition-all"
           style={
             isSubscribed
               ? { borderColor: "#4361ee", color: "#4361ee", background: "#f0f4ff" }
               : { borderColor: "#ccc", color: "#333", background: "#fff" }
           }
         >
-          {isSubscribed ? "찜콩중" : "+ 찜콩"}
+          {isSubscribed ? DASHBOARD_COPY.programs.appliedButton : DASHBOARD_COPY.programs.applyButton}
         </button>
       </div>
     </div>

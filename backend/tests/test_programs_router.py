@@ -3096,6 +3096,88 @@ def test_compute_program_relevance_items_adds_fit_interpretation_fields(
     assert item.score_breakdown["region"] == 0
     assert item.score_breakdown["skills"] == 20
     assert item.score_breakdown["experience"] == 20
+    assert item.score_breakdown["behavior"] == 0
+
+
+def test_compute_program_relevance_items_uses_real_behavior_signal(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        programs.programs_rag,
+        "_profile_keywords",
+        lambda profile, activities: ["python"],
+    )
+    monkeypatch.setattr(
+        programs.programs_rag,
+        "_program_match_context",
+        lambda program, profile_keywords: (["Python"], 0.6),
+    )
+    monkeypatch.setattr(
+        programs.programs_rag,
+        "_tokenize_text",
+        lambda value: [token.lower() for token in str(value).replace(",", " ").split() if token.strip()],
+    )
+
+    items = programs._compute_program_relevance_items(
+        profile={
+            "target_job": "백엔드 개발자",
+            "skills": ["Python"],
+            "self_intro": "백엔드 프로젝트 경험이 있습니다.",
+        },
+        activities=[{"id": "act-1", "title": "API 개발", "skills": ["Python"]}],
+        programs_by_id={
+            "program-1": {
+                "id": "program-1",
+                "title": "Python 백엔드 과정",
+                "skills": ["Python"],
+            }
+        },
+        program_ids=["program-1"],
+        behavior_program_ids={"program-1"},
+    )
+
+    assert items[0].score_breakdown["behavior"] == 5
+    assert "찜/캘린더 관심 행동과 일치" in items[0].relevance_reasons
+
+
+def test_compute_program_relevance_items_uses_derived_activity_keywords(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        programs.programs_rag,
+        "_profile_keywords",
+        lambda profile, activities: ["data", "analysis"],
+    )
+    monkeypatch.setattr(
+        programs.programs_rag,
+        "_program_match_context",
+        lambda program, profile_keywords: (["Data"], 0.5),
+    )
+    monkeypatch.setattr(
+        programs.programs_rag,
+        "_tokenize_text",
+        lambda value: [token.lower() for token in str(value).replace(",", " ").split() if token.strip()],
+    )
+
+    items = programs._compute_program_relevance_items(
+        profile={
+            "skills": ["Data"],
+            "activity_keywords": ["분석 프로젝트", "데이터 리포트"],
+            "profile_completeness_score": 0.8,
+        },
+        activities=[],
+        programs_by_id={
+            "program-1": {
+                "id": "program-1",
+                "title": "Data 분석 과정",
+                "skills": ["Data"],
+            }
+        },
+        program_ids=["program-1"],
+    )
+
+    assert items[0].score_breakdown["experience"] == 20
+    assert items[0].score_breakdown["readiness"] == 8
 
 
 def test_compute_program_relevance_items_adds_region_signal(
@@ -3140,7 +3222,7 @@ def test_compute_program_relevance_items_adds_region_signal(
     item = items[0]
     assert item.region_match_score == 1.0
     assert item.matched_regions == ["서울"]
-    assert item.relevance_score == 0.575
+    assert item.relevance_score == 0.65
     assert item.score_breakdown["region"] == 15
     assert item.score_breakdown["skills"] == 25
     assert item.score_breakdown["experience"] == 15

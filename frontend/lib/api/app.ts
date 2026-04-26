@@ -228,11 +228,18 @@ export async function trackProgramDetailView(programId: string): Promise<{ ok: t
 }
 
 export async function getDashboardBookmarks(): Promise<DashboardBookmarksResponse> {
-  return requestAppJson<DashboardBookmarksResponse>(
-    "/api/dashboard/bookmarks",
-    { method: "GET" },
-    "찜한 프로그램을 불러오지 못했습니다."
-  );
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), 15000);
+
+  try {
+    return await requestAppJson<DashboardBookmarksResponse>(
+      "/api/dashboard/bookmarks",
+      { method: "GET", signal: controller.signal },
+      "찜한 프로그램을 불러오지 못했습니다."
+    );
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
 }
 
 export async function updateDashboardProfileSection(

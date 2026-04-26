@@ -139,7 +139,10 @@ function isIgnorableProgramListIndexError(error: SupabaseErrorLike): boolean {
   return (
     code === "42P01" ||
     code === "42703" ||
+    code === "57014" ||
     code === "PGRST202" ||
+    message.includes("statement timeout") ||
+    message.includes("canceling statement due to statement timeout") ||
     message.includes("program_list_index")
   );
 }
@@ -188,6 +191,7 @@ export function readModelRowToProgramCardSummary(row: Record<string, unknown>): 
     support_type: cleanText(row.support_type),
     teaching_method: cleanText(row.teaching_method_label) ?? cleanText(row.teaching_method),
     is_active: asBoolean(row.is_active),
+    is_open: asBoolean(row.is_open),
     is_ad: asBoolean(row.is_ad),
     days_left: asNumber(row.days_left),
     deadline_confidence:
@@ -271,6 +275,7 @@ export function legacyProgramRowToProgramCardSummary(row: Record<string, unknown
     support_type: cleanText(row.support_type),
     teaching_method: cleanText(row.teaching_method),
     is_active: asBoolean(row.is_active),
+    is_open: asBoolean(row.is_open),
     is_ad: asBoolean(row.is_ad),
     days_left: asNumber(row.days_left),
     deadline_confidence:
@@ -391,7 +396,7 @@ export async function loadDeadlineOrderedProgramCardSummaries(
     const { data, error } = await supabase
       .from("program_list_index")
       .select("*")
-      .eq("is_open", true)
+      .gte("deadline", today)
       .order("deadline", { ascending: true, nullsFirst: false })
       .limit(normalizedLimit);
 

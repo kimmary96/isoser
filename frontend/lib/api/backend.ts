@@ -22,11 +22,9 @@ import type {
   ProgramFilterOptionsResponse,
   ProgramListPageResponse,
   ProgramListParams,
-  ProgramSelectSummary,
   ProgramRecommendResponse,
   SkillSuggestResponse,
 } from "@/lib/types";
-import { toProgramSelectSummaries, unwrapProgramListRows } from "@/lib/program-display";
 import { fetchBackendResponse } from "./backend-endpoint";
 import { buildPathWithSearchParams, buildProgramListSearchParams } from "./program-query";
 
@@ -257,13 +255,6 @@ export async function listPrograms(params?: ProgramListParams): Promise<Program[
     },
     "Failed to load programs."
   );
-}
-
-export async function listProgramSelectSummaries(
-  params?: ProgramListParams
-): Promise<ProgramSelectSummary[]> {
-  const page = await listProgramsPage(params);
-  return toProgramSelectSummaries(unwrapProgramListRows(page.items));
 }
 
 export async function listProgramsPage(params?: ProgramListParams): Promise<ProgramListPageResponse> {

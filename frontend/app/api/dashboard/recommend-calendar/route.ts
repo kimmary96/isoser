@@ -1,6 +1,7 @@
 import { apiError, apiOk } from "@/lib/api/route-response";
 import { fetchBackendResponse } from "@/lib/api/backend-endpoint";
 import { buildPathWithSearchParams, buildRecommendationSearchParams } from "@/lib/api/program-query";
+import { DASHBOARD_COPY } from "@/app/dashboard/dashboard-copy";
 import {
   toCalendarProgramCardItem,
   toFallbackCalendarProgramCardItem,
@@ -24,11 +25,18 @@ const BACKEND_RECOMMEND_TIMEOUT_MS = 3500;
 const BACKEND_FALLBACK_TIMEOUT_MS = 2500;
 const SUPABASE_FALLBACK_SCAN_LIMIT = 1000;
 
+function formatLocalDateKey(date = new Date()): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function toFallbackCalendarResponse(
   programs: ProgramCardSummary[],
   topK: number
 ): DashboardRecommendCalendarResponse {
-  const reason = "추천 데이터가 비어 있어 모집 마감이 가까운 공개 프로그램을 우선 노출합니다.";
+  const reason = "커리어 핏 일정이 비어 있어 모집 마감이 가까운 공개 과정을 먼저 보여줍니다.";
   return {
     items: programs
       .slice(0, topK)
@@ -44,7 +52,7 @@ async function loadSupabaseFallbackPrograms(topK: number): Promise<DashboardReco
   } catch {
     supabase = (await createServerSupabaseClient()) as unknown as ProgramCardDeadlineRouteClient;
   }
-  const today = new Date().toISOString().slice(0, 10);
+  const today = formatLocalDateKey();
   const items = await loadDeadlineOrderedProgramCardSummaries(
     supabase,
     {
@@ -95,7 +103,7 @@ export async function GET(request: Request) {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.detail || "캘린더 추천 프로그램을 불러오지 못했습니다.");
+      throw new Error(errorData?.detail || DASHBOARD_COPY.calendar.loadError);
     }
 
     const data = (await response.json()) as CalendarRecommendResponse;
@@ -132,10 +140,10 @@ export async function GET(request: Request) {
     } catch (fallbackError) {
       const message =
         fallbackError instanceof Error
-          ? fallbackError.message
-          : error instanceof Error
-            ? error.message
-            : "캘린더 추천 프로그램을 불러오지 못했습니다.";
+            ? fallbackError.message
+            : error instanceof Error
+              ? error.message
+              : DASHBOARD_COPY.calendar.loadError;
       return apiError(message, 400, "BAD_REQUEST");
     }
   }

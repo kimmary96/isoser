@@ -303,6 +303,7 @@ export interface ProgramBaseSummary {
   support_type?: string | null;
   teaching_method?: string | null;
   is_active?: boolean | null;
+  is_open?: boolean | null;
   is_ad?: boolean | null;
   days_left?: number | null;
   deadline_confidence?: "high" | "medium" | "low" | null;
@@ -342,17 +343,6 @@ export interface ProgramCardSummary extends ProgramBaseSummary {
 }
 
 export type ProgramListRow = ProgramCardSummary;
-
-export interface ProgramSelectSummary {
-  id: string | number | null;
-  title: string | null;
-  category: string | null;
-  provider: string | null;
-  source?: string | null;
-  tags: string[] | string | null;
-  days_left?: number | null;
-  support_type?: string | null;
-}
 
 export interface ProgramSurfaceContext {
   surface?: string | null;
@@ -398,7 +388,7 @@ export interface DashboardCalendarSelectionsResponse {
 }
 
 export interface ProgramCompareSearchResponse {
-  items: ProgramSelectSummary[];
+  items: ProgramCardItem[];
 }
 
 export interface Program {

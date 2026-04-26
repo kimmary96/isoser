@@ -1,5 +1,18 @@
 # 리팩토링 로그
 
+- 2026-04-26: `frontend/app/(landing)/compare/*`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-26-compare-page-bookmarks-detail-relevance-result.md`
+  - 비교 모달의 찜 목록 로딩을 서버 렌더링 로그인 힌트가 아니라 실제 dashboard bookmark BFF 응답 기준으로 바꿔, 로그인 직후 SSR 상태가 어긋나도 `program_bookmarks`를 다시 조회하게 함
+  - 비교 모달의 찜/검색/하단 suggestion을 `ProgramSelectSummary` 전용 계약에서 `ProgramCardItem(program + context)` 계약으로 되돌려 대시보드 찜 카드와 공개 프로그램 목록 summary를 같은 데이터 구조로 소비하게 함
+  - compare-search BFF는 `GET /programs/list`의 public browse/search 규칙을 그대로 사용해 keyword가 없으면 기본 browse, keyword가 있으면 `scope=all` search로 동작하게 함
+  - compare-search와 하단 suggestion에 모집중 방어 필터를 추가해 stale read-model 또는 검색 fallback에서 `days_left < 0`, `is_active=false`, 과거 deadline row가 비교 후보로 새지 않게 함
+  - `/api/dashboard/bookmarks`는 인증 확인 후 대시보드 캘린더 선택 BFF와 같은 service-role read fallback으로 `program_bookmarks`와 프로그램 summary를 읽게 해, 로그인 사용자의 찜 목록이 RLS/세션 흔들림으로 비어 보이는 위험을 줄임
+  - 비교 표를 상세 페이지 항목에 맞춰 `과정 분류/NCS/운영 방식/참여 시간/비용 유형/신청 방법/선발 절차/후기 수`까지 확장하고, 중복 카테고리/참여 시간 값은 dedupe해 한 번만 표시함
+  - 소개 섹션은 기관명만 들어온 `summary/description`을 훈련 설명처럼 보여주지 않고, 실제 소개/훈련 내용이 있을 때만 렌더링하도록 정리함
+  - AI 적합도 UI에 판단 근거, 연결 데이터, 점수 구성을 추가하고, backend breakdown은 대시보드 추천과 같은 키/가중치 상수를 사용하며 `behavior` 점수는 실제 `program_bookmarks`/`calendar_program_selections` 매칭이 있을 때만 반영하도록 조정함
+  - backend compare relevance 입력을 `programs` 원본 + `program_list_index` summary/skills/extracted_keywords/display_categories 병합으로 바꿔, 목록/대시보드와 같은 키워드 근거를 쓰고 RAG 매칭이 0인 경우에도 추천 breakdown 총점이 관련도 하한으로 반영되게 함
+  - 후속 리팩토링으로 비교 표 formatter를 `compare-formatters.ts`, 표 값 추출을 `compare-value-getters.ts`로 분리해 `compare-table-sections.tsx`의 렌더링 책임을 줄임
+  - 검증: `npm run lint -- --file "app/(landing)/compare/program-select-modal.tsx" --file "app/(landing)/compare/programs-compare-client.tsx" --file "app/(landing)/compare/page.tsx" --file "app/api/programs/compare-search/route.ts" --file "app/api/dashboard/bookmarks/route.ts" --file "lib/types/index.ts" --file "lib/program-display.ts" --file "lib/api/backend.ts"`, `npx tsc -p tsconfig.codex-check.json --noEmit`, `python -m py_compile backend\routers\programs.py backend\tests\test_programs_router.py`, `backend\venv\Scripts\python.exe -m pytest backend\tests\test_programs_router.py -q -k "compute_program_relevance_items"`, local API smoke on `/api/programs/compare-search?recruiting_only=true`
+
 - 2026-04-26: `scripts/backfill_work24_browse_pool_self_pay.py`, `backend/tests/test_work24_browse_pool_self_pay_backfill_script.py`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/session/2026-04/SESSION-2026-04-26-work24-canonical-self-pay-repair-result.md`
   - Work24 상세 증거(`compare_meta.self_payment/out_of_pocket`)가 이미 있는데 canonical `support_amount/subsidy_amount`가 총 훈련비로 남은 browse pool row를 다시 복구하도록 backfill 스크립트를 보강함
   - 대표 row `09b33464-3ac7-4eeb-a4bd-1ff03ea48eb4`의 live 값을 `훈련비 629,760원 / 자부담금 220,420원`으로 맞췄고, 적용 후 Work24 browse pool 299건 중 canonical 자부담이 있는 278건의 `programs.support_amount`와 `program_list_index.verified_self_pay_amount` mismatch가 0건임을 확인함
@@ -3352,3 +3365,67 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - 공용 program display helper가 `support_amount`와 camelCase legacy compare_meta 비용 키까지 해석하도록 넓혀, 일부 고용24 카드가 총 훈련비를 `본인부담금`으로 보이던 회귀를 줄임
   - 카드 일정 라인을 source-aware helper로 공용화해 `고용24`는 훈련 기간을 유지하고, 그 외 source는 실제 운영 일정 메타를 우선 보며 신청기간처럼 보이는 값은 `일정 확인 필요`로 숨기도록 조정함
   - 랜딩 Opportunity feed, 마감임박 compact card, dashboard 추천/찜/캘린더 카드에 공통 `ProgramDeadlineBadge`를 붙여 오른쪽 위 D-day 시각 표현을 통일함
+- 2026-04-26: `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/compare/page.tsx`, `frontend/app/(landing)/compare/programs-compare-client.tsx`, `frontend/app/(landing)/compare/program-select-modal.tsx`, `frontend/app/(landing)/compare/compare-value-getters.ts`, `frontend/app/(landing)/compare/compare-table-sections.tsx`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-26-compare-page-bookmarks-detail-relevance-result.md`
+  - 로컬 8000 backend의 `/programs/filter-options?recruiting_only=true`가 약 29초 걸리는 것을 확인하고, `/programs` 기본 browse 진입은 동적 filter option을 기다리지 않게 바꿔 탐색 페이지 진입 지연을 끊음
+  - 비교 페이지는 로그인 SSR에서 `program_bookmarks`를 service-role로 미리 읽어 `initialBookmarkedItems`를 내려주고, 클라이언트 찜 조회 실패 시 이 초기 찜 카드가 빈 목록으로 사라지지 않도록 보강함
+  - 비교 표의 신청 방법/선발 절차/지원사업 유형/만족도/후기 수는 Work24 원천 메타와 지원 링크에서 파생 가능한 값을 먼저 표기해, 실제 0값과 원천 미수집을 UI에서 구분하도록 정리함
+- 2026-04-26: `frontend/app/(landing)/programs/[id]/program-detail-client.tsx`, `docs/current-state.md`
+  - 상세 페이지 `ChipList`가 같은 텍스트를 그대로 React key로 쓰면서 `디자인` 같은 중복 키워드에서 key 충돌 경고가 나던 문제를 수정함
+  - 칩 목록은 렌더 직전 공백 정리와 중복 제거를 수행하고, 반복 가능성이 있는 추천 대상/지원 자격/hero badge 목록은 index를 포함한 key를 사용하도록 보강함
+- 2026-04-26: `frontend/app/(landing)/compare/program-select-modal.tsx`, `docs/current-state.md`
+  - 비교 모달을 닫거나 프로그램을 추가한 뒤 다시 열 때 SSR로 받은 찜 카드가 있음에도 `bookmarksLoaded`만 false로 초기화되어 로딩 화면에 가려지는 문제를 수정함
+  - 초기 찜 목록이 있으면 modal state도 loaded로 시작하고, 닫기/재열기 동안 loaded 상태를 보존해 같은 비교 페이지 세션에서 찜 카드가 계속 표시되도록 맞춤
+- 2026-04-26: `frontend/lib/api/app.ts`, `frontend/app/api/dashboard/bookmarks/route.ts`, `frontend/app/(landing)/compare/program-select-modal.tsx`, `docs/current-state.md`
+  - 비교 모달의 클라이언트 찜 fallback timeout을 10초에서 5초로 낮춰 사용자가 장시간 로딩을 빈 목록으로 오해하는 시간을 줄임
+  - 찜 목록 fallback 실패 UI에 `다시 시도` 버튼을 추가해 같은 모달 안에서 `/api/dashboard/bookmarks`를 다시 호출할 수 있게 함
+  - dashboard bookmarks BFF는 최신 30건만 조회하고 찜 row가 0건이면 프로그램 summary 조회를 생략해 fallback 응답 경로를 줄임
+- 2026-04-26: `frontend/app/(landing)/compare/compare-relevance-section.tsx`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`
+  - 비교 페이지 AI 적합도 섹션을 `종합 적합도`, `매칭 키워드`, `AI 코멘트 한스푼` 3개 행으로 축소하고, 프로그래스 바 대신 큰 퍼센트 숫자를 사용하도록 정리함
+  - 매칭 근거는 긴 판단 문구/연결 데이터/점수 구성 대신 지역·기술·분류·태그·지원 유형 chip으로만 보여주게 바꿈
+  - backend compare relevance는 RAG 직접 매칭 점수와 추천 breakdown 점수 중 더 높은 값을 종합 적합도로 채택하고, 활동/프로젝트 키워드가 프로그램 키워드와 맞을 때 experience 점수를 더 크게 반영함
+  - 더 이상 쓰지 않는 `compare-relevance-helpers.ts`를 제거해 AI 적합도 UI 책임을 단일 컴포넌트로 정리함
+- 2026-04-26: `frontend/app/(landing)/compare/compare-relevance-section.tsx`, `docs/current-state.md`
+  - AI 종합 적합도를 숫자 퍼센트 대신 5단계 감성 bar로 바꿔, `부적합/적합` 같은 평가적 단어 없이 현재 훈련과의 거리감을 표현하도록 조정함
+  - 단계 문구는 1단계 `엄청난 도전과 열정이 필요해요`, 2단계 `새로운 가능성을 열어볼 수 있어요`, 3단계 `내 커리어에 부스터를 달아줄거에요`, 4단계 `성장 방향과 꽤 잘 맞는 훈련이에요`, 5단계 `나와 딱맞는 훈련이에요!`로 정리함
+- 2026-04-26: `frontend/app/(landing)/compare/compare-table-sections.tsx`, `frontend/app/(landing)/compare/compare-value-getters.ts`, `docs/current-state.md`
+  - 비교 표에서 사용자가 요청한 `운영 방식`, `비용 유형`, `후기 수` 행을 제거해 표 밀도를 낮춤
+  - `후기 수` 전용 getter도 더 이상 쓰이지 않아 제거하고, 비교 표는 참여 시간/지원 유형/만족도/문의 등 남은 판단 항목 중심으로 유지함
+- 2026-04-26: `frontend/app/(landing)/compare/compare-relevance-section.tsx`, `docs/current-state.md`
+  - AI 종합 적합도 5단계 bar를 두꺼운 캡슐형 블록에서 더 얇은 segmented rail과 작은 marker 디자인으로 다듬음
+  - 현재 단계 색상만 진하게 보이고 나머지 구간은 낮은 opacity로 처리해 비교 표 안에서 덜 무겁게 보이도록 조정함
+- 2026-04-26: `frontend/app/(landing)/compare/page.tsx`, `frontend/app/(landing)/compare/programs-compare-client.tsx`, `docs/current-state.md`
+  - 비교 하단 후보가 단순 공개 browse 목록만 보여주던 기준을 `찜한 과정 -> 비교 항목 유사 검색 -> 대시보드 커리어 핏 후보 -> 공개 모집중 후보` 우선순위로 통합함
+  - 유사 검색은 비교 중인 과정의 상세 키워드, skills, display category, NCS, 카테고리, 지역을 `/programs/list` 검색 규칙에 넣어 재사용하고, 맞춤 후보는 기존 `/programs/recommend`를 3.5초 timeout으로 호출하도록 맞춤
+  - 하단 카드에는 `찜한 과정`, `비교 항목과 유사`, `내 이력 기준`, `모집중 공개 후보` 기준 라벨과 빈 상태를 추가해 후보 근거가 화면에서 바로 보이도록 정리함
+- 2026-04-26: `frontend/app/(landing)/compare/compare-copy.ts`, `frontend/app/(landing)/compare/page.tsx`, `frontend/app/(landing)/compare/programs-compare-client.tsx`, `frontend/app/(landing)/compare/program-select-modal.tsx`, `frontend/app/(landing)/compare/compare-relevance-section.tsx`, `docs/current-state.md`
+  - 비교페이지 사용자-facing 문구를 `compare-copy.ts`로 모아 상단 hero, 표기 기준, 커리어 핏 섹션, 로그인 CTA, 하단 후보, 선택 모달이 같은 copy source를 사용하도록 리팩토링함
+  - 화면 용어를 `커리어 핏`, `과정`, `내 이력` 중심으로 통일하고 `적합도/관련도/분석/프로필 기준`처럼 섞여 보이던 표현을 제거함
+  - `AI 적합도`, `종합 적합도`, `매칭 키워드`, `로그인하면 내 프로필 기준 관련도...` 같은 딱딱한 문구를 `커리어 핏`, `커리어 핏 단계`, `맞닿은 키워드`, `내 이력과 비교하면 더 정확해져요` 흐름으로 정리함
+- 2026-04-26: `frontend/app/dashboard/dashboard-copy.ts`, `frontend/app/dashboard/page.tsx`, `frontend/app/dashboard/_hooks/use-dashboard-recommendations.ts`, `frontend/app/dashboard/_components/dashboard-program-cards.tsx`, `frontend/app/dashboard/_components/dashboard-calendar-section.tsx`, `frontend/app/api/dashboard/recommended-programs/route.ts`, `frontend/app/api/dashboard/recommend-calendar/route.ts`, `frontend/app/(landing)/compare/page.tsx`, `frontend/app/(landing)/compare/programs-compare-client.tsx`, `frontend/app/(landing)/compare/program-select-modal.tsx`, `docs/current-state.md`
+  - 대시보드 추천/캘린더 copy를 `dashboard-copy.ts`로 모아 `AI 추천 프로그램`, `관련도`, `추천관리`, `찜콩` 등 비교 페이지와 어긋나던 표현을 `커리어 핏 과정`, `커리어 핏`, `과정 탐색`, `담기` 흐름으로 맞춤
+  - 대시보드 추천/캘린더 BFF fallback reason도 `커리어 핏` 용어로 정리하고, 비교/대시보드 client catch fallback은 upstream error detail 대신 사용자-facing copy를 보여주도록 조정함
+  - 대시보드 추천/찜 빈 상태와 캘린더 empty/CTA도 `과정`, `내 이력` 기준으로 통일함
+- 2026-04-26: `frontend/app/(landing)/compare/compare-suggestions.ts`, `frontend/app/(landing)/compare/page.tsx`, `docs/current-state.md`
+  - 비교 하단 후보 조립 로직을 `page.tsx`에서 서버 전용 `compare-suggestions.ts`로 분리해 page 컴포넌트 책임을 줄임
+  - 기존 우선순위, 모집중 필터, 중복 제외, `/programs/recommend` 3.5초 timeout, 공개 fallback 계약은 그대로 유지함
+  - `page.tsx`는 URL 슬롯/상세/로그인/초기 찜 데이터 조립과 클라이언트 props 전달만 맡도록 import 경계를 정리함
+- 2026-04-26: `frontend/app/dashboard/page.tsx`, `frontend/app/dashboard/_hooks/use-dashboard-recommendations.ts`, `frontend/app/dashboard/dashboard-copy.ts`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-26-dashboard-qa-fixes-result.md`
+  - 대시보드 상단 인사말 bar를 제거하고 같은 문구를 왼쪽 사이드 최상단으로 이동해 캘린더 본문을 위로 당김
+  - 왼쪽 사이드 폭을 320px로 조정하고 작은 달력 날짜 셀을 정사각형으로 유지하도록 조정함
+  - 오른쪽 큰 월간 달력을 6행에서 5행/35칸 표시로 줄임
+  - 하단 추천/찜 strip을 최대 5개 카드로 줄이고 5컬럼 grid로 바꿔 카드가 오른쪽 달력 가로폭을 나눠 쓰도록 조정함
+  - 왼쪽 작은 달력 아래 카테고리 chip 블록과 관련 activeTag 필터 상태를 제거함
+  - `오늘의 성과`는 전체 누적 수가 아니라 각 항목 `created_at`이 오늘인 row만 세도록 바꿔 당일 작성 기준으로 맞춤
+  - `오늘의 성과` 표시 순서를 프로필/성과/자기소개서/이력서/포트폴리오로 조정하고, 포트폴리오는 저장된 포트폴리오 목록의 생성일 기준으로 당일 건수를 함께 표시함
+  - 대시보드 하단 카드의 D-day는 공통 `ProgramDeadlineBadge`를 카드 오른쪽 상단에만 표시하도록 맞추고, 기존 HOT/NEW badge와 본문 `마감 MM.DD` 중복 표기를 제거함
+  - 카드 점수 helper에서 `relevance_score=0`이 양수 `score/final_score`를 막아 커리어 핏이 0%로 보이던 경로를 수정하고 회귀 테스트를 추가함
+  - 커리어 핏 추천 BFF 응답과 클라이언트 localStorage 추천 캐시 모두에서 마감된 과정(`days_left < 0`, 과거 deadline)을 제외하도록 공통 helper를 추가함. 날짜 신호가 없을 때만 `is_open=false`/`is_active=false`를 closed 신호로 사용해 stale flag가 미래 deadline 카드를 숨기지 않게 보정함
+  - 추천 BFF가 성공 응답으로 빈 추천을 반환하거나 마감 제외 후 0건이 되는 경우에도 모집중 공개 후보 fallback을 사용하도록 바꿔 `내 커리어 핏 추천` 섹션이 불필요하게 비지 않도록 복구함
+  - 실제 로컬 API 점검에서 Supabase direct fallback의 `program_list_index` 조회가 statement timeout으로 400을 반환하는 경로를 확인해, 추천 BFF도 빠른 `/programs/list?recruiting_only=true&sort=deadline` backend fallback을 먼저 사용하고 direct fallback은 로컬 날짜 기준 `deadline >= 오늘`으로 조회하도록 보강함
+  - 추천 localStorage 캐시는 `isoser:dashboard-recommended-programs:v2` 키와 6시간 TTL로 바꾸고, 모집중/양수 점수 조건을 만족하는 추천 및 fallback 카드를 즉시 재사용하게 해 대시보드 재진입 시 빈 로딩을 줄임
+  - 후속 QA 기준에 맞춰 `내 커리어 핏 추천`은 70점 threshold 없이 사용자 DB 기반 개인화 추천 surface만 노출하고 내부 매칭 점수로 정렬하도록 변경함. 공개 fallback 후보는 추천 strip에 섞지 않고, 추천/캘린더 카드의 커리어 핏 퍼센트 텍스트는 제거함
+  - 대시보드 찜한 과정은 `program_bookmarks`가 비어 있을 때 legacy `bookmarks` 테이블도 확인하고, 카드 summary는 `programs` 테이블을 먼저 읽어 read-model timeout 영향을 줄임. 클라이언트 fetch timeout은 15초로 늘리고 10분 localStorage cache를 추가해 재진입 시 기존 찜 카드가 먼저 보이게 함
+  - `오늘의 성과` 하위 항목의 아이콘/라벨/건수 글자 크기를 12px로 조정함
+  - 달력 내부 글자는 유지하고, 캘린더 툴바/왼쪽 정보 패널/하단 추천·찜 카드의 작은 글자들을 `찜한 과정` 제목과 같은 15px 기준으로 키워 화면 밀도를 완화함
+  - 하단 `내 커리어 핏 추천` strip은 추천 전용 BFF를 사용하고 커리어 핏 점수 기준으로 정렬하며, 이전 캘린더 fallback 0% cache가 추천 카드를 덮지 않게 cache 사용 조건을 좁힘
+  - `찜한 과정` strip은 추천 strip과 같은 최소 세로 공간 및 hover 여백을 갖게 해 카드 상단 클리핑을 완화함

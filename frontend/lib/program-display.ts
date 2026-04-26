@@ -4,7 +4,6 @@ import type {
   ProgramCardSummary,
   ProgramListRow,
   ProgramListRowItem,
-  ProgramSelectSummary,
 } from "@/lib/types";
 
 type ProgramIdentity = Pick<ProgramBaseSummary, "id">;
@@ -228,6 +227,25 @@ export function formatProgramDeadlineCountdown(
   if (daysLeft < 0) return "마감";
   if (daysLeft === 0) return "D-Day";
   return `D-${daysLeft}`;
+}
+
+type ProgramRecruitingState = Pick<
+  ProgramBaseSummary,
+  "deadline" | "days_left" | "is_active" | "is_open"
+>;
+
+export function isRecruitingProgramSummary(
+  program: ProgramRecruitingState | null | undefined
+): boolean {
+  if (!program) return false;
+  if (program.is_active === false || program.is_open === false) return false;
+  if (typeof program.days_left === "number" && program.days_left < 0) return false;
+
+  const deadline = normalizeProgramDateText(program.deadline);
+  const today = toProgramDateKey(new Date());
+  if (deadline && today && deadline < today) return false;
+
+  return true;
 }
 
 export function getProgramDeadlineTone(
@@ -840,55 +858,6 @@ export function getProgramSelectionKeywords(
     .slice(0, 8);
 }
 
-export function toProgramSelectSummary(
-  program:
-    | (Pick<
-        ProgramBaseSummary,
-        "id" | "title" | "category" | "provider" | "source" | "days_left" | "support_type"
-      > & {
-        tags?: string[] | string | null;
-      })
-    | null
-    | undefined
-): ProgramSelectSummary | null {
-  if (!program) {
-    return null;
-  }
-
-  const id = getProgramId(program);
-  if (!id) {
-    return null;
-  }
-
-  return {
-    id,
-    title: program.title ?? null,
-    category: program.category ?? null,
-    provider: program.provider ?? null,
-    source: program.source ?? null,
-    tags: program.tags ?? null,
-    days_left: program.days_left ?? null,
-    support_type: program.support_type ?? null,
-  };
-}
-
-export function toProgramSelectSummaries(
-  programs: Array<
-    | (Pick<
-        ProgramBaseSummary,
-        "id" | "title" | "category" | "provider" | "source" | "days_left" | "support_type"
-      > & {
-        tags?: string[] | string | null;
-      })
-    | null
-    | undefined
-  >
-): ProgramSelectSummary[] {
-  return programs
-    .map((program) => toProgramSelectSummary(program))
-    .filter((program): program is ProgramSelectSummary => Boolean(program));
-}
-
 export function unwrapProgramListRows(
   items: Array<ProgramListRowItem | null | undefined>
 ): ProgramListRow[] {
@@ -896,5 +865,3 @@ export function unwrapProgramListRows(
     .map((item) => item?.program ?? null)
     .filter((program): program is ProgramListRow => Boolean(program));
 }
-
-export type ProgramSelectCardProgram = ProgramSelectSummary;
