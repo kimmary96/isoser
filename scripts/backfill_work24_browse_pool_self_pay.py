@@ -78,14 +78,17 @@ def _meta_dict(row: dict[str, Any], key: str) -> dict[str, Any]:
 
 
 def _has_verified_self_pay_signal(row: dict[str, Any]) -> bool:
+    return _verified_self_pay_amount(row) is not None
+
+
+def _verified_self_pay_amount(row: dict[str, Any]) -> int | None:
     compare_meta = _meta_dict(row, "compare_meta")
     service_meta = _meta_dict(row, "service_meta")
-    if any(
-        meta.get(key) not in (None, "", [], {})
-        for meta in (compare_meta, service_meta)
-        for key in SELF_PAY_META_KEYS
-    ):
-        return True
+    for meta in (compare_meta, service_meta):
+        for key in SELF_PAY_META_KEYS:
+            amount = _int_or_none(meta.get(key))
+            if amount is not None:
+                return amount
 
     cost = _int_or_none(row.get("cost") or row.get("fee_amount"))
     for key in ("verified_self_pay_amount", "support_amount", "subsidy_amount"):
@@ -93,8 +96,41 @@ def _has_verified_self_pay_signal(row: dict[str, Any]) -> bool:
         if amount is None:
             continue
         if cost is None or amount < cost:
-            return True
-    return False
+            return amount
+    return None
+
+
+def build_existing_self_pay_patch(row: dict[str, Any], *, overwrite: bool) -> dict[str, Any]:
+    if program_backfill.source_family(row) != "work24":
+        return {}
+    self_pay = _verified_self_pay_amount(row)
+    cost = _int_or_none(row.get("cost") or row.get("fee_amount"))
+    if self_pay is None:
+        return {}
+    if cost is not None and cost > 0 and self_pay >= cost:
+        return {}
+
+    patch: dict[str, Any] = {}
+    for key in ("support_amount", "subsidy_amount"):
+        current = _int_or_none(row.get(key))
+        should_patch = (
+            overwrite
+            or current is None
+            or (current != self_pay and cost is not None and current >= cost)
+        )
+        if should_patch and current != self_pay:
+            patch[key] = self_pay
+    return patch
+
+
+def build_self_pay_patch(db_row: dict[str, Any], normalized: dict[str, Any], *, overwrite: bool) -> dict[str, Any]:
+    patch = program_backfill.build_patch(db_row, normalized, overwrite=overwrite)
+    merged_row = {**db_row, **patch}
+    if "compare_meta" in patch and isinstance(patch["compare_meta"], dict):
+        merged_row["compare_meta"] = patch["compare_meta"]
+    canonical_patch = build_existing_self_pay_patch(merged_row, overwrite=overwrite)
+    patch.update(canonical_patch)
+    return patch
 
 
 def should_fetch_work24_self_pay_detail(row: dict[str, Any]) -> bool:
@@ -126,19 +162,26 @@ def build_report(
     for browse_row in browse_rows:
         program_id = _clean_id(browse_row.get("id"))
         db_row = program_rows_by_id.get(program_id)
-        if db_row is None or not should_fetch_work24_self_pay_detail(db_row):
+        if db_row is None:
             continue
 
+        existing_patch = build_existing_self_pay_patch(db_row, overwrite=overwrite)
+        if existing_patch:
+            record = None
+            patch = existing_patch
+        elif should_fetch_work24_self_pay_detail(db_row):
+            record = program_backfill.fetch_work24_record_from_detail_url(db_row)
+            patch = build_self_pay_patch(db_row, record.normalized, overwrite=overwrite) if record else {}
+        else:
+            continue
         suspicious_count += 1
-        record = program_backfill.fetch_work24_record_from_detail_url(db_row)
-        patch = program_backfill.build_patch(db_row, record.normalized, overwrite=overwrite) if record else {}
         items.append(
             {
                 "id": program_id,
                 "title": browse_row.get("title") or db_row.get("title"),
                 "source": browse_row.get("source") or db_row.get("source"),
                 "browse_rank": browse_row.get("browse_rank"),
-                "matched": record is not None,
+                "matched": record is not None or bool(existing_patch),
                 "patch": program_backfill.compact(patch),
                 "diff": program_backfill.compact(program_backfill.build_diff(db_row, patch)),
             }

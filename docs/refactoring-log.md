@@ -1,5 +1,10 @@
 # 리팩토링 로그
 
+- 2026-04-26: `scripts/backfill_work24_browse_pool_self_pay.py`, `backend/tests/test_work24_browse_pool_self_pay_backfill_script.py`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/session/2026-04/SESSION-2026-04-26-work24-canonical-self-pay-repair-result.md`
+  - Work24 상세 증거(`compare_meta.self_payment/out_of_pocket`)가 이미 있는데 canonical `support_amount/subsidy_amount`가 총 훈련비로 남은 browse pool row를 다시 복구하도록 backfill 스크립트를 보강함
+  - 대표 row `09b33464-3ac7-4eeb-a4bd-1ff03ea48eb4`의 live 값을 `훈련비 629,760원 / 자부담금 220,420원`으로 맞췄고, 적용 후 Work24 browse pool 299건 중 canonical 자부담이 있는 278건의 `programs.support_amount`와 `program_list_index.verified_self_pay_amount` mismatch가 0건임을 확인함
+  - 검증: `backend\venv\Scripts\python.exe -m pytest backend\tests\test_work24_browse_pool_self_pay_backfill_script.py -q`, `backend\venv\Scripts\python.exe -m py_compile scripts\backfill_work24_browse_pool_self_pay.py`, API smoke on `/programs/list` and `/programs/{id}/detail`
+
 - 2026-04-26: `backend/schemas/programs.py`, `backend/services/program_detail_builder.py`, `backend/tests/test_programs_router.py`, `frontend/lib/types/index.ts`, `frontend/lib/server/program-detail-fallback.ts`, `frontend/app/(landing)/programs/[id]/program-detail-client.tsx`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/session/2026-04/SESSION-2026-04-26-program-detail-fee-and-meta-result.md`
   - 상세 페이지 비용 표기 명칭을 `수강료/지원금`에서 `훈련비/자부담금`으로 바꾸고, hero/sidebar/fee 섹션의 문구를 동일하게 정리함
   - 상세 API/SSR fallback이 이미 조회 가능한 원천, 분류, NCS, deadline, 비용 유형, 참여시간, 신청방법, 선발절차, 추출 키워드를 `ProgramDetail`에 포함하게 확장하고, 프론트 상세 화면의 요약/일정/지원/상세 정보 섹션에 값이 있는 항목만 노출함

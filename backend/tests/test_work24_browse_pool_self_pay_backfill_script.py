@@ -81,8 +81,8 @@ def test_build_report_keeps_work24_rows_without_verified_self_pay(monkeypatch) -
 
     assert report["candidate_rows_from_program_list_index"] == 2
     assert report["candidate_rows_from_programs"] == 2
-    assert report["suspicious_count"] == 1
-    assert report["patch_count"] == 1
+    assert report["suspicious_count"] == 2
+    assert report["patch_count"] == 2
     assert report["items"] == [
         {
             "id": "program-1",
@@ -90,16 +90,28 @@ def test_build_report_keeps_work24_rows_without_verified_self_pay(monkeypatch) -
             "source": "고용24",
             "browse_rank": 1,
             "matched": True,
-            "patch": {"support_amount": 93100, "compare_meta": {"self_payment": 93100}},
+            "patch": {"support_amount": 93100, "subsidy_amount": 93100, "compare_meta": {"self_payment": 93100}},
             "diff": {
                 "support_amount": {"after": 93100},
+                "subsidy_amount": {"after": 93100},
                 "compare_meta": {"after": {"self_payment": 93100}},
             },
-        }
+        },
+        {
+            "id": "program-2",
+            "title": "정상 과정",
+            "source": "고용24",
+            "browse_rank": 2,
+            "matched": True,
+            "patch": {"support_amount": 93100},
+            "diff": {
+                "support_amount": {"after": 93100},
+            },
+        },
     ]
 
 
-def test_work24_self_pay_candidate_skips_already_verified_rows() -> None:
+def test_work24_self_pay_candidate_skips_already_verified_and_canonical_rows() -> None:
     assert not backfill_work24_browse_pool_self_pay.should_fetch_work24_self_pay_detail(
         {
             "source": "고용24",
@@ -117,6 +129,16 @@ def test_work24_self_pay_candidate_skips_already_verified_rows() -> None:
             "link": "https://www.work24.go.kr/detail?id=1",
         }
     )
+    assert not backfill_work24_browse_pool_self_pay.build_existing_self_pay_patch(
+        {
+            "source": "고용24",
+            "cost": 265980,
+            "support_amount": 93100,
+            "subsidy_amount": 93100,
+            "compare_meta": {"self_payment": 93100},
+        },
+        overwrite=False,
+    )
     assert backfill_work24_browse_pool_self_pay.should_fetch_work24_self_pay_detail(
         {
             "source": "고용24",
@@ -126,6 +148,21 @@ def test_work24_self_pay_candidate_skips_already_verified_rows() -> None:
             "link": "https://www.work24.go.kr/detail?id=1",
         }
     )
+
+
+def test_work24_existing_self_pay_patch_repairs_total_fee_copied_to_canonical_amounts() -> None:
+    patch = backfill_work24_browse_pool_self_pay.build_existing_self_pay_patch(
+        {
+            "source": "고용24",
+            "cost": 629760,
+            "support_amount": 629760,
+            "subsidy_amount": 629760,
+            "compare_meta": {"self_payment": 220420, "out_of_pocket": 220420},
+        },
+        overwrite=False,
+    )
+
+    assert patch == {"support_amount": 220420, "subsidy_amount": 220420}
 
 
 def test_refresh_browse_pool_uses_browse_only_strategy(monkeypatch) -> None:
