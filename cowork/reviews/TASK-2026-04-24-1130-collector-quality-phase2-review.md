@@ -14,3 +14,8 @@
 ## Recommendation
 
 planned files 기준으로 packet fingerprint를 다시 고정한 뒤 review를 재생성하세요.
+
+## Review Run Metadata
+
+- generated_at: `2026-04-26T06:30:45`
+- watcher_exit_code: `1`

@@ -60,3 +60,8 @@ The user asked for a safe retry decision. After checking the current packet, blo
 - generated_at: `2026-04-24T01:28:08`
 - watcher_exit_code: `0`
 - codex_tokens_used: `90,056`
+
+## Run Metadata
+
+- generated_at: `2026-04-26T06:30:44`
+- watcher_exit_code: `1`
