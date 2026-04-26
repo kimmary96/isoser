@@ -46,6 +46,14 @@ function formatMoney(value: number | null | undefined): string | null {
   return `${value.toLocaleString("ko-KR")}원`;
 }
 
+function formatSelfPayLabel(value: number | null | undefined, trainingFee: number | null | undefined): string | null {
+  if (typeof value !== "number") return null;
+  if (typeof trainingFee === "number" && trainingFee > 0 && value >= trainingFee) {
+    return "자부담금 정보 확인 필요";
+  }
+  return formatMoney(value);
+}
+
 function joinNonEmpty(values: Array<string | number | null | undefined>, separator = " · "): string | null {
   const items = values
     .map((value) => (value === null || value === undefined ? "" : String(value).trim()))
@@ -207,7 +215,7 @@ export default function ProgramDetailClient({
   const applicationPeriod = formatDateRange(program.application_start_date, program.application_end_date);
   const programPeriod = formatDateRange(program.program_start_date, program.program_end_date);
   const feeLabel = formatMoney(program.fee);
-  const supportAmountLabel = formatMoney(program.support_amount);
+  const supportAmountLabel = formatSelfPayLabel(program.support_amount, program.fee);
   const categoryLabel = joinNonEmpty([displayCategories.join(", ") || null, program.category_detail, program.category]);
   const ncsLabel = joinNonEmpty([program.ncs_name, program.ncs_code]);
   const participationLabel = joinNonEmpty([program.participation_time, program.participation_time_text]);

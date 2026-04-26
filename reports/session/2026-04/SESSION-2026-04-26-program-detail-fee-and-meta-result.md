@@ -20,6 +20,7 @@
 - `ProgramDetailResponse`에 source/category/NCS/deadline/cost/participation/application/selection metadata를 추가했다.
 - 프론트 상세 페이지에 `상세 정보` 섹션을 추가하고, 값이 있는 상세 메타만 fact grid로 표시한다.
 - 자부담금은 검증 자부담 또는 detail self-pay/out-of-pocket 증거를 우선하고, 증거 없이 훈련비 이상인 금액은 표시하지 않는다.
+- stale backend나 fallback payload가 `훈련비 == 자부담금` 값을 내려도 프론트 상세 표시 레이어가 `자부담금 정보 확인 필요`로 방어한다.
 
 ## Preserved behaviors
 - 상세 페이지 route, apply link, bookmark/share, 기존 section 렌더링 방식은 유지했다.

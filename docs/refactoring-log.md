@@ -3,7 +3,7 @@
 - 2026-04-26: `backend/schemas/programs.py`, `backend/services/program_detail_builder.py`, `backend/tests/test_programs_router.py`, `frontend/lib/types/index.ts`, `frontend/lib/server/program-detail-fallback.ts`, `frontend/app/(landing)/programs/[id]/program-detail-client.tsx`, `docs/current-state.md`, `docs/refactoring-log.md`, `reports/session/2026-04/SESSION-2026-04-26-program-detail-fee-and-meta-result.md`
   - 상세 페이지 비용 표기 명칭을 `수강료/지원금`에서 `훈련비/자부담금`으로 바꾸고, hero/sidebar/fee 섹션의 문구를 동일하게 정리함
   - 상세 API/SSR fallback이 이미 조회 가능한 원천, 분류, NCS, deadline, 비용 유형, 참여시간, 신청방법, 선발절차, 추출 키워드를 `ProgramDetail`에 포함하게 확장하고, 프론트 상세 화면의 요약/일정/지원/상세 정보 섹션에 값이 있는 항목만 노출함
-  - 자부담금은 `verified_self_pay_amount` 또는 detail `self_payment/out_of_pocket` 증거를 우선하고, 증거 없이 총 훈련비와 같은 금액은 숨겨 총액을 자부담으로 오표기하지 않게 함
+  - 자부담금은 `verified_self_pay_amount` 또는 detail `self_payment/out_of_pocket` 증거를 우선하고, 증거 없이 총 훈련비와 같은 금액은 backend/fallback에서 숨기며, stale backend 응답이 와도 프론트 표시 레이어가 `자부담금 정보 확인 필요`로 방어해 총액을 자부담으로 오표기하지 않게 함
   - 검증: `backend\venv\Scripts\python.exe -m pytest backend\tests\test_programs_router.py -q -k "program_detail_response"`, `backend\venv\Scripts\python.exe -m py_compile backend\schemas\programs.py backend\services\program_detail_builder.py backend\routers\programs.py`, `npx --prefix frontend tsc -p frontend\tsconfig.codex-check.json --noEmit --pretty false`, API smoke on `http://127.0.0.1:8001/programs/{id}/detail`
 
 - 2026-04-26: `frontend/app/(landing)/programs/page-filters.ts`, `frontend/app/(landing)/programs/page-filters.test.ts`, `backend/services/program_list_filters.py`, `backend/services/program_list_queries.py`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `docs/refactoring-log.md`

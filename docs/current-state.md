@@ -1,7 +1,7 @@
 # Current State
 
 Update 2026-04-26:
-- 공개 `/programs/{id}` 상세 페이지는 비용 영역의 사용자-facing 명칭을 `훈련비`와 `자부담금`으로 사용한다. 상세 API는 `source/category/category_detail/display_categories/NCS/deadline/days_left/cost_type/participation_time/application_method/selection_process_label/extracted_keywords` 같은 이미 조회 가능한 상세 메타를 함께 내려주고, 프론트는 프로그램 요약/일정/지원 자격/상세 정보 섹션에 값이 있는 항목만 노출한다. 자부담금은 `verified_self_pay_amount` 또는 detail `self_payment/out_of_pocket` 증거를 먼저 쓰며, 증거 없이 총 훈련비와 같은 금액은 자부담금으로 표시하지 않는다.
+- 공개 `/programs/{id}` 상세 페이지는 비용 영역의 사용자-facing 명칭을 `훈련비`와 `자부담금`으로 사용한다. 상세 API는 `source/category/category_detail/display_categories/NCS/deadline/days_left/cost_type/participation_time/application_method/selection_process_label/extracted_keywords` 같은 이미 조회 가능한 상세 메타를 함께 내려주고, 프론트는 프로그램 요약/일정/지원 자격/상세 정보 섹션에 값이 있는 항목만 노출한다. 자부담금은 `verified_self_pay_amount` 또는 detail `self_payment/out_of_pocket` 증거를 먼저 쓰며, 증거 없이 총 훈련비와 같은 금액은 backend와 frontend 표시 레이어 양쪽에서 `자부담금 정보 확인 필요`로 방어해 총액을 자부담금처럼 표시하지 않는다.
 - 공개 `/programs/list` 기본 read-model 응답은 이제 `program_list_index.verified_self_pay_amount`를 select에 포함하고, backend serializer가 이를 기존 `support_amount/subsidy_amount` 소비 코드로 bridge한다. 그래서 필터를 걸지 않은 기본 목록에서도 detail/backfill로 확인된 고용24 자부담금이 내려온다.
 - `frontend/lib/program-display.ts`는 Work24 비용 표시에서 `verified_self_pay_amount`와 `compare_meta.self_payment/out_of_pocket`을 먼저 신뢰하고, `support_amount >= cost`처럼 총 훈련비로 보이는 값은 자부담금으로 쓰지 않는다. 검증 자부담이 없고 `cost`만 있으면 금액을 `본인부담금`으로 억지 표기하지 않고 `훈련비 N원`으로 표시한다.
 - `landing-c` Opportunity feed는 snapshot row를 후보/순서로 쓰되, 화면 표시 전 같은 id의 최신 `program_list_index` summary로 비용 관련 필드를 보강한다. 따라서 snapshot RPC가 timeout으로 갱신되지 않아도 랜딩 카드의 본인부담금은 최신 read-model의 `verified_self_pay_amount`를 우선 반영한다.
