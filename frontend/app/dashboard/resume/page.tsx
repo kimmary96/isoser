@@ -17,8 +17,6 @@ export default function ResumePage() {
     error,
     activeTypeTab,
     setActiveTypeTab,
-    templateId,
-    setTemplateId,
     chatMessages,
     chatInput,
     setChatInput,
@@ -41,21 +39,36 @@ export default function ResumePage() {
     setCustomQuestion,
     customQuestionInput,
     setCustomQuestionInput,
+    jobPostingText,
+    setJobPostingText,
+    jobPostingUrl,
+    setJobPostingUrl,
+    jobImageFiles,
+    addJobImageFiles,
+    removeJobImageFile,
+    clearJobImageFiles,
+    jobPdfFile,
+    setJobPdfFile,
+    jobPostingExtracting,
+    rewriteLoading,
+    rewriteError,
+    rewriteResult,
+    rewriteActivityTitles,
+    appliedRewriteLines,
     toggleSelect,
     saveBio,
+    handleExtractJobUrl,
+    handleExtractJobImages,
+    handleExtractJobPdf,
     handleChatSend,
+    handleGenerateRewriteSuggestions,
+    handleApplyRewriteSuggestion,
+    handleClearRewriteSuggestion,
+    handleUpdateRewriteLine,
+    handleAddRewriteLine,
+    handleRemoveRewriteLine,
     handleCreateResume,
   } = useResumeBuilder();
-
-  const TEMPLATES = [
-    { id: "simple", label: "기본형", free: true },
-    { id: "modern", label: "Modern", free: true },
-    { id: "minimal", label: "Minimal", free: true },
-    { id: "bold", label: "Bold", free: true },
-    { id: "elegant", label: "Elegant", free: true },
-    { id: "premium1", label: "Premium A", free: false },
-    { id: "premium2", label: "Premium B", free: false },
-  ] as const;
 
   const COMMON_QUESTIONS = [
     "자기소개 (1분 자기소개)",
@@ -99,16 +112,16 @@ export default function ResumePage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500">불러오는 중...</p>
+      <main className="flex min-h-screen items-center justify-center bg-[#f3f6fb]">
+        <p className="text-slate-500">불러오는 중...</p>
       </main>
     );
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#f8f7f4]">
-      <div className="w-72 flex-shrink-0 bg-white border-r border-gray-100 flex flex-col h-full">
-        <div className="flex border-b border-gray-100">
+    <div className="flex h-screen overflow-hidden bg-[#f3f6fb] text-slate-950">
+      <div className="flex h-full w-80 flex-shrink-0 flex-col border-r border-slate-200 bg-white shadow-[0_12px_32px_rgba(15,23,42,0.04)] 2xl:w-[21rem]">
+        <div className="flex border-b border-slate-100">
           {(["성과저장소", "자기소개서"] as const).map((tab) => (
             <button
               key={tab}
@@ -116,15 +129,15 @@ export default function ResumePage() {
                 setLeftMainTab(tab);
                 setLeftSubTab(tab === "성과저장소" ? "회사경력" : "공통질문");
               }}
-              className={`flex-1 py-3 text-xs font-semibold transition-all ${
+              className={`flex-1 py-3 text-[13px] font-semibold transition-all ${
                 leftMainTab === tab
-                  ? "text-blue-600 border-b-2 border-blue-600"
-                  : "text-gray-400 hover:text-gray-600"
+                  ? "border-b-2 border-[#094cb2] text-[#094cb2]"
+                  : "text-slate-400 hover:text-slate-600"
               }`}
             >
               {tab}
               {tab === "성과저장소" && (
-                <span className="ml-1 text-[10px] text-gray-400">{activities.length}개</span>
+                <span className="ml-1 text-[11px] text-slate-400">{activities.length}개</span>
               )}
             </button>
           ))}
@@ -132,8 +145,8 @@ export default function ResumePage() {
 
         {leftMainTab === "성과저장소" && (
           <>
-            <div className="px-3 py-2 border-b border-gray-100">
-              <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
+            <div className="border-b border-slate-100 px-4 py-3">
+              <div className="flex items-center gap-2 rounded-xl border border-blue-100 bg-[#eef6ff] px-3 py-2">
                 <svg
                   width="12"
                   height="12"
@@ -141,16 +154,16 @@ export default function ResumePage() {
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2"
-                  className="text-gray-400"
+                  className="text-slate-400"
                 >
                   <circle cx="11" cy="11" r="8" />
                   <path d="M21 21l-4.35-4.35" />
                 </svg>
-                <span className="text-xs text-gray-400">검색하기</span>
+                <span className="text-xs text-slate-400">검색하기</span>
               </div>
             </div>
 
-            <div className="flex gap-1 px-3 py-2 border-b border-gray-100">
+            <div className="flex gap-1.5 border-b border-slate-100 px-4 py-3">
               {["회사경력", "프로젝트", "기술스택"].map((tab) => {
                 const isActive =
                   leftSubTab === tab ||
@@ -164,10 +177,10 @@ export default function ResumePage() {
                         setActiveTypeTab(tab);
                       }
                     }}
-                    className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
+                    className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
                       isActive
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        ? "bg-[#071a36] text-white"
+                        : "border border-slate-200 bg-white text-slate-600 hover:border-orange-200 hover:text-orange-700"
                     }`}
                   >
                     {tab}
@@ -176,10 +189,10 @@ export default function ResumePage() {
               })}
             </div>
 
-            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+            <div className="flex-1 space-y-2.5 overflow-y-auto p-4">
               {leftSubTab === "기술스택" && (
                 <div className="space-y-2">
-                  <p className="text-xs text-gray-400 mb-3">이력서에 포함할 기술을 선택하세요.</p>
+                  <p className="mb-3 text-xs text-slate-500">이력서에 포함할 기술을 선택하세요.</p>
                   <div className="flex flex-wrap gap-2">
                     {(profile?.skills || []).map((skill, i) => {
                       const isSelected = selectedSkills.has(skill);
@@ -192,10 +205,10 @@ export default function ResumePage() {
                             else next.add(skill);
                             setSelectedSkills(next);
                           }}
-                          className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                          className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
                             isSelected
-                              ? "bg-blue-500 text-white border-blue-500"
-                              : "bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-400"
+                              ? "border-[#094cb2] bg-[#094cb2] text-white"
+                              : "border-slate-200 bg-white text-slate-600 hover:border-orange-200 hover:text-orange-700"
                           }`}
                         >
                           {skill}
@@ -203,7 +216,7 @@ export default function ResumePage() {
                       );
                     })}
                     {(!profile?.skills || profile.skills.length === 0) && (
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-slate-400">
                         대시보드에서 기술 스택을 먼저 추가해주세요.
                       </p>
                     )}
@@ -218,25 +231,25 @@ export default function ResumePage() {
                     <div
                       key={activity.id}
                       onClick={() => toggleSelect(activity.id)}
-                      className={`p-3 rounded-xl border cursor-pointer transition-all ${
+                      className={`cursor-pointer rounded-2xl border p-3.5 transition-all ${
                         isSelected
-                          ? "border-blue-400 bg-blue-50"
-                          : "border-gray-100 bg-white hover:border-gray-300"
+                          ? "border-blue-200 bg-[#eef6ff]"
+                          : "border-slate-200 bg-white hover:border-orange-200"
                       }`}
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
-                          <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-full">
+                          <span className="rounded-full bg-[#fff1e6] px-2 py-0.5 text-[11px] font-semibold text-[#c94f12]">
                             {activity.type}
                           </span>
-                          <p className="text-xs font-bold text-gray-900 line-clamp-2 mt-1">
+                          <p className="mt-1.5 line-clamp-2 text-[13px] font-bold leading-snug text-slate-950">
                             {activity.title}
                           </p>
                           {activity.period && (
-                            <p className="text-[10px] text-gray-400 mt-0.5">{activity.period}</p>
+                            <p className="mt-1 text-[11px] text-slate-400">{activity.period}</p>
                           )}
                           {getActivityPreviewText(activity) && (
-                            <p className="text-[10px] text-gray-500 mt-1 line-clamp-2">
+                            <p className="mt-1.5 line-clamp-2 text-[11px] leading-4 text-slate-500">
                               {getActivityPreviewText(activity)}
                             </p>
                           )}
@@ -245,7 +258,7 @@ export default function ResumePage() {
                               {activity.skills.slice(0, 3).map((s, i) => (
                                 <span
                                   key={i}
-                                  className="text-[9px] px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded-full"
+                                  className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-500"
                                 >
                                   {s}
                                 </span>
@@ -254,8 +267,8 @@ export default function ResumePage() {
                           )}
                         </div>
                         <div
-                          className={`w-4 h-4 rounded flex-shrink-0 border-2 flex items-center justify-center mt-0.5 transition-all ${
-                            isSelected ? "bg-blue-500 border-blue-500" : "border-gray-300"
+                          className={`mt-0.5 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border-2 transition-all ${
+                            isSelected ? "border-[#094cb2] bg-[#094cb2]" : "border-slate-300"
                           }`}
                         >
                           {isSelected && (
@@ -279,15 +292,15 @@ export default function ResumePage() {
 
         {leftMainTab === "자기소개서" && (
           <>
-            <div className="flex border-b border-gray-100">
+            <div className="flex border-b border-slate-100">
               {(["공통질문", "회사맞춤질문", "직접입력"] as const).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setCoverLetterTab(tab)}
-                  className={`flex-1 py-2.5 text-[10px] font-semibold transition-all ${
+                  className={`flex-1 py-2.5 text-[11px] font-semibold transition-all ${
                     coverLetterTab === tab
-                      ? "text-blue-600 border-b-2 border-blue-600"
-                      : "text-gray-400 hover:text-gray-600"
+                      ? "border-b-2 border-[#094cb2] text-[#094cb2]"
+                      : "text-slate-400 hover:text-slate-600"
                   }`}
                 >
                   {tab}
@@ -295,10 +308,10 @@ export default function ResumePage() {
               ))}
             </div>
 
-            <div className="flex-1 overflow-y-auto p-3">
+            <div className="flex-1 overflow-y-auto p-4">
               {coverLetterTab === "공통질문" && (
                 <div className="space-y-2">
-                  <p className="text-xs text-gray-400 mb-3">이력서에 포함할 항목을 선택하세요.</p>
+                  <p className="mb-3 text-xs text-slate-500">이력서에 포함할 항목을 선택하세요.</p>
                   {COMMON_QUESTIONS.map((q, i) => {
                     const isSelected = selectedCommonQuestions.has(q);
                     return (
@@ -310,17 +323,17 @@ export default function ResumePage() {
                           else next.add(q);
                           setSelectedCommonQuestions(next);
                         }}
-                        className={`p-3 rounded-xl border cursor-pointer transition-all ${
+                        className={`cursor-pointer rounded-2xl border p-3 transition-all ${
                           isSelected
-                            ? "border-blue-400 bg-blue-50"
-                            : "border-gray-100 bg-white hover:border-gray-300"
+                            ? "border-blue-200 bg-[#eef6ff]"
+                            : "border-slate-200 bg-white hover:border-orange-200"
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <p className="text-xs font-medium text-gray-700">{q}</p>
+                          <p className="text-xs font-medium text-slate-700">{q}</p>
                           <div
-                            className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 ml-2 ${
-                              isSelected ? "bg-blue-500 border-blue-500" : "border-gray-300"
+                            className={`ml-2 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border-2 ${
+                              isSelected ? "border-[#094cb2] bg-[#094cb2]" : "border-slate-300"
                             }`}
                           >
                             {isSelected && (
@@ -343,7 +356,7 @@ export default function ResumePage() {
 
               {coverLetterTab === "회사맞춤질문" && (
                 <div className="space-y-2">
-                  <p className="text-xs text-gray-400 mb-3">
+                  <p className="mb-3 text-xs text-slate-500">
                     채용공고 URL이나 내용을 AI 어시스턴트에 입력하면 맞춤 질문을 추출해드립니다.
                   </p>
                   {COMPANY_QUESTIONS.map((q, i) => {
@@ -357,17 +370,17 @@ export default function ResumePage() {
                           else next.add(q);
                           setSelectedCommonQuestions(next);
                         }}
-                        className={`p-3 rounded-xl border cursor-pointer transition-all ${
+                        className={`cursor-pointer rounded-2xl border p-3 transition-all ${
                           isSelected
-                            ? "border-blue-400 bg-blue-50"
-                            : "border-gray-100 bg-white hover:border-gray-300"
+                            ? "border-blue-200 bg-[#eef6ff]"
+                            : "border-slate-200 bg-white hover:border-orange-200"
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <p className="text-xs font-medium text-gray-700">{q}</p>
+                          <p className="text-xs font-medium text-slate-700">{q}</p>
                           <div
-                            className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 ml-2 ${
-                              isSelected ? "bg-blue-500 border-blue-500" : "border-gray-300"
+                            className={`ml-2 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border-2 ${
+                              isSelected ? "border-[#094cb2] bg-[#094cb2]" : "border-slate-300"
                             }`}
                           >
                             {isSelected && (
@@ -390,7 +403,7 @@ export default function ResumePage() {
 
               {coverLetterTab === "직접입력" && (
                 <div className="space-y-3">
-                  <p className="text-xs text-gray-400 mb-3">질문을 직접 입력하고 이력서에 추가하세요.</p>
+                  <p className="mb-3 text-xs text-slate-500">질문을 직접 입력하고 이력서에 추가하세요.</p>
                   <div className="flex gap-2">
                     <input
                       value={customQuestionInput}
@@ -405,7 +418,7 @@ export default function ResumePage() {
                         }
                       }}
                       placeholder="질문 입력 후 Enter"
-                      className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-blue-400"
+                      className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-xs focus:border-[#094cb2] focus:outline-none"
                     />
                     <button
                       onClick={() => {
@@ -417,20 +430,20 @@ export default function ResumePage() {
                           setCustomQuestionInput("");
                         }
                       }}
-                      className="px-3 py-2 bg-blue-500 text-white rounded-xl text-xs hover:bg-blue-600"
+                      className="rounded-xl bg-[#094cb2] px-3 py-2 text-xs text-white hover:bg-[#073c8f]"
                     >
                       추가
                     </button>
                   </div>
                   {customQuestion && (
-                    <p className="text-[10px] text-gray-400">최근 추가 질문: {customQuestion}</p>
+                    <p className="text-[11px] text-slate-400">최근 추가 질문: {customQuestion}</p>
                   )}
                   {Array.from(selectedCommonQuestions).map((q, i) => (
                     <div
                       key={i}
-                      className="flex items-center justify-between p-2 bg-blue-50 rounded-xl border border-blue-200"
+                      className="flex items-center justify-between rounded-xl border border-blue-200 bg-[#eef6ff] p-2"
                     >
-                      <p className="text-xs text-blue-700">{q}</p>
+                      <p className="text-xs text-[#094cb2]">{q}</p>
                       <button
                         onClick={() => {
                           const next = new Set(selectedCommonQuestions);
@@ -461,6 +474,11 @@ export default function ResumePage() {
         selectedProjectActivities={selectedProjectActivities}
         selectedSkillsList={selectedSkillsList}
         selectedQuestions={Array.from(selectedCommonQuestions)}
+        activityLineOverrides={appliedRewriteLines}
+        onActivityLineOverrideChange={handleUpdateRewriteLine}
+        onActivityLineOverrideAdd={handleAddRewriteLine}
+        onActivityLineOverrideRemove={handleRemoveRewriteLine}
+        onActivityLineOverrideClear={handleClearRewriteSuggestion}
       />
 
       <ResumeAssistantSidebar
@@ -470,9 +488,31 @@ export default function ResumePage() {
         saving={saving}
         canCreate={selected.size > 0}
         error={error}
-        templates={TEMPLATES.map((template) => ({ ...template }))}
-        templateId={templateId}
-        onTemplateChange={setTemplateId}
+        jobPostingText={jobPostingText}
+        onJobPostingTextChange={setJobPostingText}
+        jobPostingUrl={jobPostingUrl}
+        onJobPostingUrlChange={setJobPostingUrl}
+        onExtractJobUrl={handleExtractJobUrl}
+        jobImageFiles={jobImageFiles}
+        onAddJobImageFiles={addJobImageFiles}
+        onRemoveJobImageFile={removeJobImageFile}
+        onClearJobImageFiles={clearJobImageFiles}
+        jobPdfFile={jobPdfFile}
+        onJobPdfFileChange={setJobPdfFile}
+        jobPostingExtracting={jobPostingExtracting}
+        onExtractJobImages={handleExtractJobImages}
+        onExtractJobPdf={handleExtractJobPdf}
+        rewriteLoading={rewriteLoading}
+        rewriteError={rewriteError}
+        rewriteResult={rewriteResult}
+        rewriteActivityTitles={rewriteActivityTitles}
+        appliedRewriteLines={appliedRewriteLines}
+        canGenerateRewrite={
+          selected.size > 0 && Boolean(targetJob.trim()) && jobPostingText.trim().length >= 50
+        }
+        onGenerateRewrite={() => handleGenerateRewriteSuggestions(selectedActivities)}
+        onApplyRewriteSuggestion={handleApplyRewriteSuggestion}
+        onClearRewriteSuggestion={handleClearRewriteSuggestion}
         chatMessages={chatMessages}
         chatLoading={chatLoading}
         chatInput={chatInput}

@@ -160,3 +160,33 @@ async def test_run_job_posting_rewrite_chain_respects_requested_activity_ids(
 
     assert processed_ids == ["activity-2"]
     assert [item.activity_id for item in result.activity_rewrites] == ["activity-2"]
+
+
+def test_build_activity_prompt_text_includes_activity_evidence_packet() -> None:
+    prompt = chain._build_activity_prompt_text(
+        {
+            "id": "activity-1",
+            "type": "프로젝트",
+            "title": "주문 API 개선",
+            "organization": "이소서",
+            "period": "2026.01 ~ 2026.03",
+            "team_size": 4,
+            "team_composition": "백엔드 2, 프론트엔드 1, PM 1",
+            "my_role": "백엔드 개발",
+            "role": "개발자",
+            "skills": ["Python", "Redis"],
+            "contributions": ["Redis 캐시 설계", "비동기 주문 처리 구현"],
+            "description": "주문 API 응답 속도를 개선했습니다.",
+            "star_situation": "주문량 증가로 응답 지연이 발생했습니다.",
+            "star_task": "API 지연을 줄이는 것이 목표였습니다.",
+            "star_action": "캐시와 비동기 처리 구조를 적용했습니다.",
+            "star_result": "응답 시간이 단축되었습니다.",
+        }
+    )
+
+    assert "활동 유형: 프로젝트" in prompt
+    assert "팀 구성: 백엔드 2, 프론트엔드 1, PM 1" in prompt
+    assert "내 역할: 백엔드 개발" in prompt
+    assert "기여 내용:" in prompt
+    assert "- Redis 캐시 설계" in prompt
+    assert "STAR Result: 응답 시간이 단축되었습니다." in prompt

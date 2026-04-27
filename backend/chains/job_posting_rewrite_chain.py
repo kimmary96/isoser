@@ -42,7 +42,11 @@ ACTIVITY_TEXT_LIMIT = 1000
 JOB_POSTING_TEXT_LIMIT = 2000
 SUMMARY_KEYWORD_LIMIT = 6
 SUMMARY_LINE_LIMIT = 3
-ACTIVITY_SELECT_COLUMNS = "id,user_id,type,title,role,skills,description,is_visible"
+ACTIVITY_SELECT_COLUMNS = (
+    "id,user_id,type,title,organization,team_size,team_composition,my_role,"
+    "contributions,period,role,skills,description,star_situation,star_task,"
+    "star_action,star_result,is_visible"
+)
 ALLOWED_ACTIVITY_SECTION_TYPES = {"회사경력", "프로젝트", "대외활동", "학생활동"}
 
 FOCUS_DEFAULT_REFERENCE_PATTERN = {
@@ -223,8 +227,19 @@ def _build_activity_original_text(activity: dict[str, Any]) -> str:
     if description:
         return description
 
+    contributions = activity.get("contributions")
+    if isinstance(contributions, list):
+        contribution_lines = [
+            str(item).strip()
+            for item in contributions
+            if str(item).strip()
+        ]
+        if contribution_lines:
+            return " / ".join(contribution_lines[:3])
+
     fallback_parts = [
         _safe_text(activity.get("title")),
+        _safe_text(activity.get("my_role")),
         _safe_text(activity.get("role")),
     ]
     fallback = " / ".join(part for part in fallback_parts if part)
@@ -236,20 +251,60 @@ def _build_activity_prompt_text(activity: dict[str, Any]) -> str:
 
     pieces: list[str] = []
     title = _safe_text(activity.get("title"))
+    activity_type = _safe_text(activity.get("type"))
+    organization = _safe_text(activity.get("organization"))
+    period = _safe_text(activity.get("period"))
+    team_size = activity.get("team_size")
+    team_composition = _safe_text(activity.get("team_composition"))
+    my_role = _safe_text(activity.get("my_role"))
     role = _safe_text(activity.get("role"))
     skills = activity.get("skills")
+    contributions = activity.get("contributions")
     description = _safe_text(activity.get("description"))
+    star_situation = _safe_text(activity.get("star_situation"))
+    star_task = _safe_text(activity.get("star_task"))
+    star_action = _safe_text(activity.get("star_action"))
+    star_result = _safe_text(activity.get("star_result"))
 
     if title:
         pieces.append(f"제목: {title}")
+    if activity_type:
+        pieces.append(f"활동 유형: {activity_type}")
+    if organization:
+        pieces.append(f"조직: {organization}")
+    if period:
+        pieces.append(f"기간: {period}")
+    if isinstance(team_size, int) and team_size > 0:
+        pieces.append(f"팀 규모: {team_size}명")
+    if team_composition:
+        pieces.append(f"팀 구성: {team_composition}")
+    if my_role:
+        pieces.append(f"내 역할: {my_role}")
     if role:
-        pieces.append(f"역할: {role}")
+        pieces.append(f"기존 역할 표기: {role}")
     if isinstance(skills, list):
         normalized_skills = [str(skill).strip() for skill in skills if str(skill).strip()]
         if normalized_skills:
             pieces.append(f"기술/스킬: {', '.join(normalized_skills)}")
+    if isinstance(contributions, list):
+        normalized_contributions = [
+            str(item).strip()
+            for item in contributions
+            if str(item).strip()
+        ]
+        if normalized_contributions:
+            contribution_text = "\n- ".join(normalized_contributions[:6])
+            pieces.append(f"기여 내용:\n- {contribution_text}")
     if description:
         pieces.append(f"설명: {description}")
+    if star_situation:
+        pieces.append(f"STAR Situation: {star_situation}")
+    if star_task:
+        pieces.append(f"STAR Task: {star_task}")
+    if star_action:
+        pieces.append(f"STAR Action: {star_action}")
+    if star_result:
+        pieces.append(f"STAR Result: {star_result}")
 
     return _truncate_text("\n".join(pieces), ACTIVITY_TEXT_LIMIT)
 

@@ -1,5 +1,7 @@
 // Shared app types for Supabase rows and backend API payloads.
 
+import type { ResumeActivityLineOverrides } from "@/lib/resume-line-overrides";
+
 export interface Profile {
   id: string;
   name: string | null;
@@ -56,6 +58,7 @@ export interface Resume {
   target_job: string | null;
   template_id: string;
   selected_activity_ids: string[] | null;
+  activity_line_overrides?: ResumeActivityLineOverrides | null;
   created_at: string;
   updated_at: string;
 }
@@ -787,14 +790,128 @@ export interface PortfolioConversionResponse {
   review_tags: string[];
 }
 
+export type PortfolioReviewTag =
+  | "수치 보완 필요"
+  | "검토 필요"
+  | "본인 경험으로 수정 필요"
+  | "근거 부족"
+  | "이미지 캡션 확인 필요"
+  | string;
+
+export type PortfolioSectionKey =
+  | "overview"
+  | "problemDefinition"
+  | "techDecision"
+  | "implementation"
+  | "result"
+  | "troubleshooting";
+
+export interface PortfolioSourceActivitySnapshot {
+  id: string;
+  title: string;
+  type: Activity["type"];
+  period: string | null;
+  role?: string | null;
+  skills: string[];
+}
+
+export interface PortfolioSectionOverrides {
+  projectTitle?: string;
+  overviewSummary?: string;
+  problemDefinition?: string;
+  techDecision?: string;
+  implementationSummary?: string;
+  resultSummary?: string;
+  troubleshooting?: string;
+  jobFitSummary?: string;
+}
+
+export interface PortfolioProjectDraft {
+  activityId: string;
+  sourceActivity: PortfolioSourceActivitySnapshot | null;
+  portfolio: PortfolioConversionResponse;
+  sectionOverrides: PortfolioSectionOverrides;
+  reviewTags: PortfolioReviewTag[];
+  fitScore?: number;
+  fitReasons?: string[];
+  gapNotes?: string[];
+}
+
+export interface PortfolioImagePlacement {
+  id: string;
+  activityId: string;
+  imageUrl: string;
+  sectionKey: PortfolioSectionKey;
+  order: number;
+  captionDraft?: string | null;
+  source: "activity.image_urls";
+  needsUserCheck?: boolean;
+}
+
+export interface PortfolioFitActivityAnalysis {
+  activityId: string;
+  score: number;
+  rank: number;
+  matchedJobKeywords: string[];
+  matchedEvidenceKeywords: string[];
+  strongReasons: string[];
+  gapReasons: string[];
+  riskFlags: PortfolioReviewTag[];
+}
+
+export interface PortfolioFitAnalysis {
+  targetJob: string | null;
+  analyzedAt: string;
+  recommendedActivityIds: string[];
+  activities: PortfolioFitActivityAnalysis[];
+}
+
+export interface PortfolioDocumentPayload {
+  version: 2;
+  title: string;
+  targetJob: string | null;
+  jobPostingSummary?: string | null;
+  selectedActivityIds: string[];
+  projectOrder: string[];
+  projects: PortfolioProjectDraft[];
+  fitAnalysis?: PortfolioFitAnalysis | null;
+  imagePlacements: PortfolioImagePlacement[];
+  templateId: string;
+  createdFrom: "portfolio-builder" | "legacy-portfolio";
+}
+
 export interface SavedPortfolio {
   id: string;
   title: string;
   sourceActivityId: string | null;
   selectedActivityIds: string[];
-  portfolio: PortfolioConversionResponse | null;
+  portfolio: PortfolioConversionResponse | PortfolioDocumentPayload | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface PortfolioFitResponse {
+  recommendedActivityIds: string[];
+  analysis: PortfolioFitAnalysis;
+}
+
+export interface PortfolioExportResponse {
+  portfolio: SavedPortfolio | null;
+  document: PortfolioDocumentPayload | null;
+  activities: Activity[];
+  profile: Pick<Profile, "name" | "avatar_url" | "email" | "phone" | "self_intro" | "skills"> | null;
+}
+
+export type DashboardDocumentKind = "resume" | "portfolio";
+
+export interface DashboardDocumentItem {
+  id: string;
+  kind: DashboardDocumentKind;
+  title: string;
+  subtitle: string;
+  createdAt: string;
+  updatedAt: string;
+  exportHref: string;
 }
 
 export interface ActivityConvertResponse {
@@ -842,6 +959,48 @@ export interface ExtractJobImageResponse {
 
 export interface ExtractJobPdfResponse {
   job_posting_text: string;
+}
+
+export interface ExtractJobUrlResponse {
+  job_posting_text: string;
+  final_url: string;
+  content_type: string;
+}
+
+export type MatchRewriteSuggestionFocus =
+  | "star_gap"
+  | "quantification"
+  | "verb_strength"
+  | "job_fit"
+  | "tech_decision"
+  | "problem_definition";
+
+export type MatchRewriteSuggestionSection =
+  | "프로젝트 개요"
+  | "문제 정의"
+  | "기술적 의사결정"
+  | "구현"
+  | "성과"
+  | "트러블슈팅";
+
+export interface MatchRewriteSuggestion {
+  text: string;
+  focus: MatchRewriteSuggestionFocus;
+  section: MatchRewriteSuggestionSection;
+  rationale: string;
+  reference_pattern: string;
+}
+
+export interface ActivityRewrite {
+  activity_id: string;
+  original_text: string;
+  suggestions: MatchRewriteSuggestion[];
+}
+
+export interface MatchRewriteResponse {
+  activity_rewrites: ActivityRewrite[];
+  job_analysis_summary: string;
+  fallback_used: boolean;
 }
 
 export interface CompanyInsightSignal {
@@ -902,6 +1061,9 @@ export interface ResumeBuilderProfile {
   phone: string;
   self_intro: string;
   skills: string[];
+  awards: string[];
+  certifications: string[];
+  languages: string[];
 }
 
 export interface ResumeBuilderResponse {
@@ -940,7 +1102,7 @@ export interface ResumeExportResponse {
 }
 
 export interface DocumentsResponse {
-  documents: Resume[];
+  documents: DashboardDocumentItem[];
 }
 
 export interface ActivityListResponse {

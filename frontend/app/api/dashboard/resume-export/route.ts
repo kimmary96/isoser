@@ -1,4 +1,11 @@
 import { apiError, apiOk } from "@/lib/api/route-response";
+import {
+  isMissingResumeProfileColumnError,
+  normalizeResumeBuilderProfile,
+  RESUME_PROFILE_BASE_COLUMNS,
+  RESUME_PROFILE_COLUMNS,
+} from "@/lib/resume-profile";
+import { normalizeResumeActivityLineOverrides } from "@/lib/resume-line-overrides";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 async function getAuthenticatedClient() {
@@ -13,6 +20,30 @@ async function getAuthenticatedClient() {
   }
 
   return { supabase, user };
+}
+
+async function fetchResumeProfile(
+  supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>,
+  userId: string
+) {
+  const profileResult = await supabase
+    .from("profiles")
+    .select(RESUME_PROFILE_COLUMNS)
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (isMissingResumeProfileColumnError(profileResult.error)) {
+    const fallbackResult = await supabase
+      .from("profiles")
+      .select(RESUME_PROFILE_BASE_COLUMNS)
+      .eq("id", userId)
+      .maybeSingle();
+    if (fallbackResult.error) throw new Error(fallbackResult.error.message);
+    return normalizeResumeBuilderProfile(fallbackResult.data);
+  }
+
+  if (profileResult.error) throw new Error(profileResult.error.message);
+  return normalizeResumeBuilderProfile(profileResult.data);
 }
 
 export async function GET(request: Request) {
@@ -38,6 +69,13 @@ export async function GET(request: Request) {
       return apiOk({ resume: null, activities: [], profile: null });
     }
 
+    const resume = {
+      ...resumeRow,
+      activity_line_overrides: normalizeResumeActivityLineOverrides(
+        (resumeRow as { activity_line_overrides?: unknown }).activity_line_overrides
+      ),
+    };
+
     const rawIds = Array.isArray(resumeRow.selected_activity_ids)
       ? (resumeRow.selected_activity_ids as unknown[])
       : [];
@@ -49,15 +87,8 @@ export async function GET(request: Request) {
       : [];
 
     if (ids.length === 0) {
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("name, bio, avatar_url, email, phone, self_intro, skills")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (profileError) throw new Error(profileError.message);
-
-      return apiOk({ resume: resumeRow, activities: [], profile: profileData ?? null });
+      const profileData = await fetchResumeProfile(supabase, user.id);
+      return apiOk({ resume, activities: [], profile: profileData ?? null });
     }
 
     const { data: activityRows, error: activityError } = await supabase
@@ -73,16 +104,10 @@ export async function GET(request: Request) {
       .map((id) => activityMap.get(id))
       .filter((activity): activity is NonNullable<typeof activity> => Boolean(activity));
 
-    const { data: profileData, error: profileError } = await supabase
-      .from("profiles")
-      .select("name, bio, avatar_url, email, phone, self_intro, skills")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    if (profileError) throw new Error(profileError.message);
+    const profileData = await fetchResumeProfile(supabase, user.id);
 
     return apiOk({
-      resume: resumeRow,
+      resume,
       activities: orderedActivities,
       profile: profileData ?? null,
     });

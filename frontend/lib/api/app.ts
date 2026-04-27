@@ -8,6 +8,8 @@ import type {
   ProgramCompareSearchResponse,
   DashboardRecommendCalendarResponse,
   DashboardRecommendedProgramsResponse,
+  DashboardDocumentItem,
+  ExtractJobUrlResponse,
   Profile,
   ProgramCompareRelevanceResponse,
   ProgramSort,
@@ -21,7 +23,10 @@ import type {
   DashboardMeResponse,
   DashboardProfileResponse,
   DocumentsResponse,
+  MatchRewriteResponse,
   MatchDashboardResponse,
+  PortfolioExportResponse,
+  PortfolioFitResponse,
   ResumeBuilderResponse,
   ResumeExportResponse,
   SavedPortfolio,
@@ -309,8 +314,9 @@ export async function createResumeDocument(payload: {
   target_job: string | null;
   template_id: string;
   selected_activity_ids: string[];
-}): Promise<{ id: string }> {
-  return requestAppJson<{ id: string }>(
+  activity_line_overrides?: NonNullable<Resume["activity_line_overrides"]>;
+}): Promise<{ id: string; activity_line_overrides_saved?: boolean }> {
+  return requestAppJson<{ id: string; activity_line_overrides_saved?: boolean }>(
     "/api/dashboard/resume",
     {
       method: "POST",
@@ -321,7 +327,36 @@ export async function createResumeDocument(payload: {
   );
 }
 
-export async function getDocuments(): Promise<{ documents: Resume[] }> {
+export async function requestResumeJobPostingRewrite(payload: {
+  job_posting_text: string;
+  job_title: string;
+  activity_ids: string[];
+  section_type: Activity["type"] | "요약";
+}): Promise<MatchRewriteResponse> {
+  return requestAppJson<MatchRewriteResponse>(
+    "/api/dashboard/resume/rewrite",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+    "공고 기준 문장 후보 생성에 실패했습니다."
+  );
+}
+
+export async function extractResumeJobPostingUrl(url: string): Promise<ExtractJobUrlResponse> {
+  return requestAppJson<ExtractJobUrlResponse>(
+    "/api/dashboard/resume/extract-job-url",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+    },
+    "URL 공고 추출에 실패했습니다."
+  );
+}
+
+export async function getDocuments(): Promise<{ documents: DashboardDocumentItem[] }> {
   return requestAppJson<DocumentsResponse>(
     "/api/dashboard/documents",
     { method: "GET" },
@@ -340,6 +375,7 @@ export async function listSavedPortfolios(): Promise<{ portfolios: SavedPortfoli
 export async function savePortfolioDocument(payload: {
   title: string;
   sourceActivityId: string;
+  selectedActivityIds?: string[];
   portfolio: NonNullable<SavedPortfolio["portfolio"]>;
 }): Promise<{ id: string }> {
   return requestAppJson<{ id: string }>(
@@ -457,6 +493,34 @@ export async function requestActivityCoaching(payload: {
       body: JSON.stringify(payload),
     },
     "AI coach request failed."
+  );
+}
+
+export async function requestPortfolioFitAnalysis(payload: {
+  targetJob?: string | null;
+  jobPostingText?: string | null;
+  activityIds?: string[];
+  recommendLimit?: number;
+}): Promise<PortfolioFitResponse> {
+  return requestAppJson<PortfolioFitResponse>(
+    "/api/dashboard/portfolio/fit",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+    "포트폴리오 적합도 분석에 실패했습니다."
+  );
+}
+
+export async function getPortfolioExportData(
+  portfolioId?: string | null
+): Promise<PortfolioExportResponse> {
+  const query = portfolioId ? `?portfolioId=${encodeURIComponent(portfolioId)}` : "";
+  return requestAppJson<PortfolioExportResponse>(
+    `/api/dashboard/portfolio-export${query}`,
+    { method: "GET" },
+    "포트폴리오 PDF 데이터 로딩에 실패했습니다."
   );
 }
 

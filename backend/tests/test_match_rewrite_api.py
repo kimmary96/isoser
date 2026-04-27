@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import pytest
 
-from routers import match as match_router
+try:
+    from backend.routers import match as match_router
+except ImportError:
+    from routers import match as match_router
 
 
 def _rewrite_payload() -> dict:
