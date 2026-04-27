@@ -16,15 +16,15 @@ export function UrgentProgramCompactCard({ program }: { program: ProgramListRow 
   return (
     <Link
       href={href}
-      className="block h-full rounded-2xl border border-rose-200/80 bg-white/90 p-4 shadow-sm transition hover:border-rose-300 hover:bg-white hover:shadow-md"
+      className="block h-full rounded-[18px] border border-white/70 bg-white/90 p-4 shadow-[0_16px_42px_rgba(10,19,37,0.08)] backdrop-blur-sm transition hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_24px_58px_rgba(10,19,37,0.12)]"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate text-xs font-semibold uppercase tracking-[0.16em] text-rose-500">
+          <p className="truncate text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
             {program.source || program.provider || "-"}
           </p>
-          <h3 className="mt-1.5 line-clamp-2 text-base font-semibold leading-6 text-slate-950">{program.title}</h3>
-          {schedule ? <p className="mt-2 line-clamp-1 text-xs font-semibold text-slate-600">{schedule}</p> : null}
+          <h3 className="mt-1.5 line-clamp-2 text-base font-black leading-6 text-slate-950">{program.title}</h3>
+          {schedule ? <p className="mt-2 line-clamp-1 text-xs font-semibold text-slate-500">{schedule}</p> : null}
         </div>
         <ProgramDeadlineBadge program={program} />
       </div>
@@ -32,7 +32,7 @@ export function UrgentProgramCompactCard({ program }: { program: ProgramListRow 
       {chips.length ? (
         <div className="mt-3 flex flex-wrap gap-1.5">
           {chips.map((chip) => (
-            <span key={`${programId}-${chip}`} className="rounded-full bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600">
+            <span key={`${programId}-${chip}`} className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-extrabold text-slate-600">
               {chip}
             </span>
           ))}

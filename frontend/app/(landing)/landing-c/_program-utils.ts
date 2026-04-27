@@ -303,4 +303,12 @@ export function getLiveBoardPrograms(programs: ProgramListRow[]): ProgramListRow
     .slice(0, LIVE_BOARD_LIMIT);
 }
 
+export function resolveLandingHeroPrograms(
+  liveBoardPrograms: ProgramListRow[],
+  fallbackPrograms: ProgramListRow[]
+): ProgramListRow[] {
+  const heroPrograms = getLiveBoardPrograms(liveBoardPrograms);
+  return heroPrograms.length > 0 ? heroPrograms : getLiveBoardPrograms(fallbackPrograms);
+}
+
 export { getProgramDeadlineTone };

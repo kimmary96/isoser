@@ -304,7 +304,7 @@ export function ProgramsFilterBar({
   }));
 
   return (
-    <section className={cx("rounded-3xl p-5 sm:p-6", iso.softPanel)}>
+    <section className="rounded-3xl border border-sky-100 bg-[linear-gradient(135deg,#f8fbff_0%,#edf7ff_48%,#ffffff_100%)] p-5 shadow-[0_14px_36px_rgba(14,116,144,0.08)] sm:p-6">
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Program Search</p>
         <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">

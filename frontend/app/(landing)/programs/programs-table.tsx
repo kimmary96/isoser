@@ -79,7 +79,7 @@ export function ProgramsTable({
                 ? program.selection_process_label
                 : null;
             const rowClassName = program.is_ad
-              ? "bg-amber-50/70 hover:bg-amber-50"
+              ? "bg-[linear-gradient(90deg,#fff1f2_0%,#fff7ed_48%,#ffffff_100%)] hover:bg-[linear-gradient(90deg,#ffe4e6_0%,#ffedd5_48%,#ffffff_100%)]"
               : "hover:bg-slate-50";
 
             return (

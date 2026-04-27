@@ -19,7 +19,7 @@ import type { ProgramListRow } from "@/lib/types";
 import { LandingCHeroSection } from "./_hero";
 import { LandingCOpportunityFeed } from "./_program-feed";
 import { OPPORTUNITY_FEED_SIZE } from "./_content";
-import { filterOpportunityPrograms, getLiveBoardPrograms, orderOpportunityPrograms } from "./_program-utils";
+import { filterOpportunityPrograms, orderOpportunityPrograms, resolveLandingHeroPrograms } from "./_program-utils";
 import { normalizeChip, normalizeKeyword } from "./_search";
 import { landingCThemeVars } from "./_styles";
 import {
@@ -134,7 +134,7 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
   }
 
   const canServeFromLandingSnapshot = snapshotPrograms.length >= OPPORTUNITY_FEED_SIZE;
-  const heroPrograms = getLiveBoardPrograms(liveBoardPrograms);
+  const heroPrograms = resolveLandingHeroPrograms(liveBoardPrograms, programs);
   let opportunityPrograms = canServeFromLandingSnapshot && !error
     ? orderOpportunityPrograms(snapshotPrograms, { activeChip, limit: OPPORTUNITY_FEED_SIZE })
     : orderOpportunityPrograms(

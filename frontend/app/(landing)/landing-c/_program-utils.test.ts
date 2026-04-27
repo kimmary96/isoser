@@ -2,7 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import type { Program } from "@/lib/types";
 
-import { filterOpportunityPrograms, getLiveBoardPrograms, orderOpportunityPrograms } from "./_program-utils";
+import {
+  filterOpportunityPrograms,
+  getLiveBoardPrograms,
+  orderOpportunityPrograms,
+  resolveLandingHeroPrograms,
+} from "./_program-utils";
 
 function createProgram(overrides: Partial<Program> = {}): Program {
   return {
@@ -52,6 +57,37 @@ describe("landing-c program utils", () => {
     ];
 
     expect(getLiveBoardPrograms(programs).map((program) => program.id)).toEqual(["top", "mid", "low"]);
+  });
+
+  it("uses opportunity programs when the live board source is empty", () => {
+    const fallbackPrograms = [
+      createProgram({ id: "fallback-1", title: "대체 공고 1", days_left: 2, detail_view_count_7d: 8 }),
+      createProgram({ id: "fallback-2", title: "대체 공고 2", days_left: 4, detail_view_count_7d: 7 }),
+      createProgram({ id: "fallback-3", title: "대체 공고 3", days_left: 6, detail_view_count_7d: 6 }),
+    ];
+
+    expect(resolveLandingHeroPrograms([], fallbackPrograms).map((program) => program.id)).toEqual([
+      "fallback-1",
+      "fallback-2",
+      "fallback-3",
+    ]);
+  });
+
+  it("keeps the live board source when it has eligible programs", () => {
+    const liveBoardPrograms = [
+      createProgram({ id: "live-1", title: "라이브 공고 1", days_left: 2, detail_view_count_7d: 12 }),
+      createProgram({ id: "live-2", title: "라이브 공고 2", days_left: 3, detail_view_count_7d: 10 }),
+      createProgram({ id: "live-3", title: "라이브 공고 3", days_left: 4, detail_view_count_7d: 9 }),
+    ];
+    const fallbackPrograms = [
+      createProgram({ id: "fallback-1", title: "대체 공고 1", days_left: 1, detail_view_count_7d: 99 }),
+    ];
+
+    expect(resolveLandingHeroPrograms(liveBoardPrograms, fallbackPrograms).map((program) => program.id)).toEqual([
+      "live-1",
+      "live-2",
+      "live-3",
+    ]);
   });
 
   it("orders 전체 opportunity feed by active recruiting and satisfaction signals", () => {

@@ -309,10 +309,10 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
 
           <ProgramBookmarkStateProvider initialBookmarkedProgramIds={bookmarkedProgramIds}>
             {displayUrgentPrograms.length > 0 ? (
-              <section className="rounded-[24px] border border-rose-200/80 bg-white/80 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.08)] backdrop-blur-sm">
+              <section className="rounded-[24px] border border-orange-100 bg-[#fff1e6] p-5 shadow-[0_18px_40px_rgba(224,98,26,0.10)]">
                 <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-[0.24em] text-rose-700">Closing Soon</p>
+                    <p className="text-sm font-semibold uppercase tracking-[0.24em] text-orange-700">Closing Soon</p>
                     <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-950">마감 임박 프로그램</h2>
                     <p className="mt-2 text-sm text-slate-600">
                       {urgentProgramsUseStrictWindow
