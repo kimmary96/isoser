@@ -9,7 +9,7 @@ import {
   getRecommendedPrograms,
   saveCalendarSelections,
 } from "@/lib/api/app";
-import { getProgramCardScore, isProgramCardOpen } from "@/lib/program-card-items";
+import { isProgramCardOpen } from "@/lib/program-card-items";
 import { toProgramDateKey } from "@/lib/program-display";
 import type { ProgramCardItem, ProgramCardSummary } from "@/lib/types";
 import {
@@ -40,25 +40,6 @@ export const DASHBOARD_REGION_OPTIONS = [
 function formatUserName(value: string | null | undefined): string {
   const trimmed = value?.trim();
   return trimmed || "사용자";
-}
-
-function resolveUserMatchScore(item: ProgramCardItem): number {
-  return getProgramCardScore(item) ?? 0;
-}
-
-function resolveDeadlineTime(value: string | null | undefined): number {
-  if (!value) return Number.MAX_SAFE_INTEGER;
-  const parsed = new Date(value).getTime();
-  return Number.isNaN(parsed) ? Number.MAX_SAFE_INTEGER : parsed;
-}
-
-function sortByUserMatch(items: ProgramCardItem[]): ProgramCardItem[] {
-  return [...items].sort((left, right) => {
-    const scoreDiff = resolveUserMatchScore(right) - resolveUserMatchScore(left);
-    if (scoreDiff !== 0) return scoreDiff;
-
-    return resolveDeadlineTime(left.program.deadline) - resolveDeadlineTime(right.program.deadline);
-  });
 }
 
 function isUsableCareerFitCache(items: ProgramCardItem[]): boolean {
