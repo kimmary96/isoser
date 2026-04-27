@@ -166,7 +166,7 @@ export function ListEditorModal({
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+            className="rounded-lg bg-[#071a36] px-4 py-2 text-sm font-medium text-white hover:bg-[#0a2146] disabled:opacity-50"
           >
             {saving ? "저장 중..." : "저장"}
           </button>
@@ -295,7 +295,7 @@ export function CareerEditorModal({
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+            className="rounded-lg bg-[#071a36] px-4 py-2 text-sm font-medium text-white hover:bg-[#0a2146] disabled:opacity-50"
           >
             {saving ? "저장 중..." : "저장"}
           </button>
@@ -437,7 +437,7 @@ export function EducationEditorModal({
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+            className="rounded-lg bg-[#071a36] px-4 py-2 text-sm font-medium text-white hover:bg-[#0a2146] disabled:opacity-50"
           >
             {saving ? "저장 중..." : "저장"}
           </button>
@@ -578,7 +578,7 @@ export function SkillEditorModal({
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+            className="rounded-lg bg-[#071a36] px-4 py-2 text-sm font-medium text-white hover:bg-[#0a2146] disabled:opacity-50"
           >
             {saving ? "저장 중..." : "저장"}
           </button>
@@ -636,7 +636,7 @@ export function SelfIntroEditorModal({
           type="button"
           onClick={handleSave}
           disabled={saving}
-          className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+          className="rounded-lg bg-[#071a36] px-4 py-2 text-sm font-medium text-white hover:bg-[#0a2146] disabled:opacity-50"
         >
           {saving ? "저장 중..." : "저장"}
         </button>

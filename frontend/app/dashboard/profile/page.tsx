@@ -81,6 +81,23 @@ export default function DashboardPage() {
   const languageItems = toArray(profile.languages);
   const skillItems = toArray(profile.skills);
   const careerCards = buildCareerCards(careerItems, activities);
+  const contactItems = useMemo(() => {
+    const profileWithExtras = profile as Profile & { portfolio_url?: string | null };
+    const items: Array<{ label: string; href?: string; external?: boolean }> = [];
+
+    if (profile.phone) items.push({ label: `📞 ${profile.phone}` });
+    if (profile.email) items.push({ label: `✉️ ${profile.email}`, href: `mailto:${profile.email}` });
+    if (profile.region) {
+      items.push({
+        label: `📍 ${profile.region}${profile.region_detail ? ` ${profile.region_detail}` : ""}`,
+      });
+    }
+    if (profileWithExtras.portfolio_url) {
+      items.push({ label: "포트폴리오 링크", href: profileWithExtras.portfolio_url, external: true });
+    }
+
+    return items;
+  }, [profile]);
   const tabs = [
     { label: "전체", type: "전체" },
     { label: "회사 프로젝트", type: "회사경력" },
@@ -199,6 +216,7 @@ export default function DashboardPage() {
               activeTab={activeTab}
               activities={activities}
               tabActivities={tabActivities}
+              contactItems={contactItems}
               onSelectTab={setActiveTab}
               onManageActivities={() => router.push("/dashboard/activities")}
               onOpenActivity={(id) => router.push(`/dashboard/activities/${id}`)}

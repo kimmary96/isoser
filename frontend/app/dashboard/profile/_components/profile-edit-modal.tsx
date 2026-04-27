@@ -174,7 +174,7 @@ export function ProfileEditModal({
             type="button"
             disabled={profileModalSaving}
             onClick={() => void onSave()}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:opacity-50"
+            className="rounded-lg bg-[linear-gradient(135deg,#094cb2,#3b82f6)] px-4 py-2 text-sm text-white hover:brightness-95 disabled:opacity-50"
           >
             {profileModalSaving ? "저장 중..." : "저장하기"}
           </button>

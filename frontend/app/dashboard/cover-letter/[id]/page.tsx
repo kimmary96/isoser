@@ -46,29 +46,29 @@ export default function CoverLetterDetailPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500">불러오는 중...</p>
+      <main className="flex min-h-screen items-center justify-center bg-[#f3f6fb]">
+        <p className="text-slate-500">불러오는 중...</p>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-5 py-8">
+    <main className="min-h-screen bg-[#f3f6fb]">
+      <div className="mx-auto max-w-7xl px-5 py-8">
         <button
           onClick={() => router.push("/dashboard/cover-letter")}
-          className="mb-6 inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800"
+          className="mb-6 inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800"
         >
           <span>←</span>
           목록으로
         </button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-6">
-          <div className="rounded-2xl border border-gray-200 bg-white p-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_12px_32px_rgba(15,23,42,0.05)]">
             <div className="mb-5 flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs text-gray-400 mb-1">자기소개서 편집기</p>
-                <h1 className="text-xl font-bold text-gray-900">
+                <p className="mb-1 text-xs font-medium text-[#e0621a]">자기소개서 편집기</p>
+                <h1 className="text-xl font-bold text-slate-950">
                   {isNew ? "새 자기소개서 작성" : "자기소개서 편집"}
                 </h1>
               </div>
@@ -124,13 +124,13 @@ export default function CoverLetterDetailPage() {
             </div>
 
             <div className="mt-6 grid grid-cols-[44px_minmax(0,1fr)] gap-4">
-              <div className="rounded-xl border border-gray-200 bg-gray-50 p-2 flex flex-col items-center gap-2">
+              <div className="flex flex-col items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2">
                 {qaItems.map((_, idx) => (
                   <button
                     key={`qa-tab-${idx}`}
                     onClick={() => setActiveQaIndex(idx)}
                     className={`h-8 w-8 rounded-md text-sm font-semibold ${
-                      idx === activeQaIndex ? "bg-orange-500 text-white" : "bg-white text-gray-600 border border-gray-200"
+                      idx === activeQaIndex ? "bg-[#e0621a] text-white" : "border border-slate-200 bg-white text-slate-600"
                     }`}
                     title={`문항 ${idx + 1}`}
                   >
@@ -190,16 +190,16 @@ export default function CoverLetterDetailPage() {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                className="rounded-xl bg-[linear-gradient(135deg,#094cb2,#3b82f6)] px-6 py-2.5 text-sm font-medium text-white hover:brightness-95 disabled:opacity-50"
               >
                 {saving ? "저장 중..." : "저장하기"}
               </button>
             </div>
           </div>
 
-          <aside className="rounded-2xl border border-gray-200 bg-white h-fit lg:sticky lg:top-6 overflow-hidden">
+          <aside className="h-fit overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_12px_32px_rgba(15,23,42,0.05)] lg:sticky lg:top-6">
             <div className="px-4 py-4 border-b border-gray-100">
-              <h2 className="text-base font-bold text-gray-900 mb-3">AI 코치</h2>
+              <h2 className="mb-3 text-base font-bold text-slate-950">AI 코치</h2>
               <input
                 value={coachJobTitle}
                 onChange={(e) => setCoachJobTitle(e.target.value)}
@@ -219,7 +219,7 @@ export default function CoverLetterDetailPage() {
                     key={`${message.role}-${idx}`}
                     className={`rounded-lg px-3 py-2 text-xs whitespace-pre-wrap ${
                       message.role === "user"
-                        ? "bg-gray-900 text-white ml-8"
+                        ? "bg-[#071a36] text-white ml-8"
                         : "bg-gray-100 text-gray-700 mr-8"
                     }`}
                   >
@@ -252,7 +252,7 @@ export default function CoverLetterDetailPage() {
                 <button
                   onClick={() => requestCoaching(coachInput)}
                   disabled={coaching || !coachInput.trim()}
-                  className="rounded-lg bg-gray-700 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+                  className="rounded-lg bg-[#071a36] px-4 py-2 text-sm font-medium text-white hover:bg-[#0a2146] disabled:opacity-50"
                 >
                   {coaching ? "전송 중" : "전송"}
                 </button>

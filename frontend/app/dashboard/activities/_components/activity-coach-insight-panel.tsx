@@ -38,7 +38,7 @@ const PLACEHOLDER_DIAGNOSIS_ITEMS = [
 
 function ActivityCoachInsightPlaceholder() {
   return (
-    <div className="h-full min-h-[640px] space-y-4 rounded-lg border border-dashed border-blue-200 bg-blue-50/45 p-4">
+    <div className="h-full min-h-[640px] space-y-4 rounded-2xl border border-dashed border-blue-200 bg-[#eef6ff] p-4">
       <div>
         <div className="flex items-center justify-between gap-3">
           <h3 className="text-sm font-semibold text-slate-900">코칭 진단</h3>
@@ -95,12 +95,12 @@ export function ActivityCoachInsightPanel({
   }
 
   return (
-    <div className="h-full min-h-[640px] space-y-4 overflow-y-auto rounded-lg border border-blue-100 bg-blue-50/60 p-3">
+    <div className="h-full min-h-[640px] space-y-4 overflow-y-auto rounded-2xl border border-blue-100 bg-[#eef6ff] p-3">
       <div>
         <div className="flex items-center justify-between gap-3">
           <h3 className="text-sm font-semibold text-slate-900">코칭 진단</h3>
           {insight.priorityFocus && (
-            <span className="shrink-0 rounded-full bg-blue-600 px-2 py-0.5 text-[11px] font-semibold text-white">
+            <span className="shrink-0 rounded-full bg-[#094cb2] px-2 py-0.5 text-[11px] font-semibold text-white">
               우선 보강: {insight.priorityFocus}
             </span>
           )}

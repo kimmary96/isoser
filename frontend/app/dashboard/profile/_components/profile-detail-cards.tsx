@@ -92,7 +92,7 @@ export function ProfileFooterActions({
       <button
         type="button"
         onClick={onOpenPortfolio}
-        className="flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2 text-sm font-medium text-white hover:bg-slate-800"
+        className="flex items-center gap-2 rounded-xl bg-[#071a36] px-5 py-2 text-sm font-medium text-white hover:bg-[#0a2146]"
       >
         {hasPortfolioUrl ? "포트폴리오 링크 열기" : "포트폴리오 링크 설정"}
       </button>

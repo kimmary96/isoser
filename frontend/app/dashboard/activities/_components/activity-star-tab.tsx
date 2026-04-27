@@ -29,7 +29,7 @@ export function ActivityStarTab({
 }: ActivityStarTabProps) {
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-3">
+      <div className="rounded-xl border border-orange-100 bg-[#fff1e6] p-3">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs leading-5 text-slate-600">
             기본정보의 활동명, 역할, 사용 기술, 기여내용을 STAR 초안에 자동으로 나눠 넣습니다.
@@ -38,7 +38,7 @@ export function ActivityStarTab({
             type="button"
             onClick={onImportBasicInfo}
             disabled={!canImportBasicInfo}
-            className="shrink-0 rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:border-gray-200 disabled:text-gray-400"
+            className="shrink-0 rounded-lg border border-orange-200 bg-white px-3 py-1.5 text-xs font-semibold text-[#c94f12] transition-colors hover:bg-orange-50 disabled:cursor-not-allowed disabled:border-gray-200 disabled:text-gray-400"
           >
             기본정보 가져오기
           </button>
@@ -46,7 +46,7 @@ export function ActivityStarTab({
       </div>
 
       <div>
-        <label className="text-sm font-semibold text-blue-600 mb-1 block">
+        <label className="mb-1 block text-sm font-semibold text-[#094cb2]">
           S - Situation (상황)
         </label>
         <p className="text-xs text-gray-400 mb-2">
@@ -62,7 +62,7 @@ export function ActivityStarTab({
       </div>
 
       <div>
-        <label className="text-sm font-semibold text-blue-600 mb-1 block">
+        <label className="mb-1 block text-sm font-semibold text-[#094cb2]">
           T - Task (과제)
         </label>
         <p className="text-xs text-gray-400 mb-2">
@@ -78,7 +78,7 @@ export function ActivityStarTab({
       </div>
 
       <div>
-        <label className="text-sm font-semibold text-blue-600 mb-1 block">
+        <label className="mb-1 block text-sm font-semibold text-[#094cb2]">
           A - Action (행동)
         </label>
         <p className="text-xs text-gray-400 mb-2">
@@ -94,7 +94,7 @@ export function ActivityStarTab({
       </div>
 
       <div>
-        <label className="text-sm font-semibold text-blue-600 mb-1 block">
+        <label className="mb-1 block text-sm font-semibold text-[#094cb2]">
           R - Result (결과)
         </label>
         <p className="text-xs text-gray-400 mb-2">
@@ -113,7 +113,7 @@ export function ActivityStarTab({
         <button
           onClick={() => void onStarSave()}
           disabled={starSaving}
-          className="px-5 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+          className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm text-slate-600 hover:bg-slate-50 disabled:opacity-50"
         >
           {starSaving ? "저장 중..." : "저장"}
         </button>

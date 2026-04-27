@@ -13,6 +13,7 @@ type ProfileActivityStripProps = {
   activeTab: string;
   activities: Activity[];
   tabActivities: Activity[];
+  contactItems: Array<{ label: string; href?: string; external?: boolean }>;
   onSelectTab: (tab: string) => void;
   onManageActivities: () => void;
   onOpenActivity: (id: string) => void;
@@ -24,6 +25,7 @@ export function ProfileActivityStrip({
   activeTab,
   activities,
   tabActivities,
+  contactItems,
   onSelectTab,
   onManageActivities,
   onOpenActivity,
@@ -33,48 +35,72 @@ export function ProfileActivityStrip({
 
   return (
     <div className="mb-4">
-      <div className="mb-3 flex flex-wrap gap-2">
-        {tabs.map((tab) => {
-          const count =
-            tab.type === "전체"
-              ? activities.length
-              : activities.filter((activity) => {
-                  const activityType = activity.type as string;
-                  return tab.type === "개인프로젝트"
-                    ? activityType === "프로젝트" || activityType === "개인프로젝트"
-                    : activityType === tab.type;
-                }).length;
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap gap-2">
+          {tabs.map((tab) => {
+            const count =
+              tab.type === "전체"
+                ? activities.length
+                : activities.filter((activity) => {
+                    const activityType = activity.type as string;
+                    return tab.type === "개인프로젝트"
+                      ? activityType === "프로젝트" || activityType === "개인프로젝트"
+                      : activityType === tab.type;
+                  }).length;
 
-          return (
-            <button
-              key={tab.type}
-              type="button"
-              onClick={() => onSelectTab(tab.type)}
-              className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all ${
-                activeTab === tab.type
-                  ? "bg-slate-900 text-white"
-                  : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-              }`}
-            >
-              {tab.label}
-              <span
-                className={`text-xs ${
-                  activeTab === tab.type ? "text-gray-300" : "text-gray-400"
+            return (
+              <button
+                key={tab.type}
+                type="button"
+                onClick={() => onSelectTab(tab.type)}
+                className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                  activeTab === tab.type
+                    ? "bg-[#071a36] text-white"
+                    : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
                 }`}
               >
-                {count}
-              </span>
-            </button>
-          );
-        })}
+                {tab.label}
+                <span
+                  className={`text-xs ${
+                    activeTab === tab.type ? "text-gray-300" : "text-gray-400"
+                  }`}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
 
-        <button
-          type="button"
-          onClick={onManageActivities}
-          className="flex items-center gap-1 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-500 hover:bg-slate-50"
-        >
-          ⚙ 활동 관리
-        </button>
+          <button
+            type="button"
+            onClick={onManageActivities}
+            className="flex items-center gap-1 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-500 hover:bg-slate-50"
+          >
+            ⚙ 활동 관리
+          </button>
+        </div>
+
+        {contactItems.length > 0 && (
+          <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-x-3 gap-y-1 px-1 text-xs font-medium text-slate-500">
+            {contactItems.map((item) =>
+              item.href ? (
+                <a
+                  key={`${item.label}-${item.href}`}
+                  href={item.href}
+                  target={item.external ? "_blank" : undefined}
+                  rel={item.external ? "noreferrer" : undefined}
+                  className="max-w-[15rem] truncate text-[#094cb2] underline-offset-2 hover:underline"
+                >
+                  {item.label}
+                </a>
+              ) : (
+                <span key={item.label} className="max-w-[15rem] truncate">
+                  {item.label}
+                </span>
+              )
+            )}
+          </div>
+        )}
       </div>
 
       <div className="flex gap-3 overflow-x-auto pb-2">
@@ -85,11 +111,11 @@ export function ProfileActivityStrip({
             <div
               key={activity.id}
               onClick={() => onOpenActivity(activity.id)}
-              className="w-60 flex-shrink-0 cursor-pointer overflow-hidden rounded-2xl border border-slate-200 bg-white transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(15,23,42,0.08)]"
+              className="w-60 flex-shrink-0 cursor-pointer overflow-hidden rounded-2xl border border-slate-200 bg-white transition-all hover:-translate-y-0.5 hover:border-orange-200 hover:shadow-[0_12px_32px_rgba(15,23,42,0.08)]"
               style={{ height: "212px" }}
             >
-              <div className="flex h-28 items-center justify-center bg-[linear-gradient(135deg,#dbeafe,#e2e8f0)]">
-                <span className="text-2xl text-slate-400">🖼</span>
+              <div className="flex h-28 items-center justify-center bg-[linear-gradient(135deg,#f4f9ff_0%,#dbeafe_52%,#eef6ff_100%)]">
+                <span className="text-2xl text-blue-300">🖼</span>
               </div>
               <div className="p-3">
                 <p className="mb-1 text-xs text-slate-400">{activity.period}</p>

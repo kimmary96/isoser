@@ -106,26 +106,6 @@ export function ProfileHeroSection({
             </div>
           )}
         </div>
-        <div className="flex flex-wrap gap-4 px-1 text-sm text-slate-500">
-          {profile.phone && <span>📞 {profile.phone}</span>}
-          {profile.email && <span>✉️ {profile.email}</span>}
-          {profile.region && (
-            <span>
-              📍 {profile.region}
-              {profile.region_detail ? ` ${profile.region_detail}` : ""}
-            </span>
-          )}
-          {profile.portfolio_url && (
-            <a
-              href={profile.portfolio_url}
-              target="_blank"
-              rel="noreferrer"
-              className="text-blue-600 underline underline-offset-2"
-            >
-              포트폴리오 링크
-            </a>
-          )}
-        </div>
       </div>
 
       <div className="flex w-56 min-w-0 flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.05)] xl:h-[228px] xl:w-auto">
@@ -146,13 +126,13 @@ export function ProfileHeroSection({
               </div>
               <div className="min-w-0">
                 <div className="mb-1 flex justify-end">
-                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-500">
+                  <span className="rounded-full bg-[#fff1e6] px-2 py-0.5 text-[11px] font-semibold text-[#c94f12]">
                     {skill.level}
                   </span>
                 </div>
                 <div className="h-2 rounded-full bg-slate-100">
                   <div
-                    className="h-2 rounded-full bg-slate-900 transition-all"
+                    className="h-2 rounded-full bg-[#094cb2] transition-all"
                     style={{ width: `${getSkillLevelPercent(skill.level)}%` }}
                   />
                 </div>

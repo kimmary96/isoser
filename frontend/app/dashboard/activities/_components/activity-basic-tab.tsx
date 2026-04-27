@@ -105,8 +105,8 @@ export function ActivityBasicTab({
                 onClick={() => onTypeDraftChange(type)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${
                   typeDraft === type
-                    ? "bg-gray-900 text-white border-gray-900"
-                    : "bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100"
+                    ? "border-[#071a36] bg-[#071a36] text-white"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-orange-200 hover:text-orange-700"
                 }`}
               >
                 {type}
@@ -238,7 +238,7 @@ export function ActivityBasicTab({
             )}
 
             {skillSuggestions.length > 0 && (
-              <div className="mt-3 rounded-2xl border border-blue-100 bg-blue-50/60 p-3">
+              <div className="mt-3 rounded-2xl border border-blue-100 bg-[#eef6ff] p-3">
                 <div className="flex items-center justify-between gap-3 mb-2">
                   <p className="text-xs font-semibold text-blue-700">역할 기반 추천</p>
                   {skillSuggestionRoleLabel && (
@@ -260,7 +260,7 @@ export function ActivityBasicTab({
                         disabled={disabled}
                         className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-all ${
                           selected
-                            ? "border-blue-600 bg-blue-600 text-white"
+                            ? "border-[#094cb2] bg-[#094cb2] text-white"
                             : "border-blue-200 bg-white text-blue-700 hover:border-blue-300 hover:bg-blue-50"
                         } ${disabled ? "cursor-not-allowed opacity-50" : ""}`}
                       >
@@ -341,7 +341,7 @@ export function ActivityBasicTab({
                 ? "기본정보와 기여내용을 바탕으로 소개글 후보를 생성합니다."
                 : "기여내용을 먼저 작성해주세요"
             }
-            className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 transition-all hover:border-blue-300 hover:bg-blue-100 disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-100 disabled:text-gray-400"
+            className="inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-[#fff1e6] px-3 py-1.5 text-xs font-medium text-[#c94f12] transition-all hover:border-orange-300 hover:bg-orange-100 disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-100 disabled:text-gray-400"
           >
             <span aria-hidden="true">AI</span>
             <span>{introGenerateLoading ? "소개글 생성 중..." : "간단 소개글 생성"}</span>
@@ -388,7 +388,7 @@ export function ActivityBasicTab({
                     </div>
                     <span
                       className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-medium ${
-                        selected ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-500"
+                        selected ? "bg-[#094cb2] text-white" : "bg-gray-100 text-gray-500"
                       }`}
                     >
                       {selected ? "선택됨" : "선택"}
@@ -454,7 +454,7 @@ export function ActivityBasicTab({
         <button
           onClick={() => void onSaveBasicInfo()}
           disabled={basicSaving}
-          className="px-6 py-2.5 bg-blue-500 text-white rounded-xl text-sm font-medium hover:bg-blue-600 disabled:opacity-50 transition-all"
+          className="rounded-xl bg-[linear-gradient(135deg,#094cb2,#3b82f6)] px-6 py-2.5 text-sm font-medium text-white transition-all hover:brightness-95 disabled:opacity-50"
         >
           {basicSaving ? "저장 중..." : "저장"}
         </button>

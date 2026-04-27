@@ -107,26 +107,26 @@ export default function ActivityDetailPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500">불러오는 중...</p>
+      <main className="flex min-h-screen items-center justify-center bg-[#f3f6fb]">
+        <p className="text-slate-500">불러오는 중...</p>
       </main>
     );
   }
 
   if (!activity) {
     return (
-      <main className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500">활동을 찾을 수 없습니다.</p>
+      <main className="flex min-h-screen items-center justify-center bg-[#f3f6fb]">
+        <p className="text-slate-500">활동을 찾을 수 없습니다.</p>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-[#f3f6fb]">
       <button
         onClick={() => router.push("/dashboard/activities")}
         aria-label="뒤로가기"
-        className="fixed top-6 left-[230px] ml-4 z-40 flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 transition-all"
+        className="fixed left-[230px] top-6 z-40 ml-4 flex h-8 w-8 items-center justify-center rounded-full transition-all hover:bg-white/80"
       >
         <svg
           width="18"
@@ -145,21 +145,21 @@ export default function ActivityDetailPage() {
       <div className={`${activeTab === "star" ? "max-w-[1320px]" : "max-w-4xl"} mx-auto px-4 py-8`}>
         <div className="flex justify-between items-start mb-6">
           <div>
-            <p className="text-sm text-gray-400">{typeDraft || activity.type}</p>
+            <p className="text-sm font-medium text-[#e0621a]">{typeDraft || activity.type}</p>
             <input
               value={titleDraft}
               onChange={(e) => setTitleDraft(e.target.value)}
-              className="text-2xl font-bold text-gray-900 bg-transparent border-b border-transparent hover:border-gray-300 focus:border-blue-400 focus:outline-none w-full transition-all"
+              className="w-full border-b border-transparent bg-transparent text-2xl font-bold text-slate-950 transition-all hover:border-slate-300 focus:border-[#094cb2] focus:outline-none"
               style={{ fontFamily: "Pretendard, sans-serif" }}
             />
             {activity.period && (
-              <p className="text-sm text-gray-500">{activity.period}</p>
+              <p className="text-sm text-slate-500">{activity.period}</p>
             )}
           </div>
           {!isNewActivity && (
             <button
               onClick={() => setShowDeleteModal(true)}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm text-red-500 border border-red-200 hover:bg-red-50 transition-all"
+              className="flex items-center gap-1.5 rounded-xl border border-red-200 bg-white px-4 py-2 text-sm text-red-500 transition-all hover:bg-red-50"
             >
               삭제
             </button>
@@ -188,14 +188,14 @@ export default function ActivityDetailPage() {
           }`}
         >
           {/* 활동 설명 */}
-          <div className="h-full rounded-xl border border-gray-200 bg-white p-6">
+          <div className="h-full rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_12px_32px_rgba(15,23,42,0.05)]">
             <div className="flex gap-2 mb-4">
               <button
                 onClick={() => setActiveTab("basic")}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   activeTab === "basic"
-                    ? "bg-gray-900 text-white"
-                    : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
+                    ? "bg-[#071a36] text-white"
+                    : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
                 }`}
               >
                 기본 정보
@@ -204,8 +204,8 @@ export default function ActivityDetailPage() {
                 onClick={() => setActiveTab("star")}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   activeTab === "star"
-                    ? "bg-gray-900 text-white"
-                    : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
+                    ? "bg-[#071a36] text-white"
+                    : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
                 }`}
               >
                 STAR 기록

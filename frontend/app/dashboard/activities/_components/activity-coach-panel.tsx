@@ -29,7 +29,7 @@ export function ActivityCoachPanel({
   const diagnosisDisabled = diagnosisLoading || sending || !canRunDiagnosis;
 
   return (
-    <div className="flex h-full min-h-[640px] flex-col rounded-xl border border-gray-200 bg-white">
+    <div className="flex h-full min-h-[640px] flex-col rounded-2xl border border-slate-200 bg-white shadow-[0_12px_32px_rgba(15,23,42,0.05)]">
       <div className="p-4 border-b border-gray-100">
         <div className="flex items-center justify-between gap-3">
           <h2 className="font-semibold text-gray-900">AI 코치</h2>
@@ -38,7 +38,7 @@ export function ActivityCoachPanel({
             onClick={() => void onRunDiagnosis()}
             disabled={diagnosisDisabled}
             title={!canRunDiagnosis ? "STAR 4개 항목을 모두 채우면 진단할 수 있습니다." : undefined}
-            className="shrink-0 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
+            className="shrink-0 rounded-lg bg-[#094cb2] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#073c8f] disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
           >
             {diagnosisLoading ? "진단 중..." : "코칭 진단"}
           </button>
@@ -71,7 +71,7 @@ export function ActivityCoachPanel({
             <div
               className={`max-w-[85%] rounded-xl px-4 py-2.5 text-sm ${
                 msg.role === "user"
-                  ? "bg-black text-white"
+                  ? "bg-[#071a36] text-white"
                   : "bg-gray-100 text-gray-800"
               }`}
             >
@@ -105,7 +105,7 @@ export function ActivityCoachPanel({
         <button
           onClick={() => void onSendMessage()}
           disabled={sending || !input.trim()}
-          className="px-3 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50"
+          className="rounded-lg bg-[#071a36] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[#0a2146] disabled:opacity-50"
         >
           전송
         </button>

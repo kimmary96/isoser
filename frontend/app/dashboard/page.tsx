@@ -60,7 +60,7 @@ type CalendarEvent = {
 type BgKey = "blue" | "teal" | "mint" | "lavender";
 
 const AGENDA_DOT_COLOR: Record<ColorKey, string> = {
-  it: "#4361ee",
+  it: "#094cb2",
   design: "#d63384",
   biz: "#198754",
   urgent: "#e0621a",
@@ -74,29 +74,29 @@ const PREFIX_LABEL: Record<EventType, string> = {
   test: "인",
 };
 
-const PREFIX_BG: Record<EventType, string> = {
-  start: "#e05c5c",
-  deadline: "#4361ee",
-  pass: "#1ba362",
-  test: "#9b5de5",
+const PREFIX_TONE: Record<EventType, { bg: string; border: string; color: string }> = {
+  start: { bg: "#e8f0fe", border: "#bfdbfe", color: "#094cb2" },
+  deadline: { bg: "#fff1e6", border: "#fed7aa", color: "#c94f12" },
+  pass: { bg: "#e8f8f0", border: "#bbf7d0", color: "#198754" },
+  test: { bg: "#fce8f3", border: "#fbcfe8", color: "#be185d" },
 };
 
 const FILTER_ITEMS: Array<{ key: EventType; label: string; color: string }> = [
-  { key: "start", label: "마감일정", color: "#4361ee" },
+  { key: "start", label: "마감일정", color: "#094cb2" },
   { key: "deadline", label: "훈련 시작일정", color: "#e05c5c" },
 ];
 
 const CARD_BG_CLASS: Record<BgKey, string> = {
-  blue: "bg-[linear-gradient(135deg,#ebf4ff_0%,#f8fbff_100%)]",
-  teal: "bg-[linear-gradient(135deg,#eef8ff_0%,#fbfdff_100%)]",
-  mint: "bg-[linear-gradient(135deg,#eff8ff_0%,#fcfdff_100%)]",
-  lavender: "bg-[linear-gradient(135deg,#eef4ff_0%,#fafcff_100%)]",
+  blue: "bg-[#eef6ff]",
+  teal: "bg-[#e8f8f0]",
+  mint: "bg-[#f1f8e9]",
+  lavender: "bg-[#f3efff]",
 };
 
 const CARD_BG_CYCLE: BgKey[] = ["blue", "teal", "mint", "lavender"];
 
 const BOOKMARK_BADGE_PALETTE: Array<{ bg: string; color: string }> = [
-  { bg: "#e8f0fe", color: "#4361ee" },
+  { bg: "#e8f0fe", color: "#094cb2" },
   { bg: "#fff3e8", color: "#e0621a" },
   { bg: "#fce8f3", color: "#d63384" },
   { bg: "#e8f8f0", color: "#198754" },
@@ -276,7 +276,9 @@ export default function DashboardPage() {
           : 0;
       const resumesCount =
         documentsRes.status === "fulfilled"
-          ? countCreatedToday(documentsRes.value.documents, todayDate)
+          ? documentsRes.value.documents.filter(
+              (item) => item.kind === "resume" && isSameLocalDate(item.createdAt, todayDate)
+            ).length
           : 0;
       const coverLettersCount =
         coverLettersRes.status === "fulfilled"
@@ -428,20 +430,20 @@ export default function DashboardPage() {
   const bookmarkedCardItems = bookmarkedPrograms.slice(0, 5);
 
   return (
-    <div className="flex h-[calc(100vh-57px)] flex-col overflow-hidden bg-[linear-gradient(135deg,#edf5ff_0%,#f3f9ff_48%,#fbfdff_100%)] font-sans">
+    <div className="flex h-[calc(100vh-57px)] flex-col overflow-hidden bg-[#f3f6fb]">
       {/* Body: left panel + right area */}
-      <div className="mx-4 mb-0 mt-3 flex flex-1 min-h-0 min-w-0 overflow-hidden rounded-[32px] border border-white/80 bg-white/82 shadow-[0_28px_72px_rgba(15,23,42,0.10)] backdrop-blur-xl">
+      <div className="mx-4 mb-0 mt-3 flex flex-1 min-h-0 min-w-0 overflow-hidden rounded-[32px] border border-white/80 bg-white/90 shadow-[0_28px_72px_rgba(15,23,42,0.10)] backdrop-blur-xl">
         {/* LEFT PANEL */}
-        <aside className="flex w-[320px] min-w-[320px] flex-shrink-0 flex-col overflow-y-auto border-r border-white/70 bg-[linear-gradient(180deg,#e7f2ff_0%,#f1f7ff_42%,#fbfdff_100%)]">
+        <aside className="flex w-[320px] min-w-[320px] flex-shrink-0 flex-col overflow-y-auto border-r border-white/70 bg-[linear-gradient(180deg,#f8fbff_0%,#edf7ff_54%,#ffffff_100%)]">
           {/* Greeting summary */}
           <div className="border-b border-white/60 px-4 pb-3 pt-6">
-            <div className="text-[15px] font-semibold text-[#16162a]">
+            <div className="text-[15px] font-bold text-[#0a1325]">
               안녕하세요, {userName}님 👋
             </div>
-            <div className="mt-[3px] text-[15px] text-[#888]">
+            <div className="mt-[3px] text-[15px] font-medium text-slate-500">
               이번 달 마감{" "}
               <b className="text-[#e0621a]">{totalDeadlines}건</b> · 오늘 마감{" "}
-              <b className="text-[#d63384]">{todayEvents.length}건</b>
+              <b className="text-[#c94f12]">{todayEvents.length}건</b>
             </div>
           </div>
 
@@ -461,11 +463,11 @@ export default function DashboardPage() {
 
           {/* Today's deadlines */}
           <div className="border-b border-white/60 p-4">
-            <div className="mb-2.5 text-[15px] font-semibold text-[#aaa]">
+            <div className="mb-2.5 text-[15px] font-bold text-slate-500">
               오늘 마감 일정
             </div>
             {todayEvents.length === 0 ? (
-              <div className="py-2 text-[12px] text-[#bbb]">오늘 마감 일정이 없습니다</div>
+              <div className="py-2 text-[12px] font-medium text-slate-400">오늘 마감 일정이 없습니다</div>
             ) : (
               todayEvents.map((e) => (
                 <div key={e.id} className="flex items-start gap-2 py-1.5">
@@ -474,10 +476,10 @@ export default function DashboardPage() {
                     style={{ background: AGENDA_DOT_COLOR[e.color] }}
                   />
                   <div className="min-w-0">
-                    <div className="truncate text-[12px] font-medium leading-[1.4] text-[#222]">
+                    <div className="truncate text-[12px] font-semibold leading-[1.4] text-slate-800">
                       {e.title}
                     </div>
-                    <div className="mt-[1px] text-[12px] text-[#999]">
+                    <div className="mt-[1px] text-[12px] font-medium text-slate-500">
                       {e.org ? `${e.org} · ` : ""}마감 {formatProgramMonthDay(e.deadline) ?? "-"}
                     </div>
                   </div>
@@ -489,11 +491,11 @@ export default function DashboardPage() {
           {/* Selected date events */}
           {effectiveSelectedDate !== todayStr ? (
             <div className="border-b border-white/60 p-4">
-              <div className="mb-2.5 text-[15px] font-semibold text-[#aaa]">
+              <div className="mb-2.5 text-[15px] font-bold text-slate-500">
                 선택 날짜 일정
               </div>
               {selectedEvents.length === 0 ? (
-                <div className="py-2 text-[12px] text-[#bbb]">해당 날짜 일정 없음</div>
+                <div className="py-2 text-[12px] font-medium text-slate-400">해당 날짜 일정 없음</div>
               ) : (
                 selectedEvents.slice(0, 3).map((e) => (
                   <div key={e.id} className="flex items-start gap-2 py-1.5">
@@ -502,10 +504,10 @@ export default function DashboardPage() {
                       style={{ background: AGENDA_DOT_COLOR[e.color] }}
                     />
                     <div className="min-w-0">
-                      <div className="truncate text-[12px] font-medium leading-[1.4] text-[#222]">
+                      <div className="truncate text-[12px] font-semibold leading-[1.4] text-slate-800">
                         {e.title}
                       </div>
-                      <div className="mt-[1px] text-[12px] text-[#999]">
+                      <div className="mt-[1px] text-[12px] font-medium text-slate-500">
                         {e.org ? `${e.org} · ` : ""}마감 {formatProgramMonthDay(e.deadline) ?? "-"}
                       </div>
                     </div>
@@ -517,7 +519,7 @@ export default function DashboardPage() {
 
           {/* Today's achievements (dashboard counts) */}
           <div className="border-b border-white/60 p-4">
-            <div className="mb-2.5 text-[15px] font-semibold text-[#aaa]">
+            <div className="mb-2.5 text-[15px] font-bold text-slate-500">
               오늘의 성과
             </div>
             {(
@@ -572,7 +574,7 @@ export default function DashboardPage() {
               <Link
                 key={row.key}
                 href={row.href}
-                className="flex items-center gap-2.5 rounded-xl border-b border-white/50 py-[7px] last:border-b-0 hover:bg-white/45"
+                className="flex items-center gap-2.5 rounded-xl border-b border-white/50 py-[7px] last:border-b-0 hover:bg-white/70"
               >
                 <div
                   className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-[12px] font-bold"
@@ -581,10 +583,10 @@ export default function DashboardPage() {
                   {row.letter}
                 </div>
                 <div className="flex min-w-0 flex-1 items-center justify-between">
-                  <div className="truncate text-[12px] font-medium leading-[1.3] text-[#333]">
+                  <div className="truncate text-[12px] font-semibold leading-[1.3] text-slate-700">
                     {row.label}
                   </div>
-                  <div className="ml-2 flex-shrink-0 text-[12px] font-semibold text-[#4361ee]">
+                  <div className="ml-2 flex-shrink-0 text-[12px] font-bold text-[#094cb2]">
                     {row.count}
                     {row.unit}
                   </div>
@@ -595,13 +597,13 @@ export default function DashboardPage() {
         </aside>
 
         {/* RIGHT AREA */}
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-[linear-gradient(180deg,rgba(255,255,255,0.60)_0%,rgba(255,255,255,0.96)_100%)]">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-[linear-gradient(180deg,rgba(255,255,255,0.72)_0%,rgba(255,255,255,0.98)_100%)]">
           {/* Calendar area */}
           <div className="flex min-h-0 min-w-0 flex-1 flex-col px-4 pt-5">
             {/* Toolbar */}
-            <div className="relative flex flex-shrink-0 flex-nowrap items-center gap-1.5 rounded-[22px] border border-white/80 bg-white/76 px-4 py-2.5 shadow-[0_14px_34px_rgba(15,23,42,0.06)] backdrop-blur-sm">
+            <div className="relative flex flex-shrink-0 flex-nowrap items-center gap-1.5 rounded-[22px] border border-slate-200/70 bg-white/88 px-4 py-2.5 shadow-[0_14px_34px_rgba(15,23,42,0.06)] backdrop-blur-sm">
               <div className="flex flex-shrink-0 items-center gap-2">
-                <div className="flex overflow-hidden rounded-2xl border border-[#e6eefb] bg-white/88">
+                <div className="flex overflow-hidden rounded-2xl border border-slate-200 bg-white/90">
                   {(["차트", "달력", "주간"] as const).map((v) => (
                     <button
                       key={v}
@@ -609,8 +611,8 @@ export default function DashboardPage() {
                       onClick={() => setCalView(v)}
                       className={`border-r border-[#dde0e8] px-2.5 py-1 text-[12px] font-medium transition-colors last:border-r-0 ${
                         calView === v
-                          ? "bg-[#1d4ed8] text-white"
-                          : "bg-transparent text-[#6b7280]"
+                          ? "bg-[#094cb2] text-white"
+                          : "bg-transparent text-slate-500"
                       }`}
                     >
                       {v}
@@ -651,17 +653,17 @@ export default function DashboardPage() {
                 <button
                   type="button"
                   onClick={prevMonth}
-                  className="flex h-7 w-7 items-center justify-center rounded-xl border border-[#e6eefb] bg-white/94 text-[15px] text-[#555] transition-colors hover:border-[#4361ee] hover:text-[#4361ee]"
+                  className="flex h-7 w-7 items-center justify-center rounded-xl border border-slate-200 bg-white/94 text-[15px] text-slate-600 transition-colors hover:border-[#094cb2] hover:text-[#094cb2]"
                 >
                   ‹
                 </button>
-                <span className="min-w-[90px] whitespace-nowrap text-center text-[17px] font-extrabold text-[#16162a]">
+                <span className="min-w-[90px] whitespace-nowrap text-center text-[17px] font-extrabold text-[#0a1325]">
                   {year}년 {MONTHS_KR[month]}
                 </span>
                 <button
                   type="button"
                   onClick={nextMonth}
-                  className="flex h-7 w-7 items-center justify-center rounded-xl border border-[#e6eefb] bg-white/94 text-[15px] text-[#555] transition-colors hover:border-[#4361ee] hover:text-[#4361ee]"
+                  className="flex h-7 w-7 items-center justify-center rounded-xl border border-slate-200 bg-white/94 text-[15px] text-slate-600 transition-colors hover:border-[#094cb2] hover:text-[#094cb2]"
                 >
                   ›
                 </button>
@@ -671,13 +673,13 @@ export default function DashboardPage() {
               <div className="ml-auto flex flex-shrink-0 flex-nowrap items-center gap-1.5">
                 <button
                   type="button"
-                  className="whitespace-nowrap rounded-2xl border border-[#e6eefb] bg-white/92 px-3 py-[5px] text-[15px] font-medium text-[#555] transition-colors hover:bg-blue-50"
+                  className="whitespace-nowrap rounded-2xl border border-slate-200 bg-white/92 px-3 py-[5px] text-[15px] font-semibold text-slate-600 transition-colors hover:border-orange-200 hover:text-orange-700"
                 >
                   새로고침
                 </button>
                 <Link
                   href="/programs"
-                  className="whitespace-nowrap rounded-2xl bg-[#1d4ed8] px-3 py-[5px] text-[15px] font-medium text-white transition-colors hover:bg-[#1e40af]"
+                  className="whitespace-nowrap rounded-2xl bg-[linear-gradient(135deg,#094cb2,#3b82f6)] px-3 py-[5px] text-[15px] font-semibold text-white shadow-[0_10px_22px_rgba(9,76,178,0.16)] transition hover:brightness-95"
                 >
                   + 새 일정
                 </Link>
@@ -686,11 +688,11 @@ export default function DashboardPage() {
 
             {/* DOW header + grid */}
             <div className="flex min-h-0 min-w-0 flex-1 flex-col pb-2">
-              <div className="grid flex-shrink-0 grid-cols-7 rounded-t-[24px] border border-[#e7eef9] border-b-0 bg-white/92 backdrop-blur-sm">
+              <div className="grid flex-shrink-0 grid-cols-7 rounded-t-[24px] border border-slate-200 border-b-0 bg-white/92 backdrop-blur-sm">
                 {DOW_KR.map((d, i) => (
                   <div
                     key={d}
-                    className={`border-r border-[#e8eaed] px-2.5 py-2 text-left text-[12px] font-bold text-[#333] last:border-r-0 ${
+                    className={`border-r border-slate-100 px-2.5 py-2 text-left text-[12px] font-bold text-slate-700 last:border-r-0 ${
                       i === 0 ? "" : i === 6 ? "" : ""
                     }`}
                   >
@@ -699,7 +701,7 @@ export default function DashboardPage() {
                 ))}
               </div>
               <div
-                className="grid min-h-0 flex-1 grid-cols-7 gap-px overflow-hidden rounded-b-[24px] border border-[#e7eef9] bg-[#e7eef9] shadow-[0_14px_34px_rgba(15,23,42,0.05)]"
+                className="grid min-h-0 flex-1 grid-cols-7 gap-px overflow-hidden rounded-b-[24px] border border-slate-100 bg-slate-100 shadow-[0_14px_34px_rgba(15,23,42,0.05)]"
                 style={{ gridTemplateRows: `repeat(${MAIN_CALENDAR_ROWS}, minmax(0, 1fr))` }}
               >
                 {monthCells.map((cell, idx) => {
@@ -712,14 +714,14 @@ export default function DashboardPage() {
                   const more = cellEvents.length - shown.length;
                   const dateTextClass = `text-[12px] font-medium flex-shrink-0 mb-1 ${
                     isToday
-                      ? "text-[#4361ee] font-bold"
+                      ? "text-[#094cb2] font-bold"
                       : !cell.cur
                         ? "text-[#bbb]"
                         : colIdx === 0
                           ? "text-[#e05c5c]"
                           : colIdx === 6
-                            ? "text-[#4361ee]"
-                            : "text-[#333]"
+                            ? "text-[#094cb2]"
+                            : "text-slate-700"
                   }`;
                   return (
                     <button
@@ -728,15 +730,15 @@ export default function DashboardPage() {
                       onClick={() => handleSelectDate(cell.dateStr)}
                       className={`relative flex flex-col overflow-hidden px-1.5 py-1 text-left transition-colors ${
                         !cell.cur
-                          ? "bg-[#e5ebf4]"
+                          ? "bg-[#f1f5f9]"
                           : isSelected && !isToday
-                            ? "bg-[#eaf2ff]"
+                            ? "bg-[#edf7ff]"
                             : "bg-white hover:bg-[#f8fbff]"
-                      } ${isToday ? "z-[1] outline outline-2 -outline-offset-2 outline-[#2563eb]" : ""}`}
+                      } ${isToday ? "z-[1] outline outline-2 -outline-offset-2 outline-[#094cb2]" : ""}`}
                     >
                       <div className={dateTextClass}>{cell.day}</div>
                       {more > 0 ? (
-                        <div className="absolute right-1 top-1 rounded-full bg-white/95 px-1.5 py-0.5 text-[9px] font-semibold text-[#4361ee] shadow-sm">
+                        <div className="absolute right-1 top-1 rounded-full bg-white/95 px-1.5 py-0.5 text-[9px] font-semibold text-[#094cb2] shadow-sm">
                           +{more}
                         </div>
                       ) : null}
@@ -744,16 +746,20 @@ export default function DashboardPage() {
                         {shown.map((e) => (
                           <div
                             key={e.id}
-                            className="flex items-center gap-1 rounded-[6px] px-[4px] py-[1px] text-[10px] text-[#333] transition-colors hover:bg-[#eef4ff]"
+                            className="flex items-center gap-1 rounded-[6px] border border-transparent bg-white/45 px-[4px] py-[1px] text-[10px] text-slate-700 transition-colors hover:border-slate-200 hover:bg-white/85"
                             title={e.title}
                           >
                             <span
-                              className="flex h-[13px] w-[13px] flex-shrink-0 items-center justify-center rounded-full text-[8px] font-bold text-white"
-                              style={{ background: PREFIX_BG[e.eventType] }}
+                              className="flex h-[14px] w-[14px] flex-shrink-0 items-center justify-center rounded-full border text-[8px] font-bold"
+                              style={{
+                                background: PREFIX_TONE[e.eventType].bg,
+                                borderColor: PREFIX_TONE[e.eventType].border,
+                                color: PREFIX_TONE[e.eventType].color,
+                              }}
                             >
                               {PREFIX_LABEL[e.eventType]}
                             </span>
-                            <span className="flex-1 truncate text-[10px] text-[#333]">
+                            <span className="flex-1 truncate text-[10px] text-slate-700">
                               {e.title}
                             </span>
                             <span
@@ -763,8 +769,8 @@ export default function DashboardPage() {
                               }}
                               className={`flex-shrink-0 cursor-pointer text-[11px] transition-colors ${
                                 e.isBookmarked || starred[e.id]
-                                  ? "text-[#f4b942]"
-                                  : "text-[#ccc] hover:text-[#f4b942]"
+                                  ? "text-[#e0621a]"
+                                  : "text-slate-300 hover:text-[#e0621a]"
                               }`}
                               title={e.isBookmarked ? DASHBOARD_COPY.bookmarks.cardLabel : undefined}
                             >
@@ -781,69 +787,71 @@ export default function DashboardPage() {
           </div>
 
           {/* Bottom strip */}
-          <div className="max-h-[35vh] flex-shrink-0 overflow-y-auto border-t border-white/70 bg-white/74 px-6 pb-4 pt-3.5 backdrop-blur-sm">
+          <div className="max-h-[35vh] flex-shrink-0 overflow-y-auto border-t border-slate-200/70 bg-white/82 px-6 pb-4 pt-3.5 backdrop-blur-sm">
             {/* 커리어 핏 과정 */}
-            <div className="mb-3 flex items-center justify-between">
-              <div className="flex min-w-0 items-baseline gap-2">
-                <div className="text-[15px] font-bold leading-[1.4] text-[#16162a]">
-                  {DASHBOARD_COPY.programs.sectionTitle}
-                </div>
-                <span className="truncate text-[12px] font-medium text-[#999]">
-                  {DASHBOARD_COPY.programs.applyGuide}
-                </span>
-              </div>
-              <Link href="/programs" className="text-[15px] text-[#4361ee] hover:underline">
-                {DASHBOARD_COPY.programs.manageLink}
-              </Link>
-            </div>
-            <div className="mb-[18px] min-h-[154px]">
-              <div className="grid grid-cols-5 gap-2.5 overflow-visible pb-2 pt-1.5">
-                {recCardItems.length === 0 ? (
-                  <div className="col-span-5 w-full py-6 text-center text-[15px] text-[#bbb]">
-                    {DASHBOARD_COPY.programs.empty}
+            <section className="mb-[18px] rounded-[24px] border border-slate-200 bg-white p-4 shadow-[0_14px_34px_rgba(15,23,42,0.06)]">
+              <div className="mb-3 flex items-center justify-between">
+                <div className="flex min-w-0 items-baseline gap-2">
+                  <div className="text-[15px] font-bold leading-[1.4] text-[#0a1325]">
+                    {DASHBOARD_COPY.programs.sectionTitle}
                   </div>
-                ) : (
-                  recCardItems.map((item, i) => (
-                    <RecCard
-                      key={`rec-${String(item.program.id ?? i)}`}
-                      item={item}
-                      index={i}
-                      isWhite={false}
-                      isSubscribed={appliedProgramIds.has(String(item.program.id ?? ""))}
-                      onSubscribe={() => handleSubscribe(item.program)}
-                      onOpenDetail={() => openProgramPreview(item)}
-                    />
-                  ))
-                )}
+                  <span className="truncate text-[12px] font-medium text-slate-500">
+                    {DASHBOARD_COPY.programs.applyGuide}
+                  </span>
+                </div>
+                <Link href="/programs" className="text-[15px] font-semibold text-[#094cb2] hover:underline">
+                  {DASHBOARD_COPY.programs.manageLink}
+                </Link>
               </div>
-            </div>
+              <div className="min-h-[154px]">
+                <div className="grid grid-cols-5 gap-2.5 overflow-visible pb-1 pt-1.5">
+                  {recCardItems.length === 0 ? (
+                    <div className="col-span-5 w-full py-6 text-center text-[15px] font-medium text-slate-400">
+                      {DASHBOARD_COPY.programs.empty}
+                    </div>
+                  ) : (
+                    recCardItems.map((item, i) => (
+                      <RecCard
+                        key={`rec-${String(item.program.id ?? i)}`}
+                        item={item}
+                        index={i}
+                        isWhite={false}
+                        isSubscribed={appliedProgramIds.has(String(item.program.id ?? ""))}
+                        onSubscribe={() => handleSubscribe(item.program)}
+                        onOpenDetail={() => openProgramPreview(item)}
+                      />
+                    ))
+                  )}
+                </div>
+              </div>
+            </section>
 
             {/* 찜한 과정 */}
             <div className="mb-3 flex items-center justify-between">
               <div className="flex min-w-0 items-baseline gap-2">
-                <div className="text-[15px] font-bold leading-[1.4] text-[#16162a]">
+                <div className="text-[15px] font-bold leading-[1.4] text-[#0a1325]">
                   {DASHBOARD_COPY.bookmarks.sectionTitle}
                 </div>
-                <span className="truncate text-[12px] font-medium text-[#999]">
+                <span className="truncate text-[12px] font-medium text-slate-500">
                   {DASHBOARD_COPY.bookmarks.viewGuide}
                 </span>
               </div>
-              <Link href="/compare" className="text-[15px] text-[#4361ee] hover:underline">
+              <Link href="/compare" className="text-[15px] font-semibold text-[#094cb2] hover:underline">
                 {DASHBOARD_COPY.bookmarks.viewAllLink}
               </Link>
             </div>
             <div className="min-h-[154px]">
               <div className="grid grid-cols-5 gap-2.5 overflow-visible pb-2 pt-1.5">
                 {bookmarksLoading && bookmarkedCardItems.length === 0 ? (
-                  <div className="col-span-5 w-full py-6 text-center text-[15px] text-[#bbb]">
+                  <div className="col-span-5 w-full py-6 text-center text-[15px] font-medium text-slate-400">
                     찜한 과정을 불러오는 중입니다
                   </div>
                 ) : bookmarksError && bookmarkedCardItems.length === 0 ? (
-                  <div className="col-span-5 w-full py-6 text-center text-[15px] text-[#bbb]">
+                  <div className="col-span-5 w-full py-6 text-center text-[15px] font-medium text-slate-400">
                     {bookmarksError}
                   </div>
                 ) : bookmarkedCardItems.length === 0 ? (
-                  <div className="col-span-5 w-full py-6 text-center text-[15px] text-[#bbb]">
+                  <div className="col-span-5 w-full py-6 text-center text-[15px] font-medium text-slate-400">
                     {DASHBOARD_COPY.bookmarks.empty}
                   </div>
                 ) : (
@@ -914,21 +922,21 @@ function MiniCalendar({
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
-        <div className="text-[13px] font-semibold text-[#16162a]">
+        <div className="text-[13px] font-bold text-[#0a1325]">
           {year}년 {MONTHS_KR[month]}
         </div>
         <div className="flex gap-1">
           <button
             type="button"
             onClick={onPrevMonth}
-            className="flex h-[22px] w-[22px] items-center justify-center rounded-lg border border-white/70 bg-white/75 text-[11px] text-[#666] transition-colors hover:bg-blue-50"
+            className="flex h-[22px] w-[22px] items-center justify-center rounded-lg border border-white/70 bg-white/80 text-[11px] text-slate-600 transition-colors hover:bg-[#edf7ff] hover:text-[#094cb2]"
           >
             ‹
           </button>
           <button
             type="button"
             onClick={onNextMonth}
-            className="flex h-[22px] w-[22px] items-center justify-center rounded-lg border border-white/70 bg-white/75 text-[11px] text-[#666] transition-colors hover:bg-blue-50"
+            className="flex h-[22px] w-[22px] items-center justify-center rounded-lg border border-white/70 bg-white/80 text-[11px] text-slate-600 transition-colors hover:bg-[#edf7ff] hover:text-[#094cb2]"
           >
             ›
           </button>
@@ -936,7 +944,7 @@ function MiniCalendar({
       </div>
       <div className="grid grid-cols-7 gap-1">
         {DOW_KR.map((d) => (
-          <div key={d} className="py-[3px] text-center text-[9.5px] font-medium text-[#aaa]">
+          <div key={d} className="py-[3px] text-center text-[9.5px] font-semibold text-slate-400">
             {d}
           </div>
         ))}
@@ -953,19 +961,19 @@ function MiniCalendar({
               onClick={() => dateStr && onSelectDate(dateStr)}
               className={`relative flex aspect-square w-full items-center justify-center rounded-md p-0 text-[12px] transition-colors ${
                 !cell.cur
-                  ? "cursor-default text-[#ccc]"
+                  ? "cursor-default text-slate-300"
                   : isToday
-                      ? "bg-[#2563eb] font-semibold text-white hover:bg-[#1d4ed8]"
+                      ? "bg-[#094cb2] font-semibold text-white hover:bg-[#073c8f]"
                       : isSelected
-                        ? "bg-[#eaf2ff] font-semibold text-[#2563eb]"
-                      : "text-[#333] hover:bg-white/60"
+                        ? "bg-[#edf7ff] font-semibold text-[#094cb2]"
+                      : "text-slate-700 hover:bg-white/70"
               }`}
             >
               {cell.day}
               {hasEvent ? (
                 <span
                   className="absolute bottom-[2px] left-1/2 h-1 w-1 -translate-x-1/2 rounded-full"
-                  style={{ background: isToday ? "rgba(255,255,255,0.7)" : "#4361ee" }}
+                  style={{ background: isToday ? "rgba(255,255,255,0.7)" : "#094cb2" }}
                 />
               ) : null}
             </button>
@@ -1009,16 +1017,16 @@ function RecCard({
           onOpenDetail();
         }
       }}
-      className={`relative flex h-[140px] min-w-0 w-full flex-col rounded-[18px] border p-[14px_15px_13px] shadow-[0_18px_35px_rgba(15,23,42,0.08)] transition-all hover:-translate-y-0.5 hover:shadow-[0_24px_50px_rgba(15,23,42,0.12)] ${
-        canOpenDetail ? "cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#93c5fd]" : ""
+      className={`relative flex h-[140px] min-w-0 w-full flex-col rounded-[18px] border p-[14px_15px_13px] shadow-[0_18px_38px_rgba(15,23,42,0.10)] transition-all hover:-translate-y-0.5 hover:shadow-[0_26px_56px_rgba(15,23,42,0.14)] ${
+        canOpenDetail ? "cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#bfdbfe]" : ""
       } ${
         isWhite
-          ? "border-white/75 bg-white/88 backdrop-blur-sm hover:border-[#93c5fd]"
-          : `border-white/70 ${bg}`
+          ? "border-white/75 bg-white/90 backdrop-blur-sm hover:border-orange-200"
+          : `border-white/90 ${bg}`
       }`}
     >
       <div className="mb-2 flex min-w-0 items-start justify-between gap-2">
-        <div className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[12px] text-[#777]">
+        <div className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[12px] font-medium text-slate-500">
           {categoryLabel}
         </div>
         <ProgramDeadlineBadge
@@ -1026,7 +1034,7 @@ function RecCard({
           className="shrink-0 px-2 py-0.5 text-[12px]"
         />
       </div>
-      <div className="mb-2.5 line-clamp-3 pb-0.5 text-[12px] font-bold leading-[1.45] text-[#16162a]">
+      <div className="mb-2.5 line-clamp-3 pb-0.5 text-[12px] font-extrabold leading-[1.45] text-[#0a1325]">
         {program.title ?? "제목 없음"}
       </div>
       <div className="mt-auto flex min-w-0 items-center justify-between gap-2">
@@ -1042,7 +1050,7 @@ function RecCard({
           className="flex items-center gap-1 whitespace-nowrap rounded-full border-[1.5px] px-2.5 py-1 text-[12px] font-semibold transition-all"
           style={
             isSubscribed
-              ? { borderColor: "#4361ee", color: "#4361ee", background: "#f0f4ff" }
+              ? { borderColor: "#094cb2", color: "#094cb2", background: "#e8f0fe" }
               : { borderColor: "#ccc", color: "#333", background: "#fff" }
           }
         >
