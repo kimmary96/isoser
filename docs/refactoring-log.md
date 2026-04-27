@@ -1,5 +1,107 @@
 # 리팩토링 로그
 
+- 2026-04-28: `frontend/lib/resume-profile.ts`, `frontend/lib/resume-profile.test.ts`, `frontend/lib/types/index.ts`, `frontend/app/api/dashboard/resume/route.ts`, `frontend/app/api/dashboard/resume-export/route.ts`, `frontend/app/dashboard/resume/_hooks/use-resume-builder.ts`, `frontend/app/dashboard/resume/_components/resume-preview-pane.tsx`, `frontend/app/dashboard/resume/export/page.tsx`, `frontend/app/dashboard/resume/export/_components/resume-pdf-download.tsx`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-resume-profile-highlights-result.md`
+  - 이력서용 profile 조회에 수상, 자격증, 어학 필드를 포함하고 정규화 helper를 추가함
+  - builder A4 미리보기, export preview, React PDF에서 `WORK EXPERIENCE` 아래에 `AWARDS · CERTIFICATIONS · LANGUAGE` compact 섹션을 우선 배치함
+  - A4 미리보기 page unit 계산에 프로필 보강 섹션을 포함해 첫 페이지 overflow 대신 다음 페이지 분할이 일어나도록 함
+  - 선택/문서 생성/AI 문장 적용 저장 계약은 유지하고, profile optional 컬럼이 없는 환경에서는 기존 기본 profile 조회로 fallback함
+  - 검증: `npm --prefix frontend test -- lib/resume-profile.test.ts lib/resume-line-overrides.test.ts app/dashboard/resume/_lib/resume-rewrite.test.ts`, `npx --prefix frontend tsc -p frontend\tsconfig.codex-check.json --noEmit --pretty false`, 대상 파일 `next lint`, `npx tsc --noEmit` from `frontend/`, `/dashboard/resume`와 `/dashboard/resume/export` local 200 smoke
+
+- 2026-04-28: `frontend/app/dashboard/portfolio/page.tsx`, `frontend/lib/portfolio-document.ts`, `frontend/lib/portfolio-document.test.ts`, `frontend/lib/types/index.ts`, `frontend/app/dashboard/portfolio/export/_components/portfolio-pdf-download.tsx`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-portfolio-editable-preview-layout-result.md`
+  - 포트폴리오 빌더를 이력서 빌더와 같은 고정 3패널 UX로 재배치해 왼쪽은 성과 선택, 중앙은 미리보기/직접 편집, 오른쪽은 공고핏·추천·이미지 배치·저장본 관리로 분리함
+  - 초안 생성 중 변환 완료된 프로젝트부터 중앙 미리보기에 누적 표시되도록 바꿔, 생성 버튼을 누른 자리에서 결과가 바로 보이게 함
+  - 활동 STAR 근거가 있으면 문제 정의, 구현, 성과 섹션의 초기 편집값으로 우선 사용해 변환 결과 반복 문장이 그대로 노출되는 비율을 줄임
+  - 중앙 preview에서 프로젝트 제목, 개요, 문제 정의, 기술 선택 근거, 구현, 성과 문단을 직접 수정할 수 있게 하고, PDF export도 수정된 프로젝트 제목을 사용하게 함
+  - 검증: `npm --prefix frontend test -- lib/portfolio-document.test.ts lib/portfolio-fit.test.ts`, `npx --prefix frontend tsc -p frontend/tsconfig.codex-check.json --noEmit --pretty false`, 관련 파일 `next lint`, `/dashboard/portfolio`와 `/dashboard/portfolio/export` local 200 smoke
+
+- 2026-04-28: `frontend/app/dashboard/resume/_components/resume-preview-pane.tsx`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-resume-a4-print-preview-result.md`
+  - 이력서 중앙 preview가 내용 길이에 따라 하나의 긴 카드로 계속 늘어나 A4 기준 어디서 넘어가는지 보기 어려운 문제를 A4 210x297mm 비율의 page preview로 변경함
+  - section/activity/question 단위의 추정 pagination을 추가해 상단에 예상 페이지 수를 표시하고, 각 page 하단에 현재 page label을 노출함
+  - AI 적용 문장 textarea는 A4 page 높이를 사용자가 임의로 깨지 않도록 `resize-none`으로 고정하되, 기존 직접 수정/추가/삭제/원문 복귀 callback은 유지함
+  - 검증: `npm run lint -- --file app/dashboard/resume/_components/resume-preview-pane.tsx`, `npx tsc --noEmit`, `/dashboard/resume` 로컬 요청은 인증 middleware로 `/login?redirectedFrom=%2Fdashboard%2Fresume` 307 redirect 확인
+
+- 2026-04-28: `frontend/lib/portfolio-document.ts`, `frontend/lib/portfolio-document.test.ts`, `frontend/app/dashboard/portfolio/page.tsx`, `frontend/app/dashboard/portfolio/export/page.tsx`, `frontend/app/dashboard/portfolio/export/_components/portfolio-pdf-download.tsx`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-portfolio-duplicate-display-trim-result.md`
+  - 포트폴리오 변환 결과에서 같은 활동 문장이 개요 요약, 구현 본문, 구현 불릿에 반복 표시되는 문제를 확인하고, 저장 payload는 유지한 채 표시 모델에서 동일 문장을 숨기도록 함
+  - `getPortfolioProjectDisplaySections()`를 추가해 builder preview, export preview, PDF 렌더가 같은 중복 제거 규칙을 쓰게 함
+  - 저장 payload의 `projectOrder`에 같은 activity id가 중복되어도 같은 프로젝트가 두 번 렌더되지 않도록 `getOrderedPortfolioProjects()`를 보강함
+  - 검증: `npm --prefix frontend test -- lib/portfolio-document.test.ts`, `npx --prefix frontend tsc -p frontend\tsconfig.codex-check.json --noEmit --pretty false`, 대상 파일 `next lint`, `npx tsc --noEmit` from `frontend/`, `/dashboard/portfolio`와 `/dashboard/portfolio/export` local 200 smoke
+
+- 2026-04-28: `frontend/app/dashboard/resume/page.tsx`, `frontend/app/dashboard/resume/_components/resume-preview-pane.tsx`, `frontend/app/dashboard/resume/_components/resume-assistant-sidebar.tsx`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-resume-builder-ui-density-tone-result.md`
+  - `/dashboard/resume` 작성 화면의 좌측 성과/자기소개 선택 패널을 320px(2xl 21rem), 우측 AI 패널을 320px(2xl 22rem) 기준으로 넓혀 좁아서 텍스트가 잘 안 보이던 문제를 완화함
+  - 중앙 이력서 preview는 기존 max width를 유지하고, 좌우 패널의 작은 9~10px 텍스트를 11~13px 중심으로 올려 다른 대시보드 화면과 밀도를 맞춤
+  - 화면 배경, side panel, 선택 카드, 검색 band, 버튼/hover 톤을 `#f3f6fb`, white card, `#094cb2`, `#071a36`, soft orange accent 기준으로 조정함
+  - 활동 선택, 공고 추출, 문장 후보 생성/적용, AI 채팅, 문서 생성 로직은 변경하지 않음
+  - 검증: `npm run lint -- --file app/dashboard/resume/page.tsx --file app/dashboard/resume/_components/resume-preview-pane.tsx --file app/dashboard/resume/_components/resume-assistant-sidebar.tsx`, `npx tsc --noEmit`, `git diff --check`
+
+- 2026-04-28: `frontend/app/dashboard/resume/page.tsx`, `frontend/app/dashboard/resume/_hooks/use-resume-builder.ts`, `frontend/app/dashboard/resume/_components/resume-preview-pane.tsx`, `frontend/app/dashboard/resume/_lib/resume-rewrite.ts`, `frontend/app/dashboard/resume/_lib/resume-rewrite.test.ts`, `frontend/lib/resume-line-overrides.ts`, `frontend/lib/resume-line-overrides.test.ts`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-resume-applied-line-editor-result.md`
+  - 이력서 미리보기에서 AI 적용된 성과 bullet을 textarea로 직접 다듬고, 활동별 최대 6개 문장까지 추가/삭제할 수 있게 함
+  - 기존 `AppliedResumeRewriteLines`와 `activity_line_overrides` 저장 payload를 재사용해 문서 생성, 문서 저장소, PDF export 계약을 새로 늘리지 않음
+  - 적용 문장 편집 중 빈 줄만 남은 draft가 저장 후보로 오판되지 않도록 `hasResumeActivityLineOverrides()`를 실제 정규화 가능한 문장 기준으로 보강함
+  - 검증: `npm --prefix frontend test -- app/dashboard/resume/_lib/resume-rewrite.test.ts lib/resume-line-overrides.test.ts`, `npx --prefix frontend tsc -p frontend\tsconfig.codex-check.json --noEmit --pretty false`, `npm --prefix frontend run lint -- --file app/dashboard/resume/page.tsx --file app/dashboard/resume/_hooks/use-resume-builder.ts --file app/dashboard/resume/_components/resume-preview-pane.tsx --file app/dashboard/resume/_lib/resume-rewrite.ts --file app/dashboard/resume/_lib/resume-rewrite.test.ts --file lib/resume-line-overrides.ts --file lib/resume-line-overrides.test.ts`, `npx tsc --noEmit` from `frontend/`, `/dashboard/resume` local 200 smoke
+
+- 2026-04-28: `docs/specs/portfolio-builder-fit-framework-v1.md`, `docs/specs/README.md`, `frontend/lib/portfolio-document.ts`, `frontend/lib/portfolio-document.test.ts`, `frontend/lib/portfolio-fit.ts`, `frontend/lib/portfolio-fit.test.ts`, `frontend/lib/types/index.ts`, `frontend/lib/api/app.ts`, `frontend/app/api/dashboard/portfolios/route.ts`, `frontend/app/api/dashboard/portfolio/fit/route.ts`, `frontend/app/api/dashboard/portfolio-export/route.ts`, `frontend/app/dashboard/portfolio/page.tsx`, `frontend/app/dashboard/portfolio/export/page.tsx`, `frontend/app/dashboard/portfolio/export/_hooks/use-portfolio-export.ts`, `frontend/app/dashboard/portfolio/export/_components/portfolio-pdf-download.tsx`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-portfolio-builder-fit-export-result.md`
+  - 포트폴리오를 성과저장소/프로필 원천 기반의 조합형 문서로 확장하기 위해 제품/개발 프레임워크 문서를 추가하고 specs index에 연결함
+  - 기존 단일 `PortfolioConversionResponse` 저장 초안을 v2 `PortfolioDocumentPayload`로 정규화하는 helper를 추가해 legacy 저장 초안을 계속 열 수 있게 함
+  - 공고/직무와 활동 STAR·기여·기술·이미지 근거를 deterministic score로 비교해 관련도 높은 프로젝트 3개와 추천/보강 이유를 계산하는 helper와 BFF를 추가함
+  - `/dashboard/portfolio`는 다중 성과 선택, 추천 적용, 프로젝트 순서 조정, 성과 이미지 섹션 배치/캡션 draft 편집, v2 payload 저장을 지원하며 원본 activity는 수정하지 않음
+  - `/dashboard/portfolio/export`와 export BFF/PDF 버튼을 추가해 저장된 포트폴리오를 React PDF로 다운로드할 수 있게 함
+  - 후속 수정으로 포트폴리오 저장 후 `/dashboard/documents?portfolioId=...`로 이동하게 하고, 문서 저장소가 이력서와 포트폴리오를 함께 표시하도록 확장함
+  - `selected_activity_ids` 또는 `source_activity_id` 컬럼 schema cache가 맞지 않는 환경에서도 `portfolio_payload` 저장 자체가 막히지 않도록 포트폴리오 저장/불러오기 API에 fallback을 추가함
+  - 검증: `npm --prefix frontend test -- lib/portfolio-fit.test.ts lib/portfolio-document.test.ts`, `npx --prefix frontend tsc -p frontend/tsconfig.codex-check.json --noEmit --pretty false`, 관련 파일 `next lint`
+
+- 2026-04-28: `frontend/app/dashboard/profile/_components/profile-hero-section.tsx`, `frontend/app/dashboard/profile/_components/profile-activity-strip.tsx`, `frontend/app/dashboard/profile/_components/profile-detail-cards.tsx`, `frontend/app/dashboard/profile/_components/profile-edit-modal.tsx`, `frontend/app/dashboard/profile/_components/profile-section-editors.tsx`, `frontend/app/dashboard/activities/page.tsx`, `frontend/app/dashboard/activities/[id]/page.tsx`, `frontend/app/dashboard/activities/_components/activity-basic-tab.tsx`, `frontend/app/dashboard/activities/_components/activity-star-tab.tsx`, `frontend/app/dashboard/activities/_components/activity-coach-panel.tsx`, `frontend/app/dashboard/activities/_components/activity-coach-insight-panel.tsx`, `frontend/app/dashboard/cover-letter/page.tsx`, `frontend/app/dashboard/cover-letter/[id]/page.tsx`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-profile-activities-cover-ui-tone-result.md`
+  - 내프로필, 성과저장소, 자기소개서 저장소/편집 화면을 대시보드 메인과 공개 랜딩의 회색 배경, white card, primary blue gradient, dark navy action, soft orange accent 톤으로 가볍게 맞춤
+  - 사이드바/layout, API 호출, 저장/삭제/AI 코치/검색/filter state 로직은 변경하지 않고 TSX class/style만 조정함
+  - 프로필은 기존 기준 화면 성격을 유지하면서 스킬 단계 badge/progress, 활동 strip placeholder, 저장/포트폴리오 버튼의 과한 검정/파랑 포인트만 낮춤
+  - 사진 없는 성과 카드의 이미지 영역은 soft orange가 튀어 보여, 성과 목록과 프로필 성과 strip 모두 연한 파랑 그라데이션 placeholder로 조정함
+  - 프로필 전화번호, 이메일, 지역, 포트폴리오 링크는 자기소개 카드 아래 별도 줄에서 성과 strip 상단 `활동 관리` 버튼 행 오른쪽으로 옮겨 히어로와 성과 카드 사이 빈 공간을 줄임
+  - 검증: `npm run lint -- --file ...`, `npx tsc --noEmit`, `git diff --check`
+
+- 2026-04-28: `frontend/app/dashboard/page.tsx`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-dashboard-main-tone-refresh-result.md`
+  - dashboard layout sidebar는 유지하고 `/dashboard` 메인 캘린더 화면의 바깥 배경, 내부 패널, toolbar, 캘린더 셀, 하단 추천/찜 카드 톤만 공개 랜딩/프로그램 페이지의 회색 배경·white translucent panel·pale sky/soft orange accent 방향으로 조정함
+  - 메인 wrapper의 `font-sans` override를 제거해 전역 Pretendard를 그대로 사용하게 하고, 직접 blue 계열을 `#094cb2` 중심의 primary tone으로 낮춤
+  - 큰 달력 내부 이벤트 prefix는 pastel badge로 낮추고, `내 커리어 핏 추천` 섹션은 pale sky band로 묶어 추천 카드가 밋밋해 보이지 않도록 보강함
+  - 후속 조정으로 추천 카드의 gradient를 단색 soft surface로 바꾸고, 큰 달력의 이전/다음달 셀과 grid gap 회색을 더 연하게 낮춤
+  - 추천 카드 배경 순환 색은 한때 모두 `#fff1e6` soft orange 단색으로 통일했으나, 섹션 배경과 맞지 않아 `내 커리어 핏 추천` section은 white surface로 되돌리고 추천 카드는 pale blue/green/mint/lavender 순환 배경을 다시 사용함
+  - 추천/찜/캘린더/모달 상태 로직과 dashboard sidebar 스타일은 변경하지 않음
+
+- 2026-04-28: `supabase/migrations/20260428110000_add_resume_activity_line_overrides.sql`, `frontend/app/api/dashboard/resume/route.ts`, `frontend/app/api/dashboard/resume-export/route.ts`, `frontend/app/dashboard/documents/page.tsx`, `frontend/app/dashboard/resume/_hooks/use-resume-builder.ts`, `frontend/app/dashboard/resume/export/page.tsx`, `frontend/app/dashboard/resume/export/_components/resume-pdf-download.tsx`, `frontend/lib/resume-line-overrides.ts`, `frontend/lib/resume-line-overrides.test.ts`, `frontend/lib/resume-display.ts`, `frontend/lib/api/app.ts`, `frontend/lib/types/index.ts`, `frontend/public/fonts/Pretendard-Regular.woff`, `frontend/public/fonts/Pretendard-Bold.woff`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-resume-overrides-export-pdf-result.md`
+  - 이력서 미리보기에 적용한 공고 핏 문장을 문서 생성 시 `resumes.activity_line_overrides` JSONB payload로 저장하도록 함
+  - 신규 migration은 activity id별 bullet override 배열을 저장하는 컬럼을 idempotent하게 추가하며, 컬럼 미적용 환경에서는 기존 문서 생성이 실패하지 않도록 저장 API가 override 없이 한 번 fallback함
+  - export API, export 미리보기, PDF 문서 렌더는 저장된 override가 있으면 성과저장소 기본 문장 대신 해당 override bullet을 사용함
+  - PDF 다운로드는 `PDFDownloadLink` 대신 명시적 버튼 클릭 후 `pdf(...).toBlob()`으로 blob을 만들어 다운로드하도록 바꿔, 링크 href 생성 전에는 눌리지 않는 것처럼 보이는 UX를 줄임
+  - 기존 react-pdf 원격 `NotoSansKR` 폰트 URL 2개가 404로 확인되어 PDF 생성이 끝나지 않을 수 있었고, PDF 전용 Pretendard WOFF regular/bold를 `frontend/public/fonts/` 정적 자산으로 추가해 로컬 origin에서 로드하도록 변경함
+  - override 저장 fallback이 발생하면 문서 저장소에 AI 적용 문장이 저장되지 않았다는 안내를 표시하도록 함
+  - 검증: `npm --prefix frontend test -- lib/resume-line-overrides.test.ts app/dashboard/resume/_lib/resume-rewrite.test.ts`, `npx --prefix frontend tsc -p frontend\tsconfig.codex-check.json --noEmit --pretty false`, `npm --prefix frontend run lint -- --file app/dashboard/resume/page.tsx --file app/dashboard/resume/_hooks/use-resume-builder.ts --file app/dashboard/resume/_components/resume-preview-pane.tsx --file app/dashboard/resume/export/page.tsx --file app/dashboard/resume/export/_components/resume-pdf-download.tsx --file app/api/dashboard/resume/route.ts --file app/api/dashboard/resume-export/route.ts --file lib/resume-line-overrides.ts --file lib/resume-line-overrides.test.ts --file lib/resume-display.ts --file lib/api/app.ts --file lib/types/index.ts`, `npx tsc --noEmit` from `frontend/`, `/dashboard/resume` and `/dashboard/resume/export` local 200 smoke
+
+- 2026-04-28: `frontend/app/dashboard/resume/page.tsx`, `frontend/app/dashboard/resume/_hooks/use-resume-builder.ts`, `frontend/app/dashboard/resume/_components/resume-assistant-sidebar.tsx`, `frontend/app/dashboard/resume/_components/resume-preview-pane.tsx`, `frontend/app/dashboard/resume/_lib/resume-rewrite.ts`, `frontend/app/dashboard/resume/_lib/resume-rewrite.test.ts`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-resume-rewrite-preview-apply-result.md`
+  - 이력서 공고 핏 문장 후보를 생성한 뒤 후보 카드에서 `미리보기에 적용`을 눌러 중앙 이력서 미리보기의 해당 성과 bullet을 로컬 draft로 대체할 수 있게 함
+  - 적용 문장은 `AppliedResumeRewriteLines` 상태로만 관리하고, 성과 선택 해제 또는 후보 카드의 `적용 해제`로 원래 성과저장소 문장 렌더링으로 되돌리도록 함
+  - 기존 `resumes.selected_activity_ids`, 이력서 저장 API, PDF export 계약은 변경하지 않아 저장/출력 동작은 기존과 동일하게 유지함
+  - 검증: `npm --prefix frontend test -- app/dashboard/resume/_lib/resume-rewrite.test.ts`, `npx --prefix frontend tsc -p frontend\tsconfig.codex-check.json --noEmit --pretty false`, `npm --prefix frontend run lint -- --file app/dashboard/resume/page.tsx --file app/dashboard/resume/_hooks/use-resume-builder.ts --file app/dashboard/resume/_components/resume-assistant-sidebar.tsx --file app/dashboard/resume/_components/resume-preview-pane.tsx --file app/dashboard/resume/_lib/resume-rewrite.ts --file app/dashboard/resume/_lib/resume-rewrite.test.ts`
+
+- 2026-04-28: `frontend/app/(landing)/landing-c/page.tsx`, `frontend/app/(landing)/landing-c/_program-utils.ts`, `frontend/app/(landing)/landing-c/_program-utils.test.ts`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-landing-c-live-board-fallback-result.md`
+  - `/landing-c` hero 추천공고가 별도 Live Board 조회 결과만 의존해, snapshot/Opportunity feed는 채워졌지만 hero 추천공고가 0건으로 비는 분기를 확인함
+  - `resolveLandingHeroPrograms()`를 추가해 Live Board 후보가 비면 이미 확보한 공개 프로그램 목록에서 기존 `getLiveBoardPrograms()` 규칙으로 대체 후보를 고르도록 함
+  - 기존 Live Board 후보가 있으면 그대로 우선 사용해 클릭 집계 기반 추천 순서와 기존 화면 계약을 유지함
+  - 검증: `npm --prefix frontend test -- --run "app/(landing)/landing-c/_program-utils.test.ts"`, `npm --prefix frontend run lint -- --file 'app/(landing)/landing-c/page.tsx' --file 'app/(landing)/landing-c/_program-utils.ts' --file 'app/(landing)/landing-c/_program-utils.test.ts'`, `npx --prefix frontend tsc -p frontend\tsconfig.codex-check.json --noEmit --pretty false`, `Invoke-WebRequest -UseBasicParsing http://127.0.0.1:3000/landing-c -TimeoutSec 20`
+
+- 2026-04-28: `frontend/app/api/dashboard/resume/extract-job-url/route.ts`, `frontend/lib/server/job-posting-url-extract.ts`, `frontend/lib/server/job-posting-url-extract.test.ts`, `frontend/app/dashboard/resume/page.tsx`, `frontend/app/dashboard/resume/_hooks/use-resume-builder.ts`, `frontend/app/dashboard/resume/_components/resume-assistant-sidebar.tsx`, `frontend/lib/api/app.ts`, `frontend/lib/types/index.ts`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-resume-job-posting-url-extract-result.md`
+  - 이력서 우측 AI 패널의 공고 입력에 URL 추출을 추가해 텍스트/URL/이미지/PDF 입력을 같은 `jobPostingText` draft로 합치도록 함
+  - 신규 `POST /api/dashboard/resume/extract-job-url` BFF는 인증 사용자와 rate limit을 확인하고, SSRF 방어를 위해 `http/https`만 허용하며 localhost/사설 IP/link-local/메타데이터 IP/비표준 포트/과도한 본문 크기/비텍스트 content-type을 차단함
+  - HTML 공고는 script/style/noscript/svg를 제거하고 block 요소를 줄바꿈으로 바꾼 뒤 텍스트를 정규화하며, 50자 미만 결과는 실패로 처리함
+  - 사람인 relay URL에서 첫 HTML의 공고 컨테이너가 비어 있고 canonical `/zf_user/jobs/view?rec_idx=...`에 실제 본문이 있는 것을 확인해, 같은 host canonical URL을 한 번 더 조회하고 본문 컨테이너 후보를 우선 점수화하도록 보강함
+  - `.wrap_jv_cont`, `.jv_cont`, `job/recruit/detail` 계열 컨테이너가 있으면 전체 페이지 대신 해당 후보들 안에서 추출해 헤더/푸터/로그인/고객센터 텍스트가 공고 본문보다 먼저 들어오는 문제를 줄임
+  - 검증: `npm --prefix frontend test -- lib/server/job-posting-url-extract.test.ts app/dashboard/resume/_lib/resume-rewrite.test.ts`, `npx --prefix frontend tsc -p frontend\tsconfig.codex-check.json --noEmit --pretty false`, `npm --prefix frontend run lint -- --file app/dashboard/resume/page.tsx --file app/dashboard/resume/_hooks/use-resume-builder.ts --file app/dashboard/resume/_components/resume-assistant-sidebar.tsx --file app/api/dashboard/resume/extract-job-url/route.ts --file lib/server/job-posting-url-extract.ts --file lib/server/job-posting-url-extract.test.ts --file lib/api/app.ts --file lib/types/index.ts`, `npx tsc --noEmit` from `frontend/`, `Invoke-WebRequest -UseBasicParsing http://localhost:3000/dashboard/resume -TimeoutSec 10`
+
+- 2026-04-28: `frontend/app/dashboard/resume/page.tsx`, `frontend/app/dashboard/resume/_hooks/use-resume-builder.ts`, `frontend/app/dashboard/resume/_components/resume-assistant-sidebar.tsx`, `frontend/app/dashboard/resume/_lib/resume-rewrite.ts`, `frontend/app/dashboard/resume/_lib/resume-rewrite.test.ts`, `frontend/app/api/dashboard/resume/rewrite/route.ts`, `frontend/lib/api/app.ts`, `frontend/lib/types/index.ts`, `backend/chains/job_posting_rewrite_chain.py`, `backend/tests/test_job_posting_rewrite_chain.py`, `backend/tests/test_match_rewrite_api.py`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-resume-job-posting-rewrite-v1-result.md`
+  - 이력서 우측 AI 패널에 공고 텍스트 붙여넣기, 캡처 이미지 추출, PDF 추출, 선택 성과 기반 문장 후보 생성 흐름을 추가함
+  - 신규 `POST /api/dashboard/resume/rewrite` BFF가 인증 사용자와 rate limit을 확인한 뒤 backend `/match/rewrite`를 호출해 브라우저가 user id를 직접 다루지 않게 함
+  - 생성된 공고 핏 문장 후보는 화면 state에만 표시하고, 기존 `resumes.selected_activity_ids`, 미리보기 본문, PDF export 저장/출력 계약은 변경하지 않음
+  - backend 공고 rewrite 체인이 활동 유형/조직/기간/팀/역할/기여내용/STAR 근거를 prompt에 포함하도록 확장해 성과저장소 근거 패킷을 더 많이 재사용함
+  - URL 공고 추출은 SSRF와 채용 사이트 접근 제한 방어가 필요해 후속 작은 단계로 분리함
+  - 검증: `backend\venv\Scripts\python.exe -m pytest backend\tests\test_job_posting_rewrite_chain.py backend\tests\test_match_rewrite_api.py -q`, `npm --prefix frontend test -- app/dashboard/resume/_lib/resume-rewrite.test.ts`, `npx --prefix frontend tsc -p frontend\tsconfig.codex-check.json --noEmit --pretty false`, `npm --prefix frontend run lint -- --file app/dashboard/resume/page.tsx --file app/dashboard/resume/_hooks/use-resume-builder.ts --file app/dashboard/resume/_components/resume-assistant-sidebar.tsx --file app/dashboard/resume/_lib/resume-rewrite.ts --file app/api/dashboard/resume/rewrite/route.ts --file lib/api/app.ts --file lib/types/index.ts`, `npx tsc --noEmit` from `frontend/`, `backend\venv\Scripts\python.exe -m py_compile backend\chains\job_posting_rewrite_chain.py backend\routers\match.py`, `Invoke-WebRequest -UseBasicParsing http://localhost:3000/dashboard/resume -TimeoutSec 10`
+
 - 2026-04-28: `frontend/lib/api/backend.ts`, `frontend/lib/api/backend-endpoint.ts`, `frontend/lib/server/program-detail-fallback.ts`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-program-detail-loading-timeout-and-select-result.md`
   - 프로그램 상세 SSR의 backend detail 호출에 3.5초 timeout을 적용해 느린 backend 응답이 첫 화면을 계속 붙잡지 않고 기존 Supabase direct fallback으로 넘어갈 수 있게 함
   - timeout abort는 다른 로컬 backend 후보를 순차 재시도하지 않고 즉시 실패로 반환해 fallback 전환 시간이 늘어나지 않도록 정리함
@@ -3524,3 +3626,18 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
 - 2026-04-28: `frontend/app/(landing)/landing-c/_hero.tsx`, `frontend/app/(landing)/landing-c/_support-sections.tsx`, `frontend/app/(landing)/programs/[id]/program-detail-client.tsx`, `docs/current-state.md`
   - 랜딩 hero 제목의 오렌지 gradient를 제거해 solid navy 강조로 바꾸고, 상세 페이지 hero gradient/대표 박스에서 오렌지 종착색을 제거함
   - 랜딩 최하단 CTA band는 더 어두운 navy 배경과 낮은 blue glow로 조정해 신뢰감 있는 톤으로 정리함
+- 2026-04-28: `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/programs-urgent-card.tsx`, `docs/current-state.md`
+  - `/programs` 마감임박 섹션 wrapper 배경을 `#e0621a` 오렌지 accent로 바꾸고, 내부 compact card는 흰색 바탕과 orange border/source label로 맞춰 가독성을 유지함
+  - 후속 조정으로 wrapper 배경을 단색 오렌지에서 orange-to-white gradient로 바꿈
+- 2026-04-28: `frontend/app/(landing)/programs/programs-filter-bar.tsx`, `docs/current-state.md`
+  - `/programs` 상단 `지원 가능한 프로그램 찾기` 검색 패널에 pale sky-to-white gradient 배경을 적용해 흰 패널 대비를 은은하게 조정함
+- 2026-04-28: `frontend/app/(landing)/programs/page.tsx`, `frontend/app/(landing)/programs/programs-urgent-card.tsx`, `docs/current-state.md`
+  - `/programs` 마감임박 섹션의 orange-to-white gradient를 더 연하게 낮추고, 내부 compact card는 랜딩 Opportunity 카드처럼 white translucent card, slate text, neutral pill 중심으로 맞춤
+  - 후속 조정으로 마감임박 섹션 배경의 gradient를 제거하고 `#fff1e6` 단색 soft orange 배경으로 고정함
+- 2026-04-28: `frontend/app/(landing)/programs/programs-table.tsx`, `docs/current-state.md`
+  - `/programs` 테이블의 광고 row 배경을 기존 amber/yellow 톤에서 옅은 rose-peach gradient로 조정함
+- 2026-04-28: `frontend/app/dashboard/resume/page.tsx`, `frontend/app/dashboard/resume/_components/resume-assistant-sidebar.tsx`, `frontend/app/dashboard/resume/_hooks/use-resume-builder.ts`, `frontend/app/dashboard/documents/page.tsx`, `frontend/app/dashboard/resume/export/page.tsx`, `frontend/app/dashboard/portfolio/export/page.tsx`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-documents-design-hub-result.md`
+  - 이력서 빌더 우측 패널에서 템플릿 선택 UI와 props를 제거해 작성 화면은 성과 선택, 공고 핏 문장 후보, AI 채팅, 미리보기 편집에 집중하도록 정리함
+  - 저장 payload의 `template_id: "simple"`은 유지해 기존 API/DB 계약과 저장된 문서 export 흐름을 보존함
+  - 문서 저장소를 3패널 구조로 바꿔 왼쪽 저장 문서 선택, 가운데 embedded PDF 출력 미리보기, 오른쪽 디자인 선택을 담당하게 함
+  - 이력서/포트폴리오 export 화면은 `embedded=true`일 때 미리보기 본문만 보여주고, 일반 출력 화면에서는 다운로드 버튼과 `디자인 기본형` 상태만 표시하도록 템플릿 문구를 줄임
