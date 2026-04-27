@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 
 import { ProgramDeadlineBadge } from "@/components/programs/program-deadline-badge";
 import { ProgramProviderBrand } from "@/components/programs/program-provider-brand";
+import { cx, iso } from "@/components/ui/isoser-ui";
 import { getDashboardBookmarks, searchComparePrograms } from "@/lib/api/app";
 import {
   formatProgramCostLabel,
@@ -78,7 +79,7 @@ function ProgramSelectCard({
   return (
     <article
       className={`rounded-2xl border border-slate-200 bg-white px-4 py-4 transition ${
-        alreadyAdded ? "opacity-45" : "hover:border-blue-200 hover:shadow-sm"
+        alreadyAdded ? "opacity-45" : "hover:border-orange-200 hover:shadow-sm"
       }`}
     >
       <div className="flex items-start justify-between gap-3">
@@ -115,7 +116,7 @@ function ProgramSelectCard({
           <button
             type="button"
             onClick={() => onSelect(programId)}
-            className="shrink-0 rounded-xl border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-semibold text-orange-600 transition hover:bg-orange-500 hover:text-white"
+            className="shrink-0 rounded-xl border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-semibold text-orange-700 transition hover:bg-orange-600 hover:text-white"
           >
             비교에 추가
           </button>
@@ -325,7 +326,7 @@ export default function ProgramSelectModal({
                     onClick={() => setActiveTab(value as ModalTab)}
                     className={`border-b-2 px-1 py-3 text-sm font-semibold transition ${
                       active
-                        ? "border-blue-600 text-blue-600"
+                        ? "border-orange-500 text-orange-600"
                         : "border-transparent text-slate-400 hover:text-slate-600"
                     }`}
                   >
@@ -350,7 +351,7 @@ export default function ProgramSelectModal({
                   <button
                     type="button"
                     onClick={() => setActiveTab("search")}
-                    className="mt-4 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:border-blue-200 hover:text-blue-600"
+                    className="mt-4 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:border-orange-200 hover:text-orange-600"
                   >
                     {COMPARE_COPY.modal.bookmarks.searchButton}
                   </button>
@@ -371,7 +372,7 @@ export default function ProgramSelectModal({
                       setBookmarksLoading(false);
                       setBookmarksRetryKey((value) => value + 1);
                     }}
-                    className="mt-4 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:border-blue-200 hover:text-blue-600"
+                    className="mt-4 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:border-orange-200 hover:text-orange-600"
                   >
                     {COMPARE_COPY.modal.bookmarks.retryButton}
                   </button>
@@ -414,11 +415,11 @@ export default function ProgramSelectModal({
                       value={query}
                       onChange={(event) => setQuery(event.target.value)}
                       placeholder={COMPARE_COPY.modal.search.placeholder}
-                      className="min-w-0 flex-1 rounded-lg border border-[1.5px] border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-600"
+                      className="min-w-0 flex-1 rounded-lg border border-[1.5px] border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-orange-500"
                     />
                     <button
                       type="submit"
-                      className="shrink-0 rounded-lg bg-[#0A0F1E] px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+                      className={cx("shrink-0 rounded-lg px-4 py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:bg-slate-300", iso.darkButton)}
                       disabled={searchLoading}
                     >
                       검색

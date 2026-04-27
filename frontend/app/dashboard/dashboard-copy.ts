@@ -6,8 +6,7 @@ export const DASHBOARD_COPY = {
     filteredEmpty: "해당 조건에 맞는 추천 과정이 없습니다",
     dateEmpty: "해당 날짜에 마감되는 과정이 없습니다",
     loadError: "커리어 핏 과정을 불러오지 못했습니다.",
-    appliedNotice: (count: number) =>
-      `캘린더에 담은 과정 ${count}건 · 카드의 "+ 담기"로 일정을 추가할 수 있습니다.`,
+    applyGuide: '카드의 "+ 담기"로 일정을 추가',
     fallbackCategory: "과정",
     applyButton: "+ 담기",
     appliedButton: "담김",
@@ -16,6 +15,7 @@ export const DASHBOARD_COPY = {
   },
   bookmarks: {
     sectionTitle: "찜한 과정",
+    viewGuide: "카드를 눌러 상세보기",
     viewAllLink: "비교하기 >",
     empty: "아직 찜한 과정이 없습니다",
     loadError: "찜한 과정을 불러오지 못했습니다.",

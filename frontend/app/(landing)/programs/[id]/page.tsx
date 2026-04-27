@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 
 import { LandingHeader } from "@/components/landing/LandingHeader";
+import { cx, iso } from "@/components/ui/isoser-ui";
 import { getProgramDetail } from "@/lib/api/backend";
 import { getSiteUrl } from "@/lib/seo";
 import { loadProgramDetailFallback } from "@/lib/server/program-detail-fallback";
@@ -186,7 +187,7 @@ export default async function ProgramDetailPage({ params }: ProgramDetailPagePro
             dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
           />
         ) : null}
-        <div className="hidden h-8 overflow-hidden bg-indigo-950 text-white md:block">
+        <div className={cx("hidden h-8 overflow-hidden md:block", iso.darkBand)}>
           <div className="mx-auto flex h-full max-w-7xl items-center gap-7 px-6 text-[11px] font-bold tracking-[0.04em] text-white/80">
             <span className="inline-flex items-center gap-2">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
@@ -222,8 +223,8 @@ export default async function ProgramDetailPage({ params }: ProgramDetailPagePro
     return (
       <>
         <LandingHeader />
-        <main className="flex min-h-screen items-center justify-center bg-slate-50 px-6">
-          <div className="rounded-2xl border border-rose-200 bg-white px-8 py-10 text-center shadow-sm">
+        <main className={cx("flex min-h-screen items-center justify-center px-6", iso.page)}>
+          <div className="rounded-2xl border border-rose-200 bg-white/90 px-8 py-10 text-center shadow-sm">
             <p className="text-base font-medium text-rose-700">프로그램 정보를 불러오지 못했습니다.</p>
             <p className="mt-2 text-sm leading-6 text-slate-500">
               잠시 후 다시 시도하거나 프로그램 목록에서 다른 공고를 확인해 주세요.

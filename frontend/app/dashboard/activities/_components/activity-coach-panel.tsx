@@ -5,9 +5,12 @@ type ActivityCoachPanelProps = {
   onJobTitleChange: (value: string) => void;
   messages: CoachMessage[];
   sending: boolean;
+  diagnosisLoading: boolean;
+  canRunDiagnosis: boolean;
   input: string;
   onInputChange: (value: string) => void;
   onSendMessage: () => Promise<void>;
+  onRunDiagnosis: () => Promise<void>;
 };
 
 export function ActivityCoachPanel({
@@ -15,14 +18,31 @@ export function ActivityCoachPanel({
   onJobTitleChange,
   messages,
   sending,
+  diagnosisLoading,
+  canRunDiagnosis,
   input,
   onInputChange,
   onSendMessage,
+  onRunDiagnosis,
 }: ActivityCoachPanelProps) {
+  const targetRole = jobTitle.trim();
+  const diagnosisDisabled = diagnosisLoading || sending || !canRunDiagnosis;
+
   return (
-    <div className="bg-white rounded-xl border border-gray-200 flex flex-col h-[500px]">
+    <div className="flex h-full min-h-[640px] flex-col rounded-xl border border-gray-200 bg-white">
       <div className="p-4 border-b border-gray-100">
-        <h2 className="font-semibold text-gray-900">AI 코치</h2>
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="font-semibold text-gray-900">AI 코치</h2>
+          <button
+            type="button"
+            onClick={() => void onRunDiagnosis()}
+            disabled={diagnosisDisabled}
+            title={!canRunDiagnosis ? "STAR 4개 항목을 모두 채우면 진단할 수 있습니다." : undefined}
+            className="shrink-0 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
+          >
+            {diagnosisLoading ? "진단 중..." : "코칭 진단"}
+          </button>
+        </div>
         <input
           type="text"
           placeholder="지원 직무 (예: PM, 백엔드 개발자)"
@@ -30,9 +50,14 @@ export function ActivityCoachPanel({
           onChange={(e) => onJobTitleChange(e.target.value)}
           className="mt-2 w-full text-sm border border-gray-200 rounded-lg px-3 py-1.5 outline-none focus:border-gray-400"
         />
+        {targetRole && (
+          <p className="mt-2 truncate text-[11px] font-medium text-blue-700">
+            직무 기준: {targetRole}
+          </p>
+        )}
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div className="flex-1 space-y-3 overflow-y-auto overflow-x-hidden p-4">
         {messages.length === 0 && (
           <p className="text-sm text-gray-400 text-center mt-8">
             활동 내용을 입력하면 AI 코치가 STAR 기법으로 피드백을 드립니다.
@@ -50,7 +75,7 @@ export function ActivityCoachPanel({
                   : "bg-gray-100 text-gray-800"
               }`}
             >
-              <p className="whitespace-pre-wrap">{msg.content}</p>
+              <p className="whitespace-pre-wrap break-words [overflow-wrap:anywhere]">{msg.content}</p>
             </div>
           </div>
         ))}

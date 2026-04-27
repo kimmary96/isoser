@@ -31,7 +31,7 @@ type ProgramsDisplayStateArgs = PinPromotedArgs & {
 const DEFAULT_PROMOTED_LIMIT = 3;
 
 const KEYWORD_TONE_CLASSES = [
-  "bg-violet-50 text-violet-700",
+  "bg-slate-100 text-slate-700",
   "bg-sky-50 text-sky-700",
   "bg-emerald-50 text-emerald-700",
   "bg-amber-50 text-amber-700",
@@ -85,7 +85,7 @@ export function getSelectionKeywordTone(keyword: string): string {
     return "bg-rose-50 text-rose-700";
   }
   if (/(코딩|테스트|역량|평가|알고리즘|필기)/u.test(normalizedKeyword)) {
-    return "bg-violet-50 text-violet-700";
+    return "bg-slate-100 text-slate-700";
   }
   if (/(ai|llm|python|data|sql|cloud|react|java|개발|보안|데이터|클라우드)/u.test(normalizedKeyword)) {
     return "bg-sky-50 text-sky-700";

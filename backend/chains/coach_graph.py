@@ -519,6 +519,24 @@ def _fallback_feedback(priority_focus: str) -> str:
     )
 
 
+def _fallback_notice(exc: Exception) -> str:
+    """Return user-safe fallback copy without leaking provider error details."""
+
+    error_text = str(exc).lower()
+    quota_markers = [
+        "429",
+        "quota",
+        "rate limit",
+        "resource_exhausted",
+        "too many requests",
+        "retry_delay",
+    ]
+    if any(marker in error_text for marker in quota_markers):
+        return "현재 AI 사용량 제한으로 기본 코칭 기준에 따라 진단했습니다. 잠시 후 다시 요청하면 더 정교한 제안을 받을 수 있습니다."
+
+    return "AI 응답이 지연되어 기본 코칭 기준에 따라 진단했습니다."
+
+
 def _fallback_suggestion(priority_focus: str, feedback: str) -> RewriteSuggestion:
     """Build a minimal valid suggestion when the model output is incomplete."""
 
@@ -859,7 +877,7 @@ async def coach_response_node(state: CoachState) -> CoachState:
             coach_response = fallback_response.model_copy(
                 update={
                     "feedback": (
-                        f"피드백 생성 중 오류가 발생했습니다: {str(exc)}. "
+                        f"{_fallback_notice(exc)} "
                         f"{fallback_response.feedback}"
                     ),
                     "iteration_count": state["iteration_count"],

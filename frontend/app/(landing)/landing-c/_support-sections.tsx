@@ -231,9 +231,8 @@ export function LandingCCircularFlowSection() {
 export function LandingCFinalCtaSection() {
   return (
     <section className="px-5 pb-14 sm:px-8 lg:px-12">
-      <div className="relative mx-auto flex max-w-6xl flex-col gap-8 overflow-hidden rounded-[28px] bg-[var(--indigo)] px-6 py-10 text-white sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-10">
-        <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/10" />
-        <div>
+      <div className="relative mx-auto flex max-w-6xl flex-col gap-8 overflow-hidden rounded-[28px] bg-[linear-gradient(120deg,#071a36_0%,#0b2855_54%,#103c76_100%)] px-6 py-10 text-white shadow-[0_24px_68px_rgba(7,26,54,0.22)] sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-10">
+        <div className="relative">
           <p className="text-xs font-black uppercase tracking-[0.24em] text-white/60">Final CTA</p>
           <h2 className="mt-4 text-3xl font-black leading-tight tracking-[-0.05em] sm:text-4xl">
             준비가 되었다면
@@ -244,7 +243,7 @@ export function LandingCFinalCtaSection() {
             흩어진 경력 한 번에 정리하고, 원하는 공고에 맞춰 작성해 보세요
           </p>
         </div>
-        <div className="flex flex-wrap gap-3">
+        <div className="relative flex flex-wrap gap-3">
           <Link href={getLoginHref(DASHBOARD_RECOMMEND_CALENDAR)} className="rounded-full bg-white px-6 py-3 text-sm font-black text-[var(--indigo)]">무료로 시작하기</Link>
           <Link href={DASHBOARD_RECOMMEND_CALENDAR} className="rounded-full border border-white/30 px-6 py-3 text-sm font-black text-white">대시보드 미리 보기</Link>
         </div>

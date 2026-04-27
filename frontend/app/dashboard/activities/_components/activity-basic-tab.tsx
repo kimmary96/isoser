@@ -5,7 +5,6 @@ import type { Activity } from "@/lib/types";
 
 type ActivityBasicTabProps = {
   activity: Activity;
-  isNewActivity: boolean;
   typeDraft: string;
   onTypeDraftChange: (value: string) => void;
   organization: string;
@@ -51,7 +50,6 @@ type ActivityBasicTabProps = {
 };
 
 export function ActivityBasicTab({
-  isNewActivity,
   typeDraft,
   onTypeDraftChange,
   organization,
@@ -334,22 +332,20 @@ export function ActivityBasicTab({
           <label className="text-xs font-semibold text-gray-500">
             어떤 활동이었는지 간단한 소개를 적어주세요. <span className="text-red-400">*</span>
           </label>
-          {isNewActivity && (
-            <button
-              type="button"
-              onClick={() => void onGenerateIntroCandidates()}
-              disabled={!hasContributionContent || introGenerateLoading}
-              title={
-                hasContributionContent
-                  ? "기여 내용을 바탕으로 소개글 후보를 생성합니다."
-                  : "기여내용을 먼저 작성해주세요"
-              }
-              className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 transition-all hover:border-blue-300 hover:bg-blue-100 disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-100 disabled:text-gray-400"
-            >
-              <span aria-hidden="true">AI</span>
-              <span>{introGenerateLoading ? "소개글 생성 중..." : "소개글 생성"}</span>
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => void onGenerateIntroCandidates()}
+            disabled={!hasContributionContent || introGenerateLoading}
+            title={
+              hasContributionContent
+                ? "기본정보와 기여내용을 바탕으로 소개글 후보를 생성합니다."
+                : "기여내용을 먼저 작성해주세요"
+            }
+            className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 transition-all hover:border-blue-300 hover:bg-blue-100 disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-100 disabled:text-gray-400"
+          >
+            <span aria-hidden="true">AI</span>
+            <span>{introGenerateLoading ? "소개글 생성 중..." : "간단 소개글 생성"}</span>
+          </button>
         </div>
         <textarea
           value={descriptionDraft}
@@ -359,53 +355,49 @@ export function ActivityBasicTab({
           rows={5}
         />
 
-        {isNewActivity && (
-          <>
-            <p className="mt-2 text-[11px] text-gray-400">
-              기여 내용을 먼저 작성한 뒤 소개글 생성 버튼을 누르면 AI가 후보 1~3개를 제안합니다.
-            </p>
+        <p className="mt-2 text-[11px] text-gray-400">
+          STAR 기록을 쓰지 않아도 기본정보와 기여내용만으로 AI가 소개글 후보 1~3개를 제안합니다.
+        </p>
 
-            {introGenerateError && (
-              <p className="mt-2 text-xs text-red-500">{introGenerateError}</p>
-            )}
+        {introGenerateError && (
+          <p className="mt-2 text-xs text-red-500">{introGenerateError}</p>
+        )}
 
-            {introCandidates.length > 0 && (
-              <div className="mt-3 space-y-2">
-                {introCandidates.map((candidate, index) => {
-                  const selected = descriptionDraft.trim() === candidate.trim();
+        {introCandidates.length > 0 && (
+          <div className="mt-3 space-y-2">
+            {introCandidates.map((candidate, index) => {
+              const selected = descriptionDraft.trim() === candidate.trim();
 
-                  return (
-                    <button
-                      key={`${index}-${candidate}`}
-                      type="button"
-                      onClick={() => onDescriptionDraftChange(candidate)}
-                      className={`w-full rounded-2xl border p-3 text-left transition-all ${
-                        selected
-                          ? "border-blue-500 bg-blue-50 shadow-sm"
-                          : "border-gray-200 bg-white hover:border-blue-200 hover:bg-blue-50/40"
+              return (
+                <button
+                  key={`${index}-${candidate}`}
+                  type="button"
+                  onClick={() => onDescriptionDraftChange(candidate)}
+                  className={`w-full rounded-2xl border p-3 text-left transition-all ${
+                    selected
+                      ? "border-blue-500 bg-blue-50 shadow-sm"
+                      : "border-gray-200 bg-white hover:border-blue-200 hover:bg-blue-50/40"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[11px] font-semibold text-gray-500">
+                        소개글 후보 {index + 1}
+                      </p>
+                      <p className="mt-1 text-sm leading-6 text-gray-700">{candidate}</p>
+                    </div>
+                    <span
+                      className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-medium ${
+                        selected ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-500"
                       }`}
                     >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-[11px] font-semibold text-gray-500">
-                            소개글 후보 {index + 1}
-                          </p>
-                          <p className="mt-1 text-sm leading-6 text-gray-700">{candidate}</p>
-                        </div>
-                        <span
-                          className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-medium ${
-                            selected ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-500"
-                          }`}
-                        >
-                          {selected ? "선택됨" : "선택"}
-                        </span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </>
+                      {selected ? "선택됨" : "선택"}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         )}
       </div>
 

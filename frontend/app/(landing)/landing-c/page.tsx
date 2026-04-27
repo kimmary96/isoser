@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { LandingHeader } from "@/components/landing/LandingHeader";
+import { iso } from "@/components/ui/isoser-ui";
 import { listProgramsPage } from "@/lib/api/backend";
 import { resolvePublicProgramListScope } from "@/lib/program-list-scope";
 import { unwrapProgramListRows } from "@/lib/program-display";
@@ -159,7 +160,7 @@ export default async function LandingCPage({ searchParams }: LandingCPageProps) 
   }
 
   return (
-    <main className="min-h-screen bg-[var(--surface)] text-[var(--ink)]" style={landingCThemeVars}>
+    <main className={iso.page} style={landingCThemeVars}>
       <LandingHeader />
       <LandingCHeroSection heroPrograms={heroPrograms} />
       <LandingCOpportunityFeed activeChip={activeChip} programs={opportunityPrograms} error={error} />

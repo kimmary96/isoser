@@ -349,6 +349,16 @@ PROGRAM_FILTER_SCAN_SELECT = (
     "start_date,end_date,is_active,is_ad,tags,skills,target,support_type,compare_meta,service_meta,"
     "support_amount,subsidy_amount,raw_data"
 )
+PROGRAM_DETAIL_SELECT = (
+    "id,title,provider,provider_name,organizer_name,sponsor_name,summary,summary_text,description,"
+    "category,category_detail,region,region_detail,location,location_text,source,source_url,link,"
+    "deadline,close_date,reg_start_date,application_start_date,application_end_date,"
+    "start_date,end_date,program_start_date,program_end_date,teaching_method,cost,cost_type,"
+    "participation_time,fee_amount,support_amount,subsidy_amount,"
+    "support_type,business_type,target,target_summary,target_detail,eligibility_labels,tags,skills,"
+    "is_active,is_ad,selection_process_label,contact_phone,contact_email,"
+    "capacity_total,capacity_current,rating_value,curriculum_items,certifications,compare_meta,service_meta"
+)
 USER_RECOMMENDATION_PROFILE_SELECT = (
     "user_id,effective_target_job,effective_target_job_normalized,profile_keywords,evidence_skills,"
     "desired_skills,activity_keywords,preferred_regions,profile_completeness_score,"
@@ -615,21 +625,21 @@ def _recommendation_reasons(item: ProgramRecommendation) -> list[str]:
 
 
 RECOMMENDATION_SCORE_WEIGHTS_WITH_REGION = {
-    "target_job": 30,
+    "target_job": 25,
     "skills": 25,
-    "experience": 15,
-    "region": 15,
+    "experience": 20,
+    "region": 10,
     "readiness": 10,
-    "behavior": 5,
+    "behavior": 10,
 }
 
 RECOMMENDATION_SCORE_WEIGHTS_WITHOUT_REGION = {
-    "target_job": 35,
+    "target_job": 30,
     "skills": 30,
     "experience": 20,
     "region": 0,
     "readiness": 10,
-    "behavior": 5,
+    "behavior": 10,
 }
 
 RECOMMENDATION_BREAKDOWN_PRIORITY = {
@@ -1484,6 +1494,32 @@ async def _fetch_programs_by_ids(program_ids: list[str]) -> dict[str, dict[str, 
         path="/rest/v1/programs",
         params={
             "select": "*",
+            "id": f"in.({quoted_ids})",
+        },
+    )
+    if not isinstance(rows, list):
+        return {}
+
+    return {
+        str(row.get("id")): row
+        for row in rows
+        if str(row.get("id") or "").strip()
+    }
+
+
+async def _fetch_program_detail_rows_by_ids(program_ids: list[str]) -> dict[str, dict[str, Any]]:
+    if not program_ids:
+        return {}
+
+    quoted_ids = ",".join(f'"{program_id}"' for program_id in program_ids if program_id)
+    if not quoted_ids:
+        return {}
+
+    rows = await request_supabase(
+        method="GET",
+        path="/rest/v1/programs",
+        params={
+            "select": PROGRAM_DETAIL_SELECT,
             "id": f"in.({quoted_ids})",
         },
     )
@@ -3336,9 +3372,9 @@ def _compute_region_match(
     )
     explicit_delivery = _classify_delivery_region_signal(explicit_method_text)
     if explicit_delivery == "hybrid":
-        return ["혼합"], 0.6667
+        return ["혼합"], 0.25
     if explicit_delivery == "online":
-        return ["온라인"], 0.8
+        return ["온라인"], 0.0
 
     program_region = _normalize_region_name_by_priority(
         program.get("region"),
@@ -3362,9 +3398,9 @@ def _compute_region_match(
     )
     fallback_delivery = _classify_delivery_region_signal(fallback_text)
     if fallback_delivery == "hybrid":
-        return ["혼합"], 0.6667
+        return ["혼합"], 0.25
     if fallback_delivery == "online":
-        return ["온라인"], 0.8
+        return ["온라인"], 0.0
 
     if not program_region:
         return [], 0.0
@@ -4378,7 +4414,7 @@ async def get_program_details_batch(payload: ProgramDetailBatchRequest) -> Progr
         seen_program_ids.add(normalized)
         deduped_program_ids.append(normalized)
 
-    programs_by_id = await _fetch_programs_by_ids(deduped_program_ids)
+    programs_by_id = await _fetch_program_detail_rows_by_ids(deduped_program_ids)
     source_records_by_program_id = await _fetch_primary_source_records_by_program_ids(deduped_program_ids)
     return ProgramDetailBatchResponse(
         items=[
@@ -4437,7 +4473,7 @@ async def get_program_detail(program_id: str) -> ProgramDetailResponse:
         method="GET",
         path="/rest/v1/programs",
         params={
-            "select": "*",
+            "select": PROGRAM_DETAIL_SELECT,
             "id": f"eq.{program_id}",
             "limit": "1",
         },

@@ -8,9 +8,9 @@ type ActivityStarTabProps = {
   starResult: string;
   onStarResultChange: (value: string) => void;
   starSaving: boolean;
+  canImportBasicInfo: boolean;
+  onImportBasicInfo: () => void;
   onStarSave: () => Promise<void>;
-  summaryLoading: boolean;
-  onGenerateSummary: () => Promise<void>;
 };
 
 export function ActivityStarTab({
@@ -23,14 +23,28 @@ export function ActivityStarTab({
   starResult,
   onStarResultChange,
   starSaving,
+  canImportBasicInfo,
+  onImportBasicInfo,
   onStarSave,
-  summaryLoading,
-  onGenerateSummary,
 }: ActivityStarTabProps) {
-  const hasStarContent = Boolean(starSituation || starTask || starAction || starResult);
-
   return (
     <div className="space-y-4">
+      <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-3">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs leading-5 text-slate-600">
+            기본정보의 활동명, 역할, 사용 기술, 기여내용을 STAR 초안에 자동으로 나눠 넣습니다.
+          </p>
+          <button
+            type="button"
+            onClick={onImportBasicInfo}
+            disabled={!canImportBasicInfo}
+            className="shrink-0 rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:border-gray-200 disabled:text-gray-400"
+          >
+            기본정보 가져오기
+          </button>
+        </div>
+      </div>
+
       <div>
         <label className="text-sm font-semibold text-blue-600 mb-1 block">
           S - Situation (상황)
@@ -103,20 +117,7 @@ export function ActivityStarTab({
         >
           {starSaving ? "저장 중..." : "저장"}
         </button>
-        <button
-          onClick={() => void onGenerateSummary()}
-          disabled={summaryLoading || !hasStarContent}
-          className="flex items-center gap-2 px-5 py-2.5 bg-blue-500 text-white rounded-xl text-sm font-medium hover:bg-blue-600 disabled:opacity-50 transition-all"
-        >
-          {summaryLoading ? "생성 중..." : "✦ AI 요약 생성"}
-        </button>
       </div>
-
-      {summaryLoading && (
-        <p className="text-xs text-blue-400 text-center">
-          STAR 내용을 분석해 활동 소개를 작성하고 있습니다...
-        </p>
-      )}
     </div>
   );
 }

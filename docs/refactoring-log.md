@@ -1,5 +1,77 @@
 # 리팩토링 로그
 
+- 2026-04-28: `frontend/lib/api/backend.ts`, `frontend/lib/api/backend-endpoint.ts`, `frontend/lib/server/program-detail-fallback.ts`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-program-detail-loading-timeout-and-select-result.md`
+  - 프로그램 상세 SSR의 backend detail 호출에 3.5초 timeout을 적용해 느린 backend 응답이 첫 화면을 계속 붙잡지 않고 기존 Supabase direct fallback으로 넘어갈 수 있게 함
+  - timeout abort는 다른 로컬 backend 후보를 순차 재시도하지 않고 즉시 실패로 반환해 fallback 전환 시간이 늘어나지 않도록 정리함
+  - backend 상세 단건/배치 조회는 `programs select=*` 대신 `PROGRAM_DETAIL_SELECT`를 사용해 `raw_data/search_text` 같은 무거운 collector payload를 읽지 않게 함
+  - 실제 운영 DB smoke에서 없는 것으로 확인된 `programs.application_url`, `programs.verified_self_pay_amount`는 상세 select에서 제외하고 기존 source record/link/meta fallback을 유지함
+  - 검증: `backend\venv\Scripts\python.exe -m pytest backend\tests\test_programs_router.py -q -k "program_detail_select or get_program_detail_uses_lightweight_detail_select or get_program_details_batch_reuses_detail_mapping or build_program_detail_response"`, `backend\venv\Scripts\python.exe -m py_compile backend\routers\programs.py backend\tests\test_programs_router.py`, `npx --prefix frontend tsc -p frontend\tsconfig.codex-check.json --noEmit --pretty false`, `npm --prefix frontend run lint -- --file lib/api/backend.ts --file lib/api/backend-endpoint.ts --file lib/server/program-detail-fallback.ts`, local smoke on `/programs/list`, `/programs/{id}/detail`, `/programs/{id}`
+
+- 2026-04-28: `frontend/app/dashboard/activities/_lib/activity-coach-chat.ts`, `frontend/app/dashboard/activities/_lib/activity-coach-chat.test.ts`, `frontend/app/dashboard/activities/_components/activity-coach-panel.tsx`, `frontend/app/dashboard/activities/_components/activity-coach-panel.test.tsx`, `frontend/app/dashboard/activities/_components/activity-coach-insight-panel.tsx`, `frontend/app/dashboard/activities/[id]/page.tsx`, `frontend/app/dashboard/activities/_hooks/use-activity-detail.ts`, `frontend/lib/api/app.ts`, `docs/current-state.md`
+  - STAR 탭 3열 레이아웃에서 가운데 AI 채팅과 오른쪽 진단 패널이 별도 고정 높이를 갖지 않고, grid row stretch로 왼쪽 STAR 입력 패널 높이를 따라가도록 조정함
+  - 일반 채팅 전송은 `/coach/feedback` 구조 진단 응답을 쓰지 않고 채팅 전용 prompt + `/api/summary` 흐름으로 분리해, `지원 직무/활동명/활동 유형` 내부 컨텍스트가 메시지 history에 노출되지 않게 함
+  - 채팅 전용 prompt는 사용자의 질문에만 답하고 STAR 진단/전체 첨삭을 하지 않도록 제한했으며, 응답은 `핵심 답변`, `바로 할 일`, 필요 시 `예시` 구조로 짧게 나오게 함
+  - 모델이 메타 라벨을 되풀이해도 `지원 직무:`, `활동명:`, `활동 유형:` 라인을 화면 표시 전에 제거하는 normalize 함수를 추가함
+  - 진단 패널 `문장 후보`에 내부 활동 컨텍스트가 섞이면 `활동명/활동 유형/조직/기간/팀 구성/STAR ...` 라벨을 제거하고 실제 개선 문장만 짧게 보여주도록 정리함
+  - `STAR 구조` 후보는 왼쪽 STAR 입력 폼과 중복되어 후보 목록에서 숨기도록 조정함
+  - AI 코치 채팅의 로컬 fallback을 질문 의도별로 분기해 provider quota/API 실패 상황에서도 같은 답변이 반복되는 UX를 줄임
+  - 코칭 진단의 `문장 후보`가 `보강 질문`에 대한 답변 예시를 먼저 보여주도록 바꾸고, 같은 focus의 백엔드 rewrite 후보는 중복 노출하지 않게 정리함
+  - 진단 후보 생성에 활동명, 활동 유형, 역할, 기술, 기여내용, STAR draft context를 전달해 `기술 선택 근거` 같은 후보가 현재 성과 내용과 연결되도록 보강함
+  - STAR 기록 상단에 `기본정보 가져오기` 버튼을 추가하고, 기본정보의 활동명/조직/기간/역할/기술/기여내용/소개글을 로컬 규칙으로 S/T/A/R 초안에 분배해 기존 STAR draft에 중복 없이 붙이도록 함
+  - 기여내용 분류는 수치/성과 신호를 Result, 개발/설계/구축 같은 실행 신호를 Action, 문제/목표 신호를 Task, 배경 신호를 Situation으로 나누며 `실시간` 같은 단어가 시간 성과로 오분류되지 않도록 숫자 동반 시간 표현만 성과 신호로 처리함
+  - STAR 탭의 기존 `AI 요약 생성` 버튼과 STAR 기반 summary state를 제거하고, 기본정보 탭의 `간단 소개글 생성`을 새 활동/기존 활동 모두에서 사용할 수 있게 열어 STAR를 쓰지 않아도 기본정보와 기여내용으로 소개글 후보를 만들 수 있게 함
+  - 활동명/유형/조직/기간/팀/역할/스킬/기여내용/소개글을 묶는 `ActivityEvidenceSource`와 evidence text helper를 추가해 STAR 가져오기, AI 소개글 입력, 코치 진단 입력이 같은 근거 패킷을 재사용하도록 정리함
+  - `generateActivityIntro` 호출 실패 시에도 기본정보와 기여내용으로 로컬 소개글 후보를 만들어 보여주는 fallback을 추가해 Gemini/API quota 상황에서 최소 소개글 생성 UX를 유지함
+  - 검증: `npm --prefix frontend test -- app/dashboard/activities/_lib/activity-evidence.test.ts app/dashboard/activities/_lib/activity-intro-fallback.test.ts app/dashboard/activities/_lib/activity-star-import.test.ts app/dashboard/activities/_components/activity-basic-tab.test.tsx app/dashboard/activities/_components/activity-star-tab.test.tsx app/dashboard/activities/_lib/activity-coach-chat.test.ts app/dashboard/activities/_lib/activity-coach-insight.test.ts app/dashboard/activities/_components/activity-coach-insight-panel.test.tsx app/dashboard/activities/_components/activity-coach-panel.test.tsx`, `npx tsc --noEmit` from `frontend/`, `npm --prefix frontend run lint`
+
+- 2026-04-27: `frontend/app/dashboard/activities/_components/activity-coach-panel.tsx`, `frontend/app/dashboard/activities/_components/activity-coach-panel.test.tsx`, `frontend/app/dashboard/activities/[id]/page.tsx`, `frontend/app/dashboard/activities/_hooks/use-activity-detail.ts`, `backend/chains/coach_graph.py`, `backend/tests/test_coach_e2e.py`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-27-activity-coach-diagnosis-ui-and-quota-fallback-result.md`
+  - STAR 탭에서 일반 채팅 질문을 보낼 때 `코칭 진단` 패널이 자동으로 생기지 않도록 마지막 코치 응답 저장 흐름을 진단 버튼 전용으로 분리함
+  - STAR 4개 항목이 모두 채워진 경우에만 AI 코치 헤더의 `코칭 진단` 버튼으로 구조화 진단을 생성하도록 추가함
+  - STAR 화면을 왼쪽 입력, 가운데 긴 AI 채팅, 오른쪽 진단 패널의 3열 구조로 조정하고, 긴 provider URL/오류 문자열이 채팅 박스를 가로로 밀지 않도록 메시지 줄바꿈을 보강함
+  - 진단 전 오른쪽 패널이 비어 화면 정렬이 어색해 보이지 않도록 `STAR 작성후 AI 코치의 진단을 받아보세요!` 안내와 진단 예시 카드를 표시하는 placeholder를 추가함
+  - Gemini quota/rate-limit 같은 provider 오류 발생 시 fallback 응답에 raw 오류 원문과 링크를 붙이지 않고 사용자용 제한 안내와 기본 코칭 진단만 반환하도록 정리함
+  - 검증: `npm --prefix frontend test -- app/dashboard/activities/_components/activity-coach-panel.test.tsx app/dashboard/activities/_components/activity-coach-insight-panel.test.tsx app/dashboard/activities/_lib/activity-coach-insight.test.ts app/dashboard/activities/_lib/activity-coach-context.test.ts`, `npm --prefix frontend test -- app/dashboard/activities/_components/activity-coach-insight-panel.test.tsx app/dashboard/activities/_components/activity-coach-panel.test.tsx`, `npm --prefix frontend run lint -- --file app/dashboard/activities/_components/activity-coach-panel.tsx --file app/dashboard/activities/_components/activity-coach-panel.test.tsx --file app/dashboard/activities/_components/activity-coach-insight-panel.tsx --file app/dashboard/activities/_components/activity-coach-insight-panel.test.tsx --file app/dashboard/activities/_hooks/use-activity-detail.ts --file app/dashboard/activities/[id]/page.tsx`, `npx --prefix frontend tsc -p frontend\tsconfig.codex-check.json --noEmit --pretty false`, `backend\venv\Scripts\python.exe -m pytest backend\tests\test_coach_e2e.py -q`, `backend\venv\Scripts\python.exe -m py_compile backend\chains\coach_graph.py backend\tests\test_coach_e2e.py`
+
+- 2026-04-27: `backend/routers/coach.py`, `backend/tests/test_coach_sessions_api.py`, `supabase/migrations/20260427233000_repair_coach_sessions_columns.sql`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-27-coach-session-schema-drift-result.md`
+  - 운영 Supabase `coach_sessions` 테이블에 `job_title` 컬럼이 없어 `/coach/feedback`이 `coach session persistence error`로 실패하던 schema drift를 확인함
+  - 코치 세션 조회/생성/업데이트 중 `CoachSessionRepoError`가 발생하면 warning 로그만 남기고 persistence를 건너뛰게 해, AI 코칭 응답 자체는 계속 반환되도록 변경함
+  - 누락된 `coach_sessions` 컬럼, 인덱스, updated_at trigger, RLS policy를 idempotent하게 보정하는 migration을 추가함
+  - 회귀 테스트에서 세션 persistence가 실패해도 `/coach/feedback`이 200 응답을 유지하는 케이스를 추가함
+  - 검증: `backend\venv\Scripts\python.exe -m pytest backend\tests\test_coach_sessions_api.py -q`, `backend\venv\Scripts\python.exe -m pytest backend\tests\test_coach_e2e.py -q`, `backend\venv\Scripts\python.exe -m py_compile backend\routers\coach.py backend\repositories\coach_session_repo.py backend\tests\test_coach_sessions_api.py`
+
+- 2026-04-27: `frontend/app/dashboard/activities/_lib/activity-coach-context.ts`, `frontend/app/dashboard/activities/_lib/activity-coach-insight.ts`, `frontend/app/dashboard/activities/_components/activity-coach-insight-panel.tsx`, `frontend/app/dashboard/activities/_components/activity-coach-panel.tsx`, `frontend/app/dashboard/activities/_hooks/use-activity-detail.ts`, `frontend/app/dashboard/activities/[id]/page.tsx`, `docs/specs/career-evidence-engine-v1.md`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-27-activity-ai-coach-v1-result.md`
+  - 성과저장소 AI 코치의 기존 채팅 응답을 보존하면서 최신 `CoachFeedbackResponse`를 진단 카드, 보강 질문, 문장 후보, 검토 포인트로 변환하는 mapper와 패널을 추가함
+  - hook은 마지막 성공 코치 응답만 `lastCoachResponse`로 보관하고, 화면에는 구조화 인사이트를 표시하도록 연결함
+  - 문장 후보의 `소개글에 적용` 버튼은 `descriptionDraft`만 갱신하고 기본 정보 탭으로 이동하도록 연결해, 사용자가 확인 후 기존 저장 버튼으로 저장하게 함
+  - 문장 후보의 focus/section을 Situation/Task/Action/Result 중 하나로 매핑하고, `STAR에 적용` 계열 버튼은 해당 STAR draft 필드에 기존 내용을 덮어쓰지 않고 중복 없이 추가하도록 연결함
+  - 문장 후보의 `기여내용에 추가` 버튼은 빈 기여 칸을 먼저 채우고, 없으면 최대 6개까지 중복 없이 draft 항목을 추가하도록 연결함
+  - 코치 요청의 `activity_description`은 소개글 fallback 대신 지원 직무, 활동명, 유형, 조직, 기간, 팀 정보, 역할, 스킬, 기여 내용, 소개글, STAR 4요소를 묶은 구조화 근거 패킷으로 전송하도록 분리함
+  - 코치 인사이트 mapper가 지원 직무, 스킬, 역할, 기여 내용을 기반으로 `roleKeywords`와 `strengthPoints`를 파생하고, 패널은 이를 `살릴 포인트` 섹션으로 표시함
+  - `career-evidence-engine-v1.md`에 Phase 1 구현 contract와 apply action 규칙을 추가하고, 직접 대화 작업 결과를 session report로 남김
+  - 검증: `npm run test -- app/dashboard/activities/_lib/activity-coach-context.test.ts app/dashboard/activities/_lib/activity-coach-insight.test.ts app/dashboard/activities/_components/activity-coach-insight-panel.test.tsx`, `npx tsc --noEmit --pretty false`, `npm run lint -- --file app/dashboard/activities/_lib/activity-coach-context.ts --file app/dashboard/activities/_lib/activity-coach-context.test.ts --file app/dashboard/activities/_lib/activity-coach-insight.ts --file app/dashboard/activities/_lib/activity-coach-insight.test.ts --file app/dashboard/activities/_components/activity-coach-insight-panel.tsx --file app/dashboard/activities/_components/activity-coach-insight-panel.test.tsx --file app/dashboard/activities/_components/activity-coach-panel.tsx --file app/dashboard/activities/_hooks/use-activity-detail.ts --file app/dashboard/activities/[id]/page.tsx`
+
+- 2026-04-27: `frontend/app/dashboard/page.tsx`, `docs/current-state.md`
+  - 대시보드 왼쪽 패널의 오늘/선택 날짜 마감 일정 본문과 빈 상태 텍스트를 12px로 낮춤
+  - 하단 `내 커리어 핏 추천`/`찜한 과정` 카드의 D-day badge, 카테고리, 제목, 미리보기/담기 버튼 텍스트를 12px로 낮춤
+  - 카드 D-day badge를 absolute 배치에서 상단 행 배치로 바꾸고, 제목은 badge 아래에서 전체 카드 폭을 쓰는 3줄 clamp로 조정함
+  - 추천 카드 `+ 담기`는 캘린더 담기와 dashboard bookmark 추가를 함께 수행해 찜 목록에 즉시 반영하고, 추천/찜 카드 `담김`은 다시 클릭하면 캘린더 담기와 찜 목록에서 해제되도록 토글 동작을 보강함
+  - 카드의 별도 미리보기 버튼을 제거하고, 카드 본문 클릭 또는 키보드 Enter/Space로 상세 미리보기 모달을 열도록 조정함
+  - 카드 좌하단에 `훈련 기간 MM/DD ~ MM/DD` 형식의 프로그램 기간을 표시함
+  - 대시보드 달력 이벤트 소스를 전체 추천/찜 목록에서 실제 `+ 담기`로 캘린더에 담긴 항목으로 제한함
+  - `카드의 "+ 담기"로 일정을 추가할 수 있습니다.` 안내를 `내 커리어 핏 추천` 제목 옆으로 옮기고, `캘린더에 담은 과정 N건` 하단 문구는 제거함
+  - `찜한 과정` 제목 옆에 `카드를 눌러 상세보기` 안내 문구를 추가함
+  - 오른쪽 큰 월간 달력의 현재월 날짜 셀은 흰색으로, 이전/다음달 날짜 셀은 더 어두운 회청색으로 보여 월 경계를 명확히 함
+  - 오른쪽 큰 월간 달력 상단의 월 제목을 왼쪽 패널 일정 제목보다 약간 큰 17px로 조정함
+  - 큰 달력 상단의 보기 전환 버튼과 일정 필터 라벨/체크 표시를 12px로 낮춰 툴바 밀도를 조정함
+  - 검증: `npm --prefix frontend run lint -- --file "app/dashboard/page.tsx"`, `npx --prefix frontend tsc -p frontend\tsconfig.codex-check.json --noEmit --pretty false`
+
+- 2026-04-27: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/app/(landing)/compare/compare-relevance-section.tsx`, `frontend/app/(landing)/compare/compare-relevance-section.test.ts`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-27-career-fit-score-calibration-result.md`
+  - 다른 팀원의 로컬 QA 결과를 현재 저장소 코드 기준으로 재검토했고, 기존 가중치가 직무/스킬 중심이며 화면 단계 기준이 빡빡하고 온라인 전달방식 점수 영향이 큰 진단이 실제 구현과 맞는 것을 확인함
+  - 비교 커리어 핏 breakdown에서 활동 경험과 찜/캘린더 행동 비중을 올리고, target job과 region 비중을 낮춰 화면 copy의 `내 이력, 활동, 과정 데이터` 방향과 더 맞춤
+  - 온라인 전달방식은 `matched_regions` chip에는 유지하되 지역 점수는 0으로 낮추고, 혼합형은 약한 접근성 신호만 주도록 조정함
+  - 커리어 핏 5단계 기준을 `0.20 / 0.40 / 0.55 / 0.70`으로 낮추고, `맞닿은 키워드` chip을 `직접 근거`와 `과정 메타`로 나눠 chip 수와 실제 점수 근거가 같은 의미처럼 보이는 오해를 줄임
+  - 검증: `backend\venv\Scripts\python.exe -m pytest backend\tests\test_programs_router.py -q -k "compute_program_relevance_items or compute_region_match"`, `backend\venv\Scripts\python.exe -m py_compile backend\routers\programs.py backend\tests\test_programs_router.py`, `npm --prefix frontend test -- "app/(landing)/compare/compare-relevance-section.test.ts"`, `npm --prefix frontend run lint -- --file "app/(landing)/compare/compare-relevance-section.tsx" --file "app/(landing)/compare/compare-relevance-section.test.ts"`, `npx --prefix frontend tsc -p frontend\tsconfig.codex-check.json --noEmit --pretty false`
+
 - 2026-04-27: `frontend/app/dashboard/page.tsx`, `frontend/app/dashboard/_components/program-preview-modal.tsx`, `frontend/app/dashboard/_components/program-preview-modal.test.tsx`, `frontend/app/(landing)/compare/compare-relevance-section.tsx`, `frontend/app/(landing)/compare/programs-compare-client.tsx`, `frontend/vitest.config.ts`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-27-dashboard-front-ui-merge-result.md`
   - `origin/dashboard`의 프론트/UI 변경 중 화면 TSX 변경만 선별 반영하고, 문서 충돌 파일과 UI가 아닌 `frontend/lib/supabase/server.ts` 변경은 제외해 backend/DB/develop runtime 계약을 유지함
   - `/dashboard`의 캘린더 shell, 왼쪽 패널, 추천/찜 카드 strip을 밝은 블루 gradient와 translucent panel 스타일로 맞추고, 추천/찜 프로그램 카드에서 상세 미리보기 모달을 열 수 있게 함
@@ -3444,3 +3516,11 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - 자기소개 카드의 line clamp를 제거하고 카드 내부 스크롤로 긴 본문을 끝까지 볼 수 있게 조정했으며, 자기소개 수정 모달도 넓은 textarea 전용 모달로 분리함
   - 프로필 성과 strip에 `전체` 탭을 추가해 기본 최신순 목록으로 쓰고, 개별 카테고리 첫 행이 5장 미만이면 오른쪽에 `성과 추가 하기` 플러스 카드를 채우도록 조정함
   - production build 검증 중 기존 landing-c JSX apostrophe lint 오류가 빌드를 막아 표시 결과를 바꾸지 않는 escape만 최소 수정함
+- 2026-04-28: `frontend/components/ui/isoser-ui.ts`, `frontend/components/landing/LandingHeader.tsx`, `frontend/app/(landing)/landing-c/*`, `frontend/app/(landing)/programs/*`, `frontend/app/(landing)/programs/[id]/*`, `frontend/app/(landing)/compare/*`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-public-ui-tone-refresh-result.md`
+  - 프로필 페이지의 `#f3f6fb` 회색 배경, 은은한 neutral/warm gradient, 프로필 완성도 CTA 계열 blue gradient button, `#e0621a` 오렌지 accent 톤을 공개 랜딩, 프로그램 탐색, 프로그램 상세, 비교 페이지에 맞춤
+  - 이후 대시보드/프로필/이력서로 확장할 수 있도록 `iso`, `isoserThemeVars`, `cx` 공통 class helper를 추가함
+  - 공개 헤더 로그인 버튼, 프로그램 탐색 필터 active/focus/current page, 상세 섹션 아이콘/탭/보조 강조, 비교 승자 강조/추천 CTA/선택 모달 CTA에 오렌지 accent를 섞고 주요 검색/로그인/일반 CTA는 blue gradient로 유지함
+  - 마감 임박, 위험, 커리어 핏 단계 같은 상태 색상은 의미 구분 용도로 유지하고, 기능/API/DB 계약은 변경하지 않음
+- 2026-04-28: `frontend/app/(landing)/landing-c/_hero.tsx`, `frontend/app/(landing)/landing-c/_support-sections.tsx`, `frontend/app/(landing)/programs/[id]/program-detail-client.tsx`, `docs/current-state.md`
+  - 랜딩 hero 제목의 오렌지 gradient를 제거해 solid navy 강조로 바꾸고, 상세 페이지 hero gradient/대표 박스에서 오렌지 종착색을 제거함
+  - 랜딩 최하단 CTA band는 더 어두운 navy 배경과 낮은 blue glow로 조정해 신뢰감 있는 톤으로 정리함

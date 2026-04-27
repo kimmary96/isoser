@@ -4,6 +4,63 @@ import type { ProgramDetail } from "@/lib/types";
 
 type JsonRecord = Record<string, unknown>;
 
+const PROGRAM_DETAIL_FALLBACK_SELECT = [
+  "id",
+  "title",
+  "provider",
+  "provider_name",
+  "organizer_name",
+  "sponsor_name",
+  "summary",
+  "summary_text",
+  "description",
+  "category",
+  "category_detail",
+  "region",
+  "region_detail",
+  "location",
+  "location_text",
+  "source",
+  "source_url",
+  "link",
+  "deadline",
+  "close_date",
+  "reg_start_date",
+  "application_start_date",
+  "application_end_date",
+  "start_date",
+  "end_date",
+  "program_start_date",
+  "program_end_date",
+  "teaching_method",
+  "cost",
+  "cost_type",
+  "participation_time",
+  "fee_amount",
+  "support_amount",
+  "subsidy_amount",
+  "support_type",
+  "business_type",
+  "target",
+  "target_summary",
+  "target_detail",
+  "eligibility_labels",
+  "tags",
+  "skills",
+  "is_active",
+  "is_ad",
+  "selection_process_label",
+  "contact_phone",
+  "contact_email",
+  "capacity_total",
+  "capacity_current",
+  "rating_value",
+  "curriculum_items",
+  "certifications",
+  "compare_meta",
+  "service_meta",
+].join(",");
+
 function cleanText(value: unknown): string | null {
   const text = String(value ?? "").trim();
   return text || null;
@@ -342,7 +399,7 @@ export async function loadProgramDetailFallback(programId: string): Promise<Prog
   const supabase = await createProgramDetailClient();
   const { data: programRow, error } = await supabase
     .from("programs")
-    .select("*")
+    .select(PROGRAM_DETAIL_FALLBACK_SELECT)
     .eq("id", programId)
     .maybeSingle();
 

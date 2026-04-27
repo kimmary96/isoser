@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import AdSlot from "@/components/AdSlot";
+import { cx, iso } from "@/components/ui/isoser-ui";
 import { trackProgramDetailView } from "@/lib/api/app";
 import type { ProgramDetail } from "@/lib/types";
 
@@ -128,9 +129,9 @@ const sectionIconById: Record<string, string> = {
 
 function SectionCard({ section }: { section: DetailSection }) {
   return (
-    <section id={section.id} className="scroll-mt-36 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+    <section id={section.id} className={cx("scroll-mt-36 overflow-hidden rounded-3xl", iso.softPanel)}>
       <div className="flex items-center gap-4 border-b border-slate-100 px-6 py-5 sm:px-7">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-slate-50 text-sm font-black text-teal-700">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-orange-50 text-sm font-black text-orange-700">
           {sectionIconById[section.id] || "•"}
         </span>
         <div>
@@ -172,7 +173,7 @@ function FactGrid({ facts }: { facts: Array<[string, string]> }) {
   return (
     <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {facts.map(([label, value]) => (
-        <div key={label} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
+        <div key={label} className="rounded-2xl border border-slate-200 bg-white/80 px-4 py-4">
           <dt className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">{label}</dt>
           <dd className="mt-2 text-sm font-semibold leading-6 text-slate-900">{value}</dd>
         </div>
@@ -391,7 +392,7 @@ export default function ProgramDetailClient({
               </ul>
             ) : null}
             {externalLink ? (
-              <a href={externalLink} target="_blank" rel="noreferrer" className="inline-flex rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">
+              <a href={externalLink} target="_blank" rel="noreferrer" className={cx("inline-flex rounded-full px-5 py-3 text-sm font-semibold", iso.primaryButton)}>
                 신청 페이지로 이동
               </a>
             ) : null}
@@ -423,7 +424,7 @@ export default function ProgramDetailClient({
         title: "추가 안내",
         body: (
           <div className="space-y-3 text-sm leading-7 text-slate-700">
-            {program.ai_matching_summary ? <p className="rounded-2xl bg-slate-950 px-5 py-4 text-white">{program.ai_matching_summary}</p> : null}
+            {program.ai_matching_summary ? <p className={cx("rounded-2xl px-5 py-4", iso.darkBand)}>{program.ai_matching_summary}</p> : null}
             {program.event_banner ? <p className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4">{program.event_banner}</p> : null}
           </div>
         ),
@@ -587,9 +588,9 @@ export default function ProgramDetailClient({
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-950">
-      <section className="border-b border-slate-200 bg-white">
-        <div className="border-b border-slate-200 bg-white">
+    <main className={iso.page}>
+      <section className={cx("border-b border-white/70", iso.glassPanel)}>
+        <div className="border-b border-white/70 bg-white/65">
           <div className="mx-auto flex h-11 max-w-7xl items-center gap-2 px-6 text-xs text-slate-400">
             <Link href="/" className="font-medium text-slate-500 transition hover:text-slate-950">
               이소서
@@ -603,13 +604,13 @@ export default function ProgramDetailClient({
           </div>
         </div>
         <div className="relative overflow-hidden">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_5%_0%,rgba(79,70,229,0.08),transparent_36%),radial-gradient(ellipse_at_95%_20%,rgba(20,184,166,0.08),transparent_32%)]" />
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,#f8fafc_0%,#eef3f8_58%,#e7eef8_100%)]" />
           <div className="pointer-events-none absolute inset-0 opacity-[0.22] [background-image:linear-gradient(#d8e3f2_0.5px,transparent_0.5px),linear-gradient(90deg,#d8e3f2_0.5px,transparent_0.5px)] [background-size:40px_40px]" />
           <Link href="/programs" className="relative z-10 mx-auto block max-w-7xl px-6 py-4 text-sm font-semibold text-slate-500 transition hover:text-slate-950">
             프로그램 목록으로
           </Link>
           <div className="relative z-10 mx-auto grid max-w-7xl gap-8 px-6 pb-0 pt-8 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-start">
-          <div className="flex aspect-[4/3] items-center justify-center rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-950 via-indigo-900 to-teal-700 text-5xl font-black text-white shadow-xl">
+          <div className="flex aspect-[4/3] items-center justify-center rounded-3xl border border-white/70 bg-gradient-to-br from-[#071a36] via-[#094cb2] to-[#1d4ed8] text-5xl font-black text-white shadow-xl">
             {getInitials(program)}
           </div>
           <div className="min-w-0">
@@ -625,13 +626,13 @@ export default function ProgramDetailClient({
             </h1>
             {program.provider || program.organizer ? (
               <p className="mt-3 text-sm leading-6 text-slate-600">
-                {program.provider ? <strong className="font-semibold text-teal-700">{program.provider}</strong> : null}
+                {program.provider ? <strong className="font-semibold text-orange-700">{program.provider}</strong> : null}
                 {program.provider && program.organizer ? " · " : null}
                 {program.organizer}
               </p>
             ) : null}
             {heroFacts.length ? (
-              <dl className="mt-8 grid overflow-hidden rounded-t-3xl border border-b-0 border-slate-200 bg-slate-50 sm:grid-cols-2 lg:grid-cols-5">
+              <dl className="mt-8 grid overflow-hidden rounded-t-3xl border border-b-0 border-white/70 bg-white/80 sm:grid-cols-2 lg:grid-cols-5">
                 {heroFacts.map(([label, value]) => (
                   <div key={label} className="border-b border-r border-slate-200 px-5 py-4 last:border-r-0 sm:border-b-0">
                     <dt className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{label}</dt>
@@ -646,7 +647,7 @@ export default function ProgramDetailClient({
       </section>
 
       {topTabs.length ? (
-        <nav className="sticky top-[100px] z-20 border-b border-slate-200 bg-white/95 backdrop-blur">
+        <nav className="sticky top-[100px] z-20 border-b border-white/70 bg-white/92 backdrop-blur">
           <div className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-6">
             {topTabs.map((section) => (
               <button
@@ -654,7 +655,7 @@ export default function ProgramDetailClient({
                 type="button"
                 onClick={() => scrollToSection(section.id)}
                 className={`h-12 shrink-0 border-b-2 px-4 text-sm font-semibold transition ${
-                  activeSectionId === section.id ? "border-indigo-700 text-indigo-700" : "border-transparent text-slate-500 hover:text-slate-950"
+                  activeSectionId === section.id ? "border-orange-600 text-orange-700" : "border-transparent text-slate-500 hover:text-slate-950"
                 }`}
               >
                 {section.label}
@@ -671,14 +672,14 @@ export default function ProgramDetailClient({
           ))}
           <AdSlot
             slotId="program-detail-bottom-banner"
-            className="overflow-hidden rounded-3xl border border-slate-200 bg-white px-3 py-3"
+            className="overflow-hidden rounded-3xl border border-white/70 bg-white/80 px-3 py-3"
           />
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-40">
-          <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-            <div className="relative overflow-hidden bg-indigo-950 px-6 py-5 text-white">
-              <div className="pointer-events-none absolute -right-12 -top-14 h-40 w-40 rounded-full bg-teal-400/20 blur-2xl" />
+          <section className={cx("overflow-hidden rounded-3xl", iso.softPanel)}>
+            <div className={cx("relative overflow-hidden px-6 py-5", iso.darkBand)}>
+              <div className="pointer-events-none absolute -right-12 -top-14 h-40 w-40 rounded-full bg-orange-400/20 blur-2xl" />
               <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${deadlineState.active ? "bg-emerald-400/15 text-emerald-200" : "bg-white/10 text-slate-200"}`}>
                 {deadlineState.active ? "모집 중" : deadlineState.label}
               </span>
@@ -698,7 +699,7 @@ export default function ProgramDetailClient({
                 </dl>
               ) : null}
               {externalLink ? (
-                <a href={externalLink} target="_blank" rel="noreferrer" className="mt-4 inline-flex w-full justify-center rounded-full bg-indigo-950 px-5 py-3 text-sm font-bold text-white transition hover:bg-indigo-900">
+                <a href={externalLink} target="_blank" rel="noreferrer" className={cx("mt-4 inline-flex w-full justify-center rounded-full px-5 py-3 text-sm font-bold", iso.primaryButton)}>
                   신청 페이지 바로가기
                 </a>
               ) : null}

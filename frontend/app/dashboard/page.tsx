@@ -14,6 +14,7 @@ import {
 } from "@/lib/api/app";
 import {
   formatProgramMonthDay,
+  formatProgramTrainingPeriod,
   getProgramId,
   toProgramDateKey,
 } from "@/lib/program-display";
@@ -217,7 +218,8 @@ export default function DashboardPage() {
     appliedCalendarPrograms,
     selectedDate,
     setSelectedDate,
-    handleApplyToCalendar,
+    handleToggleRecommendedProgram,
+    handleRemoveBookmark,
     appliedProgramIds,
   } = useDashboardRecommendations();
 
@@ -347,33 +349,16 @@ export default function DashboardPage() {
   const effectiveSelectedDate = selectedDate ?? todayStr;
 
   const events = useMemo<CalendarEvent[]>(() => {
-    const bookmarkedIds = new Set(
-      bookmarkedPrograms
-        .map((item) => String(item.program.id ?? ""))
-        .filter(Boolean)
-    );
     const byId = new Map<string, CalendarEvent>();
 
-    programs.forEach((item, idx) => {
-      const ev = toCalendarEvent(item, idx, bookmarkedIds.has(String(item.program.id ?? "")));
-      if (!ev) return;
-      byId.set(ev.id, ev);
-    });
-
-    bookmarkedPrograms.forEach((item, idx) => {
-      const pid = String(item.program.id ?? "");
-      if (pid && byId.has(pid)) {
-        const existing = byId.get(pid)!;
-        byId.set(pid, { ...existing, isBookmarked: true });
-        return;
-      }
-      const ev = toCalendarEvent(item, idx, true);
+    appliedCalendarPrograms.forEach((program, idx) => {
+      const ev = toCalendarEvent({ program }, idx, true);
       if (!ev) return;
       byId.set(ev.id, ev);
     });
 
     return Array.from(byId.values());
-  }, [programs, bookmarkedPrograms]);
+  }, [appliedCalendarPrograms]);
 
   const eventsByDate = useMemo(() => groupEventsByDate(events), [events]);
   const eventDates = useMemo(() => new Set(Object.keys(eventsByDate)), [eventsByDate]);
@@ -413,8 +398,9 @@ export default function DashboardPage() {
   const handleSubscribe = (program: ProgramCardSummary) => {
     const pid = String(program.id ?? "");
     if (!pid) return;
-    if (appliedProgramIds.has(pid)) return;
-    handleApplyToCalendar(program);
+    const item = recCardItems.find((cardItem) => String(cardItem.program.id ?? "") === pid);
+    if (!item) return;
+    handleToggleRecommendedProgram(item);
   };
 
   const handleSelectDate = (dateStr: string) => {
@@ -479,7 +465,7 @@ export default function DashboardPage() {
               오늘 마감 일정
             </div>
             {todayEvents.length === 0 ? (
-              <div className="py-2 text-[15px] text-[#bbb]">오늘 마감 일정이 없습니다</div>
+              <div className="py-2 text-[12px] text-[#bbb]">오늘 마감 일정이 없습니다</div>
             ) : (
               todayEvents.map((e) => (
                 <div key={e.id} className="flex items-start gap-2 py-1.5">
@@ -488,10 +474,10 @@ export default function DashboardPage() {
                     style={{ background: AGENDA_DOT_COLOR[e.color] }}
                   />
                   <div className="min-w-0">
-                    <div className="truncate text-[15px] font-medium leading-[1.4] text-[#222]">
+                    <div className="truncate text-[12px] font-medium leading-[1.4] text-[#222]">
                       {e.title}
                     </div>
-                    <div className="mt-[1px] text-[15px] text-[#999]">
+                    <div className="mt-[1px] text-[12px] text-[#999]">
                       {e.org ? `${e.org} · ` : ""}마감 {formatProgramMonthDay(e.deadline) ?? "-"}
                     </div>
                   </div>
@@ -507,7 +493,7 @@ export default function DashboardPage() {
                 선택 날짜 일정
               </div>
               {selectedEvents.length === 0 ? (
-                <div className="py-2 text-[15px] text-[#bbb]">해당 날짜 일정 없음</div>
+                <div className="py-2 text-[12px] text-[#bbb]">해당 날짜 일정 없음</div>
               ) : (
                 selectedEvents.slice(0, 3).map((e) => (
                   <div key={e.id} className="flex items-start gap-2 py-1.5">
@@ -516,10 +502,10 @@ export default function DashboardPage() {
                       style={{ background: AGENDA_DOT_COLOR[e.color] }}
                     />
                     <div className="min-w-0">
-                      <div className="truncate text-[15px] font-medium leading-[1.4] text-[#222]">
+                      <div className="truncate text-[12px] font-medium leading-[1.4] text-[#222]">
                         {e.title}
                       </div>
-                      <div className="mt-[1px] text-[15px] text-[#999]">
+                      <div className="mt-[1px] text-[12px] text-[#999]">
                         {e.org ? `${e.org} · ` : ""}마감 {formatProgramMonthDay(e.deadline) ?? "-"}
                       </div>
                     </div>
@@ -621,7 +607,7 @@ export default function DashboardPage() {
                       key={v}
                       type="button"
                       onClick={() => setCalView(v)}
-                      className={`border-r border-[#dde0e8] px-2.5 py-1 text-[15px] font-medium transition-colors last:border-r-0 ${
+                      className={`border-r border-[#dde0e8] px-2.5 py-1 text-[12px] font-medium transition-colors last:border-r-0 ${
                         calView === v
                           ? "bg-[#1d4ed8] text-white"
                           : "bg-transparent text-[#6b7280]"
@@ -649,9 +635,9 @@ export default function DashboardPage() {
                             background: on ? f.color : "transparent",
                           }}
                         >
-                          {on ? <span className="text-[15px] leading-none text-white">✓</span> : null}
+                          {on ? <span className="text-[12px] leading-none text-white">✓</span> : null}
                         </span>
-                        <span className="whitespace-nowrap text-[15px] font-medium">
+                        <span className="whitespace-nowrap text-[12px] font-medium">
                           {f.label}
                         </span>
                       </button>
@@ -669,7 +655,7 @@ export default function DashboardPage() {
                 >
                   ‹
                 </button>
-                <span className="min-w-[90px] whitespace-nowrap text-center text-[15px] font-extrabold text-[#16162a]">
+                <span className="min-w-[90px] whitespace-nowrap text-center text-[17px] font-extrabold text-[#16162a]">
                   {year}년 {MONTHS_KR[month]}
                 </span>
                 <button
@@ -742,10 +728,10 @@ export default function DashboardPage() {
                       onClick={() => handleSelectDate(cell.dateStr)}
                       className={`relative flex flex-col overflow-hidden px-1.5 py-1 text-left transition-colors ${
                         !cell.cur
-                          ? "bg-[#f8fbff]"
+                          ? "bg-[#e5ebf4]"
                           : isSelected && !isToday
                             ? "bg-[#eaf2ff]"
-                            : "bg-white/92 hover:bg-[#f8fbff]"
+                            : "bg-white hover:bg-[#f8fbff]"
                       } ${isToday ? "z-[1] outline outline-2 -outline-offset-2 outline-[#2563eb]" : ""}`}
                     >
                       <div className={dateTextClass}>{cell.day}</div>
@@ -798,10 +784,13 @@ export default function DashboardPage() {
           <div className="max-h-[35vh] flex-shrink-0 overflow-y-auto border-t border-white/70 bg-white/74 px-6 pb-4 pt-3.5 backdrop-blur-sm">
             {/* 커리어 핏 과정 */}
             <div className="mb-3 flex items-center justify-between">
-              <div className="flex flex-col gap-0.5">
+              <div className="flex min-w-0 items-baseline gap-2">
                 <div className="text-[15px] font-bold leading-[1.4] text-[#16162a]">
                   {DASHBOARD_COPY.programs.sectionTitle}
                 </div>
+                <span className="truncate text-[12px] font-medium text-[#999]">
+                  {DASHBOARD_COPY.programs.applyGuide}
+                </span>
               </div>
               <Link href="/programs" className="text-[15px] text-[#4361ee] hover:underline">
                 {DASHBOARD_COPY.programs.manageLink}
@@ -831,10 +820,13 @@ export default function DashboardPage() {
 
             {/* 찜한 과정 */}
             <div className="mb-3 flex items-center justify-between">
-              <div className="flex flex-col gap-0.5">
+              <div className="flex min-w-0 items-baseline gap-2">
                 <div className="text-[15px] font-bold leading-[1.4] text-[#16162a]">
                   {DASHBOARD_COPY.bookmarks.sectionTitle}
                 </div>
+                <span className="truncate text-[12px] font-medium text-[#999]">
+                  {DASHBOARD_COPY.bookmarks.viewGuide}
+                </span>
               </div>
               <Link href="/compare" className="text-[15px] text-[#4361ee] hover:underline">
                 {DASHBOARD_COPY.bookmarks.viewAllLink}
@@ -862,7 +854,7 @@ export default function DashboardPage() {
                       index={i}
                       isWhite
                       isSubscribed
-                      onSubscribe={() => handleSubscribe(item.program)}
+                      onSubscribe={() => handleRemoveBookmark(item.program)}
                       onOpenDetail={() => openProgramPreview(item)}
                     />
                   ))
@@ -870,11 +862,6 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {appliedCalendarPrograms.length > 0 ? (
-              <p className="mt-3 text-[15px] text-[#999]">
-                {DASHBOARD_COPY.programs.appliedNotice(appliedCalendarPrograms.length)}
-              </p>
-            ) : null}
           </div>
         </div>
       </div>
@@ -1008,39 +995,51 @@ function RecCard({
   const bg = isWhite ? "" : CARD_BG_CLASS[CARD_BG_CYCLE[index % CARD_BG_CYCLE.length]];
   const categoryLabel = program.category ?? DASHBOARD_COPY.programs.fallbackCategory;
   const canOpenDetail = Boolean(getProgramId(program));
+  const trainingPeriod = formatProgramTrainingPeriod(program.start_date, program.end_date);
 
   return (
-    <div
+    <article
+      role={canOpenDetail ? "button" : undefined}
+      tabIndex={canOpenDetail ? 0 : undefined}
+      onClick={canOpenDetail ? onOpenDetail : undefined}
+      onKeyDown={(event) => {
+        if (!canOpenDetail) return;
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onOpenDetail();
+        }
+      }}
       className={`relative flex h-[140px] min-w-0 w-full flex-col rounded-[18px] border p-[14px_15px_13px] shadow-[0_18px_35px_rgba(15,23,42,0.08)] transition-all hover:-translate-y-0.5 hover:shadow-[0_24px_50px_rgba(15,23,42,0.12)] ${
+        canOpenDetail ? "cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#93c5fd]" : ""
+      } ${
         isWhite
           ? "border-white/75 bg-white/88 backdrop-blur-sm hover:border-[#93c5fd]"
           : `border-white/70 ${bg}`
       }`}
     >
-      <ProgramDeadlineBadge
-        program={program}
-        className="absolute right-3 top-3 px-2 py-0.5 text-[15px]"
-      />
-      <div className="mb-1.5 max-w-[calc(100%-72px)] overflow-hidden text-ellipsis whitespace-nowrap text-[15px] text-[#777]">
-        {categoryLabel}
+      <div className="mb-2 flex min-w-0 items-start justify-between gap-2">
+        <div className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[12px] text-[#777]">
+          {categoryLabel}
+        </div>
+        <ProgramDeadlineBadge
+          program={program}
+          className="shrink-0 px-2 py-0.5 text-[12px]"
+        />
       </div>
-      <div className="mb-2.5 line-clamp-2 pr-20 pb-0.5 text-[15px] font-bold leading-[1.45] text-[#16162a]">
+      <div className="mb-2.5 line-clamp-3 pb-0.5 text-[12px] font-bold leading-[1.45] text-[#16162a]">
         {program.title ?? "제목 없음"}
       </div>
-      <div className="mt-auto flex items-center justify-end gap-2">
-        {canOpenDetail ? (
-          <button
-            type="button"
-            onClick={onOpenDetail}
-            className="flex items-center gap-1 whitespace-nowrap rounded-full border-[1.5px] border-[#d8e6ff] bg-white/90 px-2.5 py-1 text-[15px] font-semibold text-[#4a5568] transition-all hover:border-[#4361ee] hover:text-[#3451d1]"
-          >
-            미리보기
-          </button>
-        ) : null}
+      <div className="mt-auto flex min-w-0 items-center justify-between gap-2">
+        <div className="min-w-0 truncate text-[12px] font-medium text-[#64748b]">
+          훈련 기간 {trainingPeriod}
+        </div>
         <button
           type="button"
-          onClick={onSubscribe}
-          className="flex items-center gap-1 whitespace-nowrap rounded-full border-[1.5px] px-2.5 py-1 text-[15px] font-semibold transition-all"
+          onClick={(event) => {
+            event.stopPropagation();
+            onSubscribe();
+          }}
+          className="flex items-center gap-1 whitespace-nowrap rounded-full border-[1.5px] px-2.5 py-1 text-[12px] font-semibold transition-all"
           style={
             isSubscribed
               ? { borderColor: "#4361ee", color: "#4361ee", background: "#f0f4ff" }
@@ -1050,6 +1049,6 @@ function RecCard({
           {isSubscribed ? DASHBOARD_COPY.programs.appliedButton : DASHBOARD_COPY.programs.applyButton}
         </button>
       </div>
-    </div>
+    </article>
   );
 }

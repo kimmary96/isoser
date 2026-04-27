@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
 
+import { cx, iso, isoserThemeVars } from "@/components/ui/isoser-ui";
 import { getDashboardMe } from "@/lib/api/app";
 import { DEFAULT_PUBLIC_LANDING, DASHBOARD_RECOMMEND_CALENDAR, getLoginHref } from "@/lib/routes";
 
@@ -26,14 +27,15 @@ const landingHeaderLinks: HeaderLink[] = [
 ];
 
 const headerVars = {
-  "--ink": "#0A1325",
-  "--sub": "#5B6E8A",
-  "--sky": "#8FC2FF",
-  "--blue": "#2B6FF2",
-  "--fire": "#F97316",
-  "--fire-lo": "#EA580C",
-  "--surface": "#F4F7FB",
-  "--border": "#D8E3F2",
+  ...isoserThemeVars,
+  "--ink": "var(--iso-ink)",
+  "--sub": "var(--iso-sub)",
+  "--sky": "#60A5FA",
+  "--blue": "var(--iso-primary)",
+  "--fire": "var(--iso-accent)",
+  "--fire-lo": "var(--iso-accent-hover)",
+  "--surface": "var(--iso-surface-strong)",
+  "--border": "var(--iso-border)",
 } as CSSProperties;
 
 function getHeaderInitial(name: string | null | undefined) {
@@ -117,7 +119,10 @@ function AuthAction({ user, authChecked }: { user: HeaderUser; authChecked: bool
   return (
     <Link
       href={getLoginHref(DASHBOARD_RECOMMEND_CALENDAR)}
-      className="rounded-full bg-[var(--fire)] px-3 py-2 text-xs font-bold text-white shadow-[0_12px_32px_rgba(249,115,22,0.18)] transition hover:bg-[var(--fire-lo)] sm:px-4 sm:text-sm"
+      className={cx(
+        "rounded-full px-3 py-2 text-xs font-bold sm:px-4 sm:text-sm",
+        iso.accentButton
+      )}
     >
       로그인
     </Link>

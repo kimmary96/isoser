@@ -167,7 +167,7 @@ export const compareSections: CompareSection[] = [
   },
   {
     label: "대상·모집",
-    className: "bg-violet-50 text-violet-700",
+    className: "bg-orange-50 text-orange-700",
     rows: [
       {
         label: "지원 대상",

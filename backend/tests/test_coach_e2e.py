@@ -106,6 +106,16 @@ def _mock_gemini_failure(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(coach_graph, "_get_llm", _raise)
 
 
+def _mock_gemini_quota_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+    def _raise():  # noqa: ANN202
+        raise RuntimeError(
+            "429 You exceeded your current quota. "
+            "https://ai.google.dev/gemini-api/docs/rate-limits retry_delay seconds: 51"
+        )
+
+    monkeypatch.setattr(coach_graph, "_get_llm", _raise)
+
+
 def _mock_intro_success_llm(monkeypatch: pytest.MonkeyPatch) -> None:
     payload = {
         "intro_candidates": [
@@ -219,6 +229,23 @@ def test_coach_fallback_on_gemini_failure(client, monkeypatch: pytest.MonkeyPatc
     assert "structure_diagnosis" in payload
     assert payload["structure_diagnosis"]["missing_elements"]
     assert payload["rewrite_suggestions"]
+    assert "gemini unavailable" not in payload["feedback"]
+
+
+def test_coach_fallback_sanitizes_quota_error(client, monkeypatch: pytest.MonkeyPatch) -> None:
+    _mock_gemini_quota_failure(monkeypatch)
+
+    response = client.post(
+        "/coach/feedback",
+        json=_valid_payload(activity_description="회원가입 개선 프로젝트에서 이탈 문제를 줄였습니다."),
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert "사용량 제한" in payload["feedback"]
+    assert "429" not in payload["feedback"]
+    assert "quota" not in payload["feedback"].lower()
+    assert "https://" not in payload["feedback"]
 
 
 def test_tech_decision_coaching(client, monkeypatch: pytest.MonkeyPatch) -> None:

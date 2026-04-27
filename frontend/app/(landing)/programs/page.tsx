@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import AdSlot from "@/components/AdSlot";
 import { LandingHeader } from "@/components/landing/LandingHeader";
+import { cx, iso } from "@/components/ui/isoser-ui";
 import { getProgramFilterOptions, listPrograms, listProgramsPage } from "@/lib/api/backend";
 import { unwrapProgramListRows } from "@/lib/program-display";
 import { countActiveProgramFilterGroups, resolvePublicProgramListScope } from "@/lib/program-list-scope";
@@ -283,7 +284,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
   return (
     <>
       <LandingHeader />
-      <main className="min-h-screen bg-slate-50 text-slate-950">
+      <main className={iso.page}>
         <div className="mx-auto flex w-full max-w-[1680px] flex-col gap-8 px-4 py-10 sm:px-6 lg:px-8">
           <ProgramsFilterBar
             q={q}
@@ -308,7 +309,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
 
           <ProgramBookmarkStateProvider initialBookmarkedProgramIds={bookmarkedProgramIds}>
             {displayUrgentPrograms.length > 0 ? (
-              <section className="rounded-2xl border border-rose-200 bg-rose-50/70 p-5 shadow-sm">
+              <section className="rounded-[24px] border border-rose-200/80 bg-white/80 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.08)] backdrop-blur-sm">
                 <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
                   <div>
                     <p className="text-sm font-semibold uppercase tracking-[0.24em] text-rose-700">Closing Soon</p>
@@ -333,7 +334,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
             ) : null}
 
             <section className="min-w-0">
-              <div className="w-full rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className={cx("w-full rounded-3xl p-6", iso.softPanel)}>
                 <AdSlot
                   slotId="programs-results-top-banner"
                   className="mb-6 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3"
@@ -439,7 +440,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                             })}
                             className={`rounded-xl px-3 py-2 text-sm font-medium transition ${
                               pageNumber === safePage
-                                ? "bg-slate-950 text-white"
+                              ? "bg-[#e0621a] text-white"
                                 : "border border-slate-300 text-slate-700 hover:bg-slate-100"
                             }`}
                           >

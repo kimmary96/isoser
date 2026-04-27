@@ -242,6 +242,22 @@ export async function getDashboardBookmarks(): Promise<DashboardBookmarksRespons
   }
 }
 
+export async function deleteDashboardBookmark(programId: string): Promise<{ ok: true }> {
+  return requestAppJson<{ ok: true }>(
+    `/api/dashboard/bookmarks/${encodeURIComponent(programId)}`,
+    { method: "DELETE" },
+    "찜한 프로그램을 해제하지 못했습니다."
+  );
+}
+
+export async function createDashboardBookmark(programId: string): Promise<{ ok: true }> {
+  return requestAppJson<{ ok: true }>(
+    `/api/dashboard/bookmarks/${encodeURIComponent(programId)}`,
+    { method: "POST" },
+    "찜한 프로그램을 추가하지 못했습니다."
+  );
+}
+
 export async function updateDashboardProfileSection(
   patch: Partial<Profile>
 ): Promise<{ profile: Profile }> {
@@ -441,6 +457,18 @@ export async function requestActivityCoaching(payload: {
       body: JSON.stringify(payload),
     },
     "AI coach request failed."
+  );
+}
+
+export async function requestActivityCoachChat(prompt: string): Promise<{ summary: string }> {
+  return requestAppJson<{ summary: string }>(
+    "/api/summary",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt }),
+    },
+    "AI 코치 답변을 생성하지 못했습니다."
   );
 }
 

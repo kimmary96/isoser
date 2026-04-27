@@ -95,7 +95,7 @@ export function ProgramsTable({
                 </td>
                 <td className="px-4 py-4">
                   <p className="text-xs font-medium text-slate-500">{program.provider || program.source || "-"}</p>
-                  <Link href={href} className="mt-1 block text-base font-semibold leading-6 text-slate-950 hover:text-violet-700">
+                  <Link href={href} className="mt-1 block text-base font-semibold leading-6 text-slate-950 hover:text-orange-700">
                     {program.title}
                   </Link>
                 </td>
@@ -105,7 +105,7 @@ export function ProgramsTable({
                       <span
                         key={category}
                         className={`rounded-md px-2 py-1 text-xs font-medium ${
-                          index === 0 ? "bg-violet-50 text-violet-700" : "bg-slate-100 text-slate-600"
+                          index === 0 ? "bg-slate-100 text-slate-700" : "bg-slate-50 text-slate-600"
                         }`}
                       >
                         {category}
@@ -134,7 +134,7 @@ export function ProgramsTable({
                   {methodAndRegion.method || methodAndRegion.region ? (
                     <div className="space-y-1">
                       {methodAndRegion.method ? (
-                        <span className="inline-flex rounded-md bg-teal-50 px-2 py-1 text-xs font-semibold text-teal-700">
+                        <span className="inline-flex rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">
                           {methodAndRegion.method}
                         </span>
                       ) : null}
@@ -149,7 +149,7 @@ export function ProgramsTable({
                   {participation.label || participation.detail ? (
                     <div className="flex flex-wrap gap-1.5">
                       {participation.label ? (
-                        <span className="inline-flex rounded-full bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-700">
+                        <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
                           {participation.label}
                         </span>
                       ) : null}

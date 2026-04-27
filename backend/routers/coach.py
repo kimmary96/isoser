@@ -359,22 +359,34 @@ async def get_coach_feedback(request: CoachRequest):
 
     try:
         if should_persist_session and repo is not None and request.user_id:
-            if request.session_id:
-                saved_session = await repo.get_session(request.session_id, request.user_id)
+            try:
+                if request.session_id:
+                    saved_session = await repo.get_session(request.session_id, request.user_id)
 
-            if saved_session is None:
-                saved_session = await repo.create_session(
-                    session_id=request.session_id,
+                if saved_session is None:
+                    saved_session = await repo.create_session(
+                        session_id=request.session_id,
+                        user_id=request.user_id,
+                        job_title=request.job_title,
+                        section_type=request.section_type,
+                        activity_description=request.activity_description,
+                        selected_suggestion_index=request.selected_suggestion_index,
+                    )
+                else:
+                    restored_history = saved_session.restore_conversation() or restored_history
+
+                session_id = saved_session.id
+            except CoachSessionRepoError as exc:
+                log_event(
+                    logger,
+                    logging.WARNING,
+                    "coach_session_persistence_skipped",
                     user_id=request.user_id,
-                    job_title=request.job_title,
-                    section_type=request.section_type,
-                    activity_description=request.activity_description,
-                    selected_suggestion_index=request.selected_suggestion_index,
+                    session_id=request.session_id,
+                    error=str(exc),
                 )
-            else:
-                restored_history = saved_session.restore_conversation() or restored_history
-
-            session_id = saved_session.id
+                repo = None
+                session_id = request.session_id or ""
 
         if request.mode == "feedback" and request.user_id:
             recommended_programs = await _load_coach_recommended_programs(request.user_id)
@@ -391,23 +403,33 @@ async def get_coach_feedback(request: CoachRequest):
         )
 
         if should_persist_session and repo is not None and request.user_id:
-            await repo.update_session(
-                session_id=session_id,
-                user_id=request.user_id,
-                job_title=request.job_title,
-                section_type=request.section_type,
-                activity_description=request.activity_description,
-                iteration_count=int(result["iteration_count"]),
-                last_feedback=str(result["feedback"]),
-                last_suggestions=list(result["rewrite_suggestions"]),
-                selected_suggestion_index=request.selected_suggestion_index,
-                suggestion_type=_resolve_suggestion_type(
-                    result.get("rewrite_suggestions", []),
-                    request.selected_suggestion_index,
-                ),
-                last_structure_diagnosis=dict(result["structure_diagnosis"]),
-                missing_elements=list(result["missing_elements"]),
-            )
+            try:
+                await repo.update_session(
+                    session_id=session_id,
+                    user_id=request.user_id,
+                    job_title=request.job_title,
+                    section_type=request.section_type,
+                    activity_description=request.activity_description,
+                    iteration_count=int(result["iteration_count"]),
+                    last_feedback=str(result["feedback"]),
+                    last_suggestions=list(result["rewrite_suggestions"]),
+                    selected_suggestion_index=request.selected_suggestion_index,
+                    suggestion_type=_resolve_suggestion_type(
+                        result.get("rewrite_suggestions", []),
+                        request.selected_suggestion_index,
+                    ),
+                    last_structure_diagnosis=dict(result["structure_diagnosis"]),
+                    missing_elements=list(result["missing_elements"]),
+                )
+            except CoachSessionRepoError as exc:
+                log_event(
+                    logger,
+                    logging.WARNING,
+                    "coach_session_update_skipped",
+                    user_id=request.user_id,
+                    session_id=session_id,
+                    error=str(exc),
+                )
 
         if request.mode == "intro_generate":
             return CoachIntroGenerateApiResponse.model_validate(result)

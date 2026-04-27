@@ -130,6 +130,10 @@ export async function fetchBackendResponse(
 
       return response;
     } catch (error) {
+      if (options?.timeoutMs && error instanceof Error && error.name === "AbortError") {
+        throw new Error("Backend request timed out.");
+      }
+
       const message = error instanceof Error ? error.message : "backend request failed";
       if (shouldRetryLocalCandidate(baseUrl, null, message)) {
         lastError = error instanceof Error ? error : new Error(message);

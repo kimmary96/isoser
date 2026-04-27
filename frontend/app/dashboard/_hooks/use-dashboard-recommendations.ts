@@ -3,13 +3,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
+  createDashboardBookmark,
+  deleteDashboardBookmark,
   getCalendarSelections,
   getDashboardBookmarks,
   getDashboardMe,
   getRecommendedPrograms,
   saveCalendarSelections,
 } from "@/lib/api/app";
-import { isProgramCardOpen } from "@/lib/program-card-items";
+import { isProgramCardOpen, toBookmarkProgramCardItem } from "@/lib/program-card-items";
 import { toProgramDateKey } from "@/lib/program-display";
 import type { ProgramCardItem, ProgramCardSummary } from "@/lib/types";
 import {
@@ -78,7 +80,12 @@ function readBookmarkedProgramsCache(now = Date.now()): ProgramCardItem[] {
 }
 
 function writeBookmarkedProgramsCache(items: ProgramCardItem[]) {
-  if (typeof window === "undefined" || items.length === 0) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  if (items.length === 0) {
+    window.localStorage.removeItem(BOOKMARKED_PROGRAMS_CACHE_KEY);
     return;
   }
 
@@ -86,6 +93,19 @@ function writeBookmarkedProgramsCache(items: ProgramCardItem[]) {
     BOOKMARKED_PROGRAMS_CACHE_KEY,
     JSON.stringify({ savedAt: Date.now(), items })
   );
+}
+
+function writeAppliedCalendarPrograms(programs: ProgramCardSummary[]) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  if (programs.length === 0) {
+    window.localStorage.removeItem(APPLIED_CALENDAR_PROGRAMS_KEY);
+    return;
+  }
+
+  window.localStorage.setItem(APPLIED_CALENDAR_PROGRAMS_KEY, JSON.stringify(programs));
 }
 
 export function useDashboardRecommendations() {
@@ -120,26 +140,98 @@ export function useDashboardRecommendations() {
     [appliedCalendarPrograms]
   );
 
-  const handleApplyToCalendar = (program: ProgramCardSummary) => {
+  const persistCalendarPrograms = (next: ProgramCardSummary[], successMessage: string) => {
+    writeAppliedCalendarPrograms(next);
+
+    void saveCalendarSelections(next.map((item) => String(item.id ?? "")).filter(Boolean))
+      .then(() => setCalendarSaveStatus(successMessage))
+      .catch(() => setCalendarSaveStatus("서버 저장에 실패해 이 브라우저에만 유지됩니다."));
+  };
+
+  const handleToggleCalendarSelection = (program: ProgramCardSummary) => {
     const programId = String(program.id ?? "");
     if (!programId) return;
 
     setAppliedCalendarPrograms((current) => {
-      const next = [
-        program,
-        ...current.filter((item) => String(item.id ?? "") !== programId),
-      ].slice(0, 3);
+      const isSelected = current.some((item) => String(item.id ?? "") === programId);
+      const next = isSelected
+        ? current.filter((item) => String(item.id ?? "") !== programId)
+        : [
+            program,
+            ...current.filter((item) => String(item.id ?? "") !== programId),
+          ].slice(0, 3);
 
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem(APPLIED_CALENDAR_PROGRAMS_KEY, JSON.stringify(next));
-      }
-
-      void saveCalendarSelections(next.map((item) => String(item.id ?? "")).filter(Boolean))
-        .then(() => setCalendarSaveStatus("서버에 저장되었습니다."))
-        .catch(() => setCalendarSaveStatus("서버 저장에 실패해 이 브라우저에만 유지됩니다."));
+      persistCalendarPrograms(
+        next,
+        isSelected ? "캘린더 담기를 해제했습니다." : "서버에 저장되었습니다."
+      );
 
       return next;
     });
+  };
+
+  const handleRemoveBookmark = (program: ProgramCardSummary) => {
+    const programId = String(program.id ?? "");
+    if (!programId) return;
+
+    const previousBookmarks = bookmarkedPrograms;
+    const previousAppliedPrograms = appliedCalendarPrograms;
+    const nextBookmarks = previousBookmarks.filter((item) => String(item.program.id ?? "") !== programId);
+    setBookmarkedPrograms(nextBookmarks);
+    writeBookmarkedProgramsCache(nextBookmarks);
+
+    if (previousAppliedPrograms.some((item) => String(item.id ?? "") === programId)) {
+      const next = previousAppliedPrograms.filter((item) => String(item.id ?? "") !== programId);
+      setAppliedCalendarPrograms(next);
+      persistCalendarPrograms(next, "캘린더 담기를 해제했습니다.");
+    }
+
+    void deleteDashboardBookmark(programId)
+      .then(() => setBookmarksError(null))
+      .catch(() => {
+        setBookmarkedPrograms(previousBookmarks);
+        writeBookmarkedProgramsCache(previousBookmarks);
+        setAppliedCalendarPrograms(previousAppliedPrograms);
+        writeAppliedCalendarPrograms(previousAppliedPrograms);
+        setBookmarksError("찜 해제에 실패했습니다.");
+      });
+  };
+
+  const handleToggleRecommendedProgram = (item: ProgramCardItem) => {
+    const program = item.program;
+    const programId = String(program.id ?? "");
+    if (!programId) return;
+
+    const isSelected = appliedProgramIds.has(programId);
+    if (isSelected) {
+      handleRemoveBookmark(program);
+      return;
+    }
+
+    handleToggleCalendarSelection(program);
+
+    const previousBookmarks = bookmarkedPrograms;
+    if (!previousBookmarks.some((bookmark) => String(bookmark.program.id ?? "") === programId)) {
+      const nextBookmarks = [
+        toBookmarkProgramCardItem(program, new Date().toISOString()),
+        ...previousBookmarks,
+      ].slice(0, 30);
+      setBookmarkedPrograms(nextBookmarks);
+      writeBookmarkedProgramsCache(nextBookmarks);
+    }
+
+    void createDashboardBookmark(programId)
+      .then(() => setBookmarksError(null))
+      .catch(() => {
+        setBookmarkedPrograms(previousBookmarks);
+        writeBookmarkedProgramsCache(previousBookmarks);
+        setAppliedCalendarPrograms((current) => {
+          const next = current.filter((programItem) => String(programItem.id ?? "") !== programId);
+          writeAppliedCalendarPrograms(next);
+          return next;
+        });
+        setBookmarksError("찜 추가에 실패했습니다.");
+      });
   };
 
   const clearAppliedCalendarPrograms = () => {
@@ -337,7 +429,9 @@ export function useDashboardRecommendations() {
     filteredPrograms,
     calendarPrograms,
     appliedProgramIds,
-    handleApplyToCalendar,
+    handleToggleCalendarSelection,
+    handleToggleRecommendedProgram,
+    handleRemoveBookmark,
     clearAppliedCalendarPrograms,
     emptyMessage,
   };

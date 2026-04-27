@@ -34,13 +34,13 @@ const FIT_STAGE_COLORS = [
   "bg-emerald-500",
 ] as const;
 
-function getFitStage(score: number | null | undefined): number {
+export function getFitStage(score: number | null | undefined): number {
   if (typeof score !== "number" || Number.isNaN(score)) return 1;
   const normalized = Math.max(0, Math.min(1, score));
-  if (normalized >= 0.82) return 5;
-  if (normalized >= 0.64) return 4;
-  if (normalized >= 0.46) return 3;
-  if (normalized >= 0.28) return 2;
+  if (normalized >= 0.7) return 5;
+  if (normalized >= 0.55) return 4;
+  if (normalized >= 0.4) return 3;
+  if (normalized >= 0.2) return 2;
   return 1;
 }
 
@@ -76,20 +76,35 @@ function pushUniqueKeyword(target: string[], value: string | null | undefined) {
   target.push(normalized);
 }
 
+type MatchingKeywordGroups = {
+  direct: string[];
+  metadata: string[];
+};
+
+function getMatchingKeywordGroups(item: ProgramRelevanceItem, program: CompareProgram | null): MatchingKeywordGroups {
+  const direct: string[] = [];
+  const metadata: string[] = [];
+  item.matched_regions.forEach((region) => pushUniqueKeyword(direct, region));
+  item.matched_skills.forEach((skill) => pushUniqueKeyword(direct, skill));
+
+  normalizeTextList(program?.skills).slice(0, 4).forEach((keyword) => pushUniqueKeyword(metadata, keyword));
+  normalizeTextList(program?.detail?.tech_stack).slice(0, 4).forEach((keyword) => pushUniqueKeyword(metadata, keyword));
+  normalizeTextList(program?.display_categories).forEach((keyword) => pushUniqueKeyword(metadata, keyword));
+  normalizeTextList(program?.tags).forEach((keyword) => pushUniqueKeyword(metadata, keyword));
+  pushUniqueKeyword(metadata, program?.category_detail ?? program?.category ?? null);
+  pushUniqueKeyword(metadata, program?.support_type ?? null);
+  pushUniqueKeyword(metadata, program?.teaching_method ?? null);
+
+  const directKeySet = new Set(direct.map((keyword) => keyword.toLowerCase()));
+  return {
+    direct: direct.slice(0, 8),
+    metadata: metadata.filter((keyword) => !directKeySet.has(keyword.toLowerCase())).slice(0, 8),
+  };
+}
+
 function getMatchingKeywords(item: ProgramRelevanceItem, program: CompareProgram | null): string[] {
-  const keywords: string[] = [];
-  item.matched_regions.forEach((region) => pushUniqueKeyword(keywords, region));
-  item.matched_skills.forEach((skill) => pushUniqueKeyword(keywords, skill));
-
-  normalizeTextList(program?.skills).slice(0, 4).forEach((keyword) => pushUniqueKeyword(keywords, keyword));
-  normalizeTextList(program?.detail?.tech_stack).slice(0, 4).forEach((keyword) => pushUniqueKeyword(keywords, keyword));
-  normalizeTextList(program?.display_categories).forEach((keyword) => pushUniqueKeyword(keywords, keyword));
-  normalizeTextList(program?.tags).forEach((keyword) => pushUniqueKeyword(keywords, keyword));
-  pushUniqueKeyword(keywords, program?.category_detail ?? program?.category ?? null);
-  pushUniqueKeyword(keywords, program?.support_type ?? null);
-  pushUniqueKeyword(keywords, program?.teaching_method ?? null);
-
-  return keywords.slice(0, 8);
+  const groups = getMatchingKeywordGroups(item, program);
+  return [...groups.direct, ...groups.metadata].slice(0, 8);
 }
 
 function getCareerComment(item: ProgramRelevanceItem, program: CompareProgram | null): string {
@@ -138,20 +153,35 @@ function RelevancePercent({ score }: { score: number | null | undefined }) {
 }
 
 function KeywordChips({ item, program }: { item: ProgramRelevanceItem; program: CompareProgram | null }) {
-  const keywords = getMatchingKeywords(item, program);
-  if (keywords.length === 0) return <>{COMPARE_COPY.fit.noKeywords}</>;
+  const groups = getMatchingKeywordGroups(item, program);
+  if (groups.direct.length === 0 && groups.metadata.length === 0) return <>{COMPARE_COPY.fit.noKeywords}</>;
+
+  const renderGroup = (label: string, keywords: string[], tone: "direct" | "metadata") => {
+    if (keywords.length === 0) return null;
+    const chipClass =
+      tone === "direct"
+        ? "border-orange-200 bg-orange-50 text-orange-700"
+        : "border-slate-200 bg-slate-50 text-slate-600";
+    return (
+      <div className="flex flex-wrap content-start items-center gap-2">
+        <span className="shrink-0 text-[11px] font-semibold text-slate-500">{label}</span>
+        {keywords.map((keyword) => (
+          <span
+            key={`${item.program_id}-${label}-${keyword}`}
+            className={`inline-flex shrink-0 items-center rounded-md border px-2.5 py-1 text-xs font-medium ${chipClass}`}
+          >
+            {keyword}
+          </span>
+        ))}
+      </div>
+    );
+  };
 
   return (
-    <>
-      {keywords.map((keyword) => (
-        <span
-          key={`${item.program_id}-${keyword}`}
-          className="inline-flex shrink-0 items-center rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700"
-        >
-          {keyword}
-        </span>
-      ))}
-    </>
+    <div className="space-y-2">
+      {renderGroup("직접 근거", groups.direct, "direct")}
+      {renderGroup("과정 메타", groups.metadata, "metadata")}
+    </div>
   );
 }
 
@@ -168,7 +198,6 @@ const relevanceRows: RelevanceRow[] = [
   },
   {
     label: COMPARE_COPY.fit.rows.keywords,
-    extraClassName: "flex flex-wrap content-start items-start gap-2",
     render: (item, program) => <KeywordChips item={item} program={program} />,
   },
   {
@@ -187,7 +216,7 @@ export function CompareRelevanceSection({
 }: CompareRelevanceSectionProps) {
   return (
     <>
-      <CompareSectionHeader label={COMPARE_COPY.fit.title} className="bg-[#0A0F1E] text-white" note={COMPARE_COPY.fit.note} />
+      <CompareSectionHeader label={COMPARE_COPY.fit.title} className="bg-[#071a36] text-white" note={COMPARE_COPY.fit.note} />
 
       {relevanceRows.map(({ label, render, extraClassName }) => (
         <div key={label} className="row contents">

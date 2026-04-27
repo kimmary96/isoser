@@ -1,7 +1,7 @@
 "use client";
 
 import type { ChangeEvent } from "react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import {
@@ -9,6 +9,7 @@ import {
   deleteActivity,
   getActivityDetail,
   invalidateRecommendCache,
+  requestActivityCoachChat,
   requestActivityCoaching,
   updateActivity,
   uploadActivityImages,
@@ -18,27 +19,51 @@ import {
   generateActivityIntro,
   getSkillSuggestions,
 } from "@/lib/api/backend";
-import type { Activity, ActivityConvertRequest, CoachMessage } from "@/lib/types";
+import type { Activity, ActivityConvertRequest, CoachFeedbackResponse, CoachMessage } from "@/lib/types";
+import {
+  buildActivityCoachChatFallbackReply,
+  buildActivityCoachChatPrompt,
+  normalizeActivityCoachChatReply,
+} from "../_lib/activity-coach-chat";
+import { buildActivityCoachContext } from "../_lib/activity-coach-context";
+import { buildActivityEvidenceText } from "../_lib/activity-evidence";
+import { buildActivityIntroFallbackCandidates } from "../_lib/activity-intro-fallback";
+import type { ActivityCoachRewriteCandidate } from "../_lib/activity-coach-insight";
+import { buildActivityCoachInsight } from "../_lib/activity-coach-insight";
+import {
+  buildActivityStarImportDraft,
+  hasActivityStarImportSource,
+} from "../_lib/activity-star-import";
 
 const PENDING_STAR_CONVERSION_KEY = "isoser:pending-star-conversion";
 const PENDING_PORTFOLIO_CONVERSION_KEY = "isoser:pending-portfolio-conversion";
+
+function appendUniqueDraft(current: string, next: string): string {
+  const trimmedCurrent = current.trim();
+  const trimmedNext = next.trim();
+  if (!trimmedNext) return current;
+  if (!trimmedCurrent) return trimmedNext;
+  if (trimmedCurrent.includes(trimmedNext)) return current;
+  return `${trimmedCurrent}\n\n${trimmedNext}`;
+}
 
 export function useActivityDetail(activityId: string, isNewActivity: boolean, initialTab?: string | null) {
   const router = useRouter();
   const [activity, setActivity] = useState<Activity | null>(null);
   const [messages, setMessages] = useState<CoachMessage[]>([]);
+  const [lastCoachResponse, setLastCoachResponse] = useState<CoachFeedbackResponse | null>(null);
   const [input, setInput] = useState("");
   const [descriptionDraft, setDescriptionDraft] = useState("");
   const [jobTitle, setJobTitle] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [coachDiagnosisLoading, setCoachDiagnosisLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"basic" | "star">("basic");
   const [starSituation, setStarSituation] = useState("");
   const [starTask, setStarTask] = useState("");
   const [starAction, setStarAction] = useState("");
   const [starResult, setStarResult] = useState("");
   const [starSaving, setStarSaving] = useState(false);
-  const [summaryLoading, setSummaryLoading] = useState(false);
   const [organization, setOrganization] = useState("");
   const [teamSize, setTeamSize] = useState(0);
   const [teamComposition, setTeamComposition] = useState("");
@@ -81,6 +106,7 @@ export function useActivityDetail(activityId: string, isNewActivity: boolean, in
 
   useEffect(() => {
     const fetchActivity = async () => {
+      setLastCoachResponse(null);
       const now = new Date().toISOString();
       const blankActivity: Activity = {
         id: "new",
@@ -170,6 +196,69 @@ export function useActivityDetail(activityId: string, isNewActivity: boolean, in
   const periodValue = periodStart && periodEnd ? `${periodStart} ~ ${periodEnd}` : periodStart || "";
   const contributionItems = contributions.map((item) => item.trim()).filter(Boolean);
   const hasContributionContent = contributionItems.length > 0;
+  const hasCompleteStarDraft = [starSituation, starTask, starAction, starResult].every(
+    (value) => value.trim().length > 0
+  );
+  const starImportSource = useMemo(
+    () => ({
+      title: titleDraft,
+      type: typeDraft || activity?.type || "프로젝트",
+      organization,
+      period: periodValue,
+      teamSize,
+      teamComposition,
+      myRole,
+      skills: skillsDraft,
+      contributions: contributionItems,
+      description: descriptionDraft,
+    }),
+    [
+      activity?.type,
+      contributionItems,
+      descriptionDraft,
+      myRole,
+      organization,
+      periodValue,
+      skillsDraft,
+      teamComposition,
+      teamSize,
+      titleDraft,
+      typeDraft,
+    ]
+  );
+  const canImportBasicInfoToStar = useMemo(
+    () => hasActivityStarImportSource(starImportSource),
+    [starImportSource]
+  );
+  const coachInsight = useMemo(
+    () =>
+      buildActivityCoachInsight(lastCoachResponse, {
+        targetRole: jobTitle,
+        activityTitle: titleDraft,
+        activityType: typeDraft || activity?.type || "프로젝트",
+        myRole,
+        skills: skillsDraft,
+        contributions: contributionItems,
+        starSituation,
+        starTask,
+        starAction,
+        starResult,
+      }),
+    [
+      activity?.type,
+      contributionItems,
+      jobTitle,
+      lastCoachResponse,
+      myRole,
+      skillsDraft,
+      starAction,
+      starResult,
+      starSituation,
+      starTask,
+      titleDraft,
+      typeDraft,
+    ]
+  );
 
   const handleSendMessage = async () => {
     if (!activity || !input.trim()) return;
@@ -181,20 +270,54 @@ export function useActivityDetail(activityId: string, isNewActivity: boolean, in
     setMessages(updatedHistory);
     setInput("");
     try {
-      const result = await requestActivityCoaching({
-        message: trimmedInput,
-        session_id: sessionId,
-        activity_description: descriptionDraft.trim() || buildIntroSourceText() || trimmedInput,
-        job_title: jobTitle || "일반",
-        section_type: (typeDraft || activity.type) as Activity["type"],
-        history: messages,
-      });
-      setMessages(result.updated_history);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "코치 피드백 요청에 실패했습니다.");
-      setMessages([...updatedHistory, { role: "assistant", content: "오류가 발생했습니다. 다시 시도해주세요." }]);
+      const result = await requestActivityCoachChat(
+        buildActivityCoachChatPrompt({
+          question: trimmedInput,
+          targetRole: jobTitle,
+          activityTitle: titleDraft,
+          activityType: typeDraft || activity.type,
+          recentMessages: messages,
+        })
+      );
+      setMessages([
+        ...updatedHistory,
+        {
+          role: "assistant",
+          content: normalizeActivityCoachChatReply(result.summary),
+        },
+      ]);
+    } catch {
+      setMessages([
+        ...updatedHistory,
+        {
+          role: "assistant",
+          content: buildActivityCoachChatFallbackReply(trimmedInput, jobTitle),
+        },
+      ]);
     } finally {
       setSending(false);
+    }
+  };
+
+  const handleRunCoachDiagnosis = async () => {
+    if (!activity || !hasCompleteStarDraft) return;
+
+    setCoachDiagnosisLoading(true);
+    setError(null);
+    try {
+      const result = await requestActivityCoaching({
+        message: "STAR 내용을 기준으로 코칭 진단을 생성해주세요.",
+        session_id: sessionId,
+        activity_description: buildCoachSourceText("STAR 내용을 기준으로 코칭 진단을 생성해주세요."),
+        job_title: jobTitle.trim() || "일반",
+        section_type: (typeDraft || activity.type) as Activity["type"],
+        history: [],
+      });
+      setLastCoachResponse(result);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "코칭 진단 생성에 실패했습니다.");
+    } finally {
+      setCoachDiagnosisLoading(false);
     }
   };
 
@@ -264,16 +387,25 @@ export function useActivityDetail(activityId: string, isNewActivity: boolean, in
   const handleContributionAdd = () => { if (contributions.length < 6) setContributions((prev) => [...prev, ""]); };
   const handleContributionRemove = (index: number) => { if (contributions.length > 1) setContributions((prev) => prev.filter((_, i) => i !== index)); };
 
-  const buildIntroSourceText = () =>
-    [
-      titleDraft.trim() ? `활동명: ${titleDraft.trim()}` : "",
-      organization.trim() ? `조직: ${organization.trim()}` : "",
-      myRole.trim() ? `역할: ${myRole.trim()}` : "",
-      `활동 유형: ${(typeDraft || activity?.type || "프로젝트").trim()}`,
-      contributionItems.length > 0 ? `기여 내용:\n- ${contributionItems.join("\n- ")}` : "",
-    ]
-      .filter(Boolean)
-      .join("\n");
+  const buildCoachSourceText = (fallbackText: string) =>
+    buildActivityCoachContext({
+      targetRole: jobTitle,
+      title: titleDraft,
+      type: typeDraft || activity?.type || "프로젝트",
+      organization,
+      period: periodValue,
+      teamSize,
+      teamComposition,
+      myRole,
+      skills: skillsDraft,
+      contributions: contributionItems,
+      description: descriptionDraft,
+      starSituation,
+      starTask,
+      starAction,
+      starResult,
+      fallbackText,
+    });
 
   const handleGenerateIntroCandidates = async () => {
     if (!hasContributionContent) {
@@ -285,7 +417,7 @@ export function useActivityDetail(activityId: string, isNewActivity: boolean, in
     try {
       const result = await generateActivityIntro({
         mode: "intro_generate",
-        activity_description: buildIntroSourceText(),
+        activity_description: buildActivityEvidenceText(starImportSource),
         activity_type: typeDraft || activity?.type || "프로젝트",
         org_name: organization.trim(),
         period: periodValue,
@@ -298,8 +430,13 @@ export function useActivityDetail(activityId: string, isNewActivity: boolean, in
       setIntroCandidates(result.intro_candidates);
       if (result.intro_candidates.length === 0) setIntroGenerateError("생성된 소개글 후보가 없습니다.");
     } catch (e) {
-      setIntroCandidates([]);
-      setIntroGenerateError(e instanceof Error ? e.message : "AI 소개글을 생성하지 못했습니다.");
+      const fallbackCandidates = buildActivityIntroFallbackCandidates(starImportSource);
+      setIntroCandidates(fallbackCandidates);
+      const fallbackMessage =
+        fallbackCandidates.length > 0
+          ? "AI 소개글 생성에 실패해 기본정보 기반 후보를 대신 만들었습니다."
+          : "AI 소개글을 생성하지 못했습니다.";
+      setIntroGenerateError(e instanceof Error && fallbackCandidates.length === 0 ? e.message : fallbackMessage);
     } finally {
       setIntroGenerateLoading(false);
     }
@@ -456,37 +593,72 @@ export function useActivityDetail(activityId: string, isNewActivity: boolean, in
     }
   };
 
-  const handleGenerateSummary = async () => {
-    if (!starSituation && !starTask && !starAction && !starResult) return;
-    setSummaryLoading(true);
-    try {
-      const prompt = `아래 STAR 기법으로 작성된 활동 내용을 바탕으로,
-이력서에 쓸 수 있는 간결하고 임팩트 있는 활동 소개 문단을 3~4문장으로 작성해줘.
-수치와 결과를 강조하고, 1인칭 주어 없이 서술해줘.
+  const handleImportBasicInfoToStar = useCallback(() => {
+    const draft = buildActivityStarImportDraft(starImportSource);
 
-Situation(상황): ${starSituation}
-Task(과제): ${starTask}
-Action(행동): ${starAction}
-Result(결과): ${starResult}`;
-      const res = await fetch("/api/summary", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
-      });
-      const data = await res.json();
-      if (data.summary) {
-        setDescriptionDraft(data.summary);
-        setActiveTab("basic");
-      }
-    } finally {
-      setSummaryLoading(false);
+    setStarSituation((current) => appendUniqueDraft(current, draft.situation));
+    setStarTask((current) => appendUniqueDraft(current, draft.task));
+    setStarAction((current) => appendUniqueDraft(current, draft.action));
+    setStarResult((current) => appendUniqueDraft(current, draft.result));
+    setStarSaveToast({ tone: "success", message: "기본정보를 STAR 초안에 가져왔습니다." });
+  }, [starImportSource]);
+
+  const handleApplyCoachSuggestionToDescription = useCallback((text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+
+    setDescriptionDraft(trimmed);
+    setActiveTab("basic");
+  }, []);
+
+  const handleApplyCoachSuggestionToStar = useCallback((candidate: ActivityCoachRewriteCandidate) => {
+    const text = candidate.text.trim();
+    if (!text) return;
+
+    if (candidate.starTarget === "situation") {
+      setStarSituation((current) => appendUniqueDraft(current, text));
+    } else if (candidate.starTarget === "task") {
+      setStarTask((current) => appendUniqueDraft(current, text));
+    } else if (candidate.starTarget === "action") {
+      setStarAction((current) => appendUniqueDraft(current, text));
+    } else {
+      setStarResult((current) => appendUniqueDraft(current, text));
     }
-  };
+    setActiveTab("star");
+  }, []);
+
+  const handleApplyCoachSuggestionToContribution = useCallback((text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+
+    const normalizedContributions = contributions.map((item) => item.trim());
+    if (normalizedContributions.includes(trimmed)) {
+      setActiveTab("basic");
+      return;
+    }
+
+    const emptyIndex = normalizedContributions.findIndex((item) => item.length === 0);
+    if (emptyIndex >= 0) {
+      setContributions((current) => current.map((item, index) => (index === emptyIndex ? trimmed : item)));
+      setActiveTab("basic");
+      return;
+    }
+
+    if (contributions.length >= 6) {
+      setError("기여 내용은 최대 6개까지 추가할 수 있습니다.");
+      setActiveTab("basic");
+      return;
+    }
+
+    setContributions((current) => [...current, trimmed]);
+    setActiveTab("basic");
+  }, [contributions]);
 
   return {
     router,
     activity,
     messages,
+    coachInsight,
     input,
     setInput,
     descriptionDraft,
@@ -495,6 +667,8 @@ Result(결과): ${starResult}`;
     setJobTitle,
     loading,
     sending,
+    coachDiagnosisLoading,
+    hasCompleteStarDraft,
     activeTab,
     setActiveTab,
     starSituation,
@@ -506,7 +680,7 @@ Result(결과): ${starResult}`;
     starResult,
     setStarResult,
     starSaving,
-    summaryLoading,
+    canImportBasicInfoToStar,
     organization,
     setOrganization,
     teamSize,
@@ -548,6 +722,7 @@ Result(결과): ${starResult}`;
     hasContributionContent,
     isSkillSelected,
     handleSendMessage,
+    handleRunCoachDiagnosis,
     handleSaveBasicInfo,
     handleImageUpload,
     handleImageRemove,
@@ -563,6 +738,9 @@ Result(결과): ${starResult}`;
     handlePostSaveLater,
     handleDelete,
     handleStarSave,
-    handleGenerateSummary,
+    handleImportBasicInfoToStar,
+    handleApplyCoachSuggestionToDescription,
+    handleApplyCoachSuggestionToStar,
+    handleApplyCoachSuggestionToContribution,
   };
 }

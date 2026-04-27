@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { getProgramCompareHref, getProgramDetailHref } from "@/components/landing/program-card-helpers";
 import { ProgramDeadlineBadge } from "@/components/programs/program-deadline-badge";
+import { cx, iso } from "@/components/ui/isoser-ui";
 import type { ProgramListRow } from "@/lib/types";
 
 import { chips } from "./_content";
@@ -18,7 +19,7 @@ function ProgramCard({ program }: { program: ProgramListRow }) {
 
   return (
     <article
-      className="flex min-h-[300px] flex-col rounded-[18px] border border-[var(--border)] bg-white p-6 shadow-[0_16px_42px_rgba(10,19,37,0.08)] transition hover:-translate-y-1 hover:shadow-[0_24px_58px_rgba(10,19,37,0.12)]"
+      className="flex min-h-[300px] flex-col rounded-[18px] border border-white/70 bg-white/90 p-6 shadow-[0_16px_42px_rgba(10,19,37,0.08)] backdrop-blur-sm transition hover:-translate-y-1 hover:bg-white hover:shadow-[0_24px_58px_rgba(10,19,37,0.12)]"
     >
       <div>
         <div className="flex items-start justify-between gap-3">
@@ -55,13 +56,13 @@ function ProgramCard({ program }: { program: ProgramListRow }) {
       <div className="mt-auto grid grid-cols-[1fr_auto] gap-2 pt-6">
         <Link
           href={getProgramDetailHref(program)}
-          className="rounded-xl bg-[var(--blue)] px-4 py-3 text-center text-sm font-black text-white transition hover:bg-[var(--indigo)]"
+          className={cx("rounded-xl px-4 py-3 text-center text-sm font-black", iso.primaryButton)}
         >
           과정 보기
         </Link>
         <Link
           href={getProgramCompareHref(program)}
-          className="rounded-xl border border-[var(--border)] bg-white px-4 py-3 text-center text-sm font-black text-[var(--ink)] transition hover:border-[var(--indigo)] hover:text-[var(--indigo)]"
+          className={cx("rounded-xl px-4 py-3 text-center text-sm font-black", iso.secondaryButton)}
         >
           비교
         </Link>
@@ -95,7 +96,7 @@ export function LandingCOpportunityFeed({ activeChip, programs, error }: Landing
           </div>
         </div>
 
-        <div className="mt-8 rounded-[24px] border border-[var(--border)] bg-white p-4">
+        <div className={cx("mt-8 rounded-[24px] p-4", iso.softPanel)}>
           <div className="flex gap-2 overflow-x-auto pb-1">
             {chips.map((chip) => (
               <Link
@@ -103,7 +104,7 @@ export function LandingCOpportunityFeed({ activeChip, programs, error }: Landing
                 href={getOpportunityChipHref(chip)}
                 className={`shrink-0 rounded-full border px-4 py-2 text-xs font-black transition ${
                   chip === activeChip
-                    ? "border-[var(--indigo)] bg-[var(--indigo)] text-white"
+                    ? "border-[var(--fire)] bg-[var(--fire)] text-white"
                     : "border-[var(--border)] bg-white text-[var(--sub)] hover:border-[var(--indigo)] hover:text-[var(--indigo)]"
                 }`}
               >

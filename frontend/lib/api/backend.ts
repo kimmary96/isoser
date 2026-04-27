@@ -28,6 +28,8 @@ import type {
 import { fetchBackendResponse } from "./backend-endpoint";
 import { buildPathWithSearchParams, buildProgramListSearchParams } from "./program-query";
 
+const PROGRAM_DETAIL_TIMEOUT_MS = 3500;
+
 async function handleResponse<T>(
   response: Response,
   fallbackMessage: string
@@ -43,10 +45,11 @@ async function handleResponse<T>(
 async function requestJson<T>(
   path: string,
   init: RequestInit,
-  fallbackMessage: string
+  fallbackMessage: string,
+  options?: { timeoutMs?: number }
 ): Promise<T> {
   try {
-    const response = await fetchBackendResponse(path, init);
+    const response = await fetchBackendResponse(path, init, options);
     return handleResponse<T>(response, fallbackMessage);
   } catch (error) {
     if (error instanceof Error && /failed to fetch/i.test(error.message)) {
@@ -321,7 +324,8 @@ export async function getProgramDetail(programId: string): Promise<ProgramDetail
     {
       method: "GET",
     },
-    "Failed to load the program detail."
+    "Failed to load the program detail.",
+    { timeoutMs: PROGRAM_DETAIL_TIMEOUT_MS }
   );
 }
 

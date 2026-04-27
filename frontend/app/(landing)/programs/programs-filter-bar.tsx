@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
+import { cx, iso } from "@/components/ui/isoser-ui";
 import type { ProgramSort } from "@/lib/types";
 
 import { DEFAULT_PROGRAM_SORT, isProgramSort, PROGRAM_SORT_OPTIONS } from "./program-sort";
@@ -95,7 +96,7 @@ function FilterMenu({
         aria-expanded={isOpen}
         aria-label={label}
         onClick={() => setIsOpen((current) => !current)}
-        className="flex h-12 w-full items-center justify-between rounded-2xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-800 outline-none transition hover:bg-slate-50 focus:border-slate-900"
+        className="flex h-12 w-full items-center justify-between rounded-2xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-800 outline-none transition hover:bg-slate-50 focus:border-orange-500"
       >
         <span className="flex min-w-0 items-center gap-2">
           <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${selectedOption.dotClassName}`} />
@@ -118,7 +119,7 @@ function FilterMenu({
                   setIsOpen(false);
                 }}
                 className={`flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-sm transition hover:bg-slate-50 ${
-                  isSelected ? "bg-slate-50 font-semibold text-violet-700" : "text-slate-700"
+                  isSelected ? "bg-orange-50 font-semibold text-orange-700" : "text-slate-700"
                 }`}
               >
                 <span className={`h-2.5 w-2.5 rounded-full ${option.dotClassName}`} />
@@ -177,8 +178,8 @@ function MultiFilterMenu({
         aria-expanded={isOpen}
         aria-label={label}
         onClick={() => setIsOpen((current) => !current)}
-        className={`flex h-12 w-full items-center justify-between rounded-2xl border bg-white px-3 text-sm font-medium outline-none transition hover:bg-slate-50 focus:border-slate-900 ${
-          values.length ? "border-violet-300 text-violet-700" : "border-slate-200 text-slate-800"
+        className={`flex h-12 w-full items-center justify-between rounded-2xl border bg-white px-3 text-sm font-medium outline-none transition hover:bg-slate-50 focus:border-orange-500 ${
+          values.length ? "border-orange-300 text-orange-700" : "border-slate-200 text-slate-800"
         }`}
       >
         <span className="min-w-0 truncate">{displayLabel}</span>
@@ -197,7 +198,7 @@ function MultiFilterMenu({
                   type="checkbox"
                   checked={values.includes(option.value)}
                   onChange={() => toggleValue(option.value)}
-                  className="h-3.5 w-3.5 rounded border-slate-300 text-violet-600 focus:ring-violet-600"
+                  className="h-3.5 w-3.5 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
                 />
                 <span className="min-w-0 truncate">{option.label}</span>
               </label>
@@ -216,7 +217,7 @@ function MultiFilterMenu({
                 type="checkbox"
                 readOnly
                 checked={values.length === 0}
-                className="h-3.5 w-3.5 rounded border-slate-300 text-violet-600 focus:ring-violet-600"
+                className="h-3.5 w-3.5 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
               />
               전체선택
             </button>
@@ -293,7 +294,7 @@ export function ProgramsFilterBar({
     ...teachingMethodOptions.map((method) => ({
       value: method,
       label: method,
-      dotClassName: method === "온라인" ? "bg-violet-500" : method === "오프라인" ? "bg-blue-500" : "bg-teal-500",
+      dotClassName: method === "온라인" ? "bg-blue-500" : method === "오프라인" ? "bg-sky-500" : "bg-cyan-500",
     })),
   ];
   const sortMenuOptions: FilterMenuOption[] = PROGRAM_SORT_OPTIONS.map((option, index) => ({
@@ -303,7 +304,7 @@ export function ProgramsFilterBar({
   }));
 
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+    <section className={cx("rounded-3xl p-5 sm:p-6", iso.softPanel)}>
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Program Search</p>
         <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
@@ -425,12 +426,12 @@ export function ProgramsFilterBar({
               type="search"
               defaultValue={q}
               placeholder="제목, 기관, 설명, 지역, 태그 검색"
-              className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-slate-900"
+              className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-orange-500"
             />
           </label>
           <button
             type="submit"
-            className="h-12 w-full rounded-2xl bg-slate-950 px-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+            className={cx("h-12 w-full rounded-2xl px-3 text-sm font-semibold", iso.primaryButton)}
           >
             검색
           </button>
@@ -456,7 +457,7 @@ export function ProgramsFilterBar({
                   name="closed"
                   value="true"
                   defaultChecked={showClosedRecent}
-                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900"
+                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
                 />
                 <span>
                   <span className="block font-semibold text-slate-900">마감된 공고 보기</span>

@@ -9,7 +9,9 @@ import pytest
 from fastapi.testclient import TestClient
 
 from services.program_list_scoring import compute_recommended_score
-from routers import programs
+import main
+
+programs = main.programs
 
 
 def _sample_program(program_id: str = "program-1", *, deadline: str | None = None) -> dict[str, object]:
@@ -580,6 +582,20 @@ def test_read_model_summary_select_excludes_heavy_detail_fields() -> None:
     assert "raw_data" not in selected
     assert "verified_self_pay_amount" in selected
     assert "recommended_score" in selected
+
+
+def test_program_detail_select_excludes_raw_collector_payload() -> None:
+    selected = set(programs.PROGRAM_DETAIL_SELECT.split(","))
+
+    assert "raw_data" not in selected
+    assert "search_text" not in selected
+    assert "application_url" not in selected
+    assert "verified_self_pay_amount" not in selected
+    assert "compare_meta" in selected
+    assert "service_meta" in selected
+    assert "provider_name" in selected
+    assert "application_end_date" in selected
+    assert "curriculum_items" in selected
 
 
 def test_program_list_quality_migration_hardens_refresh_policy() -> None:
@@ -1722,6 +1738,51 @@ def test_get_program_detail_returns_404_for_invalid_uuid(client: TestClient) -> 
     assert response.json()["detail"] == "Program not found"
 
 
+@pytest.mark.asyncio
+async def test_get_program_detail_uses_lightweight_detail_select(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[tuple[str, dict[str, str]]] = []
+
+    async def fake_request_supabase(
+        *,
+        method: str,
+        path: str,
+        params: dict[str, str] | None = None,
+        payload: object | None = None,
+        prefer: str | None = None,
+    ) -> list[dict[str, object]]:
+        assert method == "GET"
+        assert payload is None
+        assert prefer is None
+        assert params is not None
+        calls.append((path, dict(params)))
+        if path == "/rest/v1/programs":
+            assert params["select"] == programs.PROGRAM_DETAIL_SELECT
+            assert "raw_data" not in params["select"]
+            return [
+                {
+                    "id": "00000000-0000-0000-0000-000000000123",
+                    "title": "상세 조회 테스트",
+                    "provider": "테스트 기관",
+                    "source": "고용24",
+                    "deadline": "2026-05-01",
+                    "compare_meta": {"contact_phone": "02-0000-0000"},
+                    "service_meta": {},
+                }
+            ]
+        if path == "/rest/v1/program_source_records":
+            return []
+        raise AssertionError(f"unexpected path: {path}")
+
+    monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
+
+    response = await programs.get_program_detail("00000000-0000-0000-0000-000000000123")
+
+    assert response.title == "상세 조회 테스트"
+    assert response.provider == "테스트 기관"
+    assert response.phone == "02-0000-0000"
+    assert calls[0][0] == "/rest/v1/programs"
+
+
 def test_get_program_returns_404_for_invalid_uuid(client: TestClient) -> None:
     response = client.get("/programs/not-a-real-program-id")
 
@@ -2328,7 +2389,7 @@ def test_build_program_detail_response_uses_legacy_compare_meta_overlay_when_ser
 async def test_get_program_details_batch_reuses_detail_mapping(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    async def fake_fetch_programs_by_ids(program_ids: list[str]) -> dict[str, dict[str, object]]:
+    async def fake_fetch_program_detail_rows_by_ids(program_ids: list[str]) -> dict[str, dict[str, object]]:
         assert program_ids == ["program-1", "program-2"]
         return {
             "program-1": {
@@ -2350,7 +2411,7 @@ async def test_get_program_details_batch_reuses_detail_mapping(
             },
         }
 
-    monkeypatch.setattr(programs, "_fetch_programs_by_ids", fake_fetch_programs_by_ids)
+    monkeypatch.setattr(programs, "_fetch_program_detail_rows_by_ids", fake_fetch_program_detail_rows_by_ids)
     async def fake_fetch_primary_source_records_by_program_ids(program_ids: list[str]) -> dict[str, dict[str, object]]:
         assert program_ids == ["program-1", "program-2"]
         return {
@@ -3136,7 +3197,7 @@ def test_compute_program_relevance_items_uses_real_behavior_signal(
         behavior_program_ids={"program-1"},
     )
 
-    assert items[0].score_breakdown["behavior"] == 5
+    assert items[0].score_breakdown["behavior"] == 10
     assert "찜/캘린더 관심 행동과 일치" in items[0].relevance_reasons
 
 
@@ -3223,9 +3284,9 @@ def test_compute_program_relevance_items_adds_region_signal(
     assert item.region_match_score == 1.0
     assert item.matched_regions == ["서울"]
     assert item.relevance_score == 0.65
-    assert item.score_breakdown["region"] == 15
+    assert item.score_breakdown["region"] == 10
     assert item.score_breakdown["skills"] == 25
-    assert item.score_breakdown["experience"] == 15
+    assert item.score_breakdown["experience"] == 20
 
 
 def test_compute_region_match_scores_adjacent_and_online_programs() -> None:
@@ -3238,22 +3299,22 @@ def test_compute_region_match_scores_adjacent_and_online_programs() -> None:
         profile_region="전북",
         profile_region_detail=None,
         program={"teaching_method": "온라인"},
-    ) == (["온라인"], 0.8)
+    ) == (["온라인"], 0.0)
     assert programs._compute_region_match(
         profile_region="전북",
         profile_region_detail=None,
         program={"teaching_method": "온라인/오프라인 병행"},
-    ) == (["혼합"], 0.6667)
+    ) == (["혼합"], 0.25)
     assert programs._compute_region_match(
         profile_region="전북",
         profile_region_detail=None,
         program={"teaching_method": "온라인", "summary": "혼합형 실습 과정"},
-    ) == (["온라인"], 0.8)
+    ) == (["온라인"], 0.0)
     assert programs._compute_region_match(
         profile_region="서울",
         profile_region_detail=None,
         program={"title": "온라인 AI 과정", "location": "서울 강남구"},
-    ) == (["혼합"], 0.6667)
+    ) == (["혼합"], 0.25)
     assert programs._compute_region_match(
         profile_region="충북",
         profile_region_detail=None,
@@ -3288,7 +3349,7 @@ def test_compute_region_match_scores_adjacent_and_online_programs() -> None:
             "service_meta": {"teaching_method": "온라인"},
             "compare_meta": {"teaching_method": "오프라인"},
         },
-    ) == (["온라인"], 0.8)
+    ) == (["온라인"], 0.0)
     assert programs._compute_region_match(
         profile_region="부산",
         profile_region_detail=None,

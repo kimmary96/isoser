@@ -107,7 +107,7 @@ describe("programs page helpers", () => {
 
   it("assigns different tones to different keyword families", () => {
     expect(getSelectionKeywordTone("면접")).toBe("bg-rose-50 text-rose-700");
-    expect(getSelectionKeywordTone("코딩테스트")).toBe("bg-violet-50 text-violet-700");
+    expect(getSelectionKeywordTone("코딩테스트")).toBe("bg-slate-100 text-slate-700");
     expect(getSelectionKeywordTone("Python")).toBe("bg-sky-50 text-sky-700");
     expect(getSelectionKeywordTone("멘토링")).toBe("bg-emerald-50 text-emerald-700");
   });

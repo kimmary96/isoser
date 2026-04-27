@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from "next/navigation";
 
 import { useActivityDetail } from "../_hooks/use-activity-detail";
 import { ActivityBasicTab } from "../_components/activity-basic-tab";
+import { ActivityCoachInsightPanel } from "../_components/activity-coach-insight-panel";
 import { ActivityCoachPanel } from "../_components/activity-coach-panel";
 import { ActivityDetailModals } from "../_components/activity-detail-modals";
 import { ActivityStarTab } from "../_components/activity-star-tab";
@@ -18,6 +19,7 @@ export default function ActivityDetailPage() {
     router,
     activity,
     messages,
+    coachInsight,
     input,
     setInput,
     descriptionDraft,
@@ -26,6 +28,8 @@ export default function ActivityDetailPage() {
     setJobTitle,
     loading,
     sending,
+    coachDiagnosisLoading,
+    hasCompleteStarDraft,
     activeTab,
     setActiveTab,
     starSituation,
@@ -37,7 +41,7 @@ export default function ActivityDetailPage() {
     starResult,
     setStarResult,
     starSaving,
-    summaryLoading,
+    canImportBasicInfoToStar,
     organization,
     setOrganization,
     teamSize,
@@ -94,7 +98,11 @@ export default function ActivityDetailPage() {
     handlePostSaveLater,
     handleDelete,
     handleStarSave,
-    handleGenerateSummary,
+    handleImportBasicInfoToStar,
+    handleRunCoachDiagnosis,
+    handleApplyCoachSuggestionToDescription,
+    handleApplyCoachSuggestionToStar,
+    handleApplyCoachSuggestionToContribution,
   } = useActivityDetail(activityId, isNewActivity, searchParams.get("tab"));
 
   if (loading) {
@@ -134,7 +142,7 @@ export default function ActivityDetailPage() {
           <path d="M15 18l-6-6 6-6" />
         </svg>
       </button>
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className={`${activeTab === "star" ? "max-w-[1320px]" : "max-w-4xl"} mx-auto px-4 py-8`}>
         <div className="flex justify-between items-start mb-6">
           <div>
             <p className="text-sm text-gray-400">{typeDraft || activity.type}</p>
@@ -172,9 +180,15 @@ export default function ActivityDetailPage() {
           </div>
         )}
 
-        <div className={`grid grid-cols-1 ${activeTab === "star" ? "lg:grid-cols-2" : ""} gap-6`}>
+        <div
+          className={`grid grid-cols-1 items-stretch gap-6 ${
+            activeTab === "star"
+              ? "xl:grid-cols-[minmax(360px,430px)_minmax(420px,1fr)_minmax(320px,380px)]"
+              : ""
+          }`}
+        >
           {/* 활동 설명 */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="h-full rounded-xl border border-gray-200 bg-white p-6">
             <div className="flex gap-2 mb-4">
               <button
                 onClick={() => setActiveTab("basic")}
@@ -201,7 +215,6 @@ export default function ActivityDetailPage() {
             {activeTab === "basic" && (
               <ActivityBasicTab
                 activity={activity}
-                isNewActivity={isNewActivity}
                 typeDraft={typeDraft}
                 onTypeDraftChange={setTypeDraft}
                 organization={organization}
@@ -258,9 +271,9 @@ export default function ActivityDetailPage() {
                 starResult={starResult}
                 onStarResultChange={setStarResult}
                 starSaving={starSaving}
+                canImportBasicInfo={canImportBasicInfoToStar}
+                onImportBasicInfo={handleImportBasicInfoToStar}
                 onStarSave={handleStarSave}
-                summaryLoading={summaryLoading}
-                onGenerateSummary={handleGenerateSummary}
               />
             )}
           </div>
@@ -271,10 +284,25 @@ export default function ActivityDetailPage() {
               onJobTitleChange={setJobTitle}
               messages={messages}
               sending={sending}
+              diagnosisLoading={coachDiagnosisLoading}
+              canRunDiagnosis={hasCompleteStarDraft}
               input={input}
               onInputChange={setInput}
               onSendMessage={handleSendMessage}
+              onRunDiagnosis={handleRunCoachDiagnosis}
             />
+          )}
+
+          {activeTab === "star" && (
+            <div className="h-full overflow-y-auto xl:pr-1">
+              <ActivityCoachInsightPanel
+                insight={coachInsight}
+                showPlaceholder
+                onApplyToDescription={handleApplyCoachSuggestionToDescription}
+                onApplyToStar={handleApplyCoachSuggestionToStar}
+                onApplyToContribution={handleApplyCoachSuggestionToContribution}
+              />
+            </div>
           )}
         </div>
       </div>

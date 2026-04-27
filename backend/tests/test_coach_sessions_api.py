@@ -4,8 +4,10 @@ from typing import Any
 
 import pytest
 
-from repositories.coach_session_repo import CoachSessionRecord
-from routers import coach as coach_router
+import main as app_main
+from repositories.coach_session_repo import CoachSessionRecord, CoachSessionRepoError
+
+coach_router = app_main.coach
 
 
 class FakeCoachSessionRepo:
@@ -115,6 +117,17 @@ class FakeCoachSessionRepo:
         return session.restore_conversation() if session else []
 
 
+class FailingCoachSessionRepo:
+    async def create_session(self, **kwargs):  # noqa: ANN003, ANN202
+        raise CoachSessionRepoError("schema drift")
+
+    async def get_session(self, session_id: str, user_id: str) -> CoachSessionRecord | None:
+        raise CoachSessionRepoError("schema drift")
+
+    async def update_session(self, *args, **kwargs):  # noqa: ANN002, ANN003, ANN202
+        raise CoachSessionRepoError("schema drift")
+
+
 @pytest.fixture
 def fake_repo(monkeypatch: pytest.MonkeyPatch) -> FakeCoachSessionRepo:
     repo = FakeCoachSessionRepo()
@@ -187,6 +200,35 @@ def test_feedback_creates_session_and_persists_structure(client, fake_repo, monk
     assert fake_repo.last_updated_payload is not None
     assert fake_repo.last_updated_payload["last_structure_diagnosis"]["priority_focus"] == "정량적 성과"
     assert fake_repo.last_updated_payload["suggestion_type"] == "quantification"
+
+
+def test_feedback_continues_when_session_persistence_fails(
+    client,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_run_coach_graph(**kwargs):  # noqa: ANN003
+        return _graph_result(kwargs["activity_text"])
+
+    monkeypatch.setattr(coach_router, "get_coach_session_repo", lambda: FailingCoachSessionRepo())
+    monkeypatch.setattr(coach_router, "run_coach_graph", fake_run_coach_graph)
+
+    response = client.post(
+        "/coach/feedback",
+        json={
+            "session_id": "session-1",
+            "user_id": "user-1",
+            "activity_description": "Redis cache rollout improved API latency.",
+            "job_title": "Backend Engineer",
+            "section_type": "프로젝트",
+            "selected_suggestion_index": 0,
+            "history": [],
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["session_id"] == "session-1"
+    assert payload["feedback"] == "feedback for Redis cache rollout improved API latency."
 
 
 def test_get_user_sessions_returns_summaries(client, fake_repo) -> None:
