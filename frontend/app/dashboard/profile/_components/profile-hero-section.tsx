@@ -2,6 +2,7 @@ import Image from "next/image";
 
 import { resolveProfileTargetJob } from "@/lib/normalizers/profile";
 import type { Profile } from "@/lib/types";
+import { getSkillLevelPercent, parseSkillLine } from "../_lib/profile-page";
 
 type ProfileWithExtras = Profile & {
   avatar_url?: string | null;
@@ -51,12 +52,13 @@ export function ProfileHeroSection({
   onEditSkills,
 }: ProfileHeroSectionProps) {
   const targetJob = resolveProfileTargetJob(profile);
+  const parsedSkillItems = skillItems.map(parseSkillLine).filter((skill) => skill.name);
 
   return (
-    <div className="mb-6 grid gap-6 xl:grid-cols-[14rem_minmax(0,42rem)_14rem] xl:items-start xl:justify-between">
+    <div className="mb-4 grid gap-4 xl:grid-cols-[15rem_minmax(0,1fr)_18rem] xl:items-start">
       <div className="w-56 flex-shrink-0 xl:w-auto">
         <div
-          className="relative h-[220px] cursor-pointer overflow-hidden rounded-3xl border border-slate-200 bg-slate-700 shadow-[0_16px_40px_rgba(15,23,42,0.08)]"
+          className="relative h-[228px] cursor-pointer overflow-hidden rounded-2xl border border-slate-200 bg-slate-700 shadow-[0_12px_32px_rgba(15,23,42,0.08)]"
           onClick={onOpenProfileModal}
         >
           {profile.avatar_url ? (
@@ -80,15 +82,18 @@ export function ProfileHeroSection({
       </div>
 
       <div className="min-w-0">
-        <div className="mb-4 flex h-[220px] flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.05)]">
+        <div className="mb-3 flex h-[228px] min-h-0 flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.05)]">
           <div className="mb-2 flex items-center justify-between">
             <p className="text-sm font-medium text-slate-500">자기소개</p>
             <IconButton onClick={onEditSelfIntro} label="자기소개 수정" />
           </div>
-          <p className="mb-3 line-clamp-[6] text-sm leading-6 text-slate-700">
-            {profile.self_intro || "자기소개를 생성해보세요."}
-          </p>
-          {!profile.self_intro && (
+          {profile.self_intro ? (
+            <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden pr-1 [scrollbar-gutter:stable]">
+              <p className="whitespace-pre-wrap break-words text-sm leading-6 text-slate-700">
+                {profile.self_intro}
+              </p>
+            </div>
+          ) : (
             <div className="mt-auto rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 text-center">
               <p className="mb-2 text-sm text-slate-400">자기소개 생성하기</p>
               <button
@@ -123,24 +128,39 @@ export function ProfileHeroSection({
         </div>
       </div>
 
-      <div className="w-56 rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.05)] xl:h-[220px] xl:w-auto">
+      <div className="flex w-56 min-w-0 flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.05)] xl:h-[228px] xl:w-auto">
         <div className="mb-3 flex items-center justify-between">
           <p className="text-sm font-semibold tracking-tight text-slate-950">Skills</p>
           <IconButton onClick={onEditSkills} label="스킬 수정" />
         </div>
-        <div className="h-[164px] space-y-3 overflow-y-auto pr-1">
-          {skillItems.map((skill, index) => (
-            <div key={`${skill}-${index}`}>
-              <div className="mb-1 flex justify-between text-xs">
-                <span className="font-medium text-slate-700">{skill}</span>
+        <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto overflow-x-hidden pr-1 [scrollbar-gutter:stable]">
+          {parsedSkillItems.map((skill, index) => (
+            <div
+              key={`${skill.name}-${index}`}
+              className="grid min-w-0 grid-cols-[minmax(0,1fr)_7.5rem] items-center gap-3"
+            >
+              <div className="min-w-0">
+                <span className="line-clamp-2 block break-words text-xs font-medium leading-snug text-slate-700">
+                  {skill.name}
+                </span>
               </div>
-              <div className="h-2 rounded-full bg-slate-100">
-                <div className="h-2 rounded-full bg-slate-900" style={{ width: "80%" }} />
+              <div className="min-w-0">
+                <div className="mb-1 flex justify-end">
+                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-500">
+                    {skill.level}
+                  </span>
+                </div>
+                <div className="h-2 rounded-full bg-slate-100">
+                  <div
+                    className="h-2 rounded-full bg-slate-900 transition-all"
+                    style={{ width: `${getSkillLevelPercent(skill.level)}%` }}
+                  />
+                </div>
               </div>
             </div>
           ))}
-          {skillItems.length === 0 && (
-            <div className="flex h-[150px] items-center justify-center rounded-2xl bg-slate-50 text-xs text-slate-400">
+          {parsedSkillItems.length === 0 && (
+            <div className="flex h-full min-h-[140px] items-center justify-center rounded-2xl bg-slate-50 text-xs text-slate-400">
               스킬을 추가해주세요.
             </div>
           )}

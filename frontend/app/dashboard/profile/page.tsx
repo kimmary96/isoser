@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { resolveProfileTargetJob } from "@/lib/normalizers/profile";
 import type { Profile } from "@/lib/types";
@@ -17,12 +17,17 @@ import { ProfileEditModal } from "./_components/profile-edit-modal";
 import { ProfileHeroSection } from "./_components/profile-hero-section";
 import {
   CareerEditorModal,
+  EducationEditorModal,
   ListEditorModal,
+  SelfIntroEditorModal,
+  SkillEditorModal,
 } from "./_components/profile-section-editors";
 import {
   type EditableSection,
   buildCareerCards,
+  formatEducationLine,
   getCareerItemsFromActivities,
+  getActivitySortValue,
   isStructuredCareerLine,
   toArray,
 } from "./_lib/profile-page";
@@ -31,7 +36,7 @@ import {
 export default function DashboardPage() {
   const router = useRouter();
   const [editing, setEditing] = useState<EditableSection | null>(null);
-  const [activeTab, setActiveTab] = useState<string>("회사경력");
+  const [activeTab, setActiveTab] = useState<string>("전체");
   const {
     profile,
     activities,
@@ -70,26 +75,36 @@ export default function DashboardPage() {
     toArray(profile.education_history).length > 0
       ? toArray(profile.education_history)
       : [profile.education ?? ""].filter(Boolean);
+  const displayedEducationItems = educationItems.map(formatEducationLine);
   const awardItems = toArray(profile.awards);
   const certItems = toArray(profile.certifications);
   const languageItems = toArray(profile.languages);
   const skillItems = toArray(profile.skills);
   const careerCards = buildCareerCards(careerItems, activities);
   const tabs = [
+    { label: "전체", type: "전체" },
     { label: "회사 프로젝트", type: "회사경력" },
     { label: "개인 프로젝트", type: "개인프로젝트" },
     { label: "대외 활동", type: "대외활동" },
     { label: "학생 활동", type: "학생활동" },
   ];
-  const tabActivities = activities.filter((a) => {
-    const activityType = a.type as string;
-    return activeTab === "개인프로젝트"
-      ? activityType === "프로젝트" || activityType === "개인프로젝트"
-      : activityType === activeTab;
-  });
-  const completionScore = useMemo(() => {
+  const tabActivities = useMemo(() => {
+    const filtered =
+      activeTab === "전체"
+        ? activities
+        : activities.filter((activity) => {
+            const activityType = activity.type as string;
+            return activeTab === "개인프로젝트"
+              ? activityType === "프로젝트" || activityType === "개인프로젝트"
+              : activityType === activeTab;
+          });
+
+    return [...filtered].sort((a, b) => getActivitySortValue(b) - getActivitySortValue(a));
+  }, [activeTab, activities]);
+  const completion = useMemo(() => {
     let score = 0;
-    if (!profile) return 0;
+    const missingItems: string[] = [];
+    if (!profile) return { score: 0, missingItems: ["기본 정보"] };
 
     const profileAny = profile as Profile & {
       avatar_url?: string | null;
@@ -99,28 +114,71 @@ export default function DashboardPage() {
     const targetJob = resolveProfileTargetJob(profile);
 
     if (profileAny.avatar_url) score += 10;
+    else missingItems.push("프로필 사진");
+
     if (profile.name) score += 10;
+    else missingItems.push("이름");
+
     if (profile.email) score += 10;
+    else missingItems.push("이메일");
+
     if (profile.phone) score += 10;
+    else missingItems.push("전화번호");
+
     if (targetJob || profileAny.bio || profile.self_intro) score += 10;
+    else missingItems.push("희망 직무/소개");
+
     if (toArray(profile.skills).length > 0) score += 10;
+    else missingItems.push("스킬");
+
     if (toArray(profile.career).length > 0) score += 10;
+    else missingItems.push("경력");
 
     const educationSource = Array.isArray(profileAny.education)
       ? profileAny.education
       : [profileAny.education ?? ""].filter(Boolean);
     if (toArray(educationSource).length > 0) score += 10;
+    else missingItems.push("학력");
 
     const activityCount = activities.length;
     if (activityCount >= 2) score += 20;
-    else if (activityCount === 1) score += 10;
+    else if (activityCount === 1) {
+      score += 10;
+      missingItems.push("활동 1개 추가");
+    } else {
+      missingItems.push("활동 2개");
+    }
 
-    return Math.min(score, 100);
+    return { score: Math.min(score, 100), missingItems };
   }, [profile, activities]);
+  const completionScore = completion.score;
+  const isCompletionComplete = completionScore >= 100;
+  const [showCompletionCard, setShowCompletionCard] = useState(true);
+
+  useEffect(() => {
+    if (!isCompletionComplete) {
+      setShowCompletionCard(true);
+      return;
+    }
+
+    setShowCompletionCard(true);
+    const timer = window.setTimeout(() => {
+      setShowCompletionCard(false);
+    }, 1900);
+
+    return () => window.clearTimeout(timer);
+  }, [isCompletionComplete]);
+
   return (
     <div className="min-h-screen bg-[#f3f6fb] px-6 py-8">
-      <div className="mx-auto max-w-6xl space-y-6">
-        <ProfileCompletionCard completionScore={completionScore} />
+      <div className="mx-auto max-w-7xl space-y-4">
+        {showCompletionCard && (
+          <ProfileCompletionCard
+            completionScore={completionScore}
+            missingItems={completion.missingItems}
+            isComplete={isCompletionComplete}
+          />
+        )}
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
@@ -147,7 +205,7 @@ export default function DashboardPage() {
               onCreateActivity={() => router.push("/dashboard/activities/new")}
             />
 
-            <div className="mb-6 grid grid-cols-2 gap-6">
+            <div className="mb-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
               <ProfileCareerCardSection
                 careerCards={careerCards}
                 onEditCareer={() => setEditing("career")}
@@ -155,13 +213,13 @@ export default function DashboardPage() {
 
               <ProfileListCard
                 title="🎓 학력"
-                items={educationItems}
+                items={displayedEducationItems}
                 emptyMessage="학력을 입력해주세요."
                 onEdit={() => setEditing("education_history")}
               />
             </div>
 
-            <div className="mb-6 grid grid-cols-3 gap-6">
+            <div className="mb-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
               <ProfileListCard
                 title="🏆 수상경력"
                 items={awardItems}
@@ -208,11 +266,9 @@ export default function DashboardPage() {
         onSave={async (items) => updateProfileSection({ career: items })}
       />
 
-      <ListEditorModal
+      <EducationEditorModal
         open={editing === "education_history"}
-        title="학력 수정"
         initialItems={educationItems}
-        placeholder="학력 항목 입력"
         saving={saving}
         onClose={() => setEditing(null)}
         onSave={async (items) => updateProfileSection({ education_history: items })}
@@ -238,11 +294,9 @@ export default function DashboardPage() {
         onSave={async (items) => updateProfileSection({ certifications: items })}
       />
 
-      <ListEditorModal
+      <SkillEditorModal
         open={editing === "skills"}
-        title="스킬 수정"
         initialItems={skillItems}
-        placeholder="스킬 입력"
         saving={saving}
         onClose={() => setEditing(null)}
         onSave={async (items) => updateProfileSection({ skills: items })}
@@ -258,14 +312,12 @@ export default function DashboardPage() {
         onSave={async (items) => updateProfileSection({ languages: items })}
       />
 
-      <ListEditorModal
+      <SelfIntroEditorModal
         open={editing === "self_intro"}
-        title="자기소개 수정"
-        initialItems={[profile.self_intro || ""]}
-        placeholder="자기소개 입력"
+        initialValue={profile.self_intro || ""}
         saving={saving}
         onClose={() => setEditing(null)}
-        onSave={async (items) => updateProfileSection({ self_intro: items[0] ?? "" })}
+        onSave={async (value) => updateProfileSection({ self_intro: value })}
       />
 
         <ProfileEditModal

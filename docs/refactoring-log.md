@@ -3420,12 +3420,20 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - 대시보드 하단 카드의 D-day는 공통 `ProgramDeadlineBadge`를 카드 오른쪽 상단에만 표시하도록 맞추고, 기존 HOT/NEW badge와 본문 `마감 MM.DD` 중복 표기를 제거함
   - 카드 점수 helper에서 `relevance_score=0`이 양수 `score/final_score`를 막아 커리어 핏이 0%로 보이던 경로를 수정하고 회귀 테스트를 추가함
   - 커리어 핏 추천 BFF 응답과 클라이언트 localStorage 추천 캐시 모두에서 마감된 과정(`days_left < 0`, 과거 deadline)을 제외하도록 공통 helper를 추가함. 날짜 신호가 없을 때만 `is_open=false`/`is_active=false`를 closed 신호로 사용해 stale flag가 미래 deadline 카드를 숨기지 않게 보정함
-  - 추천 BFF가 성공 응답으로 빈 추천을 반환하거나 마감 제외 후 0건이 되는 경우에도 모집중 공개 후보 fallback을 사용하도록 바꿔 `내 커리어 핏 추천` 섹션이 불필요하게 비지 않도록 복구함
+  - 추천 BFF가 성공 응답으로 빈 추천을 반환하거나 마감 제외 후 0건이 되는 경우에도 추천 strip을 비우지 않도록, 백엔드 추천 엔진 -> 사용자 DB 용어 직접 매칭(`dashboard_user_db_match`) -> 모집중 품질 fallback(`dashboard_quality_open_fallback`) 순서로 최대 5개를 채우는 단계형 추천 조립을 추가함
   - 실제 로컬 API 점검에서 Supabase direct fallback의 `program_list_index` 조회가 statement timeout으로 400을 반환하는 경로를 확인해, 추천 BFF도 빠른 `/programs/list?recruiting_only=true&sort=deadline` backend fallback을 먼저 사용하고 direct fallback은 로컬 날짜 기준 `deadline >= 오늘`으로 조회하도록 보강함
-  - 추천 localStorage 캐시는 `isoser:dashboard-recommended-programs:v2` 키와 6시간 TTL로 바꾸고, 모집중/양수 점수 조건을 만족하는 추천 및 fallback 카드를 즉시 재사용하게 해 대시보드 재진입 시 빈 로딩을 줄임
-  - 후속 QA 기준에 맞춰 `내 커리어 핏 추천`은 70점 threshold 없이 사용자 DB 기반 개인화 추천 surface만 노출하고 내부 매칭 점수로 정렬하도록 변경함. 공개 fallback 후보는 추천 strip에 섞지 않고, 추천/캘린더 카드의 커리어 핏 퍼센트 텍스트는 제거함
+  - 추천 localStorage 캐시는 `isoser:dashboard-recommended-programs:v3` 키와 6시간 TTL로 바꾸고, 모집중 카드가 있으면 즉시 재사용하게 해 대시보드 재진입 시 빈 로딩을 줄임
+  - 후속 QA 기준에 맞춰 `내 커리어 핏 추천`은 70점 threshold나 화면 퍼센트 표시 없이 사용자 DB와 공개 모집중 후보를 BFF에서 정렬/보충하고, 프론트는 BFF 순서를 그대로 표시하도록 변경함. 추천/캘린더 카드의 커리어 핏 퍼센트 텍스트는 제거함
   - 대시보드 찜한 과정은 `program_bookmarks`가 비어 있을 때 legacy `bookmarks` 테이블도 확인하고, 카드 summary는 `programs` 테이블을 먼저 읽어 read-model timeout 영향을 줄임. 클라이언트 fetch timeout은 15초로 늘리고 10분 localStorage cache를 추가해 재진입 시 기존 찜 카드가 먼저 보이게 함
   - `오늘의 성과` 하위 항목의 아이콘/라벨/건수 글자 크기를 12px로 조정함
   - 달력 내부 글자는 유지하고, 캘린더 툴바/왼쪽 정보 패널/하단 추천·찜 카드의 작은 글자들을 `찜한 과정` 제목과 같은 15px 기준으로 키워 화면 밀도를 완화함
-  - 하단 `내 커리어 핏 추천` strip은 추천 전용 BFF를 사용하고 커리어 핏 점수 기준으로 정렬하며, 이전 캘린더 fallback 0% cache가 추천 카드를 덮지 않게 cache 사용 조건을 좁힘
+  - 하단 `내 커리어 핏 추천` strip은 추천 전용 BFF를 사용하고 BFF의 단계형 추천 순서를 그대로 쓰며, 이전 캘린더 fallback 0% cache가 추천 카드를 덮지 않게 cache key와 사용 조건을 좁힘
   - `찜한 과정` strip은 추천 strip과 같은 최소 세로 공간 및 hover 여백을 갖게 해 카드 상단 클리핑을 완화함
+- 2026-04-27: `frontend/app/dashboard/profile/page.tsx`, `frontend/app/dashboard/profile/_components/profile-completion-card.tsx`, `frontend/app/dashboard/profile/_components/profile-hero-section.tsx`, `frontend/app/dashboard/profile/_components/profile-activity-strip.tsx`, `frontend/app/dashboard/profile/_components/profile-detail-cards.tsx`, `frontend/app/dashboard/profile/_components/profile-section-editors.tsx`, `frontend/app/dashboard/profile/_lib/profile-page.ts`, `frontend/app/(landing)/landing-c/_program-feed.tsx`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-27-profile-page-completion-and-editors-result.md`
+  - 프로필 완성도 카드가 100% 미만일 때 기존 점수 기준에 맞춰 부족 항목을 제목 옆에 표시하고, 100% 도달 시 완료/팡파레 상태 후 섹션을 숨기도록 조정함
+  - 학력 수정 모달은 저장 계약을 유지한 채 `학교명/학과/기간/졸업구분/학점` 필드로 분리했고, 기존 단일 문자열 학력은 학교명으로 열어 편집할 수 있게 함
+  - Skills 카드 긴 텍스트 overflow, 경력 하위 프로젝트 설명 과다 표시, 프로필 화면 카드 간격/밀도 문제를 함께 정리함
+  - Skills 편집 모달을 키워드 + 3단계 range slider로 바꾸고, 기존 `skills: string[]` 계약 안에서 `스킬명 | 상/중/하`를 파싱/직렬화하도록 보강함
+  - 자기소개 카드의 line clamp를 제거하고 카드 내부 스크롤로 긴 본문을 끝까지 볼 수 있게 조정했으며, 자기소개 수정 모달도 넓은 textarea 전용 모달로 분리함
+  - 프로필 성과 strip에 `전체` 탭을 추가해 기본 최신순 목록으로 쓰고, 개별 카테고리 첫 행이 5장 미만이면 오른쪽에 `성과 추가 하기` 플러스 카드를 채우도록 조정함
+  - production build 검증 중 기존 landing-c JSX apostrophe lint 오류가 빌드를 막아 표시 결과를 바꾸지 않는 escape만 최소 수정함

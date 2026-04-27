@@ -87,7 +87,7 @@ export function LandingCOpportunityFeed({ activeChip, programs, error }: Landing
             <p className="text-xs font-black uppercase tracking-[0.24em] text-[var(--indigo)]">Opportunity feed</p>
             <h2 className="mt-3 text-3xl font-black tracking-[-0.05em]">자주찾는 검색어로 공고를 빠르게 탐색합니다</h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--sub)]">
-              더 많은 공고를 탐색하고 싶다면 '프로그램 더보기' 버튼을 누르세요.
+              더 많은 공고를 탐색하고 싶다면 &apos;프로그램 더보기&apos; 버튼을 누르세요.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
