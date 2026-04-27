@@ -1,0 +1,13 @@
+{
+  "task_id": "TASK-2026-04-24-1100-html-diagnostic-followup",
+  "version": 1,
+  "anchors": {
+    "review-failed": {
+      "source": "cowork-dispatch",
+      "at": "2026-04-27T09:33:51",
+      "details": {
+        "status": "action-required"
+      }
+    }
+  }
+}
