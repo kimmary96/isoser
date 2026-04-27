@@ -4,6 +4,7 @@
 
 - [program-surface-contract-v2.md](./program-surface-contract-v2.md)
 - [career-evidence-engine-v1.md](./career-evidence-engine-v1.md)
+- [portfolio-builder-fit-framework-v1.md](./portfolio-builder-fit-framework-v1.md)
 - [final-refactor-axis-map-v1.md](./final-refactor-axis-map-v1.md)
 - [program-canonical-schema-design-v1.md](./program-canonical-schema-design-v1.md)
 - [compare-meta-runtime-touchpoints-v1.md](./compare-meta-runtime-touchpoints-v1.md)

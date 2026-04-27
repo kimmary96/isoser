@@ -1,0 +1,364 @@
+"use client";
+
+import { useState } from "react";
+import {
+  Document,
+  Font,
+  Image as PdfImage,
+  Page,
+  pdf,
+  StyleSheet,
+  Text,
+  View,
+} from "@react-pdf/renderer";
+
+import {
+  getOrderedPortfolioProjects,
+  getPortfolioProjectDisplaySections,
+  getPortfolioProjectSummary,
+  getPortfolioProjectTitle,
+} from "@/lib/portfolio-document";
+import type { PortfolioDocumentPayload, PortfolioImagePlacement, PortfolioProjectDraft } from "@/lib/types";
+
+type PortfolioPdfProfile = {
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+  self_intro: string | null;
+};
+
+Font.register({
+  family: "ResumePretendard",
+  fonts: [
+    {
+      src: "/fonts/Pretendard-Regular.woff",
+      fontWeight: 400,
+    },
+    {
+      src: "/fonts/Pretendard-Bold.woff",
+      fontWeight: 700,
+    },
+  ],
+});
+
+const styles = StyleSheet.create({
+  page: {
+    paddingTop: 28,
+    paddingBottom: 28,
+    paddingHorizontal: 30,
+    fontFamily: "ResumePretendard",
+    fontSize: 10,
+    lineHeight: 1.55,
+    color: "#0f172a",
+  },
+  documentTitle: {
+    fontSize: 20,
+    fontWeight: 700,
+    marginBottom: 6,
+  },
+  subtitle: {
+    fontSize: 10,
+    color: "#475569",
+  },
+  intro: {
+    marginTop: 10,
+    padding: 10,
+    backgroundColor: "#f8fafc",
+    borderRadius: 8,
+    color: "#475569",
+  },
+  project: {
+    marginTop: 18,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: "#e2e8f0",
+  },
+  eyebrow: {
+    fontSize: 8,
+    color: "#2563eb",
+    fontWeight: 700,
+    marginBottom: 4,
+  },
+  projectTitle: {
+    fontSize: 15,
+    fontWeight: 700,
+    marginBottom: 4,
+  },
+  summary: {
+    color: "#334155",
+    marginBottom: 8,
+  },
+  meta: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 4,
+    marginBottom: 8,
+  },
+  metaItem: {
+    paddingVertical: 3,
+    paddingHorizontal: 6,
+    borderRadius: 6,
+    backgroundColor: "#f1f5f9",
+    color: "#475569",
+    fontSize: 8,
+  },
+  section: {
+    marginTop: 9,
+  },
+  sectionTitle: {
+    fontSize: 11,
+    fontWeight: 700,
+    marginBottom: 3,
+  },
+  body: {
+    color: "#334155",
+  },
+  bullet: {
+    marginTop: 2,
+    color: "#334155",
+  },
+  metricRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+    marginTop: 5,
+  },
+  metric: {
+    width: "31%",
+    padding: 7,
+    borderRadius: 8,
+    backgroundColor: "#fff7ed",
+  },
+  metricValue: {
+    fontSize: 13,
+    fontWeight: 700,
+    color: "#b45309",
+  },
+  metricLabel: {
+    marginTop: 2,
+    fontSize: 8,
+    color: "#475569",
+  },
+  imageGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 8,
+  },
+  imageBox: {
+    width: "48%",
+  },
+  image: {
+    width: "100%",
+    height: 130,
+    objectFit: "cover",
+    borderRadius: 8,
+  },
+  caption: {
+    marginTop: 3,
+    fontSize: 8,
+    color: "#64748b",
+  },
+  tagRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 4,
+    marginTop: 8,
+  },
+  tag: {
+    paddingVertical: 2,
+    paddingHorizontal: 5,
+    borderRadius: 999,
+    backgroundColor: "#fffbeb",
+    color: "#92400e",
+    fontSize: 8,
+  },
+});
+
+function imagesForSection(
+  document: PortfolioDocumentPayload,
+  project: PortfolioProjectDraft,
+  sectionKey: PortfolioImagePlacement["sectionKey"]
+): PortfolioImagePlacement[] {
+  return document.imagePlacements
+    .filter((placement) => placement.activityId === project.activityId && placement.sectionKey === sectionKey)
+    .sort((a, b) => a.order - b.order);
+}
+
+function PortfolioPdfImages({ placements }: { placements: PortfolioImagePlacement[] }) {
+  if (placements.length === 0) return null;
+
+  return (
+    <View style={styles.imageGrid}>
+      {placements.map((placement) => (
+        <View key={placement.id} style={styles.imageBox}>
+          <PdfImage src={placement.imageUrl} style={styles.image} />
+          <Text style={styles.caption}>{placement.captionDraft || "이미지 캡션 확인 필요"}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function PortfolioPdfProject({
+  document,
+  project,
+  index,
+}: {
+  document: PortfolioDocumentPayload;
+  project: PortfolioProjectDraft;
+  index: number;
+}) {
+  const overview = project.portfolio.project_overview;
+  const displaySections = getPortfolioProjectDisplaySections(project);
+
+  return (
+    <View style={styles.project}>
+      <Text style={styles.eyebrow}>PROJECT {index + 1}</Text>
+      <Text style={styles.projectTitle}>{getPortfolioProjectTitle(project)}</Text>
+      <Text style={styles.summary}>{getPortfolioProjectSummary(project)}</Text>
+      <View style={styles.meta}>
+        <Text style={styles.metaItem}>기간: {overview.period || "기간 미입력"}</Text>
+        <Text style={styles.metaItem}>역할: {overview.role || project.portfolio.role_clarification.content || "역할 미입력"}</Text>
+        {overview.organization && <Text style={styles.metaItem}>조직: {overview.organization}</Text>}
+        {overview.skills.slice(0, 6).map((skill) => (
+          <Text key={skill} style={styles.metaItem}>
+            {skill}
+          </Text>
+        ))}
+      </View>
+      <PortfolioPdfImages placements={imagesForSection(document, project, "overview")} />
+      {displaySections.map((section) => {
+        const placements = imagesForSection(document, project, section.key);
+        const metrics =
+          section.key === "result" ? project.portfolio.quantified_result.metrics : [];
+        const hasContent =
+          Boolean(section.text) ||
+          section.highlights.length > 0 ||
+          metrics.length > 0 ||
+          placements.length > 0;
+        if (!hasContent) return null;
+
+        return (
+          <View key={section.key} style={styles.section}>
+            <Text style={styles.sectionTitle}>{section.title}</Text>
+            {section.text && <Text style={styles.body}>{section.text}</Text>}
+            {section.highlights.map((highlight) => (
+              <Text key={highlight} style={styles.bullet}>
+                - {highlight}
+              </Text>
+            ))}
+            {metrics.length > 0 && (
+              <View style={styles.metricRow}>
+                {metrics.map((metric) => (
+                  <View key={`${metric.value}-${metric.label}`} style={styles.metric}>
+                    <Text style={styles.metricValue}>{metric.value}</Text>
+                    <Text style={styles.metricLabel}>{metric.label}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+            <PortfolioPdfImages placements={placements} />
+          </View>
+        );
+      })}
+      {project.reviewTags.length > 0 && (
+        <View style={styles.tagRow}>
+          {project.reviewTags.map((tag) => (
+            <Text key={tag} style={styles.tag}>
+              {tag}
+            </Text>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+}
+
+function PortfolioPdfDocument({
+  document,
+  profile,
+}: {
+  document: PortfolioDocumentPayload;
+  profile: PortfolioPdfProfile | null;
+}) {
+  const projects = getOrderedPortfolioProjects(document);
+
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        <Text style={styles.documentTitle}>{document.title}</Text>
+        <Text style={styles.subtitle}>
+          {[profile?.name, document.targetJob ? `지원 직무: ${document.targetJob}` : null, profile?.email, profile?.phone]
+            .filter(Boolean)
+            .join(" · ")}
+        </Text>
+        {profile?.self_intro && <Text style={styles.intro}>{profile.self_intro}</Text>}
+        {projects.map((project, index) => (
+          <PortfolioPdfProject
+            key={project.activityId || `${project.portfolio.project_overview.title}-${index}`}
+            document={document}
+            project={project}
+            index={index}
+          />
+        ))}
+      </Page>
+    </Document>
+  );
+}
+
+function sanitizePdfFileName(value: string): string {
+  const normalized = value.replace(/[\\/:*?"<>|]+/g, "_").trim();
+  return normalized || "portfolio";
+}
+
+function downloadBlob(blob: Blob, fileName: string) {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = fileName;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+export function PortfolioPdfDownload({
+  document,
+  profile,
+}: {
+  document: PortfolioDocumentPayload;
+  profile: PortfolioPdfProfile | null;
+}) {
+  const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+
+  const handleDownload = async () => {
+    if (downloading) return;
+
+    setDownloading(true);
+    setDownloadError(null);
+    try {
+      const blob = await pdf(<PortfolioPdfDocument document={document} profile={profile} />).toBlob();
+      downloadBlob(blob, `${sanitizePdfFileName(document.title)}.pdf`);
+    } catch (error) {
+      setDownloadError(error instanceof Error ? error.message : "포트폴리오 PDF 생성 중 오류가 발생했습니다.");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <button
+        type="button"
+        onClick={() => void handleDownload()}
+        disabled={downloading}
+        className="block w-full rounded-xl bg-[#071a36] px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-wait disabled:opacity-60"
+      >
+        {downloading ? "PDF 생성 중..." : "PDF 다운로드"}
+      </button>
+      {downloadError && <p className="text-xs leading-relaxed text-red-600">{downloadError}</p>}
+    </div>
+  );
+}
