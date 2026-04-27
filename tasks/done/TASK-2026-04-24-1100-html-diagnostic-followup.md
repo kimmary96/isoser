@@ -25,9 +25,9 @@ Operational rule:
 # Current References
 
 - `reports/TASK-2026-04-23-html-collector-dynamic-retrieve-diagnostic-result.md`
-- `reports/SESSION-2026-04-23-html-snapshot-and-scheduler-integration-result.md`
-- `reports/SESSION-2026-04-24-ocr-field-gap-audit-result.md`
-- `reports/SESSION-2026-04-24-html-diagnostic-signal-hardening-result.md`
+- `reports\session\2026-04\SESSION-2026-04-23-html-snapshot-and-scheduler-integration-result.md`
+- `reports\session\2026-04\SESSION-2026-04-24-ocr-field-gap-audit-result.md`
+- `reports\session\2026-04\SESSION-2026-04-24-html-diagnostic-signal-hardening-result.md`
 - `docs/current-state.md`의 2026-04-23, 2026-04-24 HTML diagnostic / OCR preflight 항목
 
 # Scope
@@ -77,3 +77,4 @@ Operational rule:
 
 - scheduler dry-run summary와 diagnostic report 완전 통합
 - 반복 full parse-empty source 전용 Playwright opt-in packet 분리
+

@@ -2,39 +2,16 @@
 
 import { useMemo } from "react";
 
-import type { ProgramCalendarRecommendItem } from "@/lib/types";
+import { isSameProgramDate, parseProgramDate, toProgramDateKey } from "@/lib/program-display";
+import type { ProgramCardItem } from "@/lib/types";
 
 type DashboardCalendarMiniCalendarProps = {
-  items: ProgramCalendarRecommendItem[];
+  items: ProgramCardItem[];
   selectedDate: string | null;
   onSelectDate: (dateKey: string) => void;
 };
 
 const WEEKDAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
-
-function toDateKey(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function parseDateKey(value: string | null | undefined): string | null {
-  if (!value) return null;
-
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return null;
-
-  return toDateKey(parsed);
-}
-
-function isSameDay(left: Date, right: Date): boolean {
-  return (
-    left.getFullYear() === right.getFullYear() &&
-    left.getMonth() === right.getMonth() &&
-    left.getDate() === right.getDate()
-  );
-}
 
 export function DashboardCalendarMiniCalendar({
   items,
@@ -49,11 +26,9 @@ export function DashboardCalendarMiniCalendar({
     const meta = new Map<string, { count: number; titles: string[] }>();
 
     items.forEach((item) => {
-      const dateKey = parseDateKey(item.deadline);
-      if (!dateKey) return;
-      if (!item.deadline) return;
-
-      const parsed = new Date(item.deadline);
+      const parsed = parseProgramDate(item.program.deadline);
+      const dateKey = toProgramDateKey(parsed);
+      if (!parsed || !dateKey) return;
       if (parsed.getFullYear() !== currentYear || parsed.getMonth() !== currentMonth) return;
 
       const entry = meta.get(dateKey) ?? { count: 0, titles: [] };
@@ -99,10 +74,13 @@ export function DashboardCalendarMiniCalendar({
 
       <div className="grid grid-cols-7 gap-1">
         {cells.map((cell) => {
-          const dateKey = toDateKey(cell);
+          const dateKey = toProgramDateKey(cell);
+          if (!dateKey) {
+            return null;
+          }
           const meta = dateMeta.get(dateKey);
           const isCurrentMonth = cell.getMonth() === currentMonth;
-          const isToday = isSameDay(cell, today);
+          const isToday = isSameProgramDate(cell, today);
           const isSelected = selectedDate === dateKey;
 
           return (

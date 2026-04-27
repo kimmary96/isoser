@@ -21,6 +21,14 @@ export function getActivityPreviewText(activity: Activity): string {
   return getActivityIntroLines(activity).join(" ");
 }
 
+export function getActivityImageUrls(activity: Activity): string[] {
+  return Array.isArray(activity.image_urls)
+    ? activity.image_urls
+        .map((url) => (typeof url === "string" ? url.trim() : ""))
+        .filter(Boolean)
+    : [];
+}
+
 export function getActivityMetaItems(activity: Activity): string[] {
   const items = [
     normalizeText(activity.organization),

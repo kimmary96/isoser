@@ -10,13 +10,15 @@ type CookieToSet = {
 };
 
 export async function middleware(request: NextRequest) {
-  if (request.nextUrl.pathname === "/programs/compare") {
+  const { pathname } = request.nextUrl;
+
+  if (pathname === "/programs/compare") {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/compare";
     return NextResponse.redirect(redirectUrl);
   }
 
-  if (request.nextUrl.pathname === "/" && request.nextUrl.searchParams.has("code")) {
+  if (pathname === "/" && request.nextUrl.searchParams.has("code")) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/auth/callback";
     if (!redirectUrl.searchParams.get("next")) {
@@ -28,6 +30,13 @@ export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
     request,
   });
+
+  const requiresAuth = pathname === "/onboarding" || pathname.startsWith("/dashboard");
+  const needsUserLookup = pathname === "/login" || requiresAuth;
+
+  if (!needsUserLookup) {
+    return response;
+  }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -51,10 +60,6 @@ export async function middleware(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const { pathname } = request.nextUrl;
-  const requiresAuth =
-    pathname === "/onboarding" || pathname.startsWith("/dashboard");
 
   if (user && pathname === "/login") {
     const redirectUrl = request.nextUrl.clone();

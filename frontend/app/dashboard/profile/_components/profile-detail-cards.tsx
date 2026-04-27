@@ -1,7 +1,6 @@
 "use client";
 
 import { PencilButton, ReadonlyListSection } from "./profile-section-editors";
-import { getActivityPreviewText } from "@/lib/activity-display";
 import type { CareerCard } from "../_lib/profile-page";
 
 type ProfileCareerCardSectionProps = {
@@ -14,7 +13,7 @@ export function ProfileCareerCardSection({
   onEditCareer,
 }: ProfileCareerCardSectionProps) {
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.05)]">
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.05)]">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-base font-semibold tracking-tight text-slate-950">🗂 경력</h3>
         <PencilButton onClick={onEditCareer} label="경력 수정" />
@@ -23,7 +22,7 @@ export function ProfileCareerCardSection({
         <p className="text-sm text-slate-400">저장된 경력이 없습니다.</p>
       ) : (
         careerCards.map((card, index) => (
-          <div key={`${card.company}-${card.position}-${index}`} className="mb-4">
+          <div key={`${card.company}-${card.position}-${index}`} className="mb-3">
             <div className="mb-1 flex items-start justify-between">
               <div>
                 <p className="text-sm font-semibold text-slate-900">{card.company}</p>
@@ -34,12 +33,7 @@ export function ProfileCareerCardSection({
             <div className="mt-2 space-y-1 rounded-2xl border border-slate-200 bg-slate-50 p-3">
               {card.activities.map((activity, activityIndex) => (
                 <div key={`${activity.title}-${activityIndex}`} className="text-xs text-slate-600">
-                  <p>- {activity.title}</p>
-                  {getActivityPreviewText(activity) && (
-                    <p className="mt-0.5 line-clamp-2 pl-2 text-slate-500">
-                      {getActivityPreviewText(activity)}
-                    </p>
-                  )}
+                  <p className="truncate">- {activity.title}</p>
                 </div>
               ))}
             </div>
@@ -64,7 +58,7 @@ export function ProfileListCard({
   onEdit,
 }: ProfileListCardProps) {
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.05)]">
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_12px_32px_rgba(15,23,42,0.05)]">
       <ReadonlyListSection
         title={title}
         items={items}
@@ -87,7 +81,7 @@ export function ProfileFooterActions({
   onOpenPortfolio,
 }: ProfileFooterActionsProps) {
   return (
-    <div className="mb-8 flex justify-end gap-3">
+    <div className="mb-6 flex justify-end gap-3">
       <button
         type="button"
         onClick={onOpenSettings}

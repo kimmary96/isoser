@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 
 import { getRecommendedCalendar } from "@/lib/api/app";
-import type { ProgramCalendarRecommendItem } from "@/lib/types";
+import { getProgramCardScore } from "@/lib/program-card-items";
+import type { ProgramCardItem } from "@/lib/types";
 
 const REQUEST_TIMEOUT_MS = 5_000;
 const MAX_VISIBLE_ITEMS = 8;
@@ -17,18 +18,25 @@ function resolveDeadlineTime(value: string | null | undefined): number {
   return Number.isNaN(parsed) ? Number.MAX_SAFE_INTEGER : parsed;
 }
 
-function sortCalendarItems(items: ProgramCalendarRecommendItem[]): ProgramCalendarRecommendItem[] {
+function resolveItemScore(item: ProgramCardItem): number {
+  return getProgramCardScore(item) ?? 0;
+}
+
+function sortCalendarItems(items: ProgramCardItem[]): ProgramCardItem[] {
   return [...items].sort((left, right) => {
-    if (right.final_score !== left.final_score) {
-      return right.final_score - left.final_score;
+    const rightScore = resolveItemScore(right);
+    const leftScore = resolveItemScore(left);
+
+    if (rightScore !== leftScore) {
+      return rightScore - leftScore;
     }
 
-    return resolveDeadlineTime(left.deadline) - resolveDeadlineTime(right.deadline);
+    return resolveDeadlineTime(left.program.deadline) - resolveDeadlineTime(right.program.deadline);
   });
 }
 
 export function useDashboardCalendar() {
-  const [items, setItems] = useState<ProgramCalendarRecommendItem[]>([]);
+  const [items, setItems] = useState<ProgramCardItem[]>([]);
   const [status, setStatus] = useState<DashboardCalendarStatus>("loading");
 
   useEffect(() => {

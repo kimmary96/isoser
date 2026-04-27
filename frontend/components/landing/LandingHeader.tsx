@@ -20,7 +20,7 @@ type HeaderLink = {
 };
 
 const landingHeaderLinks: HeaderLink[] = [
-  { href: "/programs", label: "프로그램 상세", mobileLabel: "상세" },
+  { href: "/programs", label: "프로그램 탐색", mobileLabel: "탐색" },
   { href: "/compare", label: "비교" },
   { href: DASHBOARD_RECOMMEND_CALENDAR, label: "대시보드" },
 ];

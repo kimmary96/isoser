@@ -2,9 +2,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { listActivities } from "@/lib/api/app";
-import { getActivityIntroLines } from "@/lib/activity-display";
+import { getActivityImageUrls, getActivityIntroLines } from "@/lib/activity-display";
 import type { Activity } from "@/lib/types";
 
 export default function ActivitiesPage() {
@@ -115,6 +116,7 @@ export default function ActivitiesPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredActivities.map((activity) => {
               const previewLines = getActivityIntroLines(activity);
+              const coverImage = getActivityImageUrls(activity)[0];
 
               return (
                 <Link
@@ -124,18 +126,35 @@ export default function ActivitiesPage() {
                 >
                   <div
                     className="h-40 flex items-center justify-center relative"
-                    style={{ background: "linear-gradient(135deg, #1e3a5f, #2d5a8e)" }}
+                    style={
+                      coverImage
+                        ? undefined
+                        : { background: "linear-gradient(135deg, #1e3a5f, #2d5a8e)" }
+                    }
                   >
+                    {coverImage ? (
+                      <>
+                        <Image
+                          src={coverImage}
+                          alt={`${activity.title} 대표 이미지`}
+                          fill
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          className="object-cover"
+                        />
+                        <div className="absolute inset-0 bg-slate-950/10" />
+                      </>
+                    ) : (
+                      <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,0.3)" strokeWidth={1}>
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <circle cx="8.5" cy="8.5" r="1.5" />
+                        <path d="M21 15l-5-5L5 21" />
+                      </svg>
+                    )}
                     <div className="absolute top-3 left-3">
                       <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: "rgba(109,94,0,0.85)", color: "#fef3c7" }}>
                         {activity.type}
                       </span>
                     </div>
-                    <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,0.3)" strokeWidth={1}>
-                      <rect x="3" y="3" width="18" height="18" rx="2" />
-                      <circle cx="8.5" cy="8.5" r="1.5" />
-                      <path d="M21 15l-5-5L5 21" />
-                    </svg>
                   </div>
 
                   <div className="p-4">

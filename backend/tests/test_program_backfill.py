@@ -1,6 +1,7 @@
 from datetime import date
 
-from backend.rag.collector.work24_detail_parser import parse_work24_detail_html
+from backend.rag.collector.external_program_schedule_parser import parse_external_program_schedule_html
+from backend.rag.collector.work24_detail_parser import parse_work24_detail_html, parse_work24_timetable_html
 from scripts.program_backfill import (
     build_patch,
     build_program_deadline_audit_report,
@@ -287,6 +288,8 @@ def test_fetch_work24_record_from_detail_url_extracts_html_fields(monkeypatch) -
     assert record.normalized["compare_meta"]["day_night"] == "주간"
     assert record.normalized["compare_meta"]["weekend_text"] == "주중"
     assert record.normalized["compare_meta"]["training_time"] == "월,화,수,목,금 / 09:00 ~ 18:00"
+    assert record.normalized["compare_meta"]["self_payment"] == 231020
+    assert record.normalized["compare_meta"]["out_of_pocket"] == 231020
     assert record.normalized["compare_meta"]["contact_phone"] == "02-792-3440"
     assert record.normalized["compare_meta"]["email"] == "test@example.com"
 
@@ -317,6 +320,132 @@ def test_work24_detail_parser_drops_malformed_schedule_and_contact_values() -> N
     assert "email" not in meta
 
 
+def test_work24_timetable_parser_extracts_date_slots_and_summary() -> None:
+    html = """
+    <table>
+      <caption>훈련과정정보 시간표 요일, 날짜, 훈련시간 정보 제공</caption>
+      <tr><th>일</th><th>월</th><th>화</th></tr>
+      <tr class="tac notice3">
+        <td data-itemtype="20260426"></td>
+        <td class="timtbl-cal dt1-20260427" data-itemtype="20260427">04월 27일 03시간</td>
+        <td class="timtbl-cal dt1-20260428" data-itemtype="20260428">04월 28일 08시간</td>
+      </tr>
+      <tr class="tac notice4">
+        <td class="btlL dt2-20260426" data-itemtype="20260426"></td>
+        <td class="dt3-20260426" data-itemtype="20260426"></td>
+        <td class="btlL timtbl-cal dt2-20260427" data-itemtype="20260427">훈련</td>
+        <td class="timtbl-cal dt3-20260427" data-itemtype="20260427">19:30~22:30</td>
+        <td class="btlL timtbl-cal dt2-20260428" data-itemtype="20260428">훈련</td>
+        <td class="timtbl-cal dt3-20260428" data-itemtype="20260428">09:00~18:00</td>
+      </tr>
+      <tr class="tac notice4">
+        <td class="btlL dt2-20260426" data-itemtype="20260426"></td>
+        <td class="dt3-20260426" data-itemtype="20260426"></td>
+        <td class="btlL timtbl-cal dt2-20260427" data-itemtype="20260427">저녁</td>
+        <td class="timtbl-cal dt3-20260427" data-itemtype="20260427">~</td>
+        <td class="btlL timtbl-cal dt2-20260428" data-itemtype="20260428">점심</td>
+        <td class="timtbl-cal dt3-20260428" data-itemtype="20260428">12:00~13:00</td>
+      </tr>
+    </table>
+    """
+
+    parsed = parse_work24_timetable_html(html)
+
+    assert parsed == {
+        "training_schedule": [
+            {
+                "date": "2026-04-27",
+                "duration_hours": 3,
+                "training_times": ["19:30~22:30"],
+                "break_times": [],
+            },
+            {
+                "date": "2026-04-28",
+                "duration_hours": 8,
+                "training_times": ["09:00~18:00"],
+                "break_times": ["점심 12:00~13:00"],
+            },
+        ],
+        "training_schedule_summary": "2일 · 총 11시간 · 19:30~22:30, 09:00~18:00",
+    }
+
+
+def test_external_program_schedule_parser_extracts_program_and_application_dates() -> None:
+    html = """
+    <html><body>
+      <table>
+        <tr><td><strong>일정 :</strong> 2026-04-29 ~ 2026-04-29</td></tr>
+        <tr><td><strong>시간 :</strong> 14:00 ~ 15:30</td></tr>
+        <tr><td><strong>신청기간 :</strong> 공고일~2026-04-27</td></tr>
+      </table>
+    </body></html>
+    """
+
+    parsed = parse_external_program_schedule_html(
+        html,
+        source_url="https://dobongstartup.com/program/programview.php?pg_id=233",
+    )
+
+    assert parsed is not None
+    meta = parsed["compare_meta"]
+    assert meta["program_start_date"] == "2026-04-29"
+    assert meta["program_end_date"] == "2026-04-29"
+    assert meta["application_end_date"] == "2026-04-27"
+    assert meta["schedule_text"] == "2026-04-29 ~ 2026-04-29 / 14:00 ~ 15:30"
+
+
+def test_external_program_schedule_parser_prefers_short_label_rows_over_combined_page_text() -> None:
+    html = """
+    <html><body>
+      <div>
+        프로그램명 : 스케일업 아카데미
+        일정 : 2026-04-29 ~ 2026-04-29
+        시간 : 14:00 ~ 15:30
+        신청기간 : 공고일~2026-04-27
+        정원 : 24
+        프로그램 내용 ...
+      </div>
+      <p>일정 : 2026-04-29 ~ 2026-04-29</p>
+      <p>시간 : 14:00 ~ 15:30</p>
+      <p>신청기간 : 공고일~2026-04-27</p>
+    </body></html>
+    """
+
+    parsed = parse_external_program_schedule_html(
+        html,
+        source_url="https://dobongstartup.com/program/programview.php?pg_id=233",
+    )
+
+    assert parsed is not None
+    meta = parsed["compare_meta"]
+    assert meta["program_start_date"] == "2026-04-29"
+    assert meta["program_end_date"] == "2026-04-29"
+    assert meta["application_end_date"] == "2026-04-27"
+    assert meta["schedule_text"] == "2026-04-29 ~ 2026-04-29 / 14:00 ~ 15:30"
+
+
+def test_external_program_schedule_parser_keeps_primary_schedule_label_priority() -> None:
+    html = """
+    <html><body>
+      <p>운영기간 : ~ 2026.12</p>
+      <p>일정 : 2026-04-29 ~ 2026-04-29</p>
+      <p>시간 : 14:00 ~ 15:30</p>
+      <p>신청기간 : 공고일~2026-04-27</p>
+    </body></html>
+    """
+
+    parsed = parse_external_program_schedule_html(
+        html,
+        source_url="https://dobongstartup.com/program/programview.php?pg_id=233",
+    )
+
+    assert parsed is not None
+    meta = parsed["compare_meta"]
+    assert meta["program_start_date"] == "2026-04-29"
+    assert meta["program_end_date"] == "2026-04-29"
+    assert meta["schedule_text"] == "2026-04-29 ~ 2026-04-29 / 14:00 ~ 15:30"
+
+
 def test_build_patch_fills_only_blank_fields_by_default() -> None:
     db_row = {
         "provider": None,
@@ -343,6 +472,40 @@ def test_build_patch_fills_only_blank_fields_by_default() -> None:
         "contact_phone": "02-0000-0000",
         "announcement_id": "176678",
     }
+
+
+def test_build_patch_derives_canonical_support_and_program_dates_from_enriched_record() -> None:
+    db_row = {
+        "source": "K-Startup 창업진흥원",
+        "support_amount": None,
+        "application_start_date": None,
+        "application_end_date": "2026-04-26",
+        "program_start_date": None,
+        "program_end_date": None,
+        "service_meta": None,
+    }
+    normalized = {
+        "source": "K-Startup 창업진흥원",
+        "title": "스케일업 아카데미",
+        "start_date": "2026-04-13",
+        "end_date": "2026-04-26",
+        "deadline": "2026-04-26",
+        "compare_meta": {
+            "application_url": "https://dobongstartup.com/program/programview.php?pg_id=233",
+            "program_start_date": "2026-04-29",
+            "program_end_date": "2026-04-29",
+            "schedule_text": "2026-04-29 ~ 2026-04-29 / 14:00 ~ 15:30",
+            "application_end_date": "2026-04-27",
+        },
+    }
+
+    patch = build_patch(db_row, normalized, overwrite=True)
+
+    assert patch["application_start_date"] == "2026-04-13"
+    assert patch["application_end_date"] == "2026-04-27"
+    assert patch["program_start_date"] == "2026-04-29"
+    assert patch["program_end_date"] == "2026-04-29"
+    assert patch["service_meta"]["schedule_text"] == "2026-04-29 ~ 2026-04-29 / 14:00 ~ 15:30"
 
 
 def test_build_patch_can_overwrite_when_requested() -> None:

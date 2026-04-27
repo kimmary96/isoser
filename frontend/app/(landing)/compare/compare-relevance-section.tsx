@@ -2,7 +2,10 @@ import type { ReactNode } from "react";
 
 import type { ProgramRelevanceItem } from "@/lib/types";
 
-import { CompareSectionHeader, type CompareProgram, ValueCell } from "./compare-table-sections";
+import { COMPARE_COPY } from "./compare-copy";
+import { CompareSectionHeader, ValueCell } from "./compare-table-sections";
+import { normalizeTextList } from "./compare-formatters";
+import type { CompareProgram } from "./compare-value-getters";
 
 type RelevanceState = "empty" | "login" | "loading" | "error" | "ready";
 
@@ -15,31 +18,30 @@ type CompareRelevanceSectionProps = {
   relevanceItems: Record<string, ProgramRelevanceItem>;
 };
 
-type RelevanceDetailRow = {
-  label: string;
-  extraClassName?: string;
-  empty?: (item: ProgramRelevanceItem | null, program: CompareProgram | null, isLoggedIn: boolean) => boolean;
-  render: (item: ProgramRelevanceItem | null) => ReactNode;
-};
+const FIT_STAGE_MESSAGES = [
+  "엄청난 도전과 열정이 필요해요",
+  "새로운 가능성을 열어볼 수 있어요",
+  "내 커리어에 부스터를 달아줄거에요",
+  "성장 방향과 꽤 잘 맞는 훈련이에요",
+  "나와 딱맞는 훈련이에요!",
+] as const;
 
-function formatPercent(score: number | null | undefined): string {
-  if (typeof score !== "number" || Number.isNaN(score)) return "0%";
-  return `${Math.round(score * 100)}%`;
-}
+const FIT_STAGE_COLORS = [
+  "bg-rose-500",
+  "bg-orange-400",
+  "bg-yellow-300",
+  "bg-lime-500",
+  "bg-emerald-500",
+] as const;
 
-function ScoreBar({ score }: { score: number | null | undefined }) {
-  const width = typeof score === "number" && !Number.isNaN(score) ? Math.max(0, Math.min(100, Math.round(score * 100))) : 0;
-
-  return (
-    <div className="w-full">
-      <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
-        <span>{formatPercent(score)}</span>
-      </div>
-      <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
-        <div className="h-full rounded-full bg-[#F97316]" style={{ width: `${width}%` }} />
-      </div>
-    </div>
-  );
+function getFitStage(score: number | null | undefined): number {
+  if (typeof score !== "number" || Number.isNaN(score)) return 1;
+  const normalized = Math.max(0, Math.min(1, score));
+  if (normalized >= 0.82) return 5;
+  if (normalized >= 0.64) return 4;
+  if (normalized >= 0.46) return 3;
+  if (normalized >= 0.28) return 2;
+  return 1;
 }
 
 function getRelevanceValueState(
@@ -56,49 +58,122 @@ function getRelevanceValueState(
 }
 
 function renderRelevanceFallback(state: RelevanceState): string {
-  if (state === "empty") return "정보 없음";
-  if (state === "login") return "로그인 후 확인";
-  if (state === "loading") return "분석 중";
-  if (state === "error") return "불러오기 실패";
-  return "정보 없음";
+  if (state === "empty") return COMPARE_COPY.fit.fallback.empty;
+  if (state === "login") return COMPARE_COPY.fit.fallback.login;
+  if (state === "loading") return COMPARE_COPY.fit.fallback.loading;
+  if (state === "error") return COMPARE_COPY.fit.fallback.error;
+  return COMPARE_COPY.fit.fallback.empty;
 }
 
-const relevanceDetailRows: RelevanceDetailRow[] = [
-  {
-    label: "적합도 판단",
-    render: (item) =>
-      item ? (
-        <span className="inline-flex rounded-md border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-semibold text-orange-700">
-          {item.fit_label}
+function normalizeKeyword(value: string): string {
+  return value.trim().replace(/\s+/g, " ");
+}
+
+function pushUniqueKeyword(target: string[], value: string | null | undefined) {
+  const normalized = value ? normalizeKeyword(value) : "";
+  if (!normalized || normalized === "정보 없음" || normalized === "데이터 미수집") return;
+  if (target.some((item) => item.toLowerCase() === normalized.toLowerCase())) return;
+  target.push(normalized);
+}
+
+function getMatchingKeywords(item: ProgramRelevanceItem, program: CompareProgram | null): string[] {
+  const keywords: string[] = [];
+  item.matched_regions.forEach((region) => pushUniqueKeyword(keywords, region));
+  item.matched_skills.forEach((skill) => pushUniqueKeyword(keywords, skill));
+
+  normalizeTextList(program?.skills).slice(0, 4).forEach((keyword) => pushUniqueKeyword(keywords, keyword));
+  normalizeTextList(program?.detail?.tech_stack).slice(0, 4).forEach((keyword) => pushUniqueKeyword(keywords, keyword));
+  normalizeTextList(program?.display_categories).forEach((keyword) => pushUniqueKeyword(keywords, keyword));
+  normalizeTextList(program?.tags).forEach((keyword) => pushUniqueKeyword(keywords, keyword));
+  pushUniqueKeyword(keywords, program?.category_detail ?? program?.category ?? null);
+  pushUniqueKeyword(keywords, program?.support_type ?? null);
+  pushUniqueKeyword(keywords, program?.teaching_method ?? null);
+
+  return keywords.slice(0, 8);
+}
+
+function getCareerComment(item: ProgramRelevanceItem, program: CompareProgram | null): string {
+  const keywords = getMatchingKeywords(item, program);
+  const primaryKeywords = keywords.slice(0, 3);
+  const keywordText = primaryKeywords.length > 0 ? `${primaryKeywords.join(", ")} 역량과 연결되는 과정입니다.` : "내 이력과 연결해 탐색해볼 만한 과정입니다.";
+
+  if (item.fit_label === "높음") {
+    return `${keywordText} 이 훈련을 들으면 이미 가진 경험을 더 실무적인 결과물로 확장하고, 지원서에서 바로 설명할 수 있는 프로젝트 근거를 만들기 좋습니다.`;
+  }
+  if (item.fit_label === "보통") {
+    return `${keywordText} 부족한 부분을 보완하면서 관심 직무와 연결된 포트폴리오 소재를 만들 수 있어, 다음 지원 단계의 설득력을 높이는 데 도움이 됩니다.`;
+  }
+  return `${keywordText} 아직 직접 매칭 신호는 적지만, 새로운 직무 키워드를 확보하고 커리어 방향을 넓혀보는 출발점으로 활용할 수 있습니다.`;
+}
+
+function RelevancePercent({ score }: { score: number | null | undefined }) {
+  const stage = getFitStage(score);
+  const markerLeft = `${((stage - 0.5) / 5) * 100}%`;
+
+  return (
+    <div className="w-full">
+      <div className="relative h-6 px-1">
+        <div className="grid h-2.5 grid-cols-5 gap-1 overflow-hidden rounded-full bg-slate-100 p-0.5 shadow-inner">
+          {FIT_STAGE_COLORS.map((color, index) => (
+            <span
+              key={color}
+              className={`${color} h-full rounded-full ${stage === index + 1 ? "opacity-100" : "opacity-45"}`}
+            />
+          ))}
+        </div>
+        <span
+          className="absolute top-[5px] h-4 w-1.5 -translate-x-1/2 rounded-full bg-slate-950 shadow-sm ring-2 ring-white"
+          style={{ left: markerLeft }}
+          aria-hidden="true"
+        />
+      </div>
+      <div className="mt-3 flex items-center justify-between gap-3">
+        <p className="text-sm font-bold leading-5 text-slate-800">{FIT_STAGE_MESSAGES[stage - 1]}</p>
+        <span className="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-500">
+          {stage}/5
         </span>
-      ) : null,
-  },
-  {
-    label: "지원 준비도",
-    render: (item) =>
-      item ? (
-        <span className="inline-flex rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700">
-          {item.readiness_label}
+      </div>
+    </div>
+  );
+}
+
+function KeywordChips({ item, program }: { item: ProgramRelevanceItem; program: CompareProgram | null }) {
+  const keywords = getMatchingKeywords(item, program);
+  if (keywords.length === 0) return <>{COMPARE_COPY.fit.noKeywords}</>;
+
+  return (
+    <>
+      {keywords.map((keyword) => (
+        <span
+          key={`${item.program_id}-${keyword}`}
+          className="rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700"
+        >
+          {keyword}
         </span>
-      ) : null,
+      ))}
+    </>
+  );
+}
+
+type RelevanceRow = {
+  label: string;
+  extraClassName?: string;
+  render: (item: ProgramRelevanceItem, program: CompareProgram | null) => ReactNode;
+};
+
+const relevanceRows: RelevanceRow[] = [
+  {
+    label: COMPARE_COPY.fit.rows.stage,
+    render: (item) => <RelevancePercent score={item.relevance_score} />,
   },
   {
-    label: "AI 한줄 요약",
-    render: (item) => (item ? <span className="line-clamp-2 break-words">{item.fit_summary}</span> : null),
-  },
-  {
-    label: "보완 포인트",
+    label: COMPARE_COPY.fit.rows.keywords,
     extraClassName: "flex flex-wrap gap-2",
-    render: (item) =>
-      item
-        ? item.gap_tags.length > 0
-          ? item.gap_tags.map((tag) => (
-              <span key={`${item.program_id}-${tag}`} className="rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">
-                {tag}
-              </span>
-            ))
-          : "보완 포인트 없음"
-        : null,
+    render: (item, program) => <KeywordChips item={item} program={program} />,
+  },
+  {
+    label: COMPARE_COPY.fit.rows.comment,
+    render: (item, program) => <span className="block max-w-prose text-sm leading-6 text-slate-700">{getCareerComment(item, program)}</span>,
   },
 ];
 
@@ -112,102 +187,9 @@ export function CompareRelevanceSection({
 }: CompareRelevanceSectionProps) {
   return (
     <>
-      <CompareSectionHeader label="★ AI 적합도" className="bg-[#0A0F1E] text-white" />
+      <CompareSectionHeader label={COMPARE_COPY.fit.title} className="bg-[#0A0F1E] text-white" note={COMPARE_COPY.fit.note} />
 
-      <div className="row contents">
-        <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">상태</div>
-        {slots.map((program, index) => {
-          const state = getRelevanceValueState(program, isLoggedIn, relevanceLoading, relevanceError);
-          return (
-            <ValueCell key={`relevance-state-${program?.id ?? index}`} winner={winnerIndex === index} empty={!program}>
-              {state === "login" ? (
-                <span className="inline-flex rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600">
-                  로그인 후 확인
-                </span>
-              ) : state === "loading" ? "분석 중" : state === "error" ? "불러오기 실패" : state === "ready" ? "분석 완료" : "정보 없음"}
-            </ValueCell>
-          );
-        })}
-      </div>
-
-      {[
-        { label: "종합 관련도", scoreKey: "relevance_score" as const },
-        { label: "프로필 키워드 일치도", scoreKey: "skill_match_score" as const },
-        { label: "지역 일치도", scoreKey: "region_match_score" as const },
-      ].map(({ label, scoreKey }) => (
-        <div key={label} className="row contents">
-          <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">{label}</div>
-          {slots.map((program, index) => {
-            const programId = typeof program?.id === "string" ? program.id : "";
-            const item = programId ? relevanceItems[programId] : null;
-            const score = item?.[scoreKey];
-            const state = getRelevanceValueState(program, isLoggedIn, relevanceLoading, relevanceError);
-            return (
-              <ValueCell key={`${label}-${program?.id ?? index}`} winner={winnerIndex === index} empty={!program}>
-                {state === "ready" && item ? <ScoreBar score={score} /> : renderRelevanceFallback(state)}
-              </ValueCell>
-            );
-          })}
-        </div>
-      ))}
-
-      <div className="row contents">
-        <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">매칭된 프로필 키워드</div>
-        {slots.map((program, index) => {
-          const programId = typeof program?.id === "string" ? program.id : "";
-          const item = programId ? relevanceItems[programId] : null;
-          const matchedSkills = item?.matched_skills ?? [];
-          const state = getRelevanceValueState(program, isLoggedIn, relevanceLoading, relevanceError);
-          return (
-            <ValueCell
-              key={`matched-skills-${program?.id ?? index}`}
-              winner={winnerIndex === index}
-              empty={!program || (!isLoggedIn && matchedSkills.length === 0)}
-              extraClassName="flex flex-wrap gap-2"
-            >
-              {state !== "ready"
-                ? renderRelevanceFallback(state)
-                : matchedSkills.length > 0
-                  ? matchedSkills.map((skill) => (
-                      <span key={`${programId}-${skill}`} className="rounded-md border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-medium text-orange-700">
-                        {skill}
-                      </span>
-                    ))
-                  : "매칭 키워드 없음"}
-            </ValueCell>
-          );
-        })}
-      </div>
-
-      <div className="row contents">
-        <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">매칭된 지역</div>
-        {slots.map((program, index) => {
-          const programId = typeof program?.id === "string" ? program.id : "";
-          const item = programId ? relevanceItems[programId] : null;
-          const matchedRegions = item?.matched_regions ?? [];
-          const state = getRelevanceValueState(program, isLoggedIn, relevanceLoading, relevanceError);
-          return (
-            <ValueCell
-              key={`matched-regions-${program?.id ?? index}`}
-              winner={winnerIndex === index}
-              empty={!program || (!isLoggedIn && matchedRegions.length === 0)}
-              extraClassName="flex flex-wrap gap-2"
-            >
-              {state !== "ready"
-                ? renderRelevanceFallback(state)
-                : matchedRegions.length > 0
-                  ? matchedRegions.map((region) => (
-                      <span key={`${programId}-${region}`} className="rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
-                        {region}
-                      </span>
-                    ))
-                  : "지역 매칭 없음"}
-            </ValueCell>
-          );
-        })}
-      </div>
-
-      {relevanceDetailRows.map(({ label, render, empty, extraClassName }) => (
+      {relevanceRows.map(({ label, render, extraClassName }) => (
         <div key={label} className="row contents">
           <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-600">{label}</div>
           {slots.map((program, index) => {
@@ -218,10 +200,10 @@ export function CompareRelevanceSection({
               <ValueCell
                 key={`${label}-${program?.id ?? index}`}
                 winner={winnerIndex === index}
-                empty={empty ? empty(item, program, isLoggedIn) : !program}
+                empty={!program}
                 extraClassName={extraClassName ?? ""}
               >
-                {state === "ready" && item ? render(item) : renderRelevanceFallback(state)}
+                {state === "ready" && item ? render(item, program) : renderRelevanceFallback(state)}
               </ValueCell>
             );
           })}

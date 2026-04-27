@@ -1,4 +1,5 @@
 import { apiError, apiOk } from "@/lib/api/route-response";
+import { syncRecommendationProfileAfterUserMutation } from "@/lib/server/recommendation-profile";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 async function getAuthenticatedClient() {
@@ -58,6 +59,8 @@ export async function PATCH(
       throw new Error(error?.message ?? "활동 저장에 실패했습니다.");
     }
 
+    await syncRecommendationProfileAfterUserMutation(supabase, user.id);
+
     return apiOk({ activity: data });
   } catch (error) {
     const message = error instanceof Error ? error.message : "활동 저장에 실패했습니다.";
@@ -83,6 +86,8 @@ export async function DELETE(
     if (!data || data.length === 0) {
       throw new Error("활동 삭제 권한이 없습니다.");
     }
+
+    await syncRecommendationProfileAfterUserMutation(supabase, user.id);
 
     return apiOk({ id });
   } catch (error) {

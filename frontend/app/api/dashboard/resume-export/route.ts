@@ -35,7 +35,7 @@ export async function GET(request: Request) {
     if (resumeError) throw new Error(resumeError.message);
 
     if (!resumeRow) {
-      return apiOk({ resume: null, activities: [] });
+      return apiOk({ resume: null, activities: [], profile: null });
     }
 
     const rawIds = Array.isArray(resumeRow.selected_activity_ids)
@@ -49,7 +49,15 @@ export async function GET(request: Request) {
       : [];
 
     if (ids.length === 0) {
-      return apiOk({ resume: resumeRow, activities: [] });
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("name, bio, avatar_url, email, phone, self_intro, skills")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (profileError) throw new Error(profileError.message);
+
+      return apiOk({ resume: resumeRow, activities: [], profile: profileData ?? null });
     }
 
     const { data: activityRows, error: activityError } = await supabase
@@ -65,9 +73,18 @@ export async function GET(request: Request) {
       .map((id) => activityMap.get(id))
       .filter((activity): activity is NonNullable<typeof activity> => Boolean(activity));
 
+    const { data: profileData, error: profileError } = await supabase
+      .from("profiles")
+      .select("name, bio, avatar_url, email, phone, self_intro, skills")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (profileError) throw new Error(profileError.message);
+
     return apiOk({
       resume: resumeRow,
       activities: orderedActivities,
+      profile: profileData ?? null,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "PDF 데이터 로딩에 실패했습니다.";

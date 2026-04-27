@@ -1,8 +1,6 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 import { getGoogleAuthHref, resolveInternalPath } from "@/lib/routes";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 type LoginPageProps = {
   searchParams: Promise<{
@@ -56,19 +54,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const resolvedSearchParams = await searchParams;
   const safeNext = resolveInternalPath(takeFirst(resolvedSearchParams.redirectedFrom));
   const errorMessage = getLoginErrorMessage(takeFirst(resolvedSearchParams.error));
-
-  try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (user) {
-      redirect(safeNext);
-    }
-  } catch {
-    // 인증 확인 실패 시에는 로그인 화면을 그대로 보여준다.
-  }
 
   const googleLoginHref = getGoogleAuthHref(safeNext);
 

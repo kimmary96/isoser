@@ -23,11 +23,86 @@ def _sample_program(program_id: str = "program-1", *, deadline: str | None = Non
     }
 
 
+def test_program_surface_serializers_split_base_and_card_layers() -> None:
+    program = {
+        **_sample_program(),
+        "summary": "AI와 데이터 기초를 배우는 과정",
+        "description": "설명",
+        "tags": ["AI"],
+        "skills": ["Python"],
+        "compare_meta": {"satisfaction_score": "4.7"},
+    }
+
+    base = programs._serialize_program_base_summary(program)
+    card = programs._serialize_program_card_summary(program)
+    list_row = programs._serialize_program_list_row(program)
+
+    assert base["deadline"] is not None
+    assert base["days_left"] is not None
+    assert "display_categories" not in base
+    assert card["display_categories"] is not None
+    assert "selection_process_label" in card
+    assert card["deadline_confidence"] in {"high", "medium", "low"}
+    assert list_row == card
+
+
+def test_program_surface_serializer_bridges_verified_self_pay_amount() -> None:
+    base = programs._serialize_program_base_summary(
+        {
+            **_sample_program(),
+            "verified_self_pay_amount": 93100,
+            "support_amount": None,
+            "subsidy_amount": None,
+        }
+    )
+
+    assert base["verified_self_pay_amount"] == 93100
+    assert base["support_amount"] == 93100
+    assert base["subsidy_amount"] == 93100
+
+
+def test_serialize_program_recommendation_uses_card_summary_serializer() -> None:
+    item = SimpleNamespace(
+        program_id="program-1",
+        score=0.82,
+        relevance_score=0.76,
+        reason="프로필과 잘 맞는 과정입니다.",
+        fit_keywords=["AI", "서울"],
+        program={
+            **_sample_program(),
+            "summary": "AI와 데이터 기초를 배우는 과정",
+        },
+    )
+
+    serialized = programs._serialize_program_recommendation(item)
+
+    assert serialized.program.id == "program-1"
+    assert serialized.program.days_left is not None
+    assert serialized.program.deadline_confidence in {"high", "medium", "low"}
+    assert serialized.program.display_categories is not None
+    assert serialized.relevance_reasons
+
+
+def test_program_list_item_response_model_omits_compare_meta() -> None:
+    item = programs.ProgramListItem(
+        id="program-1",
+        title="AI 부트캠프",
+        compare_meta={"region": "서울"},
+    )
+
+    dumped = item.model_dump(exclude_none=True)
+
+    assert dumped["id"] == "program-1"
+    assert "compare_meta" not in dumped
+
+
 def test_build_program_query_params_for_filtered_list() -> None:
+    today = date.today().isoformat()
     params = programs._build_program_query_params(
         select="*",
         category="IT",
         category_detail="web-development",
+        scope="default",
         q="부트캠프",
         regions=["서울", "대전·충청"],
         recruiting_only=True,
@@ -39,13 +114,27 @@ def test_build_program_query_params_for_filtered_list() -> None:
     assert params["select"] == "*"
     assert params["category"] == "eq.IT"
     assert "category_detail" not in params
+    assert "scope" not in params
     assert "title" not in params
     assert params["search_text"] == "ilike.*부트캠프*"
     assert params["limit"] == str(programs.PROGRAM_SEARCH_SCAN_LIMIT)
-    assert "deadline" not in params
+    assert params["deadline"] == f"gte.{today}"
     assert params["order"] == "created_at.desc.nullslast"
     assert "offset" not in params
     assert params["or"] == "(location.ilike.*서울*,location.ilike.*대전*,location.ilike.*충청*,location.ilike.*세종*)"
+
+
+def test_build_program_query_params_bounds_default_browse_deadline_scan() -> None:
+    today = date.today().isoformat()
+    params = programs._build_program_query_params(
+        select="*",
+        sort="default",
+        limit=20,
+    )
+
+    assert params["limit"] == str(programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE)
+    assert params["order"] == "deadline.asc.nullslast"
+    assert params["deadline"] == f"gte.{today}"
 
 
 def test_recommended_score_uses_weighted_components_and_reasons() -> None:
@@ -114,6 +203,30 @@ def test_recommended_score_accepts_read_model_cost_and_time_fields() -> None:
     assert "상세정보 충실" in score.reasons
 
 
+def test_recommended_score_prefers_service_meta_over_compare_meta_fallbacks() -> None:
+    score = compute_recommended_score(
+        {
+            "title": "AI 부트캠프",
+            "service_meta": {
+                "satisfaction_score": "100",
+                "review_count": "64",
+                "deadline_source": "traStartDate",
+            },
+            "compare_meta": {
+                "satisfaction_score": "20",
+                "review_count": "1",
+            },
+            "deadline": (date.today() + timedelta(days=1)).isoformat(),
+            "end_date": (date.today() + timedelta(days=1)).isoformat(),
+        },
+        today=date.today(),
+    )
+
+    assert score.bayesian_satisfaction > 0.9
+    assert score.review_confidence > 0.7
+    assert score.deadline_urgency == 0
+
+
 def test_program_cursor_round_trip_is_stable_for_recommended_sort() -> None:
     row = {"id": "00000000-0000-0000-0000-000000000001", "recommended_score": 0.92}
     cursor = programs._encode_program_cursor(row, sort="default")
@@ -131,6 +244,52 @@ def test_read_model_mode_splits_browse_search_and_archive() -> None:
     assert programs._program_list_mode(q="ai", scope=None, include_closed_recent=False) == "search"
     assert programs._program_list_mode(q=None, scope="all", include_closed_recent=False) == "search"
     assert programs._program_list_mode(q=None, scope=None, include_closed_recent=True) == "archive"
+
+
+def test_program_list_mode_treats_two_filter_groups_as_search() -> None:
+    assert (
+        programs._program_list_mode(
+            q=None,
+            scope=None,
+            include_closed_recent=False,
+            active_filter_group_count=1,
+        )
+        == "browse"
+    )
+    assert (
+        programs._program_list_mode(
+            q=None,
+            scope=None,
+            include_closed_recent=False,
+            active_filter_group_count=2,
+        )
+        == "search"
+    )
+
+
+def test_program_active_filter_group_count_counts_filter_families() -> None:
+    assert (
+        programs._program_active_filter_group_count(
+            category_detail="data-ai",
+            regions=["서울", "경기"],
+            cost_types=["naeil-card"],
+        )
+        == 3
+    )
+    assert (
+        programs._program_active_filter_group_count(
+            regions=["서울", "경기"],
+        )
+        == 1
+    )
+
+
+def test_read_model_is_disabled_for_recent_closed_mode() -> None:
+    assert programs._can_use_program_list_read_model(include_closed_recent=False) is True
+    assert programs._can_use_program_list_read_model(include_closed_recent=True) is False
+    assert programs._can_use_program_list_read_model(category_detail="web-development") is False
+    assert programs._can_use_program_list_read_model(participation_times=["part-time"]) is False
+    assert programs._can_use_program_list_read_model(targets=["청년"]) is False
 
 
 def test_read_model_query_limits_default_browse_pool() -> None:
@@ -156,6 +315,113 @@ def test_read_model_query_limits_default_browse_pool() -> None:
     assert params["browse_rank"] == "lte.300"
     assert params["is_open"] == "eq.true"
     assert params["order"].startswith("recommended_score.desc")
+
+
+def test_underfilled_default_browse_read_model_triggers_fallback() -> None:
+    assert programs._is_underfilled_default_browse_read_model(
+        count=50,
+        category=None,
+        category_detail=None,
+        scope=None,
+        region_detail=None,
+        q=None,
+        regions=None,
+        sources=None,
+        teaching_methods=None,
+        cost_types=None,
+        participation_times=None,
+        targets=None,
+        include_closed_recent=False,
+    ) is True
+
+    assert programs._is_underfilled_default_browse_read_model(
+        count=300,
+        category=None,
+        category_detail=None,
+        scope=None,
+        region_detail=None,
+        q=None,
+        regions=None,
+        sources=None,
+        teaching_methods=None,
+        cost_types=None,
+        participation_times=None,
+        targets=None,
+        include_closed_recent=False,
+    ) is False
+
+    assert programs._is_underfilled_default_browse_read_model(
+        count=50,
+        category="AI",
+        category_detail=None,
+        scope=None,
+        region_detail=None,
+        q=None,
+        regions=None,
+        sources=None,
+        teaching_methods=None,
+        cost_types=None,
+        participation_times=None,
+        targets=None,
+        include_closed_recent=False,
+    ) is False
+
+
+def test_stale_default_browse_read_model_items_trigger_fallback() -> None:
+    assert (
+        programs._is_stale_default_browse_read_model_items(
+            [
+                programs.ProgramListRowItem(
+                    program=programs.ProgramListItem(
+                        id="program-1",
+                        title="stale",
+                        days_left=-1,
+                        is_active=False,
+                    )
+                )
+            ],
+            category=None,
+            category_detail=None,
+            scope=None,
+            region_detail=None,
+            q=None,
+            regions=None,
+            sources=None,
+            teaching_methods=None,
+            cost_types=None,
+            participation_times=None,
+            targets=None,
+            include_closed_recent=False,
+        )
+        is True
+    )
+    assert (
+        programs._is_stale_default_browse_read_model_items(
+            [
+                programs.ProgramListRowItem(
+                    program=programs.ProgramListItem(
+                        id="program-2",
+                        title="open",
+                        days_left=2,
+                        is_active=True,
+                    )
+                )
+            ],
+            category=None,
+            category_detail=None,
+            scope=None,
+            region_detail=None,
+            q=None,
+            regions=None,
+            sources=None,
+            teaching_methods=None,
+            cost_types=None,
+            participation_times=None,
+            targets=None,
+            include_closed_recent=False,
+        )
+        is False
+    )
 
 
 def test_read_model_query_popular_sort_skips_browse_pool() -> None:
@@ -312,6 +578,7 @@ def test_read_model_summary_select_excludes_heavy_detail_fields() -> None:
     assert "compare_meta" not in selected
     assert "description" not in selected
     assert "raw_data" not in selected
+    assert "verified_self_pay_amount" in selected
     assert "recommended_score" in selected
 
 
@@ -402,6 +669,37 @@ def test_program_detail_click_hotness_migration_formula_matches_backend_contract
     assert "+ coalesce(recommended, 0);" in migration
 
 
+def test_program_browse_pool_daily_refresh_migration_uses_kst_midnight_schedule() -> None:
+    migration = (
+        Path(__file__).resolve().parents[2]
+        / "supabase"
+        / "migrations"
+        / "20260425133000_schedule_daily_program_browse_pool_refresh_kst.sql"
+    ).read_text(encoding="utf-8")
+
+    assert "program_list_kst_today" in migration
+    assert "timezone('Asia/Seoul', now())::date" in migration
+    assert "refresh_program_list_browse_pool_daily" in migration
+    assert "create extension if not exists pg_cron" in migration
+    assert "program-list-browse-pool-daily-kst" in migration
+    assert "'0 15 * * *'" in migration
+
+
+def test_program_browse_pool_priority_migration_uses_urgency_bucket_before_diversity() -> None:
+    migration = (
+        Path(__file__).resolve().parents[2]
+        / "supabase"
+        / "migrations"
+        / "20260425143000_prioritize_program_browse_pool_urgency_buckets.sql"
+    ).read_text(encoding="utf-8")
+
+    assert "urgency_bucket" in migration
+    assert "between 0 and 7 then 1" in migration
+    assert "between 8 and 30 then 2" in migration
+    assert "c.urgency_bucket asc" in migration
+    assert "source_rank_calc <= ceil(greatest(pool_limit, 1)::numeric * 0.70)" in migration
+
+
 def test_pg_trgm_extension_warning_has_separate_migration() -> None:
     migration = (
         Path(__file__).resolve().parents[2]
@@ -431,7 +729,11 @@ async def test_filter_options_use_facet_snapshot_for_default_browse(monkeypatch:
     async def fail_legacy_request(**_: object) -> list[dict[str, object]]:
         raise AssertionError("legacy filter option scan should not run for default browse")
 
+    async def fake_count_program_read_model_rows(**_: object) -> int:
+        return 300
+
     monkeypatch.setattr(programs, "_load_program_facet_snapshot", fake_load_facet_snapshot)
+    monkeypatch.setattr(programs, "_count_program_read_model_rows", fake_count_program_read_model_rows)
     monkeypatch.setattr(programs, "request_supabase", fail_legacy_request)
     monkeypatch.setenv("ENABLE_PROGRAM_LIST_READ_MODEL", "true")
 
@@ -451,7 +753,7 @@ async def test_list_programs_page_uses_read_model_and_cursor(monkeypatch: pytest
         params = kwargs.get("params")
         assert isinstance(params, dict)
         if params.get("select") == "id":
-            return [{"id": "program-1"}]
+            return [{"id": f"program-{index}"} for index in range(300)]
         return [
             {
                 "id": "00000000-0000-0000-0000-000000000001",
@@ -485,8 +787,151 @@ async def test_list_programs_page_uses_read_model_and_cursor(monkeypatch: pytest
     assert response.source == "read_model"
     assert response.mode == "browse"
     assert len(response.items) == 1
+    assert response.items[0].program.id == "00000000-0000-0000-0000-000000000001"
     assert response.next_cursor is not None
-    assert response.count == 1
+    assert response.count == 300
+
+
+@pytest.mark.asyncio
+async def test_list_programs_flat_endpoint_falls_back_when_default_browse_read_model_is_underfilled(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_fetch_program_list_read_model_rows(**_: object) -> programs.ProgramListPageResponse:
+        return programs.ProgramListPageResponse(
+            items=[
+                programs._serialize_program_list_row_item(
+                    {
+                        "id": "stale-read-model",
+                        "title": "stale-read-model",
+                        "deadline": (date.today() - timedelta(days=1)).isoformat(),
+                        "is_active": False,
+                        "days_left": -1,
+                    }
+                )
+            ],
+            mode="browse",
+            source="read_model",
+        )
+
+    async def fake_count_program_read_model_rows(**_: object) -> int:
+        return 50
+
+    async def fake_fetch_program_list_rows(params: dict[str, object], *, q: str | None) -> list[dict[str, object]]:
+        assert q is None
+        assert params["select"] == "*"
+        assert params["limit"] == str(programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE)
+        future_deadline = (date.today() + timedelta(days=5)).isoformat()
+        return [
+            {
+                "id": "legacy-open",
+                "title": "legacy-open",
+                "deadline": future_deadline,
+                "is_active": True,
+            }
+        ]
+
+    monkeypatch.setattr(programs, "_fetch_program_list_read_model_rows", fake_fetch_program_list_read_model_rows)
+    monkeypatch.setattr(programs, "_count_program_read_model_rows", fake_count_program_read_model_rows)
+    monkeypatch.setattr(programs, "_fetch_program_list_rows", fake_fetch_program_list_rows)
+    monkeypatch.setenv("ENABLE_PROGRAM_LIST_READ_MODEL", "true")
+
+    rows = await programs.list_programs(
+        regions=None,
+        sources=None,
+        teaching_methods=None,
+        cost_types=None,
+        participation_times=None,
+        targets=None,
+        selection_processes=None,
+        employment_links=None,
+        sort="default",
+        limit=5,
+        offset=0,
+        cursor=None,
+    )
+
+    assert len(rows) == 1
+    assert rows[0]["id"] == "legacy-open"
+    assert rows[0]["days_left"] == 5
+
+
+@pytest.mark.asyncio
+async def test_list_programs_page_falls_back_when_default_browse_read_model_contains_closed_rows(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_fetch_program_list_read_model_rows(**_: object) -> programs.ProgramListPageResponse:
+        return programs.ProgramListPageResponse(
+            items=[
+                programs.ProgramListRowItem(
+                    program=programs.ProgramListItem(
+                        id="closed-read-model",
+                        title="closed-read-model",
+                        days_left=-1,
+                        is_active=False,
+                    )
+                )
+            ],
+            mode="browse",
+            source="read_model",
+        )
+
+    async def fake_count_program_read_model_rows(**_: object) -> int:
+        return 300
+
+    async def fake_fetch_program_list_rows(params: dict[str, object], *, q: str | None) -> list[dict[str, object]]:
+        assert q is None
+        assert "select" in params
+        return [
+            {
+                "id": "legacy-open",
+                "title": "legacy-open",
+                "deadline": (date.today() + timedelta(days=3)).isoformat(),
+                "is_active": True,
+            }
+        ]
+
+    monkeypatch.setattr(programs, "_fetch_program_list_read_model_rows", fake_fetch_program_list_read_model_rows)
+    monkeypatch.setattr(programs, "_count_program_read_model_rows", fake_count_program_read_model_rows)
+    monkeypatch.setattr(programs, "_fetch_program_list_rows", fake_fetch_program_list_rows)
+    monkeypatch.setenv("ENABLE_PROGRAM_LIST_READ_MODEL", "true")
+
+    response = await programs.list_programs_page(
+        regions=None,
+        sources=None,
+        teaching_methods=None,
+        cost_types=None,
+        participation_times=None,
+        targets=None,
+        limit=5,
+    )
+
+    assert response.source == "legacy"
+    assert response.items[0].program.id == "legacy-open"
+    assert response.items[0].program.days_left == 3
+
+
+@pytest.mark.asyncio
+async def test_count_programs_returns_browse_pool_limit_when_default_read_model_is_underfilled(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_count_program_read_model_rows(**_: object) -> int:
+        return 50
+
+    monkeypatch.setattr(programs, "_count_program_read_model_rows", fake_count_program_read_model_rows)
+    monkeypatch.setenv("ENABLE_PROGRAM_LIST_READ_MODEL", "true")
+
+    response = await programs.count_programs(
+        regions=None,
+        sources=None,
+        teaching_methods=None,
+        cost_types=None,
+        participation_times=None,
+        targets=None,
+        selection_processes=None,
+        employment_links=None,
+    )
+
+    assert response.count == programs._program_browse_pool_limit()
 
 
 @pytest.mark.asyncio
@@ -498,7 +943,7 @@ async def test_list_programs_page_forwards_offset_to_read_model(monkeypatch: pyt
         params = kwargs.get("params")
         assert isinstance(params, dict)
         if params.get("select") == "id":
-            return [{"id": "program-1"}]
+            return [{"id": f"program-{index}"} for index in range(300)]
         return [
             {
                 "id": "00000000-0000-0000-0000-000000000021",
@@ -534,14 +979,16 @@ async def test_list_popular_programs_prefers_read_model_popular_sort(monkeypatch
         assert kwargs["recruiting_only"] is True
         return programs.ProgramListPageResponse(
             items=[
-                programs.ProgramListItem(
-                    id="00000000-0000-0000-0000-000000000111",
-                    title="실제 클릭 인기 과정",
-                    source="고용24",
-                    detail_view_count_7d=7,
-                    detail_view_count=11,
-                    click_hotness_score=7_000_011.9,
-                    recommended_score=0.9,
+                programs.ProgramListRowItem(
+                    program=programs.ProgramListItem(
+                        id="00000000-0000-0000-0000-000000000111",
+                        title="실제 클릭 인기 과정",
+                        source="고용24",
+                        detail_view_count_7d=7,
+                        detail_view_count=11,
+                        click_hotness_score=7_000_011.9,
+                        recommended_score=0.9,
+                    )
                 )
             ],
             mode="browse",
@@ -589,7 +1036,7 @@ async def test_list_programs_page_returns_fastcampus_promoted_layer_without_orga
         params = kwargs.get("params")
         assert isinstance(params, dict)
         if params.get("select") == "id":
-            return [{"id": "program-fastcampus"}, {"id": "program-organic"}]
+            return [{"id": f"program-{index}"} for index in range(300)]
         if params.get("is_ad") == "eq.true":
             return []
         if "search_text.ilike.*패스트캠퍼스*" in str(params.get("or", "")) or "search_text.ilike.*패스트캠퍼스*" in str(params.get("and", "")):
@@ -634,10 +1081,12 @@ async def test_list_programs_page_returns_fastcampus_promoted_layer_without_orga
         limit=1,
     )
 
-    assert [item.id for item in response.promoted_items] == ["program-fastcampus"]
-    assert response.promoted_items[0].is_ad is True
-    assert "광고" in response.promoted_items[0].recommendation_reasons
-    assert [item.id for item in response.items] == ["program-organic"]
+    assert [item.program.id for item in response.promoted_items] == ["program-fastcampus"]
+    assert response.promoted_items[0].program.is_ad is True
+    assert response.promoted_items[0].context is not None
+    assert response.promoted_items[0].context.promoted_rank == 1
+    assert "광고" in response.promoted_items[0].program.recommendation_reasons
+    assert [item.program.id for item in response.items] == ["program-organic"]
 
 
 @pytest.mark.asyncio
@@ -690,7 +1139,77 @@ async def test_list_programs_page_skips_promoted_layer_for_filtered_browse(
 
     assert observed_ad_request["value"] is False
     assert response.promoted_items == []
-    assert [item.id for item in response.items] == ["program-organic"]
+    assert [item.program.id for item in response.items] == ["program-organic"]
+
+
+@pytest.mark.asyncio
+async def test_list_programs_page_uses_local_browse_subset_count_for_category_filter(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_load_local_browse_subset_rows(**_: object) -> list[dict[str, object]]:
+        return [
+            {
+                "id": "subset-1",
+                "title": "웹 과정",
+                "source": "고용24",
+                "deadline": (date.today() + timedelta(days=4)).isoformat(),
+            },
+            {
+                "id": "subset-2",
+                "title": "백엔드 과정",
+                "source": "고용24",
+                "deadline": (date.today() + timedelta(days=5)).isoformat(),
+            },
+        ]
+
+    monkeypatch.setattr(programs, "_load_local_browse_subset_rows", fake_load_local_browse_subset_rows)
+
+    response = await programs.list_programs_page(
+        regions=None,
+        sources=None,
+        teaching_methods=None,
+        cost_types=None,
+        participation_times=None,
+        targets=None,
+        category="IT",
+        category_detail="web-development",
+        limit=1,
+        offset=0,
+    )
+
+    assert response.source == "legacy"
+    assert response.mode == "browse"
+    assert response.count == 2
+    assert [item.program.id for item in response.items] == ["subset-1"]
+
+
+@pytest.mark.asyncio
+async def test_count_programs_uses_local_browse_subset_for_derived_filters(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_load_local_browse_subset_rows(**_: object) -> list[dict[str, object]]:
+        return [
+            {"id": "subset-1"},
+            {"id": "subset-2"},
+            {"id": "subset-3"},
+        ]
+
+    monkeypatch.setattr(programs, "_load_local_browse_subset_rows", fake_load_local_browse_subset_rows)
+
+    response = await programs.count_programs(
+        regions=None,
+        sources=None,
+        teaching_methods=None,
+        cost_types=None,
+        participation_times=None,
+        targets=None,
+        selection_processes=None,
+        employment_links=None,
+        category="IT",
+        category_detail="web-development",
+    )
+
+    assert response.count == 3
 
 
 @pytest.mark.asyncio
@@ -855,7 +1374,107 @@ def test_category_detail_filter_matches_inferred_ai_programs() -> None:
     assert [row["id"] for row in programs._filter_program_rows_by_category_detail(rows, "data-ai")] == ["program-ai"]
 
 
+def test_category_detail_filter_matches_title_based_development_tags() -> None:
+    rows = [
+        programs._serialize_program_list_row(
+            {
+                "id": "program-dev",
+                "title": "프론트엔드 백엔드 실무 부트캠프",
+                "category": "IT",
+                "category_detail": None,
+                "deadline": (date.today() + timedelta(days=5)).isoformat(),
+            }
+        ),
+        programs._serialize_program_list_row(
+            {
+                "id": "program-design",
+                "title": "브랜딩 디자인 워크숍",
+                "category": "디자인",
+                "category_detail": None,
+                "deadline": (date.today() + timedelta(days=5)).isoformat(),
+            }
+        ),
+    ]
+
+    assert [row["id"] for row in programs._filter_program_rows_by_category_detail(rows, "web-development")] == ["program-dev"]
+
+
+def test_category_detail_filter_prefers_ncs_based_tags_when_available() -> None:
+    rows = [
+        programs._serialize_program_list_row(
+            {
+                "id": "program-ncs-web",
+                "title": "실무 과정",
+                "category": "IT",
+                "deadline": (date.today() + timedelta(days=5)).isoformat(),
+                "compare_meta": {
+                    "ncs_name": "응용SW엔지니어링",
+                },
+            }
+        ),
+        programs._serialize_program_list_row(
+            {
+                "id": "program-ncs-marketing",
+                "title": "마케팅 과정",
+                "category": "경영",
+                "deadline": (date.today() + timedelta(days=5)).isoformat(),
+                "compare_meta": {
+                    "ncs_name": "경영기획",
+                },
+            }
+        ),
+    ]
+
+    assert [row["id"] for row in programs._filter_program_rows_by_category_detail(rows, "web-development")] == ["program-ncs-web"]
+    assert [row["id"] for row in programs._filter_program_rows_by_category_detail(rows, "ncs-20")] == ["program-ncs-web"]
+    assert rows[0]["display_categories"][0] == "정보통신"
+
+
+def test_program_target_filter_matches_derived_target_tags_from_title_and_description() -> None:
+    rows = programs._postprocess_program_list_rows(
+        [
+            {
+                "id": "program-startup",
+                "title": "여성 예비창업자 아카데미",
+                "description": "여성 창업자를 위한 실전 과정",
+                "deadline": (date.today() + timedelta(days=10)).isoformat(),
+            },
+            {
+                "id": "program-worker",
+                "title": "재직자 데이터 분석 과정",
+                "description": "직장인 대상 야간 수업",
+                "deadline": (date.today() + timedelta(days=10)).isoformat(),
+            },
+        ],
+        targets=["여성", "창업"],
+        sort="deadline",
+        include_closed_recent=False,
+        limit=10,
+        offset=0,
+    )
+
+    assert [row["id"] for row in rows] == ["program-startup"]
+
+
+def test_program_query_search_uses_service_meta_when_compare_meta_is_sparse() -> None:
+    rows = [
+        {
+            "id": "service-meta-search",
+            "title": "기본 과정",
+            "service_meta": {
+                "training_type": "온라인 특화 과정",
+            },
+            "compare_meta": {},
+        }
+    ]
+
+    filtered = programs._filter_program_rows_by_query(rows, "특화")
+
+    assert [row["id"] for row in filtered] == ["service-meta-search"]
+
+
 def test_build_program_query_params_expands_latest_recruiting_scan_limit() -> None:
+    today = date.today().isoformat()
     params = programs._build_program_query_params(
         select="*",
         recruiting_only=True,
@@ -863,11 +1482,12 @@ def test_build_program_query_params_expands_latest_recruiting_scan_limit() -> No
     )
 
     assert params["limit"] == str(programs.PROGRAM_SEARCH_SCAN_LIMIT)
-    assert "deadline" not in params
+    assert params["deadline"] == f"gte.{today}"
     assert params["order"] == "created_at.desc.nullslast"
 
 
 def test_build_program_query_params_deadline_sort_only_includes_active_programs() -> None:
+    today = date.today().isoformat()
     params = programs._build_program_query_params(
         select="*",
         sort="default",
@@ -875,10 +1495,11 @@ def test_build_program_query_params_deadline_sort_only_includes_active_programs(
 
     assert params["order"] == "deadline.asc.nullslast"
     assert params["limit"] == str(programs.PROGRAM_SEARCH_SCAN_LIMIT)
-    assert "deadline" not in params
+    assert params["deadline"] == f"gte.{today}"
 
 
 def test_build_program_query_params_default_sort_preserves_deadline_scan() -> None:
+    today = date.today().isoformat()
     params = programs._build_program_query_params(
         select="*",
         sort="default",
@@ -886,7 +1507,7 @@ def test_build_program_query_params_default_sort_preserves_deadline_scan() -> No
 
     assert params["order"] == "deadline.asc.nullslast"
     assert params["limit"] == str(programs.PROGRAM_SEARCH_SCAN_LIMIT)
-    assert "deadline" not in params
+    assert params["deadline"] == f"gte.{today}"
 
 
 def test_build_program_query_params_computed_sort_expands_scan_limit() -> None:
@@ -900,6 +1521,7 @@ def test_build_program_query_params_computed_sort_expands_scan_limit() -> None:
 
 
 def test_build_program_query_params_include_closed_recent_uses_90_day_cutoff() -> None:
+    cutoff = (date.today() - timedelta(days=90)).isoformat()
     params = programs._build_program_query_params(
         select="*",
         include_closed_recent=True,
@@ -907,7 +1529,7 @@ def test_build_program_query_params_include_closed_recent_uses_90_day_cutoff() -
     )
 
     assert params["limit"] == str(programs.PROGRAM_SEARCH_SCAN_LIMIT)
-    assert "deadline" not in params
+    assert params["deadline"] == f"gte.{cutoff}"
 
 
 def test_normalize_regions_param_splits_csv_values() -> None:
@@ -1018,6 +1640,52 @@ def test_extract_program_filter_options_uses_present_program_values() -> None:
     assert {option.value for option in options.employment_links} == {"취업지원", "멘토링", "인턴십"}
 
 
+def test_extract_program_filter_options_canonicalizes_raw_source_labels() -> None:
+    rows = [
+        {
+            "source": "K-Startup 창업진흥원",
+            "title": "창업 지원 사업",
+        },
+        {
+            "source": "고용24",
+            "title": "직무 훈련 과정",
+        },
+    ]
+
+    options = programs._extract_program_filter_options(rows)
+
+    assert [option.value for option in options.sources] == ["kstartup", "고용24"]
+    assert [option.label for option in options.sources] == ["K-Startup", "고용24"]
+
+
+def test_filter_options_from_facet_snapshot_canonicalizes_source_values() -> None:
+    facets = programs.ProgramFacetSnapshot(
+        source=[
+            programs.ProgramFacetBucket(value="K-Startup 창업진흥원", count=1),
+            programs.ProgramFacetBucket(value="고용24", count=2),
+        ]
+    )
+
+    options = programs._filter_options_from_facet_snapshot(facets)
+
+    assert [option.value for option in options.sources] == ["kstartup", "고용24"]
+    assert [option.label for option in options.sources] == ["K-Startup", "고용24"]
+
+
+def test_extract_program_filter_options_uses_reduced_explicit_target_family() -> None:
+    rows = [
+        {
+            "source": "sesac",
+            "title": "여성 예비창업자 성장 프로그램",
+            "description": "재직자와 대학생도 지원 가능합니다.",
+        }
+    ]
+
+    options = programs._extract_program_filter_options(rows)
+
+    assert [option.value for option in options.targets] == ["여성", "창업", "재직자", "대학생"]
+
+
 def test_get_program_filter_options_endpoint(
     client: TestClient,
     monkeypatch: pytest.MonkeyPatch,
@@ -1059,6 +1727,33 @@ def test_get_program_returns_404_for_invalid_uuid(client: TestClient) -> None:
 
     assert response.status_code == 404
     assert response.json()["detail"] == "Program not found"
+
+
+def test_get_program_omits_compare_meta_in_raw_response(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_request_supabase(*, method: str, path: str, params: dict[str, str], **_: object) -> list[dict[str, object]]:
+        assert method == "GET"
+        assert path == "/rest/v1/programs"
+        assert params["limit"] == "1"
+        return [
+            {
+                "id": "00000000-0000-0000-0000-000000000123",
+                "title": "단건 조회 테스트",
+                "compare_meta": {"contact_phone": "02-0000-0000"},
+                "source": "고용24",
+            }
+        ]
+
+    monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
+
+    response = client.get("/programs/00000000-0000-0000-0000-000000000123")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["title"] == "단건 조회 테스트"
+    assert "compare_meta" not in payload
 
 
 @pytest.mark.asyncio
@@ -1155,6 +1850,28 @@ def test_serialize_program_list_row_adds_normalized_rating_fields() -> None:
     assert row["rating_display"] == "5.0"
 
 
+def test_serialize_program_list_row_prefers_service_meta_over_compare_meta_for_base_fallbacks() -> None:
+    row = programs._serialize_program_list_row(
+        {
+            "id": "service-meta-priority",
+            "title": "원격 실무 과정",
+            "deadline": (date.today() + timedelta(days=3)).isoformat(),
+            "service_meta": {
+                "satisfaction_score": "100",
+                "teaching_method": "온라인",
+            },
+            "compare_meta": {
+                "satisfaction_score": "20",
+                "teaching_method": "오프라인",
+            },
+        }
+    )
+
+    assert row["rating_raw"] == "100"
+    assert row["rating_display"] == "5.0"
+    assert row["teaching_method"] == "온라인"
+
+
 def test_serialize_program_list_row_derives_display_metadata_from_real_text() -> None:
     row = programs._serialize_program_list_row(
         {
@@ -1174,10 +1891,11 @@ def test_serialize_program_list_row_derives_display_metadata_from_real_text() ->
         }
     )
 
-    assert row["display_categories"] == ["AI서비스"]
+    assert row["display_categories"] == ["정보통신"]
     assert row["participation_mode_label"] == "풀타임"
     assert row["participation_time_text"] == "월,화,수,목,금 / 09:00 ~ 18:00"
     assert row["selection_process_label"] == "포트폴리오 / 면접 / 서류"
+    assert {"정보통신", "풀타임"}.isdisjoint(set(row["extracted_keywords"]))
     assert {"Python", "RAG", "LLM", "MCP", "머신러닝"}.issubset(set(row["extracted_keywords"]))
 
 
@@ -1207,10 +1925,25 @@ def test_serialize_program_list_row_derives_weekend_and_semiconductor_metadata()
         }
     )
 
-    assert row["display_categories"] == ["반도체"]
+    assert row["display_categories"] == ["전기·전자"]
     assert row["participation_mode_label"] == "주말반"
     assert row["participation_time_text"] == "주말 / 10:00 ~ 17:00"
+    assert {"전기·전자", "주말반"}.isdisjoint(set(row["extracted_keywords"]))
     assert {"FPGA", "SoC", "RTL", "Verilog", "반도체설계"}.issubset(set(row["extracted_keywords"]))
+
+
+def test_serialize_program_list_row_hides_selection_process_when_evidence_is_missing() -> None:
+    row = programs._serialize_program_list_row(
+        {
+            "id": "program-basic",
+            "title": "대학생 웹개발 입문",
+            "description": "서울에서 진행하는 오프라인 과정",
+            "deadline": (date.today() + timedelta(days=5)).isoformat(),
+        }
+    )
+
+    assert row["selection_process_label"] is None
+    assert row["extracted_keywords"] == ["대학생"]
 
 
 def test_serialize_program_list_row_uses_work24_day_night_metadata() -> None:
@@ -1341,6 +2074,10 @@ def test_build_program_detail_response_maps_kstartup_dates_as_application_period
             "source": "K-Startup 창업진흥원",
             "title": "2026년 서울여성 창업아이디어 공모전",
             "provider": "서울시여성능력개발원",
+            "category": "창업",
+            "category_detail": "startup-career",
+            "ncs_code": "010101",
+            "ncs_name": "사업관리",
             "location": "서울",
             "description": "창업 아이디어 공모전 설명",
             "start_date": "2026-03-30",
@@ -1362,6 +2099,12 @@ def test_build_program_detail_response_maps_kstartup_dates_as_application_period
 
     assert detail.title == "2026년 서울여성 창업아이디어 공모전"
     assert detail.provider == "서울시여성능력개발원"
+    assert detail.source == "K-Startup 창업진흥원"
+    assert detail.category == "창업"
+    assert detail.category_detail == "startup-career"
+    assert detail.ncs_code == "010101"
+    assert detail.ncs_name == "사업관리"
+    assert detail.display_categories
     assert detail.organizer == "민간"
     assert detail.location == "서울"
     assert detail.application_start_date == "2026-03-30"
@@ -1384,13 +2127,16 @@ def test_build_program_detail_response_maps_work24_dates_as_program_period() -> 
             "source": "고용24",
             "title": "Python 자료구조&알고리즘 프로그래밍",
             "provider": "그린컴퓨터아트학원",
+            "participation_time": "part-time",
+            "application_method": "온라인 신청",
+            "cost_type": "naeil-card",
             "location": "서울 종로구",
             "description": "그린컴퓨터아트학원",
             "start_date": "2026-04-23",
             "end_date": "2026-05-12",
             "deadline": "2026-05-01",
             "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20230000419940",
-            "cost": 0,
+            "cost": 629760,
             "subsidy_amount": 238320,
             "compare_meta": {
                 "capacity": "20",
@@ -1404,6 +2150,11 @@ def test_build_program_detail_response_maps_work24_dates_as_program_period() -> 
 
     assert detail.title == "Python 자료구조&알고리즘 프로그래밍"
     assert detail.provider == "그린컴퓨터아트학원"
+    assert detail.source == "고용24"
+    assert detail.participation_time in {"파트타임", "part-time"}
+    assert detail.application_method == "온라인 신청"
+    assert detail.cost_type == "naeil-card"
+    assert detail.deadline == "2026-05-01"
     assert detail.location == "서울 종로구"
     assert detail.application_start_date is None
     assert detail.application_end_date == "2026-05-01"
@@ -1411,7 +2162,7 @@ def test_build_program_detail_response_maps_work24_dates_as_program_period() -> 
     assert detail.program_end_date == "2026-05-12"
     assert detail.schedule_text == "신청 시작일 미정 ~ 2026-05-01"
     assert detail.source_url == "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=AIG20230000419940"
-    assert detail.fee == 0
+    assert detail.fee == 629760
     assert detail.support_amount == 238320
     assert detail.rating == "4.6"
     assert detail.rating_raw == "91.4"
@@ -1421,6 +2172,22 @@ def test_build_program_detail_response_maps_work24_dates_as_program_period() -> 
     assert detail.capacity_total == 20
     assert detail.capacity_remaining == 17
     assert detail.phone == "02-722-2111"
+
+
+def test_build_program_detail_response_hides_self_pay_when_only_total_fee_is_available() -> None:
+    detail = programs._build_program_detail_response(
+        {
+            "id": "work24-total-only",
+            "source": "고용24",
+            "title": "총 훈련비만 있는 과정",
+            "cost": 629760,
+            "support_amount": 629760,
+            "deadline": "2026-05-01",
+        }
+    )
+
+    assert detail.fee == 629760
+    assert detail.support_amount is None
 
 
 def test_build_program_detail_response_uses_work24_application_deadline_from_meta() -> None:
@@ -1440,6 +2207,121 @@ def test_build_program_detail_response_uses_work24_application_deadline_from_met
     assert detail.program_start_date == "2026-04-23"
     assert detail.program_end_date == "2026-05-12"
     assert detail.schedule_text == "신청 시작일 미정 ~ 2026-04-20"
+
+
+def test_build_program_detail_response_prefers_canonical_and_source_record_fields() -> None:
+    detail = programs._build_program_detail_response(
+        {
+            "id": "program-detail-1",
+            "source": "고용24",
+            "title": "정본 상세 보강 과정",
+            "provider": "기존 기관명",
+            "provider_name": "정본 기관명",
+            "organizer_name": "정본 주관기관",
+            "location": "기존 위치",
+            "location_text": "정본 위치",
+            "summary": "기존 요약",
+            "business_type": "훈련비 지원",
+            "application_method": "홈페이지 신청",
+            "cost_type": "free-no-card",
+            "application_start_date": "2026-04-20",
+            "application_end_date": "2026-04-29",
+            "program_start_date": "2026-05-10",
+            "program_end_date": "2026-06-10",
+            "fee_amount": 0,
+            "support_amount": 120000,
+            "verified_self_pay_amount": 120000,
+            "eligibility_labels": ["청년", "초급 개발자"],
+            "contact_phone": "02-0000-0000",
+            "contact_email": "hello@example.com",
+            "capacity_total": 30,
+            "capacity_current": 12,
+            "curriculum_items": ["Python 기초", "FastAPI 실습"],
+            "certifications": ["수료증"],
+            "service_meta": {
+                "career_support": ["멘토링"],
+                "learning_outcomes": ["포트폴리오 완성"],
+            },
+            "compare_meta": {
+                "contact_phone": "02-9999-9999",
+                "application_method_email": "legacy@example.com",
+                "selection_process": "서류 검토",
+            },
+        },
+        {
+            "program_id": "program-detail-1",
+            "application_url": "https://example.com/apply",
+            "detail_url": "https://example.com/detail",
+            "source_url": "https://example.com/source",
+            "source_specific": {
+                "faq": [{"question": "질문", "answer": "답변"}],
+                "reviews": [{"author": "수강생", "content": "좋았어요"}],
+                "recommended_for": ["백엔드 입문자"],
+                "learning_outcomes": ["실무 API 제작"],
+                "career_support": ["취업 컨설팅"],
+                "event_banner": "얼리버드 신청 가능",
+                "ai_matching_summary": "백엔드 전환 준비자에게 특히 적합합니다.",
+            },
+            "is_primary": True,
+        },
+    )
+
+    assert detail.provider == "정본 기관명"
+    assert detail.organizer == "정본 주관기관"
+    assert detail.location == "정본 위치"
+    assert detail.support_type == "훈련비 지원"
+    assert detail.application_method == "홈페이지 신청"
+    assert detail.selection_process_label == "서류 검토"
+    assert detail.cost_type == "free-no-card"
+    assert detail.source_url == "https://example.com/apply"
+    assert detail.fee == 0
+    assert detail.support_amount == 120000
+    assert detail.eligibility == ["청년", "초급 개발자"]
+    assert detail.capacity_total == 30
+    assert detail.capacity_remaining == 18
+    assert detail.phone == "02-0000-0000"
+    assert detail.email == "hello@example.com"
+    assert detail.curriculum == ["Python 기초", "FastAPI 실습"]
+    assert detail.certifications == ["수료증"]
+    assert detail.faq == [{"question": "질문", "answer": "답변"}]
+    assert detail.reviews == [{"author": "수강생", "content": "좋았어요"}]
+    assert detail.recommended_for == ["백엔드 입문자"]
+    assert detail.learning_outcomes == ["실무 API 제작", "포트폴리오 완성"]
+    assert detail.career_support == ["취업 컨설팅", "멘토링"]
+    assert detail.event_banner == "얼리버드 신청 가능"
+    assert detail.ai_matching_summary == "백엔드 전환 준비자에게 특히 적합합니다."
+
+
+def test_build_program_detail_response_uses_legacy_compare_meta_overlay_when_service_meta_is_sparse() -> None:
+    detail = programs._build_program_detail_response(
+        {
+            "id": "program-detail-legacy-overlay",
+            "source": "고용24",
+            "title": "레거시 상세 보강 과정",
+            "compare_meta": {
+                "supervising_institution": "레거시 주관기관",
+                "department": "레거시 담당부서",
+                "application_url": "https://legacy.example/apply",
+                "target_group": "청년",
+                "employment_rate_6m": "62%",
+                "curriculum": ["실전 프로젝트"],
+                "application_method_email": "legacy@example.com",
+                "field_sources": {"department": "legacy"},
+            },
+            "service_meta": {
+                "contact_phone": "02-2222-2222",
+            },
+        }
+    )
+
+    assert detail.organizer == "레거시 주관기관"
+    assert detail.source_url == "https://legacy.example/apply"
+    assert detail.eligibility == ["청년"]
+    assert detail.job_placement_rate == "62%"
+    assert detail.phone == "02-2222-2222"
+    assert detail.email == "legacy@example.com"
+    assert detail.curriculum == ["실전 프로젝트"]
+    assert detail.manager_name == "레거시 담당부서"
 
 
 @pytest.mark.asyncio
@@ -1469,6 +2351,22 @@ async def test_get_program_details_batch_reuses_detail_mapping(
         }
 
     monkeypatch.setattr(programs, "_fetch_programs_by_ids", fake_fetch_programs_by_ids)
+    async def fake_fetch_primary_source_records_by_program_ids(program_ids: list[str]) -> dict[str, dict[str, object]]:
+        assert program_ids == ["program-1", "program-2"]
+        return {
+            "program-1": {
+                "program_id": "program-1",
+                "application_url": "https://example.com/program-1/apply",
+                "source_specific": {"recommended_for": ["입문자"]},
+                "is_primary": True,
+            }
+        }
+
+    monkeypatch.setattr(
+        programs,
+        "_fetch_primary_source_records_by_program_ids",
+        fake_fetch_primary_source_records_by_program_ids,
+    )
 
     response = await programs.get_program_details_batch(
         programs.ProgramDetailBatchRequest(program_ids=["program-1", "program-2", "program-1"])
@@ -1476,6 +2374,8 @@ async def test_get_program_details_batch_reuses_detail_mapping(
 
     assert [item.id for item in response.items] == ["program-1", "program-2"]
     assert response.items[0].program_start_date == "2026-05-01"
+    assert response.items[0].source_url == "https://example.com/program-1/apply"
+    assert response.items[0].recommended_for == ["입문자"]
     assert response.items[1].application_end_date == "2026-05-20"
 
 
@@ -1483,6 +2383,10 @@ async def test_get_program_details_batch_reuses_detail_mapping(
 async def test_get_programs_batch_preserves_requested_order(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    async def fake_fetch_program_list_summary_rows_by_ids(program_ids: list[str]) -> dict[str, dict[str, object]]:
+        assert program_ids == ["program-2", "program-1"]
+        return {}
+
     async def fake_fetch_programs_by_ids(program_ids: list[str]) -> dict[str, dict[str, object]]:
         assert program_ids == ["program-2", "program-1"]
         return {
@@ -1490,6 +2394,11 @@ async def test_get_programs_batch_preserves_requested_order(
             "program-2": {"id": "program-2", "title": "두 번째", "deadline": "2026-05-01", "source": "K-Startup"},
         }
 
+    monkeypatch.setattr(
+        programs,
+        "_fetch_program_list_summary_rows_by_ids",
+        fake_fetch_program_list_summary_rows_by_ids,
+    )
     monkeypatch.setattr(programs, "_fetch_programs_by_ids", fake_fetch_programs_by_ids)
 
     response = await programs.get_programs_batch(
@@ -1497,6 +2406,61 @@ async def test_get_programs_batch_preserves_requested_order(
     )
 
     assert [item.id for item in response.items] == ["program-2", "program-1"]
+
+
+@pytest.mark.asyncio
+async def test_get_programs_batch_prefers_read_model_rows_and_falls_back_for_missing_ids(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_fetch_program_list_summary_rows_by_ids(program_ids: list[str]) -> dict[str, dict[str, object]]:
+        assert program_ids == ["program-2", "program-1"]
+        return {
+            "program-2": {
+                "id": "program-2",
+                "title": "읽기 모델 두 번째",
+                "provider": "read-model 기관",
+                "location": "서울",
+                "summary": "읽기 모델 요약",
+                "source": "K-Startup",
+                "deadline": "2026-05-01",
+                "days_left": 7,
+                "deadline_confidence": "high",
+                "recommended_score": 0.91,
+            }
+        }
+
+    async def fake_fetch_programs_by_ids(program_ids: list[str]) -> dict[str, dict[str, object]]:
+        assert program_ids == ["program-1"]
+        return {
+            "program-1": {
+                "id": "program-1",
+                "title": "legacy 첫 번째",
+                "provider": "legacy 기관",
+                "location": "부산",
+                "deadline": "2026-06-01",
+                "source": "고용24",
+            }
+        }
+
+    monkeypatch.setattr(
+        programs,
+        "_fetch_program_list_summary_rows_by_ids",
+        fake_fetch_program_list_summary_rows_by_ids,
+    )
+    monkeypatch.setattr(programs, "_fetch_programs_by_ids", fake_fetch_programs_by_ids)
+    monkeypatch.setattr(programs, "_program_list_read_model_enabled", lambda: True)
+
+    response = await programs.get_programs_batch(
+        programs.ProgramDetailBatchRequest(program_ids=["program-2", "program-1"])
+    )
+
+    assert [item.id for item in response.items] == ["program-2", "program-1"]
+    assert response.items[0].title == "읽기 모델 두 번째"
+    assert response.items[0].provider == "read-model 기관"
+    assert response.items[0].days_left == 7
+    assert response.items[0].recommended_score == 0.91
+    assert response.items[1].title == "legacy 첫 번째"
+    assert response.items[1].provider == "legacy 기관"
 
 
 def test_normalize_cached_recommendation_rows_marks_missing_component_scores_stale() -> None:
@@ -1642,6 +2606,121 @@ def test_should_apply_work24_default_mix_skips_startup_filters_and_explicit_sour
     assert programs._should_apply_work24_default_mix(category_detail="project-career-startup") is False
     assert programs._should_apply_work24_default_mix(q="스타트업 지원") is False
     assert programs._should_apply_work24_default_mix(sources=["K-Startup 창업진흥원"]) is False
+
+
+def test_build_program_query_params_expands_canonical_source_aliases() -> None:
+    params = programs._build_program_query_params(
+        select="*",
+        sources=["kstartup"],
+        sort="default",
+        limit=20,
+    )
+
+    assert params["source"] == 'in.("kstartup","K-Startup","K-Startup 창업진흥원")'
+
+
+def test_build_program_query_params_supports_other_source_filter() -> None:
+    params = programs._build_program_query_params(
+        select="*",
+        sources=["other"],
+        sort="default",
+        limit=20,
+    )
+
+    assert "source" not in params
+    assert params["limit"] == "10000"
+    assert "offset" not in params
+
+
+def test_other_source_filter_uses_legacy_postprocess_path() -> None:
+    assert programs._can_use_program_list_read_model(sources=["other"]) is False
+
+
+def test_build_read_model_params_skips_source_param_when_other_is_present() -> None:
+    params, mode = programs._build_read_model_params(
+        category=None,
+        category_detail=None,
+        scope="default",
+        region_detail=None,
+        q=None,
+        regions=None,
+        sources=["kstartup", "other"],
+        teaching_methods=None,
+        cost_types=None,
+        participation_times=None,
+        targets=None,
+        recruiting_only=True,
+        include_closed_recent=False,
+        sort="default",
+        limit=20,
+    )
+
+    assert mode == "browse"
+    assert "source" not in params
+
+
+def test_postprocess_other_source_filter_matches_non_canonical_provider() -> None:
+    deadline = (date.today() + timedelta(days=10)).isoformat()
+
+    rows = programs._postprocess_program_list_rows(
+        [
+            {
+                "id": "local-gov-kstartup",
+                "title": "도봉구 청년 창업 교육",
+                "source": "K-Startup 창업진흥원",
+                "provider": "도봉구청",
+                "deadline": deadline,
+                "is_active": True,
+            },
+            {
+                "id": "work24-provider",
+                "title": "도봉 간호 교육",
+                "source": "고용24",
+                "provider": "도봉유디간호학원",
+                "deadline": deadline,
+                "is_active": True,
+            },
+            {
+                "id": "sesac",
+                "title": "SeSAC 개발자 과정",
+                "source": "SeSAC",
+                "provider": "청년취업사관학교",
+                "deadline": deadline,
+                "is_active": True,
+            },
+            {
+                "id": "unknown-source",
+                "title": "서울시 일자리 특강",
+                "source": "서울시 일자리",
+                "provider": "서울시 일자리",
+                "deadline": deadline,
+                "is_active": True,
+            },
+        ],
+        sources=["other"],
+        recruiting_only=True,
+        sort="deadline",
+        include_closed_recent=False,
+        limit=10,
+        offset=0,
+    )
+
+    assert [row["id"] for row in rows] == ["local-gov-kstartup", "unknown-source"]
+
+
+def test_filter_options_collapse_unknown_sources_into_other() -> None:
+    options = programs._extract_program_filter_options(
+        [
+            {"source": "서울시 일자리"},
+            {"source": "도봉구청"},
+            {"source": "K-Startup 창업진흥원"},
+        ]
+    )
+
+    assert [option.model_dump() for option in options.sources] == [
+        {"value": "kstartup", "label": "K-Startup"},
+        {"value": "other", "label": "기타 기관"},
+    ]
 
 
 def test_postprocess_program_list_rows_searches_provider_and_orders_by_match_field() -> None:
@@ -2017,6 +3096,88 @@ def test_compute_program_relevance_items_adds_fit_interpretation_fields(
     assert item.score_breakdown["region"] == 0
     assert item.score_breakdown["skills"] == 20
     assert item.score_breakdown["experience"] == 20
+    assert item.score_breakdown["behavior"] == 0
+
+
+def test_compute_program_relevance_items_uses_real_behavior_signal(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        programs.programs_rag,
+        "_profile_keywords",
+        lambda profile, activities: ["python"],
+    )
+    monkeypatch.setattr(
+        programs.programs_rag,
+        "_program_match_context",
+        lambda program, profile_keywords: (["Python"], 0.6),
+    )
+    monkeypatch.setattr(
+        programs.programs_rag,
+        "_tokenize_text",
+        lambda value: [token.lower() for token in str(value).replace(",", " ").split() if token.strip()],
+    )
+
+    items = programs._compute_program_relevance_items(
+        profile={
+            "target_job": "백엔드 개발자",
+            "skills": ["Python"],
+            "self_intro": "백엔드 프로젝트 경험이 있습니다.",
+        },
+        activities=[{"id": "act-1", "title": "API 개발", "skills": ["Python"]}],
+        programs_by_id={
+            "program-1": {
+                "id": "program-1",
+                "title": "Python 백엔드 과정",
+                "skills": ["Python"],
+            }
+        },
+        program_ids=["program-1"],
+        behavior_program_ids={"program-1"},
+    )
+
+    assert items[0].score_breakdown["behavior"] == 5
+    assert "찜/캘린더 관심 행동과 일치" in items[0].relevance_reasons
+
+
+def test_compute_program_relevance_items_uses_derived_activity_keywords(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        programs.programs_rag,
+        "_profile_keywords",
+        lambda profile, activities: ["data", "analysis"],
+    )
+    monkeypatch.setattr(
+        programs.programs_rag,
+        "_program_match_context",
+        lambda program, profile_keywords: (["Data"], 0.5),
+    )
+    monkeypatch.setattr(
+        programs.programs_rag,
+        "_tokenize_text",
+        lambda value: [token.lower() for token in str(value).replace(",", " ").split() if token.strip()],
+    )
+
+    items = programs._compute_program_relevance_items(
+        profile={
+            "skills": ["Data"],
+            "activity_keywords": ["분석 프로젝트", "데이터 리포트"],
+            "profile_completeness_score": 0.8,
+        },
+        activities=[],
+        programs_by_id={
+            "program-1": {
+                "id": "program-1",
+                "title": "Data 분석 과정",
+                "skills": ["Data"],
+            }
+        },
+        program_ids=["program-1"],
+    )
+
+    assert items[0].score_breakdown["experience"] == 20
+    assert items[0].score_breakdown["readiness"] == 8
 
 
 def test_compute_program_relevance_items_adds_region_signal(
@@ -2061,7 +3222,7 @@ def test_compute_program_relevance_items_adds_region_signal(
     item = items[0]
     assert item.region_match_score == 1.0
     assert item.matched_regions == ["서울"]
-    assert item.relevance_score == 0.575
+    assert item.relevance_score == 0.65
     assert item.score_breakdown["region"] == 15
     assert item.score_breakdown["skills"] == 25
     assert item.score_breakdown["experience"] == 15
@@ -2119,6 +3280,22 @@ def test_compute_region_match_scores_adjacent_and_online_programs() -> None:
         profile_region="부산",
         profile_region_detail=None,
         program={"compare_meta": {"region": "부산광역시 해운대구"}},
+    ) == (["부산"], 1.0)
+    assert programs._compute_region_match(
+        profile_region="전북",
+        profile_region_detail=None,
+        program={
+            "service_meta": {"teaching_method": "온라인"},
+            "compare_meta": {"teaching_method": "오프라인"},
+        },
+    ) == (["온라인"], 0.8)
+    assert programs._compute_region_match(
+        profile_region="부산",
+        profile_region_detail=None,
+        program={
+            "service_meta": {"region": "부산"},
+            "compare_meta": {"region": "서울"},
+        },
     ) == (["부산"], 1.0)
 
 
@@ -2205,6 +3382,132 @@ async def test_build_cached_recommendation_items_recalculates_final_score_and_pr
     assert items[0].program.final_score == 0.44
     assert items[0].program.relevance_score == 0.4
     assert items[0].program.urgency_score == 0.5
+
+
+def test_build_profile_hash_prefers_recommendation_profile_hash_when_present() -> None:
+    profile_hash = programs._build_profile_hash(
+        {
+            "job_title": "백엔드 개발자",
+            "skills": ["Python"],
+            "recommendation_profile_hash": "derived-hash-123",
+        },
+        [],
+    )
+
+    assert profile_hash == "derived-hash-123"
+
+
+@pytest.mark.asyncio
+async def test_fetch_profile_row_prefers_user_recommendation_profile(monkeypatch: pytest.MonkeyPatch) -> None:
+    async def fake_request_supabase(
+        *,
+        method: str,
+        path: str,
+        params: dict[str, object] | None = None,
+        payload: object | None = None,
+        prefer: str | None = None,
+    ) -> list[dict[str, object]]:
+        assert method == "GET"
+        assert payload is None
+        assert prefer is None
+        assert params is not None
+        if path == "/rest/v1/user_recommendation_profile":
+            assert params["select"] == programs.USER_RECOMMENDATION_PROFILE_SELECT
+            return [
+                {
+                    "user_id": "user-1",
+                    "effective_target_job": "데이터 분석가",
+                    "profile_keywords": ["데이터 분석", "sql"],
+                    "evidence_skills": ["Python", "SQL"],
+                    "desired_skills": ["Tableau"],
+                    "activity_keywords": ["프로젝트"],
+                    "preferred_regions": ["서울"],
+                    "profile_completeness_score": 0.7,
+                    "recommendation_ready": True,
+                    "recommendation_profile_hash": "derived-hash",
+                    "derivation_version": 1,
+                    "source_snapshot": {
+                        "profile": {
+                            "region": "서울",
+                            "region_detail": "강남구",
+                        }
+                    },
+                    "last_derived_at": "2026-04-24T12:00:00+00:00",
+                }
+            ]
+        raise AssertionError(f"unexpected path: {path}")
+
+    monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
+
+    profile = await programs._fetch_profile_row("user-1")
+
+    assert profile["job_title"] == "데이터 분석가"
+    assert profile["target_job"] == "데이터 분석가"
+    assert profile["skills"] == ["Python", "SQL"]
+    assert profile["desired_skills"] == ["Tableau"]
+    assert profile["region"] == "서울"
+    assert profile["region_detail"] == "강남구"
+    assert profile["recommendation_profile_hash"] == "derived-hash"
+    assert profile["recommendation_ready"] is True
+
+
+@pytest.mark.asyncio
+async def test_fetch_profile_row_falls_back_to_profiles_when_recommendation_profile_is_unavailable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+
+    async def fake_request_supabase(
+        *,
+        method: str,
+        path: str,
+        params: dict[str, object] | None = None,
+        payload: object | None = None,
+        prefer: str | None = None,
+    ) -> list[dict[str, object]]:
+        assert method == "GET"
+        assert payload is None
+        assert prefer is None
+        assert params is not None
+        calls.append(path)
+        if path == "/rest/v1/user_recommendation_profile":
+            raise RuntimeError('Supabase request failed: relation "user_recommendation_profile" does not exist')
+        if path == "/rest/v1/profiles":
+            return [{"id": "user-1", "job_title": "백엔드 개발자", "skills": ["FastAPI"]}]
+        raise AssertionError(f"unexpected path: {path}")
+
+    monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
+
+    profile = await programs._fetch_profile_row("user-1")
+
+    assert calls == ["/rest/v1/user_recommendation_profile", "/rest/v1/profiles"]
+    assert profile["job_title"] == "백엔드 개발자"
+    assert profile["skills"] == ["FastAPI"]
+
+
+@pytest.mark.asyncio
+async def test_fetch_primary_source_records_by_program_ids_soft_fails_when_table_is_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_request_supabase(
+        *,
+        method: str,
+        path: str,
+        params: dict[str, object] | None = None,
+        payload: object | None = None,
+        prefer: str | None = None,
+    ) -> list[dict[str, object]]:
+        assert method == "GET"
+        assert path == "/rest/v1/program_source_records"
+        assert payload is None
+        assert prefer is None
+        raise RuntimeError('Supabase request failed: relation "program_source_records" does not exist')
+
+    monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
+
+    rows = await programs._fetch_primary_source_records_by_program_ids(["program-1"])
+
+    assert rows == {}
 
 
 @pytest.mark.asyncio

@@ -280,6 +280,19 @@ def apply_alert_runbook(
             "note": "Known non-blocking Git state was downgraded from push-failed to self-healed.",
         }
 
+    if stage == "push-failed" and summary and "already contains the task commit" in summary:
+        return {
+            "handled": True,
+            "stage": "self-healed",
+            "status": "done",
+            "packet_path": packet_path,
+            "report_path": report_path,
+            "summary": "Task completed successfully. The remote branch already contained the task commit, so the earlier push failure was treated as stale.",
+            "next_action": "No action required unless you want to inspect the result report Git Automation section.",
+            "runbook": "downgrade-stale-branch-push-failure",
+            "note": "A stale push-failed state was downgraded because the remote branch already had the task commit.",
+        }
+
     if stage == "runtime-error" and summary and "FileExistsError: Destination already exists:" in summary and "/tasks/done" in summary.replace("\\", "/"):
         source_abs = resolve_repo_path(packet_path)
         if not os.path.exists(source_abs):
@@ -614,6 +627,71 @@ def run_git(args: list[str], *, check: bool = True) -> subprocess.CompletedProce
     )
 
 
+def is_transient_git_push_error(output: str) -> bool:
+    normalized = output.casefold()
+    transient_markers = (
+        "internal server error",
+        "the requested url returned error: 500",
+        "the requested url returned error: 502",
+        "the requested url returned error: 503",
+        "the requested url returned error: 504",
+        "http 500",
+        "http 502",
+        "http 503",
+        "http 504",
+    )
+    return any(marker in normalized for marker in transient_markers)
+
+
+def remote_branch_contains_commit(branch: str, commit_sha: str) -> bool:
+    fetch_result = run_git(["fetch", "origin", branch], check=False)
+    if fetch_result.returncode != 0:
+        return False
+
+    ancestry_check = run_git(["merge-base", "--is-ancestor", commit_sha, f"origin/{branch}"], check=False)
+    return ancestry_check.returncode == 0
+
+
+def timing_artifact_path(task_id: str) -> str:
+    return os.path.join(REPORTS_DIR, f"{task_id}-timing.json")
+
+
+def record_task_timing_anchor(
+    task_id: str,
+    *,
+    source: str,
+    stage: str,
+    timestamp: Optional[str] = None,
+    details: Optional[dict[str, object]] = None,
+) -> str:
+    path = timing_artifact_path(task_id)
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    payload: dict[str, object]
+    if os.path.exists(path):
+        try:
+            payload = json.loads(Path(path).read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            payload = {}
+    else:
+        payload = {}
+
+    payload.setdefault("task_id", task_id)
+    payload.setdefault("version", 1)
+    anchors = payload.setdefault("anchors", {})
+    assert isinstance(anchors, dict)
+
+    anchor_payload: dict[str, object] = {
+        "source": source,
+        "at": timestamp or datetime.now().isoformat(timespec="seconds"),
+    }
+    if details:
+        anchor_payload["details"] = details
+    anchors[stage] = anchor_payload
+
+    Path(path).write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return path
+
+
 def write_report(task_id: str, suffix: str, body: str) -> str:
     report_path = os.path.join(REPORTS_DIR, f"{task_id}-{suffix}.md")
     with open(report_path, "w", encoding="utf-8") as file:
@@ -761,6 +839,14 @@ def write_alert(
         lines.append(f"auto_remediation_packet: `{auto_remediation_packet}`")
     if slack_thread_ts:
         lines.append(f"slack_thread_ts: `{slack_thread_ts}`")
+
+    if stage in {"completed", "push-failed", "self-healed", "blocked", "drift", "needs-review", "recovered", "runtime-error"}:
+        timing_details: dict[str, object] = {"status": status}
+        if summary:
+            timing_details["summary"] = summary
+        if original_stage != stage:
+            timing_details["original_stage"] = original_stage
+        record_task_timing_anchor(task_id, source="local-alert", stage=stage, details=timing_details)
 
     with open(alert_path, "w", encoding="utf-8") as file:
         file.write("\n".join(lines).rstrip() + "\n")
@@ -1459,17 +1545,34 @@ def sync_completed_task_to_git(
         return ("commit-failed", commit_output.strip() or "git commit failed", branch, None)
 
     commit_sha = current_head()
+    branch_push_note: Optional[str] = None
     push_result = run_git(["push", "origin", branch], check=False)
     push_output = (push_result.stdout or "") + (push_result.stderr or "")
+
+    if push_result.returncode != 0 and is_transient_git_push_error(push_output):
+        retry_result = run_git(["push", "origin", branch], check=False)
+        retry_output = (retry_result.stdout or "") + (retry_result.stderr or "")
+        if retry_result.returncode == 0:
+            push_result = retry_result
+            push_output = retry_output
+        else:
+            push_output = "\n".join(part for part in [push_output.strip(), retry_output.strip()] if part).strip()
+            push_result = retry_result
+
     if push_result.returncode != 0:
-        append_git_metadata(
-            result_report,
-            status="push-failed",
-            branch=branch,
-            commit_sha=commit_sha,
-            message=push_output.strip() or "git push failed",
-        )
-        return ("push-failed", push_output.strip() or "git push failed", branch, commit_sha)
+        if remote_branch_contains_commit(branch, commit_sha):
+            branch_push_note = (
+                f"{commit_message} origin/{branch} already contains the task commit even though the watcher push returned an error."
+            )
+        else:
+            append_git_metadata(
+                result_report,
+                status="push-failed",
+                branch=branch,
+                commit_sha=commit_sha,
+                message=push_output.strip() or "git push failed",
+            )
+            return ("push-failed", push_output.strip() or "git push failed", branch, commit_sha)
 
     promotion_note: Optional[str] = None
     if branch != "main":
@@ -1477,7 +1580,7 @@ def sync_completed_task_to_git(
         fetch_main_output = (fetch_main_result.stdout or "") + (fetch_main_result.stderr or "")
         if fetch_main_result.returncode != 0:
             promotion_note = (
-                f"{commit_message} Pushed to origin/{branch}. "
+                f"{branch_push_note or commit_message} "
                 "Automatic main promotion skipped because git fetch origin main failed: "
                 f"{fetch_main_output.strip() or 'git fetch origin main failed'}"
             )
@@ -1485,7 +1588,7 @@ def sync_completed_task_to_git(
             ancestry_check = run_git(["merge-base", "--is-ancestor", "origin/main", commit_sha], check=False)
             if ancestry_check.returncode != 0:
                 promotion_note = (
-                    f"{commit_message} Pushed to origin/{branch}. "
+                    f"{branch_push_note or commit_message} "
                     "Automatic main promotion skipped because origin/main is not an ancestor of the task commit."
                 )
             else:
@@ -1502,7 +1605,7 @@ def sync_completed_task_to_git(
                     return ("merged-main", f"{commit_message} Auto-promoted to origin/main.", branch, commit_sha)
 
                 promotion_note = (
-                    f"{commit_message} Pushed to origin/{branch}. "
+                    f"{branch_push_note or commit_message} "
                     "Automatic main promotion failed but branch push succeeded: "
                     f"{main_push_output.strip() or 'git push to origin/main failed'}"
                 )
@@ -1512,9 +1615,9 @@ def sync_completed_task_to_git(
         status="pushed",
         branch=branch,
         commit_sha=commit_sha,
-        message=promotion_note or commit_message,
+        message=promotion_note or branch_push_note or commit_message,
     )
-    return ("pushed", promotion_note or commit_message, branch, commit_sha)
+    return ("pushed", promotion_note or branch_push_note or commit_message, branch, commit_sha)
 
 
 def move_task_file(src: str, dst: str) -> None:
@@ -1866,6 +1969,7 @@ def run_supervisor_workflow(
         packet_path=f"tasks/running/{task_filename}",
         report_path=f"reports/{task_id}-supervisor-inspection.md",
     )
+    record_task_timing_anchor(task_id, source="local-watcher", stage="supervisor-inspection-started")
     inspector_exit_code, inspector_token_count = run_codex_prompt(
         build_supervisor_inspector_prompt(task_filename, task_id, task_type),
         label=SUPERVISOR_AGENT_LABELS["inspector"],
@@ -1892,6 +1996,7 @@ def run_supervisor_workflow(
         packet_path=f"tasks/running/{task_filename}",
         report_path=f"reports/{task_id}-result.md",
     )
+    record_task_timing_anchor(task_id, source="local-watcher", stage="supervisor-implementer-started")
     implementer_exit_code, implementer_token_count = run_codex_prompt(
         build_supervisor_implementer_prompt(task_filename, task_id, task_type),
         label=SUPERVISOR_AGENT_LABELS["implementer"],
@@ -1933,6 +2038,12 @@ def run_supervisor_workflow(
             report_path=f"reports/{task_id}-supervisor-verification.md",
             details={"mode": "docs-fast-path"},
         )
+        record_task_timing_anchor(
+            task_id,
+            source="local-watcher",
+            stage="supervisor-verification-started",
+            details={"mode": "docs-fast-path"},
+        )
         write_docs_fast_path_verification_report(task_id)
         return {
             "exit_code": implementer_exit_code,
@@ -1948,6 +2059,7 @@ def run_supervisor_workflow(
         packet_path=f"tasks/running/{task_filename}",
         report_path=f"reports/{task_id}-supervisor-verification.md",
     )
+    record_task_timing_anchor(task_id, source="local-watcher", stage="supervisor-verification-started")
     verifier_exit_code, verifier_token_count = run_codex_prompt(
         build_supervisor_verifier_prompt(task_filename, task_id, task_type),
         label=SUPERVISOR_AGENT_LABELS["verifier"],
@@ -2246,6 +2358,7 @@ def handle_task(task_path: str) -> None:
         status="started",
         packet_path=f"tasks/running/{filename}",
     )
+    record_task_timing_anchor(task_id, source="local-watcher", stage="running-started")
     planned_commit = metadata.get("planned_against_commit", "")
     task_type = metadata.get("type", "").strip().lower()
 

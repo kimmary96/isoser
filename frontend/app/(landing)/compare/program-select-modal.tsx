@@ -3,109 +3,124 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { listPrograms } from "@/lib/api/backend";
-import { getDashboardBookmarks } from "@/lib/api/app";
-import type { Program } from "@/lib/types";
+import { ProgramDeadlineBadge } from "@/components/programs/program-deadline-badge";
+import { ProgramProviderBrand } from "@/components/programs/program-provider-brand";
+import { getDashboardBookmarks, searchComparePrograms } from "@/lib/api/app";
+import {
+  formatProgramCostLabel,
+  getProgramId,
+  getProgramTrainingModeLabel,
+} from "@/lib/program-display";
+import type { ProgramCardItem, ProgramCardSummary } from "@/lib/types";
+
+import { COMPARE_COPY } from "./compare-copy";
 
 type ProgramSelectModalProps = {
   open: boolean;
   slotIndex: number | null;
   selectedProgramIds: string[];
-  isLoggedIn: boolean;
+  initialBookmarkedItems: ProgramCardItem[];
   onClose: () => void;
   onSelectProgram: (programId: string) => void;
 };
 
 type ModalTab = "bookmarks" | "search";
 
-type BookmarkItem = {
-  programId: string | null;
-  createdAt: string | null;
-  program: Program | null;
-};
-
-function normalizePrograms(programs: Program[]): Program[] {
-  return programs.filter(
-    (program): program is Program =>
-      Boolean(program) && typeof program.id === "string" && program.id.trim().length > 0
-  );
+function normalizeCardTags(value: string[] | string | null | undefined): string[] {
+  if (Array.isArray(value)) {
+    return value.map((item) => item.trim()).filter(Boolean);
+  }
+  if (typeof value === "string" && value.trim()) {
+    return value
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+  return [];
 }
 
-function getProgramId(program: Program | null | undefined): string {
-  return typeof program?.id === "string" ? program.id : "";
-}
-
-function getDeadlineLabel(daysLeft?: number | null): string {
-  if (typeof daysLeft !== "number") return "정보 없음";
-  if (daysLeft < 0) return "마감";
-  if (daysLeft === 0) return "D-Day";
-  return `D-${daysLeft}`;
-}
-
-function getMetaTags(program: Program, includeBookmarkedTag: boolean): string[] {
+function getMetaTags(program: ProgramCardSummary, includeBookmarkedTag: boolean): string[] {
+  const trainingMode = getProgramTrainingModeLabel(program);
+  const costLabel = formatProgramCostLabel(program);
   const tags = [
     program.category,
-    getDeadlineLabel(program.days_left),
-    includeBookmarkedTag ? "찜한 프로그램" : null,
-    program.compare_meta?.subsidy_rate ?? null,
+    trainingMode,
+    costLabel,
+    includeBookmarkedTag ? COMPARE_COPY.suggestionReasons.bookmark : null,
+    program.support_type ?? null,
+    ...normalizeCardTags(program.tags).slice(0, 2),
   ];
 
-  return tags.filter((tag): tag is string => Boolean(tag && tag !== "정보 없음"));
+  const filteredTags = tags.filter((tag): tag is string => Boolean(tag && tag !== "정보 없음"));
+  return filteredTags.filter((tag, index) => filteredTags.indexOf(tag) === index).slice(0, 5);
 }
 
-function ProgramListCard({
-  program,
+function ProgramSelectCard({
+  item,
   alreadyAdded,
   includeBookmarkedTag,
   onSelect,
 }: {
-  program: Program;
+  item: ProgramCardItem;
   alreadyAdded: boolean;
   includeBookmarkedTag: boolean;
   onSelect: (programId: string) => void;
 }) {
+  const { program } = item;
   const programId = getProgramId(program);
   const tags = getMetaTags(program, includeBookmarkedTag);
+  const reason =
+    item.context?.reason ||
+    item.context?.relevance_reasons?.[0] ||
+    program.recommendation_reasons?.[0] ||
+    null;
 
   return (
     <article
-      className={`flex items-start justify-between gap-3 rounded-2xl border border-slate-200 px-4 py-4 transition ${
-        alreadyAdded ? "opacity-45" : "bg-white"
+      className={`rounded-2xl border border-slate-200 bg-white px-4 py-4 transition ${
+        alreadyAdded ? "opacity-45" : "hover:border-blue-200 hover:shadow-sm"
       }`}
     >
-      <div className="min-w-0">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-          {program.source || program.provider || "출처 미상"}
-        </p>
-        <h3 className="mt-1 text-[13px] font-semibold leading-5 text-slate-950">
-          {program.title || "제목 미정"}
-        </h3>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {tags.length > 0 ? (
-            tags.map((tag) => (
-              <span
-                key={`${programId}-${tag}`}
-                className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-medium text-slate-600"
-              >
-                {tag}
-              </span>
-            ))
-          ) : (
-            <span className="text-[11px] text-slate-400">태그 정보 없음</span>
-          )}
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <ProgramProviderBrand program={program} />
+          <h3 className="mt-3 line-clamp-2 text-[14px] font-semibold leading-5 text-slate-950">
+            {program.title || "제목 미정"}
+          </h3>
+          <p className="mt-1 truncate text-xs text-slate-500">
+            {program.provider || program.source || "운영기관 정보 없음"}
+          </p>
         </div>
+        <ProgramDeadlineBadge program={program} className="mt-0.5" />
       </div>
-      {alreadyAdded ? (
-        <span className="shrink-0 pt-1 text-xs font-semibold text-slate-500">추가됨</span>
-      ) : (
-        <button
-          type="button"
-          onClick={() => onSelect(programId)}
-          className="shrink-0 rounded-xl border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-semibold text-orange-600 transition hover:bg-orange-500 hover:text-white"
-        >
-          + 추가
-        </button>
-      )}
+      <div className="mt-3 flex flex-wrap gap-2">
+        {tags.length > 0 ? (
+          tags.map((tag) => (
+            <span
+              key={`${programId}-${tag}`}
+              className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-medium text-slate-600"
+            >
+              {tag}
+            </span>
+          ))
+        ) : (
+          <span className="text-[11px] text-slate-400">태그 정보 없음</span>
+        )}
+      </div>
+      {reason ? <p className="mt-3 line-clamp-2 text-xs leading-5 text-slate-500">{reason}</p> : null}
+      <div className="mt-4 flex justify-end">
+        {alreadyAdded ? (
+          <span className="shrink-0 rounded-xl bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-500">추가됨</span>
+        ) : (
+          <button
+            type="button"
+            onClick={() => onSelect(programId)}
+            className="shrink-0 rounded-xl border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-semibold text-orange-600 transition hover:bg-orange-500 hover:text-white"
+          >
+            비교에 추가
+          </button>
+        )}
+      </div>
     </article>
   );
 }
@@ -114,20 +129,22 @@ export default function ProgramSelectModal({
   open,
   slotIndex,
   selectedProgramIds,
-  isLoggedIn,
+  initialBookmarkedItems,
   onClose,
   onSelectProgram,
 }: ProgramSelectModalProps) {
   const [isMounted, setIsMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<ModalTab>("bookmarks");
   const [query, setQuery] = useState("");
-  const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
+  const [bookmarks, setBookmarks] = useState<ProgramCardItem[]>(initialBookmarkedItems);
   const [bookmarksLoading, setBookmarksLoading] = useState(false);
   const [bookmarksError, setBookmarksError] = useState<string | null>(null);
-  const [searchResults, setSearchResults] = useState<Program[]>([]);
+  const [searchResults, setSearchResults] = useState<ProgramCardItem[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
-  const [bookmarksLoaded, setBookmarksLoaded] = useState(false);
+  const [bookmarksLoaded, setBookmarksLoaded] = useState(() => initialBookmarkedItems.length > 0);
+  const [bookmarksRetryKey, setBookmarksRetryKey] = useState(0);
+  const [submittedQuery, setSubmittedQuery] = useState("");
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -160,6 +177,7 @@ export default function ProgramSelectModal({
     if (!open) {
       setActiveTab("bookmarks");
       setQuery("");
+      setSubmittedQuery("");
       setSearchResults([]);
       setSearchError(null);
       setSearchLoading(false);
@@ -174,13 +192,16 @@ export default function ProgramSelectModal({
   }, [activeTab, open]);
 
   useEffect(() => {
-    if (!open) {
-      setBookmarksLoaded(false);
+    setBookmarks(initialBookmarkedItems);
+    if (initialBookmarkedItems.length > 0) {
+      setBookmarksLoaded(true);
+      setBookmarksError(null);
+      setBookmarksLoading(false);
     }
-  }, [open]);
+  }, [initialBookmarkedItems]);
 
   useEffect(() => {
-    if (!open || activeTab !== "bookmarks" || !isLoggedIn || bookmarksLoaded || bookmarksLoading) {
+    if (!open || activeTab !== "bookmarks" || bookmarksLoaded || bookmarksLoading) {
       return;
     }
 
@@ -194,12 +215,16 @@ export default function ProgramSelectModal({
         if (cancelled) return;
         setBookmarks(response.items);
         setBookmarksLoaded(true);
-      } catch (error) {
+      } catch {
         if (cancelled) return;
-        setBookmarksError(
-          error instanceof Error ? error.message : "찜한 프로그램을 불러올 수 없습니다."
-        );
+        if (bookmarks.length > 0) {
+          setBookmarksLoaded(true);
+          setBookmarksError(null);
+          return;
+        }
+        setBookmarksError(COMPARE_COPY.modal.bookmarks.errorTitle);
         setBookmarks([]);
+        setBookmarksLoaded(true);
       } finally {
         if (!cancelled) {
           setBookmarksLoading(false);
@@ -212,7 +237,7 @@ export default function ProgramSelectModal({
     return () => {
       cancelled = true;
     };
-  }, [activeTab, bookmarksLoaded, bookmarksLoading, isLoggedIn, open]);
+  }, [activeTab, bookmarks.length, bookmarksLoaded, bookmarksLoading, bookmarksRetryKey, open]);
 
   useEffect(() => {
     if (!open || activeTab !== "search") return;
@@ -222,19 +247,17 @@ export default function ProgramSelectModal({
       setSearchLoading(true);
       setSearchError(null);
       try {
-        const programs = await listPrograms({
-          q: query.trim() || undefined,
-          limit: 20,
-          sort: "deadline",
-          recruiting_only: true,
+        const response = await searchComparePrograms({
+          q: submittedQuery || undefined,
+          limit: 30,
+          sort: submittedQuery ? "deadline" : "default",
+          recruitingOnly: true,
         });
         if (cancelled) return;
-        setSearchResults(normalizePrograms(programs));
-      } catch (error) {
+        setSearchResults(response.items);
+      } catch {
         if (cancelled) return;
-        setSearchError(
-          error instanceof Error ? error.message : "프로그램 검색 결과를 불러오지 못했습니다."
-        );
+        setSearchError(COMPARE_COPY.modal.search.error);
         setSearchResults([]);
       } finally {
         if (!cancelled) {
@@ -247,14 +270,11 @@ export default function ProgramSelectModal({
       cancelled = true;
       window.clearTimeout(timeoutId);
     };
-  }, [activeTab, open, query]);
+  }, [activeTab, open, submittedQuery]);
 
   if (!isMounted || !open || slotIndex === null) return null;
 
-  const bookmarkedPrograms = bookmarks
-    .map((item) => item.program)
-    .filter((program): program is Program => Boolean(program))
-    .filter((program): program is Program => Boolean(getProgramId(program)));
+  const bookmarkedPrograms = bookmarks.filter((item) => Boolean(getProgramId(item.program)));
 
   return createPortal(
     <>
@@ -275,10 +295,10 @@ export default function ProgramSelectModal({
           <div className="flex items-start justify-between border-b border-slate-100 px-5 py-4">
             <div>
               <h2 id="program-select-modal-title" className="text-base font-bold text-slate-950">
-                프로그램 선택
+                {COMPARE_COPY.modal.title}
               </h2>
               <p className="mt-1 text-xs text-slate-500">
-                비교 슬롯 {slotIndex + 1}에 추가할 프로그램을 선택하세요.
+                {COMPARE_COPY.modal.description(slotIndex + 1)}
               </p>
             </div>
             <button
@@ -294,8 +314,8 @@ export default function ProgramSelectModal({
           <div className="border-b border-slate-100 px-5">
             <div className="flex gap-5">
               {[
-                ["bookmarks", "찜한 프로그램"],
-                ["search", "전체 검색"],
+                ["bookmarks", COMPARE_COPY.modal.tabs.bookmarks],
+                ["search", COMPARE_COPY.modal.tabs.search],
               ].map(([value, label]) => {
                 const active = activeTab === value;
                 return (
@@ -318,39 +338,56 @@ export default function ProgramSelectModal({
 
           <div className="overflow-y-auto px-5 py-4">
             {activeTab === "bookmarks" ? (
-              !isLoggedIn ? (
+              bookmarksLoading || (!bookmarksLoaded && !bookmarksError) ? (
+                <div className="flex items-center justify-center py-12 text-sm text-slate-500">
+                  {COMPARE_COPY.modal.bookmarks.loading}
+                </div>
+              ) : bookmarksError && /UNAUTHORIZED|로그인/.test(bookmarksError) ? (
                 <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-5 py-10 text-center">
                   <p className="text-sm font-semibold text-slate-700">
-                    로그인하면 찜한 프로그램을 바로 불러올 수 있습니다
+                    {COMPARE_COPY.modal.bookmarks.loginTitle}
                   </p>
                   <button
                     type="button"
                     onClick={() => setActiveTab("search")}
                     className="mt-4 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:border-blue-200 hover:text-blue-600"
                   >
-                    전체 검색으로 찾기
+                    {COMPARE_COPY.modal.bookmarks.searchButton}
                   </button>
                 </div>
-              ) : bookmarksLoading ? (
-                <div className="flex items-center justify-center py-12 text-sm text-slate-500">
-                  찜한 프로그램을 불러오는 중입니다...
-                </div>
               ) : bookmarksError ? (
-                <div className="flex items-center justify-center py-12 text-sm text-slate-500">
-                  불러올 수 없습니다.
+                <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-5 py-10 text-center">
+                  <p className="text-sm font-semibold text-slate-700">
+                    {COMPARE_COPY.modal.bookmarks.errorTitle}
+                  </p>
+                  <p className="mt-2 text-xs leading-5 text-slate-500">
+                    {COMPARE_COPY.modal.bookmarks.retryDescription}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBookmarksError(null);
+                      setBookmarksLoaded(false);
+                      setBookmarksLoading(false);
+                      setBookmarksRetryKey((value) => value + 1);
+                    }}
+                    className="mt-4 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:border-blue-200 hover:text-blue-600"
+                  >
+                    {COMPARE_COPY.modal.bookmarks.retryButton}
+                  </button>
                 </div>
               ) : bookmarkedPrograms.length === 0 ? (
                 <div className="flex items-center justify-center py-12 text-sm text-slate-500">
-                  아직 찜한 프로그램이 없습니다.
+                  {COMPARE_COPY.modal.bookmarks.empty}
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {bookmarkedPrograms.map((program) => {
-                    const programId = getProgramId(program);
+                  {bookmarkedPrograms.map((item) => {
+                    const programId = getProgramId(item.program);
                     return (
-                      <ProgramListCard
+                      <ProgramSelectCard
                         key={`bookmark-${programId}`}
-                        program={program}
+                        item={item}
                         alreadyAdded={selectedProgramIds.includes(programId)}
                         includeBookmarkedTag
                         onSelect={(nextProgramId) => {
@@ -364,13 +401,30 @@ export default function ProgramSelectModal({
               )
             ) : (
               <div>
-                <input
-                  ref={inputRef}
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder="프로그램명, 카테고리, 기관 검색..."
-                  className="w-full rounded-lg border border-[1.5px] border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-600"
-                />
+                <form
+                  className="sticky top-0 z-10 -mx-5 border-b border-slate-100 bg-white px-5 pb-3"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    setSubmittedQuery(query.trim());
+                  }}
+                >
+                  <div className="flex gap-2">
+                    <input
+                      ref={inputRef}
+                      value={query}
+                      onChange={(event) => setQuery(event.target.value)}
+                      placeholder={COMPARE_COPY.modal.search.placeholder}
+                      className="min-w-0 flex-1 rounded-lg border border-[1.5px] border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-600"
+                    />
+                    <button
+                      type="submit"
+                      className="shrink-0 rounded-lg bg-[#0A0F1E] px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+                      disabled={searchLoading}
+                    >
+                      검색
+                    </button>
+                  </div>
+                </form>
                 <div className="mt-4">
                   {searchLoading ? (
                     <div className="flex items-center justify-center py-12 text-sm text-slate-500">
@@ -386,12 +440,12 @@ export default function ProgramSelectModal({
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {searchResults.map((program) => {
-                        const programId = getProgramId(program);
+                      {searchResults.map((item) => {
+                        const programId = getProgramId(item.program);
                         return (
-                          <ProgramListCard
+                          <ProgramSelectCard
                             key={`search-${programId}`}
-                            program={program}
+                            item={item}
                             alreadyAdded={selectedProgramIds.includes(programId)}
                             includeBookmarkedTag={false}
                             onSelect={(nextProgramId) => {

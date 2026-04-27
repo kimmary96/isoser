@@ -2,13 +2,23 @@ import type { Metadata } from "next";
 
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { listProgramsPage } from "@/lib/api/backend";
+import { resolvePublicProgramListScope } from "@/lib/program-list-scope";
+import { unwrapProgramListRows } from "@/lib/program-display";
 import { buildProgramFilterParams } from "@/lib/program-filters";
 import { getSiteUrl } from "@/lib/seo";
-import type { Program } from "@/lib/types";
+import {
+  loadPublicLandingChipSnapshotRows,
+  loadPublicLandingLiveBoardRows,
+  loadPublicFilteredProgramFallbackRows,
+  loadPublicProgramsPageFallback,
+  PUBLIC_PROGRAM_BROWSE_LIMIT,
+} from "@/lib/server/public-programs-fallback";
+import type { ProgramListRow } from "@/lib/types";
 
 import { LandingCHeroSection } from "./_hero";
 import { LandingCOpportunityFeed } from "./_program-feed";
-import { getLiveBoardPrograms, orderOpportunityPrograms } from "./_program-utils";
+import { OPPORTUNITY_FEED_SIZE } from "./_content";
+import { filterOpportunityPrograms, getLiveBoardPrograms, orderOpportunityPrograms } from "./_program-utils";
 import { normalizeChip, normalizeKeyword } from "./_search";
 import { landingCThemeVars } from "./_styles";
 import {
@@ -36,43 +46,123 @@ export const metadata: Metadata = {
   },
 };
 
+function mergeDistinctPrograms(...programGroups: ProgramListRow[][]): ProgramListRow[] {
+  const seenIds = new Set<string>();
+  const merged: ProgramListRow[] = [];
+
+  for (const programs of programGroups) {
+    for (const program of programs) {
+      const programId = String(program.id ?? "").trim();
+      if (!programId || seenIds.has(programId)) {
+        continue;
+      }
+      seenIds.add(programId);
+      merged.push(program);
+    }
+  }
+
+  return merged;
+}
+
 export default async function LandingCPage({ searchParams }: LandingCPageProps) {
   const resolvedSearchParams = await searchParams;
   const activeChip = normalizeChip(resolvedSearchParams.chip);
   const keyword = normalizeKeyword(resolvedSearchParams.q);
   const programParams = buildProgramFilterParams(activeChip, keyword, 48);
+  const scope = resolvePublicProgramListScope({ keyword });
+  const shouldUseLandingSnapshot = !keyword;
 
-  let programs: Program[] = [];
-  let liveBoardPrograms: Program[] = [];
+  let programs: ProgramListRow[] = [];
+  let liveBoardPrograms: ProgramListRow[] = [];
+  let snapshotPrograms: ProgramListRow[] = [];
   let error: string | null = null;
 
   try {
-    const [programsPage, liveBoardPage] = await Promise.all([
-      listProgramsPage({
+    if (shouldUseLandingSnapshot) {
+      [snapshotPrograms, liveBoardPrograms] = await Promise.all([
+        loadPublicLandingChipSnapshotRows(activeChip).catch(() => []),
+        loadPublicLandingLiveBoardRows().catch(() => []),
+      ]);
+      if (snapshotPrograms.length > 0) {
+        programs = snapshotPrograms;
+      } else if (activeChip === "전체") {
+        const fallbackPage = await loadPublicProgramsPageFallback();
+        programs = fallbackPage.programs;
+        if (liveBoardPrograms.length === 0) {
+          liveBoardPrograms = fallbackPage.programs;
+        }
+      } else {
+        const fallbackPage = await loadPublicProgramsPageFallback();
+        programs = filterOpportunityPrograms(fallbackPage.programs, { activeChip, keyword: "" });
+        if (liveBoardPrograms.length === 0) {
+          liveBoardPrograms = fallbackPage.programs;
+        }
+      }
+    } else {
+      liveBoardPrograms = await loadPublicLandingLiveBoardRows().catch(() => []);
+      const programsPage = await listProgramsPage({
         ...programParams,
-        scope: programParams.q ? "all" : "default",
-      }),
-      listProgramsPage({
-        sort: "popular",
-        recruiting_only: true,
-        limit: 100,
-        scope: "default",
-      }),
-    ]);
-    programs = programsPage.items;
-    liveBoardPrograms = liveBoardPage.items;
+        scope,
+      });
+      const shouldUseBrowseFallback =
+        activeChip === "전체" &&
+        !keyword &&
+        programsPage.source === "read_model" &&
+        (programsPage.count ?? 0) > 0 &&
+        (programsPage.count ?? 0) < PUBLIC_PROGRAM_BROWSE_LIMIT;
+
+      if (shouldUseBrowseFallback) {
+        const fallbackPage = await loadPublicProgramsPageFallback();
+        programs = fallbackPage.programs;
+        liveBoardPrograms = fallbackPage.programs;
+      } else {
+        programs = unwrapProgramListRows(programsPage.items);
+      }
+    }
   } catch (cause) {
-    error = cause instanceof Error ? cause.message : "프로그램 정보를 불러오지 못했습니다.";
+    const canServeFromLandingSnapshot = snapshotPrograms.length >= OPPORTUNITY_FEED_SIZE;
+    try {
+      const fallbackPage = await loadPublicProgramsPageFallback();
+      programs = canServeFromLandingSnapshot
+        ? snapshotPrograms
+        : fallbackPage.programs;
+      liveBoardPrograms = fallbackPage.programs;
+    } catch {
+      error = cause instanceof Error ? cause.message : "프로그램 정보를 불러오지 못했습니다.";
+    }
   }
 
+  const canServeFromLandingSnapshot = snapshotPrograms.length >= OPPORTUNITY_FEED_SIZE;
   const heroPrograms = getLiveBoardPrograms(liveBoardPrograms);
-  const opportunityPrograms = orderOpportunityPrograms(programs, { activeChip });
+  let opportunityPrograms = canServeFromLandingSnapshot && !error
+    ? orderOpportunityPrograms(snapshotPrograms, { activeChip, limit: OPPORTUNITY_FEED_SIZE })
+    : orderOpportunityPrograms(
+        filterOpportunityPrograms(programs, { activeChip, keyword }),
+        { activeChip }
+      );
+
+  if (keyword && !error && opportunityPrograms.length < OPPORTUNITY_FEED_SIZE) {
+    try {
+      const fallbackPrograms = await loadPublicFilteredProgramFallbackRows({
+        activeChip,
+        keyword,
+        limit: OPPORTUNITY_FEED_SIZE * 4,
+      });
+
+      opportunityPrograms = orderOpportunityPrograms(
+        filterOpportunityPrograms(mergeDistinctPrograms(programs, fallbackPrograms), { activeChip, keyword }),
+        { activeChip, limit: OPPORTUNITY_FEED_SIZE }
+      );
+    } catch {
+      // Keep the already loaded list when the supplemental fallback path is unavailable.
+    }
+  }
 
   return (
     <main className="min-h-screen bg-[var(--surface)] text-[var(--ink)]" style={landingCThemeVars}>
       <LandingHeader />
       <LandingCHeroSection heroPrograms={heroPrograms} />
-      <LandingCOpportunityFeed activeChip={activeChip} keyword={keyword} programs={opportunityPrograms} error={error} />
+      <LandingCOpportunityFeed activeChip={activeChip} programs={opportunityPrograms} error={error} />
       <LandingCBackupHeroSection />
       <LandingCWorkflowSection />
       <LandingCCircularFlowSection />

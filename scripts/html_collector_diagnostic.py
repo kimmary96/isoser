@@ -281,12 +281,19 @@ def build_source_diagnostic(
     finally:
         row["duration_ms"] = round((perf_counter() - started) * 1000, 2)
 
+    source_run_counts = summarize_source_run_counts(
+        message=str(row.get("last_collect_message") or ""),
+        url_diagnostics=row.get("_url_diagnostics"),
+    )
+    row["repeated_parse_empty_in_run"] = source_run_counts["parse_empty"] >= 2
     classification, evidence, recommendation = classify_source(
         status=str(row.get("last_collect_status") or ""),
         message=str(row.get("last_collect_message") or ""),
         raw_count=int(row.get("raw_count") or 0),
         normalized_count=int(row.get("normalized_count") or 0),
         normalize_failed=int(row.get("normalize_failed") or 0),
+        parse_empty_count=source_run_counts["parse_empty"],
+        request_failed_count=source_run_counts["request_failed"],
     )
     row["classification"] = classification
     row["evidence"] = evidence
@@ -465,6 +472,7 @@ def build_field_gap_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
     issue_fields: dict[str, int] = {}
     source_count_with_any_issues = 0
     source_count_with_only_info_issues = 0
+    source_count_with_warning_or_error_follow_up = 0
 
     for row in rows:
         field_gap_audit = row.get("field_gap_audit")
@@ -476,6 +484,8 @@ def build_field_gap_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
         rows_with_info_only = int(field_gap_audit.get("rows_with_info_only") or 0)
         if checked_rows > 0 and checked_rows == rows_with_info_only:
             source_count_with_only_info_issues += 1
+        if bool(field_gap_audit.get("warning_or_error_follow_up_needed")):
+            source_count_with_warning_or_error_follow_up += 1
         for code, count in (field_gap_audit.get("issue_codes") or {}).items():
             issue_codes[str(code)] = issue_codes.get(str(code), 0) + int(count or 0)
         for field, count in (field_gap_audit.get("issue_fields") or {}).items():
@@ -485,6 +495,7 @@ def build_field_gap_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "enabled": True,
         "source_count_with_any_issues": source_count_with_any_issues,
         "source_count_with_only_info_issues": source_count_with_only_info_issues,
+        "source_count_with_warning_or_error_follow_up": source_count_with_warning_or_error_follow_up,
         "issue_codes": dict(sorted(issue_codes.items())),
         "issue_fields": dict(sorted(issue_fields.items())),
     }
@@ -855,6 +866,36 @@ def _collect_probe_url_samples(
     return collected
 
 
+def summarize_source_run_counts(
+    *,
+    message: str,
+    url_diagnostics: Iterable[Any] | None,
+) -> dict[str, int]:
+    parse_empty_count = 0
+    request_failed_count = 0
+    has_structured_diagnostics = False
+
+    for diagnostic in url_diagnostics or []:
+        if not isinstance(diagnostic, dict):
+            continue
+        has_structured_diagnostics = True
+        if str(diagnostic.get("request_status") or "") == "request_failed":
+            request_failed_count += 1
+        if str(diagnostic.get("parse_status") or "") in {"parse_empty", "parse_failed"}:
+            parse_empty_count += 1
+
+    if has_structured_diagnostics:
+        return {
+            "parse_empty": parse_empty_count,
+            "request_failed": request_failed_count,
+        }
+
+    return {
+        "parse_empty": _int_from(r"parse_empty=(\d+)", message) or 0,
+        "request_failed": _int_from(r"request_failed=(\d+)", message) or 0,
+    }
+
+
 def classify_source(
     *,
     status: str,
@@ -862,10 +903,16 @@ def classify_source(
     raw_count: int,
     normalized_count: int,
     normalize_failed: int,
+    parse_empty_count: int | None = None,
+    request_failed_count: int | None = None,
 ) -> tuple[str, list[str], str]:
     lowered = message.lower()
-    parse_empty = _int_from(r"parse_empty=(\d+)", message)
-    request_failed = _int_from(r"request_failed=(\d+)", message)
+    parse_empty = parse_empty_count
+    if parse_empty is None:
+        parse_empty = _int_from(r"parse_empty=(\d+)", message)
+    request_failed = request_failed_count
+    if request_failed is None:
+        request_failed = _int_from(r"request_failed=(\d+)", message)
 
     evidence = [f"status={status or 'unknown'}", f"raw={raw_count}", f"normalized={normalized_count}"]
     if parse_empty is not None:
@@ -945,13 +992,13 @@ def render_markdown_report(report: dict[str, Any]) -> str:
             "",
             "## Sources",
             "",
-            "| Source | Class | Raw | Normalized | Duration ms | Status | Classification |",
-            "| --- | --- | ---: | ---: | ---: | --- | --- |",
+            "| Source | Class | Raw | Normalized | Duration ms | Status | Classification | repeated_parse_empty_in_run |",
+            "| --- | --- | ---: | ---: | ---: | --- | --- | --- |",
         ]
     )
     for row in report["sources"]:
         lines.append(
-            "| {source} | `{class_name}` | {raw_count} | {normalized_count} | {duration_ms} | {status} | {classification} |".format(
+            "| {source} | `{class_name}` | {raw_count} | {normalized_count} | {duration_ms} | {status} | {classification} | {repeated_parse_empty_in_run} |".format(
                 source=_escape_table(str(row["source"])),
                 class_name=row["class_name"],
                 raw_count=row["raw_count"],
@@ -959,6 +1006,9 @@ def render_markdown_report(report: dict[str, Any]) -> str:
                 duration_ms=row.get("duration_ms", 0),
                 status=_escape_table(str(row["last_collect_status"])),
                 classification=row["classification"],
+                repeated_parse_empty_in_run=str(
+                    bool(row.get("repeated_parse_empty_in_run"))
+                ).lower(),
             )
         )
 
@@ -971,6 +1021,9 @@ def render_markdown_report(report: dict[str, Any]) -> str:
                 f"### {row['source']}",
                 "",
                 f"- Classification: `{row['classification']}`",
+                "- repeated_parse_empty_in_run: `{}`".format(
+                    str(bool(row.get("repeated_parse_empty_in_run"))).lower()
+                ),
                 f"- Evidence: {', '.join(f'`{item}`' for item in row['evidence'])}",
                 f"- Recommendation: {row['recommendation']}",
                 "",
@@ -1085,6 +1138,7 @@ def render_markdown_report(report: dict[str, Any]) -> str:
                 f"- Poster/attachment review candidates: `{len(poster_or_attachment_candidates)}`",
                 f"- Detail/parser follow-up candidates: `{len(inconclusive_sources)}`",
                 f"- Sources with any field gaps: `{field_gap_summary.get('source_count_with_any_issues', 0)}`",
+                f"- Sources with warning/error follow-up needed: `{field_gap_summary.get('source_count_with_warning_or_error_follow_up', 0)}`",
                 f"- Sources with info-only field gaps: `{field_gap_summary.get('source_count_with_only_info_issues', 0)}`",
                 "",
             ]
@@ -1102,8 +1156,8 @@ def render_markdown_report(report: dict[str, Any]) -> str:
         lines.extend(
             [
                 "",
-                "| Source | OCR classification | Field gap rows | Top field gaps | Evidence |",
-                "| --- | --- | ---: | --- | --- |",
+                "| Source | OCR classification | Field gap rows | Field gap follow-up | Top field gaps | Evidence |",
+                "| --- | --- | ---: | --- | --- | --- |",
             ]
         )
         for row in report["sources"]:
@@ -1116,10 +1170,13 @@ def render_markdown_report(report: dict[str, Any]) -> str:
                 f"{field}={count}" for field, count in list(gap_fields.items())[:3]
             )
             lines.append(
-                "| {source} | {classification} | {gap_rows} | {gap_summary} | {evidence} |".format(
+                "| {source} | {classification} | {gap_rows} | {follow_up_bucket} | {gap_summary} | {evidence} |".format(
                     source=_escape_table(str(row["source"])),
                     classification=ocr_probe.get("classification", "unknown"),
                     gap_rows=field_gap_audit.get("rows_with_any_issues", 0),
+                    follow_up_bucket=_escape_table(
+                        str(field_gap_audit.get("field_gap_follow_up_bucket") or "none")
+                    ),
                     gap_summary=_escape_table(gap_summary or "-"),
                     evidence=_escape_table(", ".join(str(item) for item in ocr_probe.get("evidence", []))),
                 )
@@ -1144,10 +1201,12 @@ def render_markdown_report(report: dict[str, Any]) -> str:
             field_gap_audit = row.get("field_gap_audit") or {}
             if isinstance(field_gap_audit, dict) and field_gap_audit.get("checked_rows", 0):
                 lines.append(
-                    "- Field gap audit: checked_rows={checked}, rows_with_any_issues={rows_with_issues}, rows_with_info_only={rows_with_info_only}".format(
+                    "- Field gap audit: checked_rows={checked}, rows_with_any_issues={rows_with_issues}, rows_with_info_only={rows_with_info_only}, rows_with_warning_or_error={rows_with_warning_or_error}, follow_up_bucket={follow_up_bucket}".format(
                         checked=field_gap_audit.get("checked_rows", 0),
                         rows_with_issues=field_gap_audit.get("rows_with_any_issues", 0),
                         rows_with_info_only=field_gap_audit.get("rows_with_info_only", 0),
+                        rows_with_warning_or_error=field_gap_audit.get("rows_with_warning_or_error", 0),
+                        follow_up_bucket=field_gap_audit.get("field_gap_follow_up_bucket", "none"),
                     )
                 )
                 issue_codes = field_gap_audit.get("issue_codes") or {}

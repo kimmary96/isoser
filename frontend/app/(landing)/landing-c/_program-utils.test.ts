@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { Program } from "@/lib/types";
 
-import { getLiveBoardPrograms, orderOpportunityPrograms } from "./_program-utils";
+import { filterOpportunityPrograms, getLiveBoardPrograms, orderOpportunityPrograms } from "./_program-utils";
 
 function createProgram(overrides: Partial<Program> = {}): Program {
   return {
@@ -27,7 +27,6 @@ function createProgram(overrides: Partial<Program> = {}): Program {
     review_count: overrides.review_count ?? null,
     detail_view_count: overrides.detail_view_count ?? null,
     detail_view_count_7d: overrides.detail_view_count_7d ?? null,
-    compare_meta: overrides.compare_meta ?? null,
     ...overrides,
   };
 }
@@ -81,6 +80,30 @@ describe("landing-c program utils", () => {
       "soon",
       "next",
       "later",
+    ]);
+  });
+
+  it("filters opportunity feed by keyword and chip locally", () => {
+    const programs = [
+      createProgram({ id: "ai", title: "AI 과정", category: "AI", location: "서울", summary: "LLM 실습" }),
+      createProgram({ id: "design", title: "디자인 과정", category: "디자인", location: "서울", summary: "Figma" }),
+    ];
+
+    expect(filterOpportunityPrograms(programs, { activeChip: "AI·데이터", keyword: "llm" }).map((program) => program.id)).toEqual([
+      "ai",
+    ]);
+  });
+
+  it("filters 무료 chip to both free-no-card and naeil-card programs", () => {
+    const programs = [
+      createProgram({ id: "free", title: "무료 특강", cost_type: "free-no-card", cost: 0 }),
+      createProgram({ id: "card", title: "내배카 과정", cost_type: "naeil-card", cost: 0 }),
+      createProgram({ id: "paid", title: "유료 과정", cost_type: "paid", cost: 10000 }),
+    ];
+
+    expect(filterOpportunityPrograms(programs, { activeChip: "무료" }).map((program) => program.id)).toEqual([
+      "free",
+      "card",
     ]);
   });
 });

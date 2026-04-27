@@ -121,13 +121,17 @@ def summarize_program_field_gaps(
     issue_fields: dict[str, int] = {}
     rows_with_any_issues = 0
     rows_with_info_only = 0
+    rows_with_warning_or_error = 0
     samples: list[dict[str, Any]] = []
 
     for row, report in zip(rows, reports):
         if not report.issues:
             continue
         rows_with_any_issues += 1
-        if all(issue.severity == "info" for issue in report.issues):
+        has_warning_or_error = any(issue.severity in {"warning", "error"} for issue in report.issues)
+        if has_warning_or_error:
+            rows_with_warning_or_error += 1
+        elif all(issue.severity == "info" for issue in report.issues):
             rows_with_info_only += 1
         for issue in report.issues:
             issue_codes[issue.code] = issue_codes.get(issue.code, 0) + 1
@@ -149,6 +153,12 @@ def summarize_program_field_gaps(
         "checked_rows": len(reports),
         "rows_with_any_issues": rows_with_any_issues,
         "rows_with_info_only": rows_with_info_only,
+        "rows_with_warning_or_error": rows_with_warning_or_error,
+        "warning_or_error_follow_up_needed": rows_with_warning_or_error > 0,
+        "field_gap_follow_up_bucket": _field_gap_follow_up_bucket(
+            rows_with_any_issues=rows_with_any_issues,
+            rows_with_warning_or_error=rows_with_warning_or_error,
+        ),
         "issue_codes": dict(sorted(issue_codes.items())),
         "issue_fields": dict(sorted(issue_fields.items())),
         "sample_limit": sample_limit,
@@ -260,3 +270,15 @@ def _check_cost(
 
 def _text(value: Any) -> str:
     return str(value or "").strip()
+
+
+def _field_gap_follow_up_bucket(
+    *,
+    rows_with_any_issues: int,
+    rows_with_warning_or_error: int,
+) -> str:
+    if rows_with_warning_or_error > 0:
+        return "warning_or_error_follow_up_needed"
+    if rows_with_any_issues > 0:
+        return "info_only"
+    return "none"

@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 
-import type { Program } from "@/lib/types";
+import type { ProgramListRow } from "@/lib/types";
 
 import { useLandingAUser } from "./_auth";
 import { getProgramDeadline, getProgramDeadlineTone, getProgramScore } from "./_shared";
 
 type LandingAHeroSectionProps = {
-  featuredPrograms: Program[];
+  featuredPrograms: ProgramListRow[];
   totalCount: number;
 };
 
@@ -18,7 +18,7 @@ type HeroStat = {
 };
 
 type HeroProgramSignalCardProps = {
-  program: Program;
+  program: ProgramListRow;
 };
 
 function HeroProgramSignalCard({ program }: HeroProgramSignalCardProps) {

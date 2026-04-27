@@ -1,0 +1,16 @@
+
+> isoser-frontend@0.1.0 dev
+> next dev --hostname 127.0.0.1 --port 3001
+
+   ▲ Next.js 15.5.15
+   - Local:        http://127.0.0.1:3001
+   - Network:      http://127.0.0.1:3001
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1197ms
+ ✓ Compiled /middleware in 133ms (167 modules)
+ ○ Compiling /compare ...
+ ✓ Compiled /compare in 1158ms (736 modules)
+ ✓ Compiled in 440ms (270 modules)
+ GET /compare 200 in 1617ms

@@ -19,7 +19,7 @@ Because those required fields are missing, repository rules require this blocked
 
 - Treat promoted/ad slots as if Fast Campus has an active sponsored placement.
 - Implement the missing promoted/ad API/UI layer rather than only storing `is_ad` / `promoted_rank`.
-- Fix the remaining read-model gaps identified in `reports/camps-list-refactor-current-state-audit-2026-04-23.md`, including:
+- Fix the remaining read-model gaps identified in `reports\ad-hoc\programs\camps-list-refactor-current-state-audit-2026-04-23.md`, including:
   - `scope=all` read-model query behavior
   - cursor + filter condition composition
   - offset/cursor policy or better pagination path
@@ -31,7 +31,7 @@ Because those required fields are missing, repository rules require this blocked
 
 ## Initial Repository Facts Checked
 
-- The current audit report exists at `reports/camps-list-refactor-current-state-audit-2026-04-23.md`.
+- The current audit report exists at `reports\ad-hoc\programs\camps-list-refactor-current-state-audit-2026-04-23.md`.
 - The prior read-model task was executed through a valid packet at `tasks/done/TASK-2026-04-23-camps-list-read-model-refactor.md`.
 - Current worktree is already dirty with unrelated modified and untracked files. Those were not modified by this blocked report except this new file.
 
@@ -52,3 +52,4 @@ Use the current `HEAD` as `planned_against_commit`.
 ## No Implementation Changes Made
 
 No API, frontend, migration, test, benchmark, or read-model code was changed.
+

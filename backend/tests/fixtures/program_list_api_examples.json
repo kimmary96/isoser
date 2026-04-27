@@ -1,0 +1,128 @@
+{
+  "list_browse": {
+    "params": {
+      "limit": 20,
+      "offset": 0,
+      "sort": "default",
+      "recruiting_only": true
+    },
+    "response": {
+      "promoted_items": [
+        {
+          "program": {
+            "id": "00000000-0000-0000-0000-000000000901",
+            "title": "패스트캠퍼스 AI 실무 부트캠프",
+            "provider": "패스트캠퍼스",
+            "source": "Fast Campus",
+            "deadline": "2026-05-30",
+            "is_ad": true,
+            "recommended_score": 0.91,
+            "recommendation_reasons": ["광고", "우수기관"],
+            "display_categories": ["AI서비스"],
+            "extracted_keywords": ["AI", "Python"]
+          },
+          "context": {
+            "surface": "program_list_promoted",
+            "promoted_rank": 1
+          }
+        }
+      ],
+      "items": [
+        {
+          "program": {
+            "id": "00000000-0000-0000-0000-000000000101",
+            "title": "AI 서비스 개발 취업 부트캠프",
+            "category": "AI",
+            "category_detail": "data-ai",
+            "location": "서울 강남",
+            "provider": "이소서 아카데미",
+            "summary": "LLM, RAG, FastAPI 중심 실무형 과정",
+            "source": "고용24",
+            "deadline": "2026-05-20",
+            "start_date": "2026-06-01",
+            "end_date": "2026-08-31",
+            "cost": 0,
+            "cost_type": "free-no-card",
+            "participation_time": "full-time",
+            "teaching_method": "오프라인",
+            "is_active": true,
+            "display_categories": ["AI서비스", "백엔드"],
+            "participation_mode_label": "풀타임",
+            "participation_time_text": "월,화,수,목,금 / 09:00 ~ 18:00",
+            "selection_process_label": "서류 / 면접",
+            "extracted_keywords": ["AI", "LLM", "FastAPI", "취업지원"],
+            "days_left": 26,
+            "deadline_confidence": "high",
+            "recommended_score": 0.88,
+            "recommendation_reasons": ["우수기관", "상세정보 충실"],
+            "detail_view_count": 14,
+            "detail_view_count_7d": 5,
+            "click_hotness_score": 5000014.88
+          },
+          "context": {
+            "surface": "program_list"
+          }
+        }
+      ],
+      "count": 128,
+      "mode": "browse",
+      "source": "read_model",
+      "cache_hit": false,
+      "facets": {
+        "category": [
+          { "value": "AI", "count": 42 }
+        ],
+        "region": [
+          { "value": "서울", "count": 57 }
+        ],
+        "teaching_method": [
+          { "value": "오프라인", "count": 61 }
+        ],
+        "cost_type": [
+          { "value": "free-no-card", "count": 33 }
+        ],
+        "participation_time": [
+          { "value": "full-time", "count": 48 }
+        ],
+        "source": [
+          { "value": "고용24", "count": 74 }
+        ]
+      }
+    }
+  },
+  "count": {
+    "params": {
+      "category_detail": "data-ai",
+      "regions": ["서울"],
+      "recruiting_only": true
+    },
+    "response": {
+      "count": 42
+    }
+  },
+  "filter_options": {
+    "params": {
+      "category_detail": "data-ai",
+      "q": "ai",
+      "recruiting_only": true
+    },
+    "response": {
+      "sources": [
+        { "value": "kstartup", "label": "K-Startup" },
+        { "value": "고용24", "label": "고용24" }
+      ],
+      "targets": [
+        { "value": "청년", "label": "청년" },
+        { "value": "구직자", "label": "구직자" }
+      ],
+      "selection_processes": [
+        { "value": "서류", "label": "서류" },
+        { "value": "면접", "label": "면접" }
+      ],
+      "employment_links": [
+        { "value": "취업지원", "label": "취업지원" },
+        { "value": "멘토링", "label": "멘토링" }
+      ]
+    }
+  }
+}

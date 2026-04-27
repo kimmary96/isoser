@@ -3,6 +3,7 @@
 
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useResumeExport } from "./_hooks/use-resume-export";
 import { getActivityMetaItems, getActivityResumeLines } from "@/lib/activity-display";
@@ -22,7 +23,7 @@ const ResumePdfDownload = dynamic(
 function ResumeExportContent() {
   const searchParams = useSearchParams();
   const resumeId = searchParams.get("resumeId");
-  const { resume, activities, loading, error } = useResumeExport(resumeId);
+  const { resume, activities, profile, loading, error } = useResumeExport(resumeId);
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -39,9 +40,39 @@ function ResumeExportContent() {
               <p className="text-gray-400 text-sm">저장된 이력서가 없습니다.</p>
             ) : (
               <div className="space-y-4">
-                <div>
-                  <p className="text-lg font-semibold text-gray-900">{resume.title}</p>
-                  <p className="text-sm text-gray-500">지원 직무: {resume.target_job ?? "미입력"}</p>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gray-100">
+                      {profile?.avatar_url ? (
+                        <Image
+                          src={profile.avatar_url}
+                          alt={`${profile.name || "프로필"} 아바타`}
+                          width={80}
+                          height={80}
+                          sizes="80px"
+                          unoptimized
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-2xl text-gray-300">👤</span>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-lg font-semibold text-gray-900">
+                        {profile?.name || resume.title}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        지원 직무: {resume.target_job ?? "미입력"}
+                      </p>
+                      {(profile?.email || profile?.phone) && (
+                        <div className="mt-2 flex flex-wrap gap-3 text-xs text-gray-400">
+                          {profile?.email && <span>✉ {profile.email}</span>}
+                          {profile?.phone && <span>☎ {profile.phone}</span>}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-400">{resume.title}</p>
                 </div>
                 <div className="space-y-3">
                   {activities.map((activity) => (
@@ -87,7 +118,9 @@ function ResumeExportContent() {
               </div>
             </div>
 
-            {!loading && resume && <ResumePdfDownload resume={resume} activities={activities} />}
+            {!loading && resume && (
+              <ResumePdfDownload resume={resume} activities={activities} profile={profile} />
+            )}
           </div>
         </div>
       </div>

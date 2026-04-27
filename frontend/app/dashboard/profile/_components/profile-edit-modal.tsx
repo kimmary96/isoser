@@ -8,6 +8,8 @@ type ProfileEditModalProps = {
   onAvatarFileChange: (event: ChangeEvent<HTMLInputElement>) => void;
   profileNameInput: string;
   onProfileNameInputChange: (value: string) => void;
+  profileTargetJobInput: string;
+  onProfileTargetJobInputChange: (value: string) => void;
   profileBioInput: string;
   onProfileBioInputChange: (value: string) => void;
   profileEmailInput: string;
@@ -30,6 +32,8 @@ export function ProfileEditModal({
   onAvatarFileChange,
   profileNameInput,
   onProfileNameInputChange,
+  profileTargetJobInput,
+  onProfileTargetJobInputChange,
   profileBioInput,
   onProfileBioInputChange,
   profileEmailInput,
@@ -102,9 +106,18 @@ export function ProfileEditModal({
             <div>
               <label className="mb-1 block text-xs text-gray-500">희망 직무 (선택)</label>
               <input
+                value={profileTargetJobInput}
+                onChange={(e) => onProfileTargetJobInputChange(e.target.value)}
+                placeholder="데이터 분석가, 백엔드 개발자"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-400 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs text-gray-500">한 줄 소개 (선택)</label>
+              <input
                 value={profileBioInput}
                 onChange={(e) => onProfileBioInputChange(e.target.value)}
-                placeholder="5년차 마케터 | 브랜드 기획 전문"
+                placeholder="브랜드와 데이터를 함께 보는 기획자"
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-400 focus:outline-none"
               />
             </div>

@@ -16,6 +16,21 @@ export type CareerEntry = {
   end: string;
 };
 
+export type EducationEntry = {
+  school: string;
+  department: string;
+  period: string;
+  graduationStatus: string;
+  gpa: string;
+};
+
+export type SkillLevel = "하" | "중" | "상";
+
+export type SkillEntry = {
+  name: string;
+  level: SkillLevel;
+};
+
 export type CareerCard = {
   company: string;
   position: string;
@@ -120,6 +135,111 @@ export function serializeCareerEntry(entry: CareerEntry): string {
   }
 
   return [company || "-", position || "-", start || "-", end || "-"].join(" | ");
+}
+
+export function parseEducationLine(line: string): EducationEntry {
+  const trimmed = line.trim();
+  if (!trimmed) {
+    return {
+      school: "",
+      department: "",
+      period: "",
+      graduationStatus: "",
+      gpa: "",
+    };
+  }
+
+  const pipeParts = trimmed.split("|").map((part) => part.trim());
+  if (pipeParts.length >= 5) {
+    return {
+      school: pipeParts[0] === "-" ? "" : pipeParts[0],
+      department: pipeParts[1] === "-" ? "" : pipeParts[1],
+      period: pipeParts[2] === "-" ? "" : pipeParts[2],
+      graduationStatus: pipeParts[3] === "-" ? "" : pipeParts[3],
+      gpa: pipeParts.slice(4).join(" | ").replace(/^-$/, ""),
+    };
+  }
+
+  return {
+    school: trimmed,
+    department: "",
+    period: "",
+    graduationStatus: "",
+    gpa: "",
+  };
+}
+
+export function serializeEducationEntry(entry: EducationEntry): string {
+  const school = entry.school.trim();
+  const department = entry.department.trim();
+  const period = entry.period.trim();
+  const graduationStatus = entry.graduationStatus.trim();
+  const gpa = entry.gpa.trim();
+
+  if (!school && !department && !period && !graduationStatus && !gpa) {
+    return "";
+  }
+
+  if (school && !department && !period && !graduationStatus && !gpa) {
+    return school;
+  }
+
+  return [
+    school || "-",
+    department || "-",
+    period || "-",
+    graduationStatus || "-",
+    gpa || "-",
+  ].join(" | ");
+}
+
+export function formatEducationLine(line: string): string {
+  const entry = parseEducationLine(line);
+  const parts = [
+    entry.school,
+    entry.department,
+    entry.period,
+    entry.graduationStatus,
+    entry.gpa ? `학점 ${entry.gpa}` : "",
+  ].filter(Boolean);
+
+  return parts.length > 0 ? parts.join(" · ") : line;
+}
+
+export function normalizeSkillLevel(value: string | null | undefined): SkillLevel {
+  if (value === "상" || value === "중" || value === "하") return value;
+  return "중";
+}
+
+export function parseSkillLine(line: string): SkillEntry {
+  const trimmed = line.trim();
+  if (!trimmed) return { name: "", level: "중" };
+
+  const pipeParts = trimmed.split("|").map((part) => part.trim()).filter(Boolean);
+  if (pipeParts.length >= 2) {
+    const possibleLevel = pipeParts[pipeParts.length - 1];
+    const level = normalizeSkillLevel(possibleLevel);
+    if (possibleLevel === level) {
+      return {
+        name: pipeParts.slice(0, -1).join(" | "),
+        level,
+      };
+    }
+  }
+
+  return { name: trimmed, level: "중" };
+}
+
+export function serializeSkillEntry(entry: SkillEntry): string {
+  const name = entry.name.trim();
+  if (!name) return "";
+  return `${name} | ${normalizeSkillLevel(entry.level)}`;
+}
+
+export function getSkillLevelPercent(level: SkillLevel): number {
+  if (level === "상") return 100;
+  if (level === "중") return 66;
+  return 33;
 }
 
 export function parsePeriodRange(periodText: string): { start: number; end: number } | null {

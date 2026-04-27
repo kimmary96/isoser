@@ -14,17 +14,13 @@ export async function GET(request: Request) {
   }
 
   const supabase = await createServerSupabaseClient();
-  const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+  const { data: exchangeData, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
   if (exchangeError) {
     return NextResponse.redirect(new URL("/login?error=oauth_callback_failed", request.url));
   }
 
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
+  const user = exchangeData.user;
+  if (!user) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 

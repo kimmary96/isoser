@@ -1,779 +1,965 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import MiniCalendar from "@/components/MiniCalendar";
+import { ProgramDeadlineBadge } from "@/components/programs/program-deadline-badge";
 import {
-  getCalendarSelections,
-  getDashboardBookmarks,
-  getDashboardMe,
-  getRecommendCalendar,
-  saveCalendarSelections,
+  getDashboardProfile,
+  getDocuments,
+  listActivities,
+  listCoverLetters,
+  listSavedPortfolios,
 } from "@/lib/api/app";
-import type { Program } from "@/lib/types";
+import { formatProgramMonthDay, toProgramDateKey } from "@/lib/program-display";
+import type { ProgramCardItem, ProgramCardSummary } from "@/lib/types";
 
-const APPLIED_CALENDAR_PROGRAMS_KEY = "isoser:applied-calendar-programs";
-const RECOMMEND_CALENDAR_CACHE_KEY = "isoser:recommend-calendar-programs";
-const RECOMMEND_CALENDAR_CACHE_TTL_MS = 1000 * 60 * 15;
+import { useDashboardRecommendations } from "./_hooks/use-dashboard-recommendations";
+import { DASHBOARD_COPY } from "./dashboard-copy";
 
-type RecommendCalendarCache = {
-  savedAt: number;
-  programs: Program[];
+const DOW_KR = ["일", "월", "화", "수", "목", "금", "토"];
+const MONTHS_KR = [
+  "1월",
+  "2월",
+  "3월",
+  "4월",
+  "5월",
+  "6월",
+  "7월",
+  "8월",
+  "9월",
+  "10월",
+  "11월",
+  "12월",
+];
+const MAIN_CALENDAR_ROWS = 5;
+const MINI_CALENDAR_ROWS = 6;
+
+type ColorKey = "it" | "design" | "biz" | "urgent" | "other";
+type EventType = "start" | "deadline" | "pass" | "test";
+
+type CalendarEvent = {
+  id: string;
+  title: string;
+  org: string;
+  deadline: string;
+  category: string;
+  color: ColorKey;
+  eventType: EventType;
+  daysLeft: number | null;
+  isBookmarked: boolean;
 };
 
-const CATEGORY_OPTIONS = [
-  { label: "전체", value: null },
-  { label: "IT·컴퓨터", value: "IT" },
-  { label: "디자인", value: "디자인" },
-  { label: "경영·마케팅", value: "경영" },
-  { label: "어학", value: "어학" },
-] as const;
+type BgKey = "blue" | "teal" | "mint" | "lavender";
 
-const REGION_OPTIONS = [
-  { label: "전체", value: null },
-  { label: "서울", value: "서울" },
-  { label: "경기", value: "경기" },
-  { label: "온라인", value: "온라인" },
-] as const;
+const AGENDA_DOT_COLOR: Record<ColorKey, string> = {
+  it: "#4361ee",
+  design: "#d63384",
+  biz: "#198754",
+  urgent: "#e0621a",
+  other: "#94a3b8",
+};
 
-function formatUserName(value: string | null | undefined): string {
-  const trimmed = value?.trim();
-  return trimmed || "사용자";
+const PREFIX_LABEL: Record<EventType, string> = {
+  start: "시",
+  deadline: "마",
+  pass: "합",
+  test: "인",
+};
+
+const PREFIX_BG: Record<EventType, string> = {
+  start: "#e05c5c",
+  deadline: "#4361ee",
+  pass: "#1ba362",
+  test: "#9b5de5",
+};
+
+const FILTER_ITEMS: Array<{ key: EventType; label: string; color: string }> = [
+  { key: "start", label: "마감일정", color: "#4361ee" },
+  { key: "deadline", label: "훈련 시작일정", color: "#e05c5c" },
+];
+
+const CARD_BG_CLASS: Record<BgKey, string> = {
+  blue: "bg-[#dce9ff]",
+  teal: "bg-[#d5f0ee]",
+  mint: "bg-[#d4f0e4]",
+  lavender: "bg-[#e4dcff]",
+};
+
+const CARD_BG_CYCLE: BgKey[] = ["blue", "teal", "mint", "lavender"];
+
+const BOOKMARK_BADGE_PALETTE: Array<{ bg: string; color: string }> = [
+  { bg: "#e8f0fe", color: "#4361ee" },
+  { bg: "#fff3e8", color: "#e0621a" },
+  { bg: "#fce8f3", color: "#d63384" },
+  { bg: "#e8f8f0", color: "#198754" },
+  { bg: "#e4dcff", color: "#7c3aed" },
+];
+
+function pickColor(category: string | null | undefined, daysLeft: number | null | undefined): ColorKey {
+  if (typeof daysLeft === "number" && daysLeft >= 0 && daysLeft <= 3) return "urgent";
+  if (!category) return "other";
+  const c = category.toUpperCase();
+  if (c.includes("IT") || c.includes("개발") || c.includes("데이터") || c.includes("AI")) return "it";
+  if (category.includes("디자인")) return "design";
+  if (
+    category.includes("경영") ||
+    category.includes("비즈니스") ||
+    category.includes("마케팅") ||
+    category.includes("사무")
+  ) return "biz";
+  return "other";
 }
 
-function formatMonthDay(value: string | null | undefined): string | null {
-  if (!value) return null;
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
-
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${month}/${day}`;
+function pickEventType(color: ColorKey): EventType {
+  if (color === "urgent") return "deadline";
+  if (color === "it") return "start";
+  if (color === "design") return "pass";
+  if (color === "biz") return "deadline";
+  return "start";
 }
 
-function formatTrainingPeriod(
-  startDate: string | null | undefined,
-  endDate: string | null | undefined
-): string {
-  const start = formatMonthDay(startDate);
-  const end = formatMonthDay(endDate);
-
-  if (start && end) {
-    return `${start} ~ ${end}`;
-  }
-
-  if (start) {
-    return `${start} ~ 정보 없음`;
-  }
-
-  if (end) {
-    return `정보 없음 ~ ${end}`;
-  }
-
-  return "정보 없음";
-}
-
-function formatDeadline(value: string | null | undefined): string {
-  const formatted = formatMonthDay(value);
-  return formatted ? `${formatted}까지` : "정보 없음";
-}
-
-function toDateKey(value: string): string | null {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
-
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function formatRelevance(score: number | null | undefined): string {
-  if (typeof score !== "number" || Number.isNaN(score)) {
-    return "관련도 0%";
-  }
-
-  const percent = score <= 1 ? Math.round(score * 100) : Math.round(score);
-  return `관련도 ${percent}%`;
-}
-
-function getRecommendedReason(value: string | null | undefined): string | null {
-  const trimmed = value?.trim();
-  return trimmed || null;
-}
-
-function getRelevanceReasons(program: Program): string[] {
-  const reasons = Array.isArray(program.relevance_reasons) ? program.relevance_reasons : [];
-  const fallback = getRecommendedReason(program._reason);
-  return (reasons.length > 0 ? reasons : fallback ? [fallback] : []).slice(0, 3);
-}
-
-function getFitKeywords(value: string[] | null | undefined): string[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value.map((keyword) => keyword.trim()).filter(Boolean).slice(0, 3);
-}
-
-function readRecommendCalendarCache(): Program[] {
-  if (typeof window === "undefined") return [];
-
-  const raw = window.localStorage.getItem(RECOMMEND_CALENDAR_CACHE_KEY);
-  if (!raw) return [];
-
-  try {
-    const parsed = JSON.parse(raw) as Partial<RecommendCalendarCache>;
-    if (
-      typeof parsed.savedAt !== "number" ||
-      !Array.isArray(parsed.programs) ||
-      Date.now() - parsed.savedAt > RECOMMEND_CALENDAR_CACHE_TTL_MS
-    ) {
-      window.localStorage.removeItem(RECOMMEND_CALENDAR_CACHE_KEY);
-      return [];
-    }
-    return parsed.programs.filter((program) => program && program.id);
-  } catch {
-    window.localStorage.removeItem(RECOMMEND_CALENDAR_CACHE_KEY);
-    return [];
-  }
-}
-
-function writeRecommendCalendarCache(programs: Program[]) {
-  if (typeof window === "undefined" || programs.length === 0) return;
-
-  const cache: RecommendCalendarCache = {
-    savedAt: Date.now(),
-    programs,
+function toCalendarEvent(item: ProgramCardItem, index: number, isBookmarked = false): CalendarEvent | null {
+  const { program } = item;
+  const dateKey = toProgramDateKey(program.deadline);
+  if (!dateKey) return null;
+  const color = pickColor(program.category, program.days_left);
+  return {
+    id: String(program.id ?? `${program.title ?? "program"}-${index}`),
+    title: program.title ?? "제목 없음",
+    org: program.provider ?? "",
+    deadline: dateKey,
+    category: program.category ?? "",
+    color,
+    eventType: pickEventType(color),
+    daysLeft: program.days_left ?? null,
+    isBookmarked,
   };
-  window.localStorage.setItem(RECOMMEND_CALENDAR_CACHE_KEY, JSON.stringify(cache));
 }
 
-function formatSource(source: string | null | undefined): string {
-  if (source === "work24_training") {
-    return "Work24 훈련과정";
+function groupEventsByDate(events: CalendarEvent[]): Record<string, CalendarEvent[]> {
+  const map: Record<string, CalendarEvent[]> = {};
+  for (const ev of events) {
+    if (!map[ev.deadline]) map[ev.deadline] = [];
+    map[ev.deadline].push(ev);
   }
-
-  return source || "출처 미상";
+  return map;
 }
 
-function getCardBorderClass(daysLeft: number | null | undefined): string {
-  if (typeof daysLeft !== "number" || Number.isNaN(daysLeft) || daysLeft > 14) {
-    return "border-l-4 border-l-green-400";
-  }
-
-  if (daysLeft <= 7) {
-    return "border-l-4 border-l-red-500";
-  }
-
-  return "border-l-4 border-l-yellow-400";
+function formatDateStr(year: number, month: number, day: number): string {
+  return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
-function getDdayBadge(daysLeft: number | null | undefined) {
-  if (typeof daysLeft !== "number" || Number.isNaN(daysLeft) || daysLeft < 0) {
-    return null;
-  }
-
-  if (daysLeft === 0) {
-    return {
-      label: "마감 D-Day",
-      className: "bg-red-100 text-red-700",
-    };
-  }
-
-  if (daysLeft <= 7) {
-    return {
-      label: `마감 D-${daysLeft}`,
-      className: "bg-orange-100 text-orange-700",
-    };
-  }
-
-  return null;
+function daysInMonth(y: number, m: number): number {
+  return new Date(y, m + 1, 0).getDate();
 }
 
-function SkeletonCard() {
+function firstDayOfMonth(y: number, m: number): number {
+  return new Date(y, m, 1).getDay();
+}
+
+function isSameLocalDate(value: string | null | undefined, targetDate: Date): boolean {
+  if (!value) return false;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return false;
+
   return (
-    <div className="animate-pulse rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <div className="h-5 w-3/4 rounded bg-slate-200" />
-          <div className="mt-2 h-4 w-24 rounded bg-slate-100" />
+    parsed.getFullYear() === targetDate.getFullYear() &&
+    parsed.getMonth() === targetDate.getMonth() &&
+    parsed.getDate() === targetDate.getDate()
+  );
+}
+
+function countCreatedToday<T extends { created_at?: string | null }>(
+  items: T[],
+  targetDate: Date
+): number {
+  return items.filter((item) => isSameLocalDate(item.created_at, targetDate)).length;
+}
+
+function buildMonthCells(year: number, month: number, rowCount = MINI_CALENDAR_ROWS) {
+  const firstDay = firstDayOfMonth(year, month);
+  const days = daysInMonth(year, month);
+  const prevDays = daysInMonth(year, month - 1);
+  const targetCellCount = rowCount * 7;
+  const cells: Array<{ day: number; cur: boolean; dateStr: string }> = [];
+
+  for (let i = 0; i < firstDay; i += 1) {
+    const d = prevDays - firstDay + i + 1;
+    const m = month === 0 ? 11 : month - 1;
+    const y = month === 0 ? year - 1 : year;
+    cells.push({ day: d, cur: false, dateStr: formatDateStr(y, m, d) });
+  }
+  for (let d = 1; d <= days; d += 1) {
+    cells.push({ day: d, cur: true, dateStr: formatDateStr(year, month, d) });
+  }
+  const remaining = targetCellCount - cells.length;
+  for (let d = 1; d <= remaining; d += 1) {
+    const m = month === 11 ? 0 : month + 1;
+    const y = month === 11 ? year + 1 : year;
+    cells.push({ day: d, cur: false, dateStr: formatDateStr(y, m, d) });
+  }
+  return cells.slice(0, targetCellCount);
+}
+
+export default function DashboardPage() {
+  const {
+    userName,
+    programs,
+    bookmarkedPrograms,
+    bookmarksLoading,
+    bookmarksError,
+    appliedCalendarPrograms,
+    selectedDate,
+    setSelectedDate,
+    handleApplyToCalendar,
+    appliedProgramIds,
+  } = useDashboardRecommendations();
+
+  const todayDate = useMemo(() => new Date(), []);
+  const todayStr = useMemo(
+    () => formatDateStr(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate()),
+    [todayDate]
+  );
+
+  const [year, setYear] = useState<number>(todayDate.getFullYear());
+  const [month, setMonth] = useState<number>(todayDate.getMonth());
+  const [calView, setCalView] = useState<"차트" | "달력" | "주간">("달력");
+  const [filters, setFilters] = useState<Record<EventType, boolean>>({
+    start: true,
+    deadline: true,
+    pass: true,
+    test: true,
+  });
+  const [starred, setStarred] = useState<Record<string, boolean>>({});
+
+  const [achievement, setAchievement] = useState<{
+    profile: number;
+    activities: number;
+    resumes: number;
+    coverLetters: number;
+    portfolios: number;
+  }>({ profile: 0, activities: 0, resumes: 0, coverLetters: 0, portfolios: 0 });
+
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      const [profileRes, activitiesRes, documentsRes, coverLettersRes, portfoliosRes] =
+        await Promise.allSettled([
+          getDashboardProfile(),
+          listActivities(),
+          getDocuments(),
+          listCoverLetters(),
+          listSavedPortfolios(),
+        ]);
+      if (!mounted) return;
+      const profileCount =
+        profileRes.status === "fulfilled" &&
+        isSameLocalDate(profileRes.value.profile?.created_at, todayDate)
+          ? 1
+          : 0;
+      const activitiesCount =
+        activitiesRes.status === "fulfilled"
+          ? countCreatedToday(activitiesRes.value.activities, todayDate)
+          : 0;
+      const resumesCount =
+        documentsRes.status === "fulfilled"
+          ? countCreatedToday(documentsRes.value.documents, todayDate)
+          : 0;
+      const coverLettersCount =
+        coverLettersRes.status === "fulfilled"
+          ? countCreatedToday(coverLettersRes.value.coverLetters, todayDate)
+          : 0;
+      const portfoliosCount =
+        portfoliosRes.status === "fulfilled"
+          ? portfoliosRes.value.portfolios.filter((item) =>
+              isSameLocalDate(item.createdAt, todayDate)
+            ).length
+          : 0;
+      setAchievement({
+        profile: profileCount,
+        activities: activitiesCount,
+        resumes: resumesCount,
+        coverLetters: coverLettersCount,
+        portfolios: portfoliosCount,
+      });
+    };
+    void load();
+    return () => {
+      mounted = false;
+    };
+  }, [todayDate]);
+
+  const effectiveSelectedDate = selectedDate ?? todayStr;
+
+  const events = useMemo<CalendarEvent[]>(() => {
+    const bookmarkedIds = new Set(
+      bookmarkedPrograms
+        .map((item) => String(item.program.id ?? ""))
+        .filter(Boolean)
+    );
+    const byId = new Map<string, CalendarEvent>();
+
+    programs.forEach((item, idx) => {
+      const ev = toCalendarEvent(item, idx, bookmarkedIds.has(String(item.program.id ?? "")));
+      if (!ev) return;
+      byId.set(ev.id, ev);
+    });
+
+    bookmarkedPrograms.forEach((item, idx) => {
+      const pid = String(item.program.id ?? "");
+      if (pid && byId.has(pid)) {
+        const existing = byId.get(pid)!;
+        byId.set(pid, { ...existing, isBookmarked: true });
+        return;
+      }
+      const ev = toCalendarEvent(item, idx, true);
+      if (!ev) return;
+      byId.set(ev.id, ev);
+    });
+
+    return Array.from(byId.values());
+  }, [programs, bookmarkedPrograms]);
+
+  const eventsByDate = useMemo(() => groupEventsByDate(events), [events]);
+  const eventDates = useMemo(() => new Set(Object.keys(eventsByDate)), [eventsByDate]);
+
+  const todayEvents = eventsByDate[todayStr] ?? [];
+  const selectedEvents =
+    effectiveSelectedDate && effectiveSelectedDate !== todayStr
+      ? eventsByDate[effectiveSelectedDate] ?? []
+      : [];
+
+  const totalDeadlines = useMemo(() => {
+    const prefix = `${year}-${String(month + 1).padStart(2, "0")}`;
+    return Object.keys(eventsByDate)
+      .filter((k) => k.startsWith(prefix))
+      .reduce((acc, k) => acc + eventsByDate[k].length, 0);
+  }, [year, month, eventsByDate]);
+
+  const prevMonth = () => {
+    if (month === 0) {
+      setYear((y) => y - 1);
+      setMonth(11);
+    } else {
+      setMonth((m) => m - 1);
+    }
+  };
+  const nextMonth = () => {
+    if (month === 11) {
+      setYear((y) => y + 1);
+      setMonth(0);
+    } else {
+      setMonth((m) => m + 1);
+    }
+  };
+
+  const toggleFilter = (k: EventType) => setFilters((f) => ({ ...f, [k]: !f[k] }));
+  const toggleStar = (id: string) => setStarred((s) => ({ ...s, [id]: !s[id] }));
+  const handleSubscribe = (program: ProgramCardSummary) => {
+    const pid = String(program.id ?? "");
+    if (!pid) return;
+    if (appliedProgramIds.has(pid)) return;
+    handleApplyToCalendar(program);
+  };
+
+  const handleSelectDate = (dateStr: string) => {
+    setSelectedDate((current) => (current === dateStr ? null : dateStr));
+  };
+
+  const monthCells = useMemo(
+    () => buildMonthCells(year, month, MAIN_CALENDAR_ROWS),
+    [year, month]
+  );
+
+  // 커리어 핏 과정/찜한 과정은 하단 5컬럼 grid에 맞춰 최대 5개만 보여준다.
+  const recCardItems = programs.slice(0, 5);
+  const bookmarkedCardItems = bookmarkedPrograms.slice(0, 5);
+
+  return (
+    <div className="flex h-[calc(100vh-57px)] flex-col overflow-hidden bg-[#f4f5f7] font-sans">
+      {/* Body: left panel + right area */}
+      <div className="flex flex-1 min-h-0 min-w-0">
+        {/* LEFT PANEL */}
+        <aside className="flex w-[320px] min-w-[320px] flex-shrink-0 flex-col overflow-y-auto border-r border-[#e8eaed] bg-white">
+          {/* Greeting summary */}
+          <div className="border-b border-[#f0f0f0] px-4 pb-3 pt-6">
+            <div className="text-[15px] font-semibold text-[#16162a]">
+              안녕하세요, {userName}님 👋
+            </div>
+            <div className="mt-[3px] text-[15px] text-[#888]">
+              이번 달 마감{" "}
+              <b className="text-[#e0621a]">{totalDeadlines}건</b> · 오늘 마감{" "}
+              <b className="text-[#d63384]">{todayEvents.length}건</b>
+            </div>
+          </div>
+
+          {/* Mini calendar */}
+          <div className="border-b border-[#f0f0f0] p-4">
+            <MiniCalendar
+              year={year}
+              month={month}
+              today={todayStr}
+              selectedDate={effectiveSelectedDate}
+              eventDates={eventDates}
+              onSelectDate={handleSelectDate}
+              onPrevMonth={prevMonth}
+              onNextMonth={nextMonth}
+            />
+          </div>
+
+          {/* Today's deadlines */}
+          <div className="border-b border-[#f0f0f0] p-4">
+            <div className="mb-2.5 text-[15px] font-semibold text-[#aaa]">
+              오늘 마감 일정
+            </div>
+            {todayEvents.length === 0 ? (
+              <div className="py-2 text-[15px] text-[#bbb]">오늘 마감 일정이 없습니다</div>
+            ) : (
+              todayEvents.slice(0, 3).map((e) => (
+                <div key={e.id} className="flex items-start gap-2 py-1.5">
+                  <span
+                    className="mt-1 h-[7px] w-[7px] flex-shrink-0 rounded-full"
+                    style={{ background: AGENDA_DOT_COLOR[e.color] }}
+                  />
+                  <div className="min-w-0">
+                    <div className="truncate text-[15px] font-medium leading-[1.4] text-[#222]">
+                      {e.title}
+                    </div>
+                    <div className="mt-[1px] text-[15px] text-[#999]">
+                      {e.org ? `${e.org} · ` : ""}마감 {formatProgramMonthDay(e.deadline) ?? "-"}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Selected date events */}
+          {effectiveSelectedDate !== todayStr ? (
+            <div className="border-b border-[#f0f0f0] p-4">
+              <div className="mb-2.5 text-[15px] font-semibold text-[#aaa]">
+                선택 날짜 일정
+              </div>
+              {selectedEvents.length === 0 ? (
+                <div className="py-2 text-[15px] text-[#bbb]">해당 날짜 일정 없음</div>
+              ) : (
+                selectedEvents.slice(0, 3).map((e) => (
+                  <div key={e.id} className="flex items-start gap-2 py-1.5">
+                    <span
+                      className="mt-1 h-[7px] w-[7px] flex-shrink-0 rounded-full"
+                      style={{ background: AGENDA_DOT_COLOR[e.color] }}
+                    />
+                    <div className="min-w-0">
+                      <div className="truncate text-[15px] font-medium leading-[1.4] text-[#222]">
+                        {e.title}
+                      </div>
+                      <div className="mt-[1px] text-[15px] text-[#999]">
+                        {e.org ? `${e.org} · ` : ""}마감 {formatProgramMonthDay(e.deadline) ?? "-"}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          ) : null}
+
+          {/* Today's achievements (dashboard counts) */}
+          <div className="border-b border-[#f0f0f0] p-4">
+            <div className="mb-2.5 text-[15px] font-semibold text-[#aaa]">
+              오늘의 성과
+            </div>
+            {(
+              [
+                {
+                  key: "profile",
+                  label: "프로필",
+                  href: "/dashboard/profile",
+                  count: achievement.profile,
+                  unit: "건",
+                  palette: BOOKMARK_BADGE_PALETTE[0],
+                  letter: "프",
+                },
+                {
+                  key: "activities",
+                  label: "성과",
+                  href: "/dashboard/activities",
+                  count: achievement.activities,
+                  unit: "건",
+                  palette: BOOKMARK_BADGE_PALETTE[1],
+                  letter: "성",
+                },
+                {
+                  key: "coverLetters",
+                  label: "자기소개서",
+                  href: "/dashboard/cover-letter",
+                  count: achievement.coverLetters,
+                  unit: "건",
+                  palette: BOOKMARK_BADGE_PALETTE[2],
+                  letter: "자",
+                },
+                {
+                  key: "resumes",
+                  label: "이력서",
+                  href: "/dashboard/resume",
+                  count: achievement.resumes,
+                  unit: "건",
+                  palette: BOOKMARK_BADGE_PALETTE[3],
+                  letter: "이",
+                },
+                {
+                  key: "portfolios",
+                  label: "포트폴리오",
+                  href: "/dashboard/portfolio",
+                  count: achievement.portfolios,
+                  unit: "건",
+                  palette: BOOKMARK_BADGE_PALETTE[4],
+                  letter: "포",
+                },
+              ] as const
+            ).map((row) => (
+              <Link
+                key={row.key}
+                href={row.href}
+                className="flex items-center gap-2.5 border-b border-[#f5f5f5] py-[7px] last:border-b-0 hover:bg-[#fafbff]"
+              >
+                <div
+                  className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-[12px] font-bold"
+                  style={{ background: row.palette.bg, color: row.palette.color }}
+                >
+                  {row.letter}
+                </div>
+                <div className="flex min-w-0 flex-1 items-center justify-between">
+                  <div className="truncate text-[12px] font-medium leading-[1.3] text-[#333]">
+                    {row.label}
+                  </div>
+                  <div className="ml-2 flex-shrink-0 text-[12px] font-semibold text-[#4361ee]">
+                    {row.count}
+                    {row.unit}
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </aside>
+
+        {/* RIGHT AREA */}
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          {/* Calendar area */}
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col px-4 pt-6">
+            {/* Toolbar */}
+            <div className="relative flex flex-shrink-0 flex-nowrap items-center gap-1.5 py-2">
+              <div className="flex flex-shrink-0 items-center gap-2">
+                <div className="flex overflow-hidden rounded-md border border-[#dde0e8]">
+                  {(["차트", "달력", "주간"] as const).map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => setCalView(v)}
+                      className={`border-r border-[#dde0e8] px-2.5 py-1 text-[15px] font-medium transition-colors last:border-r-0 ${
+                        calView === v
+                          ? "bg-[#16162a] text-white"
+                          : "bg-white text-[#888]"
+                      }`}
+                    >
+                      {v}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {FILTER_ITEMS.map((f) => {
+                    const on = filters[f.key];
+                    return (
+                      <button
+                        key={f.key}
+                        type="button"
+                        onClick={() => toggleFilter(f.key)}
+                        className="flex items-center gap-[3px]"
+                        style={{ color: f.color }}
+                      >
+                        <span
+                          className={`flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center rounded-[3px] border-[1.5px]`}
+                          style={{
+                            borderColor: f.color,
+                            background: on ? f.color : "transparent",
+                          }}
+                        >
+                          {on ? <span className="text-[15px] leading-none text-white">✓</span> : null}
+                        </span>
+                        <span className="whitespace-nowrap text-[15px] font-medium">
+                          {f.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Centered month nav */}
+              <div className="pointer-events-auto absolute left-1/2 flex -translate-x-1/2 items-center gap-2">
+                <button
+                  type="button"
+                  onClick={prevMonth}
+                  className="flex h-7 w-7 items-center justify-center rounded-md border border-[#e0e0e0] bg-white text-[15px] text-[#555] transition-colors hover:border-[#4361ee] hover:text-[#4361ee]"
+                >
+                  ‹
+                </button>
+                <span className="min-w-[90px] whitespace-nowrap text-center text-[15px] font-extrabold text-[#16162a]">
+                  {year}년 {MONTHS_KR[month]}
+                </span>
+                <button
+                  type="button"
+                  onClick={nextMonth}
+                  className="flex h-7 w-7 items-center justify-center rounded-md border border-[#e0e0e0] bg-white text-[15px] text-[#555] transition-colors hover:border-[#4361ee] hover:text-[#4361ee]"
+                >
+                  ›
+                </button>
+              </div>
+
+              {/* Right buttons */}
+              <div className="ml-auto flex flex-shrink-0 flex-nowrap items-center gap-1.5">
+                <button
+                  type="button"
+                  className="whitespace-nowrap rounded-md border border-[#ddd] bg-transparent px-3 py-[5px] text-[15px] font-medium text-[#555] transition-colors hover:bg-[#f5f5f5]"
+                >
+                  새로고침
+                </button>
+                <Link
+                  href="/programs"
+                  className="whitespace-nowrap rounded-md bg-[#4361ee] px-3 py-[5px] text-[15px] font-medium text-white transition-colors hover:bg-[#3451d1]"
+                >
+                  + 새 일정
+                </Link>
+              </div>
+            </div>
+
+            {/* DOW header + grid */}
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col pb-2">
+              <div className="grid flex-shrink-0 grid-cols-7 border border-[#e8eaed] border-b-0 bg-white">
+                {DOW_KR.map((d, i) => (
+                  <div
+                    key={d}
+                    className={`border-r border-[#e8eaed] px-2.5 py-2 text-left text-[12px] font-bold text-[#333] last:border-r-0 ${
+                      i === 0 ? "" : i === 6 ? "" : ""
+                    }`}
+                  >
+                    {d}
+                  </div>
+                ))}
+              </div>
+              <div
+                className="grid min-h-0 flex-1 grid-cols-7 gap-px overflow-hidden border border-[#e8eaed] bg-[#e8eaed]"
+                style={{ gridTemplateRows: `repeat(${MAIN_CALENDAR_ROWS}, minmax(0, 1fr))` }}
+              >
+                {monthCells.map((cell, idx) => {
+                  const colIdx = idx % 7;
+                  const isToday = cell.dateStr === todayStr;
+                  const isSelected = cell.dateStr === effectiveSelectedDate;
+                  let cellEvents = eventsByDate[cell.dateStr] ?? [];
+                  cellEvents = cellEvents.filter((e) => filters[e.eventType]);
+                  const shown = cellEvents.slice(0, 3);
+                  const more = cellEvents.length - shown.length;
+                  const dateTextClass = `text-[12px] font-medium flex-shrink-0 mb-1 ${
+                    isToday
+                      ? "text-[#4361ee] font-bold"
+                      : !cell.cur
+                        ? "text-[#bbb]"
+                        : colIdx === 0
+                          ? "text-[#e05c5c]"
+                          : colIdx === 6
+                            ? "text-[#4361ee]"
+                            : "text-[#333]"
+                  }`;
+                  return (
+                    <button
+                      key={`${cell.dateStr}-${idx}`}
+                      type="button"
+                      onClick={() => handleSelectDate(cell.dateStr)}
+                      className={`relative flex flex-col overflow-hidden px-1.5 py-1 text-left transition-colors ${
+                        !cell.cur
+                          ? "bg-[#fafafa]"
+                          : isSelected && !isToday
+                            ? "bg-[#f0f4ff]"
+                            : "bg-white hover:bg-[#fafbff]"
+                      } ${isToday ? "z-[1] outline outline-2 -outline-offset-2 outline-[#4361ee]" : ""}`}
+                    >
+                      <div className={dateTextClass}>{cell.day}</div>
+                      <div className="flex min-h-0 flex-1 flex-col gap-[2px]">
+                        {shown.map((e) => (
+                          <div
+                            key={e.id}
+                            className="flex items-center gap-1 rounded-[3px] px-[2px] py-[1px] text-[10.5px] text-[#333] transition-colors hover:bg-[#f5f5f5]"
+                            title={e.title}
+                          >
+                            <span
+                              className="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full text-[9px] font-bold text-white"
+                              style={{ background: PREFIX_BG[e.eventType] }}
+                            >
+                              {PREFIX_LABEL[e.eventType]}
+                            </span>
+                            <span className="flex-1 truncate text-[10.5px] text-[#333]">
+                              {e.title}
+                            </span>
+                            <span
+                              onClick={(ev) => {
+                                ev.stopPropagation();
+                                toggleStar(e.id);
+                              }}
+                              className={`flex-shrink-0 cursor-pointer text-[11px] transition-colors ${
+                                e.isBookmarked || starred[e.id]
+                                  ? "text-[#f4b942]"
+                                  : "text-[#ccc] hover:text-[#f4b942]"
+                              }`}
+                              title={e.isBookmarked ? DASHBOARD_COPY.bookmarks.cardLabel : undefined}
+                            >
+                              {e.isBookmarked || starred[e.id] ? "★" : "☆"}
+                            </span>
+                          </div>
+                        ))}
+                        {more > 0 ? (
+                          <div className="cursor-pointer px-[2px] py-[2px] text-[10.5px] font-medium text-[#888] hover:text-[#4361ee]">
+                            + {more}
+                          </div>
+                        ) : null}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom strip */}
+          <div className="max-h-[42vh] flex-shrink-0 overflow-y-auto border-t border-[#e8eaed] bg-white px-6 pb-4 pt-3.5">
+            {/* 커리어 핏 과정 */}
+            <div className="mb-3 flex items-center justify-between">
+              <div className="flex flex-col gap-0.5">
+                <div className="text-[15px] font-bold leading-[1.4] text-[#16162a]">
+                  {DASHBOARD_COPY.programs.sectionTitle}
+                </div>
+              </div>
+              <Link href="/programs" className="text-[15px] text-[#4361ee] hover:underline">
+                {DASHBOARD_COPY.programs.manageLink}
+              </Link>
+            </div>
+            <div className="mb-[18px] min-h-[154px]">
+              <div className="grid grid-cols-5 gap-2.5 overflow-visible pb-2 pt-1.5">
+                {recCardItems.length === 0 ? (
+                  <div className="col-span-5 w-full py-6 text-center text-[15px] text-[#bbb]">
+                    {DASHBOARD_COPY.programs.empty}
+                  </div>
+                ) : (
+                  recCardItems.map((item, i) => (
+                    <RecCard
+                      key={`rec-${String(item.program.id ?? i)}`}
+                      item={item}
+                      index={i}
+                      isWhite={false}
+                      isSubscribed={appliedProgramIds.has(String(item.program.id ?? ""))}
+                      onSubscribe={() => handleSubscribe(item.program)}
+                    />
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* 찜한 과정 */}
+            <div className="mb-3 flex items-center justify-between">
+              <div className="flex flex-col gap-0.5">
+                <div className="text-[15px] font-bold leading-[1.4] text-[#16162a]">
+                  {DASHBOARD_COPY.bookmarks.sectionTitle}
+                </div>
+              </div>
+              <Link href="/compare" className="text-[15px] text-[#4361ee] hover:underline">
+                {DASHBOARD_COPY.bookmarks.viewAllLink}
+              </Link>
+            </div>
+            <div className="min-h-[154px]">
+              <div className="grid grid-cols-5 gap-2.5 overflow-visible pb-2 pt-1.5">
+                {bookmarksLoading && bookmarkedCardItems.length === 0 ? (
+                  <div className="col-span-5 w-full py-6 text-center text-[15px] text-[#bbb]">
+                    찜한 과정을 불러오는 중입니다
+                  </div>
+                ) : bookmarksError && bookmarkedCardItems.length === 0 ? (
+                  <div className="col-span-5 w-full py-6 text-center text-[15px] text-[#bbb]">
+                    {bookmarksError}
+                  </div>
+                ) : bookmarkedCardItems.length === 0 ? (
+                  <div className="col-span-5 w-full py-6 text-center text-[15px] text-[#bbb]">
+                    {DASHBOARD_COPY.bookmarks.empty}
+                  </div>
+                ) : (
+                  bookmarkedCardItems.map((item, i) => (
+                    <RecCard
+                      key={`bm-card-${String(item.program.id ?? i)}`}
+                      item={item}
+                      index={i}
+                      isWhite
+                      isSubscribed
+                      onSubscribe={() => handleSubscribe(item.program)}
+                    />
+                  ))
+                )}
+              </div>
+            </div>
+
+            {appliedCalendarPrograms.length > 0 ? (
+              <p className="mt-3 text-[15px] text-[#999]">
+                {DASHBOARD_COPY.programs.appliedNotice(appliedCalendarPrograms.length)}
+              </p>
+            ) : null}
+          </div>
         </div>
-        <div className="h-7 w-14 rounded-full bg-slate-100" />
       </div>
-      <div className="mb-5 h-4 w-20 rounded bg-slate-100" />
-      <div className="mb-6 h-4 w-24 rounded bg-slate-200" />
-      <div className="mb-4 flex gap-2">
-        <div className="h-6 w-16 rounded-full bg-slate-100" />
-        <div className="h-6 w-16 rounded-full bg-slate-100" />
-      </div>
-      <div className="mb-6 h-4 w-full rounded bg-slate-100" />
-      <div className="h-4 w-20 rounded bg-slate-100" />
     </div>
   );
 }
 
-function ProgramCard({
-  program,
-  cardId,
-  isApplied,
-  onApplyToCalendar,
+function MiniCalendar({
+  year,
+  month,
+  today,
+  selectedDate,
+  eventDates,
+  onSelectDate,
+  onPrevMonth,
+  onNextMonth,
 }: {
-  program: Program;
-  cardId?: string;
-  isApplied: boolean;
-  onApplyToCalendar: (program: Program) => void;
+  year: number;
+  month: number;
+  today: string;
+  selectedDate: string | null;
+  eventDates: Set<string>;
+  onSelectDate: (dateStr: string) => void;
+  onPrevMonth: () => void;
+  onNextMonth: () => void;
 }) {
-  const trainingPeriodLabel = formatTrainingPeriod(program.start_date, program.end_date);
-  const deadlineLabel = formatDeadline(program.deadline);
-  const ddayBadge = getDdayBadge(program.days_left);
-  const cardBorderClass = getCardBorderClass(program.days_left);
-  const programLink = program.link || program.application_url || program.source_url;
-  const relevanceReasons = getRelevanceReasons(program);
-  const fitKeywords = getFitKeywords(program._fit_keywords);
-  const relevanceBadge = program.relevance_badge || null;
+  const firstDay = firstDayOfMonth(year, month);
+  const days = daysInMonth(year, month);
+  const prevDays = daysInMonth(year, month - 1);
+  const cells: Array<{ day: number; cur: boolean }> = [];
+  for (let i = 0; i < firstDay; i += 1) {
+    cells.push({ day: prevDays - firstDay + i + 1, cur: false });
+  }
+  for (let d = 1; d <= days; d += 1) {
+    cells.push({ day: d, cur: true });
+  }
+  const remaining = 42 - cells.length;
+  for (let d = 1; d <= remaining; d += 1) {
+    cells.push({ day: d, cur: false });
+  }
 
   return (
-    <article
-      id={cardId}
-      className={`flex min-h-[260px] flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md ${cardBorderClass}`}
-    >
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h3 className="line-clamp-2 text-base font-semibold text-slate-950">{program.title || "제목 없음"}</h3>
-          <p className="mt-2 text-sm text-slate-500">{formatSource(program.source)}</p>
+    <div>
+      <div className="mb-2 flex items-center justify-between">
+        <div className="text-[13px] font-semibold text-[#16162a]">
+          {year}년 {MONTHS_KR[month]}
         </div>
-        {ddayBadge ? (
-          <span
-            className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-xs font-semibold ${ddayBadge.className}`}
+        <div className="flex gap-1">
+          <button
+            type="button"
+            onClick={onPrevMonth}
+            className="flex h-[22px] w-[22px] items-center justify-center rounded border-0 bg-[#f5f5f5] text-[11px] text-[#666] transition-colors hover:bg-[#e8eaed]"
           >
-            {ddayBadge.label}
-          </span>
-        ) : null}
-      </div>
-
-      <div className="mb-2 text-sm text-slate-600">훈련 기간: {trainingPeriodLabel}</div>
-      <div className="mb-3 text-sm text-slate-600">{"\uc2e0\uccad \ub9c8\uac10"}: {deadlineLabel}</div>
-      <div className="mb-3 flex flex-wrap items-center gap-2">
-        {relevanceBadge ? (
-          <span className="inline-flex rounded-full bg-orange-50 px-2.5 py-1 text-xs font-semibold text-orange-700">
-            {relevanceBadge}
-          </span>
-        ) : null}
-        <span className="text-sm font-semibold text-slate-800">
-          {formatRelevance(program._relevance_score ?? program.relevance_score ?? program._score ?? program.final_score)}
-        </span>
-      </div>
-
-      {fitKeywords.length > 0 ? (
-        <div className="mb-3 flex flex-wrap gap-2">
-          {fitKeywords.map((keyword) => (
-            <span
-              key={`${program.id ?? program.title ?? "program"}-${keyword}`}
-              className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700"
-            >
-              {keyword}
-            </span>
-          ))}
+            ‹
+          </button>
+          <button
+            type="button"
+            onClick={onNextMonth}
+            className="flex h-[22px] w-[22px] items-center justify-center rounded border-0 bg-[#f5f5f5] text-[11px] text-[#666] transition-colors hover:bg-[#e8eaed]"
+          >
+            ›
+          </button>
         </div>
-      ) : null}
+      </div>
+      <div className="grid grid-cols-7 gap-1">
+        {DOW_KR.map((d) => (
+          <div key={d} className="py-[3px] text-center text-[9.5px] font-medium text-[#aaa]">
+            {d}
+          </div>
+        ))}
+        {cells.map((cell, i) => {
+          const dateStr = cell.cur ? formatDateStr(year, month, cell.day) : null;
+          const isToday = cell.cur && dateStr === today;
+          const isSelected = cell.cur && dateStr === selectedDate;
+          const hasEvent = Boolean(dateStr && eventDates.has(dateStr));
+          return (
+            <button
+              key={i}
+              type="button"
+              disabled={!cell.cur}
+              onClick={() => dateStr && onSelectDate(dateStr)}
+              className={`relative flex aspect-square w-full items-center justify-center rounded-md p-0 text-[12px] transition-colors ${
+                !cell.cur
+                  ? "cursor-default text-[#ccc]"
+                  : isToday
+                    ? "bg-[#4361ee] font-semibold text-white hover:bg-[#3451d1]"
+                    : isSelected
+                      ? "bg-[#e8edff] font-semibold text-[#4361ee]"
+                      : "text-[#333] hover:bg-[#f0f4ff]"
+              }`}
+            >
+              {cell.day}
+              {hasEvent ? (
+                <span
+                  className="absolute bottom-[2px] left-1/2 h-1 w-1 -translate-x-1/2 rounded-full"
+                  style={{ background: isToday ? "rgba(255,255,255,0.7)" : "#4361ee" }}
+                />
+              ) : null}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
-      {relevanceReasons.length > 0 ? (
-        <ul className="mb-6 space-y-1.5">
-          {relevanceReasons.map((reason) => (
-            <li key={reason} className="line-clamp-2 text-sm leading-5 text-slate-600">
-              - {reason}
-            </li>
-          ))}
-        </ul>
-      ) : null}
+function RecCard({
+  item,
+  index,
+  isWhite,
+  isSubscribed,
+  onSubscribe,
+}: {
+  item: ProgramCardItem;
+  index: number;
+  isWhite: boolean;
+  isSubscribed: boolean;
+  onSubscribe: () => void;
+}) {
+  const { program } = item;
+  const bg = isWhite ? "" : CARD_BG_CLASS[CARD_BG_CYCLE[index % CARD_BG_CYCLE.length]];
+  const categoryLabel = program.category ?? DASHBOARD_COPY.programs.fallbackCategory;
 
-      <div className="mt-auto flex flex-wrap items-center gap-3">
+  return (
+    <div
+      className={`relative flex h-[132px] min-w-0 w-full flex-col rounded-[14px] border-0 p-[14px_15px_13px] transition-all hover:-translate-y-0.5 hover:shadow-md ${
+        isWhite ? "border-[1.5px] border-[#e0e0e0] bg-white hover:border-[#4361ee]" : bg
+      }`}
+    >
+      <ProgramDeadlineBadge
+        program={program}
+        className="absolute right-3 top-3 px-2 py-0.5 text-[15px]"
+      />
+      <div className="mb-1.5 max-w-[calc(100%-72px)] overflow-hidden text-ellipsis whitespace-nowrap text-[15px] text-[#777]">
+        {categoryLabel}
+      </div>
+      <div className="mb-2.5 line-clamp-2 pr-20 text-[15px] font-bold leading-[1.35] text-[#16162a]">
+        {program.title ?? "제목 없음"}
+      </div>
+      <div className="mt-auto flex items-center justify-end">
         <button
           type="button"
-          onClick={() => onApplyToCalendar(program)}
-          className={`inline-flex items-center rounded-full px-3 py-1.5 text-sm font-semibold transition ${
-            isApplied
-              ? "bg-emerald-50 text-emerald-700"
-              : "bg-blue-600 text-white hover:bg-blue-700"
-          }`}
+          onClick={onSubscribe}
+          className="flex items-center gap-1 whitespace-nowrap rounded-full border-[1.5px] px-2.5 py-1 text-[15px] font-semibold transition-all"
+          style={
+            isSubscribed
+              ? { borderColor: "#4361ee", color: "#4361ee", background: "#f0f4ff" }
+              : { borderColor: "#ccc", color: "#333", background: "#fff" }
+          }
         >
-          {isApplied ? "캘린더 적용됨" : "캘린더에 적용"}
+          {isSubscribed ? DASHBOARD_COPY.programs.appliedButton : DASHBOARD_COPY.programs.applyButton}
         </button>
-        {programLink ? (
-          <a
-            href={programLink}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-700"
-          >
-            자세히 보기
-          </a>
-        ) : (
-          <span className="text-sm text-slate-400">링크 없음</span>
-        )}
-      </div>
-    </article>
-  );
-}
-
-function BookmarkedProgramCard({ program }: { program: Program }) {
-  const programId = String(program.id ?? "").trim();
-  const detailHref = programId ? `/programs/${encodeURIComponent(programId)}` : null;
-  const deadlineLabel = formatDeadline(program.deadline);
-  const programLink = program.link || program.application_url || program.source_url;
-
-  return (
-    <article className="flex min-h-[178px] flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="min-w-0">
-        <p className="text-xs font-semibold text-amber-600">찜한 훈련</p>
-        <h3 className="mt-2 line-clamp-2 text-sm font-semibold leading-5 text-slate-950">
-          {program.title || "제목 없음"}
-        </h3>
-        <p className="mt-2 text-xs text-slate-500">{program.provider || formatSource(program.source)}</p>
-      </div>
-      <div className="mt-3 space-y-1 text-xs text-slate-600">
-        <p>신청 마감: {deadlineLabel}</p>
-        <p>훈련 기간: {formatTrainingPeriod(program.start_date, program.end_date)}</p>
-      </div>
-      <div className="mt-auto flex flex-wrap items-center gap-3 pt-4">
-        {detailHref ? (
-          <Link
-            href={detailHref}
-            className="inline-flex rounded-full bg-slate-950 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-800"
-          >
-            상세 보기
-          </Link>
-        ) : null}
-        {programLink ? (
-          <a
-            href={programLink}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex text-xs font-semibold text-blue-600 hover:text-blue-700"
-          >
-            원문 열기
-          </a>
-        ) : null}
-      </div>
-    </article>
-  );
-}
-
-export default function DashboardPage() {
-  const [userName, setUserName] = useState("사용자");
-  const [programs, setPrograms] = useState<Program[]>([]);
-  const [bookmarkedPrograms, setBookmarkedPrograms] = useState<Program[]>([]);
-  const [bookmarksLoading, setBookmarksLoading] = useState(true);
-  const [bookmarksError, setBookmarksError] = useState<string | null>(null);
-  const [appliedCalendarPrograms, setAppliedCalendarPrograms] = useState<Program[]>([]);
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [calendarSaveStatus, setCalendarSaveStatus] = useState<string | null>(null);
-
-  const handleDateClick = (date: string) => {
-    setSelectedDate((current) => (current === date ? null : date));
-  };
-
-  const filteredPrograms = useMemo(() => {
-    if (!selectedDate) {
-      return programs;
-    }
-
-    return programs.filter((program) => {
-      const dateKey = program.deadline ? toDateKey(program.deadline) : null;
-      return dateKey === selectedDate;
-    });
-  }, [programs, selectedDate]);
-
-  const calendarPrograms = appliedCalendarPrograms.length > 0 ? appliedCalendarPrograms : programs;
-  const appliedProgramIds = useMemo(
-    () => new Set(appliedCalendarPrograms.map((program) => String(program.id ?? ""))),
-    [appliedCalendarPrograms]
-  );
-
-  const handleApplyToCalendar = (program: Program) => {
-    const programId = String(program.id ?? "");
-    if (!programId) return;
-
-    setAppliedCalendarPrograms((current) => {
-      const next = [
-        program,
-        ...current.filter((item) => String(item.id ?? "") !== programId),
-      ].slice(0, 3);
-
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem(APPLIED_CALENDAR_PROGRAMS_KEY, JSON.stringify(next));
-      }
-
-      void saveCalendarSelections(next.map((item) => String(item.id ?? "")).filter(Boolean))
-        .then(() => setCalendarSaveStatus("서버에 저장되었습니다."))
-        .catch(() => setCalendarSaveStatus("서버 저장에 실패해 이 브라우저에만 유지됩니다."));
-
-      return next;
-    });
-  };
-
-  const clearAppliedCalendarPrograms = () => {
-    setAppliedCalendarPrograms([]);
-    if (typeof window !== "undefined") {
-      window.localStorage.removeItem(APPLIED_CALENDAR_PROGRAMS_KEY);
-    }
-    void saveCalendarSelections([])
-      .then(() => setCalendarSaveStatus("적용 일정이 초기화되었습니다."))
-      .catch(() => setCalendarSaveStatus("서버 초기화에 실패했습니다."));
-  };
-
-  const loadPrograms = useCallback(
-    async (options?: { category?: string | null; region?: string | null }) => {
-      const canUseCache = !options?.category && !options?.region;
-      const cachedPrograms = canUseCache ? readRecommendCalendarCache() : [];
-
-      if (cachedPrograms.length > 0) {
-        setPrograms(cachedPrograms);
-        setLoading(false);
-      } else {
-        setLoading(true);
-      }
-      setError(null);
-
-      try {
-        const result = await getRecommendCalendar({
-          category: options?.category ?? undefined,
-          region: options?.region ?? undefined,
-        });
-        const nextPrograms = result.items.map((item) => ({
-            ...item.program,
-            deadline: item.deadline ?? item.program.deadline,
-            _reason: item.reason,
-            _fit_keywords: item.fit_keywords ?? item.program._fit_keywords ?? [],
-            _score: item.final_score,
-            _relevance_score: item.relevance_score,
-            final_score: item.final_score,
-            relevance_score: item.relevance_score,
-            urgency_score: item.urgency_score,
-            relevance_reasons: item.relevance_reasons ?? item.program.relevance_reasons ?? [],
-            score_breakdown: item.score_breakdown ?? item.program.score_breakdown ?? {},
-            relevance_grade: item.relevance_grade ?? item.program.relevance_grade ?? "none",
-            relevance_badge: item.relevance_badge ?? item.program.relevance_badge ?? null,
-          }));
-        setPrograms(nextPrograms);
-        if (canUseCache) {
-          writeRecommendCalendarCache(nextPrograms);
-        }
-      } catch (e) {
-        if (cachedPrograms.length === 0) {
-          setPrograms([]);
-          setError(e instanceof Error ? e.message : "추천 프로그램을 불러오지 못했습니다.");
-        } else {
-          setError(null);
-        }
-      } finally {
-        setLoading(false);
-      }
-    },
-    []
-  );
-
-  useEffect(() => {
-    let mounted = true;
-
-    const loadUser = async () => {
-      try {
-        const meResult = await getDashboardMe();
-        if (!mounted) return;
-        setUserName(formatUserName(meResult.user?.displayName));
-      } catch {
-        if (!mounted) return;
-        setUserName("사용자");
-      }
-    };
-
-    void loadUser();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    let mounted = true;
-
-    const loadBookmarks = async () => {
-      setBookmarksLoading(true);
-      setBookmarksError(null);
-      try {
-        const result = await getDashboardBookmarks();
-        if (!mounted) return;
-        setBookmarkedPrograms(
-          result.items
-            .map((item) => item.program)
-            .filter((program): program is Program => Boolean(program && program.id))
-        );
-      } catch (error) {
-        if (!mounted) return;
-        setBookmarkedPrograms([]);
-        setBookmarksError(error instanceof Error ? error.message : "찜한 훈련을 불러오지 못했습니다.");
-      } finally {
-        if (mounted) {
-          setBookmarksLoading(false);
-        }
-      }
-    };
-
-    void loadBookmarks();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const raw = window.localStorage.getItem(APPLIED_CALENDAR_PROGRAMS_KEY);
-    if (!raw) return;
-
-    try {
-      const parsed = JSON.parse(raw) as Program[];
-      if (Array.isArray(parsed)) {
-        setAppliedCalendarPrograms(parsed.filter((program) => program && program.id).slice(0, 3));
-      }
-    } catch {
-      window.localStorage.removeItem(APPLIED_CALENDAR_PROGRAMS_KEY);
-    }
-  }, []);
-
-  useEffect(() => {
-    let mounted = true;
-
-    const loadSelections = async () => {
-      try {
-        const result = await getCalendarSelections();
-        if (!mounted || result.programs.length === 0) return;
-        setAppliedCalendarPrograms(result.programs.slice(0, 3));
-        window.localStorage.setItem(
-          APPLIED_CALENDAR_PROGRAMS_KEY,
-          JSON.stringify(result.programs.slice(0, 3))
-        );
-      } catch {
-        if (mounted) {
-          setCalendarSaveStatus("서버 저장 일정을 불러오지 못해 이 브라우저의 선택 상태를 사용합니다.");
-        }
-      }
-    };
-
-    void loadSelections();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    void loadPrograms({ category: selectedCategory, region: selectedRegion });
-  }, [loadPrograms, selectedCategory, selectedRegion]);
-
-  const isFiltered = Boolean(selectedCategory || selectedRegion);
-  const emptyMessage = error
-    ? error
-    : selectedDate && programs.length > 0
-      ? "해당 날짜에 마감되는 프로그램이 없습니다"
-      : isFiltered
-        ? "해당 조건에 맞는 추천 프로그램이 없습니다"
-        : "추천 프로그램이 없습니다";
-
-  return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-7xl px-6 py-10 lg:px-10">
-        <header className="mb-8">
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
-            안녕하세요, {userName}님
-          </h1>
-        </header>
-
-        <section id="recommend-calendar" className="scroll-mt-6">
-          <MiniCalendar
-            programs={calendarPrograms.map((program) => ({
-              title: program.title || "제목 없음",
-              deadline: program.deadline || undefined,
-              isApplied: appliedProgramIds.has(String(program.id ?? "")),
-            }))}
-            selectedDate={selectedDate}
-            onDateClick={handleDateClick}
-            focusDate={appliedCalendarPrograms[0]?.deadline ?? null}
-          />
-        </section>
-
-        <section className="mb-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h2 className="text-xl font-semibold tracking-tight text-slate-950">찜한 훈련</h2>
-              <p className="mt-1 text-sm text-slate-500">
-                프로그램 목록과 상세 페이지에서 북마크한 훈련이 여기에 저장됩니다.
-              </p>
-            </div>
-            <Link href="/compare" className="text-sm font-semibold text-blue-600 hover:text-blue-700">
-              비교 페이지에서 보기
-            </Link>
-          </div>
-
-          {bookmarksLoading ? (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <SkeletonCard key={`bookmark-skeleton-${index}`} />
-              ))}
-            </div>
-          ) : bookmarksError ? (
-            <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-8 text-center">
-              <p className="text-sm text-slate-500">찜한 훈련을 불러오지 못했습니다.</p>
-            </div>
-          ) : bookmarkedPrograms.length > 0 ? (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {bookmarkedPrograms.slice(0, 6).map((program) => (
-                <BookmarkedProgramCard key={`bookmarked-${String(program.id)}`} program={program} />
-              ))}
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-8 text-center">
-              <p className="text-sm text-slate-500">아직 찜한 훈련이 없습니다.</p>
-              <Link
-                href="/programs"
-                className="mt-4 inline-flex rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
-              >
-                프로그램 찾기
-              </Link>
-            </div>
-          )}
-        </section>
-
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-6">
-            <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
-              AI 맞춤 취업 지원 캘린더
-            </h2>
-            <p className="mt-2 text-sm text-slate-500">
-              {appliedCalendarPrograms.length > 0
-                ? "선택한 부트캠프 일정이 이번 달 마감 일정에 적용되었습니다."
-                : "추천 부트캠프에서 캘린더에 적용할 일정을 선택하세요."}
-            </p>
-          </div>
-
-          {appliedCalendarPrograms.length > 0 ? (
-            <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-emerald-800">적용된 부트캠프 일정</p>
-                  <div className="mt-3 space-y-2">
-                    {appliedCalendarPrograms.map((program) => (
-                      <p key={String(program.id)} className="text-sm text-emerald-900">
-                        {program.title || "제목 없음"} · {formatTrainingPeriod(program.start_date, program.end_date)}
-                      </p>
-                    ))}
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={clearAppliedCalendarPrograms}
-                  className="rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-sm font-semibold text-emerald-700"
-                >
-                  초기화
-                </button>
-              </div>
-            </div>
-          ) : null}
-
-          {calendarSaveStatus ? (
-            <p className="mb-6 text-sm text-slate-500">{calendarSaveStatus}</p>
-          ) : null}
-
-          <div className="mb-6 space-y-4">
-            <div>
-              <p className="mb-2 text-sm font-medium text-slate-700">카테고리</p>
-              <div className="flex flex-wrap gap-2">
-                {CATEGORY_OPTIONS.map((option) => {
-                  const isActive = selectedCategory === option.value;
-                  return (
-                    <button
-                      key={`category-${option.label}`}
-                      type="button"
-                      onClick={() => {
-                        setSelectedCategory(option.value);
-                        setSelectedRegion(null);
-                      }}
-                      className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
-                        isActive
-                          ? "border-blue-600 bg-blue-600 text-white"
-                          : "border-slate-200 bg-white text-slate-600"
-                      }`}
-                    >
-                      {option.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div>
-              <p className="mb-2 text-sm font-medium text-slate-700">지역</p>
-              <div className="flex flex-wrap gap-2">
-                {REGION_OPTIONS.map((option) => {
-                  const isActive = selectedRegion === option.value;
-                  return (
-                    <button
-                      key={`region-${option.label}`}
-                      type="button"
-                      onClick={() => {
-                        setSelectedRegion(option.value);
-                        setSelectedCategory(null);
-                      }}
-                      className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
-                        isActive
-                          ? "border-blue-600 bg-blue-600 text-white"
-                          : "border-slate-200 bg-white text-slate-600"
-                      }`}
-                    >
-                      {option.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {loading ? (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {Array.from({ length: 9 }).map((_, index) => (
-                <SkeletonCard key={`skeleton-${index}`} />
-              ))}
-            </div>
-          ) : filteredPrograms.length > 0 ? (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {filteredPrograms.map((program, index) => {
-                const dateKey = program.deadline ? toDateKey(program.deadline) : null;
-
-                return (
-                  <ProgramCard
-                    key={`${program.link ?? program.title ?? "program"}-${index}`}
-                    cardId={dateKey ? `card-${dateKey}` : undefined}
-                    program={program}
-                    isApplied={appliedProgramIds.has(String(program.id ?? ""))}
-                    onApplyToCalendar={handleApplyToCalendar}
-                  />
-                );
-              })}
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-12 text-center">
-              <p className="text-sm text-slate-500">{emptyMessage}</p>
-            </div>
-          )}
-        </section>
       </div>
     </div>
   );

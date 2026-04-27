@@ -69,7 +69,6 @@ export async function POST(request: Request) {
       const { error } = await supabase.storage
         .from("activity-images")
         .upload(path, fileBuffer, {
-          upsert: true,
           contentType: file.type || "application/octet-stream",
         });
 

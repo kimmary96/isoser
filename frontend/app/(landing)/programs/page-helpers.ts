@@ -1,10 +1,10 @@
-import type { Program, ProgramSort } from "@/lib/types";
+import type { ProgramListRow, ProgramSort } from "@/lib/types";
 
 import { isDisplayableProgram } from "./program-utils";
 
 type PromotionMergeArgs = {
-  organicPrograms: Program[];
-  promotedPrograms: Program[];
+  organicPrograms: ProgramListRow[];
+  promotedPrograms: ProgramListRow[];
   pinPromoted: boolean;
   promotedLimit?: number;
 };
@@ -23,9 +23,9 @@ type PinPromotedArgs = {
 };
 
 type ProgramsDisplayStateArgs = PinPromotedArgs & {
-  programs: Program[];
-  promotedPrograms: Program[];
-  urgentPrograms: Program[];
+  programs: ProgramListRow[];
+  promotedPrograms: ProgramListRow[];
+  urgentPrograms: ProgramListRow[];
 };
 
 const DEFAULT_PROMOTED_LIMIT = 3;
@@ -39,14 +39,18 @@ const KEYWORD_TONE_CLASSES = [
   "bg-cyan-50 text-cyan-700",
 ] as const;
 
-function normalizeProgramId(program: Program): string {
+function normalizeProgramId(program: ProgramListRow): string {
   return String(program.id ?? "").trim();
 }
 
 function totalHoursLabel(detail: string | null | undefined): string | null {
   const match = detail?.match(/총\s*(\d+(?:\.\d+)?)\s*시간/u);
   if (!match) {
-    return detail?.trim() || null;
+    const normalized = detail?.trim() || null;
+    if (!normalized || /곧\s*마감|마감\s*임박|d-\d+|d-day|모집중/iu.test(normalized)) {
+      return null;
+    }
+    return normalized;
   }
   return `${match[1]}시간`;
 }
@@ -57,15 +61,16 @@ function hashKeywordTone(keyword: string): string {
 }
 
 export function formatProgramParticipationTime(
-  program: Pick<Program, "participation_mode_label" | "participation_time" | "participation_time_text">
+  program: Pick<ProgramListRow, "participation_mode_label" | "participation_time" | "participation_time_text">
 ): { label: string | null; detail: string | null } {
-  const label =
+  const rawLabel =
     program.participation_mode_label ||
     (program.participation_time === "full-time"
       ? "풀타임"
       : program.participation_time === "part-time"
         ? "파트타임"
         : program.participation_time || null);
+  const label = rawLabel && !/곧\s*마감|마감\s*임박|d-\d+|d-day|모집중/iu.test(rawLabel) ? rawLabel : null;
   const detail = totalHoursLabel(program.participation_time_text || null);
   return { label, detail };
 }
@@ -100,7 +105,7 @@ export function mergeProgramsForDisplay({
   promotedPrograms,
   pinPromoted,
   promotedLimit = DEFAULT_PROMOTED_LIMIT,
-}: PromotionMergeArgs): Program[] {
+}: PromotionMergeArgs): ProgramListRow[] {
   const promotedSlice = promotedPrograms.slice(0, promotedLimit);
   const merged = pinPromoted ? [...promotedSlice, ...organicPrograms] : [...organicPrograms, ...promotedSlice];
   const seenIds = new Set<string>();
@@ -148,8 +153,8 @@ export function buildProgramsDisplayState({
   urgentPrograms,
   ...pinArgs
 }: ProgramsDisplayStateArgs): {
-  tablePrograms: Program[];
-  displayUrgentPrograms: Program[];
+  tablePrograms: ProgramListRow[];
+  displayUrgentPrograms: ProgramListRow[];
   urgentProgramsUseStrictWindow: boolean;
   urgentProgramsUseUpcomingFallback: boolean;
 } {

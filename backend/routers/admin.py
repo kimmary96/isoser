@@ -21,6 +21,21 @@ try:
 except ImportError:
     from logging_config import get_logger, log_event
 
+try:
+    from services.program_dual_write import (
+        build_program_source_record_rows,
+        is_missing_schema_error,
+        merge_program_dual_write_fields,
+        uses_training_start_deadline_marker,
+    )
+except ImportError:
+    from backend.services.program_dual_write import (
+        build_program_source_record_rows,
+        is_missing_schema_error,
+        merge_program_dual_write_fields,
+        uses_training_start_deadline_marker,
+    )
+
 router = APIRouter()
 logger = get_logger(__name__)
 programs_rag = ProgramsRAG()
@@ -104,7 +119,8 @@ def _normalize_program_row(row: dict[str, Any]) -> dict[str, Any]:
     link = mapped_from_raw.get("link") or source_url
     skills = mapped_from_raw.get("skills")
 
-    return {
+    return merge_program_dual_write_fields(
+        {
         "hrd_id": hrd_id,
         "title": title,
         "category": _coerce_program_category(category or _classify_category(title), title),
@@ -130,7 +146,8 @@ def _normalize_program_row(row: dict[str, Any]) -> dict[str, Any]:
         "compare_meta": compare_meta if isinstance(compare_meta, dict) and compare_meta else None,
         "raw_data": raw_data if isinstance(raw_data, dict) else None,
         "is_active": True,
-    }
+        }
+    )
 
 
 def _normalize_program_deadline(
@@ -162,24 +179,14 @@ def _uses_work24_training_start_deadline(
     *,
     start_date: str | None,
 ) -> bool:
-    markers: list[Any] = [row.get("deadline_source")]
-    if isinstance(compare_meta, dict):
-        markers.extend(
-            [
-                compare_meta.get("deadline_source"),
-                compare_meta.get("application_deadline_source"),
-                compare_meta.get("recruitment_deadline_source"),
-            ]
-        )
-        application_deadline = str(compare_meta.get("application_deadline") or "").strip()
-        if application_deadline and start_date and application_deadline[:10] == start_date[:10]:
-            return True
-
-    for marker in markers:
-        normalized = str(marker or "").replace("_", "").replace("-", "").casefold()
-        if normalized in {"trastartdate", "trainingstartdate", "trainingstart"}:
-            return True
-    return False
+    merged_meta = dict(compare_meta) if isinstance(compare_meta, dict) else {}
+    if row.get("deadline_source") not in (None, ""):
+        merged_meta["deadline_source"] = row.get("deadline_source")
+    return uses_training_start_deadline_marker(
+        merged_meta,
+        application_end_date=str((compare_meta or {}).get("application_deadline") or "").strip() or None,
+        start_date=start_date,
+    )
 
 
 def _coerce_program_category(category: str, title: str) -> str:
@@ -188,6 +195,47 @@ def _coerce_program_category(category: str, title: str) -> str:
         return normalized
     classified = _classify_category(title)
     return classified if classified in {"AI", "IT", "디자인", "경영", "창업", "기타"} else "기타"
+
+
+def _is_missing_program_source_records_schema_error(exc: Exception) -> bool:
+    return is_missing_schema_error(exc, "program_source_records")
+
+
+def _build_program_source_record_rows(program_rows: list[dict[str, Any]], source_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return build_program_source_record_rows(program_rows, source_rows)
+
+
+async def _sync_program_source_records_best_effort(
+    program_rows: list[dict[str, Any]],
+    source_rows: list[dict[str, Any]],
+) -> None:
+    source_record_rows = _build_program_source_record_rows(program_rows, source_rows)
+    if not source_record_rows:
+        return
+
+    try:
+        await request_supabase(
+            method="POST",
+            path="/rest/v1/program_source_records",
+            params={"on_conflict": "source_code,source_record_key"},
+            payload=source_record_rows,
+            prefer=_build_prefer_header("resolution=merge-duplicates", "return=minimal"),
+        )
+        log_event(
+            logger,
+            logging.INFO,
+            "admin_program_source_records_synced",
+            synced_count=len(source_record_rows),
+        )
+    except Exception as exc:
+        log_event(
+            logger,
+            logging.WARNING,
+            "admin_program_source_records_sync_skipped",
+            candidate_count=len(source_record_rows),
+            schema_missing=_is_missing_program_source_records_schema_error(exc),
+            error=str(getattr(exc, "detail", exc) or exc),
+        )
 
 
 def _deduplicate_program_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -604,6 +652,7 @@ async def sync_programs(
             payload_count=len(payload),
             synced_count=len(synced_rows),
         )
+        await _sync_program_source_records_best_effort(synced_rows, payload)
 
         chroma_started_at = perf_counter()
         chroma_synced = 0

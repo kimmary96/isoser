@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import os
+from pathlib import Path
 from typing import Any
 
 import httpx
@@ -23,10 +24,45 @@ class CurrentUser(BaseModel):
     email: str | None = None
 
 
+def _read_local_env_value(name: str) -> str:
+    candidates = (
+        Path(__file__).resolve().parents[1] / ".env",
+        Path(__file__).resolve().parents[2] / "frontend" / ".env.local",
+    )
+
+    for path in candidates:
+        if not path.exists():
+            continue
+        for raw_line in path.read_text(encoding="utf-8").splitlines():
+            line = raw_line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            if key.strip() != name:
+                continue
+            return value.strip().strip("'\"")
+
+    return ""
+
+
 def get_supabase_admin_settings() -> SupabaseAdminSettings:
-    supabase_url = (os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL") or "").strip()
-    service_role_key = (os.getenv("SUPABASE_SERVICE_ROLE_KEY") or "").strip()
-    timeout_raw = os.getenv("SUPABASE_TIMEOUT_SECONDS")
+    supabase_url = (
+        os.getenv("SUPABASE_URL")
+        or os.getenv("NEXT_PUBLIC_SUPABASE_URL")
+        or _read_local_env_value("SUPABASE_URL")
+        or _read_local_env_value("NEXT_PUBLIC_SUPABASE_URL")
+        or ""
+    ).strip()
+    service_role_key = (
+        os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+        or _read_local_env_value("SUPABASE_SERVICE_ROLE_KEY")
+        or ""
+    ).strip()
+    timeout_raw = (
+        os.getenv("SUPABASE_TIMEOUT_SECONDS")
+        or _read_local_env_value("SUPABASE_TIMEOUT_SECONDS")
+        or None
+    )
 
     if not supabase_url or not service_role_key:
         raise HTTPException(status_code=503, detail="Supabase is not configured")

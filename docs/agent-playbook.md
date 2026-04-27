@@ -19,7 +19,7 @@
 3. `docs/current-state.md`
 4. 필요하면 폴더별 추가 규칙
    - 예: `cowork/FOLDER_INSTRUCTIONS.md`
-5. 관련 `reports/*.md`, `docs/refactoring-log.md`
+5. 관련 `reports/` 하위 문서, `docs/refactoring-log.md`
 
 ## Rule Priority
 
@@ -35,7 +35,7 @@
    - 이번 작업의 목표, scope, acceptance, constraints, non-goals
 4. `docs/current-state.md`
    - 현재 동작 중인 시스템의 사실상 운영 기준
-5. `reports/*.md`, `docs/refactoring-log.md`
+5. `reports/`, `docs/refactoring-log.md`
    - 과거 판단 근거와 변경 이력
 
 중요:
@@ -73,7 +73,7 @@
 
 - `docs/current-state.md`
   - 현재 시스템 동작 기준
-- `reports/*.md`
+- `reports/`
   - blocked, drift, duplicate, result 판단 근거
 - `docs/refactoring-log.md`
   - 변경 이력 로그
@@ -122,7 +122,7 @@
 3. 최소 안전 변경으로 구현한다.
 4. touched area 기준 검증을 수행한다.
 5. queued task라면 `reports/<task-id>-result.md`를 작성한다.
-6. Codex 대화 세션 직접 작업이라면 execution queue 파일을 만들지 않고, 필요한 경우 `reports/SESSION-YYYY-MM-DD-brief-topic-result.md` 형태의 세션 결과 보고서만 작성한다.
+6. Codex 대화 세션 직접 작업이라면 execution queue 파일을 만들지 않고, 필요한 경우 `reports/session/YYYY-MM/SESSION-YYYY-MM-DD-brief-topic-result.md` 형태의 세션 결과 보고서만 작성한다.
 7. 구조나 동작이 바뀌면 `docs/current-state.md`를 갱신한다.
 8. 핵심 변경은 `docs/refactoring-log.md`에 남긴다.
 
@@ -131,7 +131,7 @@
 - `AGENTS.md`
 - 현재 packet
 - `docs/current-state.md`
-- 관련 `reports/*.md`
+- 관련 `reports/`
 
 ## Packet Workflow
 

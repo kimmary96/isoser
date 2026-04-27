@@ -459,7 +459,7 @@ export function ProgramsFilterBar({
                   className="mt-0.5 h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900"
                 />
                 <span>
-                  <span className="block font-semibold text-slate-900">최근 마감 공고 포함</span>
+                  <span className="block font-semibold text-slate-900">마감된 공고 보기</span>
                   <span className="mt-1 block leading-5 text-slate-500">
                     기본값은 모집중 공고만 표시합니다. 체크하면 최근 3개월 내 마감된 공고까지 함께 보여줍니다.
                   </span>

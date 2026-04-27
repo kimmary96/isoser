@@ -17,6 +17,7 @@ def test_program_recommend_smoke(client, monkeypatch: pytest.MonkeyPatch) -> Non
                 "location": "Seoul",
                 "deadline": "2099-01-01",
                 "is_active": True,
+                "compare_meta": {"contact_phone": "02-0000-0000"},
             }
         ]
 
@@ -28,6 +29,7 @@ def test_program_recommend_smoke(client, monkeypatch: pytest.MonkeyPatch) -> Non
     payload = response.json()
     assert payload["items"]
     assert payload["items"][0]["program"]["title"] == "Backend Bootcamp"
+    assert "compare_meta" not in payload["items"][0]["program"]
 
 
 def test_coach_feedback_smoke(client, monkeypatch: pytest.MonkeyPatch) -> None:

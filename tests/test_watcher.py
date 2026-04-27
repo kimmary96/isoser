@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import time
 from pathlib import Path
@@ -695,6 +696,148 @@ def test_sync_completed_task_to_git_skips_missing_untracked_running_path(tmp_pat
     assert "tasks/running/TASK-TEST.md" not in add_call
     assert "tasks/done/TASK-TEST.md" in add_call
     assert "reports/TASK-TEST-result.md" in add_call
+
+
+def test_sync_completed_task_to_git_retries_transient_branch_push(tmp_path, monkeypatch) -> None:
+    project_path = tmp_path
+    running_path = project_path / "tasks" / "running" / "TASK-TEST.md"
+    done_path = project_path / "tasks" / "done" / "TASK-TEST.md"
+    result_report = project_path / "reports" / "TASK-TEST-result.md"
+
+    running_path.parent.mkdir(parents=True)
+    done_path.parent.mkdir(parents=True)
+    result_report.parent.mkdir(parents=True)
+    running_path.write_text("running", encoding="utf-8")
+    done_path.write_text("done", encoding="utf-8")
+    result_report.write_text(
+        "\n".join(
+            [
+                "# Result: TASK-TEST",
+                "",
+                "## Changed files",
+                "",
+                "- `reports/example.md`",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(watcher, "PROJECT_PATH", str(project_path))
+    monkeypatch.setattr(watcher, "REPORTS_DIR", str(project_path / "reports"))
+    monkeypatch.setattr(watcher, "current_branch", lambda: "develop")
+    monkeypatch.setattr(watcher, "current_head", lambda: "abc123")
+
+    push_attempts = {"develop": 0}
+
+    class FakeResult:
+        def __init__(self, stdout: str = "", stderr: str = "", returncode: int = 0) -> None:
+            self.stdout = stdout
+            self.stderr = stderr
+            self.returncode = returncode
+
+    def fake_run_git(args: list[str], *, check: bool = True) -> FakeResult:
+        if args[:3] == ["diff", "--cached", "--name-only"]:
+            return FakeResult(stdout="tasks/done/TASK-TEST.md\n")
+        if args[:2] == ["commit", "-m"]:
+            return FakeResult(stdout="[develop abc123] [codex] TASK-TEST 구현 완료.\n")
+        if args[:3] == ["push", "origin", "develop"]:
+            push_attempts["develop"] += 1
+            if push_attempts["develop"] == 1:
+                return FakeResult(stderr="remote: Internal Server Error\nfatal: The requested URL returned error: 500", returncode=1)
+            return FakeResult(stdout="pushed\n")
+        if args[:3] == ["fetch", "origin", "main"]:
+            return FakeResult(stdout="fetched\n")
+        if args[:3] == ["merge-base", "--is-ancestor", "origin/main"]:
+            return FakeResult(returncode=1)
+        return FakeResult()
+
+    monkeypatch.setattr(watcher, "run_git", fake_run_git)
+
+    status, message, branch, commit_sha = watcher.sync_completed_task_to_git(
+        task_id="TASK-TEST",
+        task_filename="TASK-TEST.md",
+        running_path=str(running_path),
+        done_path=str(done_path),
+        result_report=str(result_report),
+    )
+
+    assert push_attempts["develop"] == 2
+    assert status == "pushed"
+    assert branch == "develop"
+    assert commit_sha == "abc123"
+    assert "origin/main is not an ancestor" in message
+
+
+def test_sync_completed_task_to_git_treats_remote_contains_commit_after_failed_push_as_pushed(tmp_path, monkeypatch) -> None:
+    project_path = tmp_path
+    running_path = project_path / "tasks" / "running" / "TASK-TEST.md"
+    done_path = project_path / "tasks" / "done" / "TASK-TEST.md"
+    result_report = project_path / "reports" / "TASK-TEST-result.md"
+
+    running_path.parent.mkdir(parents=True)
+    done_path.parent.mkdir(parents=True)
+    result_report.parent.mkdir(parents=True)
+    running_path.write_text("running", encoding="utf-8")
+    done_path.write_text("done", encoding="utf-8")
+    result_report.write_text(
+        "\n".join(
+            [
+                "# Result: TASK-TEST",
+                "",
+                "## Changed files",
+                "",
+                "- `reports/example.md`",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(watcher, "PROJECT_PATH", str(project_path))
+    monkeypatch.setattr(watcher, "REPORTS_DIR", str(project_path / "reports"))
+    monkeypatch.setattr(watcher, "current_branch", lambda: "develop")
+    monkeypatch.setattr(watcher, "current_head", lambda: "abc123")
+
+    class FakeResult:
+        def __init__(self, stdout: str = "", stderr: str = "", returncode: int = 0) -> None:
+            self.stdout = stdout
+            self.stderr = stderr
+            self.returncode = returncode
+
+    def fake_run_git(args: list[str], *, check: bool = True) -> FakeResult:
+        if args[:3] == ["diff", "--cached", "--name-only"]:
+            return FakeResult(stdout="tasks/done/TASK-TEST.md\n")
+        if args[:2] == ["commit", "-m"]:
+            return FakeResult(stdout="[develop abc123] [codex] TASK-TEST 구현 완료.\n")
+        if args[:3] == ["push", "origin", "develop"]:
+            return FakeResult(stderr="cannot lock ref\n", returncode=1)
+        if args[:3] == ["fetch", "origin", "develop"]:
+            return FakeResult(stdout="fetched develop\n")
+        if args[:3] == ["merge-base", "--is-ancestor", "abc123"]:
+            return FakeResult(returncode=0)
+        if args[:3] == ["fetch", "origin", "main"]:
+            return FakeResult(stdout="fetched main\n")
+        if args[:3] == ["merge-base", "--is-ancestor", "origin/main"]:
+            return FakeResult(returncode=1)
+        return FakeResult()
+
+    monkeypatch.setattr(watcher, "run_git", fake_run_git)
+
+    status, message, branch, commit_sha = watcher.sync_completed_task_to_git(
+        task_id="TASK-TEST",
+        task_filename="TASK-TEST.md",
+        running_path=str(running_path),
+        done_path=str(done_path),
+        result_report=str(result_report),
+    )
+
+    assert status == "pushed"
+    assert branch == "develop"
+    assert commit_sha == "abc123"
+    assert "already contains the task commit" in message
+    updated_report = result_report.read_text(encoding="utf-8")
+    assert "- status: `pushed`" in updated_report
 
 
 def test_write_alert_creates_dispatch_file(tmp_path, monkeypatch) -> None:
@@ -1404,6 +1547,45 @@ def test_write_alert_self_heals_main_promotion_skip_into_info_alert(tmp_path, mo
     assert "origin/develop" in alert_body
     assert '"stage": "self-healed"' in ledger_path.read_text(encoding="utf-8")
     assert not list(inbox_dir.glob("TASK-*-auto-remediate-push-failed-*.md"))
+
+
+def test_write_alert_self_heals_stale_branch_push_failure(tmp_path, monkeypatch) -> None:
+    alerts_dir = tmp_path / "dispatch" / "alerts"
+    inbox_dir = tmp_path / "tasks" / "inbox"
+    alerts_dir.mkdir(parents=True)
+    inbox_dir.mkdir(parents=True)
+    ledger_path = tmp_path / "dispatch" / "run-ledger.jsonl"
+    reports_dir = tmp_path / "reports"
+    reports_dir.mkdir(parents=True)
+
+    monkeypatch.setattr(watcher, "ALERTS_DIR", str(alerts_dir))
+    monkeypatch.setattr(watcher, "INBOX_DIR", str(inbox_dir))
+    monkeypatch.setattr(watcher, "REMOTE_DIR", str(tmp_path / "tasks" / "remote"))
+    monkeypatch.setattr(watcher, "RUNNING_DIR", str(tmp_path / "tasks" / "running"))
+    monkeypatch.setattr(watcher, "DONE_DIR", str(tmp_path / "tasks" / "done"))
+    monkeypatch.setattr(watcher, "BLOCKED_DIR", str(tmp_path / "tasks" / "blocked"))
+    monkeypatch.setattr(watcher, "DRIFTED_DIR", str(tmp_path / "tasks" / "drifted"))
+    monkeypatch.setattr(watcher, "REVIEW_REQUIRED_DIR", str(tmp_path / "tasks" / "review-required"))
+    monkeypatch.setattr(watcher, "ARCHIVE_DIR", str(tmp_path / "tasks" / "archive"))
+    monkeypatch.setattr(watcher, "LEDGER_PATH", str(ledger_path))
+    monkeypatch.setattr(watcher, "REPORTS_DIR", str(reports_dir))
+    monkeypatch.setattr(watcher, "notify_slack_for_alert", lambda **kwargs: None)
+
+    watcher.write_alert(
+        "TASK-2026-04-24-0106-benchmark-queue-smoke",
+        "push-failed",
+        status="action-required",
+        packet_path="tasks/done/TASK-2026-04-24-0106-benchmark-queue-smoke.md",
+        report_path="reports/TASK-2026-04-24-0106-benchmark-queue-smoke-result.md",
+        summary="Task completed successfully. origin/develop already contains the task commit even though the watcher push returned an error. (branch=develop), commit=9bafa7b21905236120b324c91dd4248e4a85c7c2",
+        next_action="Review the result report Git Automation section and push manually if needed.",
+    )
+
+    alert_body = (alerts_dir / "TASK-2026-04-24-0106-benchmark-queue-smoke-self-healed.md").read_text(encoding="utf-8")
+    assert "stage: self-healed" in alert_body
+    assert "self_heal_runbook: `downgrade-stale-branch-push-failure`" in alert_body
+    timing_body = json.loads((reports_dir / "TASK-2026-04-24-0106-benchmark-queue-smoke-timing.json").read_text(encoding="utf-8"))
+    assert timing_body["anchors"]["self-healed"]["source"] == "local-alert"
 
 
 def test_write_alert_self_heals_duplicate_done_runtime_error_by_archiving_packet(tmp_path, monkeypatch) -> None:

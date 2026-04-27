@@ -14,9 +14,15 @@ import { chipOptions } from "./_content";
 import { landingAThemeVars } from "./_styles";
 import AdSlot from "@/components/AdSlot";
 import { listProgramsPage } from "@/lib/api/backend";
-import { buildProgramFilterParams } from "@/lib/program-filters";
+import { unwrapProgramListRows } from "@/lib/program-display";
+import {
+  buildProgramFilterParams,
+  getProgramFilterChipDefinition,
+  matchesProgramFilterChip,
+} from "@/lib/program-filters";
 import { getSiteUrl } from "@/lib/seo";
-import type { Program } from "@/lib/types";
+import { loadPublicFreeProgramFallbackRows } from "@/lib/server/public-programs-fallback";
+import type { ProgramListRow } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "이소서 - 취업 지원 탐색부터 서류 준비까지 연결하는 커리어 SaaS",
@@ -60,9 +66,11 @@ export default async function LandingAPage({ searchParams }: LandingAPageProps) 
   const resolvedSearchParams = await searchParams;
   const activeChip = normalizeChip(resolvedSearchParams.chip);
   const keyword = normalizeKeyword(resolvedSearchParams.q);
+  const activeChipDefinition = getProgramFilterChipDefinition(activeChip);
+  const isCostChip = activeChipDefinition?.kind === "cost";
   const programParams = buildProgramFilterParams(activeChip, keyword);
 
-  let programs: Program[] = [];
+  let programs: ProgramListRow[] = [];
   let totalCount = 0;
   let error: string | null = null;
 
@@ -71,10 +79,37 @@ export default async function LandingAPage({ searchParams }: LandingAPageProps) 
       ...programParams,
       scope: programParams.q ? "all" : "default",
     });
-    programs = page.items;
+    programs = unwrapProgramListRows(page.items);
     totalCount = page.count ?? page.items.length;
+    if (!keyword && isCostChip && programs.length === 0) {
+      const fallbackPrograms = await loadPublicFreeProgramFallbackRows(120);
+      programs = fallbackPrograms.filter((program) => matchesProgramFilterChip(program, activeChip)).slice(0, 6);
+      totalCount = programs.length;
+    }
   } catch (cause) {
-    error = cause instanceof Error ? cause.message : "프로그램 정보를 불러오지 못했습니다.";
+    if (!keyword && isCostChip) {
+      try {
+        const fallbackPrograms = await loadPublicFreeProgramFallbackRows(120);
+        const matchedPrograms = fallbackPrograms.filter((program) => matchesProgramFilterChip(program, activeChip)).slice(0, 6);
+        programs = matchedPrograms;
+        totalCount = matchedPrograms.length;
+        error = matchedPrograms.length > 0 ? null : cause instanceof Error ? cause.message : "프로그램 정보를 불러오지 못했습니다.";
+      } catch {
+        error = cause instanceof Error ? cause.message : "프로그램 정보를 불러오지 못했습니다.";
+      }
+    } else {
+      error = cause instanceof Error ? cause.message : "프로그램 정보를 불러오지 못했습니다.";
+    }
+  }
+
+  if (!keyword && isCostChip) {
+    const fallbackPrograms = await loadPublicFreeProgramFallbackRows(120);
+    const matchedPrograms = fallbackPrograms.filter((program) => matchesProgramFilterChip(program, activeChip)).slice(0, 6);
+    if (matchedPrograms.length > 0) {
+      programs = matchedPrograms;
+      totalCount = matchedPrograms.length;
+      error = null;
+    }
   }
 
   return (

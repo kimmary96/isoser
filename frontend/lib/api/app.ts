@@ -3,9 +3,14 @@ import type {
   CoachFeedbackResponse,
   CoachMessage,
   CoverLetter,
+  DashboardBookmarksResponse,
+  DashboardCalendarSelectionsResponse,
+  ProgramCompareSearchResponse,
+  DashboardRecommendCalendarResponse,
+  DashboardRecommendedProgramsResponse,
   Profile,
-  Program,
   ProgramCompareRelevanceResponse,
+  ProgramSort,
   Resume,
   ActivityDetailResponse,
   ActivityListResponse,
@@ -16,15 +21,13 @@ import type {
   DashboardMeResponse,
   DashboardProfileResponse,
   DocumentsResponse,
-  CalendarRecommendResponse,
   MatchDashboardResponse,
-  RecommendedProgram,
-  RecommendedProgramsResponse,
   ResumeBuilderResponse,
   ResumeExportResponse,
   SavedPortfolio,
   SavedMatchAnalysis,
 } from "@/lib/types";
+import { buildCompareSearchParams, buildPathWithSearchParams, buildRecommendationSearchParams } from "./program-query";
 
 type OnboardingPayload = {
   profile: {
@@ -123,16 +126,13 @@ export interface RecommendProgramsParams {
 
 export async function getRecommendedPrograms(
   params?: RecommendProgramsParams
-): Promise<{ programs: RecommendedProgram[] }> {
-  const searchParams = new URLSearchParams();
-  if (params?.category) searchParams.set("category", params.category);
-  if (params?.region) searchParams.set("region", params.region);
-  if (params?.forceRefresh) searchParams.set("force_refresh", "true");
+): Promise<DashboardRecommendedProgramsResponse> {
+  const url = buildPathWithSearchParams(
+    "/api/dashboard/recommended-programs",
+    buildRecommendationSearchParams(params)
+  );
 
-  const query = searchParams.toString();
-  const url = `/api/dashboard/recommended-programs${query ? `?${query}` : ""}`;
-
-  return requestAppJson<RecommendedProgramsResponse>(
+  return requestAppJson<DashboardRecommendedProgramsResponse>(
     url,
     { method: "GET" },
     "추천 프로그램을 불러오지 못했습니다."
@@ -149,16 +149,13 @@ export async function invalidateRecommendCache(): Promise<void> {
 
 export async function getRecommendCalendar(
   params?: RecommendProgramsParams
-): Promise<CalendarRecommendResponse> {
-  const searchParams = new URLSearchParams();
-  if (params?.category) searchParams.set("category", params.category);
-  if (params?.region) searchParams.set("region", params.region);
-  if (params?.forceRefresh) searchParams.set("force_refresh", "true");
+): Promise<DashboardRecommendCalendarResponse> {
+  const url = buildPathWithSearchParams(
+    "/api/dashboard/recommend-calendar",
+    buildRecommendationSearchParams(params)
+  );
 
-  const query = searchParams.toString();
-  const url = `/api/dashboard/recommend-calendar${query ? `?${query}` : ""}`;
-
-  return requestAppJson<CalendarRecommendResponse>(
+  return requestAppJson<DashboardRecommendCalendarResponse>(
     url,
     { method: "GET" },
     "캘린더 추천 프로그램을 불러오지 못했습니다."
@@ -167,12 +164,12 @@ export async function getRecommendCalendar(
 
 export async function getRecommendedCalendar(
   params?: RecommendProgramsParams
-): Promise<CalendarRecommendResponse> {
+): Promise<DashboardRecommendCalendarResponse> {
   return getRecommendCalendar(params);
 }
 
-export async function getCalendarSelections(): Promise<{ programs: Program[] }> {
-  return requestAppJson<{ programs: Program[] }>(
+export async function getCalendarSelections(): Promise<DashboardCalendarSelectionsResponse> {
+  return requestAppJson<DashboardCalendarSelectionsResponse>(
     "/api/dashboard/calendar-selections",
     { method: "GET" },
     "캘린더 적용 일정을 불러오지 못했습니다."
@@ -207,6 +204,21 @@ export async function getProgramCompareRelevance(
   );
 }
 
+export async function searchComparePrograms(params?: {
+  q?: string;
+  limit?: number;
+  sort?: ProgramSort;
+  recruitingOnly?: boolean;
+}): Promise<ProgramCompareSearchResponse> {
+  const url = buildPathWithSearchParams("/api/programs/compare-search", buildCompareSearchParams(params));
+
+  return requestAppJson<ProgramCompareSearchResponse>(
+    url,
+    { method: "GET" },
+    "프로그램 검색 결과를 불러오지 못했습니다."
+  );
+}
+
 export async function trackProgramDetailView(programId: string): Promise<{ ok: true }> {
   return requestAppJson<{ ok: true }>(
     `/api/programs/${encodeURIComponent(programId)}/detail-view`,
@@ -215,18 +227,19 @@ export async function trackProgramDetailView(programId: string): Promise<{ ok: t
   );
 }
 
-export async function getDashboardBookmarks(): Promise<{
-  items: Array<{
-    programId: string | null;
-    createdAt: string | null;
-    program: Program | null;
-  }>;
-}> {
-  return requestAppJson(
-    "/api/dashboard/bookmarks",
-    { method: "GET" },
-    "찜한 프로그램을 불러오지 못했습니다."
-  );
+export async function getDashboardBookmarks(): Promise<DashboardBookmarksResponse> {
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), 15000);
+
+  try {
+    return await requestAppJson<DashboardBookmarksResponse>(
+      "/api/dashboard/bookmarks",
+      { method: "GET", signal: controller.signal },
+      "찜한 프로그램을 불러오지 못했습니다."
+    );
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
 }
 
 export async function updateDashboardProfileSection(

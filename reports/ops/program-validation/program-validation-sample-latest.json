@@ -1,0 +1,105 @@
+{
+  "status": "validation_sample_refresh",
+  "read_model": {
+    "pool_limit": 50,
+    "status": "sample_refresh",
+    "sample_max_rows": 50,
+    "affected_rows": 50,
+    "sample_result": {
+      "max_rows": 50,
+      "delta_rows": 50,
+      "batch_limit": 50,
+      "browse_rows": 50,
+      "generated_at": "2026-04-24T05:30:00.138592+00:00",
+      "trimmed_rows": 50,
+      "remaining_rows": 50,
+      "browse_pool_limit": 50,
+      "remaining_browse_rows": 50,
+      "trimmed_facet_snapshots": 1,
+      "keep_latest_snapshot_count": 1
+    },
+    "elapsed_ms": 1323.99,
+    "stages": [
+      {
+        "function": "refresh_program_list_index_sample",
+        "status": "succeeded",
+        "elapsed_ms": 1323.98,
+        "result": {
+          "max_rows": 50,
+          "delta_rows": 50,
+          "batch_limit": 50,
+          "browse_rows": 50,
+          "generated_at": "2026-04-24T05:30:00.138592+00:00",
+          "trimmed_rows": 50,
+          "remaining_rows": 50,
+          "browse_pool_limit": 50,
+          "remaining_browse_rows": 50,
+          "trimmed_facet_snapshots": 1,
+          "keep_latest_snapshot_count": 1
+        }
+      }
+    ]
+  },
+  "source_records": {
+    "status": "sample_backfill",
+    "batch_limit": 50,
+    "max_rows": 50,
+    "effective_batch_limit": 50,
+    "effective_max_rows": 50,
+    "attempt_count": 1,
+    "used_fallback_batch": false,
+    "affected_rows": 50,
+    "sample_result": {
+      "max_rows": 50,
+      "batch_limit": 50,
+      "generated_at": "2026-04-24T05:30:01.1536+00:00",
+      "trimmed_rows": 0,
+      "upserted_rows": 50,
+      "remaining_rows": 50,
+      "linked_program_rows": 50,
+      "trimmed_program_links": 0,
+      "selected_candidate_rows": 50,
+      "remaining_linked_programs": 50,
+      "candidate_rows_from_programs": 0,
+      "candidate_rows_from_program_list_index": 50
+    },
+    "elapsed_ms": 2452.66,
+    "stages": [
+      {
+        "function": "backfill_program_source_records_sample",
+        "attempt": 1,
+        "payload": {
+          "batch_limit": 50,
+          "max_rows": 50
+        },
+        "status": "succeeded",
+        "elapsed_ms": 2452.65,
+        "result": {
+          "max_rows": 50,
+          "batch_limit": 50,
+          "generated_at": "2026-04-24T05:30:01.1536+00:00",
+          "trimmed_rows": 0,
+          "upserted_rows": 50,
+          "remaining_rows": 50,
+          "linked_program_rows": 50,
+          "trimmed_program_links": 0,
+          "selected_candidate_rows": 50,
+          "remaining_linked_programs": 50,
+          "candidate_rows_from_programs": 0,
+          "candidate_rows_from_program_list_index": 50
+        }
+      }
+    ]
+  },
+  "requested_options": {
+    "pool_limit": 50,
+    "delta_batch_limit": 50,
+    "sample_max_rows": 50,
+    "sample_keep_latest_snapshot_count": 1,
+    "source_record_batch_limit": 50,
+    "source_record_max_rows": 50,
+    "source_record_fallback_min_batch_limit": 10
+  },
+  "preset": "free-plan-50",
+  "output_path": "D:\\02_2025_AI_Lab\\isoser\\reports\\program-validation-sample-latest.json"
+}

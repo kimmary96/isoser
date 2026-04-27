@@ -15,6 +15,7 @@ import type {
   ParsePdfResponse,
   Program,
   ProgramBatchResponse,
+  ProgramCardSummary,
   ProgramCountResponse,
   ProgramDetail,
   ProgramDetailBatchResponse,
@@ -24,9 +25,8 @@ import type {
   ProgramRecommendResponse,
   SkillSuggestResponse,
 } from "@/lib/types";
-
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+import { fetchBackendResponse } from "./backend-endpoint";
+import { buildPathWithSearchParams, buildProgramListSearchParams } from "./program-query";
 
 async function handleResponse<T>(
   response: Response,
@@ -46,16 +46,32 @@ async function requestJson<T>(
   fallbackMessage: string
 ): Promise<T> {
   try {
-    const response = await fetch(`${BACKEND_URL}${path}`, init);
+    const response = await fetchBackendResponse(path, init);
     return handleResponse<T>(response, fallbackMessage);
   } catch (error) {
     if (error instanceof Error && /failed to fetch/i.test(error.message)) {
       throw new Error(
-        `Failed to connect to the backend at ${BACKEND_URL}. Check whether the backend server is running.`
+        "Failed to connect to the backend. Check whether the backend server is running."
       );
     }
     throw error;
   }
+}
+
+function isRetryableLocalBackendMetadataError(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const normalized = error.message.trim().toLowerCase();
+  return (
+    normalized.includes("supabase is not configured") ||
+    normalized.includes("service unavailable") ||
+    normalized.includes("failed to fetch") ||
+    normalized.includes("fetch failed") ||
+    normalized.includes("connect") ||
+    normalized.includes("no backend endpoint could be reached")
+  );
 }
 
 export async function parsePdf(file: File): Promise<ParsePdfResponse> {
@@ -232,46 +248,8 @@ export async function convertActivity(
 }
 
 export async function listPrograms(params?: ProgramListParams): Promise<Program[]> {
-  const searchParams = new URLSearchParams();
-  if (params?.q) searchParams.set("q", params.q);
-  if (params?.category) searchParams.set("category", params.category);
-  if (params?.category_detail) searchParams.set("category_detail", params.category_detail);
-  if (params?.scope) searchParams.set("scope", params.scope);
-  if (params?.region_detail) searchParams.set("region_detail", params.region_detail);
-  if (params?.regions?.length) {
-    params.regions.forEach((region) => searchParams.append("regions", region));
-  }
-  if (params?.sources?.length) {
-    params.sources.forEach((source) => searchParams.append("sources", source));
-  }
-  if (params?.teaching_methods?.length) {
-    params.teaching_methods.forEach((method) => searchParams.append("teaching_methods", method));
-  }
-  if (params?.cost_types?.length) {
-    params.cost_types.forEach((costType) => searchParams.append("cost_types", costType));
-  }
-  if (params?.participation_times?.length) {
-    params.participation_times.forEach((time) => searchParams.append("participation_times", time));
-  }
-  if (params?.targets?.length) {
-    params.targets.forEach((target) => searchParams.append("targets", target));
-  }
-  if (params?.selection_processes?.length) {
-    params.selection_processes.forEach((process) => searchParams.append("selection_processes", process));
-  }
-  if (params?.employment_links?.length) {
-    params.employment_links.forEach((link) => searchParams.append("employment_links", link));
-  }
-  if (params?.recruiting_only) searchParams.set("recruiting_only", "true");
-  if (params?.include_closed_recent) searchParams.set("include_closed_recent", "true");
-  if (params?.sort) searchParams.set("sort", params.sort);
-  if (typeof params?.limit === "number") searchParams.set("limit", String(params.limit));
-  if (typeof params?.offset === "number") searchParams.set("offset", String(params.offset));
-  if (params?.cursor) searchParams.set("cursor", params.cursor);
-
-  const query = searchParams.toString();
   return requestJson<Program[]>(
-    `/programs/${query ? `?${query}` : ""}`,
+    buildPathWithSearchParams("/programs/", buildProgramListSearchParams(params)),
     {
       method: "GET",
     },
@@ -280,28 +258,8 @@ export async function listPrograms(params?: ProgramListParams): Promise<Program[
 }
 
 export async function listProgramsPage(params?: ProgramListParams): Promise<ProgramListPageResponse> {
-  const searchParams = new URLSearchParams();
-  if (params?.q) searchParams.set("q", params.q);
-  if (params?.category) searchParams.set("category", params.category);
-  if (params?.category_detail) searchParams.set("category_detail", params.category_detail);
-  if (params?.scope) searchParams.set("scope", params.scope);
-  if (params?.region_detail) searchParams.set("region_detail", params.region_detail);
-  if (params?.regions?.length) params.regions.forEach((region) => searchParams.append("regions", region));
-  if (params?.sources?.length) params.sources.forEach((source) => searchParams.append("sources", source));
-  if (params?.teaching_methods?.length) params.teaching_methods.forEach((method) => searchParams.append("teaching_methods", method));
-  if (params?.cost_types?.length) params.cost_types.forEach((costType) => searchParams.append("cost_types", costType));
-  if (params?.participation_times?.length) params.participation_times.forEach((time) => searchParams.append("participation_times", time));
-  if (params?.targets?.length) params.targets.forEach((target) => searchParams.append("targets", target));
-  if (params?.recruiting_only) searchParams.set("recruiting_only", "true");
-  if (params?.include_closed_recent) searchParams.set("include_closed_recent", "true");
-  if (params?.sort) searchParams.set("sort", params.sort);
-  if (typeof params?.limit === "number") searchParams.set("limit", String(params.limit));
-  if (typeof params?.offset === "number") searchParams.set("offset", String(params.offset));
-  if (params?.cursor) searchParams.set("cursor", params.cursor);
-
-  const query = searchParams.toString();
   return requestJson<ProgramListPageResponse>(
-    `/programs/list${query ? `?${query}` : ""}`,
+    buildPathWithSearchParams("/programs/list", buildProgramListSearchParams(params)),
     {
       method: "GET",
     },
@@ -310,42 +268,8 @@ export async function listProgramsPage(params?: ProgramListParams): Promise<Prog
 }
 
 export async function getProgramCount(params?: ProgramListParams): Promise<number> {
-  const searchParams = new URLSearchParams();
-  if (params?.q) searchParams.set("q", params.q);
-  if (params?.category) searchParams.set("category", params.category);
-  if (params?.category_detail) searchParams.set("category_detail", params.category_detail);
-  if (params?.scope) searchParams.set("scope", params.scope);
-  if (params?.region_detail) searchParams.set("region_detail", params.region_detail);
-  if (params?.regions?.length) {
-    params.regions.forEach((region) => searchParams.append("regions", region));
-  }
-  if (params?.sources?.length) {
-    params.sources.forEach((source) => searchParams.append("sources", source));
-  }
-  if (params?.teaching_methods?.length) {
-    params.teaching_methods.forEach((method) => searchParams.append("teaching_methods", method));
-  }
-  if (params?.cost_types?.length) {
-    params.cost_types.forEach((costType) => searchParams.append("cost_types", costType));
-  }
-  if (params?.participation_times?.length) {
-    params.participation_times.forEach((time) => searchParams.append("participation_times", time));
-  }
-  if (params?.targets?.length) {
-    params.targets.forEach((target) => searchParams.append("targets", target));
-  }
-  if (params?.selection_processes?.length) {
-    params.selection_processes.forEach((process) => searchParams.append("selection_processes", process));
-  }
-  if (params?.employment_links?.length) {
-    params.employment_links.forEach((link) => searchParams.append("employment_links", link));
-  }
-  if (params?.recruiting_only) searchParams.set("recruiting_only", "true");
-  if (params?.include_closed_recent) searchParams.set("include_closed_recent", "true");
-
-  const query = searchParams.toString();
   const result = await requestJson<ProgramCountResponse>(
-    `/programs/count${query ? `?${query}` : ""}`,
+    buildPathWithSearchParams("/programs/count", buildProgramListSearchParams(params)),
     {
       method: "GET",
     },
@@ -355,42 +279,28 @@ export async function getProgramCount(params?: ProgramListParams): Promise<numbe
 }
 
 export async function getProgramFilterOptions(params?: ProgramListParams): Promise<ProgramFilterOptionsResponse> {
-  const searchParams = new URLSearchParams();
-  if (params?.q) searchParams.set("q", params.q);
-  if (params?.category) searchParams.set("category", params.category);
-  if (params?.category_detail) searchParams.set("category_detail", params.category_detail);
-  if (params?.scope) searchParams.set("scope", params.scope);
-  if (params?.region_detail) searchParams.set("region_detail", params.region_detail);
-  if (params?.regions?.length) {
-    params.regions.forEach((region) => searchParams.append("regions", region));
+  try {
+    return await requestJson<ProgramFilterOptionsResponse>(
+      buildPathWithSearchParams("/programs/filter-options", buildProgramListSearchParams(params)),
+      {
+        method: "GET",
+      },
+      "Failed to load program filter options."
+    );
+  } catch (error) {
+    if (isRetryableLocalBackendMetadataError(error)) {
+      return {
+        sources: [],
+        targets: [],
+        selection_processes: [],
+        employment_links: [],
+      };
+    }
+    throw error;
   }
-  if (params?.teaching_methods?.length) {
-    params.teaching_methods.forEach((method) => searchParams.append("teaching_methods", method));
-  }
-  if (params?.recruiting_only) searchParams.set("recruiting_only", "true");
-  if (params?.include_closed_recent) searchParams.set("include_closed_recent", "true");
-
-  const query = searchParams.toString();
-  return requestJson<ProgramFilterOptionsResponse>(
-    `/programs/filter-options${query ? `?${query}` : ""}`,
-    {
-      method: "GET",
-    },
-    "Failed to load program filter options."
-  );
 }
 
-export async function getProgram(programId: string): Promise<Program> {
-  return requestJson<Program>(
-    `/programs/${programId}`,
-    {
-      method: "GET",
-    },
-    "Failed to load the program."
-  );
-}
-
-export async function getPrograms(programIds: string[]): Promise<Program[]> {
+export async function getPrograms(programIds: string[]): Promise<ProgramCardSummary[]> {
   const response = await requestJson<ProgramBatchResponse>(
     "/programs/batch",
     {

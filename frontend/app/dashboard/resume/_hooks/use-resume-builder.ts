@@ -28,6 +28,7 @@ export function useResumeBuilder() {
   const [profile, setProfile] = useState<{
     name: string;
     bio?: string;
+    avatar_url?: string | null;
     email: string;
     phone: string;
     self_intro: string;

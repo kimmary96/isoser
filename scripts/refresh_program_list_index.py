@@ -20,6 +20,9 @@ from utils.supabase_admin import request_supabase  # noqa: E402
 LEGACY_FULL_REFRESH_RPC = "refresh_program_list_index"
 DELTA_REFRESH_RPC = "refresh_program_list_delta"
 BROWSE_REFRESH_RPC = "refresh_program_list_browse_pool"
+BROWSE_REFRESH_RESILIENT_RPC = "refresh_program_list_browse_pool_resilient"
+LANDING_SNAPSHOT_REFRESH_RPC = "refresh_program_landing_chip_snapshots"
+SAMPLE_REFRESH_RPC = "refresh_program_list_index_sample"
 RETRYABLE_REFRESH_ERROR_TOKENS = (
     "canceling statement due to statement timeout",
     "deadlock detected",
@@ -76,6 +79,56 @@ def _coerce_int_result(result: object) -> int:
 def _is_retryable_refresh_error(detail: str) -> bool:
     lowered = detail.lower()
     return any(token in lowered for token in RETRYABLE_REFRESH_ERROR_TOKENS)
+
+
+def _coerce_json_result(result: object) -> dict[str, object]:
+    if isinstance(result, dict):
+        return result
+    if isinstance(result, str):
+        try:
+            parsed = json.loads(result)
+        except json.JSONDecodeError:
+            return {"raw_result": result}
+        if isinstance(parsed, dict):
+            return parsed
+        return {"raw_result": parsed}
+    return {"raw_result": result}
+
+
+def _default_browse_candidate_limit(pool_limit: int) -> int:
+    return max(pool_limit * 8, 1200)
+
+
+async def _run_optional_landing_snapshot_refresh() -> tuple[dict[str, object] | None, dict[str, object]]:
+    succeeded, result, stage = await _run_rpc_stage(
+        LANDING_SNAPSHOT_REFRESH_RPC,
+        {"surface": "landing-c", "item_limit": 24},
+    )
+    stage["optional"] = True
+    if not succeeded:
+        error = str(stage.get("error") or "")
+        if _is_missing_rpc_error(error, LANDING_SNAPSHOT_REFRESH_RPC):
+            stage["status"] = "skipped"
+            stage["reason"] = "missing_rpc"
+            stage.pop("error", None)
+            stage.pop("status_code", None)
+            return None, stage
+        stage["warning"] = "landing_snapshot_refresh_failed"
+        return None, stage
+
+    parsed = _coerce_json_result(result)
+    stage["result"] = parsed
+    return parsed, stage
+
+
+def _is_missing_rpc_error(detail: str, function_name: str) -> bool:
+    lowered = detail.lower()
+    function_name = function_name.lower()
+    return function_name in lowered and (
+        "could not find the function" in lowered
+        or "function public." in lowered
+        or "does not exist" in lowered
+    )
 
 
 async def _run_rpc_stage(
@@ -146,6 +199,8 @@ async def _run_delta_refresh_batches(
 async def _run_browse_refresh_with_retries(
     pool_limit: int,
     *,
+    function_name: str = BROWSE_REFRESH_RPC,
+    payload: dict[str, object] | None = None,
     max_attempts: int,
     retry_delay_seconds: float,
 ) -> tuple[bool, object | None, list[dict[str, object]], str | None]:
@@ -156,8 +211,8 @@ async def _run_browse_refresh_with_retries(
 
     for attempt in range(1, attempts + 1):
         succeeded, result, stage = await _run_rpc_stage(
-            BROWSE_REFRESH_RPC,
-            {"pool_limit": pool_limit},
+            function_name,
+            payload or {"pool_limit": pool_limit},
             attempt=attempt,
         )
         stages.append(stage)
@@ -173,6 +228,71 @@ async def _run_browse_refresh_with_retries(
     return False, None, stages, last_error
 
 
+async def _run_browse_refresh_with_strategy(
+    pool_limit: int,
+    *,
+    candidate_limit: int | None,
+    max_attempts: int,
+    retry_delay_seconds: float,
+) -> tuple[bool, object | None, list[dict[str, object]], str | None, dict[str, object] | None]:
+    effective_candidate_limit = max(1, candidate_limit or _default_browse_candidate_limit(pool_limit))
+    resilient_payload = {
+        "pool_limit": pool_limit,
+        "candidate_limit": effective_candidate_limit,
+    }
+    succeeded, result, stages, error = await _run_browse_refresh_with_retries(
+        pool_limit,
+        function_name=BROWSE_REFRESH_RESILIENT_RPC,
+        payload=resilient_payload,
+        max_attempts=max_attempts,
+        retry_delay_seconds=retry_delay_seconds,
+    )
+    if succeeded:
+        parsed = _coerce_json_result(result)
+        if stages:
+            stages[-1]["result"] = parsed
+        affected = parsed.get("browse_rows", parsed.get("affected_rows", parsed.get("raw_result")))
+        return True, affected, stages, None, parsed
+
+    if not _is_missing_rpc_error(error or "", BROWSE_REFRESH_RESILIENT_RPC):
+        return False, None, stages, error, None
+
+    fallback_succeeded, fallback_result, fallback_stages, fallback_error = await _run_browse_refresh_with_retries(
+        pool_limit,
+        function_name=BROWSE_REFRESH_RPC,
+        payload={"pool_limit": pool_limit},
+        max_attempts=max_attempts,
+        retry_delay_seconds=retry_delay_seconds,
+    )
+    stages.extend(fallback_stages)
+    if not fallback_succeeded:
+        return False, None, stages, fallback_error, None
+    return True, fallback_result, stages, None, None
+
+
+async def _run_sample_refresh(
+    *,
+    batch_limit: int,
+    browse_pool_limit: int,
+    max_rows: int,
+    keep_latest_snapshot_count: int,
+) -> tuple[bool, dict[str, object] | None, dict[str, object], str | None]:
+    succeeded, result, stage = await _run_rpc_stage(
+        SAMPLE_REFRESH_RPC,
+        {
+            "batch_limit": max(1, batch_limit),
+            "browse_pool_limit": max(1, browse_pool_limit),
+            "max_rows": max(1, max_rows),
+            "keep_latest_snapshot_count": max(1, keep_latest_snapshot_count),
+        },
+    )
+    if not succeeded:
+        return False, None, stage, str(stage.get("error") or "")
+    parsed = _coerce_json_result(result)
+    stage["result"] = parsed
+    return True, parsed, stage, None
+
+
 async def refresh(
     pool_limit: int,
     *,
@@ -183,13 +303,48 @@ async def refresh(
     delta_batch_limit: int = 500,
     max_delta_batches: int = 20,
     legacy_full_refresh: bool = False,
+    sample_refresh: bool = False,
+    sample_max_rows: int | None = None,
+    sample_keep_latest_snapshot_count: int = 1,
+    browse_candidate_limit: int | None = None,
 ) -> dict[str, object]:
     started_at = time.perf_counter()
     stages: list[dict[str, object]] = []
 
+    if sample_refresh:
+        effective_sample_max_rows = max(
+            1,
+            sample_max_rows if sample_max_rows is not None else max(pool_limit, delta_batch_limit),
+        )
+        succeeded, result, sample_stage, sample_error = await _run_sample_refresh(
+            batch_limit=delta_batch_limit,
+            browse_pool_limit=pool_limit,
+            max_rows=effective_sample_max_rows,
+            keep_latest_snapshot_count=sample_keep_latest_snapshot_count,
+        )
+        stages.append(sample_stage)
+        if not succeeded:
+            return {
+                "pool_limit": pool_limit,
+                "status": "failed",
+                "error": sample_error,
+                "elapsed_ms": _elapsed_ms(started_at),
+                "stages": stages,
+            }
+        return {
+            "pool_limit": pool_limit,
+            "status": "sample_refresh",
+            "sample_max_rows": effective_sample_max_rows,
+            "affected_rows": result.get("remaining_rows", result.get("browse_rows", result.get("delta_rows", 0))),
+            "sample_result": result,
+            "elapsed_ms": _elapsed_ms(started_at),
+            "stages": stages,
+        }
+
     if browse_only:
-        succeeded, result, browse_stages, browse_error = await _run_browse_refresh_with_retries(
+        succeeded, result, browse_stages, browse_error, browse_result = await _run_browse_refresh_with_strategy(
             pool_limit,
+            candidate_limit=browse_candidate_limit,
             max_attempts=fallback_attempts,
             retry_delay_seconds=retry_delay_seconds,
         )
@@ -203,11 +358,15 @@ async def refresh(
                 "elapsed_ms": _elapsed_ms(started_at),
                 "stages": stages,
             }
+        landing_snapshot_result, landing_snapshot_stage = await _run_optional_landing_snapshot_refresh()
+        stages.append(landing_snapshot_stage)
         return {
             "pool_limit": pool_limit,
             "status": "browse_fallback_only",
             "affected_rows": result,
             "fallback_attempts": len(browse_stages),
+            "browse_result": browse_result,
+            "landing_snapshot_result": landing_snapshot_result,
             "elapsed_ms": _elapsed_ms(started_at),
             "stages": stages,
         }
@@ -230,8 +389,9 @@ async def refresh(
                     "stages": stages,
                 }
 
-            fallback_succeeded, fallback_result, browse_stages, fallback_error = await _run_browse_refresh_with_retries(
+            fallback_succeeded, fallback_result, browse_stages, fallback_error, browse_result = await _run_browse_refresh_with_strategy(
                 pool_limit,
+                candidate_limit=browse_candidate_limit,
                 max_attempts=fallback_attempts,
                 retry_delay_seconds=retry_delay_seconds,
             )
@@ -248,6 +408,8 @@ async def refresh(
                     "elapsed_ms": _elapsed_ms(started_at),
                     "stages": stages,
                 }
+            landing_snapshot_result, landing_snapshot_stage = await _run_optional_landing_snapshot_refresh()
+            stages.append(landing_snapshot_stage)
             return {
                 "pool_limit": pool_limit,
                 "status": "browse_fallback",
@@ -256,12 +418,15 @@ async def refresh(
                 "delta_batches": len(delta_stages),
                 "affected_rows": fallback_result,
                 "fallback_attempts": len(browse_stages),
+                "browse_result": browse_result,
+                "landing_snapshot_result": landing_snapshot_result,
                 "elapsed_ms": _elapsed_ms(started_at),
                 "stages": stages,
             }
 
-        browse_succeeded, browse_result, browse_stages, browse_error = await _run_browse_refresh_with_retries(
+        browse_succeeded, browse_result, browse_stages, browse_error, browse_result_meta = await _run_browse_refresh_with_strategy(
             pool_limit,
+            candidate_limit=browse_candidate_limit,
             max_attempts=fallback_attempts,
             retry_delay_seconds=retry_delay_seconds,
         )
@@ -277,6 +442,8 @@ async def refresh(
                 "elapsed_ms": _elapsed_ms(started_at),
                 "stages": stages,
             }
+        landing_snapshot_result, landing_snapshot_stage = await _run_optional_landing_snapshot_refresh()
+        stages.append(landing_snapshot_stage)
         return {
             "pool_limit": pool_limit,
             "status": "incremental_refresh",
@@ -284,6 +451,8 @@ async def refresh(
             "delta_batches": len(delta_stages),
             "affected_rows": browse_result,
             "fallback_attempts": len(browse_stages),
+            "browse_result": browse_result_meta,
+            "landing_snapshot_result": landing_snapshot_result,
             "elapsed_ms": _elapsed_ms(started_at),
             "stages": stages,
         }
@@ -304,8 +473,9 @@ async def refresh(
                 "stages": stages,
             }
 
-        fallback_succeeded, fallback_result, browse_stages, fallback_error = await _run_browse_refresh_with_retries(
+        fallback_succeeded, fallback_result, browse_stages, fallback_error, browse_result = await _run_browse_refresh_with_strategy(
             pool_limit,
+            candidate_limit=browse_candidate_limit,
             max_attempts=fallback_attempts,
             retry_delay_seconds=retry_delay_seconds,
         )
@@ -320,21 +490,28 @@ async def refresh(
                 "elapsed_ms": _elapsed_ms(started_at),
                 "stages": stages,
             }
+        landing_snapshot_result, landing_snapshot_stage = await _run_optional_landing_snapshot_refresh()
+        stages.append(landing_snapshot_stage)
         return {
             "pool_limit": pool_limit,
             "status": "browse_fallback",
             "full_refresh_error": full_refresh_error,
             "affected_rows": fallback_result,
             "fallback_attempts": len(browse_stages),
+            "browse_result": browse_result,
+            "landing_snapshot_result": landing_snapshot_result,
             "elapsed_ms": _elapsed_ms(started_at),
             "stages": stages,
         }
 
+    landing_snapshot_result, landing_snapshot_stage = await _run_optional_landing_snapshot_refresh()
+    stages.append(landing_snapshot_stage)
     return {
         "pool_limit": pool_limit,
         "status": "full_refresh",
         "affected_rows": result,
         "fallback_attempts": 0,
+        "landing_snapshot_result": landing_snapshot_result,
         "elapsed_ms": _elapsed_ms(started_at),
         "stages": stages,
     }
@@ -383,7 +560,32 @@ def main() -> int:
         action="store_true",
         help="Use the legacy single refresh_program_list_index RPC before falling back to the browse-pool refresh.",
     )
+    parser.add_argument(
+        "--sample-refresh",
+        action="store_true",
+        help="Call refresh_program_list_index_sample to keep a bounded validation-sized read model on smaller DBs.",
+    )
+    parser.add_argument(
+        "--sample-max-rows",
+        type=int,
+        help="Maximum rows to keep in program_list_index after --sample-refresh trims extra rows.",
+    )
+    parser.add_argument(
+        "--sample-keep-latest-snapshot-count",
+        type=int,
+        default=1,
+        help="How many latest browse facet snapshots to keep per pool size during --sample-refresh.",
+    )
+    parser.add_argument(
+        "--browse-candidate-limit",
+        type=int,
+        help="Preferred candidate scan size for the timeout-safe browse refresh helper. Defaults to max(pool_limit * 8, 1200).",
+    )
     args = parser.parse_args()
+    if args.sample_refresh and args.browse_only:
+        parser.error("--sample-refresh and --browse-only cannot be used together.")
+    if args.sample_refresh and args.legacy_full_refresh:
+        parser.error("--sample-refresh and --legacy-full-refresh cannot be used together.")
     try:
         report = asyncio.run(
             refresh(
@@ -395,6 +597,10 @@ def main() -> int:
                 delta_batch_limit=args.delta_batch_limit,
                 max_delta_batches=args.max_delta_batches,
                 legacy_full_refresh=args.legacy_full_refresh,
+                sample_refresh=args.sample_refresh,
+                sample_max_rows=args.sample_max_rows,
+                sample_keep_latest_snapshot_count=args.sample_keep_latest_snapshot_count,
+                browse_candidate_limit=args.browse_candidate_limit,
             )
         )
     except Exception as exc:

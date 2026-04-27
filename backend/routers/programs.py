@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import base64
 from datetime import date, datetime, timedelta, timezone
 import hashlib
@@ -12,7 +13,6 @@ from typing import Any, Literal, Mapping, Sequence
 from uuid import UUID
 
 from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Query
-from pydantic import BaseModel, ConfigDict, Field
 
 
 def _should_fallback_to_backend(error: ModuleNotFoundError) -> bool:
@@ -32,6 +32,105 @@ except ImportError:
     from services.program_list_scoring import compute_recommended_score
 
 try:
+    from backend.services.program_list_queries import (
+        PROGRAM_COMPUTED_SORTS,
+        PROGRAM_DEADLINE_SORTS,
+        PROGRAM_POPULAR_SORTS,
+        PROGRAM_SEARCH_INDEX_COLUMN,
+        PROGRAM_SEARCH_SCAN_LIMIT,
+        PROGRAM_SEARCH_SCAN_PAGE_SIZE,
+        PROGRAM_SORT_OPTIONS,
+        build_program_query_params as _service_build_program_query_params,
+    )
+except ImportError:
+    from services.program_list_queries import (
+        PROGRAM_COMPUTED_SORTS,
+        PROGRAM_DEADLINE_SORTS,
+        PROGRAM_POPULAR_SORTS,
+        PROGRAM_SEARCH_INDEX_COLUMN,
+        PROGRAM_SEARCH_SCAN_LIMIT,
+        PROGRAM_SEARCH_SCAN_PAGE_SIZE,
+        PROGRAM_SORT_OPTIONS,
+        build_program_query_params as _service_build_program_query_params,
+    )
+
+try:
+    from backend.services.program_detail_builder import build_program_detail_response as _service_build_program_detail_response
+except ImportError:
+    from services.program_detail_builder import build_program_detail_response as _service_build_program_detail_response
+
+try:
+    from backend.services.program_list_filters import (
+        _can_use_program_search_index,
+        _derive_participation_display,
+        _derive_selection_process_label,
+        _derive_teaching_method,
+        _extract_program_filter_options,
+        _extract_program_keywords,
+        _filter_options_from_facet_snapshot,
+        _filter_program_rows_by_extra_filters,
+        _filter_program_rows_by_category_detail,
+        _filter_program_rows_by_query,
+        _first_text,
+        _flatten_search_values,
+        _infer_display_categories,
+        _int_or_none,
+        _legacy_program_meta,
+        _normalize_search_text,
+        _normalize_text_list,
+        _parse_program_deadline,
+        _program_cost_type,
+        _program_detail_view_count,
+        _program_matches_any,
+        _program_matches_targets,
+        _program_participation_time,
+        _program_search_index_filter,
+        _program_search_match_rank,
+        _program_source_filter_param,
+        _has_other_program_source_filter,
+        _program_source_label,
+        _normalize_program_source_filters,
+        _sort_program_list_rows as _service_sort_program_list_rows,
+        _postprocess_program_list_rows as _service_postprocess_program_list_rows,
+        _filter_program_rows_by_deadline_window as _service_filter_program_rows_by_deadline_window,
+    )
+except ImportError:
+    from services.program_list_filters import (
+        _can_use_program_search_index,
+        _derive_participation_display,
+        _derive_selection_process_label,
+        _derive_teaching_method,
+        _extract_program_filter_options,
+        _extract_program_keywords,
+        _filter_options_from_facet_snapshot,
+        _filter_program_rows_by_extra_filters,
+        _filter_program_rows_by_category_detail,
+        _filter_program_rows_by_query,
+        _first_text,
+        _flatten_search_values,
+        _infer_display_categories,
+        _int_or_none,
+        _legacy_program_meta,
+        _normalize_search_text,
+        _normalize_text_list,
+        _parse_program_deadline,
+        _program_cost_type,
+        _program_detail_view_count,
+        _program_matches_any,
+        _program_matches_targets,
+        _program_participation_time,
+        _program_search_index_filter,
+        _program_search_match_rank,
+        _program_source_filter_param,
+        _has_other_program_source_filter,
+        _program_source_label,
+        _normalize_program_source_filters,
+        _sort_program_list_rows as _service_sort_program_list_rows,
+        _postprocess_program_list_rows as _service_postprocess_program_list_rows,
+        _filter_program_rows_by_deadline_window as _service_filter_program_rows_by_deadline_window,
+    )
+
+try:
     from rag.collector.scheduler import run_all_collectors
     from rag.programs_rag import ProgramRecommendation, ProgramsRAG
 except ModuleNotFoundError as error:
@@ -39,6 +138,57 @@ except ModuleNotFoundError as error:
         raise
     from backend.rag.collector.scheduler import run_all_collectors
     from backend.rag.programs_rag import ProgramRecommendation, ProgramsRAG
+
+try:
+    from backend.schemas.programs import (
+        CalendarRecommendItem,
+        CalendarRecommendResponse,
+        ProgramBatchResponse,
+        ProgramCompareRelevanceRequest,
+        ProgramCompareRelevanceResponse,
+        ProgramCountResponse,
+        ProgramDetailBatchRequest,
+        ProgramDetailBatchResponse,
+        ProgramDetailResponse,
+        ProgramFacetBucket,
+        ProgramFacetSnapshot,
+        ProgramFacetSnapshotResponse,
+        ProgramFilterOption,
+        ProgramFilterOptionsResponse,
+        ProgramListItem,
+        ProgramListPageResponse,
+        ProgramListRowItem,
+        ProgramRecommendItem,
+        ProgramRecommendRequest,
+        ProgramRecommendResponse,
+        ProgramRelevanceItem,
+        ProgramSurfaceContextModel,
+    )
+except ImportError:
+    from schemas.programs import (
+        CalendarRecommendItem,
+        CalendarRecommendResponse,
+        ProgramBatchResponse,
+        ProgramCompareRelevanceRequest,
+        ProgramCompareRelevanceResponse,
+        ProgramCountResponse,
+        ProgramDetailBatchRequest,
+        ProgramDetailBatchResponse,
+        ProgramDetailResponse,
+        ProgramFacetBucket,
+        ProgramFacetSnapshot,
+        ProgramFacetSnapshotResponse,
+        ProgramFilterOption,
+        ProgramFilterOptionsResponse,
+        ProgramListItem,
+        ProgramListPageResponse,
+        ProgramListRowItem,
+        ProgramRecommendItem,
+        ProgramRecommendRequest,
+        ProgramRecommendResponse,
+        ProgramRelevanceItem,
+        ProgramSurfaceContextModel,
+    )
 
 from utils.supabase_admin import (
     get_current_user_from_authorization,
@@ -50,16 +200,12 @@ programs_router = APIRouter(prefix="/programs", tags=["programs"])
 router = programs_router
 programs_rag = ProgramsRAG()
 
-PROGRAM_DEADLINE_SORTS = {"default", "deadline"}
-PROGRAM_COMPUTED_SORTS = {"start_soon", "cost_low", "cost_high", "duration_short", "duration_long"}
-PROGRAM_POPULAR_SORTS = {"popular"}
-PROGRAM_SORT_OPTIONS = PROGRAM_DEADLINE_SORTS | PROGRAM_COMPUTED_SORTS | PROGRAM_POPULAR_SORTS | {"latest"}
 PROGRAM_CLICK_HOTNESS_RECENT_WEIGHT = 1_000_000
 PROGRAM_CLICK_HOTNESS_TOTAL_CAP = 999_999
 PROGRAM_TEACHING_METHODS = {"온라인", "오프라인", "혼합"}
 PROGRAM_COST_TYPES = {"naeil-card", "free-no-card", "paid"}
 PROGRAM_PARTICIPATION_TIMES = {"part-time", "full-time"}
-PROGRAM_TARGETS = {"청년", "여성", "중장년", "창업", "재직자", "구직자", "대학생"}
+PROGRAM_TARGETS = {"청년", "여성", "창업", "재직자", "대학생"}
 PROGRAM_SELECTION_PROCESSES = {"서류", "면접", "테스트", "선착순", "추첨"}
 PROGRAM_EMPLOYMENT_LINKS = {"채용연계", "인턴십", "취업지원", "멘토링"}
 PROGRAM_CATEGORY_LABELS: dict[str, str] = {
@@ -183,9 +329,6 @@ PROGRAM_KEYWORD_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("취업지원", ("취업지원", "취업 지원")),
     ("채용연계", ("채용연계", "채용 연계")),
 )
-PROGRAM_SEARCH_SCAN_LIMIT = 10000
-PROGRAM_SEARCH_SCAN_PAGE_SIZE = 1000
-PROGRAM_SEARCH_INDEX_COLUMN = "search_text"
 PROGRAM_SHORT_ASCII_SEARCH_MAX_LENGTH = 2
 PROGRAM_LIST_INDEX_TABLE = "program_list_index"
 PROGRAM_LIST_FACET_TABLE = "program_list_facet_snapshots"
@@ -196,8 +339,23 @@ PROGRAM_LIST_SUMMARY_SELECT = (
     "teaching_method,cost,cost_type,participation_time,source,source_url,link,deadline,"
     "close_date,start_date,end_date,is_active,is_ad,display_categories,participation_mode_label,participation_time_text,"
     "selection_process_label,extracted_keywords,tags,skills,days_left,"
+    "verified_self_pay_amount,"
     "deadline_confidence,recommended_score,recommendation_reasons,detail_view_count,detail_view_count_7d,"
     "click_hotness_score,last_detail_viewed_at,promoted_rank,updated_at"
+)
+PROGRAM_FILTER_SCAN_SELECT = (
+    "id,title,provider,summary,description,category,category_detail,region,region_detail,location,"
+    "teaching_method,cost,cost_type,participation_time,source,source_url,link,deadline,close_date,"
+    "start_date,end_date,is_active,is_ad,tags,skills,target,support_type,compare_meta,service_meta,"
+    "support_amount,subsidy_amount,raw_data"
+)
+USER_RECOMMENDATION_PROFILE_SELECT = (
+    "user_id,effective_target_job,effective_target_job_normalized,profile_keywords,evidence_skills,"
+    "desired_skills,activity_keywords,preferred_regions,profile_completeness_score,"
+    "recommendation_ready,recommendation_profile_hash,derivation_version,source_snapshot,last_derived_at"
+)
+PROGRAM_SOURCE_RECORD_DETAIL_SELECT = (
+    "program_id,source_url,detail_url,application_url,source_specific,is_primary"
 )
 PROGRAM_DEFAULT_WORK24_TARGET_RATIO = 0.7
 PROGRAM_STARTUP_FILTER_KEYWORDS = (
@@ -295,247 +453,113 @@ HYBRID_KEYWORDS = ("혼합", "블렌디드", "온오프", "온·오프")
 OFFLINE_KEYWORDS = ("오프라인", "대면", "현장")
 
 
-class ProgramListItem(BaseModel):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
-    id: str | int | None = None
-    title: str | None = None
-    category: str | None = None
-    category_detail: str | None = None
-    location: str | None = None
-    provider: str | None = None
-    summary: str | None = None
-    description: str | None = None
-    tags: list[str] | str | None = None
-    skills: list[str] | str | None = None
-    application_url: str | None = None
-    application_method: str | None = None
-    source: str | None = None
-    source_url: str | None = None
-    link: str | None = None
-    deadline: str | None = None
-    start_date: str | None = None
-    end_date: str | None = None
-    cost: int | str | None = None
-    cost_type: str | None = None
-    participation_time: str | None = None
-    subsidy_amount: int | str | None = None
-    support_type: str | None = None
-    teaching_method: str | None = None
-    is_certified: bool | None = None
-    is_active: bool | None = None
-    is_ad: bool | None = None
-    rating_raw: str | None = None
-    rating_normalized: float | None = None
-    rating_scale: int | None = None
-    rating_display: str | None = None
-    display_categories: list[str] = Field(default_factory=list)
-    participation_mode_label: str | None = None
-    participation_time_text: str | None = None
-    selection_process_label: str | None = None
-    extracted_keywords: list[str] = Field(default_factory=list)
-    relevance_score: float | None = None
-    final_score: float | None = None
-    urgency_score: float | None = None
-    days_left: int | None = None
-    deadline_confidence: Literal["high", "medium", "low"] | None = None
-    recommended_score: float | None = None
-    recommendation_reasons: list[str] = Field(default_factory=list)
-    detail_view_count: int | None = None
-    detail_view_count_7d: int | None = None
-    click_hotness_score: float | None = None
-    last_detail_viewed_at: str | None = None
-    promoted_rank: int | None = None
-    compare_meta: dict[str, Any] | None = None
+def _serialize_program_base_summary(program: Mapping[str, Any]) -> dict[str, Any]:
+    record = dict(program)
+    legacy_meta = _legacy_program_meta(record)
+    verified_self_pay_amount = record.get("verified_self_pay_amount")
+    if record.get("support_amount") in (None, "") and verified_self_pay_amount not in (None, ""):
+        record["support_amount"] = verified_self_pay_amount
+    if record.get("subsidy_amount") in (None, "") and record.get("support_amount") not in (None, ""):
+        record["subsidy_amount"] = record.get("support_amount")
+    record.update(_normalize_rating_fields(record.get("rating") or legacy_meta.get("satisfaction_score")))
+    record["teaching_method"] = _derive_teaching_method(record)
+    deadline = _resolve_program_deadline(record)
+    days_left = _calculate_days_left(deadline)
+    record["deadline"] = deadline
+    record["days_left"] = days_left
+    if days_left is not None:
+        record["is_active"] = days_left >= 0
+    return record
 
 
-class ProgramRecommendRequest(BaseModel):
-    top_k: int = Field(default=9, ge=1, le=20)
-    category: str | None = Field(default=None, description="카테고리 필터")
-    region: str | None = Field(default=None, description="지역 필터")
-    job_title: str | None = Field(default=None, description="직무명")
-    force_refresh: bool = Field(default=False, description="캐시 무시 여부")
+def _serialize_program_card_summary(program: Mapping[str, Any]) -> dict[str, Any]:
+    record = _serialize_program_base_summary(program)
+    participation_mode_label, participation_time_text = _derive_participation_display(record)
+    record["display_categories"] = _infer_display_categories(record)
+    record["participation_mode_label"] = participation_mode_label
+    record["participation_time_text"] = participation_time_text
+    record["selection_process_label"] = _derive_selection_process_label(record)
+    record["extracted_keywords"] = _extract_program_keywords(record)
+    score = compute_recommended_score(record)
+    record["deadline_confidence"] = _program_deadline_confidence(record)
+    record["recommended_score"] = score.recommended_score
+    record["recommendation_reasons"] = list(score.reasons)
+    return record
 
 
-class ProgramRecommendItem(BaseModel):
-    program_id: str
-    score: float | None = None
-    relevance_score: float | None = None
-    reason: str
-    fit_keywords: list[str] = Field(default_factory=list)
-    relevance_reasons: list[str] = Field(default_factory=list)
-    score_breakdown: dict[str, int] = Field(default_factory=dict)
-    relevance_grade: Literal["high", "medium", "low", "none"] = "none"
-    relevance_badge: str | None = None
-    program: ProgramListItem
+def _serialize_program_list_row_summary(program: Mapping[str, Any]) -> dict[str, Any]:
+    return _serialize_program_card_summary(program)
 
 
-class ProgramRecommendResponse(BaseModel):
-    items: list[ProgramRecommendItem] = Field(default_factory=list)
+def _serialize_program_list_row_item(
+    program: Mapping[str, Any],
+    *,
+    surface: str | None = None,
+    promoted_rank: int | None = None,
+    already_serialized: bool = False,
+) -> ProgramListRowItem:
+    context = None
+    if surface is not None or promoted_rank is not None:
+        context = ProgramSurfaceContextModel(
+            surface=surface,
+            promoted_rank=promoted_rank,
+        )
+    program_payload = dict(program) if already_serialized else _serialize_program_list_row_summary(program)
+    return ProgramListRowItem(
+        program=ProgramListItem.model_validate(program_payload),
+        context=context,
+    )
 
 
-class CalendarRecommendItem(BaseModel):
-    program_id: str
-    relevance_score: float
-    urgency_score: float
-    final_score: float
-    deadline: str | None = None
-    d_day_label: str
-    reason: str
-    fit_keywords: list[str] = Field(default_factory=list)
-    relevance_reasons: list[str] = Field(default_factory=list)
-    score_breakdown: dict[str, int] = Field(default_factory=dict)
-    relevance_grade: Literal["high", "medium", "low", "none"] = "none"
-    relevance_badge: str | None = None
-    program: ProgramListItem
-
-
-class CalendarRecommendResponse(BaseModel):
-    items: list[CalendarRecommendItem] = Field(default_factory=list)
-
-
-class ProgramCompareRelevanceRequest(BaseModel):
-    program_ids: list[str] = Field(default_factory=list)
-
-
-class ProgramDetailBatchRequest(BaseModel):
-    program_ids: list[str] = Field(default_factory=list, max_length=20)
-
-
-class ProgramBatchResponse(BaseModel):
-    items: list[ProgramListItem] = Field(default_factory=list)
-
-
-class ProgramFilterOption(BaseModel):
-    value: str
-    label: str
-
-
-class ProgramFilterOptionsResponse(BaseModel):
-    sources: list[ProgramFilterOption] = Field(default_factory=list)
-    targets: list[ProgramFilterOption] = Field(default_factory=list)
-    selection_processes: list[ProgramFilterOption] = Field(default_factory=list)
-    employment_links: list[ProgramFilterOption] = Field(default_factory=list)
-
-
-class ProgramRelevanceItem(BaseModel):
-    program_id: str
-    relevance_score: float
-    skill_match_score: float
-    region_match_score: float = 0.0
-    matched_skills: list[str] = Field(default_factory=list)
-    matched_regions: list[str] = Field(default_factory=list)
-    relevance_reasons: list[str] = Field(default_factory=list)
-    score_breakdown: dict[str, int] = Field(default_factory=dict)
-    relevance_grade: Literal["high", "medium", "low", "none"] = "none"
-    relevance_badge: str | None = None
-    fit_label: Literal["높음", "보통", "낮음"]
-    fit_summary: str
-    readiness_label: Literal["바로 지원 추천", "보완 후 지원", "탐색용 확인"]
-    gap_tags: list[str] = Field(default_factory=list)
-
-
-class ProgramCompareRelevanceResponse(BaseModel):
-    items: list[ProgramRelevanceItem] = Field(default_factory=list)
-
-
-class ProgramCountResponse(BaseModel):
-    count: int
-
-
-class ProgramFacetBucket(BaseModel):
-    value: str
-    count: int
-
-
-class ProgramFacetSnapshot(BaseModel):
-    category: list[ProgramFacetBucket] = Field(default_factory=list)
-    region: list[ProgramFacetBucket] = Field(default_factory=list)
-    teaching_method: list[ProgramFacetBucket] = Field(default_factory=list)
-    cost_type: list[ProgramFacetBucket] = Field(default_factory=list)
-    participation_time: list[ProgramFacetBucket] = Field(default_factory=list)
-    source: list[ProgramFacetBucket] = Field(default_factory=list)
-
-
-class ProgramListPageResponse(BaseModel):
-    promoted_items: list[ProgramListItem] = Field(default_factory=list)
-    items: list[ProgramListItem] = Field(default_factory=list)
-    next_cursor: str | None = None
-    count: int | None = None
-    mode: Literal["browse", "search", "archive"] = "browse"
-    source: Literal["read_model", "legacy"] = "legacy"
-    cache_hit: bool = False
-    facets: ProgramFacetSnapshot | None = None
-
-
-class ProgramFacetSnapshotResponse(BaseModel):
-    scope: Literal["browse", "search", "archive"] = "browse"
-    pool_limit: int
-    generated_at: str | None = None
-    facets: ProgramFacetSnapshot = Field(default_factory=ProgramFacetSnapshot)
-
-
-class ProgramDetailResponse(BaseModel):
-    id: str | int | None = None
-    title: str | None = None
-    provider: str | None = None
-    organizer: str | None = None
-    location: str | None = None
-    description: str | None = None
-    application_start_date: str | None = None
-    application_end_date: str | None = None
-    program_start_date: str | None = None
-    program_end_date: str | None = None
-    teaching_method: str | None = None
-    support_type: str | None = None
-    source_url: str | None = None
-    fee: int | None = None
-    support_amount: int | None = None
-    eligibility: list[str] = Field(default_factory=list)
-    schedule_text: str | None = None
-    rating: str | None = None
-    rating_raw: str | None = None
-    rating_normalized: float | None = None
-    rating_scale: int | None = None
-    rating_display: str | None = None
-    review_count: int | None = None
-    job_placement_rate: str | None = None
-    capacity_total: int | None = None
-    capacity_remaining: int | None = None
-    manager_name: str | None = None
-    phone: str | None = None
-    email: str | None = None
-    certifications: list[str] = Field(default_factory=list)
-    tech_stack: list[str] = Field(default_factory=list)
-    tags: list[str] = Field(default_factory=list)
-    curriculum: list[str] = Field(default_factory=list)
-    faq: list[dict[str, str]] = Field(default_factory=list)
-    reviews: list[dict[str, Any]] = Field(default_factory=list)
-    recommended_for: list[str] = Field(default_factory=list)
-    learning_outcomes: list[str] = Field(default_factory=list)
-    career_support: list[str] = Field(default_factory=list)
-    event_banner: str | None = None
-    ai_matching_summary: str | None = None
-
-
-class ProgramDetailBatchResponse(BaseModel):
-    items: list[ProgramDetailResponse] = Field(default_factory=list)
+def _build_program_surface_context(
+    *,
+    reason: str | None = None,
+    fit_keywords: Sequence[str] | None = None,
+    score: float | None = None,
+    relevance_score: float | None = None,
+    urgency_score: float | None = None,
+    relevance_reasons: Sequence[str] | None = None,
+    score_breakdown: Mapping[str, int] | None = None,
+    relevance_grade: Literal["high", "medium", "low", "none"] | None = None,
+    relevance_badge: str | None = None,
+) -> dict[str, Any]:
+    return {
+        "reason": reason,
+        "fit_keywords": list(fit_keywords or []),
+        "score": score,
+        "relevance_score": relevance_score,
+        "urgency_score": urgency_score,
+        "relevance_reasons": list(relevance_reasons or []),
+        "score_breakdown": dict(score_breakdown or {}),
+        "relevance_grade": relevance_grade,
+        "relevance_badge": relevance_badge,
+    }
 
 
 def _serialize_program_recommendation(item: ProgramRecommendation) -> ProgramRecommendItem:
     relevance_score = item.relevance_score
     score_percent = _score_to_percent(relevance_score)
-    return ProgramRecommendItem(
-        program_id=item.program_id,
-        score=item.score,
-        relevance_score=relevance_score,
+    context = _build_program_surface_context(
         reason=item.reason,
         fit_keywords=item.fit_keywords,
+        score=item.score,
+        relevance_score=relevance_score,
         relevance_reasons=_recommendation_reasons(item),
         score_breakdown=_default_score_breakdown(score_percent),
         relevance_grade=_relevance_grade(score_percent),
         relevance_badge=_relevance_badge(score_percent),
-        program=ProgramListItem.model_validate(item.program),
+    )
+    return ProgramRecommendItem(
+        program_id=item.program_id,
+        score=context["score"],
+        relevance_score=context["relevance_score"],
+        reason=context["reason"] or "",
+        fit_keywords=context["fit_keywords"],
+        relevance_reasons=context["relevance_reasons"],
+        score_breakdown=context["score_breakdown"],
+        relevance_grade=context["relevance_grade"] or "none",
+        relevance_badge=context["relevance_badge"],
+        program=ProgramListItem.model_validate(_serialize_program_card_summary(item.program)),
     )
 
 
@@ -588,6 +612,42 @@ def _recommendation_reasons(item: ProgramRecommendation) -> list[str]:
     if item.reason:
         reasons.append(item.reason)
     return reasons[:3]
+
+
+RECOMMENDATION_SCORE_WEIGHTS_WITH_REGION = {
+    "target_job": 30,
+    "skills": 25,
+    "experience": 15,
+    "region": 15,
+    "readiness": 10,
+    "behavior": 5,
+}
+
+RECOMMENDATION_SCORE_WEIGHTS_WITHOUT_REGION = {
+    "target_job": 35,
+    "skills": 30,
+    "experience": 20,
+    "region": 0,
+    "readiness": 10,
+    "behavior": 5,
+}
+
+RECOMMENDATION_BREAKDOWN_PRIORITY = {
+    "target_job": 0,
+    "skills": 1,
+    "experience": 2,
+    "region": 3,
+    "readiness": 4,
+    "behavior": 5,
+}
+
+
+def _recommendation_score_weights(*, has_profile_region: bool) -> dict[str, int]:
+    return (
+        RECOMMENDATION_SCORE_WEIGHTS_WITH_REGION
+        if has_profile_region
+        else RECOMMENDATION_SCORE_WEIGHTS_WITHOUT_REGION
+    )
 
 
 def _coerce_score(value: Any) -> float | None:
@@ -663,14 +723,27 @@ def _build_query_hash(payload: ProgramRecommendRequest) -> str:
 def _build_profile_hash(
     profile: Mapping[str, Any],
     activities: Sequence[Mapping[str, Any]],
+    *,
+    prefer_stored_hash: bool = True,
 ) -> str:
+    if prefer_stored_hash:
+        stored_hash = _clean_text(
+            profile.get("recommendation_profile_hash")
+            or profile.get("profile_hash")
+        )
+        if stored_hash:
+            return stored_hash
+
     profile_snapshot = {
         key: profile.get(key)
         for key in (
             "name",
             "bio",
             "education",
+            "target_job",
+            "desired_job",
             "job_title",
+            "effective_target_job",
             "self_intro",
             "portfolio_url",
             "career",
@@ -679,6 +752,10 @@ def _build_profile_hash(
             "certifications",
             "languages",
             "skills",
+            "desired_skills",
+            "preferred_regions",
+            "profile_keywords",
+            "activity_keywords",
         )
     }
     activity_snapshot = [
@@ -695,6 +772,9 @@ def _has_personalization_input(
     profile: Mapping[str, Any],
     activities: Sequence[Mapping[str, Any]],
 ) -> bool:
+    if profile.get("recommendation_ready") is True:
+        return True
+
     if activities:
         return True
 
@@ -702,7 +782,10 @@ def _has_personalization_input(
         "name",
         "bio",
         "education",
+        "target_job",
+        "desired_job",
         "job_title",
+        "effective_target_job",
         "self_intro",
         "portfolio_url",
         "career",
@@ -711,6 +794,10 @@ def _has_personalization_input(
         "certifications",
         "languages",
         "skills",
+        "desired_skills",
+        "preferred_regions",
+        "profile_keywords",
+        "activity_keywords",
     ):
         value = profile.get(key)
         if isinstance(value, list):
@@ -724,12 +811,12 @@ def _has_personalization_input(
 
 def _resolve_program_deadline(program: dict[str, Any]) -> str | None:
     close_date = program.get("close_date")
-    compare_meta = program.get("compare_meta") if isinstance(program.get("compare_meta"), dict) else {}
+    legacy_meta = _legacy_program_meta(program)
     meta_deadline = next(
         (
-            compare_meta.get(key)
+            legacy_meta.get(key)
             for key in PROGRAM_DEADLINE_COMPARE_META_KEYS
-            if str(compare_meta.get(key) or "").strip()
+            if str(legacy_meta.get(key) or "").strip()
         ),
         None,
     )
@@ -745,7 +832,7 @@ def _resolve_program_deadline(program: dict[str, Any]) -> str | None:
         and not meta_deadline
         and end_date
         and text[:10] == end_date[:10]
-        and not _uses_work24_training_start_deadline(compare_meta)
+        and not _uses_work24_training_start_deadline(legacy_meta)
     ):
         return None
 
@@ -765,10 +852,10 @@ def _program_deadline_confidence(program: Mapping[str, Any]) -> Literal["high", 
     if explicit in {"high", "medium", "low"}:
         return explicit  # type: ignore[return-value]
 
-    compare_meta = program.get("compare_meta") if isinstance(program.get("compare_meta"), Mapping) else {}
-    if program.get("close_date") or any(compare_meta.get(key) for key in PROGRAM_DEADLINE_COMPARE_META_KEYS):
+    legacy_meta = _legacy_program_meta(program)
+    if program.get("close_date") or any(legacy_meta.get(key) for key in PROGRAM_DEADLINE_COMPARE_META_KEYS):
         return "high"
-    if _uses_work24_training_start_deadline(compare_meta):
+    if _uses_work24_training_start_deadline(legacy_meta):
         return "medium"
     return "low"
 
@@ -863,11 +950,15 @@ def _parse_program_deadline(value: str | None) -> date | None:
         return None
 
 
+def _today_kst() -> date:
+    return datetime.now(timezone(timedelta(hours=9))).date()
+
+
 def _calculate_days_left(deadline: str | None) -> int | None:
     parsed = _parse_program_deadline(deadline)
     if parsed is None:
         return None
-    return (parsed - date.today()).days
+    return (parsed - _today_kst()).days
 
 
 def _format_d_day_label(days_left: int | None) -> str:
@@ -967,20 +1058,31 @@ def _build_calendar_item(
         urgency_score=urgency_score,
         final_score=final_score,
     )
-    return CalendarRecommendItem(
-        program_id=program_id,
+    context = _build_program_surface_context(
+        reason=reason,
+        fit_keywords=fit_keywords,
+        score=final_score,
         relevance_score=relevance_score,
         urgency_score=urgency_score,
-        final_score=final_score,
-        deadline=deadline,
-        d_day_label=_format_d_day_label(program_record.get("days_left")),
-        reason=reason,
-        fit_keywords=fit_keywords or [],
         relevance_reasons=resolved_relevance_reasons[:3],
         score_breakdown=score_breakdown or _default_score_breakdown(score_percent),
         relevance_grade=relevance_grade or _relevance_grade(score_percent),
         relevance_badge=relevance_badge if relevance_badge is not None else _relevance_badge(score_percent),
-        program=ProgramListItem.model_validate(program_record),
+    )
+    return CalendarRecommendItem(
+        program_id=program_id,
+        relevance_score=context["relevance_score"] or 0.0,
+        urgency_score=context["urgency_score"] or 0.0,
+        final_score=context["score"] or 0.0,
+        deadline=deadline,
+        d_day_label=_format_d_day_label(program_record.get("days_left")),
+        reason=context["reason"] or "",
+        fit_keywords=context["fit_keywords"],
+        relevance_reasons=context["relevance_reasons"],
+        score_breakdown=context["score_breakdown"],
+        relevance_grade=context["relevance_grade"] or "none",
+        relevance_badge=context["relevance_badge"],
+        program=ProgramListItem.model_validate(_serialize_program_card_summary(program_record)),
     )
 
 
@@ -1037,7 +1139,7 @@ def _normalize_cached_recommendation_rows(
 
 
 def _normalize_regions_param(regions: list[str] | None) -> list[str]:
-    if not regions:
+    if not isinstance(regions, list | tuple | set):
         return []
 
     normalized: list[str] = []
@@ -1052,7 +1154,7 @@ def _normalize_regions_param(regions: list[str] | None) -> list[str]:
 
 
 def _normalize_teaching_methods_param(teaching_methods: list[str] | None) -> list[str]:
-    if not teaching_methods:
+    if not isinstance(teaching_methods, list | tuple | set):
         return []
 
     normalized: list[str] = []
@@ -1067,7 +1169,7 @@ def _normalize_teaching_methods_param(teaching_methods: list[str] | None) -> lis
 
 
 def _normalize_option_param(values: list[str] | None, allowed_values: set[str]) -> list[str]:
-    if not values:
+    if not isinstance(values, list | tuple | set):
         return []
 
     normalized: list[str] = []
@@ -1092,27 +1194,6 @@ def _expand_region_keywords(regions: list[str]) -> list[str]:
     return keywords
 
 
-def _program_order_clause(sort: str) -> str:
-    if sort == "latest":
-        return "created_at.desc.nullslast"
-    if sort == "start_soon":
-        return "start_date.asc.nullslast"
-    if sort == "cost_low":
-        return "cost.asc.nullslast"
-    if sort == "cost_high":
-        return "cost.desc.nullslast"
-    return "deadline.asc.nullslast"
-
-
-def _requires_resolved_deadline_scan(
-    *,
-    recruiting_only: bool,
-    include_closed_recent: bool,
-    sort: str,
-) -> bool:
-    return include_closed_recent or recruiting_only or sort in PROGRAM_DEADLINE_SORTS or sort in PROGRAM_COMPUTED_SORTS
-
-
 def _build_program_query_params(
     *,
     select: str,
@@ -1130,49 +1211,30 @@ def _build_program_query_params(
     limit: int | None = None,
     offset: int | None = None,
 ) -> dict[str, Any]:
-    effective_sort = sort if sort in PROGRAM_SORT_OPTIONS else "deadline"
-    params: dict[str, Any] = {
-        "select": select,
-        "order": _program_order_clause(effective_sort),
-    }
-
-    should_scan_resolved_deadline = _requires_resolved_deadline_scan(
+    normalized_teaching_methods = _normalize_teaching_methods_param(teaching_methods)
+    has_keyword_search = bool(_normalize_search_text(q))
+    normalized_regions = _expand_region_keywords(_normalize_regions_param(regions))
+    normalized_sources = _normalize_program_source_filters(sources, expand_aliases=True)
+    needs_source_postprocess_scan = _has_other_program_source_filter(sources)
+    search_filter = _program_search_index_filter(q) if _can_use_program_search_index(q) else None
+    return _service_build_program_query_params(
+        select=select,
+        category=category,
+        category_detail=category_detail,
+        region_detail=region_detail,
         recruiting_only=recruiting_only,
         include_closed_recent=include_closed_recent,
-        sort=effective_sort,
+        sort=sort,
+        limit=PROGRAM_SEARCH_SCAN_LIMIT if needs_source_postprocess_scan and limit is not None else limit,
+        offset=None if needs_source_postprocess_scan else offset,
+        has_keyword_search=has_keyword_search or needs_source_postprocess_scan,
+        today_kst=_today_kst(),
+        normalized_teaching_methods=normalized_teaching_methods,
+        normalized_region_keywords=normalized_regions,
+        normalized_sources=normalized_sources,
+        search_filter=search_filter,
+        parent_categories=PROGRAM_CATEGORY_PARENT_CATEGORIES,
     )
-    if limit is not None:
-        params["limit"] = str(PROGRAM_SEARCH_SCAN_LIMIT if should_scan_resolved_deadline else limit)
-    elif q or should_scan_resolved_deadline:
-        params["limit"] = str(PROGRAM_SEARCH_SCAN_LIMIT)
-    if offset is not None and not should_scan_resolved_deadline:
-        params["offset"] = str(offset)
-    effective_category = category or PROGRAM_CATEGORY_PARENT_CATEGORIES.get(str(category_detail or "").strip())
-    if effective_category:
-        params["category"] = f"eq.{effective_category}"
-    if scope:
-        params["scope"] = f"eq.{scope}"
-    if region_detail:
-        params["region_detail"] = f"eq.{region_detail}"
-    normalized_teaching_methods = _normalize_teaching_methods_param(teaching_methods)
-    if normalized_teaching_methods:
-        quoted_values = ",".join(f'"{value}"' for value in normalized_teaching_methods)
-        params["teaching_method"] = f"in.({quoted_values})"
-
-    normalized_regions = _expand_region_keywords(_normalize_regions_param(regions))
-    if normalized_regions:
-        params["or"] = "(" + ",".join(f"location.ilike.*{keyword}*" for keyword in normalized_regions) + ")"
-
-    normalized_sources = [source.strip() for source in (sources or []) if source.strip()]
-    if normalized_sources:
-        quoted_sources = ",".join(f'"{source}"' for source in normalized_sources)
-        params["source"] = f"in.({quoted_sources})"
-
-    search_filter = _program_search_index_filter(q) if _can_use_program_search_index(q) else None
-    if search_filter:
-        params[PROGRAM_SEARCH_INDEX_COLUMN] = search_filter
-
-    return params
 
 
 def _normalize_rating_fields(value: Any) -> dict[str, str | float | int | None]:
@@ -1203,654 +1265,8 @@ def _normalize_rating_fields(value: Any) -> dict[str, str | float | int | None]:
     return result
 
 
-def _normalize_search_text(value: Any) -> str:
-    return re.sub(r"\s+", "", str(value or "").lower())
-
-
-def _program_search_index_filter(q: str | None) -> str | None:
-    needle = _normalize_search_text(q)
-    if not needle:
-        return None
-    return f"ilike.*{needle}*"
-
-
-def _can_use_program_search_index(q: str | None) -> bool:
-    needle = _normalize_search_text(q)
-    if not needle:
-        return False
-    if len(needle) <= PROGRAM_SHORT_ASCII_SEARCH_MAX_LENGTH and re.fullmatch(r"[a-z0-9]+", needle):
-        return False
-    return True
-
-
-def _flatten_search_values(value: Any) -> list[str]:
-    if value is None:
-        return []
-    if isinstance(value, dict):
-        values: list[str] = []
-        for item in value.values():
-            values.extend(_flatten_search_values(item))
-        return values
-    if isinstance(value, list):
-        values = []
-        for item in value:
-            values.extend(_flatten_search_values(item))
-        return values
-    text = str(value).strip()
-    return [text] if text else []
-
-
-def _searchable_compare_meta_values(value: Any) -> list[str]:
-    if not isinstance(value, dict):
-        return []
-    values: list[str] = []
-    for key, item in value.items():
-        if key in PROGRAM_SEARCHABLE_COMPARE_META_KEYS:
-            values.extend(_flatten_search_values(item))
-    return values
-
-
-def _program_category_search_values(row: dict[str, Any]) -> list[str]:
-    values = _flatten_search_values(row.get("category")) + _flatten_search_values(row.get("category_detail"))
-    category_detail = str(row.get("category_detail") or "").strip()
-    if category_detail:
-        values.append(category_detail.replace("-", ""))
-        values.extend(PROGRAM_CATEGORY_SEARCH_ALIASES.get(category_detail, ()))
-        label = PROGRAM_CATEGORY_LABELS.get(category_detail)
-        if label:
-            values.extend((label, re.sub(r"[\s·/]+", "", label)))
-    return values
-
-
-def _program_search_groups(row: dict[str, Any]) -> list[tuple[int, list[str]]]:
-    return [
-        (0, _flatten_search_values(row.get("title"))),
-        (1, _flatten_search_values(row.get("provider"))),
-        (2, _program_category_search_values(row)),
-        (3, _flatten_search_values(row.get("description")) + _flatten_search_values(row.get("summary"))),
-        (4, _flatten_search_values(row.get("location")) + _flatten_search_values(row.get("region_detail")) + _flatten_search_values(row.get("region"))),
-        (5, _flatten_search_values(row.get("tags")) + _flatten_search_values(row.get("skills"))),
-        (6, _searchable_compare_meta_values(row.get("compare_meta"))),
-    ]
-
-
-def _program_search_match_rank(row: dict[str, Any], q: str | None) -> int | None:
-    needle = _normalize_search_text(q)
-    if not needle:
-        return None
-    for rank, values in _program_search_groups(row):
-        if any(needle in _normalize_search_text(value) for value in values):
-            return rank
-    return None
-
-
-def _filter_program_rows_by_query(rows: list[dict[str, Any]], q: str | None) -> list[dict[str, Any]]:
-    if not _normalize_search_text(q):
-        return rows
-    return [row for row in rows if _program_search_match_rank(row, q) is not None]
-
-
-def _row_matches_category_detail(row: dict[str, Any], category_detail: str | None) -> bool:
-    target = str(category_detail or "").strip()
-    if not target:
-        return True
-
-    if str(row.get("category_detail") or "").strip() == target:
-        return True
-
-    display_labels = _flatten_search_values(row.get("display_categories"))
-    if any(label in PROGRAM_CATEGORY_DETAIL_DISPLAY_MATCHES.get(target, ()) for label in display_labels):
-        return True
-
-    broad_categories = PROGRAM_CATEGORY_DETAIL_BROAD_FALLBACKS.get(target, ())
-    if broad_categories and str(row.get("category") or "").strip() in broad_categories:
-        return True
-
-    values = (
-        _program_source_text_values(row)
-        + _flatten_search_values(row.get("category"))
-        + display_labels
-    )
-    text = " ".join(values).casefold()
-    aliases = (
-        PROGRAM_CATEGORY_SEARCH_ALIASES.get(target, ())
-        + PROGRAM_CATEGORY_DETAIL_DISPLAY_MATCHES.get(target, ())
-        + ((PROGRAM_CATEGORY_LABELS[target],) if target in PROGRAM_CATEGORY_LABELS else ())
-    )
-    return any(_text_has_keyword(text, alias) for alias in aliases)
-
-
-def _filter_program_rows_by_category_detail(
-    rows: list[dict[str, Any]],
-    category_detail: str | None,
-) -> list[dict[str, Any]]:
-    if not str(category_detail or "").strip():
-        return rows
-    return [row for row in rows if _row_matches_category_detail(row, category_detail)]
-
-
-def _program_text_blob(row: dict[str, Any]) -> str:
-    values = (
-        _flatten_search_values(row.get("title"))
-        + _flatten_search_values(row.get("provider"))
-        + _flatten_search_values(row.get("summary"))
-        + _flatten_search_values(row.get("description"))
-        + _flatten_search_values(row.get("support_type"))
-        + _flatten_search_values(row.get("teaching_method"))
-        + _flatten_search_values(row.get("tags"))
-        + _flatten_search_values(row.get("skills"))
-        + _searchable_compare_meta_values(row.get("compare_meta"))
-    )
-    return " ".join(values).casefold()
-
-
-def _dedupe_preserve_order(values: list[str], *, limit: int | None = None) -> list[str]:
-    items: list[str] = []
-    seen: set[str] = set()
-    for value in values:
-        cleaned = str(value or "").strip()
-        if not cleaned:
-            continue
-        key = re.sub(r"\s+", "", cleaned).casefold()
-        if not key or key in seen:
-            continue
-        seen.add(key)
-        items.append(cleaned)
-        if limit is not None and len(items) >= limit:
-            break
-    return items
-
-
-def _program_source_text_values(row: dict[str, Any]) -> list[str]:
-    raw_data = row.get("raw_data") if isinstance(row.get("raw_data"), dict) else {}
-    return (
-        _flatten_search_values(row.get("title"))
-        + _flatten_search_values(row.get("summary"))
-        + _flatten_search_values(row.get("description"))
-        + _flatten_search_values(row.get("target"))
-        + _flatten_search_values(row.get("tags"))
-        + _flatten_search_values(row.get("skills"))
-        + _flatten_search_values(row.get("support_type"))
-        + _flatten_search_values(row.get("teaching_method"))
-        + _flatten_search_values(raw_data.get("trainTarget"))
-        + _searchable_compare_meta_values(row.get("compare_meta"))
-    )
-
-
-def _text_has_keyword(text: str, keyword: str) -> bool:
-    normalized_keyword = keyword.casefold()
-    if re.fullmatch(r"[a-z0-9.+#/-]+", normalized_keyword):
-        escaped = re.escape(normalized_keyword)
-        return re.search(rf"(?<![a-z0-9]){escaped}(?![a-z0-9])", text) is not None
-    return normalized_keyword in text
-
-
-def _derive_teaching_method(row: dict[str, Any]) -> str | None:
-    explicit = str(row.get("teaching_method") or "").strip()
-    if explicit in PROGRAM_TEACHING_METHODS:
-        return explicit
-
-    raw_data = row.get("raw_data") if isinstance(row.get("raw_data"), dict) else {}
-    compare_meta = row.get("compare_meta") if isinstance(row.get("compare_meta"), dict) else {}
-    values = (
-        _flatten_search_values(explicit)
-        + _flatten_search_values(row.get("title"))
-        + _flatten_search_values(row.get("summary"))
-        + _flatten_search_values(row.get("description"))
-        + _flatten_search_values(row.get("target"))
-        + _flatten_search_values(raw_data.get("trainTarget"))
-        + _flatten_search_values(compare_meta.get("training_type"))
-        + _flatten_search_values(compare_meta.get("teaching_method"))
-    )
-    text = " ".join(values).casefold()
-    if not text:
-        return explicit or None
-
-    online_keywords = ONLINE_KEYWORDS + ("원격훈련", "원격 교육", "원격교육", "이러닝", "e-learning")
-    offline_keywords = OFFLINE_KEYWORDS + ("집체훈련", "집체 교육", "집체교육")
-    has_online = any(keyword.casefold() in text for keyword in online_keywords)
-    has_offline = any(keyword.casefold() in text for keyword in offline_keywords)
-    has_hybrid = any(keyword.casefold() in text for keyword in HYBRID_KEYWORDS)
-
-    if has_hybrid or (has_online and has_offline):
-        return "혼합"
-    if has_online:
-        return "온라인"
-    if has_offline:
-        return "오프라인"
-    return explicit or None
-
-
-def _infer_display_categories(row: dict[str, Any]) -> list[str]:
-    candidates: list[str] = []
-    category_detail = str(row.get("category_detail") or "").strip()
-    category = str(row.get("category") or "").strip()
-
-    if category_detail in PROGRAM_CATEGORY_LABELS:
-        mapped = PROGRAM_CATEGORY_LABELS[category_detail]
-        if mapped != "기타":
-            candidates.append(mapped)
-
-    text = " ".join(_program_source_text_values(row)).casefold()
-    for label, keywords in PROGRAM_CATEGORY_RULES:
-        if any(_text_has_keyword(text, keyword) for keyword in keywords):
-            candidates.append(label)
-
-    if category and category not in {"IT", "AI", "디자인", "경영", "창업", "기타", "전체"}:
-        candidates.append(category)
-    elif category == "AI":
-        candidates.append("AI서비스")
-    elif category == "디자인" and any(_text_has_keyword(text, keyword) for keyword in ("디자인", "ux", "ui", "figma", "피그마")):
-        candidates.append("UX/UI/디자인")
-    elif category == "창업":
-        candidates.append("PM/기획")
-
-    deduped = _dedupe_preserve_order(candidates, limit=2)
-    return deduped if deduped else ["기타"]
-
-
-def _extract_time_detail(text_values: list[str]) -> str | None:
-    source = " / ".join(text_values)
-    weekday_match = re.search(r"(월\s*[,~·/ ]\s*화\s*[,~·/ ]\s*수\s*[,~·/ ]\s*목\s*[,~·/ ]\s*금|월\s*[~-]\s*금|평일)", source)
-    weekday_broad_match = re.search(r"주중", source)
-    weekend_match = re.search(r"(토\s*[,~·/ ]\s*일|주말)", source)
-    time_match = re.search(r"([01]?\d|2[0-3])[:시]\s*([0-5]\d)?\s*(?:~|-|부터|에서)\s*([01]?\d|2[0-3])[:시]\s*([0-5]\d)?", source)
-    weekly_hours_match = re.search(r"주\s*(\d{1,2})\s*시간", source)
-    daily_hours_match = re.search(r"(?:일|하루)\s*(\d{1,2})\s*시간", source)
-    total_hours_match = re.search(r"(?:(\d{1,3})\s*일\s*[·,/]?\s*)?총\s*(\d{1,4})\s*시간", source)
-
-    day_text = None
-    if weekend_match:
-        day_text = "주말"
-    elif weekday_match:
-        day_text = "월,화,수,목,금"
-    elif weekday_broad_match:
-        day_text = "주중"
-
-    if time_match:
-        start_hour = int(time_match.group(1))
-        start_minute = time_match.group(2) or "00"
-        end_hour = int(time_match.group(3))
-        end_minute = time_match.group(4) or "00"
-        time_text = f"{start_hour:02d}:{start_minute} ~ {end_hour:02d}:{end_minute}"
-        return f"{day_text} / {time_text}" if day_text else time_text
-    if weekly_hours_match:
-        return f"주 {weekly_hours_match.group(1)}시간 학습 권장"
-    if daily_hours_match:
-        return f"일 {daily_hours_match.group(1)}시간 학습 권장"
-    if total_hours_match:
-        duration_text = (
-            f"{total_hours_match.group(1)}일 · 총 {total_hours_match.group(2)}시간"
-            if total_hours_match.group(1)
-            else f"총 {total_hours_match.group(2)}시간"
-        )
-        return f"{day_text} / {duration_text}" if day_text else duration_text
-    if day_text:
-        return day_text
-    return None
-
-
-def _extract_time_hours(text_values: list[str]) -> tuple[int | None, int | None]:
-    source = " ".join(text_values)
-    time_match = re.search(r"([01]?\d|2[0-3])[:시]\s*(?:[0-5]\d)?\s*(?:~|-|부터|에서)\s*([01]?\d|2[0-3])", source)
-    if not time_match:
-        return None, None
-    return int(time_match.group(1)), int(time_match.group(2))
-
-
-def _time_span_hours(start_hour: int | None, end_hour: int | None) -> int | None:
-    if start_hour is None or end_hour is None:
-        return None
-    span = end_hour - start_hour
-    if span < 0:
-        span += 24
-    return span
-
-
-def _derive_participation_display(row: dict[str, Any]) -> tuple[str | None, str | None]:
-    explicit = str(row.get("participation_time") or "").strip()
-    text_values = _program_source_text_values(row)
-    text = " ".join(text_values).casefold()
-    time_detail = _extract_time_detail(text_values)
-    start_hour, end_hour = _extract_time_hours(text_values)
-    span_hours = _time_span_hours(start_hour, end_hour)
-
-    if "주말" in text or re.search(r"토\s*[,~·/ ]\s*일", " ".join(text_values)):
-        label = "주말반"
-    elif "야간" in text or "저녁" in text or (start_hour is not None and start_hour >= 18):
-        label = "저녁반"
-    elif "자율" in text or "자유 학습" in text or "개별 자유" in text:
-        label = "자율학습"
-    elif explicit == "full-time" or "풀타임" in text or "전일" in text or (start_hour is not None and end_hour is not None and start_hour <= 10 and end_hour >= 17):
-        label = "풀타임"
-    elif explicit == "part-time" or any(keyword in text for keyword in ("파트타임", "part-time", "특강", "세미나")) or (span_hours is not None and 0 < span_hours <= 5):
-        label = "파트타임"
-    else:
-        inferred = _program_participation_time(row)
-        label = {"full-time": "풀타임", "part-time": "파트타임"}.get(inferred or "")
-
-    if label and time_detail:
-        return label, time_detail
-    if label:
-        return label, None
-    return None, time_detail
-
-
-def _derive_selection_process_label(row: dict[str, Any]) -> str | None:
-    compare_meta = row.get("compare_meta") if isinstance(row.get("compare_meta"), dict) else {}
-    candidates: list[str] = []
-    if compare_meta.get("coding_skill_required") in (True, "pass", "warn") or "코딩테스트" in _program_text_blob(row):
-        candidates.append("코딩 테스트")
-    if compare_meta.get("portfolio_required") is True:
-        candidates.append("포트폴리오")
-    if compare_meta.get("interview_required") is True:
-        candidates.append("면접")
-
-    text = _program_text_blob(row)
-    selection_map = (
-        ("서류", ("서류", "신청서", "자기소개서")),
-        ("면접", ("면접", "인터뷰")),
-        ("테스트", ("테스트", "코딩테스트", "역량평가")),
-        ("선착순", ("선착순",)),
-        ("추첨", ("추첨",)),
-    )
-    for label, keywords in selection_map:
-        if any(keyword.casefold() in text for keyword in keywords):
-            candidates.append(label)
-
-    deduped = _dedupe_preserve_order(candidates, limit=3)
-    return " / ".join(deduped) if deduped else "선발 절차 없음"
-
-
-def _is_useful_keyword(value: str) -> bool:
-    cleaned = value.strip(" #[](){}·,./")
-    if len(cleaned) < 2 or len(cleaned) > 18:
-        return False
-    generic = {
-        "교육",
-        "과정",
-        "프로그램",
-        "모집",
-        "무료",
-        "오프라인",
-        "온라인",
-        "혼합",
-        "서울",
-        "경기",
-        "청년",
-        "구직자",
-        "재직자",
-    }
-    return cleaned not in generic
-
-
-def _extract_program_keywords(row: dict[str, Any]) -> list[str]:
-    keywords: list[str] = []
-    text = " ".join(_program_source_text_values(row)).casefold()
-
-    for label, aliases in PROGRAM_KEYWORD_RULES:
-        if any(_text_has_keyword(text, alias) for alias in aliases):
-            keywords.append(label)
-
-    for value in _normalize_text_list(row.get("skills")) + _normalize_text_list(row.get("tags")):
-        cleaned = value.strip(" #[](){}·,./")
-        if _is_useful_keyword(cleaned):
-            keywords.append(cleaned)
-
-    for value in _flatten_search_values((row.get("compare_meta") if isinstance(row.get("compare_meta"), dict) else {}).get("target_job")):
-        cleaned = value.strip()
-        if _is_useful_keyword(cleaned):
-            keywords.append(cleaned)
-
-    return _dedupe_preserve_order(keywords, limit=8)
-
-
-def _program_cost_type(row: dict[str, Any]) -> str | None:
-    explicit_cost_type = str(row.get("cost_type") or "").strip()
-    if explicit_cost_type in PROGRAM_COST_TYPES:
-        return explicit_cost_type
-
-    text = _program_text_blob(row)
-    compare_meta = row.get("compare_meta") if isinstance(row.get("compare_meta"), dict) else {}
-    card_required = compare_meta.get("naeilbaeumcard_required")
-    has_card_keyword = "내일배움" in text or "내배카" in text or "국민내일배움" in text
-    if card_required is True or card_required == "pass" or has_card_keyword:
-        return "naeil-card"
-
-    cost = _int_or_none(row.get("cost"))
-    if cost is not None:
-        return "paid" if cost > 0 else "free-no-card"
-
-    if "무료" in text or "전액 지원" in text or "자부담 0" in text:
-        return "free-no-card"
-    if "유료" in text or "자부담" in text or "수강료" in text:
-        return "paid"
-    return None
-
-
-def _program_sort_date(
-    row: dict[str, Any],
-    *,
-    row_keys: Sequence[str],
-    meta_keys: Sequence[str],
-) -> date | None:
-    compare_meta = row.get("compare_meta") if isinstance(row.get("compare_meta"), dict) else {}
-    for key in row_keys:
-        parsed = _parse_program_deadline(_first_text(row.get(key)))
-        if parsed:
-            return parsed
-    for key in meta_keys:
-        parsed = _parse_program_deadline(_first_text(compare_meta.get(key)))
-        if parsed:
-            return parsed
-    return None
-
-
-def _program_start_sort_date(row: dict[str, Any]) -> date | None:
-    return _program_sort_date(
-        row,
-        row_keys=("program_start_date", "start_date"),
-        meta_keys=("program_start_date", "training_start_date", "tra_start_date", "traStartDate", "course_start_date"),
-    )
-
-
-def _program_end_sort_date(row: dict[str, Any]) -> date | None:
-    return _program_sort_date(
-        row,
-        row_keys=("program_end_date", "end_date"),
-        meta_keys=("program_end_date", "training_end_date", "tra_end_date", "traEndDate", "course_end_date"),
-    )
-
-
-def _program_sort_duration_days(row: dict[str, Any]) -> int | None:
-    start = _program_start_sort_date(row)
-    end = _program_end_sort_date(row)
-    if start is None or end is None or end < start:
-        return None
-    return (end - start).days + 1
-
-
-def _program_sort_cost_amount(row: dict[str, Any]) -> int | None:
-    direct_cost = _int_or_none(row.get("cost"))
-    if direct_cost is not None:
-        return max(0, direct_cost)
-
-    compare_meta = row.get("compare_meta") if isinstance(row.get("compare_meta"), dict) else {}
-    for key in ("cost", "fee", "tuition", "course_fee", "training_fee", "self_payment", "out_of_pocket"):
-        parsed = _int_or_none(compare_meta.get(key))
-        if parsed is not None:
-            return max(0, parsed)
-
-    cost_type = _program_cost_type(row)
-    if cost_type in {"free-no-card", "naeil-card"}:
-        return 0
-    return None
-
-
-def _program_participation_time(row: dict[str, Any]) -> str | None:
-    explicit_participation_time = str(row.get("participation_time") or "").strip()
-    if explicit_participation_time in PROGRAM_PARTICIPATION_TIMES:
-        return explicit_participation_time
-
-    text_values = _program_source_text_values(row)
-    text = " ".join(text_values).casefold()
-    start_hour, end_hour = _extract_time_hours(text_values)
-    span_hours = _time_span_hours(start_hour, end_hour)
-
-    if any(keyword in text for keyword in ("풀타임", "full-time", "전일", "종일")):
-        return "full-time"
-    if start_hour is not None and end_hour is not None and start_hour <= 10 and end_hour >= 17:
-        return "full-time"
-
-    if any(keyword in text for keyword in ("파트타임", "part-time", "야간", "저녁", "주말", "특강", "세미나")):
-        return "part-time"
-    if start_hour is not None and start_hour >= 18:
-        return "part-time"
-    if span_hours is not None and 0 < span_hours <= 5:
-        return "part-time"
-    return None
-
-
-def _filter_program_rows_by_extra_filters(
-    rows: list[dict[str, Any]],
-    *,
-    cost_types: list[str] | None = None,
-    participation_times: list[str] | None = None,
-    targets: list[str] | None = None,
-    selection_processes: list[str] | None = None,
-    employment_links: list[str] | None = None,
-) -> list[dict[str, Any]]:
-    normalized_cost_types = set(_normalize_option_param(cost_types, PROGRAM_COST_TYPES))
-    normalized_participation_times = set(_normalize_option_param(participation_times, PROGRAM_PARTICIPATION_TIMES))
-    normalized_targets = set(_normalize_option_param(targets, PROGRAM_TARGETS))
-    normalized_selection_processes = set(_normalize_option_param(selection_processes, PROGRAM_SELECTION_PROCESSES))
-    normalized_employment_links = set(_normalize_option_param(employment_links, PROGRAM_EMPLOYMENT_LINKS))
-    if (
-        not normalized_cost_types
-        and not normalized_participation_times
-        and not normalized_targets
-        and not normalized_selection_processes
-        and not normalized_employment_links
-    ):
-        return rows
-
-    filtered_rows: list[dict[str, Any]] = []
-    for row in rows:
-        if normalized_cost_types and _program_cost_type(row) not in normalized_cost_types:
-            continue
-        if normalized_participation_times and _program_participation_time(row) not in normalized_participation_times:
-            continue
-        if normalized_targets and not _program_matches_targets(row, normalized_targets):
-            continue
-        if normalized_selection_processes and not _program_matches_any(row, normalized_selection_processes):
-            continue
-        if normalized_employment_links and not _program_matches_any(row, normalized_employment_links):
-            continue
-        filtered_rows.append(row)
-    return filtered_rows
-
-
-def _program_matches_targets(row: dict[str, Any], targets: set[str]) -> bool:
-    text = _program_text_blob(row) + " " + " ".join(_flatten_search_values(row.get("target")))
-    return any(target.casefold() in text.casefold() for target in targets)
-
-
-def _program_matches_any(row: dict[str, Any], keywords: set[str]) -> bool:
-    text = _program_text_blob(row)
-    return any(keyword.casefold() in text.casefold() for keyword in keywords)
-
-
-def _program_source_label(source: str) -> str:
-    normalized = source.strip()
-    labels = {
-        "kstartup": "K-Startup",
-        "K-Startup": "K-Startup",
-        "sesac": "SeSAC",
-        "SeSAC": "SeSAC",
-    }
-    return labels.get(normalized, normalized)
-
-
-def _build_named_filter_options(values: list[str], *, source_labels: bool = False) -> list[ProgramFilterOption]:
-    seen: set[str] = set()
-    options: list[ProgramFilterOption] = []
-    for value in values:
-        normalized = str(value or "").strip()
-        if not normalized or normalized in seen:
-            continue
-        seen.add(normalized)
-        options.append(
-            ProgramFilterOption(
-                value=normalized,
-                label=_program_source_label(normalized) if source_labels else normalized,
-            )
-        )
-    return options
-
-
-def _extract_program_filter_options(rows: list[dict[str, Any]]) -> ProgramFilterOptionsResponse:
-    sources: list[str] = []
-    targets: list[str] = []
-    selection_processes: list[str] = []
-    employment_links: list[str] = []
-
-    for row in rows:
-        source = str(row.get("source") or "").strip()
-        if source:
-            sources.append(source)
-
-        target_text = (_program_text_blob(row) + " " + " ".join(_flatten_search_values(row.get("target")))).casefold()
-        targets.extend(target for target in sorted(PROGRAM_TARGETS) if target.casefold() in target_text)
-        selection_processes.extend(
-            process for process in sorted(PROGRAM_SELECTION_PROCESSES) if _program_matches_any(row, {process})
-        )
-        employment_links.extend(
-            link for link in sorted(PROGRAM_EMPLOYMENT_LINKS) if _program_matches_any(row, {link})
-        )
-
-    return ProgramFilterOptionsResponse(
-        sources=_build_named_filter_options(sorted(sources, key=str.casefold), source_labels=True),
-        targets=_build_named_filter_options(targets),
-        selection_processes=_build_named_filter_options(selection_processes),
-        employment_links=_build_named_filter_options(employment_links),
-    )
-
-
-def _filter_options_from_facet_snapshot(facets: ProgramFacetSnapshot) -> ProgramFilterOptionsResponse:
-    return ProgramFilterOptionsResponse(
-        sources=[
-            ProgramFilterOption(value=bucket.value, label=_program_source_label(bucket.value))
-            for bucket in facets.source
-            if bucket.value
-        ],
-        targets=[ProgramFilterOption(value=value, label=value) for value in sorted(PROGRAM_TARGETS)],
-        selection_processes=[],
-        employment_links=[],
-    )
-
-
 def _serialize_program_list_row(program: dict[str, Any]) -> dict[str, Any]:
-    record = dict(program)
-    compare_meta = record.get("compare_meta") if isinstance(record.get("compare_meta"), dict) else {}
-    record.update(_normalize_rating_fields(record.get("rating") or compare_meta.get("satisfaction_score")))
-    record["teaching_method"] = _derive_teaching_method(record)
-    deadline = _resolve_program_deadline(record)
-    days_left = _calculate_days_left(deadline)
-    participation_mode_label, participation_time_text = _derive_participation_display(record)
-    record["deadline"] = deadline
-    record["days_left"] = days_left
-    record["display_categories"] = _infer_display_categories(record)
-    record["participation_mode_label"] = participation_mode_label
-    record["participation_time_text"] = participation_time_text
-    record["selection_process_label"] = _derive_selection_process_label(record)
-    record["extracted_keywords"] = _extract_program_keywords(record)
-    if days_left is not None:
-        record["is_active"] = days_left >= 0
-    score = compute_recommended_score(record)
-    record["deadline_confidence"] = _program_deadline_confidence(record)
-    record["recommended_score"] = score.recommended_score
-    record["recommendation_reasons"] = list(score.reasons)
-    return record
+    return _serialize_program_list_row_summary(program)
 
 
 def _program_detail_view_count(row: Mapping[str, Any], *, recent_only: bool = False) -> int:
@@ -1863,6 +1279,51 @@ def _calculate_program_click_hotness_score(*, recent_count: int, total_count: in
     safe_recent_count = max(recent_count, 0)
     safe_total_count = min(max(total_count, 0), PROGRAM_CLICK_HOTNESS_TOTAL_CAP)
     return safe_recent_count * PROGRAM_CLICK_HOTNESS_RECENT_WEIGHT + safe_total_count + recommended
+
+
+def _is_ignorable_program_source_records_read_error(error: Exception) -> bool:
+    message = str(getattr(error, "detail", "") or error).lower()
+    return (
+        "program_source_records" in message
+        or "primary_source_record_id" in message
+        or "source_specific" in message
+        or "application_url" in message
+    )
+
+
+async def _fetch_primary_source_records_by_program_ids(
+    program_ids: list[str],
+) -> dict[str, dict[str, Any]]:
+    if not program_ids:
+        return {}
+
+    quoted_ids = ",".join(f'"{program_id}"' for program_id in program_ids if program_id)
+    if not quoted_ids:
+        return {}
+
+    try:
+        rows = await request_supabase(
+            method="GET",
+            path="/rest/v1/program_source_records",
+            params={
+                "select": PROGRAM_SOURCE_RECORD_DETAIL_SELECT,
+                "program_id": f"in.({quoted_ids})",
+                "is_primary": "eq.true",
+            },
+        )
+    except Exception as exc:
+        if _is_ignorable_program_source_records_read_error(exc):
+            return {}
+        raise
+
+    if not isinstance(rows, list):
+        return {}
+
+    return {
+        str(row.get("program_id")): dict(row)
+        for row in rows
+        if str(row.get("program_id") or "").strip()
+    }
 
 
 def _program_click_hotness_score(row: Mapping[str, Any]) -> float:
@@ -1885,68 +1346,11 @@ def _sort_program_list_rows(
     sort: str,
     include_closed_recent: bool,
 ) -> list[dict[str, Any]]:
-    if sort == "latest":
-        return rows
-
-    def deadline_sort_key(row: dict[str, Any]) -> tuple[int, int]:
-        parsed_deadline = _parse_program_deadline(str(row.get("deadline") or ""))
-        is_active = bool(row.get("is_active"))
-        if include_closed_recent and not is_active:
-            return (2, -(parsed_deadline.toordinal() if parsed_deadline else date.min.toordinal()))
-        if parsed_deadline is None:
-            return (1, date.max.toordinal())
-        return (0, parsed_deadline.toordinal())
-
-    if sort in PROGRAM_DEADLINE_SORTS:
-        return sorted(rows, key=deadline_sort_key)
-
-    if sort == "start_soon":
-        return sorted(
-            rows,
-            key=lambda row: (
-                1 if _program_start_sort_date(row) is None else 0,
-                (_program_start_sort_date(row) or date.max).toordinal(),
-                deadline_sort_key(row),
-            ),
-        )
-
-    if sort in {"cost_low", "cost_high"}:
-        reverse_cost = sort == "cost_high"
-        return sorted(
-            rows,
-            key=lambda row: (
-                1 if _program_sort_cost_amount(row) is None else 0,
-                -(_program_sort_cost_amount(row) or 0) if reverse_cost else (_program_sort_cost_amount(row) or 0),
-                deadline_sort_key(row),
-            ),
-        )
-
-    if sort in {"duration_short", "duration_long"}:
-        reverse_duration = sort == "duration_long"
-        return sorted(
-            rows,
-            key=lambda row: (
-                1 if _program_sort_duration_days(row) is None else 0,
-                -(_program_sort_duration_days(row) or 0)
-                if reverse_duration
-                else (_program_sort_duration_days(row) or 0),
-                deadline_sort_key(row),
-            ),
-        )
-
-    if sort == "popular":
-        return sorted(
-            rows,
-            key=lambda row: (
-                -_program_detail_view_count(row, recent_only=True),
-                -_program_detail_view_count(row),
-                -(_coerce_score(row.get("recommended_score")) or 0.0),
-                deadline_sort_key(row),
-                str(row.get("id") or ""),
-            ),
-        )
-
-    return sorted(rows, key=deadline_sort_key)
+    return _service_sort_program_list_rows(
+        rows,
+        sort=sort,
+        include_closed_recent=include_closed_recent,
+    )
 
 
 def _filter_program_rows_by_deadline_window(
@@ -1956,24 +1360,13 @@ def _filter_program_rows_by_deadline_window(
     include_closed_recent: bool,
     sort: str,
 ) -> list[dict[str, Any]]:
-    if include_closed_recent:
-        recent_cutoff = date.today() - timedelta(days=90)
-        return [
-            row
-            for row in rows
-            if (
-                (parsed_deadline := _parse_program_deadline(str(row.get("deadline") or "")))
-                and parsed_deadline >= recent_cutoff
-            )
-        ]
-    if not recruiting_only and sort not in PROGRAM_DEADLINE_SORTS:
-        return rows
-    return [
-        row
-        for row in rows
-        if (isinstance(row.get("days_left"), int) and row["days_left"] >= 0)
-        or _is_active_work24_with_unknown_deadline(row)
-    ]
+    return _service_filter_program_rows_by_deadline_window(
+        rows,
+        recruiting_only=recruiting_only,
+        include_closed_recent=include_closed_recent,
+        sort=sort,
+        is_active_work24_with_unknown_deadline=_is_active_work24_with_unknown_deadline,
+    )
 
 
 def _postprocess_program_list_rows(
@@ -1981,6 +1374,8 @@ def _postprocess_program_list_rows(
     *,
     category_detail: str | None = None,
     q: str | None = None,
+    sources: list[str] | None = None,
+    teaching_methods: list[str] | None = None,
     cost_types: list[str] | None = None,
     participation_times: list[str] | None = None,
     targets: list[str] | None = None,
@@ -1993,42 +1388,27 @@ def _postprocess_program_list_rows(
     offset: int,
     prefer_work24_default_mix: bool = False,
 ) -> list[dict[str, Any]]:
-    serialized_rows = _filter_program_rows_by_deadline_window(
-        _filter_program_rows_by_extra_filters(
-            _filter_program_rows_by_category_detail(
-                _filter_program_rows_by_query(
-                    [_serialize_program_list_row(row) for row in rows],
-                    q,
-                ),
-                category_detail,
-            ),
-            cost_types=cost_types,
-            participation_times=participation_times,
-            targets=targets,
-            selection_processes=selection_processes,
-            employment_links=employment_links,
-        ),
+    return _service_postprocess_program_list_rows(
+        rows,
+        category_detail=category_detail,
+        q=q,
+        sources=sources,
+        teaching_methods=teaching_methods,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
+        selection_processes=selection_processes,
+        employment_links=employment_links,
         recruiting_only=recruiting_only,
-        include_closed_recent=include_closed_recent,
         sort=sort,
+        include_closed_recent=include_closed_recent,
+        limit=limit,
+        offset=offset,
+        prefer_work24_default_mix=prefer_work24_default_mix,
+        serialize_program_list_row=_serialize_program_list_row,
+        is_active_work24_with_unknown_deadline=_is_active_work24_with_unknown_deadline,
+        mix_work24_default_rows=_mix_work24_default_rows,
     )
-    if _normalize_search_text(q) and sort == "default":
-        sorted_rows = sorted(
-            serialized_rows,
-            key=lambda row: (
-                _program_search_match_rank(row, q) if _program_search_match_rank(row, q) is not None else 99,
-                (_parse_program_deadline(str(row.get("deadline") or "")) or date.max).toordinal(),
-            ),
-        )
-    else:
-        sorted_rows = _sort_program_list_rows(
-            serialized_rows,
-            sort=sort,
-            include_closed_recent=include_closed_recent,
-        )
-    if prefer_work24_default_mix:
-        sorted_rows = _mix_work24_default_rows(sorted_rows)
-    return sorted_rows[offset : offset + limit]
 
 
 def _parse_content_range_total(value: str | None) -> int:
@@ -2115,6 +1495,67 @@ async def _fetch_programs_by_ids(program_ids: list[str]) -> dict[str, dict[str, 
         for row in rows
         if str(row.get("id") or "").strip()
     }
+
+
+async def _fetch_program_list_summary_rows_by_ids(
+    program_ids: list[str],
+) -> dict[str, dict[str, Any]]:
+    if not program_ids or not _program_list_read_model_enabled():
+        return {}
+
+    quoted_ids = ",".join(f'"{program_id}"' for program_id in program_ids if program_id)
+    if not quoted_ids:
+        return {}
+
+    rows = await request_supabase(
+        method="GET",
+        path=f"/rest/v1/{PROGRAM_LIST_INDEX_TABLE}",
+        params={
+            "select": PROGRAM_LIST_SUMMARY_SELECT,
+            "id": f"in.({quoted_ids})",
+        },
+    )
+    if not isinstance(rows, list):
+        return {}
+
+    return {
+        str(row.get("id")): dict(row)
+        for row in rows
+        if str(row.get("id") or "").strip()
+    }
+
+
+def _merge_program_rows_for_relevance(
+    programs_by_id: Mapping[str, Mapping[str, Any]],
+    summary_rows_by_id: Mapping[str, Mapping[str, Any]],
+) -> dict[str, dict[str, Any]]:
+    program_ids = list(dict.fromkeys([*programs_by_id.keys(), *summary_rows_by_id.keys()]))
+    merged_by_id: dict[str, dict[str, Any]] = {}
+
+    for program_id in program_ids:
+        merged: dict[str, Any] = dict(programs_by_id.get(program_id) or {})
+        summary = dict(summary_rows_by_id.get(program_id) or {})
+        for key, value in summary.items():
+            if value not in (None, "", []):
+                merged[key] = value
+
+        keywords: list[str] = []
+        for key in (
+            "skills",
+            "extracted_keywords",
+            "tags",
+            "display_categories",
+            "category",
+            "category_detail",
+        ):
+            keywords.extend(_normalize_text_list(merged.get(key)))
+        if keywords:
+            merged["skills"] = list(dict.fromkeys(keywords))
+
+        if merged:
+            merged_by_id[program_id] = merged
+
+    return merged_by_id
 
 
 async def _load_recommendation_rule(condition_keys: Sequence[str]) -> dict[str, Any] | None:
@@ -2326,7 +1767,7 @@ def _build_default_recommendation_items(
             relevance_score=program.get("relevance_score"),
             reason=reason,
             fit_keywords=[],
-            program=ProgramListItem.model_validate(program),
+            program=ProgramListItem.model_validate(_serialize_program_card_summary(program)),
         )
         for program in scored_programs[:top_k]
         if str(program.get("id") or "").strip()
@@ -2381,7 +1822,7 @@ async def _build_cached_recommendation_items(
                 relevance_score=cached_relevance_score,
                 reason=_clean_text(row.get("reason")) or "최근 생성된 추천 결과를 캐시에서 불러왔습니다.",
                 fit_keywords=fit_keywords,
-                program=ProgramListItem.model_validate(program_record),
+                program=ProgramListItem.model_validate(_serialize_program_card_summary(program_record)),
             )
         )
         if len(items) >= top_k:
@@ -2433,7 +1874,7 @@ async def _build_rule_recommendation_items(
                 relevance_score=relevance_score,
                 reason=reason,
                 fit_keywords=fit_keywords,
-                program=ProgramListItem.model_validate(program_record),
+                program=ProgramListItem.model_validate(_serialize_program_card_summary(program_record)),
             )
         )
 
@@ -2491,7 +1932,9 @@ async def _count_program_rows(
     include_closed_recent: bool = False,
 ) -> int:
     has_extra_filters = bool(
-        _normalize_option_param(cost_types, PROGRAM_COST_TYPES)
+        _has_other_program_source_filter(sources)
+        or _normalize_teaching_methods_param(teaching_methods)
+        or _normalize_option_param(cost_types, PROGRAM_COST_TYPES)
         or _normalize_option_param(participation_times, PROGRAM_PARTICIPATION_TIMES)
         or _normalize_option_param(targets, PROGRAM_TARGETS)
         or _normalize_option_param(selection_processes, PROGRAM_SELECTION_PROCESSES)
@@ -2499,7 +1942,7 @@ async def _count_program_rows(
     )
     params = _build_program_query_params(
         select=(
-            "*"
+            PROGRAM_FILTER_SCAN_SELECT
             if _normalize_search_text(q) or has_extra_filters or category_detail
             else "id,source,deadline,close_date,end_date,compare_meta,is_active,created_at"
         ),
@@ -2523,6 +1966,8 @@ async def _count_program_rows(
                         _filter_program_rows_by_query([_serialize_program_list_row(row) for row in rows], q),
                         category_detail,
                     ),
+                    sources=sources,
+                    teaching_methods=teaching_methods,
                     cost_types=cost_types,
                     participation_times=participation_times,
                     targets=targets,
@@ -2545,10 +1990,23 @@ def _program_list_read_model_enabled() -> bool:
 
 def _can_use_program_list_read_model(
     *,
+    sources: list[str] | None = None,
+    category_detail: str | None = None,
+    cost_types: list[str] | None = None,
+    participation_times: list[str] | None = None,
+    targets: list[str] | None = None,
     selection_processes: list[str] | None = None,
     employment_links: list[str] | None = None,
+    include_closed_recent: bool = False,
 ) -> bool:
-    return _program_list_read_model_enabled() and not (
+    has_local_derived_filters = bool(
+        str(category_detail or "").strip()
+        or _has_other_program_source_filter(sources)
+        or _normalize_option_param(cost_types, PROGRAM_COST_TYPES)
+        or _normalize_option_param(participation_times, PROGRAM_PARTICIPATION_TIMES)
+        or _normalize_option_param(targets, PROGRAM_TARGETS)
+    )
+    return _program_list_read_model_enabled() and not include_closed_recent and not has_local_derived_filters and not (
         _normalize_option_param(selection_processes, PROGRAM_SELECTION_PROCESSES)
         or _normalize_option_param(employment_links, PROGRAM_EMPLOYMENT_LINKS)
     )
@@ -2580,11 +2038,47 @@ def _program_promoted_provider_terms() -> list[str]:
     return terms
 
 
-def _program_list_mode(*, q: str | None, scope: str | None, include_closed_recent: bool) -> Literal["browse", "search", "archive"]:
+def _program_active_filter_group_count(
+    *,
+    category: str | None = None,
+    category_detail: str | None = None,
+    region_detail: str | None = None,
+    regions: list[str] | None = None,
+    sources: list[str] | None = None,
+    teaching_methods: list[str] | None = None,
+    cost_types: list[str] | None = None,
+    participation_times: list[str] | None = None,
+    targets: list[str] | None = None,
+) -> int:
+    count = 0
+    if category or category_detail:
+        count += 1
+    if region_detail or _normalize_regions_param(regions):
+        count += 1
+    if _normalize_program_source_filters(sources):
+        count += 1
+    if _normalize_teaching_methods_param(teaching_methods):
+        count += 1
+    if _normalize_option_param(cost_types, PROGRAM_COST_TYPES):
+        count += 1
+    if _normalize_option_param(participation_times, PROGRAM_PARTICIPATION_TIMES):
+        count += 1
+    if _normalize_option_param(targets, PROGRAM_TARGETS):
+        count += 1
+    return count
+
+
+def _program_list_mode(
+    *,
+    q: str | None,
+    scope: str | None,
+    include_closed_recent: bool,
+    active_filter_group_count: int = 0,
+) -> Literal["browse", "search", "archive"]:
     normalized_scope = str(scope or "default").strip().lower()
     if include_closed_recent or normalized_scope in {"archive", "closed", "recent_closed"}:
         return "archive"
-    if _normalize_search_text(q) or normalized_scope == "all":
+    if _normalize_search_text(q) or normalized_scope == "all" or active_filter_group_count >= 2:
         return "search"
     return "browse"
 
@@ -2623,6 +2117,171 @@ def _is_default_browse_entry_request(
             targets,
         )
     )
+
+
+def _is_default_public_browse_scope(
+    *,
+    category: str | None = None,
+    category_detail: str | None = None,
+    scope: str | None = None,
+    region_detail: str | None = None,
+    q: str | None = None,
+    regions: list[str] | None = None,
+    sources: list[str] | None = None,
+    teaching_methods: list[str] | None = None,
+    cost_types: list[str] | None = None,
+    participation_times: list[str] | None = None,
+    targets: list[str] | None = None,
+    include_closed_recent: bool = False,
+) -> bool:
+    return _is_default_browse_entry_request(
+        mode=_program_list_mode(q=q, scope=scope, include_closed_recent=include_closed_recent),
+        sort="default",
+        offset=0,
+        cursor=None,
+        category=category,
+        category_detail=category_detail,
+        region_detail=region_detail,
+        regions=regions,
+        sources=sources,
+        teaching_methods=teaching_methods,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
+    )
+
+
+def _has_local_browse_subset_filters(
+    *,
+    category_detail: str | None = None,
+    cost_types: list[str] | None = None,
+    participation_times: list[str] | None = None,
+    targets: list[str] | None = None,
+) -> bool:
+    return bool(
+        str(category_detail or "").strip()
+        or _normalize_option_param(cost_types, PROGRAM_COST_TYPES)
+        or _normalize_option_param(participation_times, PROGRAM_PARTICIPATION_TIMES)
+        or _normalize_option_param(targets, PROGRAM_TARGETS)
+    )
+
+
+def _should_use_local_browse_subset(
+    *,
+    category: str | None = None,
+    category_detail: str | None = None,
+    scope: str | None = None,
+    region_detail: str | None = None,
+    q: str | None = None,
+    regions: list[str] | None = None,
+    sources: list[str] | None = None,
+    teaching_methods: list[str] | None = None,
+    cost_types: list[str] | None = None,
+    participation_times: list[str] | None = None,
+    targets: list[str] | None = None,
+    include_closed_recent: bool = False,
+) -> bool:
+    active_filter_group_count = _program_active_filter_group_count(
+        category=category,
+        category_detail=category_detail,
+        region_detail=region_detail,
+        regions=regions,
+        sources=sources,
+        teaching_methods=teaching_methods,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
+    )
+    return (
+        _program_list_mode(
+            q=q,
+            scope=scope,
+            include_closed_recent=include_closed_recent,
+            active_filter_group_count=active_filter_group_count,
+        )
+        == "browse"
+        and _has_local_browse_subset_filters(
+            category_detail=category_detail,
+            cost_types=cost_types,
+            participation_times=participation_times,
+            targets=targets,
+        )
+    )
+
+
+def _is_underfilled_default_browse_read_model(
+    *,
+    count: int,
+    category: str | None = None,
+    category_detail: str | None = None,
+    scope: str | None = None,
+    region_detail: str | None = None,
+    q: str | None = None,
+    regions: list[str] | None = None,
+    sources: list[str] | None = None,
+    teaching_methods: list[str] | None = None,
+    cost_types: list[str] | None = None,
+    participation_times: list[str] | None = None,
+    targets: list[str] | None = None,
+    include_closed_recent: bool = False,
+) -> bool:
+    return (
+        count > 0
+        and count < _program_browse_pool_limit()
+        and _is_default_public_browse_scope(
+            category=category,
+            category_detail=category_detail,
+            scope=scope,
+            region_detail=region_detail,
+            q=q,
+            regions=regions,
+            sources=sources,
+            teaching_methods=teaching_methods,
+            cost_types=cost_types,
+            participation_times=participation_times,
+            targets=targets,
+            include_closed_recent=include_closed_recent,
+        )
+    )
+
+
+def _is_stale_default_browse_read_model_items(
+    items: Sequence[ProgramListRowItem] | Sequence[ProgramListItem],
+    *,
+    category: str | None,
+    category_detail: str | None,
+    scope: str | None,
+    region_detail: str | None,
+    q: str | None,
+    regions: list[str] | None,
+    sources: list[str] | None,
+    teaching_methods: list[str] | None,
+    cost_types: list[str] | None,
+    participation_times: list[str] | None,
+    targets: list[str] | None,
+    include_closed_recent: bool,
+) -> bool:
+    if not _is_default_public_browse_scope(
+        category=category,
+        category_detail=category_detail,
+        scope=scope,
+        region_detail=region_detail,
+        q=q,
+        regions=regions,
+        sources=sources,
+        teaching_methods=teaching_methods,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
+        include_closed_recent=include_closed_recent,
+    ):
+        return False
+
+    for item in items:
+        program = item.program if isinstance(item, ProgramListRowItem) else item
+        if (program.days_left is not None and program.days_left < 0) or program.is_active is False:
+            return True
+    return False
 
 
 def _encode_program_cursor(row: Mapping[str, Any], *, sort: str) -> str | None:
@@ -2727,7 +2386,22 @@ def _build_read_model_params(
     cursor: str | None = None,
     count: bool = False,
 ) -> tuple[dict[str, Any], Literal["browse", "search", "archive"]]:
-    mode = _program_list_mode(q=q, scope=scope, include_closed_recent=include_closed_recent)
+    mode = _program_list_mode(
+        q=q,
+        scope=scope,
+        include_closed_recent=include_closed_recent,
+        active_filter_group_count=_program_active_filter_group_count(
+            category=category,
+            category_detail=category_detail,
+            region_detail=region_detail,
+            regions=regions,
+            sources=sources,
+            teaching_methods=teaching_methods,
+            cost_types=cost_types,
+            participation_times=participation_times,
+            targets=targets,
+        ),
+    )
     effective_sort = sort if sort in PROGRAM_SORT_OPTIONS else "default"
     use_browse_pool = mode == "browse" and effective_sort != "popular"
     params: dict[str, Any] = {
@@ -2754,10 +2428,11 @@ def _build_read_model_params(
     if normalized_regions:
         _add_read_model_or_filter(params, "(" + ",".join(f"location.ilike.*{keyword}*" for keyword in normalized_regions) + ")")
 
-    normalized_sources = [source.strip() for source in (sources or []) if source.strip()]
+    normalized_sources = _normalize_program_source_filters(sources, expand_aliases=True)
     if normalized_sources:
-        quoted_sources = ",".join(f'"{source}"' for source in normalized_sources)
-        params["source"] = f"in.({quoted_sources})"
+        source_filter = _program_source_filter_param(normalized_sources)
+        if source_filter:
+            params["source"] = source_filter
 
     normalized_teaching_methods = _normalize_teaching_methods_param(teaching_methods)
     if normalized_teaching_methods:
@@ -2819,7 +2494,22 @@ async def _fetch_promoted_read_model_rows(
     slot_limit = _program_promoted_slot_limit()
     if slot_limit <= 0:
         return []
-    mode = _program_list_mode(q=None, scope=scope, include_closed_recent=include_closed_recent)
+    mode = _program_list_mode(
+        q=None,
+        scope=scope,
+        include_closed_recent=include_closed_recent,
+        active_filter_group_count=_program_active_filter_group_count(
+            category=category,
+            category_detail=category_detail,
+            region_detail=region_detail,
+            regions=regions,
+            sources=sources,
+            teaching_methods=teaching_methods,
+            cost_types=cost_types,
+            participation_times=participation_times,
+            targets=targets,
+        ),
+    )
     if mode != "browse":
         return []
 
@@ -2901,7 +2591,23 @@ async def _fetch_program_list_read_model_rows(
     cursor: str | None = None,
 ) -> ProgramListPageResponse:
     started = time.perf_counter()
-    mode = _program_list_mode(q=q, scope=scope, include_closed_recent=include_closed_recent)
+    active_filter_group_count = _program_active_filter_group_count(
+        category=category,
+        category_detail=category_detail,
+        region_detail=region_detail,
+        regions=regions,
+        sources=sources,
+        teaching_methods=teaching_methods,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
+    )
+    mode = _program_list_mode(
+        q=q,
+        scope=scope,
+        include_closed_recent=include_closed_recent,
+        active_filter_group_count=active_filter_group_count,
+    )
     effective_sort = _normalize_program_sort(sort)
     promoted_items: list[ProgramListItem] = []
     if _is_default_browse_entry_request(
@@ -2971,8 +2677,16 @@ async def _fetch_program_list_read_model_rows(
         cache_hit=False,
     )
     return ProgramListPageResponse(
-        promoted_items=promoted_items,
-        items=[ProgramListItem.model_validate(row) for row in page_rows],
+        promoted_items=[
+            _serialize_program_list_row_item(
+                item.model_dump(),
+                surface="program_list_promoted",
+                promoted_rank=item.promoted_rank,
+                already_serialized=True,
+            )
+            for item in promoted_items
+        ],
+        items=[_serialize_program_list_row_item(row) for row in page_rows],
         next_cursor=next_cursor,
         mode=mode,
         source="read_model",
@@ -3017,6 +2731,121 @@ async def _count_program_read_model_rows(
     )
     rows = await request_supabase(method="GET", path=f"/rest/v1/{PROGRAM_LIST_INDEX_TABLE}", params=params)
     return len(rows) if isinstance(rows, list) else 0
+
+
+async def _fetch_default_browse_pool_program_ids() -> list[str]:
+    params = {
+        "select": "id",
+        "browse_rank": f"lte.{_program_browse_pool_limit()}",
+        "is_open": "eq.true",
+        "is_ad": "eq.false",
+        "order": "browse_rank.asc,id.asc",
+        "limit": str(_program_browse_pool_limit()),
+    }
+    rows = await request_supabase(method="GET", path=f"/rest/v1/{PROGRAM_LIST_INDEX_TABLE}", params=params)
+    if not isinstance(rows, list):
+        return []
+    ids: list[str] = []
+    for row in rows:
+        program_id = str(row.get("id") or "").strip() if isinstance(row, Mapping) else ""
+        if program_id:
+            ids.append(program_id)
+    return ids
+
+
+async def _fetch_program_rows_by_ids_ordered(program_ids: Sequence[str]) -> list[dict[str, Any]]:
+    ordered_ids = [program_id.strip() for program_id in program_ids if str(program_id or "").strip()]
+    if not ordered_ids:
+        return []
+
+    chunk_size = 40
+    chunks = [ordered_ids[index : index + chunk_size] for index in range(0, len(ordered_ids), chunk_size)]
+
+    async def fetch_chunk(chunk_ids: Sequence[str]) -> list[dict[str, Any]]:
+        quoted_ids = ",".join(f'"{program_id}"' for program_id in chunk_ids)
+        rows = await request_supabase(
+            method="GET",
+            path="/rest/v1/programs",
+            params={
+                "select": "*",
+                "id": f"in.({quoted_ids})",
+                "limit": str(len(chunk_ids)),
+            },
+        )
+        return rows if isinstance(rows, list) else []
+
+    chunk_rows = await asyncio.gather(*(fetch_chunk(chunk) for chunk in chunks))
+    row_by_id = {
+        str(row.get("id") or "").strip(): dict(row)
+        for rows in chunk_rows
+        for row in rows
+        if isinstance(row, Mapping) and str(row.get("id") or "").strip()
+    }
+    return [row_by_id[program_id] for program_id in ordered_ids if program_id in row_by_id]
+
+
+def _filter_local_browse_subset_rows(
+    rows: list[dict[str, Any]],
+    *,
+    category_detail: str | None = None,
+    teaching_methods: list[str] | None = None,
+    cost_types: list[str] | None = None,
+    participation_times: list[str] | None = None,
+    targets: list[str] | None = None,
+    recruiting_only: bool = False,
+    include_closed_recent: bool = False,
+    sort: str,
+) -> list[dict[str, Any]]:
+    serialized_rows = [ _serialize_program_list_row(row) for row in rows ]
+    filtered_rows = _filter_program_rows_by_deadline_window(
+        _filter_program_rows_by_extra_filters(
+            _filter_program_rows_by_category_detail(serialized_rows, category_detail),
+            teaching_methods=teaching_methods,
+            cost_types=cost_types,
+            participation_times=participation_times,
+            targets=targets,
+            selection_processes=None,
+            employment_links=None,
+        ),
+        recruiting_only=recruiting_only,
+        include_closed_recent=include_closed_recent,
+        sort=sort,
+    )
+    if _normalize_program_sort(sort) == "default":
+        return filtered_rows
+    return _sort_program_list_rows(
+        filtered_rows,
+        sort=sort,
+        include_closed_recent=include_closed_recent,
+    )
+
+
+async def _load_local_browse_subset_rows(
+    *,
+    category_detail: str | None = None,
+    teaching_methods: list[str] | None = None,
+    cost_types: list[str] | None = None,
+    participation_times: list[str] | None = None,
+    targets: list[str] | None = None,
+    recruiting_only: bool = False,
+    include_closed_recent: bool = False,
+    sort: str,
+) -> list[dict[str, Any]]:
+    ordered_program_ids = await _fetch_default_browse_pool_program_ids()
+    if not ordered_program_ids:
+        return []
+    ordered_rows = await _fetch_program_rows_by_ids_ordered(ordered_program_ids)
+    return _filter_local_browse_subset_rows(
+        ordered_rows,
+        category_detail=category_detail,
+        teaching_methods=teaching_methods,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
+        recruiting_only=recruiting_only,
+        include_closed_recent=include_closed_recent,
+        sort=sort,
+    )
 
 
 async def _record_program_detail_view(program_id: str) -> None:
@@ -3095,6 +2924,14 @@ async def _fetch_program_list_rows(params: dict[str, Any], *, q: str | None) -> 
 
 
 async def _fetch_profile_row(user_id: str) -> dict[str, Any]:
+    recommendation_profile = await _fetch_user_recommendation_profile_row(user_id)
+    if recommendation_profile:
+        return _build_profile_row_from_recommendation_profile(recommendation_profile)
+
+    return await _fetch_raw_profile_row(user_id)
+
+
+async def _fetch_raw_profile_row(user_id: str) -> dict[str, Any]:
     rows = await request_supabase(
         method="GET",
         path="/rest/v1/profiles",
@@ -3107,6 +2944,83 @@ async def _fetch_profile_row(user_id: str) -> dict[str, Any]:
     if isinstance(rows, list) and rows:
         return dict(rows[0])
     return {}
+
+
+def _is_ignorable_recommendation_profile_read_error(error: Exception) -> bool:
+    message = str(getattr(error, "detail", "") or error).lower()
+    return (
+        "user_recommendation_profile" in message
+        or "recommendation_profile_hash" in message
+        or "effective_target_job" in message
+        or "profile_keywords" in message
+        or "preferred_regions" in message
+    )
+
+
+async def _fetch_user_recommendation_profile_row(user_id: str) -> dict[str, Any] | None:
+    try:
+        rows = await request_supabase(
+            method="GET",
+            path="/rest/v1/user_recommendation_profile",
+            params={
+                "select": USER_RECOMMENDATION_PROFILE_SELECT,
+                "user_id": f"eq.{user_id}",
+                "limit": "1",
+            },
+        )
+    except Exception as exc:
+        if _is_ignorable_recommendation_profile_read_error(exc):
+            return None
+        raise
+
+    if isinstance(rows, list) and rows:
+        return dict(rows[0])
+    return None
+
+
+def _build_profile_row_from_recommendation_profile(
+    recommendation_profile: Mapping[str, Any],
+) -> dict[str, Any]:
+    effective_target_job = _clean_text(recommendation_profile.get("effective_target_job"))
+    evidence_skills = _normalize_text_list(recommendation_profile.get("evidence_skills"))
+    desired_skills = _normalize_text_list(recommendation_profile.get("desired_skills"))
+    activity_keywords = _normalize_text_list(recommendation_profile.get("activity_keywords"))
+    profile_keywords = _normalize_text_list(recommendation_profile.get("profile_keywords"))
+    preferred_regions = _normalize_text_list(recommendation_profile.get("preferred_regions"))
+    source_snapshot = (
+        recommendation_profile.get("source_snapshot")
+        if isinstance(recommendation_profile.get("source_snapshot"), Mapping)
+        else {}
+    )
+    profile_snapshot = (
+        source_snapshot.get("profile")
+        if isinstance(source_snapshot.get("profile"), Mapping)
+        else {}
+    )
+    region_detail = _first_text(profile_snapshot.get("region_detail"))
+    region = _first_text(*(preferred_regions[:1]), profile_snapshot.get("region"))
+
+    return {
+        "id": recommendation_profile.get("user_id"),
+        "target_job": effective_target_job,
+        "desired_job": effective_target_job,
+        "job_title": effective_target_job,
+        "effective_target_job": effective_target_job,
+        "skills": evidence_skills,
+        "desired_skills": desired_skills,
+        "profile_keywords": profile_keywords,
+        "activity_keywords": activity_keywords,
+        "preferred_regions": preferred_regions,
+        "region": region,
+        "region_detail": region_detail,
+        "address": _first_text(region_detail, region),
+        "recommendation_ready": bool(recommendation_profile.get("recommendation_ready")),
+        "profile_completeness_score": _coerce_score(recommendation_profile.get("profile_completeness_score")),
+        "recommendation_profile_hash": _clean_text(recommendation_profile.get("recommendation_profile_hash")),
+        "derivation_version": recommendation_profile.get("derivation_version"),
+        "last_derived_at": recommendation_profile.get("last_derived_at"),
+        "source_snapshot": source_snapshot,
+    }
 
 
 async def _fetch_activity_rows(user_id: str, limit: int = 50) -> list[dict[str, Any]]:
@@ -3124,6 +3038,40 @@ async def _fetch_activity_rows(user_id: str, limit: int = 50) -> list[dict[str, 
     return rows if isinstance(rows, list) else []
 
 
+async def _fetch_user_behavior_program_ids(user_id: str) -> set[str]:
+    program_ids: set[str] = set()
+    for path in ("/rest/v1/program_bookmarks", "/rest/v1/calendar_program_selections"):
+        try:
+            rows = await request_supabase(
+                method="GET",
+                path=path,
+                params={
+                    "select": "program_id",
+                    "user_id": f"eq.{user_id}",
+                    "order": "created_at.desc",
+                    "limit": "100",
+                },
+            )
+        except Exception as exc:
+            log_event(
+                logger,
+                logging.WARNING,
+                "program_compare_behavior_signal_unavailable",
+                path=path,
+                error=str(exc),
+            )
+            continue
+        if not isinstance(rows, list):
+            continue
+        for row in rows:
+            if not isinstance(row, Mapping):
+                continue
+            program_id = _first_text(row.get("program_id"))
+            if program_id:
+                program_ids.add(program_id)
+    return program_ids
+
+
 def _normalize_text_tokens(value: Any) -> list[str]:
     if value is None:
         return []
@@ -3132,6 +3080,39 @@ def _normalize_text_tokens(value: Any) -> list[str]:
     else:
         source = str(value).strip()
     return programs_rag._tokenize_text(source)
+
+
+def _target_job_matches_program(profile: Mapping[str, Any], program_token_set: set[str]) -> bool:
+    target_job = _first_text(
+        profile.get("effective_target_job"),
+        profile.get("target_job"),
+        profile.get("desired_job"),
+        profile.get("job_title"),
+    )
+    if not target_job:
+        return False
+
+    target_tokens = set(programs_rag._tokenize_text(target_job))
+    normalized_target = target_job.replace(" ", "").lower()
+    if "개발" in normalized_target:
+        target_tokens.update(
+            {
+                "개발",
+                "개발자",
+                "백엔드",
+                "프론트엔드",
+                "소프트웨어",
+                "프로그래밍",
+                "정보기술",
+                "it",
+            }
+        )
+    if "마케팅" in normalized_target:
+        target_tokens.update({"마케팅", "광고", "홍보", "브랜딩", "콘텐츠"})
+    if "기획" in normalized_target:
+        target_tokens.update({"기획", "pm", "서비스", "프로덕트", "운영"})
+
+    return bool(target_tokens and program_token_set.intersection(target_tokens))
 
 
 def _normalize_text_list(value: Any) -> list[str]:
@@ -3179,91 +3160,35 @@ def _compact_text_list(*values: Any) -> list[str]:
     return items
 
 
-def _format_detail_schedule_text(
-    *,
-    application_start_date: str | None,
-    application_end_date: str | None,
-    program_start_date: str | None,
-    program_end_date: str | None,
-) -> str | None:
-    if application_start_date or application_end_date:
-        start = application_start_date or "시작일 미정"
-        end = application_end_date or "마감일 미정"
-        return f"신청 {start} ~ {end}"
-    if program_start_date or program_end_date:
-        start = program_start_date or "시작일 미정"
-        end = program_end_date or "종료일 미정"
-        return f"운영 {start} ~ {end}"
-    return None
+def _legacy_detail_meta(program: Mapping[str, Any]) -> dict[str, Any]:
+    return _legacy_program_meta(program)
 
 
-def _build_program_detail_response(program: dict[str, Any]) -> ProgramDetailResponse:
+def _legacy_program_meta(program: Mapping[str, Any]) -> dict[str, Any]:
     compare_meta = program.get("compare_meta") if isinstance(program.get("compare_meta"), dict) else {}
-    source = str(program.get("source") or "").casefold()
-    is_kstartup = "k-startup" in source or "kstartup" in source
-    is_work24 = "고용24" in source or "work24" in source
+    service_meta = program.get("service_meta") if isinstance(program.get("service_meta"), dict) else {}
 
-    application_start_date = _first_text(program.get("reg_start_date"))
-    application_end_date = _first_text(program.get("close_date"), program.get("deadline"))
-    program_start_date = _first_text(program.get("start_date"))
-    program_end_date = _first_text(program.get("end_date"))
-    if is_kstartup:
-        application_start_date = _first_text(program.get("start_date"), program.get("reg_start_date"))
-        application_end_date = _first_text(program.get("end_date"), program.get("deadline"), program.get("close_date"))
-        program_start_date = None
-        program_end_date = None
-    elif is_work24:
-        application_start_date = _first_text(program.get("reg_start_date"))
-        application_end_date = _first_text(program.get("close_date"), _resolve_program_deadline(program))
-        program_start_date = _first_text(program.get("start_date"))
-        program_end_date = _first_text(program.get("end_date"))
+    merged: dict[str, Any] = {
+        str(key): value
+        for key, value in compare_meta.items()
+        if key != "field_sources" and value not in (None, "", [], {})
+    }
+    for key, value in service_meta.items():
+        if value in (None, "", [], {}):
+            continue
+        merged[str(key)] = value
+    return merged
 
-    capacity_total = _int_or_none(compare_meta.get("capacity"))
-    registered_count = _int_or_none(compare_meta.get("registered_count"))
-    capacity_remaining = None
-    if capacity_total is not None and registered_count is not None:
-        capacity_remaining = max(0, capacity_total - registered_count)
 
-    certification = _first_text(compare_meta.get("certificate"))
-    rating_raw = _first_text(compare_meta.get("satisfaction_score"))
-    rating_fields = _normalize_rating_fields(rating_raw)
-    return ProgramDetailResponse(
-        id=program.get("id"),
-        title=_first_text(program.get("title")),
-        provider=_first_text(program.get("provider")),
-        organizer=_first_text(program.get("sponsor_name"), compare_meta.get("supervising_institution"), compare_meta.get("department")),
-        location=_first_text(program.get("location"), program.get("region_detail"), program.get("region")),
-        description=_first_text(program.get("description"), program.get("summary")),
-        application_start_date=application_start_date,
-        application_end_date=application_end_date,
-        program_start_date=program_start_date,
-        program_end_date=program_end_date,
-        teaching_method=_first_text(program.get("teaching_method"), compare_meta.get("teaching_method")),
-        support_type=_first_text(program.get("support_type"), compare_meta.get("business_type"), compare_meta.get("subsidy_rate")),
-        source_url=_first_text(program.get("application_url"), compare_meta.get("application_url"), program.get("source_url"), program.get("link")),
-        fee=_int_or_none(program.get("cost")),
-        support_amount=_int_or_none(program.get("subsidy_amount")),
-        eligibility=_compact_text_list(program.get("target"), compare_meta.get("target_group"), compare_meta.get("target_detail"), compare_meta.get("target_age")),
-        schedule_text=_format_detail_schedule_text(
-            application_start_date=application_start_date,
-            application_end_date=application_end_date,
-            program_start_date=program_start_date,
-            program_end_date=program_end_date,
-        ),
-        rating=rating_fields["rating_display"],
-        rating_raw=rating_fields["rating_raw"],
-        rating_normalized=rating_fields["rating_normalized"],
-        rating_scale=rating_fields["rating_scale"],
-        rating_display=rating_fields["rating_display"],
-        job_placement_rate=_first_text(compare_meta.get("employment_rate_6m"), compare_meta.get("employment_rate_3m")),
-        capacity_total=capacity_total,
-        capacity_remaining=capacity_remaining,
-        manager_name=_first_text(compare_meta.get("manager_name"), compare_meta.get("department")),
-        phone=_first_text(compare_meta.get("contact_phone")),
-        email=_first_text(compare_meta.get("application_method_email")),
-        certifications=[certification] if certification else [],
-        tech_stack=_compact_text_list(program.get("skills")),
-        tags=_compact_text_list(program.get("tags")),
+def _build_program_detail_response(
+    program: dict[str, Any],
+    source_record: Mapping[str, Any] | None = None,
+) -> ProgramDetailResponse:
+    return _service_build_program_detail_response(
+        program,
+        source_record,
+        serialize_program_base_summary=_serialize_program_base_summary,
+        resolve_program_deadline=_resolve_program_deadline,
     )
 
 
@@ -3275,6 +3200,55 @@ def _has_meaningful_profile_text(profile: dict[str, Any]) -> bool:
 
     career_items = _normalize_text_list(profile.get("career"))
     return any(len(item.strip()) >= 8 for item in career_items)
+
+
+def _has_recommendation_experience_signal(
+    profile: Mapping[str, Any],
+    activities: Sequence[Mapping[str, Any]],
+) -> bool:
+    if activities:
+        return True
+    return bool(_normalize_text_list(profile.get("activity_keywords")))
+
+
+def _matched_experience_keywords(
+    profile: Mapping[str, Any],
+    activities: Sequence[Mapping[str, Any]],
+    program_token_set: set[str],
+) -> list[str]:
+    candidates: list[str] = []
+    for activity in activities:
+        if not isinstance(activity, Mapping):
+            continue
+        candidates.extend(
+            _compact_text_list(
+                activity.get("title"),
+                activity.get("description"),
+                activity.get("role"),
+                activity.get("skills"),
+                activity.get("contributions"),
+            )
+        )
+    candidates.extend(_normalize_text_list(profile.get("activity_keywords")))
+
+    matched: list[str] = []
+    seen: set[str] = set()
+    for candidate in candidates:
+        tokens = set(programs_rag._tokenize_text(candidate))
+        if not tokens or not program_token_set.intersection(tokens):
+            continue
+        normalized = candidate.strip()
+        if normalized and normalized not in seen:
+            seen.add(normalized)
+            matched.append(normalized)
+    return matched[:5]
+
+
+def _recommendation_readiness_ratio(profile: Mapping[str, Any]) -> float:
+    completeness = _coerce_score(profile.get("profile_completeness_score"))
+    if completeness is not None:
+        return max(0.0, min(1.0, completeness))
+    return 1.0 if _has_meaningful_profile_text(dict(profile)) else 0.0
 
 
 def _derive_fit_label(
@@ -3351,13 +3325,13 @@ def _compute_region_match(
     if not normalized_profile_region:
         return [], 0.0
 
-    compare_meta = program.get("compare_meta") if isinstance(program.get("compare_meta"), dict) else {}
+    legacy_meta = _legacy_program_meta(program)
     explicit_method_text = " ".join(
         _compact_text_list(
             program.get("teaching_method"),
-            compare_meta.get("teaching_method"),
-            compare_meta.get("method"),
-            compare_meta.get("delivery_method"),
+            legacy_meta.get("teaching_method"),
+            legacy_meta.get("method"),
+            legacy_meta.get("delivery_method"),
         )
     )
     explicit_delivery = _classify_delivery_region_signal(explicit_method_text)
@@ -3370,9 +3344,9 @@ def _compute_region_match(
         program.get("region"),
         program.get("location"),
         program.get("region_detail"),
-        compare_meta.get("region"),
-        compare_meta.get("location"),
-        compare_meta.get("address"),
+        legacy_meta.get("region"),
+        legacy_meta.get("location"),
+        legacy_meta.get("address"),
     )
 
     fallback_text = " ".join(
@@ -3383,7 +3357,7 @@ def _compute_region_match(
             program.get("location"),
             program.get("region_detail"),
             program.get("region"),
-            compare_meta,
+            legacy_meta,
         )
     )
     fallback_delivery = _classify_delivery_region_signal(fallback_text)
@@ -3452,18 +3426,23 @@ def _build_compare_score_breakdown(
     skill_match_score: float,
     region_match_score: float,
     has_profile_region: bool,
+    has_target_job_match: bool = False,
+    matched_experience_keywords: Sequence[str] | None = None,
+    has_behavior_signal: bool = False,
 ) -> dict[str, int]:
-    weights = (
-        {"target_job": 30, "skills": 25, "experience": 15, "region": 15, "readiness": 10, "behavior": 5}
-        if has_profile_region
-        else {"target_job": 35, "skills": 30, "experience": 20, "region": 0, "readiness": 10, "behavior": 5}
-    )
-    target_job = weights["target_job"] if _first_text(profile.get("target_job"), profile.get("desired_job"), profile.get("job_title")) else 0
+    weights = _recommendation_score_weights(has_profile_region=has_profile_region)
+    target_job = weights["target_job"] if has_target_job_match else 0
     skills = round(skill_match_score * weights["skills"])
-    experience = weights["experience"] if activities else 0
-    region = round(region_match_score * 15)
-    readiness = weights["readiness"] if _has_meaningful_profile_text(profile) else 0
-    behavior = weights["behavior"] if activities and _normalize_text_list(profile.get("skills")) else 0
+    has_experience_signal = _has_recommendation_experience_signal(profile, activities)
+    if matched_experience_keywords:
+        experience = weights["experience"]
+    elif has_experience_signal:
+        experience = round(weights["experience"] * 0.5)
+    else:
+        experience = 0
+    region = round(region_match_score * weights["region"])
+    readiness = round(_recommendation_readiness_ratio(profile) * weights["readiness"])
+    behavior = weights["behavior"] if has_behavior_signal else 0
     return {
         "target_job": target_job,
         "skills": skills,
@@ -3486,14 +3465,20 @@ def _build_relevance_reasons(
         ("experience", score_breakdown.get("experience", 0), "활동 이력 기반 경험 신호 보유"),
         ("region", score_breakdown.get("region", 0), f"{matched_regions[0]} 지역 조건과 일치" if matched_regions else ""),
         ("readiness", score_breakdown.get("readiness", 0), "프로필 소개와 경력 정보 보유"),
-        ("behavior", score_breakdown.get("behavior", 0), "프로필과 활동 정보가 함께 입력됨"),
+        ("behavior", score_breakdown.get("behavior", 0), "찜/캘린더 관심 행동과 일치"),
     ]
-    priority = {key: index for index, key in enumerate(["target_job", "skills", "experience", "region", "readiness", "behavior"])}
-    return [
+    ranked_reasons = [
         label
-        for key, score, label in sorted(candidates, key=lambda item: (-item[1], priority[item[0]]))
-        if score >= 8 and label
-    ][:3]
+        for key, score, label in sorted(candidates, key=lambda item: (-item[1], RECOMMENDATION_BREAKDOWN_PRIORITY[item[0]]))
+        if (score >= 8 or (key == "behavior" and score > 0)) and label
+    ]
+    behavior_score = score_breakdown.get("behavior", 0)
+    behavior_label = "찜/캘린더 관심 행동과 일치"
+    if behavior_score > 0 and behavior_label not in ranked_reasons:
+        ranked_reasons.append(behavior_label)
+    if behavior_score > 0 and len(ranked_reasons) > 3 and ranked_reasons[-1] == behavior_label:
+        return [*ranked_reasons[:2], behavior_label]
+    return ranked_reasons[:3]
 
 
 def _compute_program_relevance_items(
@@ -3502,7 +3487,9 @@ def _compute_program_relevance_items(
     activities: list[dict[str, Any]],
     programs_by_id: dict[str, dict[str, Any]],
     program_ids: list[str],
+    behavior_program_ids: set[str] | None = None,
 ) -> list[ProgramRelevanceItem]:
+    behavior_program_ids = behavior_program_ids or set()
     profile_keywords = programs_rag._profile_keywords(profile, activities)
     raw_profile_skills = _normalize_text_list(profile.get("skills"))
     profile_region = _first_text(profile.get("region"))
@@ -3527,6 +3514,7 @@ def _compute_program_relevance_items(
             + _normalize_text_tokens(program.get("summary"))
             + _normalize_text_tokens(program.get("description"))
         )
+        has_target_job_match = _target_job_matches_program(profile, program_token_set)
         matched_skills = [
             skill
             for skill, tokens in skill_tokens.items()
@@ -3536,6 +3524,11 @@ def _compute_program_relevance_items(
             profile_region=profile_region,
             profile_region_detail=profile_region_detail,
             program=program,
+        )
+        matched_experience_keywords = _matched_experience_keywords(
+            profile=profile,
+            activities=activities,
+            program_token_set=program_token_set,
         )
         skill_match_score = (
             min(1.0, len(matched_skills) / max(1, min(len(skill_tokens), 5)))
@@ -3548,15 +3541,26 @@ def _compute_program_relevance_items(
             if profile_region or profile_region_detail
             else relevance_score
         )
-        rounded_relevance_score = round(adjusted_relevance_score, 4)
         rounded_skill_match_score = round(skill_match_score, 4)
         rounded_region_match_score = round(region_match_score, 4)
+        has_profile_region = bool(profile_region or profile_region_detail)
         score_breakdown = _build_compare_score_breakdown(
             profile=profile,
             activities=activities,
             skill_match_score=rounded_skill_match_score,
             region_match_score=rounded_region_match_score,
-            has_profile_region=bool(profile_region or profile_region_detail),
+            has_profile_region=has_profile_region,
+            has_target_job_match=has_target_job_match,
+            matched_experience_keywords=matched_experience_keywords,
+            has_behavior_signal=program_id in behavior_program_ids,
+        )
+        max_breakdown_score = sum(
+            _recommendation_score_weights(has_profile_region=has_profile_region).values()
+        )
+        breakdown_relevance_score = sum(score_breakdown.values()) / max(1, max_breakdown_score)
+        rounded_relevance_score = round(
+            max(adjusted_relevance_score, breakdown_relevance_score),
+            4,
         )
         relevance_reasons = _build_relevance_reasons(
             matched_skills=normalized_matched_skills,
@@ -3621,9 +3625,90 @@ async def list_programs(
     offset: int = Query(default=0, ge=0),
     cursor: str | None = Query(default=None),
 ) -> Any:
-    if _can_use_program_list_read_model(selection_processes=selection_processes, employment_links=employment_links) and offset == 0:
+    if _should_use_local_browse_subset(
+        category=category,
+        category_detail=category_detail,
+        scope=scope,
+        region_detail=region_detail,
+        q=q,
+        regions=regions,
+        sources=sources,
+        teaching_methods=teaching_methods,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
+        include_closed_recent=include_closed_recent,
+    ):
         try:
-            page = await _fetch_program_list_read_model_rows(
+            subset_rows = await _load_local_browse_subset_rows(
+                category_detail=category_detail,
+                teaching_methods=teaching_methods,
+                cost_types=cost_types,
+                participation_times=participation_times,
+                targets=targets,
+                recruiting_only=recruiting_only,
+                include_closed_recent=include_closed_recent,
+                sort=sort,
+            )
+            return subset_rows[offset : offset + limit]
+        except Exception as exc:
+            log_event(
+                logger,
+                logging.WARNING,
+                "program_list_local_browse_subset_fallback",
+                error=str(exc),
+                offset=offset,
+            )
+
+    if not _normalize_teaching_methods_param(teaching_methods) and _can_use_program_list_read_model(
+        sources=sources,
+        category_detail=category_detail,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
+        selection_processes=selection_processes,
+        employment_links=employment_links,
+        include_closed_recent=include_closed_recent,
+    ) and offset == 0:
+        try:
+            page, count = await asyncio.gather(
+                _fetch_program_list_read_model_rows(
+                    category=category,
+                    category_detail=category_detail,
+                    scope=scope,
+                    region_detail=region_detail,
+                    q=q,
+                    regions=regions,
+                    sources=sources,
+                    teaching_methods=teaching_methods,
+                    cost_types=cost_types,
+                    participation_times=participation_times,
+                    targets=targets,
+                    recruiting_only=recruiting_only,
+                    include_closed_recent=include_closed_recent,
+                    sort=sort,
+                    limit=limit,
+                    cursor=cursor,
+                ),
+                _count_program_read_model_rows(
+                    category=category,
+                    category_detail=category_detail,
+                    scope=scope,
+                    region_detail=region_detail,
+                    q=q,
+                    regions=regions,
+                    sources=sources,
+                    teaching_methods=teaching_methods,
+                    cost_types=cost_types,
+                    participation_times=participation_times,
+                    targets=targets,
+                    recruiting_only=recruiting_only,
+                    include_closed_recent=include_closed_recent,
+                    sort=sort,
+                ),
+            )
+            if _is_underfilled_default_browse_read_model(
+                count=count,
                 category=category,
                 category_detail=category_detail,
                 scope=scope,
@@ -3635,13 +3720,28 @@ async def list_programs(
                 cost_types=cost_types,
                 participation_times=participation_times,
                 targets=targets,
-                recruiting_only=recruiting_only,
                 include_closed_recent=include_closed_recent,
-                sort=sort,
-                limit=limit,
-                cursor=cursor,
-            )
-            return [item.model_dump() for item in page.items]
+            ):
+                raise RuntimeError(
+                    f"default browse read model underfilled ({count} < {_program_browse_pool_limit()})"
+                )
+            if _is_stale_default_browse_read_model_items(
+                page.items,
+                category=category,
+                category_detail=category_detail,
+                scope=scope,
+                region_detail=region_detail,
+                q=q,
+                regions=regions,
+                sources=sources,
+                teaching_methods=teaching_methods,
+                cost_types=cost_types,
+                participation_times=participation_times,
+                targets=targets,
+                include_closed_recent=include_closed_recent,
+            ):
+                raise RuntimeError("default browse read model returned closed rows")
+            return [item.program.model_dump() for item in page.items]
         except Exception as exc:
             log_event(
                 logger,
@@ -3663,6 +3763,7 @@ async def list_programs(
         recruiting_only=recruiting_only,
         include_closed_recent=include_closed_recent,
         sort=sort,
+        limit=limit,
     )
     rows = await _fetch_program_list_rows(params, q=q)
     prefer_work24_default_mix = sort == "default" and _should_apply_work24_default_mix(
@@ -3676,6 +3777,8 @@ async def list_programs(
         rows,
         category_detail=category_detail,
         q=q,
+        sources=sources,
+        teaching_methods=teaching_methods,
         cost_types=cost_types,
         participation_times=participation_times,
         targets=targets,
@@ -3710,48 +3813,7 @@ async def list_programs_page(
     offset: int = 0,
     cursor: str | None = None,
 ) -> ProgramListPageResponse:
-    if _program_list_read_model_enabled():
-        try:
-            response = await _fetch_program_list_read_model_rows(
-                category=category,
-                category_detail=category_detail,
-                scope=scope,
-                region_detail=region_detail,
-                q=q,
-                regions=regions,
-                sources=sources,
-                teaching_methods=teaching_methods,
-                cost_types=cost_types,
-                participation_times=participation_times,
-                targets=targets,
-                recruiting_only=recruiting_only,
-                include_closed_recent=include_closed_recent,
-                sort=sort,
-                limit=limit,
-                offset=offset,
-                cursor=cursor,
-            )
-            response.count = await _count_program_read_model_rows(
-                category=category,
-                category_detail=category_detail,
-                scope=scope,
-                region_detail=region_detail,
-                q=q,
-                regions=regions,
-                sources=sources,
-                teaching_methods=teaching_methods,
-                cost_types=cost_types,
-                participation_times=participation_times,
-                targets=targets,
-                recruiting_only=recruiting_only,
-                include_closed_recent=include_closed_recent,
-                sort=sort,
-            )
-            return response
-        except Exception as exc:
-            log_event(logger, logging.WARNING, "program_list_page_read_model_fallback", error=str(exc))
-
-    rows = await list_programs(
+    read_model_filters = dict(
         category=category,
         category_detail=category_detail,
         scope=scope,
@@ -3763,19 +3825,170 @@ async def list_programs_page(
         cost_types=cost_types,
         participation_times=participation_times,
         targets=targets,
-        selection_processes=None,
-        employment_links=None,
         recruiting_only=recruiting_only,
         include_closed_recent=include_closed_recent,
         sort=sort,
-        limit=limit,
-        offset=offset,
-        cursor=None,
+    )
+    if _should_use_local_browse_subset(
+        category=category,
+        category_detail=category_detail,
+        scope=scope,
+        region_detail=region_detail,
+        q=q,
+        regions=regions,
+        sources=sources,
+        teaching_methods=teaching_methods,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
+        include_closed_recent=include_closed_recent,
+    ):
+        try:
+            subset_rows = await _load_local_browse_subset_rows(
+                category_detail=category_detail,
+                teaching_methods=teaching_methods,
+                cost_types=cost_types,
+                participation_times=participation_times,
+                targets=targets,
+                recruiting_only=recruiting_only,
+                include_closed_recent=include_closed_recent,
+                sort=sort,
+            )
+            return ProgramListPageResponse(
+                items=[
+                    _serialize_program_list_row_item(row, already_serialized=True)
+                    for row in subset_rows[offset : offset + limit]
+                ],
+                count=len(subset_rows),
+                mode="browse",
+                source="legacy",
+            )
+        except Exception as exc:
+            log_event(
+                logger,
+                logging.WARNING,
+                "program_list_page_local_browse_subset_fallback",
+                error=str(exc),
+            )
+
+    if not _normalize_teaching_methods_param(teaching_methods) and _can_use_program_list_read_model(
+        sources=sources,
+        category_detail=category_detail,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
+        include_closed_recent=include_closed_recent,
+    ):
+        try:
+            response, count = await asyncio.gather(
+                _fetch_program_list_read_model_rows(
+                    **read_model_filters,
+                    limit=limit,
+                    offset=offset,
+                    cursor=cursor,
+                ),
+                _count_program_read_model_rows(
+                    **read_model_filters,
+                ),
+            )
+            if _is_underfilled_default_browse_read_model(
+                count=count,
+                category=category,
+                category_detail=category_detail,
+                scope=scope,
+                region_detail=region_detail,
+                q=q,
+                regions=regions,
+                sources=sources,
+                teaching_methods=teaching_methods,
+                cost_types=cost_types,
+                participation_times=participation_times,
+                targets=targets,
+                include_closed_recent=include_closed_recent,
+            ):
+                raise RuntimeError(
+                    f"default browse read model underfilled ({count} < {_program_browse_pool_limit()})"
+                )
+            if _is_stale_default_browse_read_model_items(
+                response.items,
+                category=category,
+                category_detail=category_detail,
+                scope=scope,
+                region_detail=region_detail,
+                q=q,
+                regions=regions,
+                sources=sources,
+                teaching_methods=teaching_methods,
+                cost_types=cost_types,
+                participation_times=participation_times,
+                targets=targets,
+                include_closed_recent=include_closed_recent,
+            ):
+                raise RuntimeError("default browse read model returned closed rows")
+            response.count = count
+            return response
+        except Exception as exc:
+            log_event(logger, logging.WARNING, "program_list_page_read_model_fallback", error=str(exc))
+
+    rows, total_count = await asyncio.gather(
+        list_programs(
+            category=category,
+            category_detail=category_detail,
+            scope=scope,
+            region_detail=region_detail,
+            q=q,
+            regions=regions,
+            sources=sources,
+            teaching_methods=teaching_methods,
+            cost_types=cost_types,
+            participation_times=participation_times,
+            targets=targets,
+            selection_processes=None,
+            employment_links=None,
+            recruiting_only=recruiting_only,
+            include_closed_recent=include_closed_recent,
+            sort=sort,
+            limit=limit,
+            offset=offset,
+            cursor=None,
+        ),
+        _count_program_rows(
+            category=category,
+            category_detail=category_detail,
+            scope=scope,
+            region_detail=region_detail,
+            q=q,
+            regions=regions,
+            sources=sources,
+            teaching_methods=teaching_methods,
+            cost_types=cost_types,
+            participation_times=participation_times,
+            targets=targets,
+            selection_processes=None,
+            employment_links=None,
+            recruiting_only=recruiting_only,
+            include_closed_recent=include_closed_recent,
+        ),
     )
     return ProgramListPageResponse(
-        items=[ProgramListItem.model_validate(row) for row in rows],
-        count=len(rows),
-        mode=_program_list_mode(q=q, scope=scope, include_closed_recent=include_closed_recent),
+        items=[_serialize_program_list_row_item(row, already_serialized=True) for row in rows],
+        count=total_count,
+        mode=_program_list_mode(
+            q=q,
+            scope=scope,
+            include_closed_recent=include_closed_recent,
+            active_filter_group_count=_program_active_filter_group_count(
+                category=category,
+                category_detail=category_detail,
+                region_detail=region_detail,
+                regions=regions,
+                sources=sources,
+                teaching_methods=teaching_methods,
+                cost_types=cost_types,
+                participation_times=participation_times,
+                targets=targets,
+            ),
+        ),
         source="legacy",
     )
 
@@ -3870,25 +4083,139 @@ async def count_programs(
     recruiting_only: bool = False,
     include_closed_recent: bool = False,
 ) -> ProgramCountResponse:
-    if _can_use_program_list_read_model(selection_processes=selection_processes, employment_links=employment_links):
+    if _should_use_local_browse_subset(
+        category=category,
+        category_detail=category_detail,
+        scope=scope,
+        region_detail=region_detail,
+        q=q,
+        regions=regions,
+        sources=sources,
+        teaching_methods=teaching_methods,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
+        include_closed_recent=include_closed_recent,
+    ):
         try:
-            return ProgramCountResponse(
-                count=await _count_program_read_model_rows(
-                    category=category,
-                    category_detail=category_detail,
-                    scope=scope,
-                    region_detail=region_detail,
-                    q=q,
-                    regions=regions,
-                    sources=sources,
-                    teaching_methods=teaching_methods,
-                    cost_types=cost_types,
-                    participation_times=participation_times,
-                    targets=targets,
-                    recruiting_only=recruiting_only,
-                    include_closed_recent=include_closed_recent,
-                )
+            subset_rows = await _load_local_browse_subset_rows(
+                category_detail=category_detail,
+                cost_types=cost_types,
+                participation_times=participation_times,
+                targets=targets,
+                recruiting_only=recruiting_only,
+                include_closed_recent=include_closed_recent,
+                sort="default",
             )
+            return ProgramCountResponse(count=len(subset_rows))
+        except Exception as exc:
+            log_event(
+                logger,
+                logging.WARNING,
+                "program_count_local_browse_subset_fallback",
+                error=str(exc),
+            )
+
+    if _is_default_public_browse_scope(
+        category=category,
+        category_detail=category_detail,
+        scope=scope,
+        region_detail=region_detail,
+        q=q,
+        regions=regions,
+        sources=sources,
+        teaching_methods=teaching_methods,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
+        include_closed_recent=include_closed_recent,
+    ) and not _normalize_teaching_methods_param(teaching_methods) and _can_use_program_list_read_model(
+        sources=sources,
+        category_detail=category_detail,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
+        selection_processes=selection_processes,
+        employment_links=employment_links,
+        include_closed_recent=include_closed_recent,
+    ):
+        try:
+            read_model_count = await _count_program_read_model_rows(
+                category=category,
+                category_detail=category_detail,
+                scope=scope,
+                region_detail=region_detail,
+                q=q,
+                regions=regions,
+                sources=sources,
+                teaching_methods=teaching_methods,
+                cost_types=cost_types,
+                participation_times=participation_times,
+                targets=targets,
+                recruiting_only=recruiting_only,
+                include_closed_recent=include_closed_recent,
+            )
+            if _is_underfilled_default_browse_read_model(
+                count=read_model_count,
+                category=category,
+                category_detail=category_detail,
+                scope=scope,
+                region_detail=region_detail,
+                q=q,
+                regions=regions,
+                sources=sources,
+                teaching_methods=teaching_methods,
+                cost_types=cost_types,
+                participation_times=participation_times,
+                targets=targets,
+                include_closed_recent=include_closed_recent,
+            ):
+                return ProgramCountResponse(count=_program_browse_pool_limit())
+        except Exception as exc:
+            log_event(logger, logging.WARNING, "program_count_browse_pool_fallback", error=str(exc))
+
+    if not _normalize_teaching_methods_param(teaching_methods) and _can_use_program_list_read_model(
+        sources=sources,
+        category_detail=category_detail,
+        cost_types=cost_types,
+        participation_times=participation_times,
+        targets=targets,
+        selection_processes=selection_processes,
+        employment_links=employment_links,
+        include_closed_recent=include_closed_recent,
+    ):
+        try:
+            read_model_count = await _count_program_read_model_rows(
+                category=category,
+                category_detail=category_detail,
+                scope=scope,
+                region_detail=region_detail,
+                q=q,
+                regions=regions,
+                sources=sources,
+                teaching_methods=teaching_methods,
+                cost_types=cost_types,
+                participation_times=participation_times,
+                targets=targets,
+                recruiting_only=recruiting_only,
+                include_closed_recent=include_closed_recent,
+            )
+            if not _is_underfilled_default_browse_read_model(
+                count=read_model_count,
+                category=category,
+                category_detail=category_detail,
+                scope=scope,
+                region_detail=region_detail,
+                q=q,
+                regions=regions,
+                sources=sources,
+                teaching_methods=teaching_methods,
+                cost_types=cost_types,
+                participation_times=participation_times,
+                targets=targets,
+                include_closed_recent=include_closed_recent,
+            ):
+                return ProgramCountResponse(count=read_model_count)
         except Exception as exc:
             log_event(logger, logging.WARNING, "program_count_read_model_fallback", error=str(exc))
     count = await _count_program_rows(
@@ -3919,15 +4246,58 @@ async def get_program_filter_options(
     region_detail: str | None = None,
     q: str | None = None,
     regions: list[str] | None = Query(default=None),
+    sources: list[str] | None = Query(default=None),
     teaching_methods: list[str] | None = Query(default=None),
     recruiting_only: bool = False,
     include_closed_recent: bool = False,
 ) -> ProgramFilterOptionsResponse:
-    mode = _program_list_mode(q=q, scope=scope, include_closed_recent=include_closed_recent)
-    if _program_list_read_model_enabled() and mode == "browse":
+    if not isinstance(sources, list):
+        sources = None
+    mode = _program_list_mode(
+        q=q,
+        scope=scope,
+        include_closed_recent=include_closed_recent,
+        active_filter_group_count=_program_active_filter_group_count(
+            category=category,
+            category_detail=category_detail,
+            region_detail=region_detail,
+            regions=regions,
+            sources=sources,
+            teaching_methods=teaching_methods,
+        ),
+    )
+    if not recruiting_only and not _normalize_teaching_methods_param(teaching_methods) and _can_use_program_list_read_model(
+        sources=sources,
+        category_detail=category_detail,
+        participation_times=None,
+        targets=None,
+        include_closed_recent=include_closed_recent,
+    ) and mode == "browse":
         try:
-            facets, _ = await _load_program_facet_snapshot(mode=mode)
-            return _filter_options_from_facet_snapshot(facets)
+            read_model_count = await _count_program_read_model_rows(
+                category=category,
+                category_detail=category_detail,
+                scope=scope,
+                region_detail=region_detail,
+                q=q,
+                regions=regions,
+                teaching_methods=teaching_methods,
+                recruiting_only=recruiting_only,
+                include_closed_recent=include_closed_recent,
+            )
+            if not _is_underfilled_default_browse_read_model(
+                count=read_model_count,
+                category=category,
+                category_detail=category_detail,
+                scope=scope,
+                region_detail=region_detail,
+                q=q,
+                regions=regions,
+                teaching_methods=teaching_methods,
+                include_closed_recent=include_closed_recent,
+            ):
+                facets, _ = await _load_program_facet_snapshot(mode=mode)
+                return _filter_options_from_facet_snapshot(facets)
         except Exception as exc:
             log_event(logger, logging.WARNING, "program_filter_options_facet_fallback", error=str(exc))
 
@@ -3940,6 +4310,7 @@ async def get_program_filter_options(
         region_detail=region_detail,
         q=q,
         regions=regions,
+        sources=sources,
         teaching_methods=teaching_methods,
         recruiting_only=recruiting_only,
         include_closed_recent=include_closed_recent,
@@ -3974,7 +4345,7 @@ async def list_popular_programs() -> Any:
                 sort="popular",
                 limit=10,
             )
-            return [item.model_dump() for item in page.items]
+            return [item.program.model_dump() for item in page.items]
         except Exception as exc:
             log_event(logger, logging.WARNING, "program_popular_read_model_fallback", error=str(exc))
 
@@ -4008,9 +4379,13 @@ async def get_program_details_batch(payload: ProgramDetailBatchRequest) -> Progr
         deduped_program_ids.append(normalized)
 
     programs_by_id = await _fetch_programs_by_ids(deduped_program_ids)
+    source_records_by_program_id = await _fetch_primary_source_records_by_program_ids(deduped_program_ids)
     return ProgramDetailBatchResponse(
         items=[
-            _build_program_detail_response(programs_by_id[program_id])
+            _build_program_detail_response(
+                programs_by_id[program_id],
+                source_records_by_program_id.get(program_id),
+            )
             for program_id in deduped_program_ids
             if program_id in programs_by_id
         ]
@@ -4028,12 +4403,25 @@ async def get_programs_batch(payload: ProgramDetailBatchRequest) -> ProgramBatch
         seen_program_ids.add(normalized)
         deduped_program_ids.append(normalized)
 
-    programs_by_id = await _fetch_programs_by_ids(deduped_program_ids)
+    read_model_rows_by_id: dict[str, dict[str, Any]] = {}
+    if _program_list_read_model_enabled():
+        try:
+            read_model_rows_by_id = await _fetch_program_list_summary_rows_by_ids(deduped_program_ids)
+        except Exception as exc:
+            log_event(logger, logging.WARNING, "program_batch_read_model_fallback", error=str(exc))
+
+    missing_program_ids = [
+        program_id for program_id in deduped_program_ids if program_id not in read_model_rows_by_id
+    ]
+    programs_by_id = await _fetch_programs_by_ids(missing_program_ids)
+
     return ProgramBatchResponse(
         items=[
-            ProgramListItem.model_validate(_serialize_program_list_row(programs_by_id[program_id]))
+            ProgramListItem.model_validate(read_model_rows_by_id[program_id])
+            if program_id in read_model_rows_by_id
+            else ProgramListItem.model_validate(_serialize_program_list_row(programs_by_id[program_id]))
             for program_id in deduped_program_ids
-            if program_id in programs_by_id
+            if program_id in read_model_rows_by_id or program_id in programs_by_id
         ]
     )
 
@@ -4056,7 +4444,11 @@ async def get_program_detail(program_id: str) -> ProgramDetailResponse:
     )
     if not rows:
         raise HTTPException(status_code=404, detail="Program not found")
-    return _build_program_detail_response(dict(rows[0]))
+    source_records_by_program_id = await _fetch_primary_source_records_by_program_ids([program_id])
+    return _build_program_detail_response(
+        dict(rows[0]),
+        source_records_by_program_id.get(program_id),
+    )
 
 
 @programs_router.post("/{program_id}/detail-view")
@@ -4088,7 +4480,9 @@ async def get_program(program_id: str) -> Any:
     )
     if not rows:
         raise HTTPException(status_code=404, detail="Program not found")
-    return rows[0]
+    response_row = dict(rows[0]) if isinstance(rows[0], Mapping) else {}
+    response_row.pop("compare_meta", None)
+    return response_row
 
 
 @programs_router.post("/recommend", response_model=ProgramRecommendResponse)
@@ -4129,8 +4523,15 @@ async def recommend_programs(
     if payload.job_title:
         profile = dict(profile)
         profile["job_title"] = payload.job_title
+        profile["target_job"] = payload.job_title
+        profile["desired_job"] = payload.job_title
+        profile["effective_target_job"] = payload.job_title
     activities = await _fetch_activity_rows(current_user.id)
-    profile_hash = _build_profile_hash(profile, activities)
+    profile_hash = _build_profile_hash(
+        profile,
+        activities,
+        prefer_stored_hash=not bool(payload.job_title),
+    )
     query_hash = _build_query_hash(payload)
 
     if payload.force_refresh:
@@ -4372,7 +4773,11 @@ async def compare_program_relevance(
     current_user = await get_current_user_from_authorization(authorization)
     profile = await _fetch_profile_row(current_user.id)
     activities = await _fetch_activity_rows(current_user.id)
-    programs_by_id = await _fetch_programs_by_ids(deduped_program_ids)
+    behavior_program_ids = await _fetch_user_behavior_program_ids(current_user.id)
+    programs_by_id = _merge_program_rows_for_relevance(
+        await _fetch_programs_by_ids(deduped_program_ids),
+        await _fetch_program_list_summary_rows_by_ids(deduped_program_ids),
+    )
 
     return ProgramCompareRelevanceResponse(
         items=_compute_program_relevance_items(
@@ -4380,6 +4785,7 @@ async def compare_program_relevance(
             activities=activities,
             programs_by_id=programs_by_id,
             program_ids=deduped_program_ids,
+            behavior_program_ids=behavior_program_ids,
         )
     )
 

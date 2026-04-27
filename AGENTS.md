@@ -67,14 +67,14 @@ When the user asks for work directly in the Codex chat session:
 4. Implement the smallest safe change that satisfies the direct request without creating execution queue files.
 5. Run relevant checks for the touched area when feasible.
 6. If the change affects user-visible behavior, workflow rules, structure, or operations, update `docs/current-state.md` and append key changes to `docs/refactoring-log.md`.
-7. Write a result report only when the work is non-trivial, user requested one, or the change needs durable audit context. Use a session-scoped filename such as `reports/SESSION-YYYY-MM-DD-brief-topic-result.md` for direct conversation work.
+7. Write a result report only when the work is non-trivial, user requested one, or the change needs durable audit context. Use a session-scoped filename such as `reports/session/YYYY-MM/SESSION-YYYY-MM-DD-brief-topic-result.md` for direct conversation work.
 
 ## Rule precedence
 - `AGENTS.md` is the top-level development rule source.
 - Folder-scoped instructions apply next inside their own directories.
 - The current task packet defines scope, acceptance, and constraints for the task.
 - `docs/current-state.md` is the runtime truth for current behavior.
-- `reports/*.md` and `docs/refactoring-log.md` are supporting history and decision records.
+- `reports/` and `docs/refactoring-log.md` are supporting history and decision records.
 
 ## Git completion workflow
 - After any code, document, or workflow-state change, re-check the repository with `git status --short --branch` before closing the task.

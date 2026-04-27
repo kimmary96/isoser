@@ -98,6 +98,40 @@ def test_normalize_program_row_builds_work24_source_unique_key_from_raw_session_
     assert row["skills"]
 
 
+def test_normalize_program_row_adds_canonical_dual_write_fields() -> None:
+    row = admin._normalize_program_row(
+        {
+            "hrd_id": "AIG202500001",
+            "title": "고용24 훈련 과정",
+            "source": "고용24",
+            "provider_name": "테스트 훈련기관",
+            "location": "서울 강남구",
+            "deadline": "2026-04-25",
+            "start_date": "2026-05-01",
+            "end_date": "2026-06-30",
+            "summary": "실무 중심 과정",
+            "support_type": "전액지원",
+            "target": "청년 구직자",
+            "raw": {
+                "trprId": "AIG202500001",
+                "title": "고용24 훈련 과정",
+                "titleLink": "https://example.com/detail",
+                "subTitle": "테스트 훈련기관",
+                "subsidyRate": "전액지원",
+                "trainTarget": "청년 구직자",
+            },
+        }
+    )
+
+    assert row["primary_source_code"] == "work24"
+    assert row["primary_source_label"] == "고용24"
+    assert row["provider_name"] == "테스트 훈련기관"
+    assert row["application_end_date"] == "2026-04-25"
+    assert row["program_start_date"] == "2026-05-01"
+    assert row["program_end_date"] == "2026-06-30"
+    assert row["target_detail"] == "청년 구직자"
+
+
 def test_deduplicate_program_rows_preserves_same_hrd_id_with_distinct_source_unique_keys() -> None:
     rows = admin._deduplicate_program_rows(
         [
@@ -108,6 +142,106 @@ def test_deduplicate_program_rows_preserves_same_hrd_id_with_distinct_source_uni
     )
 
     assert [row["title"] for row in rows] == ["1회차", "2회차 갱신"]
+
+
+def test_build_program_source_record_rows_preserves_primary_provenance_payload() -> None:
+    rows = admin._build_program_source_record_rows(
+        [
+            {
+                "id": "program-1",
+                "hrd_id": "AIG202500001",
+                "source_unique_key": "work24:AIG202500001:7:500012345678",
+                "title": "고용24 훈련 과정",
+                "source": "고용24",
+            }
+        ],
+        [
+            {
+                "hrd_id": "AIG202500001",
+                "source_unique_key": "work24:AIG202500001:7:500012345678",
+                "title": "고용24 훈련 과정",
+                "source": "고용24",
+                "provider": "테스트기관",
+                "category": "IT",
+                "location": "서울 강남구",
+                "region": "서울",
+                "region_detail": "강남구",
+                "start_date": "2026-05-01",
+                "end_date": "2026-06-30",
+                "deadline": "2026-04-25",
+                "source_url": "https://example.com/source",
+                "link": "https://example.com/detail",
+                "raw_data": {"trprId": "AIG202500001"},
+                "compare_meta": {
+                    "application_url": "https://example.com/apply",
+                    "training_type": "국가기간전략산업직종",
+                    "contact_phone": "02-1234-5678",
+                    "field_sources": {"title": "title", "deadline": "traStartDate"},
+                },
+            }
+        ],
+    )
+
+    assert len(rows) == 1
+    assert rows[0]["program_id"] == "program-1"
+    assert rows[0]["source_code"] == "work24"
+    assert rows[0]["source_record_key"] == "work24:AIG202500001:7:500012345678"
+    assert rows[0]["raw_payload"] == {"trprId": "AIG202500001"}
+    assert rows[0]["field_evidence"] == {"title": "title", "deadline": "traStartDate"}
+    assert "training_type" not in rows[0]["source_specific"]
+    assert rows[0]["source_specific"]["contact_phone"] == "02-1234-5678"
+    assert rows[0]["source_specific"]["legacy_link"] == "https://example.com/detail"
+    assert rows[0]["normalized_snapshot"]["application_url"] == "https://example.com/apply"
+
+
+@pytest.mark.asyncio
+async def test_sync_program_source_records_best_effort_soft_fails_when_table_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[dict[str, object]] = []
+
+    async def fake_request_supabase(*, method, path, params=None, payload=None, prefer=None):
+        calls.append(
+            {
+                "method": method,
+                "path": path,
+                "params": params,
+                "payload": payload,
+                "prefer": prefer,
+            }
+        )
+        raise HTTPException(
+            status_code=500,
+            detail='Supabase request failed: relation "public.program_source_records" does not exist',
+        )
+
+    monkeypatch.setattr(admin, "request_supabase", fake_request_supabase)
+
+    await admin._sync_program_source_records_best_effort(
+        [
+            {
+                "id": "program-1",
+                "hrd_id": "AIG202500001",
+                "source_unique_key": "work24:AIG202500001:7:500012345678",
+                "title": "고용24 훈련 과정",
+                "source": "고용24",
+            }
+        ],
+        [
+            {
+                "hrd_id": "AIG202500001",
+                "source_unique_key": "work24:AIG202500001:7:500012345678",
+                "title": "고용24 훈련 과정",
+                "source": "고용24",
+                "raw_data": {"trprId": "AIG202500001"},
+            }
+        ],
+    )
+
+    assert len(calls) == 1
+    assert calls[0]["method"] == "POST"
+    assert calls[0]["path"] == "/rest/v1/program_source_records"
+    assert calls[0]["params"] == {"on_conflict": "source_code,source_record_key"}
 
 
 @pytest.mark.asyncio

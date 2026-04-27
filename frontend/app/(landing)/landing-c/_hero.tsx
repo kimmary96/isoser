@@ -6,12 +6,12 @@ import {
   getProgramDetailHref,
 } from "@/components/landing/program-card-helpers";
 import { DASHBOARD_RECOMMEND_CALENDAR, ONBOARDING_RESUME_IMPORT, getLoginHref } from "@/lib/routes";
-import type { Program } from "@/lib/types";
+import type { ProgramListRow } from "@/lib/types";
 
 import { sourceLabel } from "./_program-utils";
 
 type LandingCHeroSectionProps = {
-  heroPrograms: Program[];
+  heroPrograms: ProgramListRow[];
 };
 
 export function LandingCHeroSection({ heroPrograms }: LandingCHeroSectionProps) {

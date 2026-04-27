@@ -6,6 +6,7 @@ import { cache } from "react";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { getProgramDetail } from "@/lib/api/backend";
 import { getSiteUrl } from "@/lib/seo";
+import { loadProgramDetailFallback } from "@/lib/server/program-detail-fallback";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { ProgramDetail } from "@/lib/types";
 
@@ -17,7 +18,17 @@ type ProgramDetailPageProps = {
   }>;
 };
 
-const getProgramDetailView = cache(async (id: string) => getProgramDetail(id));
+const getProgramDetailView = cache(async (id: string) => {
+  try {
+    return await getProgramDetail(id);
+  } catch (error) {
+    const fallbackProgram = await loadProgramDetailFallback(id).catch(() => null);
+    if (fallbackProgram) {
+      return fallbackProgram;
+    }
+    throw error;
+  }
+});
 
 function isNotFoundError(error: unknown): boolean {
   if (!(error instanceof Error)) {

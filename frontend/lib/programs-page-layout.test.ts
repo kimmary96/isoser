@@ -21,6 +21,6 @@ describe("programs page layout helpers", () => {
         extracted_keywords: ["창업", "AI", "멘토링"],
         skills: ["AI", "마케팅"],
       })
-    ).toEqual(["창업", "PM/기획", "AI", "멘토링"]);
+    ).toEqual(["사업관리", "창업", "AI", "멘토링"]);
   });
 });

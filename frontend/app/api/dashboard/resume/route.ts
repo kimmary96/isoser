@@ -1,4 +1,5 @@
 import { apiError, apiOk } from "@/lib/api/route-response";
+import { syncRecommendationProfileAfterUserMutation } from "@/lib/server/recommendation-profile";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 async function getAuthenticatedClient() {
@@ -30,7 +31,7 @@ export async function GET() {
 
     const profileWithBio = await supabase
       .from("profiles")
-      .select("name, bio, email, phone, self_intro, skills")
+      .select("name, bio, avatar_url, email, phone, self_intro, skills")
       .eq("id", user.id)
       .maybeSingle();
 
@@ -42,7 +43,7 @@ export async function GET() {
     ) {
       const profileWithoutBio = await supabase
         .from("profiles")
-        .select("name, email, phone, self_intro, skills")
+        .select("name, avatar_url, email, phone, self_intro, skills")
         .eq("id", user.id)
         .maybeSingle();
       profileData = profileWithoutBio.data ? { ...profileWithoutBio.data, bio: "" } : null;
@@ -95,6 +96,8 @@ export async function POST(request: Request) {
     if (error || !data) {
       throw new Error(error?.message ?? "이력서 저장에 실패했습니다.");
     }
+
+    await syncRecommendationProfileAfterUserMutation(supabase, user.id);
 
     return apiOk({ id: data.id });
   } catch (error) {

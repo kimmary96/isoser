@@ -12,7 +12,7 @@
 - `docs/camps-list-refactor.md`
 - `docs/current-state.md`
 - `docs/refactoring-log.md`
-- `reports/program-list-hardening-performance-20260423.json`
+- `reports\ad-hoc\programs\program-list-hardening-performance-20260423.json`
 - `reports/TASK-2026-04-23-program-list-hardening-result.md`
 
 ## Why changes were made
@@ -86,3 +86,4 @@ The listing comparison is recorded but not treated as a direct latency win/loss 
 - Replace list count row fetches with exact count headers or a count snapshot for large `scope=all` searches.
 - Move read-model query construction into a small module with table-driven tests for PostgREST expressions.
 - Add a staging `EXPLAIN` report for the promoted fallback and search paths after campaign schema is finalized.
+

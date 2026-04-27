@@ -3,6 +3,7 @@
 import {
   Document,
   Font,
+  Image as PdfImage,
   Page,
   PDFDownloadLink,
   StyleSheet,
@@ -10,7 +11,7 @@ import {
   View,
 } from "@react-pdf/renderer";
 
-import type { Activity, Resume } from "@/lib/types";
+import type { Activity, Resume, ResumeBuilderProfile } from "@/lib/types";
 import { getActivityMetaItems, getActivityResumeLines } from "@/lib/activity-display";
 
 Font.register({
@@ -38,13 +39,51 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    marginBottom: 8,
     fontWeight: 700,
   },
   subtitle: {
     fontSize: 10,
-    marginBottom: 12,
     color: "#666666",
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 12,
+  },
+  identityBlock: {
+    flexDirection: "row",
+    flex: 1,
+  },
+  avatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 12,
+    marginRight: 12,
+    objectFit: "cover",
+  },
+  avatarFallback: {
+    width: 56,
+    height: 56,
+    borderRadius: 12,
+    marginRight: 12,
+    backgroundColor: "#F3F4F6",
+    color: "#9CA3AF",
+    fontSize: 20,
+    textAlign: "center",
+    paddingTop: 14,
+  },
+  identityText: {
+    flex: 1,
+  },
+  contactLine: {
+    marginTop: 6,
+    fontSize: 9,
+    color: "#777777",
+  },
+  documentLabel: {
+    fontSize: 9,
+    color: "#999999",
   },
   section: {
     marginBottom: 10,
@@ -71,16 +110,33 @@ const styles = StyleSheet.create({
 function ResumePdfDocument({
   resume,
   activities,
+  profile,
 }: {
   resume: Resume;
   activities: Activity[];
+  profile: ResumeBuilderProfile | null;
 }) {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        <View style={styles.section}>
-          <Text style={styles.title}>{resume.title}</Text>
-          <Text style={styles.subtitle}>지원 직무: {resume.target_job ?? "미입력"}</Text>
+        <View style={styles.headerRow}>
+          <View style={styles.identityBlock}>
+            {profile?.avatar_url ? (
+              <PdfImage src={profile.avatar_url} style={styles.avatar} />
+            ) : (
+              <Text style={styles.avatarFallback}>👤</Text>
+            )}
+            <View style={styles.identityText}>
+              <Text style={styles.title}>{profile?.name || resume.title}</Text>
+              <Text style={styles.subtitle}>지원 직무: {resume.target_job ?? "미입력"}</Text>
+              {(profile?.email || profile?.phone) && (
+                <Text style={styles.contactLine}>
+                  {[profile?.email, profile?.phone].filter(Boolean).join(" · ")}
+                </Text>
+              )}
+            </View>
+          </View>
+          <Text style={styles.documentLabel}>{resume.title}</Text>
         </View>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>활동</Text>
@@ -111,13 +167,15 @@ function ResumePdfDocument({
 export function ResumePdfDownload({
   resume,
   activities,
+  profile,
 }: {
   resume: Resume;
   activities: Activity[];
+  profile: ResumeBuilderProfile | null;
 }) {
   return (
     <PDFDownloadLink
-      document={<ResumePdfDocument resume={resume} activities={activities} />}
+      document={<ResumePdfDocument resume={resume} activities={activities} profile={profile} />}
       fileName={`${resume.title}.pdf`}
       className="block w-full rounded-lg bg-black px-4 py-3 text-center font-medium text-white transition-colors hover:bg-gray-800"
     >

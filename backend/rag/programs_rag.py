@@ -55,19 +55,35 @@ def _safe_text(value: Any) -> str:
     return str(value).strip() if value is not None else ""
 
 
+def _legacy_program_meta(program: Mapping[str, Any]) -> dict[str, Any]:
+    compare_meta = program.get("compare_meta") if isinstance(program.get("compare_meta"), Mapping) else {}
+    service_meta = program.get("service_meta") if isinstance(program.get("service_meta"), Mapping) else {}
+
+    merged: dict[str, Any] = {
+        str(key): value
+        for key, value in compare_meta.items()
+        if key != "field_sources" and value not in (None, "", [], {})
+    }
+    for key, value in service_meta.items():
+        if value in (None, "", [], {}):
+            continue
+        merged[str(key)] = value
+    return merged
+
+
 def _resolve_recruitment_deadline(program: Mapping[str, Any]) -> str | None:
     close_date = program.get("close_date")
-    compare_meta = program.get("compare_meta") if isinstance(program.get("compare_meta"), dict) else {}
+    legacy_meta = _legacy_program_meta(program)
     meta_deadline = next(
         (
-            compare_meta.get(key)
+            legacy_meta.get(key)
             for key in (
                 "application_deadline",
                 "application_end_date",
                 "recruitment_deadline",
                 "recruitment_end_date",
             )
-            if _safe_text(compare_meta.get(key))
+            if _safe_text(legacy_meta.get(key))
         ),
         None,
     )
@@ -85,7 +101,7 @@ def _resolve_recruitment_deadline(program: Mapping[str, Any]) -> str | None:
         and not meta_deadline
         and end_date
         and deadline[:10] == end_date[:10]
-        and not _uses_work24_training_start_deadline(compare_meta)
+        and not _uses_work24_training_start_deadline(legacy_meta)
     ):
         return None
 
@@ -146,10 +162,23 @@ def _profile_document(profile: Mapping[str, Any]) -> str:
 
     append_text("bio", repeat=2)
     append_text("education")
+    append_text("target_job", repeat=2)
+    append_text("desired_job")
     append_text("job_title")
+    append_text("effective_target_job", repeat=2)
     append_text("self_intro", repeat=2)
 
-    for key in ("career", "education_history", "awards", "certifications", "languages"):
+    for key in (
+        "career",
+        "education_history",
+        "awards",
+        "certifications",
+        "languages",
+        "desired_skills",
+        "preferred_regions",
+        "profile_keywords",
+        "activity_keywords",
+    ):
         value = profile.get(key)
         if isinstance(value, list):
             normalized = [str(item).strip() for item in value if str(item).strip()]
@@ -267,11 +296,18 @@ class ProgramsRAG:
 
         for key, weight in (
             ("skills", 1.5),
+            ("desired_skills", 1.3),
             ("career", 1.0),
             ("education_history", 1.0),
             ("certifications", 1.0),
+            ("target_job", 1.4),
+            ("desired_job", 1.4),
+            ("job_title", 1.3),
+            ("effective_target_job", 1.4),
             ("bio", 1.0),
             ("self_intro", 1.2),
+            ("profile_keywords", 1.1),
+            ("activity_keywords", 1.0),
         ):
             value = profile.get(key)
             if isinstance(value, list):

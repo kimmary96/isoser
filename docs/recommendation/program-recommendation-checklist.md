@@ -1,5 +1,22 @@
 # 교육/지원 프로그램 추천시스템 체크리스트
 
+> 상태: history / audit snapshot
+> 이 문서는 `2026-04-16` 기준 추천/스키마 점검 기록이다. 현재 설계/운영 정본으로 쓰지 않는다.
+>
+> 현재 기준 문서:
+> - `docs/current-state.md`
+> - `docs/specs/final-refactor-axis-map-v1.md`
+> - `docs/specs/program-canonical-schema-design-v1.md`
+> - `docs/specs/program-recommendation-backend-touchpoints-v1.md`
+> - `docs/specs/compare-meta-runtime-touchpoints-v1.md`
+> - `supabase/README.md`
+
+## 2026-04-24 재판정
+
+- 북마크 정본은 이미 `program_bookmarks`로 굳어졌고, live legacy `public.bookmarks`는 삭제됐다.
+- `compare_meta`는 최종 정본이 아니지만, 적재 bridge / 상세 fallback / 점수 보정 / 프런트 표시 helper에 아직 남아 있어 즉시 삭제 대상은 아니다.
+- 따라서 이 문서의 체크리스트는 “당시 감사 기록”으로만 보고, 현재 cleanup 판단은 위 현재 기준 문서를 따른다.
+
 기준 날짜: 2026-04-16  
 기준 브랜치: `develop`  
 현재 기준 커밋: `60da25d7d70db974c3aca75cca3e48c76d86dc5e`

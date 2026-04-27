@@ -10,7 +10,7 @@ import {
   getProgramScore,
   normalizeTextList,
 } from "@/components/landing/program-card-helpers";
-import type { Program } from "@/lib/types";
+import type { ProgramListRow } from "@/lib/types";
 
 import { chipOptions } from "./_content";
 
@@ -21,18 +21,18 @@ type FilterBarProps = {
 
 function getChipButtonClass(chip: string, activeChip: string): string {
   const active = chip === activeChip;
-  const urgencyChip = chip === "마감임박";
+  const freeChip = chip === "무료";
 
-  if (active && urgencyChip) {
-    return "border-[var(--fire)] bg-[var(--fire)] text-white";
+  if (active && freeChip) {
+    return "border-emerald-600 bg-emerald-600 text-white";
   }
 
   if (active) {
     return "border-[var(--ink)] bg-[var(--ink)] text-white";
   }
 
-  if (urgencyChip) {
-    return "border-[rgba(249,115,22,0.35)] bg-[rgba(249,115,22,0.05)] text-[var(--fire)]";
+  if (freeChip) {
+    return "border-emerald-200 bg-emerald-50 text-emerald-700";
   }
 
   return "border-[var(--border)] bg-white text-[var(--sub)] hover:border-[var(--blue)] hover:text-[var(--blue)]";
@@ -85,7 +85,7 @@ export function LandingAFilterBar({ activeChip, keyword }: FilterBarProps) {
 }
 
 type LandingAProgramsSectionProps = {
-  programs: Program[];
+  programs: ProgramListRow[];
   totalCount: number;
   activeChip: string;
   keyword: string;
@@ -93,7 +93,7 @@ type LandingAProgramsSectionProps = {
 };
 
 type ProgramCardProps = {
-  program: Program;
+  program: ProgramListRow;
 };
 
 function ProgramCard({ program }: ProgramCardProps) {

@@ -1,42 +1,20 @@
 import { apiError, apiOk } from "@/lib/api/route-response";
+import { toSelectionProgramCardItem } from "@/lib/program-card-items";
+import { loadProgramCardSummariesByIds } from "@/lib/server/program-card-summary";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { createClient } from "@supabase/supabase-js";
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
-import type { Program } from "@/lib/types";
-
-function readLocalBackendEnv(name: string): string | null {
-  const candidates = [
-    join(process.cwd(), "..", "backend", ".env"),
-    join(process.cwd(), "backend", ".env"),
-  ];
-
-  for (const path of candidates) {
-    if (!existsSync(path)) continue;
-    const lines = readFileSync(path, "utf8").split(/\r?\n/);
-    const line = lines.find((item) => item.startsWith(`${name}=`));
-    if (!line) continue;
-    return line.slice(name.length + 1).trim().replace(/^"|"$/g, "") || null;
-  }
-
-  return null;
-}
+import { createServiceRoleSupabaseClient } from "@/lib/supabase/service-role";
+import type {
+  DashboardCalendarSelectionsResponse,
+  ProgramCardItem,
+} from "@/lib/types";
+import type { ProgramCardRouteClient } from "@/lib/server/program-card-summary";
 
 function createCalendarDbClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? readLocalBackendEnv("SUPABASE_SERVICE_ROLE_KEY");
-
-  if (supabaseUrl && serviceRoleKey) {
-    return createClient(supabaseUrl, serviceRoleKey, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
-    });
+  try {
+    return createServiceRoleSupabaseClient();
+  } catch {
+    return createServerSupabaseClient();
   }
-
-  return createServerSupabaseClient();
 }
 
 async function getAuthenticatedClient() {
@@ -69,7 +47,7 @@ export async function GET() {
 
     const { data: selectionRows, error: selectionError } = await supabase
       .from("calendar_program_selections")
-      .select("program_id, position")
+      .select("program_id, position, updated_at")
       .eq("user_id", user.id)
       .order("position", { ascending: true })
       .order("updated_at", { ascending: false });
@@ -81,22 +59,25 @@ export async function GET() {
       .filter(Boolean);
 
     if (programIds.length === 0) {
-      return apiOk({ programs: [] });
+      return apiOk<DashboardCalendarSelectionsResponse>({ items: [] });
     }
 
-    const { data: programRows, error: programError } = await supabase
-      .from("programs")
-      .select("*")
-      .in("id", programIds);
+    const programs = await loadProgramCardSummariesByIds(
+      supabase as unknown as ProgramCardRouteClient,
+      programIds
+    );
+    const programMap = new Map(
+      programs.map((program) => [String(program.id ?? ""), program])
+    );
+    const items = programIds
+      .map((programId, index) => {
+        const program = programMap.get(programId);
+        const selectedAt = (selectionRows ?? [])[index]?.updated_at ?? null;
+        return program ? toSelectionProgramCardItem(program, selectedAt) : null;
+      })
+      .filter((item): item is ProgramCardItem => Boolean(item));
 
-    if (programError) throw new Error(programError.message);
-
-    const programMap = new Map((programRows ?? []).map((program) => [String(program.id), program]));
-    const programs = programIds
-      .map((programId) => programMap.get(programId))
-      .filter((program): program is Program => Boolean(program));
-
-    return apiOk({ programs });
+    return apiOk<DashboardCalendarSelectionsResponse>({ items });
   } catch (error) {
     const message = error instanceof Error ? error.message : "캘린더 적용 일정을 불러오지 못했습니다.";
     return apiError(message, 400, "BAD_REQUEST");

@@ -5,6 +5,8 @@ export interface Profile {
   name: string | null;
   avatar_url?: string;
   bio?: string | null;
+  target_job?: string | null;
+  target_job_normalized?: string | null;
   portfolio_url?: string | null;
   email: string | null;
   phone: string | null;
@@ -230,6 +232,16 @@ export type CompareStatus = "pass" | "warn" | "block";
 
 export interface CompareMeta {
   subsidy_rate?: string | null;
+  self_payment?: string | number | null;
+  selfPayment?: string | number | null;
+  out_of_pocket?: string | number | null;
+  outOfPocket?: string | number | null;
+  out_of_pocket_amount?: string | number | null;
+  outOfPocketAmount?: string | number | null;
+  actual_training_cost?: string | number | null;
+  actualTrainingCost?: string | number | null;
+  real_man?: string | number | null;
+  realMan?: string | number | null;
   teaching_method?: string | null;
   employment_connection?: string | null;
   satisfaction_score?: string | number | null;
@@ -251,16 +263,132 @@ export interface CompareMeta {
   recruitment_deadline_source?: string | null;
   recruitment_deadline?: string | null;
   recruitment_end_date?: string | null;
+  recruitment_start_date?: string | null;
   application_end_date?: string | null;
+  application_start_date?: string | null;
+  program_start_date?: string | null;
+  program_end_date?: string | null;
+  training_start_date?: string | null;
+  training_end_date?: string | null;
   day_night?: string | null;
   day_night_type?: string | null;
   training_type?: string | null;
   training_schedule?: string | null;
+  trainingSchedule?: string | null;
   schedule_text?: string | null;
+  scheduleText?: string | null;
   weekend_text?: string | null;
   weekend_yn?: string | null;
   weekday_text?: string | null;
   training_time?: string | null;
+}
+
+export interface ProgramBaseSummary {
+  id: string | number | null;
+  title: string | null;
+  category: string | null;
+  category_detail?: string | null;
+  location: string | null;
+  provider: string | null;
+  source?: string | null;
+  source_url?: string | null;
+  link?: string | null;
+  deadline?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  cost?: number | string | null;
+  support_amount?: number | string | null;
+  verified_self_pay_amount?: number | string | null;
+  cost_type?: string | null;
+  support_type?: string | null;
+  teaching_method?: string | null;
+  is_active?: boolean | null;
+  is_open?: boolean | null;
+  is_ad?: boolean | null;
+  days_left?: number | null;
+  deadline_confidence?: "high" | "medium" | "low" | null;
+}
+
+export interface ProgramCardSummary extends ProgramBaseSummary {
+  summary: string | null;
+  description?: string | null;
+  compare_meta?: CompareMeta | null;
+  tags: string[] | string | null;
+  skills: string[] | string | null;
+  application_url?: string | null;
+  application_method?: string | null;
+  participation_time?: string | null;
+  subsidy_amount?: number | string | null;
+  display_categories?: string[] | null;
+  participation_mode_label?: string | null;
+  participation_time_text?: string | null;
+  selection_process_label?: string | null;
+  extracted_keywords?: string[] | null;
+  rating?: string | number | null;
+  rating_raw?: string | number | null;
+  rating_normalized?: number | null;
+  rating_scale?: number | null;
+  rating_display?: string | null;
+  review_count?: number | null;
+  relevance_score?: number | null;
+  final_score?: number | null;
+  urgency_score?: number | null;
+  recommended_score?: number | null;
+  recommendation_reasons?: string[] | null;
+  detail_view_count?: number | null;
+  detail_view_count_7d?: number | null;
+  click_hotness_score?: number | null;
+  last_detail_viewed_at?: string | null;
+  promoted_rank?: number | null;
+}
+
+export type ProgramListRow = ProgramCardSummary;
+
+export interface ProgramSurfaceContext {
+  surface?: string | null;
+  reason?: string | null;
+  fit_keywords?: string[] | null;
+  score?: number | null;
+  relevance_score?: number | null;
+  urgency_score?: number | null;
+  relevance_reasons?: string[] | null;
+  score_breakdown?: RelevanceScoreBreakdown | null;
+  relevance_grade?: RelevanceGrade | null;
+  relevance_badge?: string | null;
+  is_bookmarked?: boolean | null;
+  bookmarked_at?: string | null;
+  selected_at?: string | null;
+  promoted_rank?: number | null;
+}
+
+export interface ProgramCardItem {
+  program: ProgramCardSummary;
+  context?: ProgramSurfaceContext | null;
+}
+
+export interface ProgramListRowItem {
+  program: ProgramListRow;
+  context?: ProgramSurfaceContext | null;
+}
+
+export interface DashboardRecommendedProgramsResponse {
+  items: ProgramCardItem[];
+}
+
+export interface DashboardRecommendCalendarResponse {
+  items: ProgramCardItem[];
+}
+
+export interface DashboardBookmarksResponse {
+  items: ProgramCardItem[];
+}
+
+export interface DashboardCalendarSelectionsResponse {
+  items: ProgramCardItem[];
+}
+
+export interface ProgramCompareSearchResponse {
+  items: ProgramCardItem[];
 }
 
 export interface Program {
@@ -272,6 +400,7 @@ export interface Program {
   provider: string | null;
   summary: string | null;
   description?: string | null;
+  compare_meta?: CompareMeta | null;
   tags: string[] | string | null;
   skills: string[] | string | null;
   application_url?: string | null;
@@ -283,6 +412,8 @@ export interface Program {
   start_date?: string | null;
   end_date?: string | null;
   cost?: number | string | null;
+  support_amount?: number | string | null;
+  verified_self_pay_amount?: number | string | null;
   cost_type?: string | null;
   participation_time?: string | null;
   subsidy_amount?: number | string | null;
@@ -318,17 +449,6 @@ export interface Program {
   final_score?: number | null;
   urgency_score?: number | null;
   days_left?: number | null;
-  compare_meta?: CompareMeta | null;
-  _reason?: string | null;
-  _fit_keywords?: string[] | null;
-  _score?: number | null;
-  _relevance_score?: number | null;
-}
-
-export interface RecommendedProgram extends Program {
-  reason: string;
-  fitKeywords: string[];
-  score: number | null;
 }
 
 export interface ProgramDetail {
@@ -336,13 +456,26 @@ export interface ProgramDetail {
   title: string | null;
   provider: string | null;
   organizer: string | null;
+  source?: string | null;
+  category?: string | null;
+  category_detail?: string | null;
+  display_categories?: string[] | null;
+  ncs_code?: string | null;
+  ncs_name?: string | null;
   location: string | null;
   description: string | null;
+  deadline?: string | null;
+  days_left?: number | null;
   application_start_date: string | null;
   application_end_date: string | null;
   program_start_date: string | null;
   program_end_date: string | null;
   teaching_method: string | null;
+  participation_time?: string | null;
+  participation_time_text?: string | null;
+  application_method?: string | null;
+  selection_process_label?: string | null;
+  cost_type?: string | null;
   support_type: string | null;
   source_url: string | null;
   fee: number | null;
@@ -364,6 +497,7 @@ export interface ProgramDetail {
   certifications: string[];
   tech_stack: string[];
   tags: string[];
+  extracted_keywords?: string[] | null;
   curriculum: string[];
   faq: Array<{ question: string; answer: string }>;
   reviews: Array<Record<string, unknown>>;
@@ -379,7 +513,7 @@ export interface ProgramDetailBatchResponse {
 }
 
 export interface ProgramBatchResponse {
-  items: Program[];
+  items: ProgramCardSummary[];
 }
 
 export interface ProgramFilterOption {
@@ -457,8 +591,8 @@ export interface ProgramFacetSnapshot {
 }
 
 export interface ProgramListPageResponse {
-  promoted_items: Program[];
-  items: Program[];
+  promoted_items: ProgramListRowItem[];
+  items: ProgramListRowItem[];
   next_cursor: string | null;
   count: number | null;
   mode: "browse" | "search" | "archive";
@@ -477,7 +611,7 @@ export interface ProgramRecommendItem {
   score_breakdown: RelevanceScoreBreakdown;
   relevance_grade: RelevanceGrade;
   relevance_badge: string | null;
-  program: Program;
+  program: ProgramCardSummary;
 }
 
 export interface ProgramRecommendResponse {
@@ -497,14 +631,12 @@ export interface CalendarRecommendItem {
   score_breakdown?: RelevanceScoreBreakdown;
   relevance_grade?: RelevanceGrade;
   relevance_badge?: string | null;
-  program: Program;
+  program: ProgramCardSummary;
 }
 
 export interface CalendarRecommendResponse {
   items: CalendarRecommendItem[];
 }
-
-export type ProgramCalendarRecommendItem = CalendarRecommendItem;
 export type AssistantPreferredIntent = "coach" | "recommend" | "recommend_calendar";
 
 export interface AssistantToolCall {
@@ -644,6 +776,7 @@ export interface PortfolioResultResponse {
 
 export interface PortfolioConversionResponse {
   activity_id: string | null;
+  activity_image_urls?: string[];
   project_overview: PortfolioOverviewResponse;
   problem_definition: PortfolioTextSectionResponse;
   tech_decision: PortfolioTextSectionResponse;
@@ -764,6 +897,7 @@ export interface DashboardProfileResponse {
 export interface ResumeBuilderProfile {
   name: string;
   bio?: string;
+  avatar_url?: string | null;
   email: string;
   phone: string;
   self_intro: string;
@@ -802,6 +936,7 @@ export interface MatchDashboardResponse {
 export interface ResumeExportResponse {
   resume: Resume | null;
   activities: Activity[];
+  profile: ResumeBuilderProfile | null;
 }
 
 export interface DocumentsResponse {
@@ -830,12 +965,4 @@ export interface CoverLetterDetailResponse {
 
 export interface CoverLetterMutationResponse {
   coverLetter: CoverLetter;
-}
-
-export interface ProgramListResponse {
-  programs: Program[];
-}
-
-export interface RecommendedProgramsResponse {
-  programs: RecommendedProgram[];
 }

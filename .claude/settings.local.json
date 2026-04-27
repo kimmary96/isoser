@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:api.anthropic.com)",
+      "Bash(curl -sL \"https://api.anthropic.com/v1/design/h/wT8YGaHnloJKEDOWLavutg\" -o /tmp/design_index.html -w \"HTTP %{http_code} size=%{size_download}\\\\n\")",
+      "Bash(curl -sL \"https://api.anthropic.com/v1/design/h/wT8YGaHnloJKEDOWLavutg/dashboard_v2.html\" -o /tmp/dashboard_v2.html -w \"HTTP %{http_code} size=%{size_download}\\\\n\")",
+      "Bash(curl -sL \"https://api.anthropic.com/v1/design/h/wT8YGaHnloJKEDOWLavutg/README.md\" -o /tmp/design_readme.md -w \"HTTP %{http_code} size=%{size_download}\\\\n\")",
+      "Bash(gunzip -c \"C:\\\\Users\\\\User\\\\.claude\\\\projects\\\\D--02-2025-AI-Lab-isoser--claude-worktrees-strange-meitner-c319aa\\\\cb4148ee-02de-4353-86a4-7f12ef080724\\\\tool-results\\\\webfetch-1777003688448-vi3dvd.bin\")",
+      "Read(//tmp/**)",
+      "Bash(mkdir -p /tmp/design_files)",
+      "Bash(tar -xf /tmp/design_decompressed.bin -C /tmp/design_files)",
+      "Bash(cygpath -w /tmp/design_files/dashboard/README.md)",
+      "Bash(cygpath -w /tmp/design_files/dashboard/project/dashboard_v2.html)"
+    ]
+  }
+}
