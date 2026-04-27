@@ -1,6 +1,8 @@
 # Current State
 
 Update 2026-04-27:
+- `/dashboard`는 `origin/dashboard`의 프론트 UI 변경 중 TSX 화면 변경만 선별 반영했다. 대시보드 바깥 래퍼/왼쪽 패널/추천·찜 카드 strip은 밝은 블루 계열 gradient, 흰색 translucent panel, shadow를 사용하며, 추천/찜 프로그램 카드는 클릭 시 페이지 이동 없이 `ProgramPreviewModal`을 열어 상세 요약, 일정, 마감일, 카테고리, 신청 링크를 미리 보여준다. 상세 데이터는 기존 `getProgramDetail`/`ProgramDetail` 계약을 사용하고, 같은 프로그램 상세는 클라이언트 상태에 캐시한다. 모달 UI는 `frontend/app/dashboard/_components/program-preview-modal.tsx`로 분리되어 detail success, fallback, loading/error 렌더 테스트를 가진다.
+- `/compare` 화면은 같은 선별 반영 범위에서 배경 gradient, hero/legend/table/suggestion 카드 shadow와 rounded 스타일이 조정됐고, 커리어 핏 keyword chip은 줄바꿈 영역에서 카드 폭을 넘기지 않도록 `inline-flex shrink-0`과 content-start 정렬을 사용한다.
 - `/dashboard/profile`의 `내 이력 완성도` 카드는 100% 미만일 때 제목 옆에 부족한 항목을 작은 글씨로 표시한다. 부족 항목은 프로필 사진, 이름, 이메일, 전화번호, 희망 직무/소개, 스킬, 경력, 학력, 활동 개수를 기존 완성도 점수 기준과 같은 단위로 계산한다. 완성도가 100%가 되면 완료 문구와 팡파레 애니메이션을 잠깐 보여준 뒤 해당 완성도 섹션을 숨긴다.
 - 프로필 화면의 학력 수정 모달은 기존 `education_history: string[]` 저장 계약을 유지하면서 입력 UI를 `학교명`, `학과`, `기간`, `졸업구분`, `학점` 필드로 나눠 편집한다. 구조화 저장값은 `학교명 | 학과 | 기간 | 졸업구분 | 학점` 형태로 직렬화하고, 기존 단일 문자열 학력은 학교명 필드로 열어 backward compatible하게 편집한다.
 - 프로필 화면 카드 밀도는 대시보드와 가깝게 조정했다. 히어로/활동/하단 카드 간격을 줄이고 카드 폭을 넓혔으며, Skills 영역은 긴 스킬명이 카드 밖으로 넘치지 않도록 줄바꿈 가능한 텍스트 레이아웃을 사용한다. 경력 카드의 하위 프로젝트/활동은 상세 설명 없이 제목만 표시한다.

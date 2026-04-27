@@ -146,7 +146,7 @@ function KeywordChips({ item, program }: { item: ProgramRelevanceItem; program: 
       {keywords.map((keyword) => (
         <span
           key={`${item.program_id}-${keyword}`}
-          className="rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700"
+          className="inline-flex shrink-0 items-center rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700"
         >
           {keyword}
         </span>
@@ -168,7 +168,7 @@ const relevanceRows: RelevanceRow[] = [
   },
   {
     label: COMPARE_COPY.fit.rows.keywords,
-    extraClassName: "flex flex-wrap gap-2",
+    extraClassName: "flex flex-wrap content-start items-start gap-2",
     render: (item, program) => <KeywordChips item={item} program={program} />,
   },
   {

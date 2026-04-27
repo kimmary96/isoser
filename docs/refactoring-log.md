@@ -1,5 +1,12 @@
 # 리팩토링 로그
 
+- 2026-04-27: `frontend/app/dashboard/page.tsx`, `frontend/app/dashboard/_components/program-preview-modal.tsx`, `frontend/app/dashboard/_components/program-preview-modal.test.tsx`, `frontend/app/(landing)/compare/compare-relevance-section.tsx`, `frontend/app/(landing)/compare/programs-compare-client.tsx`, `frontend/vitest.config.ts`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-27-dashboard-front-ui-merge-result.md`
+  - `origin/dashboard`의 프론트/UI 변경 중 화면 TSX 변경만 선별 반영하고, 문서 충돌 파일과 UI가 아닌 `frontend/lib/supabase/server.ts` 변경은 제외해 backend/DB/develop runtime 계약을 유지함
+  - `/dashboard`의 캘린더 shell, 왼쪽 패널, 추천/찜 카드 strip을 밝은 블루 gradient와 translucent panel 스타일로 맞추고, 추천/찜 프로그램 카드에서 상세 미리보기 모달을 열 수 있게 함
+  - 미리보기 모달은 기존 `getProgramDetail`/`ProgramDetail` 계약을 사용하며, 같은 프로그램 상세 응답은 클라이언트 상태에 캐시해 반복 호출을 줄임. 모달 UI는 별도 컴포넌트로 분리하고 detail success, summary fallback, loading/error 렌더 테스트를 추가함
+  - `/compare`의 배경/hero/table/suggestion 카드 스타일과 커리어 핏 keyword chip 정렬을 조정하되 비교 데이터 조회/슬롯/추천 후보 로직은 유지함
+  - 검증: live backend smoke on `/programs/list` + `/programs/{id}/detail`, `npm test -- app/dashboard/_components/program-preview-modal.test.tsx`, `npm test`, `npm run build` in `frontend`
+
 - 2026-04-26: `frontend/app/(landing)/compare/*`, `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-26-compare-page-bookmarks-detail-relevance-result.md`
   - 비교 모달의 찜 목록 로딩을 서버 렌더링 로그인 힌트가 아니라 실제 dashboard bookmark BFF 응답 기준으로 바꿔, 로그인 직후 SSR 상태가 어긋나도 `program_bookmarks`를 다시 조회하게 함
   - 비교 모달의 찜/검색/하단 suggestion을 `ProgramSelectSummary` 전용 계약에서 `ProgramCardItem(program + context)` 계약으로 되돌려 대시보드 찜 카드와 공개 프로그램 목록 summary를 같은 데이터 구조로 소비하게 함
