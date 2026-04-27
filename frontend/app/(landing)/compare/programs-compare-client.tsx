@@ -204,7 +204,7 @@ export default function ProgramsCompareClient({
   }
 
   return (
-    <main className="min-h-screen bg-slate-100 text-slate-950">
+    <main className="min-h-screen bg-[linear-gradient(135deg,#dbeafe_0%,#e0f2fe_48%,#f8fbff_100%)] text-slate-950">
       {notice ? (
         <div className="fixed left-1/2 top-6 z-[70] -translate-x-1/2 rounded-full bg-[#0A0F1E] px-4 py-2 text-sm font-medium text-white shadow-lg">
           {notice}
@@ -223,29 +223,30 @@ export default function ProgramsCompareClient({
         }}
       />
 
-      <div className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-7xl px-6 py-10">
+      <div className="mx-4 mt-4 overflow-hidden rounded-[32px] border border-white/70 bg-white/75 shadow-[0_40px_100px_rgba(15,23,42,0.12)] backdrop-blur-xl">
+        <div className="border-b border-white/70 bg-[linear-gradient(135deg,#cfe8ff_0%,#e7f1ff_42%,#f8fbff_100%)]">
+          <div className="mx-auto max-w-7xl px-6 py-10">
           <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">{COMPARE_COPY.hero.title}</h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
             {COMPARE_COPY.hero.description}
           </p>
           <div className="mt-5 flex flex-wrap gap-2 text-xs font-semibold">
-            <span className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-slate-700">{COMPARE_COPY.hero.badges[0]}</span>
-            <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-amber-700">{COMPARE_COPY.hero.badges[1]}</span>
-            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-emerald-700">{COMPARE_COPY.hero.badges[2]}</span>
+            <span className="rounded-full border border-white/80 bg-white/80 px-3 py-1 text-slate-700 shadow-sm">{COMPARE_COPY.hero.badges[0]}</span>
+            <span className="rounded-full border border-blue-200 bg-blue-50/90 px-3 py-1 text-blue-700 shadow-sm">{COMPARE_COPY.hero.badges[1]}</span>
+            <span className="rounded-full border border-sky-200 bg-sky-50/90 px-3 py-1 text-sky-700 shadow-sm">{COMPARE_COPY.hero.badges[2]}</span>
           </div>
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-6 py-8">
-        <section className="mb-5 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-4 text-sm text-slate-600 lg:flex-row lg:items-center">
-          <div className="shrink-0 rounded-lg bg-[#0A0F1E] px-3 py-2 text-xs font-semibold text-white">{COMPARE_COPY.legend.title}</div>
+        <div className="mx-auto max-w-7xl px-6 py-8">
+        <section className="mb-5 flex flex-col gap-3 rounded-[24px] border border-white/70 bg-white/72 px-5 py-4 text-sm text-slate-600 shadow-[0_18px_40px_rgba(15,23,42,0.08)] backdrop-blur-sm lg:flex-row lg:items-center">
+          <div className="shrink-0 rounded-xl bg-[#1d4ed8] px-3 py-2 text-xs font-semibold text-white">{COMPARE_COPY.legend.title}</div>
           <div className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-sm bg-slate-400" />{COMPARE_COPY.legend.empty}</div>
           <div className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-sm bg-amber-500" />{COMPARE_COPY.legend.missing}</div>
           <div className="text-xs text-slate-400 lg:ml-auto">{COMPARE_COPY.legend.fit}</div>
         </section>
 
-        <section className="overflow-x-auto rounded-3xl border border-slate-200 bg-white shadow-sm">
+        <section className="overflow-x-auto rounded-[28px] border border-white/70 bg-white/78 shadow-[0_24px_60px_rgba(15,23,42,0.10)] backdrop-blur-sm">
           <div className="grid min-w-[980px] grid-cols-[170px_repeat(3,minmax(0,1fr))]">
             <div className="border-b border-r border-slate-200 bg-slate-100 px-4 py-5">
               <div className="text-xs font-semibold text-slate-500">비교 중</div>
@@ -407,12 +408,12 @@ export default function ProgramsCompareClient({
           </div>
         </section>
 
-        <section className="mt-7 flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white px-6 py-6 text-slate-950 lg:flex-row lg:items-center">
+        <section className="mt-7 flex flex-col gap-4 rounded-[28px] border border-white/70 bg-white/76 px-6 py-6 text-slate-950 shadow-[0_20px_44px_rgba(15,23,42,0.08)] backdrop-blur-sm lg:flex-row lg:items-center">
           <div className="flex-1">
             <h2 className="text-lg font-semibold">{COMPARE_COPY.loginCta.title}</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">{COMPARE_COPY.loginCta.description}</p>
           </div>
-          <Link href="/login" className="inline-flex items-center justify-center rounded-xl bg-[#F97316] px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange-600">
+          <Link href="/login" className="inline-flex items-center justify-center rounded-2xl bg-[#1d4ed8] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1e40af]">
             {COMPARE_COPY.loginCta.button}
           </Link>
         </section>
@@ -424,11 +425,11 @@ export default function ProgramsCompareClient({
           </p>
 
           {suggestionsError ? (
-            <div className="mt-4 rounded-2xl border border-slate-200 bg-white px-5 py-6 text-sm text-slate-500">
+            <div className="mt-4 rounded-[24px] border border-white/70 bg-white/76 px-5 py-6 text-sm text-slate-500 shadow-[0_18px_40px_rgba(15,23,42,0.08)] backdrop-blur-sm">
               {COMPARE_COPY.suggestions.error}
             </div>
           ) : suggestions.length === 0 ? (
-            <div className="mt-4 rounded-2xl border border-slate-200 bg-white px-5 py-6 text-sm text-slate-500">
+            <div className="mt-4 rounded-[24px] border border-white/70 bg-white/76 px-5 py-6 text-sm text-slate-500 shadow-[0_18px_40px_rgba(15,23,42,0.08)] backdrop-blur-sm">
               {COMPARE_COPY.suggestions.empty}
             </div>
           ) : (
@@ -445,7 +446,7 @@ export default function ProgramsCompareClient({
                 const suggestionReason = item.context?.reason?.trim() || COMPARE_COPY.suggestions.fallbackReason;
 
                 return (
-                  <article key={programId || String(program.id)} className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                  <article key={programId || String(program.id)} className="flex h-full flex-col rounded-[24px] border border-white/75 bg-white/82 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.08)] backdrop-blur-sm">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">{program.source || "출처 미상"}</span>
@@ -481,6 +482,7 @@ export default function ProgramsCompareClient({
             </div>
           )}
         </section>
+        </div>
       </div>
     </main>
   );
