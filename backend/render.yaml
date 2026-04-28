@@ -5,18 +5,26 @@ services:
     runtime: python
     rootDir: backend
     buildCommand: python check_python_version.py && pip install -r requirements.txt
-    startCommand: python check_python_version.py && python rag/seed.py && uvicorn main:app --host 0.0.0.0 --port $PORT
+    startCommand: python check_python_version.py && uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.14
       - key: GOOGLE_API_KEY
         sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: ADMIN_SECRET_KEY
+        sync: false
       - key: ANONYMIZED_TELEMETRY
         value: "False"
       - key: CHROMA_MODE
-        value: ephemeral
+        value: persistent
       - key: CHROMA_PERSIST_DIR
         value: /opt/render/project/src/chroma_store
+      - key: WORK24_TRAINING_AUTH_KEY
+        sync: false
       - key: DATA_GO_KR_SERVICE_KEY
         sync: false
       - key: WORKNET_STANDARD_JOB_DESCRIPTION_API_KEY
@@ -32,6 +40,10 @@ services:
       - key: NCS_REFERENCE_API_KEY
         sync: false
       - key: NCS_RESOURCE_API_KEY
+        sync: false
+      - key: SLACK_SIGNING_SECRET
+        sync: false
+      - key: SLACK_APPROVER_USER_IDS
         sync: false
     disk:
       name: chroma-store

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from routers import programs
+from backend.routers import programs
 
 
 def _load_examples() -> dict[str, object]:

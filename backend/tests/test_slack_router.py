@@ -7,7 +7,7 @@ import time
 from pathlib import Path
 from urllib.parse import urlencode
 
-from routers import slack
+from backend.routers import slack
 
 
 def test_cowork_approvals_rls_policy_is_service_role_only() -> None:

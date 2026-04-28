@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import pytest
 
-from routers import assistant
-from routers.coach import CoachFeedbackApiResponse
-from routers.programs import (
+from backend.routers import assistant
+from backend.routers.coach import CoachFeedbackApiResponse
+from backend.routers.programs import (
     CalendarRecommendItem,
     CalendarRecommendResponse,
     ProgramListItem,

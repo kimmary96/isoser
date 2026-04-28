@@ -67,6 +67,10 @@ export const metadata: Metadata = {
   },
 };
 
+const PROGRAMS_PAGE_MAIN_REQUEST_TIMEOUT_MS = 5500;
+const PROGRAMS_PAGE_SECONDARY_REQUEST_TIMEOUT_MS = 2500;
+const PROGRAMS_PAGE_LEGACY_FALLBACK_TIMEOUT_MS = 5000;
+
 type ProgramsPageProps = {
   searchParams: Promise<ProgramsPageSearchParams>;
 };
@@ -109,7 +113,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
           recruiting_only: recruitingOnly,
           include_closed_recent: showClosedRecent,
         }),
-        3500
+        PROGRAMS_PAGE_SECONDARY_REQUEST_TIMEOUT_MS
       );
       sourceOptions = dynamicOrFallbackOptions(
         filterOptions.sources,
@@ -194,15 +198,23 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
   ({ isLoggedIn, bookmarkedProgramIds } = await sessionContextPromise);
 
   try {
-    const [programsPage, urgentPage] = await Promise.all([
-      listProgramsPage({
-        ...currentFilterParams,
-        sort,
-        limit: PAGE_SIZE,
-        offset,
-      }),
-      listProgramsPage(buildUrgentProgramsParams()),
+    const [programsPageResult, urgentPageResult] = await Promise.allSettled([
+      withTimeout(
+        listProgramsPage({
+          ...currentFilterParams,
+          sort,
+          limit: PAGE_SIZE,
+          offset,
+        }),
+        PROGRAMS_PAGE_MAIN_REQUEST_TIMEOUT_MS
+      ),
+      withTimeout(listProgramsPage(buildUrgentProgramsParams()), PROGRAMS_PAGE_SECONDARY_REQUEST_TIMEOUT_MS),
     ]);
+    if (programsPageResult.status === "rejected") {
+      throw programsPageResult.reason;
+    }
+    const programsPage = programsPageResult.value;
+    const urgentPage = urgentPageResult.status === "fulfilled" ? urgentPageResult.value : null;
     const shouldUseBrowseFallback =
       isDefaultBrowseView &&
       programsPage.source === "read_model" &&
@@ -219,30 +231,47 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
       promotedPrograms = unwrapProgramListRows(programsPage.promoted_items);
       programs = unwrapProgramListRows(programsPage.items);
       totalCount = programsPage.count ?? programsPage.items.length;
-      urgentPrograms = unwrapProgramListRows(urgentPage.items);
+      urgentPrograms = urgentPage ? unwrapProgramListRows(urgentPage.items) : [];
     }
   } catch (e) {
     promotedPrograms = [];
     try {
-      [programs, urgentPrograms] = await Promise.all([
-        listPrograms({
-          ...currentFilterParams,
-          sort,
-          limit: PAGE_SIZE,
-          offset,
-        }),
-        listPrograms(buildUrgentProgramsParams()),
+      const [programsResult, urgentProgramsResult] = await Promise.allSettled([
+        withTimeout(
+          listPrograms({
+            ...currentFilterParams,
+            sort,
+            limit: PAGE_SIZE,
+            offset,
+          }),
+          PROGRAMS_PAGE_LEGACY_FALLBACK_TIMEOUT_MS
+        ),
+        withTimeout(listPrograms(buildUrgentProgramsParams()), PROGRAMS_PAGE_SECONDARY_REQUEST_TIMEOUT_MS),
       ]);
+      if (programsResult.status === "rejected") {
+        throw programsResult.reason;
+      }
+      programs = programsResult.value;
+      urgentPrograms = urgentProgramsResult.status === "fulfilled" ? urgentProgramsResult.value : [];
       totalCount = programs.length;
     } catch {
       try {
-        const fallbackPage = await loadPublicProgramsPageFallback();
-        promotedPrograms = page === 1 && isDefaultBrowseView ? fallbackPage.promotedPrograms : [];
-        programs = fallbackPage.programs.slice(offset, offset + PAGE_SIZE);
-        urgentPrograms = fallbackPage.urgentPrograms;
-        totalCount = fallbackPage.totalCount;
+        if (!isDefaultBrowseView) {
+          programs = [];
+          urgentPrograms = [];
+          totalCount = 0;
+          promotedPrograms = [];
+        } else {
+          const fallbackPage = await loadPublicProgramsPageFallback();
+          promotedPrograms = page === 1 ? fallbackPage.promotedPrograms : [];
+          programs = fallbackPage.programs.slice(offset, offset + PAGE_SIZE);
+          urgentPrograms = fallbackPage.urgentPrograms;
+          totalCount = fallbackPage.totalCount;
+        }
       } catch {
-        error = e instanceof Error ? e.message : "프로그램을 불러오는 중 문제가 발생했습니다.";
+        if (isDefaultBrowseView) {
+          error = e instanceof Error ? e.message : "프로그램을 불러오는 중 문제가 발생했습니다.";
+        }
       }
     }
   }

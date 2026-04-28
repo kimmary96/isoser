@@ -1,5 +1,10 @@
 # 리팩토링 로그
 
+- 2026-04-28: `frontend/app/dashboard/documents/page.tsx`, `docs/current-state.md`
+  - 문서 저장소 PDF 출력 모달에서 결제 처리 단계와 PDF 생성/다운로드 단계를 분리해, 결제 처리 중에는 기존처럼 닫기를 막고 PDF 준비 중에는 모달을 닫을 수 있게 함
+  - 다운로드 helper 호출, 선택 문서/디자인/결제 상태 흐름은 유지하고 닫기 버튼 disabled 조건만 좁힘
+  - 검증: `npx --prefix frontend tsc -p frontend/tsconfig.codex-check.json --noEmit --pretty false`, `npm --prefix frontend run lint -- --file app/dashboard/documents/page.tsx`
+
 - 2026-04-28: `frontend/lib/portfolio-document.ts`, `frontend/lib/portfolio-document.test.ts`, `frontend/app/dashboard/portfolio/export/_components/portfolio-export-preview.tsx`, `frontend/app/dashboard/portfolio/export/_components/portfolio-pdf-download.tsx`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-portfolio-pdf-output-cleanup-result.md`
   - 포트폴리오 PDF 2차 QA에서 `수치 보완 필요`, `검토 필요`, `본인 경험으로 수정 필요` 같은 내부 보완 태그와 placeholder 역할 문구가 최종 산출물에 남는 문제를 확인함
   - 최종 preview/PDF 출력 view-model에서 내부 보완 태그, placeholder 역할/metric 값을 숨기고, 정량 성과가 비어 있으면 임의 수치를 만들지 않는 정성 성과 문장으로 보강함
@@ -3692,3 +3697,13 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - 문서 저장소 데모 결제 후 포트폴리오 PDF 생성 단계에서 브라우저가 멈출 수 있던 경로를 줄이기 위해 포트폴리오 PDF를 프로젝트별 페이지로 나눠 렌더하게 조정함
   - 외부 이미지 URL을 React PDF에 직접 삽입하지 않고 이미지 캡션 placeholder로 대체해 이미지 fetch/CORS/대용량 리소스가 다운로드를 막는 상황을 피함
   - 긴 포트폴리오 본문과 bullet은 PDF용으로 길이를 제한해 데모 다운로드 안정성을 우선함
+- 2026-04-28: `backend/routers/assistant.py`, `backend/render.yaml`, `frontend/.env.local.example`, `backend/tests/test_ai_smoke.py`, `backend/tests/test_assistant_router.py`, `backend/tests/test_slack_router.py`, `tests/test_create_task_packet.py`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-final-demo-preflight-qa-result.md`
+  - 최종 데모 전 P0 QA에서 backend pytest red 원인이 `routers.*`와 `backend.routers.*` 중복 로드로 monkeypatch가 실제 route에 닿지 않는 문제임을 확인하고, assistant router 내부 import를 상대 import로 정리함
+  - 관련 테스트 import를 앱 등록 모듈 경로와 맞추고, task packet 테스트는 현재 `build_packet()` 필수 인자 계약에 맞춰 갱신함
+  - Render Blueprint에 Supabase/admin/Work24/Slack 필수 env 선언을 추가하고, Chroma를 persistent mode + uvicorn startup seed로 실행하도록 바꿔 별도 seed 프로세스의 ephemeral 인덱스 유실 위험을 제거함
+  - `frontend/.env.local.example`에 Vercel 배포 전 대조할 공개/서버 전용 env 후보를 보강함
+- 2026-04-28: `backend/routers/programs.py`, `backend/tests/test_programs_router.py`, `frontend/app/(landing)/programs/page.tsx`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-final-demo-preflight-qa-result.md`
+  - E2E 검색 중 `/programs?q=ai`가 backend Supabase timeout과 frontend SSR 500으로 이어지는 경로를 확인하고, 검색 read-model을 3.5초로 제한한 뒤 실패 시 빈 search response로 복구하도록 조정함
+  - legacy 검색/대량 scan은 중간 timeout 시 이미 확보한 row를 보존하거나 빈 row로 복구해 공개 목록 API가 500을 내지 않게 함
+  - `/programs` 페이지는 메인 검색 요청과 마감임박/필터 옵션 보조 요청 timeout을 분리하고, 검색/필터 상태에서는 무거운 browse fallback을 기다리지 않도록 바꿔 검색 화면이 오류 대신 빈 결과 상태로 이어지게 함
+  - 회귀 테스트로 검색 read-model 실패, count 실패, search scan 부분 timeout/초기 timeout 경로를 고정함

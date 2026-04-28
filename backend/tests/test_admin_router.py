@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 from fastapi import HTTPException
 
-from routers import admin
+from backend.routers import admin
 
 
 def test_missing_program_column_name_parses_postgrest_schema_error() -> None:

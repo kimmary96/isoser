@@ -872,6 +872,44 @@ async def test_list_programs_flat_endpoint_falls_back_when_default_browse_read_m
 
 
 @pytest.mark.asyncio
+async def test_list_programs_flat_endpoint_returns_empty_when_search_read_model_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_fetch_program_list_read_model_rows(**_: object) -> programs.ProgramListPageResponse:
+        raise TimeoutError("search read model timeout")
+
+    async def fake_count_program_read_model_rows(**_: object) -> int:
+        return 0
+
+    async def fail_fetch_program_list_rows(params: dict[str, object], *, q: str | None) -> list[dict[str, object]]:
+        raise AssertionError("legacy search scan should not run after read model failure")
+
+    monkeypatch.setattr(programs, "_should_use_local_browse_subset", lambda **_: False)
+    monkeypatch.setattr(programs, "_fetch_program_list_read_model_rows", fake_fetch_program_list_read_model_rows)
+    monkeypatch.setattr(programs, "_count_program_read_model_rows", fake_count_program_read_model_rows)
+    monkeypatch.setattr(programs, "_fetch_program_list_rows", fail_fetch_program_list_rows)
+    monkeypatch.setenv("ENABLE_PROGRAM_LIST_READ_MODEL", "true")
+
+    rows = await programs.list_programs(
+        q="청년",
+        regions=None,
+        sources=None,
+        teaching_methods=None,
+        cost_types=None,
+        participation_times=None,
+        targets=None,
+        selection_processes=None,
+        employment_links=None,
+        sort="default",
+        limit=5,
+        offset=0,
+        cursor=None,
+    )
+
+    assert rows == []
+
+
+@pytest.mark.asyncio
 async def test_list_programs_page_falls_back_when_default_browse_read_model_contains_closed_rows(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -924,6 +962,80 @@ async def test_list_programs_page_falls_back_when_default_browse_read_model_cont
     assert response.source == "legacy"
     assert response.items[0].program.id == "legacy-open"
     assert response.items[0].program.days_left == 3
+
+
+@pytest.mark.asyncio
+async def test_list_programs_page_uses_page_rows_when_count_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_list_programs(**_: object) -> list[dict[str, object]]:
+        return [
+            {
+                "id": "legacy-search-row",
+                "title": "legacy-search-row",
+                "deadline": (date.today() + timedelta(days=4)).isoformat(),
+                "is_active": True,
+            }
+        ]
+
+    async def fake_count_program_rows(**_: object) -> int:
+        raise TimeoutError("count timeout")
+
+    monkeypatch.setattr(programs, "_should_use_local_browse_subset", lambda **_: False)
+    monkeypatch.setattr(programs, "_can_use_program_list_read_model", lambda **_: False)
+    monkeypatch.setattr(programs, "list_programs", fake_list_programs)
+    monkeypatch.setattr(programs, "_count_program_rows", fake_count_program_rows)
+
+    response = await programs.list_programs_page(
+        q="ai",
+        regions=None,
+        sources=None,
+        teaching_methods=None,
+        cost_types=None,
+        participation_times=None,
+        targets=None,
+        limit=5,
+    )
+
+    assert response.source == "legacy"
+    assert response.count == 1
+    assert response.items[0].program.id == "legacy-search-row"
+
+
+@pytest.mark.asyncio
+async def test_list_programs_page_returns_empty_when_search_read_model_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_fetch_program_list_read_model_rows(**_: object) -> programs.ProgramListPageResponse:
+        raise TimeoutError("search read model timeout")
+
+    async def fake_count_program_read_model_rows(**_: object) -> int:
+        return 0
+
+    async def fail_list_programs(**_: object) -> list[dict[str, object]]:
+        raise AssertionError("legacy search scan should not run after read model failure")
+
+    monkeypatch.setattr(programs, "_should_use_local_browse_subset", lambda **_: False)
+    monkeypatch.setattr(programs, "_fetch_program_list_read_model_rows", fake_fetch_program_list_read_model_rows)
+    monkeypatch.setattr(programs, "_count_program_read_model_rows", fake_count_program_read_model_rows)
+    monkeypatch.setattr(programs, "list_programs", fail_list_programs)
+    monkeypatch.setenv("ENABLE_PROGRAM_LIST_READ_MODEL", "true")
+
+    response = await programs.list_programs_page(
+        q="청년",
+        regions=None,
+        sources=None,
+        teaching_methods=None,
+        cost_types=None,
+        participation_times=None,
+        targets=None,
+        limit=5,
+    )
+
+    assert response.source == "legacy"
+    assert response.mode == "search"
+    assert response.count == 0
+    assert response.items == []
 
 
 @pytest.mark.asyncio
@@ -3021,6 +3133,40 @@ async def test_fetch_program_list_rows_paginates_search_candidates(monkeypatch: 
     assert calls[0]["limit"] == str(programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE)
     assert calls[0]["offset"] == "0"
     assert calls[1]["offset"] == str(programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE)
+
+
+@pytest.mark.asyncio
+async def test_fetch_program_list_rows_keeps_partial_search_rows_on_late_timeout(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[dict] = []
+
+    async def fake_request_supabase(*, method: str, path: str, params: dict, **_: object) -> list[dict]:
+        calls.append(dict(params))
+        if int(params.get("offset", 0)) == 0:
+            return [{"id": f"row-{index}"} for index in range(programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE)]
+        raise TimeoutError("search scan timeout")
+
+    monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
+
+    rows = await programs._fetch_program_list_rows({"select": "*"}, q="ai")
+
+    assert len(rows) == programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE
+    assert calls[1]["offset"] == str(programs.PROGRAM_SEARCH_SCAN_PAGE_SIZE)
+
+
+@pytest.mark.asyncio
+async def test_fetch_program_list_rows_returns_empty_when_search_scan_starts_with_timeout(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_request_supabase(*, method: str, path: str, params: dict, **_: object) -> list[dict]:
+        raise TimeoutError("search scan timeout")
+
+    monkeypatch.setattr(programs, "request_supabase", fake_request_supabase)
+
+    rows = await programs._fetch_program_list_rows({"select": "*"}, q="ai")
+
+    assert rows == []
 
 
 @pytest.mark.asyncio

@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import pytest
 
-from routers import assistant, coach, programs
-from routers.coach import CoachFeedbackApiResponse
-from routers.programs import ProgramListItem
+from backend.routers import assistant, coach, programs
+from backend.routers.coach import CoachFeedbackApiResponse
+from backend.routers.programs import ProgramListItem
 
 
 def test_program_recommend_smoke(client, monkeypatch: pytest.MonkeyPatch) -> None:

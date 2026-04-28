@@ -17,6 +17,9 @@ def test_build_packet_includes_current_head_and_optional_fingerprint(tmp_path: P
         task_type="feature",
         priority="medium",
         planned_by="claude",
+        created_by="claude",
+        execution_path="local",
+        supervisor_spec=False,
         files=["README.md"],
     )
 

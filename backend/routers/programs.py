@@ -332,6 +332,7 @@ PROGRAM_KEYWORD_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
 PROGRAM_SHORT_ASCII_SEARCH_MAX_LENGTH = 2
 PROGRAM_LIST_INDEX_TABLE = "program_list_index"
 PROGRAM_LIST_FACET_TABLE = "program_list_facet_snapshots"
+PROGRAM_SEARCH_READ_MODEL_TIMEOUT_SECONDS = 3.5
 PROGRAM_BROWSE_POOL_LIMIT = 300
 PROGRAM_PROMOTED_SLOT_LIMIT = 15
 PROGRAM_LIST_SUMMARY_SELECT = (
@@ -2908,7 +2909,14 @@ async def _fetch_program_list_rows(params: dict[str, Any], *, q: str | None) -> 
                     page = await request_supabase(method="GET", path="/rest/v1/programs", params=page_params)
                 except Exception:
                     if "category_detail" not in page_params:
-                        raise
+                        log_event(
+                            logger,
+                            logging.WARNING,
+                            "program_list_large_scan_partial_fallback",
+                            offset=offset,
+                            has_rows=bool(rows),
+                        )
+                        break
                     fallback_params = dict(page_params)
                     fallback_params.pop("category_detail", None)
                     page = await request_supabase(method="GET", path="/rest/v1/programs", params=fallback_params)
@@ -2924,7 +2932,12 @@ async def _fetch_program_list_rows(params: dict[str, Any], *, q: str | None) -> 
             rows = await request_supabase(method="GET", path="/rest/v1/programs", params=params)
         except Exception:
             if "category_detail" not in params:
-                raise
+                log_event(
+                    logger,
+                    logging.WARNING,
+                    "program_list_query_empty_fallback",
+                )
+                return []
             fallback_params = dict(params)
             fallback_params.pop("category_detail", None)
             rows = await request_supabase(method="GET", path="/rest/v1/programs", params=fallback_params)
@@ -2941,12 +2954,26 @@ async def _fetch_program_list_rows(params: dict[str, Any], *, q: str | None) -> 
         try:
             page = await request_supabase(method="GET", path="/rest/v1/programs", params=page_params)
         except Exception:
+            if rows:
+                log_event(
+                    logger,
+                    logging.WARNING,
+                    "program_list_search_scan_partial_fallback",
+                    offset=offset,
+                )
+                break
             if PROGRAM_SEARCH_INDEX_COLUMN not in page_params:
                 if "category_detail" in page_params:
                     fallback_params = dict(params)
                     fallback_params.pop("category_detail", None)
                     return await _fetch_program_list_rows(fallback_params, q=q)
-                raise
+                log_event(
+                    logger,
+                    logging.WARNING,
+                    "program_list_search_scan_empty_fallback",
+                    offset=offset,
+                )
+                return []
             fallback_params = dict(params)
             fallback_params.pop(PROGRAM_SEARCH_INDEX_COLUMN, None)
             return await _fetch_program_list_rows(fallback_params, q=q)
@@ -3707,7 +3734,7 @@ async def list_programs(
         include_closed_recent=include_closed_recent,
     ) and offset == 0:
         try:
-            page, count = await asyncio.gather(
+            read_model_request = asyncio.gather(
                 _fetch_program_list_read_model_rows(
                     category=category,
                     category_detail=category_detail,
@@ -3743,6 +3770,13 @@ async def list_programs(
                     sort=sort,
                 ),
             )
+            if _normalize_search_text(q):
+                page, count = await asyncio.wait_for(
+                    read_model_request,
+                    timeout=PROGRAM_SEARCH_READ_MODEL_TIMEOUT_SECONDS,
+                )
+            else:
+                page, count = await read_model_request
             if _is_underfilled_default_browse_read_model(
                 count=count,
                 category=category,
@@ -3786,6 +3820,8 @@ async def list_programs(
                 error=str(exc),
                 offset=offset,
             )
+            if _normalize_search_text(q):
+                return []
     params = _build_program_query_params(
         select="*",
         category=category,
@@ -3916,7 +3952,7 @@ async def list_programs_page(
         include_closed_recent=include_closed_recent,
     ):
         try:
-            response, count = await asyncio.gather(
+            read_model_request = asyncio.gather(
                 _fetch_program_list_read_model_rows(
                     **read_model_filters,
                     limit=limit,
@@ -3927,6 +3963,13 @@ async def list_programs_page(
                     **read_model_filters,
                 ),
             )
+            if _normalize_search_text(q):
+                response, count = await asyncio.wait_for(
+                    read_model_request,
+                    timeout=PROGRAM_SEARCH_READ_MODEL_TIMEOUT_SECONDS,
+                )
+            else:
+                response, count = await read_model_request
             if _is_underfilled_default_browse_read_model(
                 count=count,
                 category=category,
@@ -3965,8 +4008,30 @@ async def list_programs_page(
             return response
         except Exception as exc:
             log_event(logger, logging.WARNING, "program_list_page_read_model_fallback", error=str(exc))
+            if _normalize_search_text(q):
+                return ProgramListPageResponse(
+                    items=[],
+                    count=0,
+                    mode=_program_list_mode(
+                        q=q,
+                        scope=scope,
+                        include_closed_recent=include_closed_recent,
+                        active_filter_group_count=_program_active_filter_group_count(
+                            category=category,
+                            category_detail=category_detail,
+                            region_detail=region_detail,
+                            regions=regions,
+                            sources=sources,
+                            teaching_methods=teaching_methods,
+                            cost_types=cost_types,
+                            participation_times=participation_times,
+                            targets=targets,
+                        ),
+                    ),
+                    source="legacy",
+                )
 
-    rows, total_count = await asyncio.gather(
+    rows_result, count_result = await asyncio.gather(
         list_programs(
             category=category,
             category_detail=category_detail,
@@ -4005,7 +4070,21 @@ async def list_programs_page(
             recruiting_only=recruiting_only,
             include_closed_recent=include_closed_recent,
         ),
+        return_exceptions=True,
     )
+    if isinstance(rows_result, Exception):
+        raise rows_result
+    rows = rows_result
+    if isinstance(count_result, Exception):
+        log_event(
+            logger,
+            logging.WARNING,
+            "program_list_page_count_fallback",
+            error=str(count_result),
+        )
+        total_count = len(rows)
+    else:
+        total_count = count_result
     return ProgramListPageResponse(
         items=[_serialize_program_list_row_item(row, already_serialized=True) for row in rows],
         count=total_count,

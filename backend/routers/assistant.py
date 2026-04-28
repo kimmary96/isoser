@@ -6,8 +6,8 @@ from typing import Literal
 from fastapi import APIRouter, Header
 from pydantic import BaseModel, ConfigDict, Field
 
-from routers.coach import CoachFeedbackApiResponse, CoachMessage, CoachRequest, get_coach_feedback
-from routers.programs import (
+from .coach import CoachFeedbackApiResponse, CoachMessage, CoachRequest, get_coach_feedback
+from .programs import (
     CalendarRecommendResponse,
     ProgramRecommendRequest,
     ProgramRecommendResponse,
