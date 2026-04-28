@@ -4,7 +4,6 @@ import { useState } from "react";
 import {
   Document,
   Font,
-  Image as PdfImage,
   Page,
   pdf,
   StyleSheet,
@@ -154,6 +153,14 @@ const styles = StyleSheet.create({
     objectFit: "cover",
     borderRadius: 8,
   },
+  imagePlaceholder: {
+    marginTop: 8,
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: "#f8fafc",
+    color: "#64748b",
+    fontSize: 8,
+  },
   caption: {
     marginTop: 3,
     fontSize: 8,
@@ -192,12 +199,19 @@ function PortfolioPdfImages({ placements }: { placements: PortfolioImagePlacemen
     <View style={styles.imageGrid}>
       {placements.map((placement) => (
         <View key={placement.id} style={styles.imageBox}>
-          <PdfImage src={placement.imageUrl} style={styles.image} />
-          <Text style={styles.caption}>{placement.captionDraft || "이미지 캡션 확인 필요"}</Text>
+          <Text style={styles.imagePlaceholder}>
+            이미지: {placement.captionDraft || "캡션 확인 필요"}
+          </Text>
         </View>
       ))}
     </View>
   );
+}
+
+function trimPdfText(value: string | null | undefined, limit = 900): string | null {
+  const normalized = value?.replace(/\s+/g, " ").trim();
+  if (!normalized) return null;
+  return normalized.length > limit ? `${normalized.slice(0, limit)}...` : normalized;
 }
 
 function PortfolioPdfProject({
@@ -216,7 +230,7 @@ function PortfolioPdfProject({
     <View style={styles.project}>
       <Text style={styles.eyebrow}>PROJECT {index + 1}</Text>
       <Text style={styles.projectTitle}>{getPortfolioProjectTitle(project)}</Text>
-      <Text style={styles.summary}>{getPortfolioProjectSummary(project)}</Text>
+      <Text style={styles.summary}>{trimPdfText(getPortfolioProjectSummary(project), 600)}</Text>
       <View style={styles.meta}>
         <Text style={styles.metaItem}>기간: {overview.period || "기간 미입력"}</Text>
         <Text style={styles.metaItem}>역할: {overview.role || project.portfolio.role_clarification.content || "역할 미입력"}</Text>
@@ -242,10 +256,10 @@ function PortfolioPdfProject({
         return (
           <View key={section.key} style={styles.section}>
             <Text style={styles.sectionTitle}>{section.title}</Text>
-            {section.text && <Text style={styles.body}>{section.text}</Text>}
+            {section.text && <Text style={styles.body}>{trimPdfText(section.text)}</Text>}
             {section.highlights.map((highlight) => (
               <Text key={highlight} style={styles.bullet}>
-                - {highlight}
+                - {trimPdfText(highlight, 260)}
               </Text>
             ))}
             {metrics.length > 0 && (
@@ -293,8 +307,8 @@ function PortfolioPdfDocument({
             .filter(Boolean)
             .join(" · ")}
         </Text>
-        {profile?.self_intro && <Text style={styles.intro}>{profile.self_intro}</Text>}
-        {projects.map((project, index) => (
+        {profile?.self_intro && <Text style={styles.intro}>{trimPdfText(profile.self_intro, 700)}</Text>}
+        {projects.slice(0, 1).map((project, index) => (
           <PortfolioPdfProject
             key={project.activityId || `${project.portfolio.project_overview.title}-${index}`}
             document={document}
@@ -303,6 +317,15 @@ function PortfolioPdfDocument({
           />
         ))}
       </Page>
+      {projects.slice(1).map((project, index) => (
+        <Page
+          key={project.activityId || `${project.portfolio.project_overview.title}-${index + 1}`}
+          size="A4"
+          style={styles.page}
+        >
+          <PortfolioPdfProject document={document} project={project} index={index + 1} />
+        </Page>
+      ))}
     </Document>
   );
 }
@@ -323,6 +346,17 @@ function downloadBlob(blob: Blob, fileName: string) {
   window.setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
+export async function downloadPortfolioPdf({
+  document,
+  profile,
+}: {
+  document: PortfolioDocumentPayload;
+  profile: PortfolioPdfProfile | null;
+}) {
+  const blob = await pdf(<PortfolioPdfDocument document={document} profile={profile} />).toBlob();
+  downloadBlob(blob, `${sanitizePdfFileName(document.title)}.pdf`);
+}
+
 export function PortfolioPdfDownload({
   document,
   profile,
@@ -339,8 +373,7 @@ export function PortfolioPdfDownload({
     setDownloading(true);
     setDownloadError(null);
     try {
-      const blob = await pdf(<PortfolioPdfDocument document={document} profile={profile} />).toBlob();
-      downloadBlob(blob, `${sanitizePdfFileName(document.title)}.pdf`);
+      await downloadPortfolioPdf({ document, profile });
     } catch (error) {
       setDownloadError(error instanceof Error ? error.message : "포트폴리오 PDF 생성 중 오류가 발생했습니다.");
     } finally {

@@ -288,6 +288,21 @@ function downloadBlob(blob: Blob, fileName: string) {
   window.setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
+export async function downloadResumePdf({
+  resume,
+  activities,
+  profile,
+}: {
+  resume: Resume;
+  activities: Activity[];
+  profile: ResumeBuilderProfile | null;
+}) {
+  const blob = await pdf(
+    <ResumePdfDocument resume={resume} activities={activities} profile={profile} />
+  ).toBlob();
+  downloadBlob(blob, `${sanitizePdfFileName(resume.title)}.pdf`);
+}
+
 export function ResumePdfDownload({
   resume,
   activities,
@@ -306,10 +321,7 @@ export function ResumePdfDownload({
     setDownloading(true);
     setDownloadError(null);
     try {
-      const blob = await pdf(
-        <ResumePdfDocument resume={resume} activities={activities} profile={profile} />
-      ).toBlob();
-      downloadBlob(blob, `${sanitizePdfFileName(resume.title)}.pdf`);
+      await downloadResumePdf({ resume, activities, profile });
     } catch (error) {
       setDownloadError(
         error instanceof Error ? error.message : "PDF 생성 중 오류가 발생했습니다."
