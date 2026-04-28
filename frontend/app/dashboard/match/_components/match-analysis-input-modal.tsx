@@ -1,7 +1,11 @@
 "use client";
 
+import { JobPostingInputPanel } from "../../_components/job-posting-input-panel";
 import { ModalShell } from "../../_components/modal-shell";
 import type { AnalysisMode, ResumeOption } from "../_hooks/use-match-page";
+
+const sectionClassName = "rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.04)]";
+const fieldClassName = "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-[#094cb2] focus:ring-2 focus:ring-[#bfdbfe]";
 
 export function MatchAnalysisInputModal({
   open,
@@ -64,20 +68,21 @@ export function MatchAnalysisInputModal({
     <ModalShell
       open={open}
       onClose={onClose}
-      maxWidthClassName="max-w-4xl"
+      maxWidthClassName="max-w-5xl"
       title="공고 입력"
       subtitle="회사명, 직무명, 채용 공고를 입력한 뒤 현재 이력서 또는 활동 기준으로 합격률을 분석합니다."
-      bodyClassName="space-y-4 px-6 py-5"
+      bodyClassName="space-y-4 bg-[#f8fbff] px-4 py-4 sm:px-6 sm:py-5"
+      scrollBody
       footer={
-        <div className="flex items-center justify-end gap-2">
-          <button type="button" onClick={onClose} className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
+          <button type="button" onClick={onClose} className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 sm:w-auto">
             취소
           </button>
           <button
             type="button"
             onClick={() => void onAnalyze()}
             disabled={loadingAnalyze || !jobPosting.trim() || !companyName.trim() || !positionName.trim() || !analysisMode || (analysisMode === "resume" && !selectedResumeId)}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+            className="w-full rounded-xl bg-gradient-to-r from-[#094cb2] to-[#3b82f6] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_22px_rgba(9,76,178,0.22)] transition hover:brightness-105 disabled:opacity-50 sm:w-auto"
           >
             {loadingAnalyze ? "분석 중..." : "합격률 분석하기"}
           </button>
@@ -85,43 +90,43 @@ export function MatchAnalysisInputModal({
       }
     >
       <>
-          <section className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-            <p className="text-sm font-semibold text-gray-800">0. 분석 방식 선택</p>
+          <section className={sectionClassName}>
+            <p className="text-sm font-semibold text-slate-900">0. 분석 방식 선택</p>
             <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
               <button
                 type="button"
                 onClick={() => void onSelectResumeMode()}
                 className={`rounded-xl border p-4 text-left transition ${
-                  analysisMode === "resume" ? "border-blue-500 bg-blue-50" : "border-gray-200 bg-white hover:border-gray-300"
+                  analysisMode === "resume" ? "border-[#094cb2] bg-[#eef6ff] ring-2 ring-[#bfdbfe]" : "border-slate-200 bg-white hover:border-[#bfdbfe] hover:bg-[#f8fbff]"
                 }`}
               >
-                <p className="text-sm font-semibold text-gray-900">이력서로 분석하기</p>
-                <p className="mt-1 text-xs text-gray-500">저장된 이력서의 활동만 기준으로 분석합니다.</p>
+                <p className="text-sm font-semibold text-slate-900">이력서로 분석하기</p>
+                <p className="mt-1 text-xs leading-5 text-slate-500">저장된 이력서의 활동만 기준으로 분석합니다.</p>
               </button>
               <button
                 type="button"
                 onClick={onSelectActivityMode}
                 className={`rounded-xl border p-4 text-left transition ${
-                  analysisMode === "activity" ? "border-blue-500 bg-blue-50" : "border-gray-200 bg-white hover:border-gray-300"
+                  analysisMode === "activity" ? "border-[#094cb2] bg-[#eef6ff] ring-2 ring-[#bfdbfe]" : "border-slate-200 bg-white hover:border-[#bfdbfe] hover:bg-[#f8fbff]"
                 }`}
               >
-                <p className="text-sm font-semibold text-gray-900">내 활동으로 분석하기</p>
-                <p className="mt-1 text-xs text-gray-500">현재 공개된 모든 활동 기준으로 분석합니다.</p>
+                <p className="text-sm font-semibold text-slate-900">내 활동으로 분석하기</p>
+                <p className="mt-1 text-xs leading-5 text-slate-500">현재 공개된 모든 활동 기준으로 분석합니다.</p>
               </button>
             </div>
 
             {analysisMode === "resume" && (
-              <div className="mt-3 rounded-lg border border-gray-200 bg-white p-3">
-                <p className="mb-2 text-xs font-semibold text-gray-700">분석할 이력서 선택</p>
+              <div className="mt-3 rounded-xl border border-slate-200 bg-[#f8fbff] p-3">
+                <p className="mb-2 text-xs font-semibold text-slate-700">분석할 이력서 선택</p>
                 {loadingResumes ? (
-                  <p className="text-xs text-gray-500">이력서 목록을 불러오는 중...</p>
+                  <p className="text-xs text-slate-500">이력서 목록을 불러오는 중...</p>
                 ) : resumeOptions.length === 0 ? (
-                  <p className="text-xs text-gray-500">저장된 이력서가 없습니다. 먼저 이력서를 생성해 주세요.</p>
+                  <p className="text-xs text-slate-500">저장된 이력서가 없습니다. 먼저 이력서를 생성해 주세요.</p>
                 ) : (
                   <select
                     value={selectedResumeId}
                     onChange={(e) => onSelectedResumeIdChange(e.target.value)}
-                    className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-gray-400"
+                    className={fieldClassName}
                   >
                     <option value="">이력서를 선택해 주세요</option>
                     {resumeOptions.map((resume) => (
@@ -136,67 +141,52 @@ export function MatchAnalysisInputModal({
             )}
           </section>
 
-          <section className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-            <p className="text-sm font-semibold text-gray-800">1. 회사명과 직무명 입력</p>
+          <section className={sectionClassName}>
+            <p className="text-sm font-semibold text-slate-900">1. 회사명과 직무명 입력</p>
             <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
-              <input
-                value={companyName}
-                onChange={(e) => onCompanyNameChange(e.target.value)}
-                placeholder="회사명을 입력해 주세요"
-                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-gray-400"
-              />
-              <input
-                value={positionName}
-                onChange={(e) => onPositionNameChange(e.target.value)}
-                placeholder="직무명을 입력해 주세요"
-                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-gray-400"
+              <label className="block">
+                <span className="mb-1.5 block text-xs font-semibold text-slate-600">회사명</span>
+                <input
+                  value={companyName}
+                  onChange={(e) => onCompanyNameChange(e.target.value)}
+                  placeholder="회사명을 입력해 주세요"
+                  className={fieldClassName}
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-xs font-semibold text-slate-600">직무명</span>
+                <input
+                  value={positionName}
+                  onChange={(e) => onPositionNameChange(e.target.value)}
+                  placeholder="직무명을 입력해 주세요"
+                  className={fieldClassName}
+                />
+              </label>
+            </div>
+          </section>
+
+          <section className={sectionClassName}>
+            <p className="text-sm font-semibold text-slate-900">2. 공고 업로드</p>
+            <div className="mt-3">
+              <JobPostingInputPanel
+                text={jobPosting}
+                onTextChange={onJobPostingChange}
+                extracting={extracting}
+                imageFiles={imageFiles}
+                onAddImageFiles={addImageFiles}
+                onRemoveImageFile={removeImageFile}
+                onClearImageFiles={clearImageFiles}
+                onExtractImages={onExtractImage}
+                pdfFile={pdfFile}
+                onPdfFileChange={onPdfFileChange}
+                onExtractPdf={onExtractPdf}
+                variant="modal"
+                textPlacement="bottom"
               />
             </div>
           </section>
 
-          <section className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-            <p className="text-sm font-semibold text-gray-800">2. 공고 업로드</p>
-            <div className="mt-3 space-y-3">
-              <input type="file" multiple accept="image/png,image/jpeg,image/jpg,image/webp" onChange={(e) => addImageFiles(e.target.files)} className="block w-full text-sm text-gray-700" />
-              {imageFiles.length > 0 && (
-                <div className="rounded-lg border border-gray-200 bg-white p-2">
-                  <div className="mb-2 flex items-center justify-between">
-                    <p className="text-xs text-gray-600">{imageFiles.length}개 이미지 선택됨</p>
-                    <button type="button" onClick={clearImageFiles} className="text-xs font-medium text-gray-500 hover:text-gray-700">
-                      전체 비우기
-                    </button>
-                  </div>
-                  <ul className="space-y-1">
-                    {imageFiles.map((file) => (
-                      <li key={`${file.name}-${file.size}-${file.lastModified}`} className="flex items-center justify-between gap-2">
-                        <span className="truncate text-xs text-gray-600">{file.name}</span>
-                        <button type="button" onClick={() => removeImageFile(file)} className="shrink-0 text-xs font-medium text-red-500 hover:text-red-700">
-                          제거
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              <button type="button" onClick={() => void onExtractImage()} disabled={extracting || imageFiles.length === 0} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">
-                {extracting ? "이미지 공고 추출 중..." : "이미지(여러 장) 공고 텍스트 추출"}
-              </button>
-              <input type="file" accept="application/pdf" onChange={(e) => onPdfFileChange(e.target.files?.[0] ?? null)} className="block w-full text-sm text-gray-700" />
-              <button type="button" onClick={() => void onExtractPdf()} disabled={extracting || !pdfFile} className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">
-                {extracting ? "PDF 공고 추출 중..." : "PDF 공고 텍스트 추출"}
-              </button>
-            </div>
-
-            <textarea
-              value={jobPosting}
-              onChange={(e) => onJobPostingChange(e.target.value)}
-              placeholder="채용 공고 전문을 붙여넣어 주세요."
-              rows={12}
-              className="mt-3 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-gray-400"
-            />
-          </section>
-
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="rounded-xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-600">{error}</p>}
       </>
     </ModalShell>
   );
