@@ -66,6 +66,15 @@ function waitForDemoPayment(ms: number): Promise<void> {
   });
 }
 
+function preloadPdfDownloadModule(kind: DashboardDocumentItem["kind"]) {
+  if (kind === "resume") {
+    void import("../resume/export/_components/resume-pdf-download");
+    return;
+  }
+
+  void import("../portfolio/export/_components/portfolio-pdf-download");
+}
+
 function DocumentsContent() {
   const searchParams = useSearchParams();
   const highlightedResumeId = searchParams.get("resumeId");
@@ -154,6 +163,7 @@ function DocumentsContent() {
 
   const openPaymentModal = () => {
     if (!selectedDocument) return;
+    preloadPdfDownloadModule(selectedDocument.kind);
     setPaymentStatus("idle");
     setPaymentMessage("");
     setPaymentError(null);
@@ -173,7 +183,7 @@ function DocumentsContent() {
     setPaymentMessage("저장된 결제수단으로 결제 중입니다...");
 
     try {
-      await waitForDemoPayment(700);
+      await waitForDemoPayment(250);
       setPaymentStatus("downloading");
       setPaymentMessage("결제 완료했습니다. PDF를 다운로드합니다.");
 

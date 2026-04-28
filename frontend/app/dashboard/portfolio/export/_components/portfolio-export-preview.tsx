@@ -7,6 +7,7 @@ import {
   getOrderedPortfolioProjects,
   getPortfolioProjectDisplaySections,
   getPortfolioProjectSummary,
+  getPortfolioProjectTitle,
 } from "@/lib/portfolio-document";
 import type {
   PortfolioDocumentPayload,
@@ -68,7 +69,7 @@ function estimateProjectUnits(
   project: PortfolioProjectDraft
 ): number {
   const overview = project.portfolio.project_overview;
-  const displaySections = getPortfolioProjectDisplaySections(project);
+  const displaySections = getPortfolioProjectDisplaySections(project, { hidePlaceholders: true });
   const summaryUnits = estimateTextRows(getPortfolioProjectSummary(project), 78);
   const sectionUnits = displaySections.reduce(
     (sum, section) =>
@@ -152,12 +153,12 @@ function PreviewProject({
   index: number;
 }) {
   const overview = project.portfolio.project_overview;
-  const displaySections = getPortfolioProjectDisplaySections(project);
+  const displaySections = getPortfolioProjectDisplaySections(project, { hidePlaceholders: true });
 
   return (
     <article className="border-b border-slate-200 pb-8 last:border-b-0">
       <p className="text-[11px] font-bold text-[#094cb2]">PROJECT {index + 1}</p>
-      <h3 className="mt-1 text-lg font-bold text-slate-950">{overview.title}</h3>
+      <h3 className="mt-1 text-lg font-bold text-slate-950">{getPortfolioProjectTitle(project)}</h3>
       <p className="mt-2 text-sm leading-6 text-slate-600">
         {getPortfolioProjectSummary(project)}
       </p>

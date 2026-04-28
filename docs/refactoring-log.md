@@ -1,5 +1,17 @@
 # 리팩토링 로그
 
+- 2026-04-28: `frontend/app/dashboard/documents/page.tsx`, `frontend/app/dashboard/portfolio/export/_components/portfolio-pdf-download.tsx`, `frontend/app/dashboard/portfolio/export/_components/portfolio-export-preview.tsx`, `frontend/lib/portfolio-document.ts`, `frontend/lib/portfolio-document.test.ts`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-portfolio-pdf-output-cleanup-result.md`
+  - 포트폴리오 PDF 출력 QA에서 다운로드 후 최종 문서에 `입력해주세요`류 편집 placeholder와 중복 검토 태그가 노출되는 문제를 확인함
+  - 저장 payload와 빌더 편집 흐름은 유지하고, 문서 저장소 preview/PDF 출력 경로에서만 placeholder 섹션과 placeholder metric label을 숨기고 review tag를 정규화함
+  - 문서 저장소 결제 모달 오픈 시 선택 문서의 PDF 다운로드 모듈을 미리 import하고 데모 결제 지연을 줄여 `결제하고 다운로드` 클릭 후 체감 대기 시간을 낮춤
+  - 검증: `npm --prefix frontend test -- lib/portfolio-document.test.ts`, 관련 파일 `next lint`, `npx --prefix frontend tsc -p frontend/tsconfig.codex-check.json --noEmit --pretty false`, `git diff --check`, `npm --prefix frontend run build`
+
+- 2026-04-28: `frontend/app/dashboard/_components/job-posting-input-panel.tsx`, `frontend/app/dashboard/match/_components/match-analysis-input-modal.tsx`, `frontend/app/dashboard/resume/_components/resume-assistant-sidebar.tsx`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-job-posting-input-panel-result.md`
+  - `/dashboard/match` 입력 모달과 `/dashboard/resume` 우측 AI 패널에 중복되어 있던 공고 본문/URL/이미지/PDF 입력 UI를 `JobPostingInputPanel`로 분리함
+  - 공통 패널은 본문 textarea, optional URL 추출 입력, 이미지/PDF 업로드 카드, 파일 목록/삭제/비우기, 추출 버튼을 렌더하고 `variant`/`textPlacement` prop으로 modal/sidebar 밀도와 표시 순서만 조정함
+  - 매칭 화면의 분석 방식/회사명/직무명 입력, 이력서 화면의 문장 후보 생성/적용 및 채팅 UI는 각 화면에 유지해 데이터 흐름과 API 계약을 바꾸지 않음
+  - 검증: `npm --prefix frontend run lint -- --file app/dashboard/_components/job-posting-input-panel.tsx --file app/dashboard/match/_components/match-analysis-input-modal.tsx --file app/dashboard/resume/_components/resume-assistant-sidebar.tsx`, `npx --prefix frontend tsc -p frontend\tsconfig.codex-check.json --noEmit --pretty false`
+
 - 2026-04-28: `frontend/app/dashboard/_components/modal-shell.tsx`, `frontend/app/dashboard/match/page.tsx`, `frontend/app/dashboard/match/_components/match-analysis-input-modal.tsx`, `frontend/app/dashboard/match/_components/match-analysis-detail-modal.tsx`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-match-ui-tone-fit-result.md`
   - 공고 매칭 분석 화면의 바깥 배경, 헤더, 저장 분석 카드, 빈 상태, 저장 완료 notice를 최근 대시보드 톤인 `#f3f6fb`, white card, `#094cb2 -> #3b82f6`, `#071a36`, soft orange accent로 맞춤
   - 입력 모달의 반복 section/input/file/secondary button class를 로컬 helper로 묶고, 분석 방식 선택·이력서 선택·공고 업로드·에러 표시 surface를 같은 밀도로 정리함

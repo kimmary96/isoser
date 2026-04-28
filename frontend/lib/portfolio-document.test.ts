@@ -6,6 +6,7 @@ import {
   normalizePortfolioDocumentPayload,
   getOrderedPortfolioProjects,
   getPortfolioProjectDisplaySections,
+  getPortfolioProjectReviewTags,
   reorderPortfolioProjects,
   updatePortfolioImagePlacement,
 } from "./portfolio-document";
@@ -116,6 +117,46 @@ describe("portfolio document helpers", () => {
       highlights: ["Redis Sorted Set 활용"],
       isDuplicateText: true,
     });
+  });
+
+  it("can hide editing placeholders from final document display sections", () => {
+    const placeholderPortfolio: PortfolioConversionResponse = {
+      ...legacyPortfolio,
+      problem_definition: {
+        label: "문제 정의",
+        content: "활동이 시작된 배경이나 해결하려던 문제를 입력해주세요.",
+      },
+      tech_decision: {
+        label: "기술 선택 근거",
+        content: "비교한 대안과 선택 이유를 입력해주세요.",
+      },
+      quantified_result: {
+        ...legacyPortfolio.quantified_result,
+        summary: "결과와 수치를 입력해주세요.",
+      },
+    };
+    const project = createPortfolioProjectDraft({ portfolio: placeholderPortfolio });
+    const sections = getPortfolioProjectDisplaySections(project, { hidePlaceholders: true });
+
+    expect(sections.find((section) => section.key === "problemDefinition")?.text).toBeNull();
+    expect(sections.find((section) => section.key === "techDecision")?.text).toBeNull();
+    expect(sections.find((section) => section.key === "result")?.text).toBeNull();
+  });
+
+  it("normalizes duplicate portfolio review tags for export", () => {
+    const project = createPortfolioProjectDraft({
+      portfolio: {
+        ...legacyPortfolio,
+        review_tags: ["[검토 필요]", "본인 경험으로 수정 필요"],
+        missing_elements: ["정량적 성과", "역할 명확화"],
+      },
+    });
+
+    expect(getPortfolioProjectReviewTags(project)).toEqual([
+      "검토 필요",
+      "본인 경험으로 수정 필요",
+      "수치 보완 필요",
+    ]);
   });
 
   it("updates image placement without changing project payload", () => {

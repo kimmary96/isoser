@@ -16,6 +16,8 @@ import {
   getPortfolioProjectDisplaySections,
   getPortfolioProjectSummary,
   getPortfolioProjectTitle,
+  getPortfolioProjectReviewTags,
+  isPortfolioPlaceholderText,
 } from "@/lib/portfolio-document";
 import type { PortfolioDocumentPayload, PortfolioImagePlacement, PortfolioProjectDraft } from "@/lib/types";
 
@@ -39,6 +41,7 @@ Font.register({
     },
   ],
 });
+Font.registerHyphenationCallback((word) => [word]);
 
 const styles = StyleSheet.create({
   page: {
@@ -211,7 +214,22 @@ function PortfolioPdfImages({ placements }: { placements: PortfolioImagePlacemen
 function trimPdfText(value: string | null | undefined, limit = 900): string | null {
   const normalized = value?.replace(/\s+/g, " ").trim();
   if (!normalized) return null;
+  if (isPortfolioPlaceholderText(normalized)) return null;
   return normalized.length > limit ? `${normalized.slice(0, limit)}...` : normalized;
+}
+
+function getPdfMetrics(project: PortfolioProjectDraft) {
+  return project.portfolio.quantified_result.metrics
+    .map((metric) => {
+      const value = trimPdfText(metric.value, 40);
+      if (!value || isPortfolioPlaceholderText(value)) return null;
+      const label = trimPdfText(metric.label, 80);
+      return {
+        value,
+        label: label && !isPortfolioPlaceholderText(label) ? label : null,
+      };
+    })
+    .filter((metric): metric is { value: string; label: string | null } => Boolean(metric));
 }
 
 function PortfolioPdfProject({
@@ -224,13 +242,15 @@ function PortfolioPdfProject({
   index: number;
 }) {
   const overview = project.portfolio.project_overview;
-  const displaySections = getPortfolioProjectDisplaySections(project);
+  const displaySections = getPortfolioProjectDisplaySections(project, { hidePlaceholders: true });
+  const reviewTags = getPortfolioProjectReviewTags(project);
+  const summary = trimPdfText(getPortfolioProjectSummary(project), 600);
 
   return (
     <View style={styles.project}>
       <Text style={styles.eyebrow}>PROJECT {index + 1}</Text>
       <Text style={styles.projectTitle}>{getPortfolioProjectTitle(project)}</Text>
-      <Text style={styles.summary}>{trimPdfText(getPortfolioProjectSummary(project), 600)}</Text>
+      {summary && <Text style={styles.summary}>{summary}</Text>}
       <View style={styles.meta}>
         <Text style={styles.metaItem}>기간: {overview.period || "기간 미입력"}</Text>
         <Text style={styles.metaItem}>역할: {overview.role || project.portfolio.role_clarification.content || "역할 미입력"}</Text>
@@ -244,8 +264,7 @@ function PortfolioPdfProject({
       <PortfolioPdfImages placements={imagesForSection(document, project, "overview")} />
       {displaySections.map((section) => {
         const placements = imagesForSection(document, project, section.key);
-        const metrics =
-          section.key === "result" ? project.portfolio.quantified_result.metrics : [];
+        const metrics = section.key === "result" ? getPdfMetrics(project) : [];
         const hasContent =
           Boolean(section.text) ||
           section.highlights.length > 0 ||
@@ -267,7 +286,7 @@ function PortfolioPdfProject({
                 {metrics.map((metric) => (
                   <View key={`${metric.value}-${metric.label}`} style={styles.metric}>
                     <Text style={styles.metricValue}>{metric.value}</Text>
-                    <Text style={styles.metricLabel}>{metric.label}</Text>
+                    {metric.label && <Text style={styles.metricLabel}>{metric.label}</Text>}
                   </View>
                 ))}
               </View>
@@ -276,9 +295,9 @@ function PortfolioPdfProject({
           </View>
         );
       })}
-      {project.reviewTags.length > 0 && (
+      {reviewTags.length > 0 && (
         <View style={styles.tagRow}>
-          {project.reviewTags.map((tag) => (
+          {reviewTags.map((tag) => (
             <Text key={tag} style={styles.tag}>
               {tag}
             </Text>

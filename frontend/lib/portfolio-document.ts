@@ -26,6 +26,18 @@ export type PortfolioProjectDisplaySection = {
   isDuplicateText: boolean;
 };
 
+type PortfolioDisplayOptions = {
+  hidePlaceholders?: boolean;
+};
+
+const PORTFOLIO_PLACEHOLDER_PHRASES = [
+  "활동이 시작된 배경이나 해결하려던 문제를 입력해주세요",
+  "비교한 대안과 선택 이유를 입력해주세요",
+  "결과와 수치를 입력해주세요",
+  "정량 성과를 입력해주세요",
+  "본인이 맡았던 목표와 해결 과제를 입력해주세요",
+] as const;
+
 function compact(value: string | null | undefined): string {
   return value?.trim() ?? "";
 }
@@ -62,6 +74,27 @@ function addDisplayText(seenTexts: Set<string>, value: string | null | undefined
 function isDuplicateDisplayText(seenTexts: Set<string>, value: string | null | undefined): boolean {
   const key = toComparableText(value ?? "");
   return key.length >= 12 && seenTexts.has(key);
+}
+
+export function isPortfolioPlaceholderText(value: string | null | undefined): boolean {
+  const key = toComparableText(value ?? "");
+  if (!key) return false;
+  return PORTFOLIO_PLACEHOLDER_PHRASES.some((phrase) => key.includes(toComparableText(phrase)));
+}
+
+export function getPortfolioProjectReviewTags(project: PortfolioProjectDraft): string[] {
+  const seen = new Set<string>();
+  const tags: string[] = [];
+
+  for (const tag of normalizeStringList(project.reviewTags)) {
+    const cleaned = tag.replace(/^\[+|\]+$/g, "").trim();
+    const key = toComparableText(cleaned);
+    if (!cleaned || seen.has(key)) continue;
+    seen.add(key);
+    tags.push(cleaned);
+  }
+
+  return tags;
 }
 
 export function isPortfolioConversionPayload(
@@ -179,7 +212,8 @@ export function getPortfolioSectionText(
 }
 
 export function getPortfolioProjectDisplaySections(
-  project: PortfolioProjectDraft
+  project: PortfolioProjectDraft,
+  options: PortfolioDisplayOptions = {}
 ): PortfolioProjectDisplaySection[] {
   const seenTexts = new Set<string>();
   addDisplayText(seenTexts, getPortfolioProjectSummary(project));
@@ -210,11 +244,13 @@ export function getPortfolioProjectDisplaySections(
 
   return rawSections.map((section) => {
     const text = compact(section.text);
+    const isPlaceholderText = options.hidePlaceholders && isPortfolioPlaceholderText(text);
     const isDuplicateText = isDuplicateDisplayText(seenTexts, text);
-    const displayText = text && !isDuplicateText ? text : null;
+    const displayText = text && !isPlaceholderText && !isDuplicateText ? text : null;
     if (displayText) addDisplayText(seenTexts, displayText);
 
     const highlights = normalizeStringList(section.highlights).filter((highlight) => {
+      if (options.hidePlaceholders && isPortfolioPlaceholderText(highlight)) return false;
       if (isDuplicateDisplayText(seenTexts, highlight)) return false;
       addDisplayText(seenTexts, highlight);
       return true;
