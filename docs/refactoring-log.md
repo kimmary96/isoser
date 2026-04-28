@@ -1,5 +1,26 @@
 # 리팩토링 로그
 
+- 2026-04-28: `frontend/app/dashboard/_components/modal-shell.tsx`, `frontend/app/dashboard/match/page.tsx`, `frontend/app/dashboard/match/_components/match-analysis-input-modal.tsx`, `frontend/app/dashboard/match/_components/match-analysis-detail-modal.tsx`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-match-ui-tone-fit-result.md`
+  - 공고 매칭 분석 화면의 바깥 배경, 헤더, 저장 분석 카드, 빈 상태, 저장 완료 notice를 최근 대시보드 톤인 `#f3f6fb`, white card, `#094cb2 -> #3b82f6`, `#071a36`, soft orange accent로 맞춤
+  - 입력 모달의 반복 section/input/file/secondary button class를 로컬 helper로 묶고, 분석 방식 선택·이력서 선택·공고 업로드·에러 표시 surface를 같은 밀도로 정리함
+  - 후속 UI 검토 후 `ModalShell`에 optional `scrollBody`, title/subtitle class prop을 추가해 기본 모달 동작은 유지하면서 매칭 입력/상세 모달만 body scroll + footer 고정 구조를 쓰게 함
+  - 입력 모달에 회사명/직무명/공고 본문 label을 추가하고, 이미지/PDF 업로드를 compact card 2개로 나눠 파일 선택 상태를 더 명확히 표시함
+  - 저장 분석 카드에는 score progress와 pill형 `상세 보기` affordance를 추가하고, 빈 상태에는 첫 분석 CTA를 추가함
+  - 상세 모달의 점수 hero는 dark navy surface로, 상세 점수 progress와 등급 chip은 blue/orange accent로 조정하고 기존 분석 결과 payload 렌더링은 유지함
+  - `useMatchPage` 훅, 분석 생성/삭제/조회, 이미지/PDF 추출, 이력서 선택 로직은 변경하지 않음
+  - 검증: 대상 파일 `next lint`, `npx --prefix frontend tsc -p frontend\tsconfig.codex-check.json --noEmit --pretty false`, `/dashboard/match` local smoke는 인증 middleware 307 redirect 확인
+
+- 2026-04-28: `frontend/app/dashboard/resume/export/_components/resume-export-preview.tsx`, `frontend/app/dashboard/portfolio/export/_components/portfolio-export-preview.tsx`, `frontend/app/dashboard/portfolio/export/page.tsx`, `frontend/app/preview/documents/resume/page.tsx`, `frontend/app/preview/documents/portfolio/page.tsx`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-documents-a4-preview-result.md`
+  - 문서 저장소 iframe에서 이력서/포트폴리오 preview-only route를 A4 210x297mm page frame으로 보여주도록 embedded preview 모드를 추가함
+  - 이력서는 header/profile/activity 단위 추정 pagination과 page label을 사용하고, 포트폴리오는 document header와 project 단위 추정 pagination과 page label을 사용함
+  - 저장 문서 선택, 디자인 선택, 데모 결제 모달, React PDF 다운로드 helper 호출, export API 계약은 변경하지 않음
+
+- 2026-04-28: `frontend/app/dashboard/documents/page.tsx`, `frontend/app/dashboard/resume/export/page.tsx`, `frontend/app/dashboard/resume/export/_components/resume-export-preview.tsx`, `frontend/app/dashboard/portfolio/export/page.tsx`, `frontend/app/dashboard/portfolio/export/_components/portfolio-export-preview.tsx`, `frontend/app/preview/documents/resume/page.tsx`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-documents-resume-portfolio-ui-fit-result.md`
+  - 이력서/포트폴리오/문서 저장소 화면의 회색 배경, white panel, `#094cb2` primary, `#071a36` action, soft orange hover accent를 맞춤
+  - 문서 저장소 왼쪽 저장 문서 카드와 오른쪽 디자인 카드의 padding/title size를 낮춰 11~14px 중심의 대시보드 밀도로 정리함
+  - 이력서 export fallback과 preview-only route에 남아 있던 gray 계열을 slate/blue tone으로 바꾸고, 포트폴리오 export preview의 제목/섹션 크기를 한 단계 낮춤
+  - 저장 문서 조회, iframe 미리보기, PDF helper 호출, 데모 결제 모달 동작은 변경하지 않음
+
 - 2026-04-28: `frontend/lib/resume-profile.ts`, `frontend/lib/resume-profile.test.ts`, `frontend/lib/types/index.ts`, `frontend/app/api/dashboard/resume/route.ts`, `frontend/app/api/dashboard/resume-export/route.ts`, `frontend/app/dashboard/resume/_hooks/use-resume-builder.ts`, `frontend/app/dashboard/resume/_components/resume-preview-pane.tsx`, `frontend/app/dashboard/resume/export/page.tsx`, `frontend/app/dashboard/resume/export/_components/resume-pdf-download.tsx`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-resume-profile-highlights-result.md`
   - 이력서용 profile 조회에 수상, 자격증, 어학 필드를 포함하고 정규화 helper를 추가함
   - builder A4 미리보기, export preview, React PDF에서 `WORK EXPERIENCE` 아래에 `AWARDS · CERTIFICATIONS · LANGUAGE` compact 섹션을 우선 배치함
@@ -3641,3 +3662,15 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - 저장 payload의 `template_id: "simple"`은 유지해 기존 API/DB 계약과 저장된 문서 export 흐름을 보존함
   - 문서 저장소를 3패널 구조로 바꿔 왼쪽 저장 문서 선택, 가운데 embedded PDF 출력 미리보기, 오른쪽 디자인 선택을 담당하게 함
   - 이력서/포트폴리오 export 화면은 `embedded=true`일 때 미리보기 본문만 보여주고, 일반 출력 화면에서는 다운로드 버튼과 `디자인 기본형` 상태만 표시하도록 템플릿 문구를 줄임
+- 2026-04-28: `frontend/app/dashboard/documents/page.tsx`, `frontend/app/preview/documents/resume/page.tsx`, `frontend/app/preview/documents/portfolio/page.tsx`, `frontend/app/dashboard/resume/export/_components/resume-export-preview.tsx`, `frontend/app/dashboard/portfolio/export/_components/portfolio-export-preview.tsx`, `frontend/app/dashboard/resume/export/page.tsx`, `frontend/app/dashboard/portfolio/export/page.tsx`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-documents-design-hub-result.md`
+  - 문서 저장소 iframe이 `/dashboard/.../export`를 직접 열면서 dashboard 헤더/사이드바까지 미리보기에 들어가던 문제를 수정함
+  - 이력서/포트폴리오 export preview 본문을 컴포넌트로 분리하고, dashboard layout 밖의 `/preview/documents/resume`, `/preview/documents/portfolio` route에서 문서 본문만 렌더하도록 연결함
+  - 문서 저장소 왼쪽 상단에 전체/이력서/포트폴리오 필터 버튼을 추가해 저장 문서를 종류별로 나눠 볼 수 있게 함
+- 2026-04-28: `frontend/app/dashboard/documents/page.tsx`, `frontend/app/dashboard/resume/export/_components/resume-pdf-download.tsx`, `frontend/app/dashboard/portfolio/export/_components/portfolio-pdf-download.tsx`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-documents-design-hub-result.md`
+  - 문서 저장소의 `PDF 출력` 버튼이 export 페이지로 이동하지 않고, 같은 화면에서 데모 결제 모달을 열도록 변경함
+  - 결제 모달은 사업계획서상 장기 Phase 3 PDF 프리미엄 전환 시연용으로 실제 결제 없이 문서/디자인/금액/저장 결제수단을 보여주고, `결제하고 다운로드` 클릭 후 완료 안내와 함께 PDF 다운로드를 시작함
+  - 이력서/포트폴리오 PDF 생성 로직을 `downloadResumePdf`, `downloadPortfolioPdf` helper로 export해 기존 export 페이지 버튼과 문서 저장소 모달이 같은 생성 함수를 재사용하게 함
+- 2026-04-28: `frontend/app/dashboard/portfolio/export/_components/portfolio-pdf-download.tsx`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-documents-design-hub-result.md`
+  - 문서 저장소 데모 결제 후 포트폴리오 PDF 생성 단계에서 브라우저가 멈출 수 있던 경로를 줄이기 위해 포트폴리오 PDF를 프로젝트별 페이지로 나눠 렌더하게 조정함
+  - 외부 이미지 URL을 React PDF에 직접 삽입하지 않고 이미지 캡션 placeholder로 대체해 이미지 fetch/CORS/대용량 리소스가 다운로드를 막는 상황을 피함
+  - 긴 포트폴리오 본문과 bullet은 PDF용으로 길이를 제한해 데모 다운로드 안정성을 우선함
