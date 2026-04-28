@@ -1,4 +1,5 @@
 import type { MatchRewriteResponse } from "@/lib/types";
+import { JobPostingInputPanel } from "../../_components/job-posting-input-panel";
 import {
   isResumeRewriteSuggestionApplied,
   type AppliedResumeRewriteLines,
@@ -120,98 +121,25 @@ export function ResumeAssistantSidebar({
           공고 핏 문장 후보
         </p>
 
-        <textarea
-          value={jobPostingText}
-          onChange={(e) => onJobPostingTextChange(e.target.value)}
-          placeholder="채용 공고 내용을 붙여넣거나 아래 URL/파일에서 추출하세요."
-          rows={5}
-          className="w-full resize-none rounded-xl border border-slate-200 px-3 py-2 text-xs focus:border-[#094cb2] focus:outline-none"
+        <JobPostingInputPanel
+          text={jobPostingText}
+          onTextChange={onJobPostingTextChange}
+          extracting={jobPostingExtracting}
+          imageFiles={jobImageFiles}
+          onAddImageFiles={onAddJobImageFiles}
+          onRemoveImageFile={onRemoveJobImageFile}
+          onClearImageFiles={onClearJobImageFiles}
+          onExtractImages={onExtractJobImages}
+          pdfFile={jobPdfFile}
+          onPdfFileChange={onJobPdfFileChange}
+          onExtractPdf={onExtractJobPdf}
+          url={jobPostingUrl}
+          onUrlChange={onJobPostingUrlChange}
+          onExtractUrl={onExtractJobUrl}
+          variant="sidebar"
+          textPlacement="top"
+          textPlaceholder="채용 공고 내용을 붙여넣거나 아래 URL/파일에서 추출하세요."
         />
-
-        <div className="space-y-2">
-          <input
-            type="url"
-            value={jobPostingUrl}
-            onChange={(e) => onJobPostingUrlChange(e.target.value)}
-            placeholder="공고 URL 입력"
-            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs focus:border-[#094cb2] focus:outline-none"
-          />
-          <button
-            type="button"
-            onClick={() => void onExtractJobUrl()}
-            disabled={jobPostingExtracting || !jobPostingUrl.trim()}
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:border-orange-200 disabled:opacity-50"
-          >
-            {jobPostingExtracting ? "추출 중..." : "URL에서 공고 추출"}
-          </button>
-        </div>
-
-        <div className="space-y-2">
-          <input
-            type="file"
-            multiple
-            accept="image/png,image/jpeg,image/jpg,image/webp"
-            onChange={(e) => onAddJobImageFiles(e.target.files)}
-            className="block w-full text-[11px] text-slate-500"
-          />
-          {jobImageFiles.length > 0 && (
-            <div className="rounded-xl border border-slate-100 bg-slate-50 p-2">
-              <div className="mb-1 flex items-center justify-between gap-2">
-                <p className="text-[11px] text-slate-500">이미지 {jobImageFiles.length}개</p>
-                <button
-                  type="button"
-                  onClick={onClearJobImageFiles}
-                  className="text-[11px] font-medium text-slate-400 hover:text-slate-700"
-                >
-                  비우기
-                </button>
-              </div>
-              <div className="space-y-1">
-                {jobImageFiles.map((file) => (
-                  <div
-                    key={`${file.name}-${file.size}-${file.lastModified}`}
-                    className="flex items-center justify-between gap-2"
-                  >
-                    <span className="min-w-0 truncate text-[11px] text-slate-500">{file.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => onRemoveJobImageFile(file)}
-                      className="shrink-0 text-[11px] font-medium text-red-400 hover:text-red-600"
-                    >
-                      제거
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          <button
-            type="button"
-            onClick={() => void onExtractJobImages()}
-            disabled={jobPostingExtracting || jobImageFiles.length === 0}
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:border-orange-200 disabled:opacity-50"
-          >
-            {jobPostingExtracting ? "추출 중..." : "이미지에서 공고 추출"}
-          </button>
-        </div>
-
-        <div className="space-y-2">
-          <input
-            type="file"
-            accept="application/pdf"
-            onChange={(e) => onJobPdfFileChange(e.target.files?.[0] ?? null)}
-            className="block w-full text-[11px] text-slate-500"
-          />
-          {jobPdfFile && <p className="truncate text-[11px] text-slate-500">{jobPdfFile.name}</p>}
-          <button
-            type="button"
-            onClick={() => void onExtractJobPdf()}
-            disabled={jobPostingExtracting || !jobPdfFile}
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:border-orange-200 disabled:opacity-50"
-          >
-            {jobPostingExtracting ? "추출 중..." : "PDF에서 공고 추출"}
-          </button>
-        </div>
 
         <button
           type="button"
