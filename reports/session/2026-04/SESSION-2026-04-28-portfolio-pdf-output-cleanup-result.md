@@ -27,10 +27,14 @@
 - Portfolio PDF metric labels that are still placeholders are omitted rather than printed as final labels.
 - Portfolio review tags are normalized so bracketed and unbracketed duplicates collapse to one tag.
 - The document store preloads the selected PDF download module when the payment modal opens and shortens the demo-only payment delay.
+- Follow-up PDF QA confirmed internal tags such as `수치 보완 필요`, `검토 필요`, and `본인 경험으로 수정 필요` could still appear through review tags or metric values.
+- Final preview/PDF output now suppresses those internal tags and placeholder role/metric values.
+- If a project has no real quantified result, final output adds a qualitative result sentence based on the project title, role, and skills instead of inventing fake numbers.
 
 ## Risks / Possible Regressions
 - Placeholder filtering is phrase-based. New backend placeholder phrases will need to be added to the helper.
 - PDF generation still happens client-side with React PDF, so very long documents can remain slower than a server-side render/export pipeline.
+- The qualitative fallback is deterministic and conservative, so it improves document completeness but does not replace a stronger AI rewrite pass with user-approved evidence.
 
 ## Follow-up Refactoring Candidates
 - Move final-output text cleanup into a dedicated portfolio export view-model helper.
@@ -43,3 +47,6 @@
 - `npx --prefix frontend tsc -p frontend/tsconfig.codex-check.json --noEmit --pretty false`
 - `git diff --check`
 - `npm --prefix frontend run build`
+- Follow-up: `npm --prefix frontend test -- lib/portfolio-document.test.ts`
+- Follow-up: `npm --prefix frontend run lint -- --file app/dashboard/portfolio/export/_components/portfolio-pdf-download.tsx --file app/dashboard/portfolio/export/_components/portfolio-export-preview.tsx --file lib/portfolio-document.ts --file lib/portfolio-document.test.ts`
+- Follow-up: `npx --prefix frontend tsc -p frontend/tsconfig.codex-check.json --noEmit --pretty false`

@@ -6,6 +6,9 @@ import {
   normalizePortfolioDocumentPayload,
   getOrderedPortfolioProjects,
   getPortfolioProjectDisplaySections,
+  getPortfolioProjectFinalResultText,
+  getPortfolioProjectMeta,
+  getPortfolioProjectResultMetrics,
   getPortfolioProjectReviewTags,
   reorderPortfolioProjects,
   updatePortfolioImagePlacement,
@@ -143,7 +146,7 @@ describe("portfolio document helpers", () => {
     expect(sections.find((section) => section.key === "result")?.text).toBeNull();
   });
 
-  it("normalizes duplicate portfolio review tags for export", () => {
+  it("hides internal review tags from final export tags", () => {
     const project = createPortfolioProjectDraft({
       portfolio: {
         ...legacyPortfolio,
@@ -152,11 +155,44 @@ describe("portfolio document helpers", () => {
       },
     });
 
-    expect(getPortfolioProjectReviewTags(project)).toEqual([
+    expect(getPortfolioProjectReviewTags(project)).toEqual([]);
+    expect(getPortfolioProjectReviewTags(project, { includeInternal: true })).toEqual([
       "검토 필요",
       "본인 경험으로 수정 필요",
       "수치 보완 필요",
     ]);
+  });
+
+  it("builds a qualitative result when final output has no real result", () => {
+    const thinPortfolio: PortfolioConversionResponse = {
+      ...legacyPortfolio,
+      project_overview: {
+        ...legacyPortfolio.project_overview,
+        title: "게임 기획 수강",
+        role: "본인이 맡았던 목표와 해결 과제를 입력해주세요.",
+        skills: ["Figma", "검토 필요"],
+      },
+      quantified_result: {
+        label: "정량적 성과",
+        summary: "결과와 수치를 입력해주세요.",
+        metrics: [{ value: "수치 보완 필요", label: "정량 성과를 입력해주세요." }],
+      },
+    };
+    const project = createPortfolioProjectDraft({ portfolio: thinPortfolio });
+    const sections = getPortfolioProjectDisplaySections(project, {
+      hidePlaceholders: true,
+      enhanceMissingResult: true,
+    });
+
+    expect(getPortfolioProjectMeta(project)).toMatchObject({
+      role: "백엔드 개발자로 참여했습니다.",
+      skills: ["Figma"],
+    });
+    expect(getPortfolioProjectResultMetrics(project)).toEqual([]);
+    expect(getPortfolioProjectFinalResultText(project)).toContain("게임 기획 수강");
+    expect(sections.find((section) => section.key === "result")?.text).toContain(
+      "후속 제작과 운영 판단"
+    );
   });
 
   it("updates image placement without changing project payload", () => {

@@ -1,5 +1,11 @@
 # 리팩토링 로그
 
+- 2026-04-28: `frontend/lib/portfolio-document.ts`, `frontend/lib/portfolio-document.test.ts`, `frontend/app/dashboard/portfolio/export/_components/portfolio-export-preview.tsx`, `frontend/app/dashboard/portfolio/export/_components/portfolio-pdf-download.tsx`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-portfolio-pdf-output-cleanup-result.md`
+  - 포트폴리오 PDF 2차 QA에서 `수치 보완 필요`, `검토 필요`, `본인 경험으로 수정 필요` 같은 내부 보완 태그와 placeholder 역할 문구가 최종 산출물에 남는 문제를 확인함
+  - 최종 preview/PDF 출력 view-model에서 내부 보완 태그, placeholder 역할/metric 값을 숨기고, 정량 성과가 비어 있으면 임의 수치를 만들지 않는 정성 성과 문장으로 보강함
+  - 저장 payload, 빌더 편집 프롬프트, 성과저장소 원본은 변경하지 않음
+  - 검증: `npm --prefix frontend test -- lib/portfolio-document.test.ts`, 관련 파일 `next lint`, `npx --prefix frontend tsc -p frontend/tsconfig.codex-check.json --noEmit --pretty false`
+
 - 2026-04-28: `frontend/app/dashboard/documents/page.tsx`, `frontend/app/dashboard/portfolio/export/_components/portfolio-pdf-download.tsx`, `frontend/app/dashboard/portfolio/export/_components/portfolio-export-preview.tsx`, `frontend/lib/portfolio-document.ts`, `frontend/lib/portfolio-document.test.ts`, `docs/current-state.md`, `reports/session/2026-04/SESSION-2026-04-28-portfolio-pdf-output-cleanup-result.md`
   - 포트폴리오 PDF 출력 QA에서 다운로드 후 최종 문서에 `입력해주세요`류 편집 placeholder와 중복 검토 태그가 노출되는 문제를 확인함
   - 저장 payload와 빌더 편집 흐름은 유지하고, 문서 저장소 preview/PDF 출력 경로에서만 placeholder 섹션과 placeholder metric label을 숨기고 review tag를 정규화함

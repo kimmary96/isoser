@@ -28,6 +28,19 @@ export type PortfolioProjectDisplaySection = {
 
 type PortfolioDisplayOptions = {
   hidePlaceholders?: boolean;
+  enhanceMissingResult?: boolean;
+};
+
+export type PortfolioProjectMeta = {
+  period: string | null;
+  role: string | null;
+  organization: string | null;
+  skills: string[];
+};
+
+export type PortfolioProjectResultMetric = {
+  value: string;
+  label: string | null;
 };
 
 const PORTFOLIO_PLACEHOLDER_PHRASES = [
@@ -36,6 +49,14 @@ const PORTFOLIO_PLACEHOLDER_PHRASES = [
   "결과와 수치를 입력해주세요",
   "정량 성과를 입력해주세요",
   "본인이 맡았던 목표와 해결 과제를 입력해주세요",
+] as const;
+
+const PORTFOLIO_INTERNAL_REVIEW_TAGS = [
+  "수치 보완 필요",
+  "검토 필요",
+  "본인 경험으로 수정 필요",
+  "보완 필요",
+  "수정 필요",
 ] as const;
 
 function compact(value: string | null | undefined): string {
@@ -79,10 +100,20 @@ function isDuplicateDisplayText(seenTexts: Set<string>, value: string | null | u
 export function isPortfolioPlaceholderText(value: string | null | undefined): boolean {
   const key = toComparableText(value ?? "");
   if (!key) return false;
-  return PORTFOLIO_PLACEHOLDER_PHRASES.some((phrase) => key.includes(toComparableText(phrase)));
+  return [...PORTFOLIO_PLACEHOLDER_PHRASES, ...PORTFOLIO_INTERNAL_REVIEW_TAGS].some((phrase) =>
+    key.includes(toComparableText(phrase))
+  );
 }
 
-export function getPortfolioProjectReviewTags(project: PortfolioProjectDraft): string[] {
+function cleanOutputText(value: string | null | undefined): string | null {
+  const text = compact(value);
+  return text && !isPortfolioPlaceholderText(text) ? text : null;
+}
+
+export function getPortfolioProjectReviewTags(
+  project: PortfolioProjectDraft,
+  options: { includeInternal?: boolean } = {}
+): string[] {
   const seen = new Set<string>();
   const tags: string[] = [];
 
@@ -90,11 +121,60 @@ export function getPortfolioProjectReviewTags(project: PortfolioProjectDraft): s
     const cleaned = tag.replace(/^\[+|\]+$/g, "").trim();
     const key = toComparableText(cleaned);
     if (!cleaned || seen.has(key)) continue;
+    if (!options.includeInternal && isPortfolioPlaceholderText(cleaned)) continue;
     seen.add(key);
     tags.push(cleaned);
   }
 
   return tags;
+}
+
+export function getPortfolioProjectMeta(project: PortfolioProjectDraft): PortfolioProjectMeta {
+  const overview = project.portfolio.project_overview;
+
+  return {
+    period: cleanOutputText(overview.period),
+    role:
+      cleanOutputText(overview.role) ||
+      cleanOutputText(project.sourceActivity?.role) ||
+      cleanOutputText(project.portfolio.role_clarification.content),
+    organization: cleanOutputText(overview.organization),
+    skills: normalizeStringList(overview.skills).filter((skill) => !isPortfolioPlaceholderText(skill)),
+  };
+}
+
+export function getPortfolioProjectResultMetrics(
+  project: PortfolioProjectDraft
+): PortfolioProjectResultMetric[] {
+  return project.portfolio.quantified_result.metrics
+    .map((metric) => {
+      const value = cleanOutputText(metric.value);
+      if (!value) return null;
+
+      return {
+        value,
+        label: cleanOutputText(metric.label),
+      };
+    })
+    .filter((metric): metric is PortfolioProjectResultMetric => Boolean(metric));
+}
+
+function getPortfolioProjectQualitativeResult(project: PortfolioProjectDraft): string {
+  const title = getPortfolioProjectTitle(project);
+  const meta = getPortfolioProjectMeta(project);
+  const skills = meta.skills.slice(0, 3);
+  const skillClause = skills.length > 0 ? `${skills.join(", ")} 기반으로 ` : "";
+  const roleClause = meta.role ? `${meta.role} 관점에서 ` : "";
+
+  return `${roleClause}${skillClause}${title}의 기획 의도를 실행 단위로 정리하고, 팀이 후속 제작과 운영 판단에 재사용할 수 있는 기준을 만들었습니다.`;
+}
+
+export function getPortfolioProjectFinalResultText(project: PortfolioProjectDraft): string | null {
+  const directResult = cleanOutputText(getPortfolioSectionText(project, "result"));
+  if (directResult) return directResult;
+
+  if (getPortfolioProjectResultMetrics(project).length > 0) return null;
+  return getPortfolioProjectQualitativeResult(project);
 }
 
 export function isPortfolioConversionPayload(
@@ -238,7 +318,10 @@ export function getPortfolioProjectDisplaySections(
     },
     {
       key: "result",
-      text: getPortfolioSectionText(project, "result"),
+      text:
+        options.hidePlaceholders && options.enhanceMissingResult
+          ? getPortfolioProjectFinalResultText(project) ?? ""
+          : getPortfolioSectionText(project, "result"),
     },
   ];
 

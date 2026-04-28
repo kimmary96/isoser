@@ -6,6 +6,7 @@ import Image from "next/image";
 import {
   getOrderedPortfolioProjects,
   getPortfolioProjectDisplaySections,
+  getPortfolioProjectMeta,
   getPortfolioProjectSummary,
   getPortfolioProjectTitle,
 } from "@/lib/portfolio-document";
@@ -68,8 +69,11 @@ function estimateProjectUnits(
   document: PortfolioDocumentPayload,
   project: PortfolioProjectDraft
 ): number {
-  const overview = project.portfolio.project_overview;
-  const displaySections = getPortfolioProjectDisplaySections(project, { hidePlaceholders: true });
+  const meta = getPortfolioProjectMeta(project);
+  const displaySections = getPortfolioProjectDisplaySections(project, {
+    hidePlaceholders: true,
+    enhanceMissingResult: true,
+  });
   const summaryUnits = estimateTextRows(getPortfolioProjectSummary(project), 78);
   const sectionUnits = displaySections.reduce(
     (sum, section) =>
@@ -82,7 +86,7 @@ function estimateProjectUnits(
   const imageUnits = document.imagePlacements.filter(
     (placement) => placement.activityId === project.activityId
   ).length;
-  const skillUnits = Math.ceil((overview.skills?.length ?? 0) / 6);
+  const skillUnits = Math.ceil(meta.skills.length / 6);
 
   return Math.max(16, 8 + summaryUnits + sectionUnits + skillUnits + imageUnits * 8);
 }
@@ -152,8 +156,11 @@ function PreviewProject({
   project: PortfolioProjectDraft;
   index: number;
 }) {
-  const overview = project.portfolio.project_overview;
-  const displaySections = getPortfolioProjectDisplaySections(project, { hidePlaceholders: true });
+  const meta = getPortfolioProjectMeta(project);
+  const displaySections = getPortfolioProjectDisplaySections(project, {
+    hidePlaceholders: true,
+    enhanceMissingResult: true,
+  });
 
   return (
     <article className="border-b border-slate-200 pb-8 last:border-b-0">
@@ -163,12 +170,12 @@ function PreviewProject({
         {getPortfolioProjectSummary(project)}
       </p>
       <div className="mt-3 flex flex-wrap gap-1.5">
-        {[overview.period, overview.role, overview.organization].filter(Boolean).map((item) => (
+        {[meta.period, meta.role, meta.organization].filter(Boolean).map((item) => (
           <span key={item} className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-600">
             {item}
           </span>
         ))}
-        {overview.skills.slice(0, 6).map((skill) => (
+        {meta.skills.slice(0, 6).map((skill) => (
           <span
             key={skill}
             className="rounded-full bg-[#eef6ff] px-2 py-1 text-xs font-semibold text-[#094cb2]"

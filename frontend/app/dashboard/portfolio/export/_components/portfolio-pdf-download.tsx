@@ -14,9 +14,10 @@ import {
 import {
   getOrderedPortfolioProjects,
   getPortfolioProjectDisplaySections,
+  getPortfolioProjectMeta,
+  getPortfolioProjectResultMetrics,
   getPortfolioProjectSummary,
   getPortfolioProjectTitle,
-  getPortfolioProjectReviewTags,
   isPortfolioPlaceholderText,
 } from "@/lib/portfolio-document";
 import type { PortfolioDocumentPayload, PortfolioImagePlacement, PortfolioProjectDraft } from "@/lib/types";
@@ -218,20 +219,6 @@ function trimPdfText(value: string | null | undefined, limit = 900): string | nu
   return normalized.length > limit ? `${normalized.slice(0, limit)}...` : normalized;
 }
 
-function getPdfMetrics(project: PortfolioProjectDraft) {
-  return project.portfolio.quantified_result.metrics
-    .map((metric) => {
-      const value = trimPdfText(metric.value, 40);
-      if (!value || isPortfolioPlaceholderText(value)) return null;
-      const label = trimPdfText(metric.label, 80);
-      return {
-        value,
-        label: label && !isPortfolioPlaceholderText(label) ? label : null,
-      };
-    })
-    .filter((metric): metric is { value: string; label: string | null } => Boolean(metric));
-}
-
 function PortfolioPdfProject({
   document,
   project,
@@ -241,9 +228,11 @@ function PortfolioPdfProject({
   project: PortfolioProjectDraft;
   index: number;
 }) {
-  const overview = project.portfolio.project_overview;
-  const displaySections = getPortfolioProjectDisplaySections(project, { hidePlaceholders: true });
-  const reviewTags = getPortfolioProjectReviewTags(project);
+  const meta = getPortfolioProjectMeta(project);
+  const displaySections = getPortfolioProjectDisplaySections(project, {
+    hidePlaceholders: true,
+    enhanceMissingResult: true,
+  });
   const summary = trimPdfText(getPortfolioProjectSummary(project), 600);
 
   return (
@@ -252,10 +241,10 @@ function PortfolioPdfProject({
       <Text style={styles.projectTitle}>{getPortfolioProjectTitle(project)}</Text>
       {summary && <Text style={styles.summary}>{summary}</Text>}
       <View style={styles.meta}>
-        <Text style={styles.metaItem}>기간: {overview.period || "기간 미입력"}</Text>
-        <Text style={styles.metaItem}>역할: {overview.role || project.portfolio.role_clarification.content || "역할 미입력"}</Text>
-        {overview.organization && <Text style={styles.metaItem}>조직: {overview.organization}</Text>}
-        {overview.skills.slice(0, 6).map((skill) => (
+        {meta.period && <Text style={styles.metaItem}>기간: {meta.period}</Text>}
+        {meta.role && <Text style={styles.metaItem}>역할: {meta.role}</Text>}
+        {meta.organization && <Text style={styles.metaItem}>조직: {meta.organization}</Text>}
+        {meta.skills.slice(0, 6).map((skill) => (
           <Text key={skill} style={styles.metaItem}>
             {skill}
           </Text>
@@ -264,7 +253,7 @@ function PortfolioPdfProject({
       <PortfolioPdfImages placements={imagesForSection(document, project, "overview")} />
       {displaySections.map((section) => {
         const placements = imagesForSection(document, project, section.key);
-        const metrics = section.key === "result" ? getPdfMetrics(project) : [];
+        const metrics = section.key === "result" ? getPortfolioProjectResultMetrics(project) : [];
         const hasContent =
           Boolean(section.text) ||
           section.highlights.length > 0 ||
@@ -295,15 +284,6 @@ function PortfolioPdfProject({
           </View>
         );
       })}
-      {reviewTags.length > 0 && (
-        <View style={styles.tagRow}>
-          {reviewTags.map((tag) => (
-            <Text key={tag} style={styles.tag}>
-              {tag}
-            </Text>
-          ))}
-        </View>
-      )}
     </View>
   );
 }
