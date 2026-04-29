@@ -4,6 +4,7 @@
 
 ## Included docs
 - [launch-smoke-test.md](./launch-smoke-test.md)
+- [launch-p0-release-test-plan.md](./launch-p0-release-test-plan.md)
 - [launch-checklist-nontechnical.md](./launch-checklist-nontechnical.md)
 - [launch-checklist-notion.md](./launch-checklist-notion.md)
 - [launch-checklist-slack.md](./launch-checklist-slack.md)

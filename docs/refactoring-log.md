@@ -3707,3 +3707,6 @@ docs/architecture-overview.md 문서를 새로 만들어줘.
   - legacy 검색/대량 scan은 중간 timeout 시 이미 확보한 row를 보존하거나 빈 row로 복구해 공개 목록 API가 500을 내지 않게 함
   - `/programs` 페이지는 메인 검색 요청과 마감임박/필터 옵션 보조 요청 timeout을 분리하고, 검색/필터 상태에서는 무거운 browse fallback을 기다리지 않도록 바꿔 검색 화면이 오류 대신 빈 결과 상태로 이어지게 함
   - 회귀 테스트로 검색 read-model 실패, count 실패, search scan 부분 timeout/초기 timeout 경로를 고정함
+- 2026-04-28: `docs/launch/launch-p0-release-test-plan.md`, `docs/launch/README.md`
+  - 링크 공유 직전 P0 런칭 리허설을 위한 공개 페이지, 인증, 대시보드 저장, AI, 문서/PDF, 모바일, 운영 리스크 체크리스트를 별도 문서로 추가함
+  - 테스트 계정 운영 방식과 비밀번호 공유 금지 원칙, Codex와 함께 점검할 때의 안전한 대안을 문서화함
