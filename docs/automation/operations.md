@@ -9,6 +9,10 @@
   - `powershell -ExecutionPolicy Bypass -File scripts/run_watcher.ps1`
 - cowork watcher start:
   - `powershell -ExecutionPolicy Bypass -File scripts/run_cowork_watcher.ps1`
+- supervised watchers start:
+  - `powershell -ExecutionPolicy Bypass -File scripts/start_watchers.ps1`
+- supervised watchers stop:
+  - `powershell -ExecutionPolicy Bypass -File scripts/stop_watchers.ps1`
 - watcher ledger summary:
   - `python scripts/summarize_run_ledgers.py`
 - watcher ledger prune/archive:
@@ -47,6 +51,12 @@
 
 ## Restart checklist
 - short checklist: [../rules/watcher-restart-checklist.md](../rules/watcher-restart-checklist.md)
+
+## Local auto-start policy
+- Watchers are not required to stay resident after Windows logon.
+- Use the VS Code task `Start Repo Watchers` or `scripts/start_watchers.ps1` only when queue automation is needed.
+- Use the VS Code task `Stop Repo Watchers` or `scripts/stop_watchers.ps1` before closing the project if watcher supervisors are running.
+- The legacy logon scheduled task name is `Isoser Start Watchers`; restore it with `scripts/install_start_watchers_task.ps1` only when always-on queue processing is intentionally needed.
 
 ## Retention notes
 - `tasks/done/`과 `reports/`는 소형 markdown 파일이 누적되는 구조다

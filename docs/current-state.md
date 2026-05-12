@@ -1,5 +1,8 @@
 # Current State
 
+Update 2026-04-29:
+- 로컬 watcher/cowork watcher는 더 이상 Windows 로그온이나 VS Code 폴더 열기만으로 상주 실행되는 것을 기본값으로 두지 않는다. Windows 작업 스케줄러의 legacy `Isoser Start Watchers` 항목은 제거 대상이며, `.vscode/tasks.json`의 `Start Repo Watchers`는 수동 실행 task로만 유지한다. 필요할 때는 VS Code `Tasks: Run Task`에서 `Start Repo Watchers`를 실행하거나 `powershell -ExecutionPolicy Bypass -File scripts/start_watchers.ps1`를 직접 실행한다. 종료는 신규 `Stop Repo Watchers` task 또는 `powershell -ExecutionPolicy Bypass -File scripts/stop_watchers.ps1`를 사용해 watcher supervisor와 repo watcher 프로세스만 정리하고 stale lock을 제거한다. 프론트엔드 `next dev`, 백엔드 `uvicorn`, Docker/WSL/vmmem은 이 stop 스크립트의 정리 대상이 아니다.
+
 Update 2026-04-28:
 - `/dashboard/match` 입력 모달과 `/dashboard/resume` 우측 AI 패널의 공고 입력 UI는 `frontend/app/dashboard/_components/job-posting-input-panel.tsx`를 공유한다. 공통 패널은 공고 본문 textarea, 선택적 URL 추출 입력, 이미지/PDF 업로드와 추출 버튼, 선택 파일 목록/삭제/비우기 UI를 담당하며, `variant="modal" | "sidebar"`와 `textPlacement="top" | "bottom"`으로 화면 밀도와 표시 순서만 조정한다. 매칭 분석의 회사/직무/분석 방식 선택과 이력서 문장 후보 생성/적용 로직은 각 화면에 남아 있고, 기존 이미지/PDF/URL 추출 API와 공고 본문 state 연결은 변경하지 않는다.
 - `/dashboard/match` 공고 매칭 분석 화면은 dashboard sidebar/layout을 유지한 채 `#f3f6fb` 회색 배경, white card surface, `#094cb2 -> #3b82f6` primary CTA, `#071a36` dark navy score surface, `#e0621a`/`#fff1e6` soft orange accent 톤으로 맞춘다. 저장 분석 목록은 3열 compact card와 요약/날짜/등급 chip, score progress, pill형 `상세 보기` affordance로 표시하고, 빈 상태에도 첫 분석 CTA를 제공한다. 입력 모달은 회사/직무/공고 본문 label, 이미지/PDF 업로드 compact card, file 선택 요약을 제공하며 `ModalShell`의 optional `scrollBody` 모드로 body만 스크롤하고 footer 분석 버튼은 모달 하단에 고정한다. 상세 모달은 기존 저장 결과 payload를 그대로 사용하되 긴 공고 제목을 2줄로 제한하고 점수 hero, 총평, 상세 점수 progress bar의 색과 밀도만 다른 대시보드 화면과 맞춘다. 분석 생성, 저장 목록 조회, 삭제, 이력서 선택, 이미지/PDF 공고 텍스트 추출 API 계약은 변경하지 않는다.

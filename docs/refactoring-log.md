@@ -1,5 +1,10 @@
 # 리팩토링 로그
 
+- 2026-04-29: `.vscode/tasks.json`, `.vscode/settings.json`, `scripts/stop_watchers.ps1`, `docs/automation/operations.md`, `docs/current-state.md`
+  - Windows 로그온과 VS Code 폴더 열기만으로 watcher가 상주 실행되던 경로를 끄고, `Start Repo Watchers`를 수동 task로 전환함
+  - `Stop Repo Watchers` task와 `scripts/stop_watchers.ps1`를 추가해 repo watcher supervisor, `watcher.py`, `cowork_watcher.py` 프로세스와 stale lock만 정리할 수 있게 함
+  - 기존 `scripts/start_watchers.ps1`, `scripts/install_start_watchers_task.ps1`, `scripts/remove_start_watchers_task.ps1`는 유지해 필요 시 수동 시작이나 legacy 로그온 자동 시작 복구가 가능하도록 함
+
 - 2026-04-28: `frontend/app/dashboard/documents/page.tsx`, `docs/current-state.md`
   - 문서 저장소 PDF 출력 모달에서 결제 처리 단계와 PDF 생성/다운로드 단계를 분리해, 결제 처리 중에는 기존처럼 닫기를 막고 PDF 준비 중에는 모달을 닫을 수 있게 함
   - 다운로드 helper 호출, 선택 문서/디자인/결제 상태 흐름은 유지하고 닫기 버튼 disabled 조건만 좁힘
