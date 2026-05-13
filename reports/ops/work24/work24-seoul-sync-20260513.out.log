@@ -1,0 +1,38 @@
+{"event": "partition_synced", "code": "11", "name": "서울", "fetched_rows": 5874, "payload_rows": 5874, "deadline_from_traStartDate_rows": 5832, "upserted_rows": 0, "duration_seconds": 2851.549, "error": "500: Supabase request failed: null value in column \"certifications\" of relation \"programs\" violates not-null constraint"}
+{
+  "mode": "apply",
+  "start_dt": "20260513",
+  "end_dt": "20261113",
+  "include_seoul": true,
+  "start_from": null,
+  "stop_after": "서울",
+  "partition_order": [
+    {
+      "code": "11",
+      "name": "서울"
+    }
+  ],
+  "preview": [
+    {
+      "code": "11",
+      "name": "서울",
+      "total_count": 5874,
+      "page_rows": 100,
+      "page_size": 100,
+      "estimated_pages": 59,
+      "within_api_page_limit": true
+    }
+  ],
+  "sync_results": [
+    {
+      "code": "11",
+      "name": "서울",
+      "fetched_rows": 5874,
+      "payload_rows": 5874,
+      "deadline_from_traStartDate_rows": 5832,
+      "upserted_rows": 0,
+      "duration_seconds": 2851.549,
+      "error": "500: Supabase request failed: null value in column \"certifications\" of relation \"programs\" violates not-null constraint"
+    }
+  ]
+}

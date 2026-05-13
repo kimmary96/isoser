@@ -1,0 +1,37 @@
+{
+  "mode": "apply",
+  "start_dt": "20260513",
+  "end_dt": "20261113",
+  "include_seoul": true,
+  "start_from": null,
+  "stop_after": "서울",
+  "partition_order": [
+    {
+      "code": "11",
+      "name": "서울"
+    }
+  ],
+  "preview": [
+    {
+      "code": "11",
+      "name": "서울",
+      "total_count": 5883,
+      "page_rows": 100,
+      "page_size": 100,
+      "estimated_pages": 59,
+      "within_api_page_limit": true
+    }
+  ],
+  "sync_results": [
+    {
+      "code": "11",
+      "name": "서울",
+      "fetched_rows": 5883,
+      "payload_rows": 5883,
+      "deadline_from_traStartDate_rows": 5842,
+      "upserted_rows": 0,
+      "duration_seconds": 2641.062,
+      "error": "500: Supabase request failed: canceling statement due to statement timeout"
+    }
+  ]
+}

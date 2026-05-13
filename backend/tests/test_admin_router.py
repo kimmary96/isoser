@@ -320,6 +320,48 @@ async def test_upsert_program_payload_batches_large_sync_payload(monkeypatch: py
 
 
 @pytest.mark.asyncio
+async def test_upsert_program_payload_splits_sparse_batch_keys(monkeypatch: pytest.MonkeyPatch) -> None:
+    captured_payloads: list[list[dict[str, object]]] = []
+
+    async def fake_request_supabase(*, method, path, params=None, payload=None, prefer=None):
+        assert method == "POST"
+        assert path == "/rest/v1/programs"
+        assert isinstance(payload, list)
+        captured_payloads.append(payload)
+        return payload
+
+    monkeypatch.setattr(admin, "request_supabase", fake_request_supabase)
+
+    rows = await admin._upsert_program_payload(
+        [
+            {
+                "hrd_id": "HRD-1",
+                "source_unique_key": "work24:HRD-1:1:5000",
+                "title": "선택 필드 있는 과정",
+                "source": "고용24",
+                "category": "IT",
+                "support_type": "무료",
+                "is_active": True,
+            },
+            {
+                "hrd_id": "HRD-2",
+                "source_unique_key": "work24:HRD-2:1:5000",
+                "title": "선택 필드 없는 과정",
+                "source": "고용24",
+                "category": "IT",
+                "is_active": True,
+            },
+        ]
+    )
+
+    assert len(captured_payloads) == 2
+    assert [len(payload) for payload in captured_payloads] == [1, 1]
+    assert "support_type" in captured_payloads[0][0]
+    assert "support_type" not in captured_payloads[1][0]
+    assert rows == [captured_payloads[0][0], captured_payloads[1][0]]
+
+
+@pytest.mark.asyncio
 async def test_upsert_program_payload_retries_row_by_row_with_existing_id(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

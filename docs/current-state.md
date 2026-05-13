@@ -1,5 +1,10 @@
 # Current State
 
+Update 2026-05-13:
+- Work24 전국 partition sync를 `20260513~20261113` 범위로 실행할 때 Supabase bulk upsert payload row의 선택 컬럼이 서로 달라 `All object keys must match`가 발생할 수 있다. `backend/routers/admin.py`의 프로그램 bulk upsert는 이제 PostgREST에 보내기 전 payload key set이 같은 row끼리 배치를 나누므로, 일부 row에만 `support_type`, `service_meta`, canonical additive field가 있어도 누락 컬럼을 `null`로 덮어쓰지 않고 기존 conflict target/fallback 흐름을 유지한다.
+- Supabase statement timeout이 나는 대량 Work24 upsert 운영에는 `PROGRAM_UPSERT_BATCH_SIZE` env로 프로그램 upsert 배치 크기를 줄일 수 있다. 기본값은 기존처럼 100이고, 2026-05-13 서울 1페이지 smoke에서는 batch 10/25/50 모두 100건 upsert에 성공했다. 서울 전체 batch50 재시도는 사용자 요청으로 중단되어 완료 리포트가 없고, 마지막 완료된 서울 전체 시도는 Work24 5,883건 fetch 후 Supabase statement timeout으로 upsert 0건 실패했다.
+- 로컬 운영 보정으로 `scripts/refresh_program_list_index.py --browse-only --pool-limit 300 --browse-candidate-limit 2400`를 `SUPABASE_TIMEOUT_SECONDS=120`에서 실행해 `program_list_index` 기본 browse pool 300건을 `indexed_at=2026-05-13T09:11:09.400214+00:00` 기준으로 재생성했다. `/programs` 기본 목록과 backend `GET /programs/list?scope=default&recruiting_only=true&sort=default`는 2026-05-13 이후 마감/훈련 시작 행만 browse rank 상위에 노출한다. `refresh_program_landing_chip_snapshots`는 DB statement timeout으로 best-effort 단계가 실패했지만, `/landing-c`는 스냅샷이 없거나 오래된 경우 read-model/legacy fallback을 오늘 KST 기준으로 필터링해 사용한다.
+
 Update 2026-04-29:
 - 로컬 watcher/cowork watcher는 더 이상 Windows 로그온이나 VS Code 폴더 열기만으로 상주 실행되는 것을 기본값으로 두지 않는다. Windows 작업 스케줄러의 legacy `Isoser Start Watchers` 항목은 제거 대상이며, `.vscode/tasks.json`의 `Start Repo Watchers`는 수동 실행 task로만 유지한다. 필요할 때는 VS Code `Tasks: Run Task`에서 `Start Repo Watchers`를 실행하거나 `powershell -ExecutionPolicy Bypass -File scripts/start_watchers.ps1`를 직접 실행한다. 종료는 신규 `Stop Repo Watchers` task 또는 `powershell -ExecutionPolicy Bypass -File scripts/stop_watchers.ps1`를 사용해 watcher supervisor와 repo watcher 프로세스만 정리하고 stale lock을 제거한다. 프론트엔드 `next dev`, 백엔드 `uvicorn`, Docker/WSL/vmmem은 이 stop 스크립트의 정리 대상이 아니다.
 

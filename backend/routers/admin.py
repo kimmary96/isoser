@@ -39,7 +39,26 @@ except ImportError:
 router = APIRouter()
 logger = get_logger(__name__)
 programs_rag = ProgramsRAG()
-PROGRAM_UPSERT_BATCH_SIZE = 100
+
+
+def _resolve_program_upsert_batch_size() -> int:
+    raw_value = os.getenv("PROGRAM_UPSERT_BATCH_SIZE", "").strip()
+    if not raw_value:
+        return 100
+    try:
+        return max(1, int(raw_value))
+    except ValueError:
+        log_event(
+            logger,
+            logging.WARNING,
+            "admin_programs_invalid_upsert_batch_size",
+            env_name="PROGRAM_UPSERT_BATCH_SIZE",
+            value=raw_value,
+        )
+        return 100
+
+
+PROGRAM_UPSERT_BATCH_SIZE = _resolve_program_upsert_batch_size()
 
 if not os.getenv("ADMIN_SECRET_KEY", "").strip():
     log_event(
@@ -383,8 +402,26 @@ async def _upsert_program_payload_row_by_row(payload: list[dict[str, Any]]) -> l
     return upserted_rows
 
 
+def _group_payload_by_postgrest_keys(payload: list[dict[str, Any]]) -> list[list[dict[str, Any]]]:
+    if not payload:
+        return []
+
+    grouped: dict[tuple[str, ...], list[dict[str, Any]]] = {}
+    for row in payload:
+        key = tuple(sorted(row.keys()))
+        grouped.setdefault(key, []).append(row)
+    return list(grouped.values())
+
+
 async def _upsert_program_payload_batch(payload: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    working_payload = [dict(row) for row in payload]
+    payload_groups = _group_payload_by_postgrest_keys([dict(row) for row in payload])
+    if len(payload_groups) > 1:
+        upserted_rows: list[dict[str, Any]] = []
+        for payload_group in payload_groups:
+            upserted_rows.extend(await _upsert_program_payload_batch(payload_group))
+        return upserted_rows
+
+    working_payload = payload_groups[0] if payload_groups else []
     skipped_columns: list[str] = []
     conflict_target = "source_unique_key" if any(row.get("source_unique_key") for row in working_payload) else "hrd_id"
 
