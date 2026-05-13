@@ -67,6 +67,18 @@ describe("public landing chip snapshots", () => {
     ).toBe(false);
   });
 
+  it("treats past deadlines as closed even when stale days_left is non-negative", () => {
+    expect(
+      isProgramOpenOnReferenceDate(
+        {
+          deadline: "2026-04-26",
+          days_left: 3,
+        },
+        "2026-05-13",
+      ),
+    ).toBe(false);
+  });
+
   it("returns a normalized KST date string", () => {
     expect(getKstTodayDateString()).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });

@@ -65,16 +65,16 @@ export function isProgramOpenOnReferenceDate(
   program: Pick<ProgramListRow, "deadline" | "days_left" | "is_active">,
   referenceDate: string
 ): boolean {
-  if (typeof program.days_left === "number" && Number.isFinite(program.days_left)) {
-    return program.days_left >= 0;
-  }
-
   const deadline = String(program.deadline ?? "").trim();
   if (deadline) {
     const normalizedDeadline = deadline.slice(0, 10);
     if (normalizedDeadline && normalizedDeadline < referenceDate) {
       return false;
     }
+  }
+
+  if (typeof program.days_left === "number" && Number.isFinite(program.days_left)) {
+    return program.days_left >= 0;
   }
 
   if (program.is_active === false && !deadline) {

@@ -1,5 +1,10 @@
 # 리팩토링 로그
 
+- 2026-05-13: `frontend/lib/server/public-programs-fallback.ts`, `frontend/lib/server/public-program-snapshot-utils.ts`, `frontend/lib/server/public-programs-fallback.test.ts`, `docs/current-state.md`, `reports/session/2026-05/SESSION-2026-05-13-landing-date-refresh-result.md`
+  - `landing-c` Opportunity feed가 `2026-04-26` snapshot을 계속 재사용하던 경로를 끊고, `generated_for = 오늘(KST)` snapshot만 사용하도록 변경함
+  - 오늘 snapshot이 없으면 read-model/legacy fallback을 사용하고, Live Board direct read에는 `deadline >= 오늘(KST)` 조건을 붙여 과거 마감 row가 추천 공고 후보를 밀어내지 않게 함
+  - 검증: `npm --prefix frontend test -- lib/server/public-programs-fallback.test.ts`, `frontend` `npm run build`, local production `GET /landing-c?verify=20260513` 200
+
 - 2026-05-13: `backend/routers/admin.py`, `backend/tests/test_admin_router.py`, `docs/current-state.md`, `reports/session/2026-05/SESSION-2026-05-13-program-read-model-refresh-result.md`
   - Work24 프로그램 bulk upsert에서 row별 optional 컬럼 유무가 달라 PostgREST가 `All object keys must match`로 실패하는 문제를 확인하고, payload key set별로 배치를 나눠 누락 컬럼을 `null`로 덮어쓰지 않으면서 기존 conflict target/fallback 흐름을 유지함
   - 대량 Work24 upsert가 Supabase statement timeout에 걸릴 때 운영 재시도 배치 크기를 낮출 수 있도록 `PROGRAM_UPSERT_BATCH_SIZE` env를 추가하되 기본값 100은 유지함

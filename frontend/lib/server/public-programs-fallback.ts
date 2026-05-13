@@ -90,8 +90,7 @@ const loadCachedLandingChipSnapshotRows = unstable_cache(
       .select("generated_for, generated_at, items")
       .eq("surface", "landing-c")
       .eq("chip", activeChip)
-      .lte("generated_for", generatedFor)
-      .order("generated_for", { ascending: false })
+      .eq("generated_for", generatedFor)
       .order("generated_at", { ascending: false })
       .limit(1);
 
@@ -108,8 +107,8 @@ const loadCachedLandingChipSnapshotRows = unstable_cache(
       generatedFor
     );
   },
-  ["public-landing-chip-snapshot"],
-  { revalidate: 3600 }
+  ["public-landing-chip-snapshot-v2-today-only"],
+  { revalidate: 300 }
 );
 
 const loadCachedLandingLiveBoardRows = unstable_cache(
@@ -120,6 +119,7 @@ const loadCachedLandingLiveBoardRows = unstable_cache(
       .select("*")
       .eq("is_open", true)
       .eq("is_ad", false)
+      .gte("deadline", generatedFor)
       .order("click_hotness_score", { ascending: false, nullsFirst: false })
       .order("deadline", { ascending: true, nullsFirst: false })
       .order("id", { ascending: true })
@@ -139,8 +139,8 @@ const loadCachedLandingLiveBoardRows = unstable_cache(
       generatedFor
     );
   },
-  ["public-landing-live-board"],
-  { revalidate: 3600 }
+  ["public-landing-live-board-v2-open-deadline"],
+  { revalidate: 300 }
 );
 
 function isIgnorableLandingSnapshotError(error: { code?: string | null; message?: string | null } | null | undefined): boolean {
