@@ -1,5 +1,11 @@
 # 리팩토링 로그
 
+- 2026-05-13: `backend/routers/admin.py`, `backend/tests/test_admin_router.py`, `docs/current-state.md`, `reports/session/2026-05/SESSION-2026-05-13-program-read-model-refresh-result.md`
+  - Work24 프로그램 bulk upsert에서 row별 optional 컬럼 유무가 달라 PostgREST가 `All object keys must match`로 실패하는 문제를 확인하고, payload key set별로 배치를 나눠 누락 컬럼을 `null`로 덮어쓰지 않으면서 기존 conflict target/fallback 흐름을 유지함
+  - 대량 Work24 upsert가 Supabase statement timeout에 걸릴 때 운영 재시도 배치 크기를 낮출 수 있도록 `PROGRAM_UPSERT_BATCH_SIZE` env를 추가하되 기본값 100은 유지함
+  - 운영 보정으로 `program_list_index` browse pool 300건을 2026-05-13 기준으로 재생성해 `/programs`와 홈페이지 fallback 목록이 오늘 이후 훈련 일정만 우선 노출하도록 갱신함
+  - 검증: `backend\venv\Scripts\python.exe -m pytest backend\tests\test_admin_router.py::test_upsert_program_payload_retries_without_missing_columns backend\tests\test_admin_router.py::test_upsert_program_payload_batches_large_sync_payload backend\tests\test_admin_router.py::test_upsert_program_payload_splits_sparse_batch_keys backend\tests\test_admin_router.py::test_upsert_program_payload_retries_row_by_row_with_existing_id`, `frontend` `npm run build`, 로컬 `/programs`, `/landing-c`, backend `/programs/list`
+
 - 2026-04-28: `frontend/app/dashboard/documents/page.tsx`, `docs/current-state.md`
   - 문서 저장소 PDF 출력 모달에서 결제 처리 단계와 PDF 생성/다운로드 단계를 분리해, 결제 처리 중에는 기존처럼 닫기를 막고 PDF 준비 중에는 모달을 닫을 수 있게 함
   - 다운로드 helper 호출, 선택 문서/디자인/결제 상태 흐름은 유지하고 닫기 버튼 disabled 조건만 좁힘
