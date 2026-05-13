@@ -1,5 +1,10 @@
 # 리팩토링 로그
 
+- 2026-05-13: `reports/ops/work24/work24-seoul-sync-20260513-batch50-full-apply.json`, `docs/current-state.md`, `reports/session/2026-05/SESSION-2026-05-13-work24-seoul-db-refresh-result.md`
+  - Work24 서울 지역 partition sync를 `20260513~20261113` 범위로 재실행해 5,890건을 Supabase `programs`에 upsert하고, `program_list_index` browse pool 300건을 `indexed_at=2026-05-13T14:02:14.882519+00:00` 기준으로 재생성함
+  - 랜딩 snapshot RPC는 statement timeout으로 실패했지만, 현재 `landing-c`는 오늘 snapshot이 없으면 오늘 기준 fallback을 사용하므로 과거 `2026-04-26` snapshot 재사용 경로를 피함
+  - 검증: Supabase `programs` 서울 Work24 updated sample, `program_list_index` browse top/open rows, local production `GET /landing-c?verify=seoul-db-refresh` 200
+
 - 2026-05-13: `frontend/lib/server/public-programs-fallback.ts`, `frontend/lib/server/public-program-snapshot-utils.ts`, `frontend/lib/server/public-programs-fallback.test.ts`, `docs/current-state.md`, `reports/session/2026-05/SESSION-2026-05-13-landing-date-refresh-result.md`
   - `landing-c` Opportunity feed가 `2026-04-26` snapshot을 계속 재사용하던 경로를 끊고, `generated_for = 오늘(KST)` snapshot만 사용하도록 변경함
   - 오늘 snapshot이 없으면 read-model/legacy fallback을 사용하고, Live Board direct read에는 `deadline >= 오늘(KST)` 조건을 붙여 과거 마감 row가 추천 공고 후보를 밀어내지 않게 함
